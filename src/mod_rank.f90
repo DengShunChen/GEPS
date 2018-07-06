@@ -1,0 +1,24 @@
+      module rank
+
+      implicit none
+
+      public
+
+      integer nsize,myrank
+
+
+      common/com_mpe/nsize,myrank
+
+
+! for io quilting
+      integer nsize_all, nsize_gfs, nsize_io,          &
+              myrank_all,myrank_gfs,myrank_io,         &
+              root_gfs,root_io,                        &
+              MPI_COMM_gfs,MPI_COMM_io,ntag,Ngfs,Nio
+
+      common/com_quilt/nsize_all, nsize_gfs, nsize_io, &
+              myrank_all,myrank_gfs,myrank_io,         &
+              root_gfs,root_io,                        &
+              MPI_COMM_gfs,MPI_COMM_io,ntag,Ngfs,Nio
+
+      end module rank

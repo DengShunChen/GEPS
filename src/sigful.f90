@@ -1,0 +1,541 @@
+      subroutine sigful(nx,my,my_max,lev,ncld,lmax,jtrun,jtmax,ifilin     &
+              , ifilout,cstar,ktrop,idtg,ptop,taux,capa,grav,rgas,rad,cp  &
+              , weight,poly,sigma,cosl,phi,tt,ut,vt,sht,o3l,pt,sgeo,pdiff &
+!             , weight,poly,sigma,cosl,phi,tt,ut,vt,sht,pt,sgeo,pdiff
+              , tsave,t1000,plt,pk,pk2,trefs,taup,ggdef,gmdef)
+!
+!  read and interpolate analysis fields to model's coordinates
+!
+!  ********************************************************************
+!
+! **** input ****
+!
+!  sgeo: gaussian grid terrain geopotential
+!
+! **** output ****
+!
+!  phi: 3-d geopotential on gaussian grid and sigma coord.
+!  tt: 3-d temperature on gaussian grid and sigma coord.
+!  ut: 3-d e-w wind component on gaussian grid and sigma coord.
+!  vt: 3-d n-s wind component on gaussian grid and sigma coord.
+!  sht: 3-d specific humidity on gaussian grid and sigma coord.
+!  pt: 2-d terrain pressure on gaussian grid.
+!  pdiff: 2-d difference between initial SLP and terrain pressure.
+!  plt: 3-d full level pressure on gaussian grid and sigma coord.
+!  pk: 3-d full level exner func on gaussian grid and sigma coord.
+!  pk2: 3-d half level exner func on gaussian grid and sigma coord.
+!
+      use mpe
+      use rank
+      use index
+
+      implicit  none
+
+      integer   nx,my,my_max,lev,ncld,lmax,jtrun,jtmax
+      integer   ktrop,nxmy,nxlev,lncrec,lmaxp1,lmaxp2,k,itaux,itaup
+      integer   istat,i,ii,jj,j,nxj,kk,lqwset,m,mf,n,llts,ntrac
+
+      real      taup,cp,rad,rgas,grav,capa,taux,ptop,dummy,ppp,fac
+      real      alaps,rdg,ttt1,ttt2,apha,ttt,sigp,x1,opok,pk800,pk300
+
+
+      logical cstar
+      real      weight(my),poly(jtrun,jtmax,my/2),sigma(lev+1,2)                &
+              , cosl(my),phi(nxp,lev,my_max),tt(nxp,lev,my_max)         &
+              , ut(nxp,lev,my_max),vt(nxp,lev,my_max),pk(nxp,lev,my_max) &
+              , pt(nxp,my_max),sgeo(nxp,my_max),pdiff(nxp,my_max),t1000(nxp,my_max) &
+              , tsave(nxp,my_max),plt(nxp,lev,my_max),pk2(nxp,lev,my_max)&
+              , sht(nxp,lev*ncld,my_max)                                    &
+              , trefs(levp,2,jtrun,jtmax),o3l(nxp,lev,my_max)
+      character*4 ggdef,gmdef
+!
+!  local work arrays
+!
+      real      preplt(nx,lmax+2),prett(nx,lmax+2),hld1(nx,my)         &
+               ,plog(nx,lev),hld2(nx,my),anlslp(nx,my),hkd1(nx,lev),ut_tmp(nx,lev)
+      real      tens(lmax+2),tstd(lmax)
+      real      puvphi(26)
+!
+      real      cc(nx+2,levp,1+ncld,my_max),wss(levp,2,1+ncld,jtrun,jtmax)
+      real      work_pr1(lev), work_pr2(lev), work_pr3(lev)
+!
+      real      plnow(jtrun,jtmax,2),ww1(nx,my_max)
+!
+      character*26 lrec
+      character*6 typ
+      character*80 ifilin,ifilout
+!dms34
+      integer*8 idtg,idtg2
+!
+!      data puvphi/10.,20.,30.,50.,70., 100.,150.,200.,250.,300.,400.
+!     * ,500.,700., 850.,925.,1000./
+      data puvphi/10.0,20.0,30.0,50.0,70.0,100.0,150.0,200.0,250.0   &
+               ,300.0,350.0,400.0,450.0,500.0,550.0,600.0,650.0      &
+               ,700.0,750.0,800.0,850.0,900.0,925.0,950.0,975.0      &
+               ,1000.0/
+!
+!CWBinit
+      plnow=0.
+      preplt=0.
+      plog=0.
+      prett=0.
+      anlslp=0.
+
+      nxmy  = nx*my
+      nxlev = nx*lev
+      lncrec= nxmy
+      lmaxp1 = lmax+1
+      lmaxp2 = lmax+2
+!
+      do 5 k = 1, lmaxp2
+       tens(k) = 1.0
+    5 continue
+      tens(1) = 0.
+      tens(lmaxp2) = 0.
+!
+      itaux = taux + 0.001
+      itaup = taup + 0.001
+!
+      call dtgfix12(idtg,idtg2,-itaup)
+!
+!  read in pt
+!
+      call syslbl ('b00010',idtg,itaux,ggdef,lrec)
+      call dmsread (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
+      if( lreduce.eq.1 )call reducepick (hld1,nxdef,nx,my)
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        ii=nxjstart(j)
+        nxj=nxdef_2d(j)
+        do i=1,nxj
+          pt(i,jj) = hld1(ii,j) - ptop
+          ii=ii+1
+        enddo
+      enddo
+      if( lreduce.eq.1 )then
+!ch     call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,pt,plnow,nsizey)
+        call mpe2d_unify_nx(ww1,pt)
+        call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1,plnow,nsizey)
+        call transr1(jtrun,jtmax,nx,my,my_max,poly,plnow,pt,nsizey)
+      endif
+!
+!  read in temp at sigma levels
+!
+      do 71 k = 1, lev
+      write (typ, '("m",i2.2,"100")' ) k
+      call syslbl (typ,idtg,itaux,gmdef,lrec)
+      call dmsread (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
+      if( lreduce.eq.1 ) call reducepick (hld1,nxdef,nx,my)
+      do 71 jj = 1, jlistnum
+       j=jlist1(jj)
+       ii=nxjstart(j)
+       nxj=nxdef_2d(j)
+      do 71 i = 1, nxj
+      tt(i,k,jj) = hld1(ii,j)
+      ii=ii+1
+  71  continue
+!
+!  read in q at sigma levels
+!
+      do 73 k = 1, lev
+      write (typ, '("m",i2.2,"500")' ) k
+      call syslbl (typ,idtg,itaux,gmdef,lrec)
+      call dmsread (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
+      if( lreduce.eq.1 ) call reducepick (hld1,nxdef,nx,my)
+      do 73 jj = 1, jlistnum
+       j=jlist1(jj)
+       ii=nxjstart(j)
+       nxj=nxdef_2d(j)
+      do 73 i = 1, nxj
+        if(hld1(ii,j).le.1.0e-10)hld1(ii,j)=1.0e-10
+        sht(i,k,jj) = hld1(ii,j)
+        ii=ii+1
+  73  continue
+!
+      if( ncld .ge. 2 ) then
+!
+!  get first guest as initial
+!
+      ntrac=2
+      do k = 1, lev
+      kk = (ntrac-1)*lev+k
+      write (typ, '("m",i2.2,"550")' ) k     ! cloud liquid water content
+      call syslbl (typ,idtg2,itaup,gmdef,lrec)
+      call dmsread (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
+!
+! reset liquid water if too large in stratusphere
+      lqwset=18
+      if(k.le.lqwset)then
+        do j = 1,my
+          do i = 1, nx
+            if(hld1(i,j).lt.1.0e-12)hld1(i,j)=1.0e-12
+            if(hld1(i,j).ge.1.0e-10)hld1(i,j)=1.0e-10
+          enddo
+        enddo
+      endif
+!
+      if( lreduce.eq.1 ) call reducepick (hld1,nxdef,nx,my)
+      do jj = 1, jlistnum
+       j=jlist1(jj)
+       ii=nxjstart(j)
+       nxj=nxdef_2d(j)
+      do i = 1, nxj
+      sht(i,kk,jj) = hld1(ii,j)
+!      sht(i,kk,jj) = 0.
+      ii=ii+1
+      end do
+      end do
+      end do
+!
+!  read "observed ozone" at sigma levels for doing ozone forecast
+!
+      if(ncld.ge.3)then
+      ntrac=3
+      do k = 1, lev
+        kk = (ntrac-1)*lev+k
+        write (typ, '("m",i2.2,"560")' ) k
+        call syslbl (typ,idtg,itaux,gmdef,lrec)
+        call dmsread (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
+        if( lreduce.eq.1 ) call reducepick (hld1,nxdef,nx,my)
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          ii=nxjstart(j)
+          nxj=nxdef_2d(j)
+          do i = 1, nxj
+            sht(i,kk,jj) = hld1(ii,j)
+            o3l(i,k,jj) = hld1(ii,j)
+            ii=ii+1
+          enddo
+        enddo
+      enddo
+      endif
+!
+      endif    ! end of if(ncld.ge.2)
+!----
+      if( lreduce.eq.1 )then
+      call joinrs(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc,trefs,1,nsizey)
+      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,trefs,cc,1,nsizey)
+      call ujoinsr(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      endif
+!------
+!
+!  ncld > 2 needs to add another cloud micro input
+!  "incrini.f" also needs to take care
+!
+      if( ncld .gt. 3 ) then
+       if(myrank.eq.0)print*,'ncld > 3, incomplete input for cloud micro'
+       call mpe_finalize
+       call dmsexit(-1)
+      end if
+!
+!  obtain plt, pk, pk2 and phi
+!
+      do 80 jj = 1, jlistnum
+       j=jlist1(jj)
+       nxj=nxdef_2d(j)
+!
+        call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pt(1,jj) &
+                        ,pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
+!
+!  derive phi from t and q based on the hydrostatic relation
+!
+      do 75 i = 1, nxj
+       phi(i,lev,jj)= cp*tt(i,lev,jj)*(1.0+0.608*sht(i,lev,jj)) &
+                    *(pk2(i,lev,jj)/pk(i,lev,jj)-1.0)+sgeo(i,jj)
+   75 continue
+!
+      do 76 k = lev-1, 1, -1
+      do 76 i = 1, nxj
+       phi(i,k,jj)= phi(i,k+1,jj) + cp*( tt(i,k,jj)               &
+            *(1.0+0.608*sht(i,k,jj))*(pk2(i,k,jj)/pk(i,k,jj)-1.0) &
+            +tt(i,k+1,jj)*(1.0+0.608*sht(i,k+1,jj))               &
+            *(1.0-pk2(i,k,jj)/pk(i,k+1,jj)) )
+   76 continue
+!
+   80 continue
+!
+!  compute reference temp and q for horizontal diffusion
+!  compute stardard atmospheric temp on pressure and then interpolate it
+!  to sigma level and then compute saturated moisture for reference q
+!
+      call ttstd(lmax, puvphi, tstd)
+!
+      do 140 k = 1, lmax
+      do 140 i = 1, nx
+       preplt(i,k+1) = log(puvphi(k))
+       prett(i,k+1) = tstd(k)
+  140 continue
+!
+      do 142 i = 1, nx
+       preplt(i,1) = log( max(ptop,1.0) )
+       prett(i,1) = prett(i,2) + (prett(i,2)-prett(i,3))          &
+          * (preplt(i,1)-preplt(i,2))/(preplt(i,2)-preplt(i,3))
+  142 continue
+!c
+
+!ch> 
+      call mpe2d_unify(hld2,pt)
+!ch<
+
+      do 170 jj = 1, jlistnum
+       j=jlist1(jj)
+       ii=nxjstart(j)
+       nxj=nxdef_2d(j)
+!
+      do 145 i = 1, nxdef(j)
+!ch    ppp = log( pt(i,jj) + ptop )
+       ppp = log( hld2(i,j) + ptop )
+       if( preplt(i,lmaxp1) .ge. ppp ) then
+          preplt(i,lmaxp2) = 2.0*preplt(i,lmaxp1) - preplt(i,lmax)
+       else
+          preplt(i,lmaxp2) = ppp
+       end if
+  145 continue
+!
+      do 155 i = 1, nxdef(j)
+       prett(i,lmaxp2) =                                            &
+               prett(i,lmaxp1) + (prett(i,lmaxp1)-prett(i,lmax)) *  &
+               (preplt(i,lmaxp2)-preplt(i,lmaxp1))/                 &
+               (preplt(i,lmaxp1)-preplt(i,lmax))
+  155 continue
+!
+      do 157 k = 1, lev
+      do 157 i = 1, nxj
+       plog(i,k) = log(plt(i,k,jj))
+  157 continue
+!
+      call mpe2d_unify_nx_lev_red(plog,nx,lev,j)
+
+!ch   call vterpj( nx,lmaxp2,lev,preplt,prett,plog,ut(1,1,jj),tens)
+      call vterpj( nx,lmaxp2,lev,preplt,prett,plog,ut_tmp,tens)
+        do  k = 1, lev
+            n=ii
+        do  i = 1,nxj
+!ch         ut(i,k,jj)=ut_tmp(i,k) 
+!cjh        ut(i,k,jj)=ut_tmp(n,k) 
+            ut(i,k,jj)=ut_tmp(n,k)*(pt(i,jj)/1000.)**capa
+            n=n+1
+        enddo
+        enddo
+!
+      call qsatq_2d( nxjp(j),nxp,lev,ut(1,1,jj),plt(1,1,jj),vt(1,1,jj))
+!
+      do 160 k = 1, lev
+      do 160 i = 1, nxj
+       ut(i,k,jj) = ut(i,k,jj)/pk(i,k,jj)
+  160 continue
+!
+  170 continue
+!
+!      do jj =1, jlistnum
+!        j=jlist1(jj)
+!      if(j .eq. 85) then
+!        do k=1,lev
+!          work_pr1(k)=plt(58,k,jj)
+!          work_pr2(k)=ut (58,k,jj)
+!          work_pr3(k)=vt (58,k,jj)
+!        enddo
+!      call mpe_send_print(work_pr1, lev, 85, mpe_double)
+!      call mpe_send_print(work_pr2, lev, 85, mpe_double)
+!      call mpe_send_print(work_pr3, lev, 85, mpe_double)
+!      endif
+!      enddo
+!
+!      if(myrank .eq. 0) then
+!        call mpe_recv_print(work_pr1, lev, 85, mpe_double)
+!        call mpe_recv_print(work_pr2, lev, 85, mpe_double)
+!        call mpe_recv_print(work_pr3, lev, 85, mpe_double)
+!
+!        do 168 k=1,lev
+!          print 900, k,work_pr1(k),work_pr2(k),work_pr3(k)
+!900       format(1x,i3,1x,f6.1,1x,f6.2,1x,e10.3)
+!168     continue
+!      endif
+!
+!     do m=1, mlistnum
+!       mf=mlist(m)
+!     do n=mf, jtrun
+!     do k=1, lev*ncld*2
+!        qrefs(k,1,n,m)=0.0
+!     enddo
+!     enddo
+!     enddo
+!
+!!    qrefs=0.0
+
+      call joinrs(cc,ut,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc,trefs,1,nsizey)
+
+!
+!!      do m=1, mlistnum
+!!        mf=mlist(m)
+!!      do n=mf, jtrun
+!!        do k=1, levp
+!!           qrefs(k,1,n,m)=qtmps(k,1,n,m)
+!!           qrefs(k,2,n,m)=qtmps(k,2,n,m)
+!!        end do
+!!      end do
+!!      end do
+!
+!  compute sea level pressure and write out pdiff
+!  The method is based on one used by ecmwf, reseach manual 2 (1988)
+!
+      alaps = 0.0065
+      rdg = rgas/grav
+!
+!  llts layer's temperature is used to derive an alternative
+!  surface skin temperature
+!
+      llts = lev-5
+!
+      do 190 jj = 1, jlistnum
+       j=jlist1(jj)
+       nxj=nxdef_2d(j)
+      do 180 i = 1, nxj
+       ttt1 = tt(i,lev,jj) + alaps*rdg*tt(i,lev,jj)*       &
+              ((pt(i,jj)+ptop)/plt(i,lev,jj)-1.0)
+       ttt2 = tt(i,llts,jj) + alaps*(phi(i,llts,jj)-sgeo(i,jj))/grav
+       hld1(i,j) = 0.25*ttt1 + 0.75*ttt2
+       hld2(i,j) = hld1(i,j) + alaps*sgeo(i,jj)/grav
+  180 continue
+      ii=nxjstart(j)
+!
+      do 185 i = 1, nxj
+      if( sgeo(i,jj) .lt. 0.1 ) then
+       anlslp(i,j) = pt(i,jj) + ptop
+
+      elseif( hld1(i,j) .le. 290.5 .and. hld2(i,j) .gt. 290.5 ) then
+       apha = rgas*(290.5-hld1(i,j))/sgeo(i,jj)
+       ttt = sgeo(i,jj)/(rgas*hld1(i,j))
+       anlslp(i,j) = (pt(i,jj)+ptop)*exp( ttt*(1.0-0.5*apha*ttt+0.333333* &
+                     apha*ttt*apha*ttt) )
+
+      elseif( hld1(i,j) .gt. 290.5 .and. hld2(i,j) .gt. 290.5 ) then
+       hld1(i,j) = (hld1(i,j)+290.5)*0.5
+       anlslp(i,j) = (pt(i,jj)+ptop)*exp( sgeo(i,jj)/(rgas*hld1(i,j)) )
+
+      elseif( hld1(i,j) .lt. 255.0 .and. hld2(i,j) .lt. 255.0 ) then
+       hld1(i,j) = (hld1(i,j)+255.0)*0.5
+       anlslp(i,j) = (pt(i,jj)+ptop)*exp( sgeo(i,jj)/(rgas*hld1(i,j)) )
+
+      else
+       apha = alaps * rdg
+       ttt = sgeo(i,jj)/(rgas*hld1(i,j))
+       anlslp(i,j) = (pt(i,jj)+ptop)*exp( ttt*(1.0-0.5*apha*ttt+0.333333* &
+                     apha*ttt*apha*ttt) )
+      end if
+  185 continue
+!
+  190 continue
+!
+      do 195 jj = 1, jlistnum
+       j=jlist1(jj)
+       nxj=nxdef_2d(j)
+      do 195 i = 1, nxj
+       hld1(i,j) = pt(i,jj)
+       pdiff(i,jj) = anlslp(i,j) - pt(i,jj)
+!       hld1(i,j) = pdiff(i,jj)
+  195 continue
+!
+      call mpe_unify(hld1,nx,my,2,mpe_double)
+      call mpe_unify(anlslp,nx,my,2,mpe_double)
+      if(myrank .eq. 0 ) print*,'pt, anlslp at (86,127)= ',hld1(86,127) &
+                        ,anlslp(86,127)
+!
+!      call mpe_unify(hld1,nx,my,2,mpe_double)
+!      call syslbl ('x00dif',idtg,itaux,ggdef,lrec)
+!      if( lreduce.eq.1 ) call reduceintp (hld1,nxdef,nx,my)
+!      call dmswrit(nx,my,lrec,lncrec,'H',ifilout,hld1,istat)
+!
+!  compute tsave and write out
+!
+      do 200 jj = 1, jlistnum
+       j=jlist1(jj)
+       nxj=nxdef_2d(j)
+      do 200 i = 1, nxj
+       sigp = sigma(ktrop,1)+sigma(ktrop,2)/pt(i,jj)
+       x1= 1.0/(rgas*log(1.0/sigp))
+       tsave(i,jj) = x1*(phi(i,ktrop,jj)-sgeo(i,jj))
+       hld1(i,j)  = tsave(i,jj)
+  200 continue
+!
+!      call mpe_unify(hld1,nx,my,2,mpe_double)
+!      call syslbl ('x00tsv',idtg,itaux,ggdef,lrec)
+!      if( lreduce.eq.1 ) call reduceintp (hld1,nxdef,nx,my)
+!      call dmswrit (nx,my,lrec,lncrec,'H',ifilout,hld1,istat)
+!
+      opok  = 1.0/1000.0**capa
+      if( cstar ) then
+!
+!  construct moisture by assuming a hopefully
+!  realistic vertical distribution of moisture profile
+!
+!
+      pk800= opok*exp(.287*log(800.))
+      pk300= opok*exp(.287*log(300.))
+!
+      do 174 jj =1, jlistnum
+      j=jlist1(jj)
+      nxj=nxdef_2d(j)
+      do 173 k = 1, lev
+      do 173 i = 1, nxj
+      hkd1(i,k) = tt(i,k,jj) - 30.0
+      if (pk(i,k,jj).gt.pk300)  hkd1(i,k)= tt(i,k,jj) -10.0
+      if (pk(i,k,jj).gt.pk800)  hkd1(i,k)= tt(i,k,jj) -7.0
+ 173  continue
+      call qsatq_2d (nxjp(j),nxp,lev,hkd1(1,1),plt(1,1,jj),sht(1,1,jj))
+ 174  continue
+!
+      endif
+!
+!  change real temp to viture potential temp
+!
+      do 300 jj = 1, jlistnum
+      j=jlist1(jj)
+      nxj=nxdef_2d(j)
+      do 300 k=1,lev
+      do 300 i=1,nxj
+      tt(i,k,jj)= tt(i,k,jj)*(1.0+0.608*sht(i,k,jj))/pk(i,k,jj)
+  300 continue
+!
+!  read in wind fields at sigma levels
+!
+      do 320 k = 1, lev
+      write (typ, '("m",i2.2,"200")' ) k
+      call syslbl (typ,idtg,itaux,gmdef,lrec)
+      call dmsread (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
+      if( lreduce.eq.1 ) call reducepick (hld1,nxdef,nx,my)
+      write (typ, '("m",i2.2,"210")' ) k
+      call syslbl (typ,idtg,itaux,gmdef,lrec)
+      call dmsread (nx,my,lrec,lncrec,'H',ifilin,hld2,istat)
+      if( lreduce.eq.1 ) call reducepick (hld2,nxdef,nx,my)
+      do 320 jj = 1, jlistnum
+        j=jlist1(jj)
+        ii=nxjstart(j)
+        nxj=nxdef_2d(j)
+        fac = cosl(j)/rad
+      do 320 i = 1,nxj
+      ut(i,k,jj) = hld1(ii,j)*fac
+      vt(i,k,jj) = hld2(ii,j)*fac
+      ii=ii+1
+  320 continue
+!
+!  read in ozone at sigma levels
+!  add in june 2010
+!
+!      do 340 k = 1, lev
+!      write (typ, '("m",i2.2,"560")' ) k
+!      call syslbl (typ,idtg,itaux,gmdef,lrec)
+!      call dmsread (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
+!      if( lreduce.eq.1 ) call reducepick (hld1,nxdef,nx,my)
+!      do 330 jj = 1, jlistnum
+!        j=jlist1(jj)
+!        nxj=nxdef(j)
+!      do 330 i = 1, nxj
+!      o3l(i,k,jj) = hld1(i,j)
+!  330 continue
+!  340 continue
+!
+      return
+      end
