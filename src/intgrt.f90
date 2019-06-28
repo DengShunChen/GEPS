@@ -1,4 +1,4 @@
-      subroutine intgrt
+       subroutine intgrt
 !
 !***********************************************************************
 !  this subroutine is the basic time stepping driver.  it does the
@@ -27,6 +27,7 @@
       use raddiag
       use radn
       use albn
+!
 !-----------------------------------------------------------------------
 
       implicit  none
@@ -39,7 +40,7 @@
                 pten(nxp,lev,my_max),pdot(nxp,lev+1,latpart),      &
                 qvadv(nxp,lev*ncld,my_max),diveng(nxp,lev,my_max), &
                 vdmerd(nxp,lev,my_max),vdzonl(nxp,lev,my_max),     &
-                qmt(nxp,lev*ncld,my_max),                      &
+!                qmt(nxp,lev*ncld,my_max),                      &
                 ddtemp_sl(nx,levp,my_max),                         &
                 pten_sl(nx,levp,my_max),                           &
                 qvadv_sl(nx,levp*ncld,my_max),                     &
@@ -55,7 +56,8 @@
                 drag(nxp,lev,my_max),ugws(nxp,my_max),vgws(nxp,my_max),      &
                 sdpbl(nxp,my_max),slpty(nxp,my_max)
 !
-      real      cc(nx+2,levp,3+ncld,my_max),wss(levp,2,3+ncld,jtrun,jtmax),ww1(nx,my_max)
+      real      cc(nx+2,levp,1,my_max),ww1(nx,my_max)
+!byl      real      cc3(nx+2,levp,3,my_max),wss3(levp,2,3,jtrun,jtmax)
 !
       character rfile*55, ctau*6
 !!      real      tbar(lev),qbar(lev*ncld),qbrrow(ncld,my)
@@ -67,11 +69,15 @@
 !
       logical   wrestrt
       data      wrestrt/.false./
+!
+! for topographic gravity wave drag
+!
+      real hprime_b(nxp,mtnvar,my_max)
 
 !
 !   restart  : write(7) work array
 !
-      real, dimension(:), allocatable :: work_io
+!!      real, dimension(:), allocatable :: work_io
 !
 !  restart  : write(10) work array
 !
@@ -98,6 +104,17 @@
               cosw,tengi,dt24,tg2,dtx_tau,hfiltx,sqhaf,     &
               dummy,dt1,sptend,wmax,xx,facw,dtaup!!,          &
 !!              sptendmax2,sptendmax1,dt_chg
+! sppt variables
+!            by John Tseng 2017/12/13 
+!            modified by PangYen Liu for 2D-MPI 2019/02/20
+!      real sppt2d(nx,my)
+!      real rold500(mlmax_c,2),rold1000(mlmax_c,2),rold2000(mlmax_c,2)
+!      real rold500(jtrun_c,jtmax_c,2),rold1000(jtrun_c,jtmax_c,2),  &
+!           rold2000(jtrun_c,jtmax_c,2)
+      real sppt3d(nxp,lev,my_max)
+      real sppt2d500(nxp,my_max),sppt2d1000(nxp,my_max)   &
+          ,sppt2d2000(nxp,my_max)
+      integer itimestep,recn
 
 ! for io quilting
       character*34 keydoit,keydone
@@ -250,6 +267,17 @@
       gfx=0.
       rld=0.
       sld=0.
+      recn=1
+!
+! read mountant variables for topographic gravity wave drag
+!
+      if(dograv .and. nmgwor .eq. 2) then
+         call read_mtnvar(nx,my,mtnvar,hprime_b)
+!
+         if( myrank .eq. 0 ) &
+           print*,'read mtnvar=14 hprime_b=',(hprime_b(1,i,1),i=1,mtnvar)
+      endif
+!
 
 !#ifndef NO_OUT
 !      call  outflds( 0,nx,my,my_max,lev,ncld                                       &
@@ -399,6 +427,9 @@
 !     start time integration iterations
 !***********************************************************************
 !
+! sppt
+      itimestep=1
+!
 !!      n_stable=0
 !!      n_unstable=0
 !!      if(nx.eq.960)then
@@ -511,9 +542,9 @@
  
 ! Transfer Spectral to Gridpoint for u,v,t,q,ps at n-1
         call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temold,cc,1,nsizey)
-        call ujoinsr(cc,ttm,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+        call ujoinsr(cc,ttp,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
         call tranuv(jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac    &
-                   ,poly,dpoly,vorold,divold,uum,vvm,nsizey)
+                   ,poly,dpoly,vorold,divold,up,vp,nsizey)
 !!        call transr1(jtrun,jtmax,nx,my,my_max,poly,plold,ptp,nsizey)
 
 ! for Semi-Lagrangian advection
@@ -528,10 +559,10 @@
        ndsldta = 0.5*dta
 
 !ch>
-! transpose partial to full: ut -> ut_sl, vt -> vt_sl, uum -> uum_sl, vvm -> vvm_sl, ttm -> ttm_sl, qm -> qm_sl
+! transpose partial to full: ut -> ut_sl, vt -> vt_sl, up -> uum_sl, vp -> vvm_sl, ttp -> ttm_sl, qm -> qm_sl
 
 #ifdef MULTIPLE
-      call mpe2d_transpose_ndsl_p2f_multi(ut   ,vt   ,uum   ,vvm   ,ttm   ,qm   , &
+      call mpe2d_transpose_ndsl_p2f_multi(ut   ,vt   ,up   ,vp   ,ttp   ,qm   , &
                                     ut_sl,vt_sl,uum_sl,vvm_sl,ttm_sl,qm_sl, &
                                     nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm,6)
 #else
@@ -539,11 +570,11 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f(vt,vt_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f(uum,uum_sl,    &
+      call mpe2d_transpose_ndsl_p2f(up,uum_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f(vvm,vvm_sl,    &
+      call mpe2d_transpose_ndsl_p2f(vp,vvm_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f(ttm,ttm_sl,  &
+      call mpe2d_transpose_ndsl_p2f(ttp,ttm_sl,  &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f(qm,qm_sl,    &
                                     nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
@@ -595,8 +626,10 @@
 !
 !   new p**capa quantities were computed in previous diabat call
 !
-        if (.not.yesdia) call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pt(1,jj), &
-                               pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
+!byl        if (.not.yesdia) call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pt(1,jj), &
+!byl                               pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
+        call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pt(1,jj), &
+                                pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
 !
 !
 !       Calculate Vertical velocity & Stream Functions
@@ -725,7 +758,7 @@
         do k = 1, lev*ncld
           do i = 1,nxj
             qp(i,k,jj) = qt(i,k,jj)
-            qmt(i,k,jj) = qt(i,k,jj)
+!            qmt(i,k,jj) = qt(i,k,jj)
           enddo
         enddo
           do i = 1,nxj
@@ -734,6 +767,16 @@
       enddo
 !
 !  take a time step
+!
+!  prepare randome numbers for sppt3d
+!
+      if (dosppt) then
+      call gensppt3dv5(nx,my,my_max,lev,sppt3d                &
+        ,sppt2d500,sppt2d1000,sppt2d2000                      &
+        ,facsppt500,facsppt1000,facsppt2000                   &
+        ,de_corretime_500,de_corretime_1000,de_corretime_2000 &
+        ,dta,itimestep )
+      endif ! dosppt
 !
       if (forward)  then
 !
@@ -755,7 +798,9 @@
           do k = 1, lev*ncld
             do i = 1, nxj
 !              qmt(i,k,jj) = qm(i,k,jj)
-              qt(i,k,jj) = dtx*qvadv(i,k,jj) + qm(i,k,jj)
+!byl no need tendency for Tracers
+!!              qt(i,k,jj) = dtx*qvadv(i,k,jj) + qm(i,k,jj)
+              qt(i,k,jj) = qvadv(i,k,jj)
             enddo
           enddo
         enddo
@@ -800,13 +845,16 @@
                       , shdmax,shdmin,snoalb                                    &
                       , slopetyp,sld,slc,zice,cice,xtice,sncover,sndepth        &
                       , ctot,chig,cmid,clow,hpbl,asl,atl,cosz                   &
+                      , nmgwor,nmgwcv,hprime_b,mtnvar                           &
 !--------------------------------------------------------------------------------
                       , fusl,fdsl,fuir,fdir                                     &
                       , fuslr,fdslr,fuirr,fdirr                                 &
                       , asl_clr,atl_clr,clds                                    &
                       , ss_clr,rs_clr,asol_clr,olr_clr,sld_clr,rld_clr          &
                       , alvsf,alvwf,alnsf,alnwf,facsf,facwf                     &
-                      , idtg,doo3l,nfxr)
+                      , idtg,doo3l,nfxr                                         &
+                      , dosppt, sppt3d, itimestep)
+          itimestep=itimestep+1   ! for sppt time evolution)
 !--------------------------------------------------------------------------------
 !
 ! add reynolds stress
@@ -818,7 +866,7 @@
 !
           call joinrs(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
           call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc   &
-                     ,temten,1,nsizey)
+                     ,temnow,1,nsizey)
 
           call trandv(jtrun,jtmax,nx,my,my_max,lev,ut,vt,weight,cim &
                      ,onocos,poly,dpoly,vornow,divnow,nsizey)
@@ -908,7 +956,9 @@
           nxj=nxdef_2d(j)
           do k = 1, lev*ncld
             do i = 1, nxj
-              qt(i,k,jj)= dta*qvadv(i,k,jj) + qm(i,k,jj)
+!byl no need tendency for Tracers
+!!              qt(i,k,jj)= dta*qvadv(i,k,jj) + qm(i,k,jj)
+              qt(i,k,jj)= qvadv(i,k,jj) 
             enddo
           enddo
         enddo
@@ -952,13 +1002,16 @@
                      , shdmax,shdmin,snoalb                                     &
                      , slopetyp,sld,slc,zice,cice,xtice,sncover,sndepth         &
                      , ctot,chig,cmid,clow,hpbl,asl,atl,cosz                    &
+                     , nmgwor,nmgwcv,hprime_b,mtnvar                            &
 !--------------------------------------------------------------------------------
                      , fusl,fdsl,fuir,fdir                                      &
                      , fuslr,fdslr,fuirr,fdirr                                  &
                      , asl_clr,atl_clr,clds                                     &
                      , ss_clr,rs_clr,asol_clr,olr_clr,sld_clr,rld_clr           &
                      , alvsf,alvwf,alnsf,alnwf,facsf,facwf                      &
-                     , idtg,doo3l,nfxr)
+                     , idtg,doo3l,nfxr                                          &
+                     , dosppt, sppt3d, itimestep)
+          itimestep=itimestep+1   ! for sppt time evolution)
 !--------------------------------------------------------------------------------
 !
 ! add reynolds stress
@@ -1018,8 +1071,8 @@
           nxj=nxdef_2d(j)
           do k = 1, lev*ncld
             do i = 1, nxj
-              qm(i,k,jj) = qmt(i,k,jj) + tfilt*( qm(i,k,jj)           &
-                         - 2.0*qmt(i,k,jj) + qt(i,k,jj) )
+              qm(i,k,jj) = qp(i,k,jj) + tfilt*( qm(i,k,jj)           &
+                         - 2.0*qp(i,k,jj) + qt(i,k,jj) )
             enddo
           enddo
         enddo
@@ -1040,10 +1093,17 @@
 !  from updated spectral variables compute corresponding grid
 !  point fields
 !
-      call joinsr(wss,vornow,divnow,temnow,dummy,jtrun,jtmax,levp &
-                 ,mlistnum,3,1)
-      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,wss,cc,3,nsizey)
-      call ujoinsr(cc,rvor,rdiv,tt,dummy,nx,my_max,lev,jlistnum,3,1)
+!!      call joinsr(wss3,vornow,divnow,temnow,dummy,jtrun,jtmax,levp &
+!!                 ,mlistnum,3,1)
+!!      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,wss3,cc3,3,nsizey)
+!!      call ujoinsr(cc3,rvor,rdiv,tt,dummy,nx,my_max,lev,jlistnum,3,1)
+
+      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,vornow,cc,1,nsizey)
+      call ujoinsr(cc,rvor,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divnow,cc,1,nsizey)
+      call ujoinsr(cc,rdiv,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temnow,cc,1,nsizey)
+      call ujoinsr(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       call transr1(jtrun,jtmax,nx,my,my_max,poly,plnow,pt,nsizey)
 !
 !  zonal and meridional gradients of terrain pressure
@@ -1175,30 +1235,17 @@
         if(myrank .eq. 0) print*,' history file written at tau= ', itau
 !
         if(wrestrt)then
-!
-! update qnow & qold
-         call joinrs(cc,qt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,3)
-         call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc     &
-                   ,wss,ncld,nsizey)
-         call ujoinrs(wss,qnow,dummy,dummy,dummy,jtrun,jtmax,levp    &
-                     ,mlistnum,1,ncld)
-         call joinrs(cc,qm,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,3)
-         call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc     &
-                   ,wss,ncld,nsizey)
-         call ujoinrs(wss,qold,dummy,dummy,dummy,jtrun,jtmax,levp     &
-                     ,mlistnum,1,ncld)
-!
           call chlen (cwbout,48,lcwb)
           call chlen (phyout,48,lphy)
           write (ctau,800) itau
   800     format('tau',i3.3)
           rfile = cwbout(1:lcwb)//ctau
 
-          allocate (work_io((( (7+2*ncld)*2*lev+8)*jtrun*jtmax+my*lev)*nsize))
+!!          allocate (work_io((( (7+2*ncld)*2*lev+8)*jtrun*jtmax+my*lev)*nsize))
  
-          call gather_spec(work_io,vornow,divnow,temnow,qnow,plnow,    &
-             vorold,divold,temold,qold,plold,dsqgeo,spgeo,trefs,       &
-             uzm,lev,ncld,jtrun,jtmax,my,nsize)
+!!          call gather_spec(work_io,vornow,divnow,temnow,qnow,plnow,    &
+!!             vorold,divold,temold,qold,plold,dsqgeo,spgeo,trefs,       &
+!!             uzm,lev,ncld,jtrun,jtmax,my,nsize)
 !
 !  add if check to let restart output performed every 24h
 !
@@ -1211,7 +1258,7 @@
 !            endif
 !          endif
 !
-          deallocate (work_io)
+!!          deallocate (work_io)
           rfile = phyout(1:lphy)//ctau
           allocate (tm1(nx,lev,my))
           allocate (tm2(nx,lev,my))
@@ -1304,16 +1351,16 @@
 !        dtaup = mod( tauo+0.001, taup )
 !ds        dtaup = mod( tau+0.001, taup )
 !ds       if(tau.le.(taureg+0.001) .and. dtaup.lt.0.01)then
-!!!       if(tau.le.(taureg+0.001))then
+       if(tau.le.(taureg+0.001))then
 !jh        if( histim ) then 
 #ifndef NO_OUT
-!!!        call outsigs ( itau,nx,my,my_max,lev,ncld        &
-!!!                     , idtg,ifilout,ptop,rad,grav        &
-!!!                     , cp,cosl,pt,sgeo,snr,gwr,tg,pk,pk2 &
-!!!                     , ut,vt,tt,qt,phi,rdiv,pllp,glob    &
-!!!                     , km_soil,smc,slc,stc,canopy,zice,ggdef,gmdef )
+        call outsigs ( itau,nx,my,my_max,lev,ncld        &
+                     , idtg,ifilout,ptop,rad,grav        &
+                     , cp,cosl,pt,sgeo,snr,gwr,tg,pk,pk2 &
+                     , ut,vt,tt,qt,phi,rdiv,pllp,glob    &
+                     , km_soil,smc,slc,stc,canopy,zice,ggdef,gmdef,up )
 #endif
-!!!        endif
+        endif
 !-------------------------------------------------------------------------------
 
 !      if (myrank .eq. 0) print *,'ioutsigr =',ioutsigr
@@ -1362,7 +1409,7 @@
       endif
 !
 !        if(typhoon .and. ltrack)then
-        if(typhoon)then
+         if(typhoon .and. ltrack .and. itau .le. 384 )then
           if(myrank .eq. 0)print*,' calling tracking,  tau= ',tau
 !          if(myrank .eq. 0)print*,'dt_trk=',dt_trk
           call tracking(tau,dt_trk,dt,nx,my,slp,v850,v700,h850,h500,    &
@@ -1438,6 +1485,11 @@
                       ,raintot,glob,t2,u10,v10,ctot,slpty,ggdef)
 #endif
         endif
+      endif
+!
+      if (dospptout .and.  (mod(tau+0.001, 1.) .lt. 0.01)) then
+         call spptout(nx,my,my_max,lev,sppt2d500,sppt2d1000,sppt2d2000 &
+                     ,up,recn,tau)
       endif
 !
       itau=tau+0.001

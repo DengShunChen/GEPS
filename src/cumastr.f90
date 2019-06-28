@@ -12,7 +12,10 @@ SUBROUTINE cumastr(nxj,klon,klev,klevp1,klevm1,pten,pqen,pxen, puen,pven,   &
                    ldland,pverv,pqsen,pqhfl,papp1,paphp1,pgeo,   &
 !                   ptte,pqte,pxtec,pvom,pvol,prsfc,pssfc,ktype,kcbot,kctop, &
                    ptte,pqte,pxtec,pvom,pvol,prsfc,pssfc,kcbot,kctop, &
-                   ztodt,jin)
+                   ztodt,jin                                         ,&
+!xb110>
+                   kcnv)
+!xb110<
 
   ! -------------> ldland included for AMIP2 !!
 
@@ -172,6 +175,9 @@ zmfub(klon), zmfub1(klon), zmful(klon,klev), &
 
 
   !  Executable statements 
+!xb110>
+  integer kcnv(klon)
+!xb110<
 
 !CWB2016 debug
      paprc=0.
@@ -511,6 +517,14 @@ zmfub(klon), zmfub1(klon), zmful(klon,klev), &
                 puen,pven,pvom,pvol,zuu,zud,zvu,zvd,pmfu,pmfd,jin)
 
   END IF
+
+!xb110>
+  kcnv = 0
+  do jl = 1,nxj
+   if (ktype(jl) .eq. 1 .or. ktype(jl) .eq. 3)  kcnv(jl) = 1
+   if (ktype(jl) .eq. 2) kcnv(jl) = 0
+  end do
+!xb110<
 
   RETURN
 END SUBROUTINE cumastr

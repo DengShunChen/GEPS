@@ -63,7 +63,7 @@
            allocate (mlist(jtmax),nlist(jtmax*nsize),ilist(jtmax*nsize), &
                      jlist1(my_max),jlist2(my),jlist2_2d(nsizex,my),     &
                      jlistnum_sl(nsize), nxdef(my),mtrundef(my),         &
-                     Llist(lev),Llist_ncld(lev*ncld),         &
+                     Llist(levp),Llist_ncld(levp*ncld),                  &
                      jtlen_all(nsizex),nxjp(my),   &
                      nxjstart(my),nxjend(my),nxjlen(my),nxdef_2d(my),    &
                      nxjstart_all(nsizex,my),nxjend_all(nsizex,my),      &

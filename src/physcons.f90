@@ -100,6 +100,10 @@
   real(kind=kind_phys),parameter:: con_amo2   =31.9999        ! molecular wght of o2  (g/mol)
   real(kind=kind_phys),parameter:: con_amch4  =16.043         ! molecular wght of ch4 (g/mol)
   real(kind=kind_phys),parameter:: con_amn2o  =44.013         ! molecular wght of n2o (g/mol)
+! for wsm6
+  real(kind=kind_phys),parameter:: rhowater   = 1000.         ! density of water (kg/m^3)
+  real(kind=kind_phys),parameter:: rhosnow    = 100.          ! density of snow (kg/m^3)
+  real(kind=kind_phys),parameter:: rhoair     = 1.28          ! density of air near surface (kg/m^3)
 
 
 !........................................!

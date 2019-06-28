@@ -1,4 +1,3 @@
-!      subroutine cumastr_driv(nx,lev,dt,g,r,cp,hltm,ptop,land,topo     &
       subroutine cumastr_driv_n  &
                    (nxj  ,nx   ,lev  ,dt   ,g    ,&
                     r    ,cp   ,hltm ,ptop ,land ,&
@@ -7,7 +6,10 @@
                     rcup ,pk   ,pk2  ,sd   ,qflux,&
                     kcbot,kctop,fwd  ,ncld ,sigma,&
                     plt  ,pt   ,j    ,lndj ,hfx  ,&
-                    xlat ,mdlon )
+                    xlon ,xlat,mdlon             ,&
+!xb110>
+                    kcnv)
+!xb110<
 !c
 !c#######################################################################
 !c                     subroutine description
@@ -47,45 +49,42 @@
       use mo_constants, only:vtmpc1
       implicit none
 !c input & output variable
-!c
-!      integer nx,lev,ncld,j,jj
       integer nx,nxj,lev,ncld,j,jj
       integer kcbot(nx),kctop(nx)
-      real*8 topo(nx),phi(nx,lev)                                     &
+      real topo(nx),phi(nx,lev)                                     &
           , u(nx,lev),v(nx,lev),t(nx,lev),q(nx,lev*ncld)             &
           , ut(nx,lev),vt(nx,lev),tt(nx,lev),qt(nx,lev*ncld)         &
           , qflux(nx),sd(nx,lev)                                     &
           , pk(nx,lev),pk2(nx,lev)                                   &
           , sigma(lev+1,2),plt(nx,lev),pt(nx)
-!c
-!c
 !c  local work arrays
-      real*8 pkxmb(nx,lev)
-      real*8 pk2x(nx,lev),pkx(nx,lev)
-!c
+      real pkxmb(nx,lev)
+      real pk2x(nx,lev),pkx(nx,lev)
 !ccumastr
-      real*8 papp1(nx,lev),paphp1(nx,lev+1),pgeo(nx,lev)              &
+      real papp1(nx,lev),paphp1(nx,lev+1),pgeo(nx,lev)              &
            ,zqsat(nx,lev),pverv(nx,lev)                              &
            ,ztp1(nx,lev),zqp1(nx,lev),zup1(nx,lev),zvp1(nx,lev)      &
            ,ptte(nx,lev),pqte(nx,lev),pvom(nx,lev),pvol(nx,lev)      &
            ,zxp1(nx,lev),pxtec(nx,lev),ptop,dth,hltm,g,dt,cp,r       &
            ,ztu(nx,lev),zqu(nx,lev),zmfu(nx,lev),zmfd(nx,lev)        &
            ,pcte(nx,lev)
-      real*8 pqhfl(nx),prsfc(nx),pssfc(nx),rcup(nx),zrain(nx)        &
+      real pqhfl(nx),prsfc(nx),pssfc(nx),rcup(nx),zrain(nx)        &
             ,phhfl(nx),hfx(nx)
 !
-      real*8 rhoh2o,dx,d2r,xlatj,xlat,tt1
+      real rhoh2o,dx,d2r,xlatj,xlat,tt1
+      real xlon(nx)
 !c
       integer klevp1,klevm1,k,i,kc,ncldq,lndj(nx)
       logical fwd,land(nx),ldland(nx)
-!------------------------------------------------------------ lin
-      real*8 zew,zqs,zcor
-      real*8 foeewm
+
+!xb110>
+      real zew,zqs,zcor
+      real foeewm
       logical locum(nx)
-      real zoentr1(nx,lev),tmp2(nx,lev),tmp3(nx,lev),tmp4(nx,lev) &
-          ,tmp5(nx,lev)
       real mdlon
-!c------------------------------------------------------------
+      integer kcnv(nx)
+!xb110<
+
       ncldq=2
       rhoh2o=1000.
 !
@@ -96,64 +95,10 @@
         pgeo(i,k) = phi(i,k) 
         pverv(i,k)=sd(i,k)*100.  ! from mb to pa
       enddo
-!        call qsatq(nxj,tt(1,k),plt(1,k),zqsat(1,k))
       enddo
       do i=1,nxj
         paphp1(i,lev+1)= (sigma(lev+1,1)*pt(i)+sigma(lev+1,2)+ptop)*100.
       enddo
-
-!      do k=1,lev
-!!      call vlog(pk2x(1,k),pk2(1,k),nx)
-!!      call vlog(pkx(1,k), pk(1,k), nx)
-!      call vlog(pk2x(1,k),pk2(1,k),nxj)
-!      call vlog(pkx(1,k), pk(1,k), nxj)
-!!      do i=1,nx
-!      do i=1,nxj
-!        pk2x(i,k)=pk2x(i,k)*(cp/r)
-!        pkx(i,k) = pkx(i,k)*(cp/r)
-!      enddo
-!!      call vexp(pk2x(1,k),pk2x(1,k),nx)
-!!      call vexp(pkx(1,k), pkx(1,k), nx)
-!      call vexp(pk2x(1,k),pk2x(1,k),nxj)
-!      call vexp(pkx(1,k), pkx(1,k), nxj)
-!      enddo
-!c
-!!      do  i=1,nx
-!      do  i=1,nxj
-!      paphp1(i,1)=ptop*100.
-!!c     paphp1(i,lev+1)=ptop*100.
-!      enddo
-!c
-!      do  k=1,lev
-!!c     kc=lev-k+1
-!      kc=k
-!!      do  i=1,nx
-!      do  i=1,nxj
-!      pkxmb(i,k)=pkx(i,k)*1000. ! change into mb
-!      papp1(i,kc)=pkx(i,k) * 1000.*100.    !hpa to pa
-!      paphp1(i,k+1)=pk2x(i,k) * 1000.*100.     !hpa to pa
-!!c     paphp1(i,kc)=pk2x(i,k) * 1000.*100.     !hpa to pa
-!      enddo
-!      enddo
-!c
-!      do  k = 1, lev
-!!c     kc=lev-k+1
-!      kc=k
-!!      do  i = 1, nx
-!      do  i = 1, nxj
-!      pgeo(i,kc) = phi(i,k) 
-!      pverv(i,kc)=sd(i,k)*100.  ! from mb/s to pa/s
-!      enddo
-!      enddo
-!c
-!      do  k=1,lev
-!!c     kc=lev-k+1
-!      kc=k
-!!      call qsatq(nx,tt(1,k),pkxmb(1,k),zqsat(1,kc))
-!      call qsatq(nxj,tt(1,k),pkxmb(1,k),zqsat(1,kc))
-!      enddo
-!c
-!      do  i=1,nx
 
       do  i=1,nxj
       zrain(i) = 0.0
@@ -162,24 +107,17 @@
       pqhfl(i) = qflux(i)
       ldland(i)= land(i)
       enddo
-!c                                                                      c
-!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-!c
 !c transfer t from potential temp to real temp
       do  k = 1, lev
-!      do  i = 1, nx
       do  i = 1, nxj
       t(i,k) = t(i,k)*pk(i,k)
       enddo
       enddo
-!c
+
       dth = dt
-!      if (.not. fwd) dth = dt*0.5
-!c
+
       do k=1,lev
-!c     kc=lev-k+1
       kc=k
-!      do i=1,nx
       do i=1,nxj
         ztp1(i,kc)=tt(i,k)
         zqp1(i,kc)=qt(i,k)
@@ -195,7 +133,7 @@
           zqs  = min(0.5,zqs)
           zcor = 1./(1.-vtmpc1*zqs)
           zqsat(i,kc)=zqs*zcor
-!c
+
         ptte(i,kc)=(tt(i,k)-t(i,k))/dth
         pqte(i,kc)=(qt(i,k)-q(i,k))/dth
         pvom(i,kc)=(ut(i,k)-u(i,k))/dth
@@ -203,13 +141,10 @@
         pxtec(i,kc)=(zxp1(i,k)-q(i,k+(ncldq-1)*lev))/dth
       enddo
       enddo
-!c
-!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-!co
+!============================================================
       klevp1=lev+1
       klevm1=lev-1
-!c
-!      call cumastr(nx,lev,klevp1,klevm1,ztp1,zqp1,zxp1,zup1,zvp1,ldland,   &
+
       call cumastr_n  &
              (nxj,   nx,   lev,  klevp1,klevm1, &
               ztp1,  zqp1, zxp1, zup1,  zvp1,   &
@@ -218,12 +153,13 @@
               pvom,  pvol, prsfc,pssfc, kcbot,  &
               kctop, dth,  j,    ztu,   zqu,    &
               zmfu,  zmfd, zrain,pcte,  phhfl,  &
-              lndj,  locum, xlat,mdlon)
-!c
+              lndj,  locum,xlon, xlat,mdlon,    &
+!xb110>
+              kcnv)
+!xb110<
+
       do k=1,lev
-!c     kc=lev-k+1
       kc=k
-!      do i=1,nx
       do i=1,nxj
         tt(i,k)=t(i,k)+ptte(i,kc)*dt
         qt(i,k)=q(i,k)+pqte(i,kc)*dt
@@ -232,12 +168,10 @@
         qt(i,k+(ncldq-1)*lev)=qt(i,k+(ncldq-1)*lev)+pxtec(i,kc)*dt
       enddo
       enddo
-!c
-!      do i=1,nx
+
       do i=1,nxj
-!        rcup(i)=(prsfc(i)+pssfc(i))*dt
         rcup(i)=(prsfc(i)+pssfc(i))*dt/rhoh2o
       enddo
-!c
+
       return
       end

@@ -58,7 +58,7 @@
                            ca,    cc,     cc1,   cc2,   charnock,     &
                            cq,    fms,    fhs,   g,     hl0,  hl0inf, &
                            hl110, hlt,    hltinf,OLINF,               &
-                           restar, rnu,   vis 
+                           restar, rnu,   vis,   DELP
 ! 
 !  
       PARAMETER (CHARNOCK=.014,CA=.4)!C CA IS THE VON KARMAN CONSTANT 
@@ -101,7 +101,9 @@
         Q0(I) = min(QS1(I),Q0(I)) 
  
         Z0(I) = .01 * Z0RL(i) 
-        Z1(I) = -RD * TV1(I) * LOG(PS1(I)/PSURF(I)) / G 
+!byl        Z1(I) = -RD * TV1(I) * LOG(PS1(I)/PSURF(I)) / G 
+        DELP  = (PSURF(I) - PS1(I)) / G
+        Z1(I) = DELP * RD * TV1(I) / PS1(I)
         endif 
       ENDDO 
 !! 

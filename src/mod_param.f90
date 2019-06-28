@@ -17,9 +17,9 @@
 !     integer, parameter :: jtrun= 2*((1+(nx-1)/3)/2)
 !     integer, parameter :: mlmax= jtrun*(jtrun+1)/2
 
-      integer  nco,nx,my,lev,jtrun,mlmax,grt
+      integer  nco,nx,my,lev,jtrun,mlmax
       logical  octahedral
-      common/comparam1/nco,nx,my,lev,jtrun,mlmax,grt,octahedral
+      common/comparam1/nco,nx,my,lev,jtrun,mlmax,octahedral
 
 !
 ! specify the ncld = number of water spieces

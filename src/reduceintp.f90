@@ -21,7 +21,9 @@
        two_pi = 2.0 * pi
        dxf = two_pi / lonf
        hfdxf = 0.5 * dxf
-
+!$omp parallel do                                       &
+!$omp private(j,i,imp,dxp,hfdxp,xpast,xnext,sc,old,new) &
+!$omp schedule(dynamic)
       do j=1,latg
        imp=lonfd(j)
        if( imp.ne.lonf ) then
@@ -46,6 +48,7 @@
         a(1:lonf,j)=new(1:lonf)
        endif
       enddo
+!$omp end parallel do
 ! .................
 
       return

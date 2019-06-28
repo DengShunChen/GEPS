@@ -28,6 +28,7 @@
       use mpe
       use rank
       use index
+      use radn, only : ntoz
 
       implicit  none
 
@@ -80,6 +81,7 @@
       plog=0.
       prett=0.
       anlslp=0.
+      sht=0.
 
       nxmy  = nx*my
       nxlev = nx*lev
@@ -102,11 +104,12 @@
 !
       call syslbl ('b00010',idtg,itaux,ggdef,lrec)
       call dmsread (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
-      if( lreduce.eq.1 )call reducepick (hld1,nxdef,nx,my)
+!byl      if( lreduce.eq.1 )call reducepick (hld1,nxdef,nx,my)
       do jj = 1, jlistnum
         j=jlist1(jj)
         ii=nxjstart(j)
         nxj=nxdef_2d(j)
+        if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
         do i=1,nxj
           pt(i,jj) = hld1(ii,j) - ptop
           ii=ii+1
@@ -125,11 +128,12 @@
       write (typ, '("m",i2.2,"100")' ) k
       call syslbl (typ,idtg,itaux,gmdef,lrec)
       call dmsread (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
-      if( lreduce.eq.1 ) call reducepick (hld1,nxdef,nx,my)
+!byl      if( lreduce.eq.1 ) call reducepick (hld1,nxdef,nx,my)
       do 71 jj = 1, jlistnum
        j=jlist1(jj)
        ii=nxjstart(j)
        nxj=nxdef_2d(j)
+       if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
       do 71 i = 1, nxj
       tt(i,k,jj) = hld1(ii,j)
       ii=ii+1
@@ -141,11 +145,12 @@
       write (typ, '("m",i2.2,"500")' ) k
       call syslbl (typ,idtg,itaux,gmdef,lrec)
       call dmsread (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
-      if( lreduce.eq.1 ) call reducepick (hld1,nxdef,nx,my)
+!byl      if( lreduce.eq.1 ) call reducepick (hld1,nxdef,nx,my)
       do 73 jj = 1, jlistnum
        j=jlist1(jj)
        ii=nxjstart(j)
        nxj=nxdef_2d(j)
+       if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
       do 73 i = 1, nxj
         if(hld1(ii,j).le.1.0e-10)hld1(ii,j)=1.0e-10
         sht(i,k,jj) = hld1(ii,j)
@@ -174,11 +179,12 @@
         enddo
       endif
 !
-      if( lreduce.eq.1 ) call reducepick (hld1,nxdef,nx,my)
+!byl      if( lreduce.eq.1 ) call reducepick (hld1,nxdef,nx,my)
       do jj = 1, jlistnum
        j=jlist1(jj)
        ii=nxjstart(j)
        nxj=nxdef_2d(j)
+       if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
       do i = 1, nxj
       sht(i,kk,jj) = hld1(ii,j)
 !      sht(i,kk,jj) = 0.
@@ -190,17 +196,18 @@
 !  read "observed ozone" at sigma levels for doing ozone forecast
 !
       if(ncld.ge.3)then
-      ntrac=3
+      ntrac=ntoz
       do k = 1, lev
         kk = (ntrac-1)*lev+k
         write (typ, '("m",i2.2,"560")' ) k
         call syslbl (typ,idtg,itaux,gmdef,lrec)
         call dmsread (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
-        if( lreduce.eq.1 ) call reducepick (hld1,nxdef,nx,my)
+!byl        if( lreduce.eq.1 ) call reducepick (hld1,nxdef,nx,my)
         do jj = 1, jlistnum
           j=jlist1(jj)
           ii=nxjstart(j)
           nxj=nxdef_2d(j)
+          if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
           do i = 1, nxj
             sht(i,kk,jj) = hld1(ii,j)
             o3l(i,k,jj) = hld1(ii,j)
@@ -223,7 +230,7 @@
 !  ncld > 2 needs to add another cloud micro input
 !  "incrini.f" also needs to take care
 !
-      if( ncld .gt. 3 ) then
+      if( ncld .gt. ntoz ) then
        if(myrank.eq.0)print*,'ncld > 3, incomplete input for cloud micro'
        call mpe_finalize
        call dmsexit(-1)
@@ -505,16 +512,18 @@
       write (typ, '("m",i2.2,"200")' ) k
       call syslbl (typ,idtg,itaux,gmdef,lrec)
       call dmsread (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
-      if( lreduce.eq.1 ) call reducepick (hld1,nxdef,nx,my)
+!byl      if( lreduce.eq.1 ) call reducepick (hld1,nxdef,nx,my)
       write (typ, '("m",i2.2,"210")' ) k
       call syslbl (typ,idtg,itaux,gmdef,lrec)
       call dmsread (nx,my,lrec,lncrec,'H',ifilin,hld2,istat)
-      if( lreduce.eq.1 ) call reducepick (hld2,nxdef,nx,my)
+!byl      if( lreduce.eq.1 ) call reducepick (hld2,nxdef,nx,my)
       do 320 jj = 1, jlistnum
         j=jlist1(jj)
         ii=nxjstart(j)
         nxj=nxdef_2d(j)
         fac = cosl(j)/rad
+       if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
+       if( lreduce.eq.1 )call reducepick (hld2(1,j),nxdef(j),nx,1)
       do 320 i = 1,nxj
       ut(i,k,jj) = hld1(ii,j)*fac
       vt(i,k,jj) = hld2(ii,j)*fac

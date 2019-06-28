@@ -130,7 +130,7 @@
       real      wss(im),wsu(im),wsv(im),wsd(im)
       real      snm(im),rim(im),denm(im)
 
-      integer   k,i,levm,levref
+      integer   k,i,levm,levref,levt
 
       real     cgw,varmax,dz1,s1,s2,u1,v1,su2,pp,wsp,sn,rr,aa,bb, & 
                delth,delth2,um,vm,umnew,denx,alp,stmin,dpk,wsold, &
@@ -154,7 +154,9 @@
 !      cgw=1.25e-4
 !
 !for T511      varmax=400.*400.
-      varmax=1200.*1200.    !TCo639
+      varmax=1200.*1200.    !TCo639L72
+!byl add
+      levt=10 !TCo639L72
 !
 ! ... variance of the terrain field
 !
@@ -393,7 +395,8 @@
 ! ...............................................
 ! ... new winds which are adjusted by gravity wave drag
 !
-      do 830 k=3,levref
+!byl      do 830 k=3,levref
+      do 830 k=levt+1,levref
       do 840 i=1,nxj
 !
         dpk=(p2(i,k-1)-p2(i,k))*100.
@@ -426,9 +429,12 @@
   850 continue
 !
       k=2
+!byl add
+      do 860 k=levt,2,-1
       do 860 i=1,nxj
 !
-      drag(i,k)=drag(i,k+1)/2.    
+!byl      drag(i,k)=drag(i,k+1)/2.    
+      drag(i,k)=0.5*drag(i,k+1)
 !
          wsold=u(i,k)*u(i,k)+v(i,k)*v(i,k)
          u(i,k)=u(i,k)+dt*drag(i,k)*wsu(i)

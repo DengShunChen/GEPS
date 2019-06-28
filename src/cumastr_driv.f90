@@ -1,7 +1,10 @@
 !      subroutine cumastr_driv(nx,lev,dt,g,r,cp,hltm,ptop,land,topo     &
       subroutine cumastr_driv(nxj,nx,lev,dt,g,r,cp,hltm,ptop,land,topo     &
                            , phi,u,v,t,q,ut,vt,tt,qt,rcup,pk,pk2,sd   &
-                           , qflux,kcbot,kctop,fwd,ncld,sigma,plt,pt,j)
+                           , qflux,kcbot,kctop,fwd,ncld,sigma,plt,pt,j&
+!xb110>
+                           ,kcnv)
+!xb110<
 !c
 !c#######################################################################
 !c                     subroutine description
@@ -69,6 +72,9 @@
 !c
       integer klevp1,klevm1,k,i,kc,ncldq
       logical fwd,land(nx),ldland(nx)
+!xb110>
+      integer kcnv(nx)
+!xb110<
 !c------------------------------------------------------------
       ncldq=2
       rhoh2o=1000.
@@ -183,7 +189,10 @@
 !      call cumastr(nx,lev,klevp1,klevm1,ztp1,zqp1,zxp1,zup1,zvp1,ldland,   &
       call cumastr(nxj,nx,lev,klevp1,klevm1,ztp1,zqp1,zxp1,zup1,zvp1,ldland,   &
                   pverv,zqsat,pqhfl,papp1,paphp1,pgeo,ptte,pqte,pxtec,    &
-                  pvom,pvol,prsfc,pssfc,kcbot,kctop,dth,j)
+                  pvom,pvol,prsfc,pssfc,kcbot,kctop,dth,j                ,&
+!xb110>
+                  kcnv)
+!xb110<
 !c
       do k=1,lev
 !c     kc=lev-k+1

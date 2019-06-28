@@ -27,6 +27,16 @@
         call mpe_unify3_r(a,n,m,jtmax,nsizey)
       else if(idcmp .eq. 4) then
         call mpe_unify4_r(a,n,m,my_max,nsize)
+      else if(idcmp .eq. 5) then
+        if(type .eq. mpe_integer) then
+          call mpe_unify5_i(a,n,m,my_max,nsize)
+        else if(type .eq. mpe_double) then
+          call mpe_unify5_r(a,n,m,my_max,nsize)
+        else if(type .eq. mpe_logical) then
+          call mpe_unify5_l(a,n,m,my_max,nsize)
+        else
+          write(6,*) 'mpe_unify: Argument(type) Error  RANK=',myrank
+        endif
       else
         write(6,*) 'mpe_unify: Argument(idcmp) Error  RANK=',myrank
       endif
@@ -244,6 +254,102 @@
       do i=1,nsizex
          jf=jlist2_2d(i,j)
          a(:,j)=a(:,j)+b2(:,jf)
+      enddo
+      enddo
+
+      return
+      end
+!-------------------------------------------------------------------------
+      subroutine mpe_unify5_i(a,n,m,mx,nsize)
+ 
+      use rank, only : MPI_COMM_gfs
+      use index
+      use mpi
+
+      integer a(n,m)
+      integer b1(n,mx)
+      integer b2(n,mx*nsize)
+
+      do jj=1,jlistnum
+         j=jlist1(jj)
+         b1(:,jj)=a(:,j)
+      enddo
+
+      call MPI_ALLGATHER( B1,n*mx, MPI_INTEGER, &
+                          B2,n*mx, MPI_INTEGER, &
+                          MPI_COMM_gfs,   IERR )
+
+      do j=1,m
+      do i=1,nsizex
+         jf=jlist2_2d(i,j)
+         a(:,j)=b2(:,jf)
+      enddo
+      enddo
+
+      return
+      end
+!-------------------------------------------------------------------------
+      subroutine mpe_unify5_r(a,n,m,mx,nsize)
+ 
+      use rank, only : MPI_COMM_gfs
+      use index
+      use mpi
+
+      real a(n,m)
+#ifdef MPISP
+      real*4 b1(n,mx),b2(n,mx*nsize)
+#else
+      real*8 b1(n,mx),b2(n,mx*nsize)
+#endif
+
+      do jj=1,jlistnum
+         j=jlist1(jj)
+         b1(:,jj)=a(:,j)
+      enddo
+
+#ifdef MPISP
+      call MPI_ALLGATHER( B1,n*mx,   MPI_REAL4,    &
+                          B2,n*mx,   MPI_REAL4,    &
+                          MPI_COMM_gfs,  IERR )
+#else
+      call MPI_ALLGATHER( B1,n*mx,   MPI_REAL8,    &
+                          B2,n*mx,   MPI_REAL8,    &
+                          MPI_COMM_gfs,  IERR )
+#endif
+!
+      do j=1,m
+      do i=1,nsizex
+         jf=jlist2_2d(i,j)
+         a(:,j)=b2(:,jf)
+      enddo
+      enddo
+
+      return
+      end
+!-------------------------------------------------------------------------
+      subroutine mpe_unify5_l(a,n,m,mx,nsize)
+ 
+      use rank, only : MPI_COMM_gfs
+      use index
+      use mpi
+
+      logical a(n,m)
+      logical b1(n,mx)
+      logical b2(n,mx*nsize)
+
+      do jj=1,jlistnum
+         j=jlist1(jj)
+         b1(:,jj)=a(:,j)
+      enddo
+
+      call MPI_ALLGATHER( B1,n*mx, MPI_LOGICAL, &
+                          B2,n*mx, MPI_LOGICAL, &
+                          MPI_COMM_gfs,   IERR )
+
+      do j=1,m
+      do i=1,nsizex
+         jf=jlist2_2d(i,j)
+         a(:,j)=b2(:,jf)
       enddo
       enddo
 

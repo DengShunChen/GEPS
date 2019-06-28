@@ -5,14 +5,16 @@
 #PJM -L elapse=8:00:00
 #PJM -L node-mem=unlimited
 #PJM --no-stging
-#PJM --mpi "proc=384"
+#PJM --mpi "proc=1536"
+##PJM --mpi "rank-map-bynode"
+##PJM --mpi "rank-map-hostfile=hostfile48_753"
 #PJM -j
 #PJM -N TCo639L72_fx100
 
 set -x
 
-MPI=384
-OMP=4
+MPI=1536
+OMP=1
 machine=fx100
 
 source /users/xa09/sample/setup_mpi+omp.${machine} $OMP
@@ -78,8 +80,8 @@ EOF
  export GFSDIR DMSPATH
  export NWPETC=${GFSDIR}/etc
  export NWPETCGLB=${GFSWRK}
- export GLB_TYPHINI="/data/datacfs/b827/data/obstyphoon"
- export GLB_WTYPHINI="/data/datacfs/b827/data/obstyphoon"
+ export GLB_TYPHINI="/nwp/npcagfs/TYP/M00/dtg/ty"
+# export GLB_WTYPHINI="/data/datacfs/b827/data/obstyphoon"
  export FIXDIR=${GFSFIX}
 
  export ANADMS=${indmsfile}
@@ -97,6 +99,7 @@ export O3FORC=${O3FORC:-${FIXDIR}/global_o3prdlos.f77}
 export O3CLIM=${O3CLIM:-${FIXDIR}/global_o3clim.txt}
 export AEROSOL_FILE=${AEROSOL_FILE:-${FIXDIR}/global_climaeropac_global.txt}
 export EMMISSIVITY_FILE=${EMMISSIVITY_FILE:-${IXDIR}/global_sfc_emissivity_idx.txt}
+export MTNVAR=${MTNVAR:-${FIXDIR}/global_mtnvar.t640.2576.1280.f77}
 
 
 cd $GFSWRK
@@ -105,6 +108,7 @@ ln -fs $O3FORC fort.28
 ln -fs $O3CLIM fort.48
 ln -fs $AEROSOL_FILE  aerosol.dat
 ln -fs $EMMISSIVITY_FILE sfc_emissivity_idx.txt
+ln -fs $MTNVAR mtnvar.dat
 
 ln -fs $FIXDIR/* .
 cp $NWPETC/gfsctl $GFSWRK/gfsctl

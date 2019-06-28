@@ -37,9 +37,8 @@
       real :: tau_trk, dt_trk
       logical :: ltrack=.false.
 
-      integer :: write_tau=120, trk_intv=6
+      integer :: write_tau=6, trk_intv=6
       integer :: write_mem=00
-      real :: min_trk_pres=1002.
 
       contains 
 

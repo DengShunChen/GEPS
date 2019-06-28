@@ -24,7 +24,7 @@
       real     sqhaf,dummy
 
       real phiten(levp,2,jtrun,jtmax)
-      real tbar(lev),qbar(lev*ncld)
+!byl      real tbar(lev),qbar(lev*ncld)
       real sdpbl(nxp,my_max)
 
 ! for Semi-Lagrangian
@@ -38,7 +38,9 @@
       ,vdmerd_sl(nx,levp,my_max)                           &
       ,vdzonl_sl(nx,levp,my_max)
 
-      real cc(nx+2,levp,1+ncld,my_max),wss(levp,2,1+ncld,jtrun,jtmax)
+!byl      real cc(nx+2,levp,1+ncld,my_max)
+      real cc(nx+2,levp,1,my_max)
+!byl,wss(levp,2,1+ncld,jtrun,jtmax)
 !
       integer   ierr
       real  dta,ww1(nx,my_max)
@@ -52,7 +54,7 @@
 !  global mean tempertures (tbar)
 !
       sqhaf= sqrt(0.5)
-      tbar=0. ; qbar=0.
+!byl      tbar=0. ; qbar=0.
 !     do 160 m = 1, mlistnum
 !      mf=mlist(m)
 !      if ( mf.eq.1) then
@@ -67,26 +69,26 @@
 !
 
 !2dMPI
-      do 160 m = 1, mlistnum
-       mf=mlist(m)
-       if ( mf.eq.1) then
-        do 161 k=1,levp
-          KK=Llist(k)
-          tbar(KK)= sqhaf*temnow(k,1,1,m)
-  161   continue
-        do 162 n=1,ncld
-           nk=(n-1)*levp
-           nL=(n-1)*lev 
-        do 162 k=1,levp
-           KK=nk+k
-           KL=nL+Llist(k)
-          qbar(KL)= sqhaf*qnow(KK,1,1,m)
-  162   continue
-       endif
-  160 continue
+!byl      do 160 m = 1, mlistnum
+!byl       mf=mlist(m)
+!byl       if ( mf.eq.1) then
+!byl        do 161 k=1,levp
+!byl          KK=Llist(k)
+!byl          tbar(KK)= sqhaf*temnow(k,1,1,m)
+!byl  161   continue
+!byl        do 162 n=1,ncld
+!byl           nk=(n-1)*levp
+!byl           nL=(n-1)*lev 
+!byl        do 162 k=1,levp
+!byl           KK=nk+k
+!byl           KL=nL+Llist(k)
+!byl          qbar(KL)= sqhaf*qnow(KK,1,1,m)
+!byl  162   continue
+!byl       endif
+!byl  160 continue
 
-      call mpe_global_sum(tbar,lev,mpe_double)
-      call mpe_global_sum(qbar,lev*ncld,mpe_double)
+!byl      call mpe_global_sum(tbar,lev,mpe_double)
+!byl      call mpe_global_sum(qbar,lev*ncld,mpe_double)
 !
       do 170 m = 1, mlistnum
          mf=mlist(m)
@@ -133,9 +135,9 @@
         nxj=nxdef_2d(j)
         do k = 1, lev
           do i = 1, nxj
-            uum(i,k,jj) = ut(i,k,jj)
-            vvm(i,k,jj) = vt(i,k,jj)
-            ttm(i,k,jj)= tt(i,k,jj)
+            up(i,k,jj) = ut(i,k,jj)
+            vp(i,k,jj) = vt(i,k,jj)
+            ttp(i,k,jj)= tt(i,k,jj)
           enddo
         enddo
         do k = 1, lev*ncld
@@ -151,7 +153,7 @@
 ! transpose partial to full: ut -> ut_sl, vt -> vt_sl, ttm -> ttm_sl, qm -> qm_sl
 
 #ifdef MULTIPLE
-      call mpe2d_transpose_ndsl_p2f_multi(ut   ,vt   ,ttm   ,dummy,dummy,qm,    &
+      call mpe2d_transpose_ndsl_p2f_multi(ut   ,vt   ,ttp   ,dummy,dummy,qm,    &
                                     ut_sl,vt_sl,ttm_sl,dummy,dummy,qm_sl, &
                                     nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm,4)
 #else
@@ -159,7 +161,7 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f(vt,vt_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f(ttm,ttm_sl,  &
+      call mpe2d_transpose_ndsl_p2f(ttp,ttm_sl,  &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f(qm,qm_sl,    &
                                     nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)

@@ -53,7 +53,7 @@
 !
 ! local work arrays
 !
-      real      tmp(nxp,lev,my_max),plog(nxp,lev,my_max),pllp(nx,my),glob(nx,my)
+      real      tmp(nxp,lev,my_max),plog(nxp,lev,my_max),pllp(nxp,my_max),glob(nx,my)
       real      slp(nxp,my_max)
 !
 !  pout(16) chnaged into pout(26) to increase p output to 26 levels
@@ -61,8 +61,11 @@
 !
       integer,  parameter :: lpout = 31 
       real      wrk1(nxp,lev),pout(lpout),pkout(lpout),phistd(lpout) &
-              , bt1(nx,my),bt2(nx,my)                               &
-              , hld1(nxp,my_max),hld2(nxp,my_max),pres3d(nx,my,lpout)
+!              , bt1(nx,my),bt2(nx,my)                               &
+              , bt1(nxp,my_max),bt2(nxp,my_max)                      &
+              , hld1(nxp,my_max),hld2(nxp,my_max)                    &
+!             , pres3d(nx,my,lpout)
+              , pres3d(nxp,my_max,lpout)
 !
       real      sht(nxp,lev*ncld,my_max),sdhat(nxp,lev,my_max)
 !
@@ -240,8 +243,8 @@
             anlslp = (pt(i,jj)+ptop)*exp( ttt*(1.0-0.5*apha*ttt+0.333333*  &
                      apha*ttt*apha*ttt) )
           endif
-          pllp(i,j) = anlslp - pt(i,jj)
-          pdiff(i,jj)=pllp(i,j)
+          pllp(i,jj) = anlslp - pt(i,jj)
+          pdiff(i,jj)=pllp(i,jj)
         enddo
       enddo
 !
@@ -304,20 +307,20 @@
         do i = 1, nxj
           slp(i,jj)= pt(i,jj)+pdiff(i,jj)
           if( slp(i,jj) .le. 1000.1) then
-            pllp(i,j) = 1000.1
+            pllp(i,jj) = 1000.1
           else
-            pllp(i,j) = slp(i,jj)
+            pllp(i,jj) = slp(i,jj)
           endif
         enddo
 !
-        call geostd (nxjp(j),pllp(1,j),bt2(1,j))
+        call geostd (nxjp(j),pllp(1,jj),bt2(1,jj))
 !
         do i = 1, nxj
-          pllp(i,j) = log(pllp(i,j))
+          pllp(i,jj) = log(pllp(i,jj))
         enddo
       enddo
 !
-      call mpe_unify(pllp,nx,my,2,mpe_double)
+!      call mpe_unify(pllp,nx,my,2,mpe_double)
 !      call mpe_unify(bt2,nx,my,2,mpe_double)
 !
       labx='phi   '
@@ -369,17 +372,17 @@
           tadia= tmp(i,lev,jj)*(slp(i,jj)/plt(i,lev,jj))**0.25
           tsf  = max( tmp(i,lev,jj), min( tsf,tadia ) )
           if ( slp(i,jj) .gt. 1000.1 )  then
-            bt1(i,j)= tsf
+            bt1(i,jj)= tsf
             t1000(i,jj) = tsf
           else
-            bt1(i,j)= tsf + (tsf-tmp(i,lev,jj))*(pl1000-splog)  &
+            bt1(i,jj)= tsf + (tsf-tmp(i,lev,jj))*(pl1000-splog)  &
                      / (splog - plog(i,lev,jj))
-            t1000(i,jj) = bt1(i,j)
+            t1000(i,jj) = bt1(i,jj)
           endif
         enddo
       enddo
 !
-      call mpe_unify(bt1,nx,my,2,mpe_double)
+!!      call mpe_unify(bt1,nx,my,2,mpe_double)
 !
       if(numt.gt.0) then
       if(myrank.eq.0)print*,' outfld : start tempout, lwrite = ',lwrite
@@ -403,11 +406,11 @@
           enddo
         enddo
         do i=1,nxj
-          bt1(i,j)= tmp(i,lev,jj)
+          bt1(i,jj)= tmp(i,lev,jj)
         enddo
       enddo
 
-      call mpe_unify(bt1,nx,my,2,mpe_double)
+!!      call mpe_unify(bt1,nx,my,2,mpe_double)
 !
       if(myrank.eq.0)print*,' outfld : start shumfout, lwrite = ',lwrite
       call shumout( nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,numq &
@@ -429,10 +432,10 @@
             enddo
           enddo
           do i = 1,nxj
-            bt1(i,j)=tmp(i,lev,jj)
+            bt1(i,jj)=tmp(i,lev,jj)
           enddo
         enddo
-        call mpe_unify(bt1,nx,my,2,mpe_double)
+!!        call mpe_unify(bt1,nx,my,2,mpe_double)
         if(myrank.eq.0)print*,' outfld : start shumout2, lwrite = ',lwrite
         call shumout2( nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,numq &
            ,whtlevq,pkout,plog,pllp,tmp,bt1,pres3d,glob,ggdef,ntrac,lwrite )
@@ -450,9 +453,9 @@
           nxj=nxdef_2d(j)
           do i=1,nxj
             if(slp(i,jj).le.1000.1) then
-              bt1(i,j)= t1000(i,jj)*rgas*log(slp(i,jj)*0.001)
+              bt1(i,jj)= t1000(i,jj)*rgas*log(slp(i,jj)*0.001)
             else
-              bt1(i,j) = min( sgeo(i,jj), 0.0 )
+              bt1(i,jj) = min( sgeo(i,jj), 0.0 )
             endif
           enddo
 !
@@ -470,10 +473,10 @@
 !  bottom boundary conditions
 !
           do i=1,nxj
-            bt1(i,j) = ograv*bt1(i,j) - bt2(i,j)
+            bt1(i,jj) = ograv*bt1(i,jj) - bt2(i,jj)
           enddo
         enddo
-        call mpe_unify(bt1,nx,my,2,mpe_double)
+!!        call mpe_unify(bt1,nx,my,2,mpe_double)
 !
         if(myrank.eq.0)print*,' outfld : start geopout, lwrite = ',lwrite
         call geopout (nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,numz &
@@ -491,10 +494,10 @@
           j=jlist1(jj)
           nxj=nxdef_2d(j)
           do i=1,nxj
-            bt1(i,j)= rvor(i,lev,jj)
+            bt1(i,jj)= rvor(i,lev,jj)
           enddo
         enddo
-        call mpe_unify(bt1,nx,my,2,mpe_double)
+!!        call mpe_unify(bt1,nx,my,2,mpe_double)
         if(myrank.eq.0)print*,' outfld : start vorout, lwrite = ',lwrite
         call vortout (nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,num  &
                  ,whtlev,pkout,plog,pllp,rvor,bt1,pres3d,ggdef,v850,v700,lwrite)
@@ -507,10 +510,10 @@
           j=jlist1(jj)
           nxj=nxdef_2d(j)
           do i=1,nxj
-            bt1(i,j)= rdiv(i,lev,jj)
+            bt1(i,jj)= rdiv(i,lev,jj)
           enddo
         enddo
-        call mpe_unify(bt1,nx,my,2,mpe_double)
+!!        call mpe_unify(bt1,nx,my,2,mpe_double)
         if(myrank.eq.0)print*,' outfld : start divgout, lwrite = ',lwrite
         call divgout (nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,num &
                   ,whtlev,pkout,plog,pllp,rdiv,bt1,pres3d,ggdef,lwrite)
@@ -523,12 +526,12 @@
           j=jlist1(jj)
           nxj=nxdef_2d(j)
           do i=1,nxj
-            bt1(i,j)= ut(i,lev,jj)
-            bt2(i,j)= vt(i,lev,jj)
+            bt1(i,jj)= ut(i,lev,jj)
+            bt2(i,jj)= vt(i,lev,jj)
           enddo
         enddo
-        call mpe_unify(bt1,nx,my,2,mpe_double)
-        call mpe_unify(bt2,nx,my,2,mpe_double)
+!!        call mpe_unify(bt1,nx,my,2,mpe_double)
+!!        call mpe_unify(bt2,nx,my,2,mpe_double)
         if(myrank.eq.0)print*,' outfld : start windout, lwrite = ',lwrite
         call windout (nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,num &
            ,whtlev,cosl,pkout,plog,pllp,ut,vt,sdhat,bt1,bt2,pres3d,glob,ggdef,lwrite)
@@ -541,10 +544,10 @@
           j=jlist1(jj)
           nxj=nxdef_2d(j)
           do i=1,nxj
-            bt1(i,j)= drag(i,lev,jj)
+            bt1(i,jj)= drag(i,lev,jj)
           enddo
         enddo
-        call mpe_unify(bt1,nx,my,2,mpe_double)
+!!        call mpe_unify(bt1,nx,my,2,mpe_double)
       if(myrank.eq.0)print*,' outfld : start dragout, lwrite = ',lwrite
         call dragout (nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,num &
                   ,whtlev,pkout,plog,pllp,drag,bt1,pres3d,ggdef,lwrite)

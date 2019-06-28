@@ -34,16 +34,16 @@
 
 !  local working array
 !
-      real      sst(nxp,my_max),ww1(nx,my),ww2(nx,my),&
-                wk1(nxp,lev,my_max),wk2(nxp,lev,my_max),  &
-                cc(nx+2,levp,3+ncld,my_max),              &
-                wss(levp,2,3+ncld,jtrun,jtmax),ww3(nx,my_max)
+      real      sst(nxp,my_max),ww1(nx,my),ww2(nx,my),          &
+                wk1(nxp,lev,my_max),wk2(nxp,lev,my_max),        &
+                cc(nx+2,levp,1,my_max),ww3(nx,my_max)
+!byl                wss3(levp,2,3,jtrun,jtmax),cc3(nx+2,levp,3,my_max)
 
       character lrec*26,rfile*55,ctau*6,topostd*4,topohgt*4
 !
 ! restart  : read(7) work array
 !
-      real, dimension(:), allocatable :: work_io
+!!      real, dimension(:), allocatable :: work_io
 !
       real      spgeo_work(mlmax,2)
 !
@@ -128,22 +128,14 @@
       call mpe_bcast(ios,1,0,mpe_integer)
       if(ios .ne. 0) goto 820
 !
-      if(myrank .eq. 0) then
-      read (7)  work_io
-      close (7)
-      endif
+!!      if(myrank .eq. 0) then
+!!      read (7)  work_io
+!!      close (7)
+!!      endif
 !
-      call scatter_spec(work_io,vornow,divnow,temnow,qnow,plnow,   &
-         vorold,divold,temold,qold,plold,dsqgeo,spgeo,trefs,       &
-         uzm,lev,ncld,jtrun,jtmax,my,nsize)
-!
-      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,qnow,cc     &
-                 ,ncld,nsizey)
-      call ujoinsr(cc,qt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,ncld)
-
-      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,qold,cc     &
-                 ,ncld,nsizey)
-      call ujoinsr(cc,qm,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,ncld)
+!!      call scatter_spec(work_io,vornow,divnow,temnow,qnow,plnow,   &
+!!         vorold,divold,temold,qold,plold,dsqgeo,spgeo,trefs,       &
+!!         uzm,lev,ncld,jtrun,jtmax,my,nsize)
 !
       rfile = phyout(1:lphy)//ctau
 !
@@ -220,11 +212,12 @@
       lncrec=nx*my
       call syslbl('x00dif',idtg,0,ggdef,lrec)
       call dmsread(nx,my,lrec,lncrec,'H',ifilout,ww1,istat)
-      if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
+!byl      if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
       do jj=1,jlistnum
         j=jlist1(jj)
         ii=nxjstart(j)
         nxj=nxdef_2d(j)
+        if( lreduce.eq.1 ) call reducepick (ww1(1,j),nxdef(j),nx,1)
         do i=1,nxj
           pdiff(i,jj)=ww1(ii,j)
           ii=ii+1
@@ -233,11 +226,12 @@
 
       call syslbl('h00100',idtg,0,ggdef,lrec)
       call dmsread(nx,my,lrec,lncrec,'H',ifilin,ww1,istat)
-      if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
+!byl      if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
       do jj=1,jlistnum
         j=jlist1(jj)
         ii=nxjstart(j)
         nxj=nxdef_2d(j)
+        if( lreduce.eq.1 ) call reducepick (ww1(1,j),nxdef(j),nx,1)
         do i=1,nxj
           t1000(i,jj)=ww1(ii,j)
           ii=ii+1
@@ -246,11 +240,12 @@
 
       call syslbl('x00tsv',idtg,0,ggdef,lrec)
       call dmsread(nx,my,lrec,lncrec,'H',ifilout,ww1,istat)
-      if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
+!byl      if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
       do jj=1,jlistnum
         j=jlist1(jj)
         ii=nxjstart(j)
         nxj=nxdef_2d(j)
+        if( lreduce.eq.1 ) call reducepick (ww1(1,j),nxdef(j),nx,1)
         do i=1,nxj
           tsave(i,jj)=ww1(ii,j)
           ii=ii+1
@@ -265,15 +260,17 @@
         topostd='gbk0'   ! responding to istdno=0
         write(lrec,'("s00062",a4,a4,12x)')topostd,ggdef
         call dmsread(nx,my,lrec,nxmy,'H',bckfile,ww1,istat)
-        if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
+!byl        if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
 !
         do jj=1,jlistnum
           j=jlist1(jj)
           ii=nxjstart(j)
           nxj=nxdef_2d(j)
+        if( lreduce.eq.1 ) call reducepick (ww1(1,j),nxdef(j),nx,1)
           do i=1,nxj
             std(i,jj)=ww1(ii,j)*ww1(ii,j)
-            if(std(i,jj).le.0. .or. ocean(i,jj)) std(i,jj)=0.
+!byl            if(std(i,jj).le.0. .or. ocean(i,jj)) std(i,jj)=0.
+            if(ww1(ii,j).le.0. .or. ocean(i,jj)) std(i,jj)=0.
             ii=ii+1
           enddo
         enddo
@@ -316,11 +313,12 @@
 !
         call syslbl('w00100',idtg,0,ggdef,lrec)
         call dmsread(nx,my,lrec,nxmy,'H',ifilin,ww1,istat)
-        if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
+!byl        if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
         do jj=1,jlistnum
           j=jlist1(jj)
           ii=nxjstart(j)
           nxj=nxdef_2d(j)
+        if( lreduce.eq.1 ) call reducepick (ww1(1,j),nxdef(j),nx,1)
           do i=1,nxj
             sst(i,jj)=ww1(ii,j)
             ii=ii+1
@@ -377,11 +375,12 @@
         if( ncepsnow  .and. isnow.eq.0 )then
           call syslbl('b00650',idtg,0,ggdef,lrec)
           call dmsread(nx,my,lrec,nxmy,'H',ifilin,ww1,istat)
-          if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
+!byl          if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
           do jj=1,jlistnum
             j=jlist1(jj)
             ii=nxjstart(j)
             nxj=nxdef_2d(j)
+            if( lreduce.eq.1 ) call reducepick (ww1(1,j),nxdef(j),nx,1)
             do i=1,nxj
               snr(i,jj)=ww1(ii,j)
               ii=ii+1
@@ -655,7 +654,8 @@
           nxj=nxdef_2d(j)
           do i=1,nxj
             std(i,jj)=ww1(ii,j)*ww1(ii,j)
-            if(std(i,jj).le.0. .or. ocean(i,jj)) std(i,jj)=0.
+!byl            if(std(i,jj).le.0. .or. ocean(i,jj)) std(i,jj)=0.
+            if(ww1(ii,j).le.0. .or. ocean(i,jj)) std(i,jj)=0.
             ii=ii+1
           enddo
         enddo
@@ -692,11 +692,14 @@
 !  specific humidity
 !  terrain pressure
 !
-      call joinrs(cc,tt,qt,dummy,dummy,nx,my_max,lev,jlistnum,2,ncld)
+!byl      call joinrs(cc,tt,qt,dummy,dummy,nx,my_max,lev,jlistnum,2,ncld)
+!      call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc  &
+!                 ,wss,1+ncld,nsizey)
+!      call ujoinrs(wss,temnow,qnow,dummy,dummy,jtrun,jtmax,levp &
+!byl                 ,mlistnum,2,ncld)
+      call joinrs(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc  &
-                 ,wss,1+ncld,nsizey)
-      call ujoinrs(wss,temnow,qnow,dummy,dummy,jtrun,jtmax,levp &
-                 ,mlistnum,2,ncld)
+                 ,temnow,1,nsizey)
       call mpe2d_unify_nx(ww3,pt) !2dMPI
 !ch   call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,pt     &
       call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww3    &
@@ -743,14 +746,14 @@
             enddo
           enddo
         enddo
-        do m=1,mlistnum
-          mf=mlist(m)
-          do n=mf,jtrun
-            do k=1,levp*ncld*2
-              qold(k,1,n,m)  = qnow(k,1,n,m)
-            enddo
-          enddo
-        enddo
+!byl        do m=1,mlistnum
+!          mf=mlist(m)
+!          do n=mf,jtrun
+!            do k=1,levp*ncld*2
+!              qold(k,1,n,m)  = qnow(k,1,n,m)
+!            enddo
+!          enddo
+!byl        enddo
         do m=1,mlistnum
           mf=mlist(m)
           do n=mf,jtrun
@@ -762,10 +765,10 @@
 !
 !     use wk1 and wk2 as work arrays to store up and vp
 !
-      call tranuv ( jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac &
-                   ,poly,dpoly,vornow,divnow,wk1,wk2,nsizey)
+!!      call tranuv ( jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac &
+!!                   ,poly,dpoly,vornow,divnow,wk1,wk2,nsizey)
 !
-      call uzmean ( nx,my,my_max,lev,wk1,uzm )
+!!      call uzmean ( nx,my,my_max,lev,wk1,uzm )
 !
 !  write initial spectral coefficients to history file
 !
@@ -773,17 +776,17 @@
         call chlen (cwbout,48,lcwb)
         call chlen (phyout,48,lphy)
         rfile = cwbout(1:lcwb)//'tau000'
-        allocate (work_io((( (7+2*ncld)*2*lev+8)*jtrun*jtmax+my*lev)*nsize))
-        call gather_spec(work_io,vornow,divnow,temnow,qnow,plnow,   &
-           vorold,divold,temold,qold,plold,dsqgeo,spgeo,trefs,      &
-           uzm,lev,ncld,jtrun,jtmax,my,nsize)
+!!        allocate (work_io((( (7+2*ncld)*2*lev+8)*jtrun*jtmax+my*lev)*nsize))
+!!        call gather_spec(work_io,vornow,divnow,temnow,qnow,plnow,   &
+!!           vorold,divold,temold,qold,plold,dsqgeo,spgeo,trefs,      &
+!!           uzm,lev,ncld,jtrun,jtmax,my,nsize)
 !         if(myrank .eq. 0) then
 !           open (unit=7,file=rfile,form='unformatted')
 !cc         write (7) work_io
 !cc         call flush (7)
 !           close (7)
 !         endif
-        deallocate (work_io)
+!!        deallocate (work_io)
 !
         rfile = phyout(1:lphy)//'tau000'
         allocate (tm1(nx,lev,my))
@@ -845,11 +848,17 @@
 !  specific humidity ( on grid point space in NDSL version)
 !  terrain pressure
 !
-      call joinsr(wss,vornow,divnow,temnow,dummy,jtrun,jtmax,levp &
-                 ,mlistnum,3,1)
-      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,wss,cc      &
-                 ,3,nsizey)
-      call ujoinsr(cc,rvor,rdiv,tt,dummy,nx,my_max,lev,jlistnum,3,1)
+!!      call joinsr(wss3,vornow,divnow,temnow,dummy,jtrun,jtmax,levp &
+!!                 ,mlistnum,3,1)
+!!      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,wss3,cc3     &
+!!                 ,3,nsizey)
+!!      call ujoinsr(cc3,rvor,rdiv,tt,dummy,nx,my_max,lev,jlistnum,3,1)
+      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,vornow,cc,1,nsizey)
+      call ujoinsr(cc,rvor,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divnow,cc,1,nsizey)
+      call ujoinsr(cc,rdiv,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temnow,cc,1,nsizey)
+      call ujoinsr(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       call transr1(jtrun,jtmax,nx,my,my_max,poly,plnow,pt,nsizey)
 !
       do 160 jj = 1, jlistnum

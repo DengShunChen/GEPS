@@ -34,8 +34,11 @@
 
       integer   levp1,jym2,nxjym2,mn,ll,k,i,jj,j,nxj,ii
 
-      real      ff(nxp,lev,my_max),t(nx,my,lpout),pkout(lpout)    &
-      , pk(nxp,lev,my_max),tensy(lev+1),pklp(nx,my),flp(nx,my)
+!byl      real      ff(nxp,lev,my_max),t(nx,my,lpout),pkout(lpout)    &
+!byl      , pk(nxp,lev,my_max),tensy(lev+1),pklp(nx,my),flp(nx,my)
+      real      ff(nxp,lev,my_max),t(nxp,my_max,lpout),pkout(lpout) &
+      , pk(nxp,lev,my_max),tensy(lev+1),pklp(nxp,my_max)            &
+      , flp(nxp,my_max)
 !
       real      fxx(nxp,lev+1),fyy(nxp,lev+1),pjy(nxp,lpout,4)      &
       , tp1(nxp,lpout,4),    pkk(nxp,lev+1),f(nxp,lev+1)            &
@@ -43,22 +46,22 @@
 
       integer   ipt(nxp,lpout)
 !
-      real      wk1(nx,my)
+!      real      wk1(nx,my)
 !
 !          compute ipt and pjy
 !
       levp1= lev+1
       jym2=levp1-2
 !
-!mic$  do all
-!mic$1  private (j,i,pkk,f,pjy,ipt,tp1,fxx,fyy,k)
-!mic$2  shared  (my,nx,lev,jym2,levp1,mn,pk,ff,pklp,flp)
-!mic$3  shared  (pout,ll,nxjym2,tensy,t,lpout)
+!$omp parallel do                                                      &
+!$omp private(j,i,ii,pkk,f,pjy,ipt,tp1,fxx,fyy,k,nxj,mn,pout) &
+!$omp schedule(dynamic)
 !
       do 200 jj =1, jlistnum
       j=jlist1(jj)
 !1d   nxj=nxdef(j)
-      nxj=nxjp(j)
+      nxj=nxdef_2d(j)
+!!      nxj=nxjp(j)
 
 !     nxjym2=nxj*jym2
       mn= nxj*lpout
@@ -77,13 +80,9 @@
        enddo
       enddo
 !
-      ii=nxjstart(j)
       do i=1,nxj
-!      pkk(i,levp1)= pklp(i,j)
-       pkk(i,levp1)= pklp(ii,j)
-!      f(i,levp1)= flp(i,j)
-       f(i,levp1)= flp(ii,j)
-       ii=ii+1
+        pkk(i,levp1)= pklp(i,jj)
+        f(i,levp1)= flp(i,jj)
       enddo
 !
       call setupv(pkk(1:nxj,1:levp1),pout(1:nxj,1:lpout),mn,nxj,levp1,   &
@@ -132,12 +131,13 @@
 !
       do k=1,lpout
        do i=1,nxj
-        t(i,j,k)=tp1(i,k,1)*pjy(i,k,1)+tp1(i,k,2)*pjy(i,k,2)+          &
+        t(i,jj,k)=tp1(i,k,1)*pjy(i,k,1)+tp1(i,k,2)*pjy(i,k,2)+          &
                     tp1(i,k,3)*pjy(i,k,3)+tp1(i,k,4)*pjy(i,k,4)
        enddo
       enddo
 !
   200 continue
+!$omp end parallel do
 !
 ! do 'reduceintp' after votertical interplot
 !1d   if( lreduce.eq.1 ) then
@@ -146,14 +146,18 @@
 !1d     enddo
 !1d   endif
 
-        do k=1,lpout
-          call mpe_unify(t(1,1,k),nx,my,2,mpe_double)
+!!        do k=1,lpout
+!!          call mpe_unify(t(1,1,k),nx,my,2,mpe_double)
 !2d>
-          if( lreduce.eq.1 ) then
-              call reduceintp(t(1,1,k),nxdef,nx,my)
-          endif
+!!          if( lreduce.eq.1 ) then
+!!           do jj =1, jlistnum
+!!             j=jlist1(jj)
+!!             call reduceintp(t(1,j,k),nxdef(j),nx,1)
+!!           enddo
+!!           call mpe_unify(t(1,1,k),nx,my,5,mpe_double) 
+!!          endif
 !2d<
-        enddo
+!!        enddo
 !
 
       return

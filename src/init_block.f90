@@ -74,6 +74,21 @@
 !
       domfc=.false.
       out_green=.false.
+! sppt
+      dosppt=.false.
+      dospptout=.false.
+!---------------------------------------------------------------------------
+! sppt parameters, de_corretime unit is hour
+!
+      de_corretime_500=6.
+      de_corretime_1000=72.    ! 3d=3.*24.
+      de_corretime_2000=720.   ! 30d=30.*24.
+!
+! perturbation amplitude factor, basically do not great than 0.17
+!
+      facsppt500=0.15
+      facsppt1000=0.05
+      facsppt2000=0.015
 !
 ! specify the default option for cup and pbl
 !
@@ -83,6 +98,11 @@
       nmshl=1
 
       cgw=1.0e-4
+!
+! specify the default option for orographic and convective gwd
+!
+      nmgwor=1
+      mtnvar=14
 !
 ! specify the default option for reduced grids
 ! numreduce : -99 for full grids, 1 to 4 proper for reduced grids
@@ -191,6 +211,7 @@
 !                   ! ntcw>0, include microphysics cloud scheme
 !     num_p3d  = 4  ! num_p3d=4, Zhao Microphysics cloud scheme (default)
 !              = 3  ! num_p3d=3, Brad Ferrier's Microphysics cloud scheme
+!              = 5  ! num_p3d=5, WSM6 Microphysics cloud scheme
 !     ntoz     = 0  ! use climatological ozone profile
 !              > 0  ! use interactive ozone profile
 !     iovr_sw  = 1  ! sw: maximum-random overlapping vertical cloud layer
@@ -235,6 +256,10 @@
 !---------------------------------------------------------------------------
       irad=2
       iflip=1
+      ntiw=3
+      ntrw=4
+      ntsw=5
+      ntgl=6
       ntoz=3
       nclds=1
       ioutsigr=0

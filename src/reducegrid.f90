@@ -1,4 +1,4 @@
-      subroutine reducegrid(qtt,jtrun,qttcut,jf,grt,lcapd,lonfd,octah)
+      subroutine reducegrid(qtt,jtrun,qttcut,jf,lcapd,lonfd,octah)
 !
 ! subroutine greduceg		programmer: hann-ming juang
 !                                  modify : jen_her Chen
@@ -16,7 +16,6 @@
 !	jtrun	wave dimension
 !	qttcut	minimax value of accuracy for qtt
 !       jf      position of y-direction at given lat
-!       grt     grid type ( 2: linear, 3: quadratic, 4: cubic )
 !       octah   option of Octahedral Gaussian reduced grid
 ! output:
 !	lcapd	wave resolution for reduced grid
@@ -26,7 +25,7 @@
 
       integer, parameter :: nibm=40
 !
-      integer  jtrun,j,k,l,m,n,lonfd,lcapd,ind,mwave,grt,jf
+      integer  jtrun,j,k,l,m,n,lonfd,lcapd,ind,mwave,jf
       integer  need,lonfi,lonff,lonfo,ii,lonf,jtime,ktime,ltime,        &
                mtime,ntime
 
@@ -56,15 +55,16 @@
          enddo
          mwave=mwave+need
        enddo
-       lcapd=mwave
+!byl       lcapd=mwave
 !
-       lonfi=2*(lcapd-1)+1
-       lonff=lonfi+mod(lonfi,2)
+!byl       lonfi=2*(lcapd-1)+1
+!byl       lonff=lonfi+mod(lonfi,2)
 !     Octahedral Gaussian reduced grid with Cubic truncation
        lonfo=16+4*jf
-       if ( lonfo .lt. lonff )                                          &
-           print *,'Warning!! not enough grid lengh at j=',jf
-         go to 200
+       lcapd=min((lonfo-1)/2+1,jtrun)
+!byl       if ( lonfo .lt. lonff )                                          &
+!byl           print *,'Warning!! not enough grid lengh at j=',jf
+!byl         go to 200
       else
        do m=1,jtrun
          need=0
@@ -77,8 +77,11 @@
        enddo
        lcapd=mwave
 !
-       lonfi=grt*(lcapd-1)+1
+       lonfi=2*(lcapd-1)+1
        lonff=lonfi+mod(lonfi,2)
+#ifdef USE_FFTW
+        lonfo=lonff
+#else
        do 100 ii=0,100,2
         lonf=lonff+ii
         lonfo=lonf
@@ -119,6 +122,7 @@
         enddo
  100   continue
 !
+#endif
       endif
 !
  200  lonfd=lonfo

@@ -15,7 +15,7 @@
       real, dimension(:,:,:),allocatable,save :: ut,vt,sd,rvor,rdiv,&
                            tt,qt,phi,plt,pk,pk2,up,vp,ttp,qp
 !! for Semi-Lagrangian
-      real, dimension(:,:,:),allocatable,save :: uum,vvm,ttm,qm
+      real, dimension(:,:,:),allocatable,save :: qm
       real, dimension(:,:,:),allocatable,save :: dlphi,dtphi,     &
                              ut_sl,vt_sl,uum_sl,vvm_sl,ttm_sl
       real, dimension(:,:,:,:),allocatable,save :: qm_sl
@@ -87,9 +87,6 @@
 
            allocate (dlphi(nxp,lev,my_max),  &
                      dtphi(nxp,lev,my_max),  &
-                     uum(nxp,lev,my_max),    & 
-                     vvm(nxp,lev,my_max),    & 
-                     ttm(nxp,lev,my_max),    & 
                      qm(nxp,lev*ncld,my_max) ,stat=ierr)
 
            if (ierr/= 0) then
@@ -113,7 +110,7 @@
            deallocate ( pt,dlpl,dtpl,sgeo,pdiff, &
                ptend,t1000,tsave,std,ptp)
 ! for Semi-Lagrangian
-           deallocate (uum,vvm,ttm,qm)
+           deallocate (qm)
            deallocate (gslati,gglati,lonstr,lonlen,latstr,latlen)
            deallocate (dlphi,dtphi)
 !!         deallocate (ut_sl,vt_sl,uum_sl,vvm_sl,ttm_sl,qm_sl,pt_sl,ptp_sl)

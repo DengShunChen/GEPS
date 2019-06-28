@@ -77,6 +77,7 @@
 !                     >0 array index location for cloud condensate      !
 !   num_p3d          :=3: ferrier's microphysics cloud scheme           !
 !                     =4: zhao/carr/sundqvist microphysics cloud        !
+!                     =5: WSM6 microphysics cloud                       !
 !   ntoz             : ozone data control flag                          !
 !                     =0: use climatological ozone profile              !
 !                     >0: use interactive ozone profile                 !
@@ -176,6 +177,8 @@
         icmphys = 1                     ! zhao/moorthi's prognostic cloud scheme
       elseif ( num_p3d == 3 ) then
         icmphys = 2                     ! ferrier's microphysics
+      elseif ( num_p3d == 5 ) then
+        icmphys = 4                     ! WSM6 microphysics
       endif
       iovrsw = iovr_sw                  ! cloud overlapping control flag for sw
       iovrlw = iovr_lw                  ! cloud overlapping control flag for lw

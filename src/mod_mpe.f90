@@ -9,6 +9,8 @@
       integer, parameter :: mpe_integer=0
       integer, parameter :: mpe_double=1
       integer, parameter :: mpe_logical=2
+!CWB 2019-06-25
+      integer, parameter :: mpe_single=3
 
 !
       interface mpe_broadcast
@@ -18,6 +20,10 @@
          module procedure mpe_broadcast_r_scalar
          module procedure mpe_broadcast_r
          module procedure mpe_broadcast_r_2d
+!CWB 2019-06-25
+         module procedure mpe_broadcast_r4_scalar
+         module procedure mpe_broadcast_r4
+         module procedure mpe_broadcast_r4_2d
       end interface
 
       interface mpe_bcast
@@ -27,6 +33,10 @@
          module procedure mpe_bcast_r_scalar
          module procedure mpe_bcast_r
          module procedure mpe_bcast_r_2d
+!CWB 2019-06-25
+         module procedure mpe_bcast_r4_scalar
+         module procedure mpe_bcast_r4
+         module procedure mpe_bcast_r4_2d
       end interface
 
       interface mpe_global_sum
@@ -208,6 +218,81 @@
 
       end subroutine mpe_broadcast_r_2d
 !--------------------------------------------------------------
+!CWB 2019-06-25
+!--------------------------------------------------------------
+      subroutine mpe_broadcast_r4_scalar(buf,n,flag,type)
+ 
+      use rank, only : myrank,MPI_COMM_gfs
+      use mpi
+
+      real*4   buf
+      integer  n,iroot_in,iroot,IERR
+      logical  flag
+      integer, optional :: type
+ 
+      iroot_in=0
+      if (flag) iroot_in = myrank+1
+ 
+      call MPI_ALLREDUCE( iroot_in, iroot, 1, MPI_INTEGER,    &
+                          MPI_SUM, MPI_COMM_gfs, IERR )
+
+      call MPI_BCAST( BUF, N, MPI_REAL4,            IROOT-1,  &
+                      MPI_COMM_gfs, IERR )
+ 
+      return
+
+      end subroutine mpe_broadcast_r4_scalar
+!--------------------------------------------------------------
+!CWB 2019-06-25
+!--------------------------------------------------------------
+      subroutine mpe_broadcast_r4(buf,n,flag,type)
+ 
+      use rank, only : myrank,MPI_COMM_gfs
+      use mpi
+
+      real*4   buf(n)
+      integer  n,iroot_in,iroot,IERR
+      logical  flag
+      integer, optional :: type
+ 
+      iroot_in=0
+      if (flag) iroot_in = myrank+1
+ 
+      call MPI_ALLREDUCE( iroot_in, iroot, 1, MPI_INTEGER,    &
+                          MPI_SUM, MPI_COMM_gfs, IERR )
+
+      call MPI_BCAST( BUF, N, MPI_REAL4,            IROOT-1,  &
+                      MPI_COMM_gfs, IERR )
+ 
+      return
+
+      end subroutine mpe_broadcast_r4
+!--------------------------------------------------------------
+!CWB 2019-06-25
+!--------------------------------------------------------------
+      subroutine mpe_broadcast_r4_2d(buf,n,flag,type)
+ 
+      use rank, only : myrank,MPI_COMM_gfs
+      use mpi
+
+      real*4   buf(n,1)
+      integer  n,iroot_in,iroot,IERR
+      logical  flag
+      integer, optional :: type
+ 
+      iroot_in=0
+      if (flag) iroot_in = myrank+1
+ 
+      call MPI_ALLREDUCE( iroot_in, iroot, 1, MPI_INTEGER,    &
+                          MPI_SUM, MPI_COMM_gfs, IERR )
+
+      call MPI_BCAST( BUF, N, MPI_REAL4,            IROOT-1,  &
+                      MPI_COMM_gfs, IERR )
+ 
+      return
+
+      end subroutine mpe_broadcast_r4_2d
+!--------------------------------------------------------------
       subroutine mpe_bcast_i_scalar(buf,n,iroot,type)
  
       use rank, only : MPI_COMM_gfs
@@ -300,6 +385,60 @@
       return
 
       end subroutine mpe_bcast_r_2d
+!--------------------------------------------------------------
+!CWB 2019-06-25
+!--------------------------------------------------------------
+      subroutine mpe_bcast_r4_scalar(buf,n,iroot,type)
+ 
+      use rank, only : MPI_COMM_gfs
+      use mpi
+
+      real*4   buf
+      integer  n,iroot,IERR
+      integer, optional :: type
+ 
+      call MPI_BCAST( BUF, N, MPI_REAL4,            IROOT,    &
+                      MPI_COMM_gfs, IERR )
+ 
+      return
+
+      end subroutine mpe_bcast_r4_scalar
+!--------------------------------------------------------------
+!CWB 2019-06-25
+!--------------------------------------------------------------
+      subroutine mpe_bcast_r4(buf,n,iroot,type)
+ 
+      use rank, only : MPI_COMM_gfs
+      use mpi
+
+      real*4   buf(n)
+      integer  n,iroot,IERR
+      integer, optional :: type
+ 
+      call MPI_BCAST( BUF, N, MPI_REAL4,            IROOT,    &
+                      MPI_COMM_gfs, IERR )
+ 
+      return
+
+      end subroutine mpe_bcast_r4
+!--------------------------------------------------------------
+!CWB 2019-06-25
+!--------------------------------------------------------------
+      subroutine mpe_bcast_r4_2d(buf,n,iroot,type)
+ 
+      use rank, only : MPI_COMM_gfs
+      use mpi
+
+      real*4   buf(n,1)
+      integer  n,iroot,IERR
+      integer, optional :: type
+ 
+      call MPI_BCAST( BUF, N, MPI_REAL4,            IROOT,    &
+                      MPI_COMM_gfs, IERR )
+ 
+      return
+
+      end subroutine mpe_bcast_r4_2d
 !--------------------------------------------------------------
       subroutine mpe_global_sum_i_scalar(swork,n,type)
  

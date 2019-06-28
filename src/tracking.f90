@@ -45,21 +45,21 @@ subroutine tracking(tau,dt_trk,dt,nx,my,slp,v850,v700,h850,h500, &
   use mpe
   use rank
   use index
-  use mod_typhoon,only:write_mem
+  use mod_typhoon,only:write_mem,write_tau
   use const,only:ifilout
 !  use mod_outflds,only:ifilout
 !  use param
   implicit none
 
 ! parameters     
-  integer, parameter   :: ntau=168, nvar=5, write_tau=6
+  integer, parameter   :: ntau=168, nvar=5
   real, parameter      :: undef=-99.999
   real, parameter      :: nodata=99999.
   integer,parameter    :: datalength=25000
 !--- 
   integer :: nx,my, ntyph, ndt, write_mem2
   character*2 :: mem
-  real :: tau,dt_trk,dt 
+  real :: tau,dt_trk,dt
 
   integer :: ixtyp(nvar,ntyph),jytyp(nvar,ntyph),nrec(ntyph)
   real :: slp(nx,my),v850(nx,my),v700(nx,my),h850(nx,my),h500(nx,my)
@@ -71,9 +71,10 @@ subroutine tracking(tau,dt_trk,dt,nx,my,slp,v850,v700,h850,h500, &
   real :: p6lat(ntyph),p6lon(ntyph),tcslp(ntyph)
   real :: smxv(ntyph),smr30(ntyph),smr50(ntyph)
   real :: slat(0:ntau),slon(0:ntau)
+  real :: sten(0:ntau),speed1(0:ntau)
   real :: tensity(0:ntau,nvar,ntyph) 
   real :: rixtyp(nvar),rjytyp(nvar)
-  
+  real :: dist,speed,slatpre,slonpre
   logical :: typhoon
   character(15)  :: typname(ntyph)
   integer(8) idtg,idtg8
@@ -85,7 +86,7 @@ subroutine tracking(tau,dt_trk,dt,nx,my,slp,v850,v700,h850,h500, &
   character(15) :: trackfile,tensfile
   character*100 line, headerline, tauline
   integer ityp, ist
-  integer il,nty,n_h_lat,n_h_lon
+  integer il,nty,n_h_lat,n_h_lon,n_h_ten,n_h_spd
   logical l_loop
   integer istat,a
 !
@@ -113,7 +114,17 @@ subroutine tracking(tau,dt_trk,dt,nx,my,slp,v850,v700,h850,h500, &
       data dmsdb/'test'/
       data epsno/'00'/
 
+! for judging the undef value
+  real ::  min_trk_pres,distpre
+  real, save    :: rixtyp_savep(60,5,10), rjytyp_savep(60,5,10)
+  logical, save :: lfound_save(60,5,10)
+  integer :: range_le30, range_gt30
+
 !---------------------------------------------------------------------------c
+! get resolution dependent tracking range
+  range_le30 = int(50*dt_trk*nx/36000)+2
+  range_gt30 = int(87.5*dt_trk*nx/36000)+2
+
 ! Using five fields to the TC center
   field(:,:,1) =  slp(:,:)      ! sea level pressure
   field(:,:,2) = v850(:,:)      ! 850hPa vorticity 
@@ -147,11 +158,66 @@ subroutine tracking(tau,dt_trk,dt,nx,my,slp,v850,v700,h850,h500, &
       nc=nrec(n)
       itauo(nc,n)=int(tau+0.01)
 !    
+      if (nc .le. 72/dt_trk+1) then                                     ! 3-day fcst
+        min_trk_pres=1007.
+      else if (nc .gt. 72/dt_trk+1 .and. nc .le. 120/dt_trk+1) then     ! 3~5-day fcst
+        min_trk_pres=1003.
+      else                                                              ! 5~7-day fcst
+        min_trk_pres=1000.
+      endif
+
       do ip=1,nvar
-        call findtrk(field(:,:,ip),nx,my,ixtyp(ip,n),jytyp(ip,n),rixtyp(ip),rjytyp(ip),tlon,tlat,ip,lfound(ip,n))
-      enddo  
-!
-      do ip=1,nvar
+        call findtrk(field(:,:,ip),nx,my,ixtyp(ip,n),jytyp(ip,n),rixtyp(ip),rjytyp(ip),tlon,tlat,ip,lfound(ip,n),min_trk_pres,range_le30,range_gt30)
+!      enddo
+
+! for pressure -999*3 check
+      if (nc .ge. 3) then
+
+!      do ip=1,nvar
+
+      if (lfound(ip,n)) then
+        call xy2ll(rixtyp(ip),rjytyp(ip),tflon(nc,ip,n),tflat(nc,ip,n),tlon,tlat,nx,my)
+
+        if (lfound_save(nc-1,ip,n)) then
+
+        call xy2ll(rixtyp_savep(nc-1,ip,n),rjytyp_savep(nc-1,ip,n),tflon(nc-1,ip,n),tflat(nc-1,ip,n),tlon,tlat,nx,my)
+        call greatcir(tflon(nc,ip,n),tflat(nc,ip,n),tflon(nc-1,ip,n),tflat(nc-1,ip,n),distpre)
+
+!        if(myrank .eq. 0) print*,'dist pre-1 = ',distpre
+        if (distpre .gt. dt_trk*85) then
+           lfound(ip,n)=.false.
+        endif
+
+        else ! (lfound_save(nc-1,1,n) == .false.) then
+
+          if (lfound_save(nc-2,ip,n)) then
+
+            call xy2ll(rixtyp_savep(nc-2,ip,n),rjytyp_savep(nc-2,ip,n),tflon(nc-2,ip,n),tflat(nc-2,ip,n),tlon,tlat,nx,my)
+            call greatcir(tflon(nc,ip,n),tflat(nc,ip,n),tflon(nc-2,ip,n),tflat(nc-2,ip,n),distpre)
+
+!            if(myrank .eq. 0)print*,'dist pre-2 = ',distpre
+            if (distpre .gt. dt_trk*85*2) then
+              lfound(ip,n)=.false.
+            endif
+
+          else ! lfound_save(nc-2,1,n) == .false.
+            lfound(ip,n)=.false.
+          endif
+        endif
+
+      endif
+
+!      enddo
+      endif ! nc > 3
+
+!      do ip=1,nvar
+         rixtyp_savep(nc,ip,n)=rixtyp(ip)
+         rjytyp_savep(nc,ip,n)=rjytyp(ip)
+         lfound_save(nc,ip,n)=lfound(ip,n)
+!      enddo
+! for pressure -999*3 check   
+
+!      do ip=1,nvar
         if(lfound(ip,n))then
           call xy2ll(rixtyp(ip),rjytyp(ip),tflon(nc,ip,n),tflat(nc,ip,n),tlon,tlat,nx,my)
           i=ixtyp(ip,n) ; j=jytyp(ip,n) 
@@ -166,7 +232,7 @@ subroutine tracking(tau,dt_trk,dt,nx,my,slp,v850,v700,h850,h500, &
           tflon(nc,ip,n)=undef ; tflat(nc,ip,n)=undef
           tensity(nc,ip,n)=undef
         endif
-      enddo
+      enddo ! ip=1,nvar
 !
       if(myrank.eq.0)then
         print *,' tau=',tau,' typhoon=',typname(n),' nrec=',nrec(n)
@@ -187,7 +253,11 @@ subroutine tracking(tau,dt_trk,dt,nx,my,slp,v850,v700,h850,h500, &
      cdtg=idtgc(1:10)
  if(WriteTrack)then
     if(myrank.eq.0)then
+     if(idtg.ge.200000000000)then
      idtg8=(idtg-200000000000)/100
+     else
+     idtg8=(idtg-190000000000)/100
+     endif
     call dmsmsg('ERR',ist)
       print *,'dmsdb= ',dfile,'  ist= ',ist,'cdtg=',cdtg,'mem=',mem
 !
@@ -245,7 +315,7 @@ subroutine tracking(tau,dt_trk,dt,nx,my,slp,v850,v700,h850,h500, &
           slat(i)=tflat(i,il,nty)
           if (slat(i) .eq. undef) slat(i)=99999.
           write(work(n_h_lat),'(i16.0)') nint(slat(i)*10000)
-          n_h_lat=n_h_lat+int(dt_trk) ! every 6 hrs output
+          n_h_lat=n_h_lat+int(write_tau) ! every 6 hrs output
         enddo
 !
 ! ... longitude
@@ -258,8 +328,57 @@ subroutine tracking(tau,dt_trk,dt,nx,my,slp,v850,v700,h850,h500, &
           slon(i)=tflon(i,il,nty)
           if (slon(i) .eq. undef) slon(i)=99999.
             write(work(n_h_lon),'(i16.0)') nint(slon(i)*10000)
-            n_h_lon=n_h_lon+int(dt_trk) ! every 6 hrs output
+            n_h_lon=n_h_lon+int(write_tau) ! every 6 hrs output
         enddo
+!
+!.. 6 hours average wind speed
+        if(nty.eq.1) n_h_spd=2273
+        if(nty.eq.2) n_h_spd=7273
+        if(nty.eq.3) n_h_spd=12273
+        if(nty.eq.4) n_h_spd=17273
+
+        do i=0,nrec(nty),ndt
+          if ((i-ndt) .lt. 0) then
+            speed=undef
+            dist=undef
+          else
+            slatpre=tflat(i-ndt,il,nty)
+            slonpre=tflon(i-ndt,il,nty)
+
+            if (slon(i) .eq. undef .or. slat(i) .eq. undef .or. &
+                slonpre .eq.undef .or. slatpre .eq. undef) then
+              speed=undef
+              dist=undef
+            else
+              call greatcir(slonpre,slatpre,slon(i),slat(i),dist)
+              speed=dist/int(write_tau) ! every 6 hrs average
+            endif
+          endif
+
+          if (speed .eq. undef .or. speed .gt. 100.) then
+             speed1(i)=99999.
+          else 
+             speed1(i)=speed
+          endif
+!          if(myrank .eq. 0) print*,"nty = ",nty,"dist(",i,") = ",dist,"speed(",i,") = ",speed1(i)
+            write(work(n_h_spd),'(i16.0)') nint(speed1(i)*10000)
+            n_h_spd=n_h_spd+int(write_tau) ! every 6 hrs output
+        enddo
+!
+! ... center min-pressure
+        if(nty.eq.1) n_h_ten=1552
+        if(nty.eq.2) n_h_ten=6552
+        if(nty.eq.3) n_h_ten=11552
+        if(nty.eq.4) n_h_ten=16552
+
+        do i=0,nrec(nty),ndt
+          sten(i)=tensity(i,1,nty)
+          if (sten(i) .eq. undef) sten(i)=99999.
+!            print*,"tensity=",sten(i)
+            write(work(n_h_ten),'(i16.0)') nint(sten(i)*10000)
+            n_h_ten=n_h_ten+int(write_tau) ! every 6 hrs output
+        enddo 
+               
 !
 !      if (trim(epsno) .eq. 'mean') then
 !      dmskeytrack=dmshead//tytrack//'MN'//cdtg//'00'//dmstail
@@ -304,7 +423,7 @@ subroutine tracking(tau,dt_trk,dt,nx,my,slp,v850,v700,h850,h500, &
           tflat(0,i,n)=tflat(0,1,n)
           tflon(0,i,n)=tflon(0,1,n)
         enddo
-        do nt=0,nrec(n),ndt
+        do nt=0,nrec(n),ndt 
           ntime=itauo(nt,n)
           write(15,1000)ntime,tflat(nt,2,n),tflon(nt,2,n), &
                               tflat(nt,1,n),tflon(nt,1,n), &
@@ -331,7 +450,7 @@ subroutine tracking(tau,dt_trk,dt,nx,my,slp,v850,v700,h850,h500, &
 return
 end
 !
-subroutine findtrk(fld,nx,my,ix,iy,rx,ry,tlon,tlat,index,lfound)
+subroutine findtrk(fld,nx,my,ix,iy,rx,ry,tlon,tlat,index,lfound,min_trk_pres,range_le30,range_gt30)
 !-------------------------------------------------------------------------
 !       Finding Tropical Cyclone Center Position 
 !
@@ -351,7 +470,7 @@ subroutine findtrk(fld,nx,my,ix,iy,rx,ry,tlon,tlat,index,lfound)
 !-------------------------------------------------------------------------
 !
   use rank
-  use mod_typhoon, only : min_trk_pres
+!  use mod_typhoon, only : min_trk_pres
 
   implicit none
 
@@ -365,7 +484,9 @@ subroutine findtrk(fld,nx,my,ix,iy,rx,ry,tlon,tlat,index,lfound)
   integer :: ixyrange
   real    :: f0,f1,f2,f3,f4
   real    :: xxx,yyy,hx,hy,rx,ry
-  real    :: max_value, min_value
+  real    :: max_value, min_value, min_trk_pres
+  integer :: range_le30, range_gt30
+
 !-------------------------------------------------------------------------
 !     max. Typhoon moving speed is around 50 km/h, which in t320(about
 !     50 km) resolution, the serch area should be bigger than
@@ -378,12 +499,15 @@ subroutine findtrk(fld,nx,my,ix,iy,rx,ry,tlon,tlat,index,lfound)
 ! data ixyrange/8/    ! river's original setup
 !
  if (tlat(iy) .le. 30. ) then
+   ixyrange=range_le30
 !   ixyrange=8
-   ixyrange=12
  else
+   ixyrange=range_gt30
 !   ixyrange=14
-   ixyrange=20
  endif
+
+! print*, 'range_le30 = ',range_le30
+! print*, 'range_gt30 = ',range_gt30
  
  if(myrank.eq.0) print*,'tlat = ',tlat(iy),' ixyrange = ',ixyrange 
 
@@ -552,4 +676,27 @@ subroutine xy2ll (rx,ry,lon,lat,tlon,tlat,nx,my)
 
 return 
 end subroutine xy2ll
+
+subroutine greatcir(lon1,lat1,lon2,lat2,dist)
+!--------------------------------------------------------------c
+!    calculate distance of lon1,lon2 lat1,lat2
+!==============================================================c
+      integer np
+      real dist
+      real lon1,lat1,lon2,lat2
+      real dlon,dlat
+!
+      pi=4.0*atan(1.0)
+      rad=6370. ! earth radius in km
+      torad=pi/180.
+      dlon=(lon2-lon1)*torad
+      dlat=(lat2-lat1)*torad
+      a=sin(dlat/2.)*sin(dlat/2.)+cos(lat1*torad)*cos(lat2*torad)*sin(dlon/2.)*sin(dlon/2.)
+      c=2.*atan2(sqrt(a), sqrt(1-a))
+      dist=rad*c
+!      print *,'The distance between (lon1,lat1) and (lon2,lat2) = ',dist
+!      print *,'lon1,lat1,lon2,lat2= ',lon1,lat1,lon2,lat2
+!
+return
+end subroutine greatcir
 !

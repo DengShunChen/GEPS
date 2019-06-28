@@ -119,6 +119,85 @@
 100    print *,'dtgfix12 error, idtg1=',idtg1
        return
        end
+!
+!ch 2019-05-10 for prerrtmg potential problem found by Pang-Yen Liu (b827)
+      subroutine dtgfix12_new(idtg1,i1,i2,i3,i4,i5,chg)
+
+      implicit none
+      integer*8 idtg1
+      integer   i1,i2,i3,i4,i5
+      integer   chg,yyyy,mm,dd,hh,ii,dt,diff,rem
+      integer   month(12)
+      character*12 cdtg
+      data      month/31,28,31,30,31,30,31,31,30,31,30,31/
+
+      write(cdtg,'(i12)')idtg1
+      read(cdtg,'(i4,i2,i2,i2,i2)')yyyy,mm,dd,hh,ii
+
+      if(((mod(yyyy,4) .eq.0) .and. (mod(yyyy,100) .ne.0)) .or.  &
+         ((mod(yyyy,100) .eq. 0) .and. (mod(yyyy,400) .eq. 0))) then
+         month(2)=29
+      endif
+
+      dt=hh+chg
+      if(dt .lt. 0) then
+          diff=chg*(-1)/24
+          rem=mod(chg*(-1),24)
+          hh=hh-rem
+          if (hh .lt. 0)then
+             diff=diff+1
+             hh=hh+24
+          endif
+          dd=dd-diff
+          if(dd .lt. 1)then
+             mm=mm-1
+             if(mm .gt. 0) then
+               dd=dd+month(mm)
+             else
+               yyyy=yyyy-1
+               mm=12
+               dd=31
+             endif
+          endif
+       elseif (dt .gt. 23)then
+          diff=chg/24
+          rem=mod(chg,24)
+          hh=hh+rem
+          if(hh .gt. 23)then
+             hh=hh-24
+             diff=diff+1
+          endif
+          dd=dd+diff
+          do while (dd.gt.month(mm))
+!          if(dd .gt. month(mm))then
+            dd=dd-month(mm)
+            if(mm .eq. 12)then
+              yyyy=yyyy+1
+              mm=1
+            else
+              mm=mm+1
+            endif
+            if(((mod(yyyy,4) .eq.0) .and. (mod(yyyy,100) .ne.0)) .or.  &
+              ((mod(yyyy,100) .eq. 0) .and. (mod(yyyy,400) .eq. 0))) then
+              month(2)=29
+            endif
+!          endif
+          enddo
+       else
+         hh=dt
+       endif
+
+       i1=yyyy
+       i2=mm
+       i3=dd
+       i4=hh
+       i5=ii
+
+       return
+
+100    print *,'dtgfix12 error, idtg1=',idtg1
+       return
+       end
 
 
       subroutine GETFNAME(pathname,logicfile,truefile,istat)

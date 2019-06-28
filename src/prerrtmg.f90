@@ -16,21 +16,26 @@
                                    random_stat
       use index
 
-      parameter(ipsdlim=100000000)!upper limit for random seed
-      integer numrdm(nx*my*2),ixseed(nx,my,2)
+      implicit none
+
+
+      integer numrdm(nx*my*2),ixseed(nx,my,2),ipsdlim
       type (random_stat)::stat
 !
-      integer i,j,jj,nxj
+      integer i,j,jj,nxj,nx,my,my_max,me,k
       integer idat(8),jdat(8)
       integer*8 idtg,idtg2
       character cdtg*12
-      integer itau,isubc_sw,isubc_lw,myrank,ii,ipsd0
+      integer itau,isubc_sw,isubc_lw,myrank,ii,ipsd0,ipseed
       logical uprad,lsswr,lslwr
       real tau,slag,sdec,cdec,solcon,frad,dt,d2r
+      real solhr,dtsw,dtlw,hours
       real xlon(nx,my_max),xlonr(nx,my_max)
+      parameter(ipsdlim=100000000)!upper limit for random seed
 
 ! CWB2016 
       ipsd0=0
+      numrdm=0
 
       do i=1,8
          idat(i)=0
@@ -42,16 +47,17 @@
       write(cdtg,900)idtg
  900  format(i12.12)
       read(cdtg,'(i4,i2,i2,i2,i2)') idat(1),idat(2),idat(3),idat(5) &
-                                     ,ii
+                                   ,ii
 !
 ! --- get forecast time : jdat
 !
       itau=int(tau+0.001) ! tau from intgrt.f
 !      if (myrank .eq. 0) print *,'+itau=',itau,' tau=',tau
-      call dtgfix12(idtg,idtg2,itau)
-      write(cdtg,900)idtg2
-      read(cdtg,'(i4,i2,i2,i2,i2)') jdat(1),jdat(2),jdat(3),jdat(5) &
-                                    ,ii
+!!      call dtgfix12(idtg,idtg2,itau)
+!!      write(cdtg,900)idtg2
+!!      read(cdtg,'(i4,i2,i2,i2,i2)') jdat(1),jdat(2),jdat(3),jdat(5) &
+!!                                    ,ii
+      call dtgfix12_new(idtg,jdat(1),jdat(2),jdat(3),jdat(5),ii,itau)
 !
 ! --- set solhr = forecast hours if not at initial time
 !
@@ -140,8 +146,8 @@
             nxj=nxdef(j)
             do i = 1, nxj
 !            do i = 1, nx
-!              ixseed(i,j,k) = numrdm(i+(j-1)*nx+(k-1)*my*nx)
-              ixseed(i,j,k) = numrdm(i+(j-1)*nxj+(k-1)*my*nxj)
+              ixseed(i,j,k) = numrdm(i+(j-1)*nx+(k-1)*my*nx)
+!              ixseed(i,j,k) = numrdm(i+(j-1)*nxj+(k-1)*my*nxj)
             enddo
           enddo
         enddo

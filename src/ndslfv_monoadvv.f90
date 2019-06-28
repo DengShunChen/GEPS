@@ -242,9 +242,9 @@
           kv=kvv+k-1
           kt=ktt+k-1
           do i=1,lons_lat
-            vdzonl(i,kk,lan) = (qqlon(i,ku,lan)-uum(i,kk,lan))*rdt2
-            vdmerd(i,kk,lan) = (vvm(i,kk,lan)-qqlon(i,kv,lan))*rdt2
-            ddtemp(i,kk,lan) = (qqlon(i,kt,lan)-ttm(i,kk,lan))*rdt2
+            vdzonl(i,kk,lan) = (qqlon(i,ku,lan)-up(i,kk,lan))*rdt2
+            vdmerd(i,kk,lan) = (vp(i,kk,lan)-qqlon(i,kv,lan))*rdt2
+            ddtemp(i,kk,lan) = (qqlon(i,kt,lan)-ttp(i,kk,lan))*rdt2
           enddo
         enddo
 ! rq tendency at n
@@ -253,7 +253,9 @@
           kk=lev-k+1+(n-1)*lev
           kq=kqq+k-1+(n-1)*lev
           do i=1,lons_lat
-            qvadv(i,kk,lan) = (qqlon(i,kq,lan)-qm(i,kk,lan))*rdt2
+!byl no need tendency for Tracers
+!!            qvadv(i,kk,lan) = (qqlon(i,kq,lan)-qm(i,kk,lan))*rdt2
+            qvadv(i,kk,lan) = qqlon(i,kq,lan)
           enddo
         enddo
         enddo

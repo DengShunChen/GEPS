@@ -186,7 +186,7 @@
      &                                     setemis
       use module_radiation_clouds,  only : nf_clds, cld_init,           &
      &                                     progcld1, progcld2, progcld3,& 
-     &					   diagcld1
+     &					   progcld4, diagcld1
 
       use module_radsw_parameters,  only : topfsw_type, sfcfsw_type,    &
      &                                     profsw_type,cmpfsw_type,nbdsw
@@ -225,6 +225,7 @@
       integer, parameter :: ltp = 0   ! no extra top layer
 !     integer, parameter :: ltp = 1   ! add an extra top layer
       logical, parameter :: lextop = (ltp > 0)
+
 
 !  ---  publicly accessible module programs:
 
@@ -645,6 +646,7 @@
              icsdsw,icsdlw,ntcw,ncld,ntoz,ntrac,nfxr,                   &
              dtlw,dtsw,lsswr,lslwr,lssav,                               &
              ix,im,lm,me,lprnt,ipt,kdt,myrank,                          &
+             ntiw,ntrw,ntsw,ntgl,uni_cloud,lmfshal,lmfdeep2,            &
 !  ---  outputs:
              htrsw,sfalb,coszen,coszdg,                                 &
              htrlw,tsflw,semis,cldcov,                                  &
@@ -929,7 +931,8 @@
 
 !  ---  inputs: (for rank>1 arrays, horizontal dimensioned by ix)
       integer,  intent(in) :: ix,im, lm, ntrac, nfxr, me,          &
-     &                        ntoz, ntcw, ncld, ipt, kdt, myrank
+     &                        ntoz, ntcw, ncld, ipt, kdt, myrank,  &
+                              ntiw, ntrw, ntsw, ntgl
       integer,  intent(in) :: icsdsw(im), icsdlw(im), jdate(8)
 
       logical,  intent(in) :: lsswr, lslwr, lssav, lprnt
@@ -1036,6 +1039,9 @@
       integer :: i, j, k, k1, lv, itop, ibtc, nday, idxday(im),         &
              mbota(im,3), mtopa(im,3), lp1, nb, lmk, lmp, kd, lla, llb, &
              lya, lyb, kt, kb
+!
+      real (kind=kind_phys), dimension(im,lm+ltp,3)   :: phy_f3d
+      logical uni_cloud,lmfshal,lmfdeep2
 
 !  ---  for debug test use
 !     real (kind=kind_phys) :: temlon, temlat, alon, alat
@@ -1600,6 +1606,15 @@
 !  ---  outputs:
 !    &       clouds,cldsa,mtopa,mbota                                   &
 !    &      )
+        elseif (icmphys == 4) then    ! wsm6
+          call progcld4 (plyr,plvl,tlyr,qlyr,qstl,rhly,tracer1,   &    !--- inputs
+                         xlat,xlon,slmsk,                         &
+                         ntrac-1,ntcw,ntiw,ntrw,ntsw,ntgl,        &
+                         im, lmk, lmp,                            &
+                         uni_cloud,lmfshal,lmfdeep2,              &
+                         cldcov(:,1:LMK),phy_f3d(:,:,1),          &
+                         phy_f3d(:,:,2),phy_f3d(:,:,3),           &
+                         clouds,cldsa,mtopa,mbota)
 
         endif                            ! end if_icmphys
 

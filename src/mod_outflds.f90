@@ -12,10 +12,11 @@ contains
 
       integer   nx,my,my_max,lpout,lev,itau
 
-      real      pkout(lpout),pklp(nx,my),pk(nxp,lev,my_max),       &
-                rdiv(nxp,lev,my_max),rdivb(nx,my),div(nx*my,lpout),&
+      real      pkout(lpout),pklp(nxp,my_max),pk(nxp,lev,my_max),       &
+                rdiv(nxp,lev,my_max),rdivb(nxp,my_max),div(nxp,my_max,lpout),&
                 plev(lpout),whtlev(num)
       real      tens(lev+1)
+      real      wk1(nx,my)
 
 !
       integer*8 idtg
@@ -47,9 +48,10 @@ contains
       do 20 n=1,num
       do 10 k=1,lpout
       if(plev(k).eq.whtlev(n)) then
+      call unify_reduceintp(nx,my,my_max,div(1,1,k),wk1)
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,div(1,k),istat)
-      call qmaxn3(div(1,k),ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,wk1,istat)
+      call qmaxn3(wk1,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       go to 20
       endif
    10 continue
@@ -68,10 +70,11 @@ contains
 
       integer   nx,my,my_max,lpout,lev,itau,num
 
-      real      pkout(lpout),pklp(nx,my),pk(nxp,lev,my_max),          &
-                rdrag(nxp,lev,my_max),rdragb(nx,my),drag(nx*my,lpout),&
+      real      pkout(lpout),pklp(nxp,my_max),pk(nxp,lev,my_max),               &
+                rdrag(nxp,lev,my_max),rdragb(nxp,my_max),drag(nxp,my_max,lpout),&
                 plev(lpout),whtlev(num)
       real      tens(lev+1)
+      real      wk1(nx,my)
 !
       integer*8 idtg
       character*80 ifilout
@@ -79,7 +82,7 @@ contains
       character*6 lrec(lpout)
       character*4 ggdef
 !
-      real      pk_lev_m1(nx,my)
+!      real      pk_lev_m1(nx,my)
 !
 
 !
@@ -103,31 +106,33 @@ contains
 !
       lenc= nx*my
 !
-      do jj =1, jlistnum
-      j=jlist1(jj)
-      nxj=nxdef_2d(j)
-      do i=1,nxj
-        pk_lev_m1(i,j)=pk(i,lev-1,jj)
-      enddo
-      enddo
+!!      do jj =1, jlistnum
+!!      j=jlist1(jj)
+!!      nxj=nxdef_2d(j)
+!!      do i=1,nxj
+!!        pk_lev_m1(i,j)=pk(i,lev-1,jj)
+!!      enddo
+!!      enddo
 !
-      call mpe_unify(pk_lev_m1,nx,my,2,mpe_double)
+!!      call mpe_unify(pk_lev_m1,nx,my,2,mpe_double)
 !
       do 20 n=1,num
       do 10 k=1,lpout
 !
       if(plev(k).eq.whtlev(n)) then
 !
-      do 45 j=1,my
+      do 45 jj=1, jlistnum
+      j=jlist1(jj)
       nxj=nxdef_2d(j)
       do 45 i=1,nxj
-      ij=(j-1)*nx+i
-      if(pkout(k).gt.pk_lev_m1(i,j)) drag(ij,k)= 0.
+!      ij=(j-1)*nx+i
+      if(pkout(k).gt.pk(i,lev-1,jj)) drag(i,jj,k)= 0.
    45 continue
 !
+      call unify_reduceintp(nx,my,my_max,drag(1,1,k),wk1)
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,drag(1,k),istat)
-      call qmaxn3(drag(1,k),ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,wk1,istat)
+      call qmaxn3(wk1,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       go to 20
       endif
    10 continue
@@ -147,8 +152,8 @@ contains
 
       integer   nx,my,my_max,lpout,lev,itau,num
 !
-      real      pkout(lpout),pklp(nx,my),pk(nxp,lev,my_max),       &
-                phi(nxp,lev,my_max),phib(nx,my),phips(nx*my,lpout),&
+      real      pkout(lpout),pklp(nxp,my_max),pk(nxp,lev,my_max),            &
+                phi(nxp,lev,my_max),phib(nxp,my_max),phips(nxp,my_max,lpout),&
                 glob(nx,my),plev(lpout),whtlev(num)
 
       real      tens(lev+1),phistd(lpout),slp(nx,my),h850(nx,my), &
@@ -162,7 +167,7 @@ contains
       character*6  lrec(lpout)
       character*4  ggdef
 !
-      integer      i,k,n,lenc,istat,lpl
+      integer      i,k,n,lenc,istat,lpl,jj,j,nxj
 
       logical lwrite
 
@@ -184,9 +189,10 @@ contains
 !
       do k=1,lpout
         if(plev(k).eq.850.)then
-          do i=1,lenc
-            h850(i,1)=phips(i,k)
-          enddo
+          call unify_reduceintp(nx,my,my_max,phips(1,1,k),h850)
+!!          do i=1,lenc
+!!            h850(i,1)=phips(i,k)
+!!          enddo
 !
 !          if(itau.le.72 .and. lreduce.eq.1)then
             call smth9(nx,my,h850,glob,1)
@@ -195,9 +201,10 @@ contains
             h850=glob
 !          endif
         else if(plev(k).eq.500.)then
-          do i=1,lenc
-            h500(i,1)=phips(i,k)
-          enddo
+          call unify_reduceintp(nx,my,my_max,phips(1,1,k),h500)
+!!          do i=1,lenc
+!!            h500(i,1)=phips(i,k)
+!!          enddo
 !          if(itau.le.72 .and. lreduce.eq.1)then
             call smth9(nx,my,h500,glob,1)
             h500=glob
@@ -212,9 +219,13 @@ contains
 !
       if(plev(k).eq.whtlev(n)) then
 !
-      do 11 i=1,lenc
-      glob(i,1)= phips(i,k)+phistd(k)
+      do 11 jj=1, jlistnum
+      j=jlist1(jj)
+      nxj=nxdef_2d(j)
+      do 11 i=1,nxj
+       phips(i,jj,k)= phips(i,jj,k)+phistd(k)
    11 continue
+      call unify_reduceintp(nx,my,my_max,phips(1,1,k),glob)
 !
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
 !
@@ -244,13 +255,13 @@ contains
       implicit  none
       integer   nx,my,my_max,lpout,lev,itau,num
 
-      real      pkout(lpout),pklp(nx,my)                            &
-      , pk(nxp,lev,my_max),dpd(nxp,lev,my_max),dpdb(nx,my)          &
-      , dew(nx*my,lpout),glob(nx,my),plev(lpout)                    &
+      real      pkout(lpout),pklp(nxp,my_max)                            &
+      , pk(nxp,lev,my_max),dpd(nxp,lev,my_max),dpdb(nxp,my_max)          &
+      , dew(nxp,my_max,lpout),glob(nx,my),plev(lpout)                    &
       , whtlev(num),tens(lev+1)
 
 
-      integer   i,k,lpl,n,lenc,istat
+      integer   i,k,lpl,n,lenc,istat,jj,j,nxj
 !
       integer*8 idtg
       character*80 ifilout
@@ -283,9 +294,16 @@ contains
 !
 ! relative humidity must be smaller or equal 1.0
 !
-      do 20 i=1,lenc
-      glob(i,1)= min(100.,max(dew(i,k)*100.,0.0))
+      do 20 jj=1, jlistnum
+      j=jlist1(jj)
+      nxj=nxdef_2d(j)
+      do 20 i=1,nxj
+       dew(i,jj,k)= min(100.,max(dew(i,jj,k)*100.,0.0))
    20 continue
+      call unify_reduceintp(nx,my,my_max,dew(1,1,k),glob)
+!!      do 20 i=1,lenc
+!!      glob(i,1)= min(100.,max(dew(i,k)*100.,0.0))
+!!   20 continue
 !
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
 !
@@ -305,18 +323,19 @@ contains
       , plev,num,whtlev,pkout,pk,pklp,dpd,dpdb,dew,glob,ggdef,ntrac,lwrite)
 !
       use index
+      use radn, only : ntoz
 
       implicit  none
 
       integer   nx,my,my_max,lpout,lev,itau,num,ntrac
 
-      real      pkout(lpout),pklp(nx,my)                             &
-      , pk(nxp,lev,my_max),dpd(nxp,lev,my_max),dpdb(nx,my)           &
-      , dew(nx*my,lpout),glob(nx,my),plev(lpout)                     &
+      real      pkout(lpout),pklp(nxp,my_max)                        &
+      , pk(nxp,lev,my_max),dpd(nxp,lev,my_max),dpdb(nxp,my_max)      &
+      , dew(nxp,my_max,lpout),glob(nx,my),plev(lpout)                &
       , whtlev(num),tens(lev+1)
 !
 
-      integer   i,k,lpl,n,lenc,istat
+      integer   i,k,lpl,n,lenc,istat,jj,j,nxj
 
       integer*8 idtg
       character*80 ifilout
@@ -348,14 +367,15 @@ contains
       end do
       lrec(lpout) = 'h00550'
 !
-      else if(ntrac.eq.3)then
+      else if(ntrac.eq.ntoz)then
 !
         do k = 1, lpout-1
           lpl = int(plev(k)+0.001)
           write( lrec(k), '(i3.3,a3)' ) lpl,'560'   ! ozone
         end do
         lrec(lpout) = 'h00560'
-
+      else
+        goto 40
       endif
 !
       call voterp(nx,my,my_max,lev,lpout,pk,pklp,dpd,dpdb,pkout,dew,tens)
@@ -370,9 +390,16 @@ contains
 !
 ! relative humidity must be smaller or equal 1.0
 !
-      do 20 i=1,lenc
-      glob(i,1)= max(dew(i,k),0.0)
+      do 20 jj=1, jlistnum
+      j=jlist1(jj)
+      nxj=nxdef_2d(j)
+      do 20 i=1,nxj
+       dew(i,jj,k)= max(dew(i,jj,k),0.0)
    20 continue
+      call unify_reduceintp(nx,my,my_max,dew(1,1,k),glob)
+!!      do 20 i=1,lenc
+!!      glob(i,1)= max(dew(i,k),0.0)
+!!   20 continue
 !
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
       if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
@@ -382,6 +409,7 @@ contains
    10 continue
    30 continue
 !
+   40 continue
       return
   end subroutine shumout2
 
@@ -491,8 +519,8 @@ contains
       integer   num,lpl,lenc
       real      tnshun
 
-      real      pkout(lpout),pklp(nx,my),pk(nxp,lev,my_max)        &
-      , tt(nxp,lev,my_max),ttbot(nx,my),temp(nx*my,lpout)          &
+      real      pkout(lpout),pklp(nxp,my_max),pk(nxp,lev,my_max)        &
+      , tt(nxp,lev,my_max),ttbot(nxp,my_max),temp(nxp,my_max,lpout)     &
       , plev(lpout),whtlev(num)
       real      tens(lev+1),glob(nx,my),slp(nx,my)
 
@@ -525,11 +553,12 @@ contains
       do 30 n=1,num
       do 10 k=1,lpout
 !
-      if(plev(k).eq.whtlev(n)) then
+      if(plev(k).eq.whtlev(n)) then  
 !
-      do 11 i=1,lenc
-      glob(i,1)= temp(i,k)
-   11 continue
+      call unify_reduceintp(nx,my,my_max,temp(1,1,k),glob)
+!!      do 11 i=1,lenc
+!!      glob(i,1)= temp(i,k)
+!!   11 continue
 !
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
 !
@@ -559,11 +588,12 @@ contains
 
       integer   nx,my,my_max,lpout,lev,itau,num
 
-      real      pkout(lpout),pklp(nx,my)                   &
-      , pk(nxp,lev,my_max),rvor(nxp,lev,my_max),rvorb(nx,my) &
-      , vor(nx*my,lpout),plev(lpout),whtlev(num)
+      real      pkout(lpout),pklp(nxp,my_max)                     &
+      , pk(nxp,lev,my_max),rvor(nxp,lev,my_max),rvorb(nxp,my_max) &
+      , vor(nxp,my_max,lpout),plev(lpout),whtlev(num)
       real      tens(lev+1)
       real      v850(nx,my),v700(nx,my)
+      real      wk1(nx,my)
 
 !
       integer*8 idtg
@@ -594,16 +624,18 @@ contains
 !
       do k=1,lpout
         if(plev(k).eq.850.)then
-          do i=1,lenc
-            v850(i,1)=vor(i,k)
-          enddo
+        call unify_reduceintp(nx,my,my_max,vor(1,1,k),v850)
+!!          do i=1,lenc
+!!            v850(i,1)=vor(i,k)
+!!          enddo
 !
 !  reduceintp has been done in voterp (2011/5)
 !
         else if(plev(k).eq.700.)then
-          do i=1,lenc
-            v700(i,1)=vor(i,k)
-          enddo
+        call unify_reduceintp(nx,my,my_max,vor(1,1,k),v700)
+!!          do i=1,lenc
+!!            v700(i,1)=vor(i,k)
+!!          enddo
 !
 !  reduceintp has been done in voterp (2011/5)
 !
@@ -613,12 +645,13 @@ contains
       do 20 n=1,num
       do 10 k=1,lpout
       if(plev(k).eq.whtlev(n)) then
+      call unify_reduceintp(nx,my,my_max,vor(1,1,k),wk1)
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
 !
 !  reduceintp has been done in voterp (2011/5)
 !
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,vor(1,k),istat)
-      call qmaxn3(vor(1,k),ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,wk1,istat)
+      call qmaxn3(wk1,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       go to 20
       endif
    10 continue
@@ -635,19 +668,19 @@ contains
 
       implicit none
 
-      real      pkout(lpout),pklp(nx,my),pk(nxp,lev,my_max)         &
-      , rdiv(nxp,lev,my_max),ut(nxp,lev,my_max),vt(nxp,lev,my_max)    &
-      , utb(nx,my),vtb(nx,my),wind(nx,my,lpout),cosl(my)           &
+      real      pkout(lpout),pklp(nxp,my_max),pk(nxp,lev,my_max)          &
+      , rdiv(nxp,lev,my_max),ut(nxp,lev,my_max),vt(nxp,lev,my_max)        &
+      , utb(nxp,my_max),vtb(nxp,my_max),wind(nxp,my_max,lpout),cosl(my)   &
       , glob(nx,my),plev(lpout),whtlev(num),sdhat(nxp,lev,my_max)
 
-      real      tens(lev+1),wtb(nx,my)
+      real      tens(lev+1),wtb(nxp,my_max)
 !
-      integer   nx,my,my_max,lpout,lev,itau
+      integer   nx,my,my_max,lpout,lev,itau,jj,nxj
       integer   num,k,lenc,lpl,n,i,j,istat
 
       real      rad,xxx
 !lzl +add
-      real      pklzl(nx,my)
+!!      real      pklzl(nx,my)
 !lzl -end
 
       integer*8 idtg
@@ -681,18 +714,18 @@ contains
 !
       call voterp(nx,my,my_max,lev,lpout,pk,pklp,ut,utb,pkout,wind,tens)
 !
-      if( lreduce.eq.1 ) call reduceintp (utb,nxdef,nx,my)
+!!      if( lreduce.eq.1 ) call reduceintp (utb,nxdef,nx,my)
 !
 !lzl +add======================================================
-      do i =1,nx
-      do j =1,my
-         pklzl(i,j)=pklp(i,j)
-      end do
-      end do
+!!      do i =1,nx
+!!      do j =1,my
+!!         pklzl(i,j)=pklp(i,j)
+!!      end do
+!!      end do
 !
-      if( lreduce.eq.1 ) then
-          call reduceintp(pklzl,nxdef,nx,my)
-      endif
+!!      if( lreduce.eq.1 ) then
+!!          call reduceintp(pklzl,nxdef,nx,my)
+!!      endif
 
 !lzl -end=====================================================          
 
@@ -702,20 +735,31 @@ contains
       if(plev(k).eq.whtlev(n)) then
 !
 !  below ground level extrapolate surface wind downward
+!  deweight wind with cos latitude, earth radius
 !
-      do 45 i=1,nx*my
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          xxx= rad/cosl(j)
+          do i=1,nxj
+           if(pkout(k).gt.pklp(i,jj)) wind(i,jj,k)= utb(i,jj)
+           wind(i,jj,k)=wind(i,jj,k)*xxx
+          enddo
+        enddo
+        call unify_reduceintp(nx,my,my_max,wind(1,1,k),glob)
+!!      do 45 i=1,nx*my
 !lzl c      if(pkout(k).gt.pklp(i,1)) wind(i,1,k)= utb(i,1)
-      if(pkout(k).gt.pklzl(i,1)) wind(i,1,k)= utb(i,1)  !lzl use full grid(pklzl)
-   45 continue
+!!      if(pkout(k).gt.pklzl(i,1)) wind(i,1,k)= utb(i,1)  !lzl use full grid(pklzl)
+!!   45 continue
 !
 !
 !  deweight wind with cos latitude, earth radius
 !
-      do 50 j=1,my
-      xxx= rad/cosl(j)
-      do 50 i=1,nx
-      glob(i,j)= wind(i,j,k)*xxx
-   50 continue
+!!      do 50 j=1,my
+!!      xxx= rad/cosl(j)
+!!      do 50 i=1,nx
+!!      glob(i,j)= wind(i,j,k)*xxx
+!!   50 continue
 !
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
 !
@@ -732,18 +776,18 @@ contains
 !
       call voterp(nx,my,my_max,lev,lpout,pk,pklp,vt,vtb,pkout,wind,tens)
 !
-      if( lreduce.eq.1 ) call reduceintp (vtb,nxdef,nx,my)
+!!      if( lreduce.eq.1 ) call reduceintp (vtb,nxdef,nx,my)
 !
 !lzl +add===============================================================
-      do i =1,nx
-      do j =1,my
-         pklzl(i,j)=pklp(i,j)
-      end do
-      end do
+!!      do i =1,nx
+!!      do j =1,my
+!!         pklzl(i,j)=pklp(i,j)
+!!      end do
+!!      end do
 !
-      if( lreduce.eq.1 ) then
-          call reduceintp(pklzl,nxdef,nx,my)
-      endif
+!!      if( lreduce.eq.1 ) then
+!!          call reduceintp(pklzl,nxdef,nx,my)
+!!      endif
 
 !lzl -end================================================================
 !
@@ -752,18 +796,32 @@ contains
 !
       if(plev(k).eq.whtlev(n)) then
 !
-      do 55 i=1,nx*my
+!  below ground level extrapolate surface wind downward
+!  deweight wind with cos latitude, earth radius
+!
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          xxx= rad/cosl(j)
+          do i=1,nxj
+           if(pkout(k).gt.pklp(i,jj)) wind(i,jj,k)= vtb(i,jj)
+           wind(i,jj,k)=wind(i,jj,k)*xxx
+          enddo
+        enddo
+        call unify_reduceintp(nx,my,my_max,wind(1,1,k),glob)
+!
+!!      do 55 i=1,nx*my
 !lzl c      if(pkout(k).gt.pklp(i,1)) wind(i,1,k)= vtb(i,1)
-      if(pkout(k).gt.pklzl(i,1)) wind(i,1,k)= vtb(i,1) !lzl use full grid (pklzl)
-   55 continue
+!!      if(pkout(k).gt.pklzl(i,1)) wind(i,1,k)= vtb(i,1) !lzl use full grid (pklzl)
+!!   55 continue
 !
 !  deweight wind with cos latitude, earth radius
 !
-      do 60 j=1,my
-      xxx= rad/cosl(j)
-      do 60 i=1,nx
-      glob(i,j)= wind(i,j,k)*xxx
-   60 continue
+!!      do 60 j=1,my
+!!      xxx= rad/cosl(j)
+!!      do 60 i=1,nx
+!!      glob(i,j)= wind(i,j,k)*xxx
+!!   60 continue
 !
       call syslbl(krec(k),idtg,itau,ggdef,ihdg)
 !
@@ -786,11 +844,12 @@ contains
 !
       if(plev(k).eq.whtlev(n)) then
 !
-      do j=1,my
-      do i=1,nx
-        glob(i,j)= wind(i,j,k)
-      enddo
-      enddo
+      call unify_reduceintp(nx,my,my_max,wind(1,1,k),glob)
+!!      do j=1,my
+!!      do i=1,nx
+!!        glob(i,j)= wind(i,j,k)
+!!      enddo
+!!      enddo
 !
       call syslbl(mrec(k),idtg,itau,ggdef,ihdg)
 !
@@ -803,6 +862,34 @@ contains
 !
       return
   end subroutine windout
+!
+  subroutine unify_reduceintp(nx,my,my_max,fp,ff)
+      use mpe
+      use index
 
+      implicit none
+
+      integer   nx,my,my_max
+      integer   i,j,jj,nxj
+      real      fp(nxp,my_max),ff(nx,my)
+
+      do jj =1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        do i=1,nxj
+         ff(i,j)=fp(i,jj)
+        enddo
+      enddo
+  
+      call mpe_unify(ff,nx,my,2,mpe_double)
+
+      if( lreduce.eq.1 ) then
+        do jj =1, jlistnum
+          j=jlist1(jj)
+          call reduceintp(ff(1,j),nxdef(j),nx,1)
+        enddo
+        call mpe_unify(ff,nx,my,5,mpe_double)
+      endif
+  end subroutine unify_reduceintp
 
 end module mod_outflds

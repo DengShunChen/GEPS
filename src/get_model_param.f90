@@ -13,7 +13,7 @@
       implicit  none
 
 !
-      namelist /model_param/nco,lev,ncld,grt,octahedral,nout &
+      namelist /model_param/nco,lev,ncld,octahedral,nout &
                            ,io_quilting,npex,npey !2dMPI
 !
       integer istat
@@ -57,19 +57,19 @@
       if ( octahedral ) then
         my=2*nco
         nx=16+4*nco
-        jtrun= 2*((1+(4*nco-1)/grt)/2)
+        jtrun= 2*((1+(4*nco-1)/4)/2)
 
         im=16+4*nco
         jm=2*nco
-        jtr= 2*((1+(4*nco-1)/grt)/2)
+        jtr= 2*((1+(4*nco-1)/4)/2)
       else
         nx=4*nco
         my=nx/2
-        jtrun= 2*((1+(nx-1)/grt)/2)
+        jtrun= 2*((1+(nx-1)/2)/2)
         
         im=nx
         jm=im/2
-        jtr= 2*((1+(im-1)/grt)/2)
+        jtr= 2*((1+(im-1)/2)/2)
       endif
       mlmax= jtrun*(jtrun+1)/2
 

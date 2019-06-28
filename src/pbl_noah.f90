@@ -9,7 +9,7 @@
                         , ncld,dsigma,slopetyp,slc,sncover,snwdph       &
                         , shdmax,shdmin,snoalb,albedo2                  &
                         , sld,zice,cice,xtice,hpbl,asl,atl,xmu,gfx      &
-                        , nmpbl,jj )
+                        , kpbl,nmpbl,jj )
 !
 !#######################################################################
 !                     subroutine description
@@ -262,7 +262,8 @@
 !
       do 50 i = 1, nxj
       ps(i) = pss(i) + ptop
-      ts(i) = tt(i,lev)/pk(i,lev)*pk2(i,lev)
+      ttt = tt(i,lev)*(1.+0.608*qt(i,lev))
+      ts(i) = ttt/pk(i,lev)*pk2(i,lev)
   50  continue
 !
       do k=1,lev
@@ -284,7 +285,7 @@
       do 105 i = 1, nxj
       ppd = pk2x(i,1) * 1000.
       dhgt(i,1) = ( ppd - ptop ) * 100. / g
-      ppp = pkx(i,1) * 1000.
+      ppp = pkx(i,1) * 1000.+ptop
       ttt = tt(i,1)*(1.+0.608*qt(i,1))
       dhgtz(i,1)= dhgt(i,1) * r * ttt / (100.*ppp)
   105 continue
@@ -294,7 +295,7 @@
       ppu=pk2x(i,k-1) * 1000.
       ppd=pk2x(i,k) * 1000.
       dhgt(i,k) = ( ppd - ppu ) * 100. / g
-      ppp = pkx(i,k) * 1000.
+      ppp = pkx(i,k) * 1000.+ptop
       ttt = tt(i,k)*(1.+0.608*qt(i,k))
       dhgtz(i,k)= dhgt(i,k) * r * ttt / (100.*ppp)
   110 continue
@@ -543,16 +544,16 @@
             v1(i,kc) = vt(i,k)
 !
            prslk(i,kc)=pk(i,k)
-           prsl(i,kc)=pkx(i,k)*100.     !cb
-           prsi(i,kc)=pk2x(i,k)*100.    !cb
-           del(i,kc)=(pss(i)*dsigma(k,1)+dsigma(k,2))*0.1 !cb
+           prsl(i,kc)=pkx(i,k)*100000.     !Pa
+           prsi(i,kc)=pk2x(i,k)*100000.    !Pa
+           del(i,kc)=(pss(i)*dsigma(k,1)+dsigma(k,2))*100. !Pa
            phil(i,kc)=phi(i,k)-topo(i)
            phii(i,kc+1)=phi2(i,k)
            enddo
        enddo
 !
        do i=1,nxj
-       prsi(i,lev+1)=ptop*0.1     !cb
+       prsi(i,lev+1)=ptop*100.     !Pa
        phii(i,1)=phi2(i,lev+1)
        enddo
 !

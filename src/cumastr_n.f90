@@ -1,15 +1,6 @@
 !***********************************************************
 !           subroutine cumastrn
 !***********************************************************
-!      subroutine cumastrn  &
-!     &    (klon,     klev,     klevp1,   klevm1,   pten, &
-!     &     pqen,     puen,     pven,     pverv,    pqsen,&
-!     &     pqhfl,    ztmst,    pap,      paph,     pgeo, &
-!     &     ptte,     pqte,     pvom,     pvol,     prsfc,& 
-!     &     pssfc,    ldcum,                              &
-!     &     ktype,    kcbot,    kctop,    ptu,      pqu,&
-!     &     plu,      plude,    pmfu,     pmfd,     prain,&
-!     &     pcte,     phhfl,    lndj,     zgeoh,   dx)
 SUBROUTINE cumastr_n  &
      &      (nxj   ,klon ,klev ,klevp1,klevm1 ,&
      &       pten  ,pqen ,pxen ,puen  ,pven   ,&
@@ -18,7 +9,10 @@ SUBROUTINE cumastr_n  &
      &       pvom  ,pvol ,prsfc,pssfc ,kcbot  ,&
      &       kctop ,ztmst,jin  ,ptu   ,pqu    ,&
      &       pmfu  ,pmfd ,prain,pcte  ,phhfl  ,&
-     &       lndj  ,ldcum,xlat,mdlon)
+     &       lndj  ,ldcum,xlon ,xlat,mdlon    ,&
+!xb110>
+     &       kcnv)
+!xb110<
 !
 !***cumastrn*  master routine for cumulus massflux-scheme
 !     m.tiedtke      e.c.m.w.f.      1986/1987/1989
@@ -83,8 +77,6 @@ SUBROUTINE cumastr_n  &
 !            link:
 !     https://software.ecmwf.int/wiki/display/OPTR/NWP+Training+Material+2016
 !-----------------------------------------------------------------
-!USE shr_kind_mod, only: r8 => shr_kind_r8              !lin
-! USE time_manager,     only: is_first_step          ! initial run
 USE mo_constants,     only: rd,      &! gas constant for dry air
                               c4les,   &!
                               c5les,   &!
@@ -104,13 +96,10 @@ USE mo_cumulus_flux,  only: lmfdudv, &! true if cum. friction is switched on
                               lmfpen,  &
                               cmfcmin, &
                               lmfpen,  &
-                              lmfscv,  &
-                              MPAS,    &
-                              RWRF
+                              lmfscv
                               
 
       implicit none
-!org      integer  klev,klon,klevp1,klevm1
       integer klev,klon,klevp1,klevm1,nxj,jin
       logical ldland(klon)
       real     pten(klon,klev),        pqen(klon,klev),& 
@@ -166,11 +155,10 @@ USE mo_cumulus_flux,  only: lmfdudv, &! true if cum. friction is switched on
       
 
 !  local varaiables
-      real     zcons,zcons2,zqumqe,zdqmin,zdh,zmfmax,xlat
+      real     zcons,zcons2,zqumqe,zdqmin,zdh,zmfmax,xlat,xlon(klon)
       real     zalfaw,zalv,zqalv,zc5ldcp,zc4les,zhsat,zgam,zzz,zhhat
       real     zpbmpt,zro,zdz,zdp,zeps,zfac,wspeed
       integer  jl,jk,ik
-!org      integer  ikb,ikt,icum,itopm2
       integer  ikb,ikt,icum,itopm2,jim
       real     ztmst,ztau,zerate,zderate,zmfa
       real     zmfs(klon),pmean(klev),zlon,pi,rad,torad,dlon,dlat
@@ -181,24 +169,19 @@ USE mo_cumulus_flux,  only: lmfdudv, &! true if cum. friction is switched on
       real     cdeep1(klon),cdeep2(klon),tmp(klon)
 !xb110>
       real     mdlon,gdx,re,rr
+      integer  kcnv(klon)
 !xb110<
 !-------------------------------------------
 !     1.    specify constants and parameters
 !-------------------------------------------
-!      do jk = 1,klev
-!       do jl = 1,nxj
-!        tmp1(jl,jk) = pten(jl,jk)
-!        tmp2(jl,jk) = pqen(jl,jk)
-!        tmp3(jl,jk) = pxen(jl,jk)
-!        tmp4(jl,jk) = puen(jl,jk)
-!        tmp5(jl,jk) = pven(jl,jk)
-!       end do
-!      end do
+!xb110>
+     pmean = 0.
+     zlon  = 0.
+     zrfl  = 0.
+!xb110<
       zcons=1./(g*ztmst)
       zcons2=3./(g*ztmst)
 
-!!MPAS 170218
-if (MPAS)then
       zlon = real(klon)
       do jk = klev , 1 , -1
         pmean(jk) = sum(pap(:,jk))/zlon
@@ -210,8 +193,6 @@ if (MPAS)then
         if ( pmean(jk)/pmean(klev)*1.013250e5 >  650.e2 ) p650 = jk
       end do
       p950 = min(klev-2,p950)
-end if
-!!MPAS
 !--------------------------------------------------------------
 !*    2.    initialize values at vertical grid points in 'cuini'
 !--------------------------------------------------------------
@@ -240,33 +221,25 @@ end if
 
 !*         (b) assign the first guess mass flux at cloud base
 !              ------------------------------------------
-!org       do jl=1,klon           
-       do jl = 1, nxj                  !lin
+       do jl = 1, nxj                  
          zdhpbl(jl)=0.0
          upbl(jl) = 0.0
          idtop(jl)=0
+         zmfub(jl) = 0.
        end do
 
        do jk=2,klev
-!org       do jl=1,klon
-       do jl = 1, nxj                   !lin
+       do jl = 1, nxj                   
          if(jk.ge.kcbot(jl) .and. ldcum(jl)) then
             zdhpbl(jl)=zdhpbl(jl)+(alv*pqte(jl,jk)+cpd*ptte(jl,jk))&
      &                 *(paph(jl,jk+1)-paph(jl,jk))
-         if(RWRF .and. lndj(jl) .eq. 0) then
-            wspeed = sqrt(puen(jl,jk)**2 + pven(jl,jk)**2) 
-            upbl(jl) = upbl(jl) + wspeed*(paph(jl,jk+1)-paph(jl,jk))
-         end if
-         if(MPAS)then
             wspeed = sqrt(puen(jl,jk)**2 + pven(jl,jk)**2)
             upbl(jl) = upbl(jl) + wspeed*(paph(jl,jk+1)-paph(jl,jk))
-         end if
          end if
        end do
        end do
 
-!org      do jl=1,klon        
-        do jl = 1, nxj                !lin
+        do jl = 1, nxj                
         if(ldcum(jl)) then
            ikb=kcbot(jl)
            zmfmax = (paph(jl,ikb)-paph(jl,ikb-1))*zcons2
@@ -309,8 +282,7 @@ end if
 !*     (b) check cloud depth and change entrainment rate accordingly
 !          calculate precipitation rate (for downdraft calculation)
 !------------------------------------------------------------------
-!org      do jl=1,klon
-        do jl = 1, nxj               !lin
+        do jl = 1, nxj               
         if ( ldcum(jl) ) then
           ikb = kcbot(jl)
           itopm2 = kctop(jl)
@@ -323,15 +295,13 @@ end if
       end do
 
       do jk=2,klev
-!org        do jl=1,klon
-        do jl = 1, nxj              !lin
+        do jl = 1, nxj              
           zrfl(jl)=zrfl(jl)+zdmfup(jl,jk)
         end do
       end do
 
       do jk = 1,klev
-!org      do jl = 1,klon
-       do jl = 1, nxj        !lin
+       do jl = 1, nxj        
         pmfd(jl,jk) = 0.
         zmfds(jl,jk) = 0.
         zmfdq(jl,jk) = 0.
@@ -372,33 +342,38 @@ end if
 !-- 6.1 recalculate cloud base massflux from a cape closure
 !       for deep convection (ktype=1) 
 !
-!org      do jl=1,klon
+!xb110>
+        zheat=0.0
+        zcape=0.0
+        zcape1=0.0
+        zcape2=0.0
+        zmfub1=0.0
+        ztauc=0.0
+        ztaubl=0.0
+        zmfs=0.0
+!xb110<
       do jl = 1, nxj
       if(ldcum(jl) .and. ktype(jl) .eq. 1) then
         ikb = kcbot(jl)
         ikt = kctop(jl)
-        zheat(jl)=0.0
-        zcape(jl)=0.0
-        zcape1(jl)=0.0
-        zcape2(jl)=0.0
+!xb110>
+!        zheat(jl)=0.0
+!        zcape(jl)=0.0
+!        zcape1(jl)=0.0
+!        zcape2(jl)=0.0
+!xb110<
         zmfub1(jl)=zmfub(jl)
-        if(MPAS)then    
         upbl(jl) = max(2.,upbl(jl)/(paph(jl,klev+1)-paph(jl,ikb)))
-        end if
         ztauc(jl)  = (zgeoh(jl,ikt)-zgeoh(jl,ikb)) / &
                    ((2.+ min(15.0,wup(jl)))*g)
-        if(MPAS .and. lndj(jl) .eq. 1) then 
+!> xb110
+!        if(lndj(jl) .eq. 1) then 
+!          ztaubl(jl) = ztauc(jl)
+!        else
+!          ztaubl(jl) = (zgeoh(jl,ikb)-zgeoh(jl,klev+1))*zrg/upbl(jl)
+!        end if
           ztaubl(jl) = ztauc(jl)
-        else
-          ztaubl(jl) = (zgeoh(jl,ikb)-zgeoh(jl,klev+1))*zrg/upbl(jl)
-        end if
-        if(RWRF .and. lndj(jl) .eq. 0) then
-          upbl(jl) = 10.+ upbl(jl)/(paph(jl,klev+1)-paph(jl,ikb))
-          ztaubl(jl) = (zgeoh(jl,ikb)-zgeoh(jl,klev+1))/(g*upbl(jl))
-          ztaubl(jl) = min(300., ztaubl(jl))
-        else
-          ztaubl(jl) = ztauc(jl)
-        end if
+!< xb110
       end if    
       end do
 !
@@ -430,23 +405,8 @@ end if
         endif
       enddo
 
-!      call qmax2d (cdeep,1,1,nxj,klev)          
-!      xmin=1.0e25
-!      xmax=-1.0e25
-!      do jl = 1,nxj
-!        if (cdeep2(jl).lt.xmin)then
-!        xmin=cdeep2(jl)
-!        endif
-!        if (cdeep2(jl).gt.xmax)then
-!        xmax=cdeep2(jl)
-!        endif
-!      enddo
-!      print *, 'cdeep2,max=',xmax,'min=',xmin
-!
-
       do jk = 1 , klev
-!org      do jl = 1 , klon
-       do jl = 1, nxj            !lin
+       do jl = 1, nxj            
         llo1 = ldcum(jl) .and. ktype(jl) .eq. 1
         if ( llo1 .and. jk <= kcbot(jl) .and. jk > kctop(jl) ) then
           ikb = kcbot(jl)
@@ -463,20 +423,13 @@ end if
           ikb = kcbot(jl)
           if(paph(jl,klev+1)-paph(jl,ikb) <= 50.e2) then
             zdp = paph(jl,jk+1)-paph(jl,jk)
-           if(MPAS)then           !lin
             zcape2(jl) = zcape2(jl) + ztaubl(jl)* &
                       (ptte(jl,jk)+vtmpc1*pten(jl,jk)*pqte(jl,jk))*zdp 
-            end if
-            if(RWRF)then           !lin
-1            zcape2(jl) = zcape2(jl) + ztaubl(jl)* &
-                     ((1.+vtmpc1*pqen(jl,jk))*ptte(jl,jk)+vtmpc1*pten(jl,jk)*pqte(jl,jk))*zdp
-            end if
           end if
         end if
       end do
       end do
 
-!org      do jl=1,klon
 !xb110>
       dx = 0.
       rad = 4.0*atan(1.0)/180.0
@@ -486,17 +439,14 @@ end if
       dx = dlon*cos(xlat*rad)
 !xb110<
 
-       do jl = 1, nxj            !lin
+       do jl = 1, nxj            
        if(ldcum(jl).and.ktype(jl).eq.1) then
            ikb = kcbot(jl)
            ikt = kctop(jl)
-           ztau = ztauc(jl) * (1.+1.33e-5*dx)       !MPAS
-!           ztau = ztauc(jl) * (1.+1.33e-5*dx)*(2/3)*(1-(cdeep2(jl)))**2  !lin
+           ztau = ztauc(jl) * (1.+1.33e-5*dx)       
            ztau = max(ztmst,ztau)
            ztau = max(720.,ztau)
            ztau = min(10800.,ztau)
-!           tmp(jl) = ztau
-!           ztau = 1800.                      !org
            zcape2(jl)= max(0.,zcape2(jl))
            zcape(jl) = max(0.,min(zcape1(jl)-zcape2(jl),5000.))
            zheat(jl) = max(1.e-4,zheat(jl))
@@ -506,25 +456,11 @@ end if
            zmfub1(jl)=min(zmfub1(jl),zmfmax)
        end if
       end do
-!      xmin=1.0e25
-!      xmax= -1.0e25
-!          do jl = 1,nxj
-!            if(ldcum(jl).and.ktype(jl).eq.1) then
-!            if (tmp(jl).lt.xmin) then
-!              xmin=tmp(jl)
-!            endif
-!            if (tmp(jl).gt.xmax) then
-!              xmax=tmp(jl)
-!            endif
-!            endif
-!          enddo
-!          print *, 'ztau,max=',xmax,'ztau,min=',xmin 
 !
 !*  6.2   recalculate convective fluxes due to effect of
 !         downdrafts on boundary layer moist static energy budget (ktype=2)
 !--------------------------------------------------------
-!org       do jl=1,klon
-        do jl=1,nxj            !lin
+        do jl=1,nxj            
          if(ldcum(jl) .and. ktype(jl) .eq. 2) then
            ikb=kcbot(jl)
            if(pmfd(jl,ikb).lt.0.0 .and. loddraf(jl)) then
@@ -559,8 +495,7 @@ end if
 !*  6.4   scaling the downdraft mass flux
 !---------------------------------------------------------
        do jk=1,klev
-!org       do jl=1,klon
-        do jl = 1, nxj           !lin
+        do jl = 1, nxj           
         if( ldcum(jl) ) then
            zfac=zmfub1(jl)/max(zmfub(jl),cmfcmin)
            pmfd(jl,jk)=pmfd(jl,jk)*zfac
@@ -574,13 +509,11 @@ end if
 
 !*  6.5   scaling the updraft mass flux
 ! --------------------------------------------------------
-!org    do jl = 1,klon
-      do jl = 1, nxj        !lin
+      do jl = 1, nxj        
         if ( ldcum(jl) ) zmfs(jl) = zmfub1(jl)/max(cmfcmin,zmfub(jl))
       end do
       do jk = 2 , klev
-!org      do jl = 1,klon
-       do jl = 1, nxj       !lin    
+       do jl = 1, nxj      
         if ( ldcum(jl) .and. jk >= kctop(jl)-1 ) then
           ikb = kcbot(jl)
           if ( jk>ikb ) then
@@ -595,8 +528,7 @@ end if
       end do
       end do
       do jk = 2 , klev
-!org      do jl = 1,klon
-        do jl = 1, nxj        !lin
+        do jl = 1, nxj        
         if ( ldcum(jl) .and. jk <= kcbot(jl) .and. jk >= kctop(jl)-1 ) then
           pmfu(jl,jk) = pmfu(jl,jk)*zmfs(jl)
           zmfus(jl,jk) = zmfus(jl,jk)*zmfs(jl)
@@ -611,8 +543,7 @@ end if
 
 !*    6.6  if ktype = 2, kcbot=kctop is not allowed
 ! ---------------------------------------------------
-!org    do jl = 1,klon
-      do jl = 1, nxj            !lin
+      do jl = 1, nxj            
       if ( ktype(jl) == 2 .and. &
            kcbot(jl) == kctop(jl) .and. kcbot(jl) >= klev-1 ) then
         ldcum(jl) = .false.
@@ -621,8 +552,7 @@ end if
       end do
 
       if ( .not. lmfscv .or. .not. lmfpen ) then
-!org      do jl = 1,klon
-       do jl = 1, nxj !lin
+       do jl = 1, nxj 
         llo2(jl) = .false.
         if ( (.not. lmfscv .and. ktype(jl) == 2) .or. &
              (.not. lmfpen .and. ktype(jl) == 1) ) then
@@ -634,15 +564,13 @@ end if
 
 !*   6.7  set downdraft mass fluxes to zero above cloud top
 !----------------------------------------------------
-!org    do jl = 1,klon
-      do jl = 1, nxj         !lin
+      do jl = 1, nxj         
       if ( loddraf(jl) .and. idtop(jl) <= kctop(jl) ) then
         idtop(jl) = kctop(jl) + 1
       end if
       end do
       do jk = 2 , klev
-!org      do jl = 1,klon
-        do jl = 1, nxj        !lin
+        do jl = 1, nxj        
         if ( loddraf(jl) ) then
           if ( jk < idtop(jl) ) then
             pmfd(jl,jk) = 0.
@@ -671,91 +599,7 @@ end if
      &  ,  zdmfup,   zdmfdp,   zdpmel,   zlglac            &   
      &  ,  prain,    pmfdde_rate, pmflxr, pmflxs )    
 
-!WRF 170218
-if (RWRF)then
-! some adjustments needed
-    do jl=1,klon
-      zmfs(jl) = 1.
-      zmfuub(jl)=0.
-    end do
-    do jk = 2 , klev
-      do jl = 1,klon
-        if ( loddraf(jl) .and. jk >= idtop(jl)-1 ) then
-          zmfmax = pmfu(jl,jk)*0.98
-          if ( pmfd(jl,jk)+zmfmax+1.e-15 < 0. ) then
-            zmfs(jl) = min(zmfs(jl),-zmfmax/pmfd(jl,jk))
-          end if
-        end if
-      end do
-    end do
-
-    do jk = 2 , klev
-      do jl = 1 , klon
-        if ( zmfs(jl) < 1. .and. jk >= idtop(jl)-1 ) then
-          pmfd(jl,jk) = pmfd(jl,jk)*zmfs(jl)
-          zmfds(jl,jk) = zmfds(jl,jk)*zmfs(jl)
-          zmfdq(jl,jk) = zmfdq(jl,jk)*zmfs(jl)
-          pmfdde_rate(jl,jk) = pmfdde_rate(jl,jk)*zmfs(jl)
-          zmfuub(jl) = zmfuub(jl) - (1.-zmfs(jl))*zdmfdp(jl,jk)
-          pmflxr(jl,jk+1) = pmflxr(jl,jk+1) + zmfuub(jl)
-          zdmfdp(jl,jk) = zdmfdp(jl,jk)*zmfs(jl)
-        end if
-      end do
-     end do
-
-   do jk = 2 , klev - 1
-      do jl = 1, klon
-        if ( loddraf(jl) .and. jk >= idtop(jl)-1 ) then
-          zerate = -pmfd(jl,jk) + pmfd(jl,jk-1) + pmfdde_rate(jl,jk)
-          if ( zerate < 0. ) then
-            pmfdde_rate(jl,jk) = pmfdde_rate(jl,jk) - zerate
-          end if
-        end if
-        if ( ldcum(jl) .and. jk >= kctop(jl)-1 ) then
-          zerate = pmfu(jl,jk) - pmfu(jl,jk+1) + pmfude_rate(jl,jk)
-          if ( zerate < 0. ) then
-            pmfude_rate(jl,jk) = pmfude_rate(jl,jk) - zerate
-          end if
-          zdmfup(jl,jk) = pmflxr(jl,jk+1) + pmflxs(jl,jk+1) - &
-                          pmflxr(jl,jk) - pmflxs(jl,jk)
-          zdmfdp(jl,jk) = 0.
-        end if
-      end do
-    end do
-
-! avoid negative humidities at ddraught top
-    do jl = 1,klon
-      if ( loddraf(jl) ) then
-        jk = idtop(jl)
-        ik = min(jk+1,klev)
-        if ( zmfdq(jl,jk) < 0.3*zmfdq(jl,ik) ) then
-            zmfdq(jl,jk) = 0.3*zmfdq(jl,ik)
-        end if
-      end if
-    end do
-! avoid negative humidities near cloud top because gradient of precip flux
-! and detrainment / liquid water flux are too large
-    do jk = 2 , klev
-      do jl = 1, klon
-        if ( ldcum(jl) .and. jk >= kctop(jl)-1 .and. jk < kcbot(jl) ) then
-          zdz = ztmst*g/(paph(jl,jk+1)-paph(jl,jk))
-          zmfa = zmfuq(jl,jk+1) + zmfdq(jl,jk+1) - &
-                 zmfuq(jl,jk) - zmfdq(jl,jk) + &
-                 zmful(jl,jk+1) - zmful(jl,jk) + zdmfup(jl,jk)
-          zmfa = (zmfa-plude(jl,jk))*zdz
-          if ( pqen(jl,jk)+zmfa < 0. ) then
-            plude(jl,jk) = plude(jl,jk) + 2.*(pqen(jl,jk)+zmfa)/zdz
-          end if
-          if ( plude(jl,jk) < 0. ) plude(jl,jk) = 0.
-        end if
-        if ( .not. ldcum(jl) ) pmfude_rate(jl,jk) = 0.
-        if ( abs(pmfd(jl,jk-1)) < 1.0e-20 ) pmfdde_rate(jl,jk) = 0.
-      end do
-    end do 
-end if
-!WRF 170218       
-!org      do jl=1,klon
-      do jl = 1, nxj           !lin
+      do jl = 1, nxj           
         prsfc(jl) = pmflxr(jl,klev+1)
         pssfc(jl) = pmflxs(jl,klev+1)
       end do
@@ -772,8 +616,7 @@ end if
       if(lmfdudv) then
       do jk = klev-1 , 2 , -1
         ik = jk + 1
-!org        do jl = 1,klon
-        do jl = 1, nxj          !lin
+        do jl = 1, nxj          
           if ( ldcum(jl) ) then
             if ( jk == kcbot(jl) .and. ktype(jl) < 3 ) then
               ikb = kdpl(jl)
@@ -822,7 +665,6 @@ end if
       if(lmfdd) then
       do jk = 3 , klev
         ik = jk - 1
-!org       do jl = 1,klon
         do jl = 1, nxj
           if ( ldcum(jl) ) then
             if ( jk == idtop(jl) ) then
@@ -845,8 +687,7 @@ end if
 !------------------------------------------------------------------------
       zmfs(:) = 1.
       do jk = 2 , klev
-!org        do jl = 1, klon
-        do jl = 1, nxj          !lin
+        do jl = 1, nxj          
           if ( ldcum(jl) .and. jk >= kctop(jl)-1 ) then
             zmfmax = (paph(jl,jk)-paph(jl,jk-1))*zcons
             if ( pmfu(jl,jk) > zmfmax .and. jk >= kctop(jl) ) then
@@ -856,8 +697,7 @@ end if
         end do
       end do
       do jk = 1 , klev
-!org        do jl = 1, klon
-        do jl = 1, nxj           !lin
+        do jl = 1, nxj           
           zmfuus(jl,jk) = pmfu(jl,jk)
           zmfdus(jl,jk) = pmfd(jl,jk)
           if ( ldcum(jl) .and. jk >= kctop(jl)-1 ) then
@@ -869,8 +709,7 @@ end if
 !*  9.1          update u and v in subroutine cududvn
 !-------------------------------------------------------------------
      do jk = 1 , klev
-!org        do jl = 1, klon
-       do jl = 1, nxj        !lin
+       do jl = 1, nxj        
           ztenu(jl,jk) = pvom(jl,jk)
           ztenv(jl,jk) = pvol(jl,jk)
         end do
@@ -880,14 +719,12 @@ end if
                   ldcum,ztmst,paph,puen,pven,zmfuus,zmfdus,zuu,  &
                   zud,zvu,zvd,pvom,pvol,jin)
 !  calculate KE dissipation
-!org      do jl = 1, klon
-      do jl = 1, nxj          !lin
+      do jl = 1, nxj          
         zsum12(jl) = 0.
         zsum22(jl) = 0.
       end do
         do jk = 1 , klev
-!org          do jl = 1, klon
-          do jl = 1, nxj             !lin
+          do jl = 1, nxj             
             zuv2(jl,jk) = 0.
             if ( ldcum(jl) .and. jk >= kctop(jl)-1 ) then
               zdz = (paph(jl,jk+1)-paph(jl,jk))
@@ -901,8 +738,7 @@ end if
           end do
         end do
         do jk = 1 , klev
-!org          do jl = 1, klon
-          do jl = 1, nxj           !lin
+          do jl = 1, nxj           
             if ( ldcum(jl) .and. jk>=kctop(jl)-1 ) then
               ztdis = rcpd*zsum12(jl)*zuv2(jl,jk)/max(1.e-15,zsum22(jl))
               ptte(jl,jk) = ptte(jl,jk) + ztdis
@@ -917,8 +753,7 @@ end if
 ! ---------------------------------------------------
       if ( .not. lmfscv .or. .not. lmfpen ) then
       do jk = 2 , klev
-!org        do jl = 1, klon
-        do jl = 1, nxj          !lin
+        do jl = 1, nxj          
           if ( llo2(jl) .and. jk >= kctop(jl)-1 ) then
             ptu(jl,jk) = pten(jl,jk)
             pqu(jl,jk) = pqen(jl,jk)
@@ -928,13 +763,21 @@ end if
           end if
         end do
       end do
-!org      do jl = 1, klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
         if ( llo2(jl) ) then
           kctop(jl) = klev - 1
           kcbot(jl) = klev - 1
         end if
       end do
       end if
+
+!xb110>
+      kcnv = 0
+      do jl = 1,nxj
+       if (ktype(jl) .eq. 1 .or. ktype(jl) .eq. 3 ) kcnv(jl) = 1
+       if (ktype(jl) .eq. 2 ) kcnv(jl) = 0
+      end do
+!xb110<
+
       return
       end subroutine cumastr_n

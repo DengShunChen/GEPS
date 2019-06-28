@@ -16,8 +16,10 @@ SRCS  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
 	readozpl.f90 rozphys.f90 readalb.f90 \
 	prerrtmg.f90 rrtmg.f90\
 	cup92.f90 cupcwb.f90 dayfil.f90 days.f90 dcbase.f90 diabat.f90 \
+        gensppt3dv5.f90  spptout.f90 \
 	diagrd.f90 dmsread.f90 dmswrit.f90 drychk.f90 drycon.f90 \
 	eeps.f90 eigen.f90 eigrs.f90 evpcup.f90 gwdp.f90 \
+        read_mtnvar.f90 gwdps.f90 \
 	gathv.f90 gausl3.f90 gauslv.f90 geostd.f90 \
 	getphi.f90 getrdy.f90 gfcst.f90 glbmean.f90 \
 	grdcon.f90 grdtpw.f90 hdiffu.f90 \
@@ -49,12 +51,12 @@ SRCS  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
 	mpe_gather_io.f90 mpe_scatter_io.f90 sfcuvt.f90 \
 	landpack.f90 landsfc.f90 landsmc.f90 \
 	rstrandz.f90 rstrantq.f90 fpvs.f90 gpvs.f90 gscond.f90 precpd.f90 \
-	sascnv.f90 sascnv_n.f90 landsfc_n.f90 mixpbl_n.f90 pbltke_n.f90 \
+	sascnv.f90 sascnv_n.f90 sascnv_sa.f90 landsfc_n.f90 mixpbl_n.f90 pbltke_n.f90 \
 	reducepick.f90 reducegrid.f90 pnmy.f90 reduceintp.f90 tracking.f90 smth9.f90 \
 	gridnl_hybrid_ndsl.f90 vstruc_hybrid.f90 \
 	matrix_hybrid_cwb.f90 pmatrx_hybrid_cwb.f90 prexp_hybrid_cwb.f90 \
 	vstruc_hybrid_cwb.f90 rayleifr.f90 pbl_noah.f90 cwb.f90 nor_gwdp.f90 normalize.f90 \
-	coszenpm.f90 shalcnv_new.f90 mixpbl_new.f90 \
+	coszenpm.f90 shalcnv_new.f90 mixpbl_new.f90 shalcnv_sa.f90\
 	qmax2d.f90 iw3jdn.f90 w3fs26.f90\
 	physpara.f90 funcphys.f90 iounitdef.f90 \
 	module_bfmicrophysics.f90 \
@@ -76,14 +78,18 @@ SRCS  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
 	mpe2d.f90 \
 	cuadjtq_n.f90 cuasc_n.f90 cubasmc_n.f90 cuddraf_n.f90\
 	cudlfs_n.f90 cudtdq_n.f90 cududv_n.f90 cuentr_n.f90 cuflx_n.f90 \
-	cuini_n.f90 cumastr_driv_n.f90 cumastr_n.f90 cutype_n.f90 ntke_func.f90
+	cuini_n.f90 cumastr_driv_n.f90 cumastr_n.f90 cutype_n.f90 ntke_func.f90 \
+        get_phi.f90 module_mp_radar.f90 module_mp_wsm6_fv3.f90
 
 OBJS=	${SRCS:.f90=.o}
 
 CC   =	fccpx100
+FC90 =  mpifrtpx100
+#CC   =	fccpx
+#FC90 =  mpifrtpx
 #FC   =  /package/$(MACHINE)/dms/bin/dmsmpiompf90
 FC   =  /package/$(MACHINE)/dms/bin/dmsmpif90
-FC90 =  mpifrtpx100
+
 
 INCLUDE = -I. -I/users/xa09/$(MACHINE)/fftw-3.3.7/include
 #INCLUDE = -I. -I/nwpr/cfsres/b827/fx10/fftw-3.3.7/include
@@ -93,6 +99,7 @@ CMD  =  MTCo639L72_$(MACHINE)
 # MSG  =    -Ec -Qa,d,i,p,t,x -Koptmsg=2 -Nquickdbg
  MSG  =    -Ec -Qa,d,i,p,t,x -Koptmsg=2
 
+INSTALL = /usr/bin/install
 # select one of the followings :
 # 1. mpi single precision for transpose and unify
 # 2. mpi single precision for unify only
@@ -150,12 +157,16 @@ clean :
 	@echo '==== CLEAN ===================================================='
 	rm -f *.o *.lst *.mod MTCo639L72_$(MACHINE)
 
+install :
+	$(INSTALL) -d ../bin
+	$(INSTALL) -D $(CMD) ../bin
+
 ancrt.o : ancrt.f90 
 cem1.o : cem1.f90 mod_paramt.o 
 check.o : check.f90 mod_fftcom.o mod_index.o mod_rank.o mod_mpe.o 
 chlen.o : chlen.f90 
 coftrix.o : coftrix.f90 
-cons.o : cons.f90 mod_typhoon.o mod_fftcom.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o mo_convect_tables.o 
+cons.o : cons.f90 mod_typhoon.o mod_fftcom.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o mo_convect_tables.o mod_spec.o module_mp_wsm6_fv3.o
 correct.o : correct.f90 mod_index.o 
 ccoszen.o : ccoszen.f90 mod_index.o
 coszenpm.o : coszenpm.f90 mod_index.o 
@@ -170,7 +181,7 @@ cwb.o : cwb.f90
 dayfil.o : dayfil.f90 mod_rank.o 
 days.o : days.f90 
 dcbase.o : dcbase.f90 
-diabat.o : diabat.f90 mod_index.o mod_rank.o mod_mpe.o mod_radn.o physpara.o
+diabat.o : diabat.f90 mod_index.o mod_rank.o mod_mpe.o mod_radn.o physpara.o module_mp_wsm6_fv3.o
 diagrd.o : diagrd.f90 mod_index.o mod_rank.o mod_mpe.o 
 dmsread.o : dmsread.f90 mod_index.o mod_rank.o mod_mpe.o 
 dmswrit.o : dmswrit.f90 mod_index.o mod_rank.o mod_mpe.o 
@@ -188,7 +199,9 @@ fpvs.o : fpvs.f90
 gather_spec.o : gather_spec.f90 
 gathv.o : gathv.f90 
 gausl3.o : gausl3.f90 mod_rank.o 
-gauslv.o : gauslv.f90 mod_paramt.o 
+gauslv.o : gauslv.f90 mod_paramt.o
+gensppt3dv5.o : gensppt3dv5.f90 mod_rank.o mod_fftcom.o mod_index.o mod_mpe.o
+spptout.o : spptout.f90 mod_mpe.o mod_rank.o mod_index.o
 geostd.o : geostd.f90 
 get_model_param.o : get_model_param.f90 mod_rank.o mod_paramt.o mod_const.o mod_param.o 
 getphi.o : getphi.f90 
@@ -199,7 +212,9 @@ gpvs.o : gpvs.f90
 grdcon.o : grdcon.f90 
 grdtpw.o : grdtpw.f90 
 gscond.o : gscond.f90 
-gwdp.o : gwdp.f90 mod_paramt.o 
+gwdp.o : gwdp.f90 mod_paramt.o
+read_mtnvar.o : read_mtnvar.f90 mod_index.o mod_param.o
+gwdps.o : gwdps.f90 mod_rank.o mod_mpe.o mod_index.o
 hdiffu.o : hdiffu.f90 mod_rank.o mod_mpe.o mod_index.o mod_const.o
 incrini.o : incrini.f90 mod_fftcom.o mod_spec.o mod_grid.o mod_const.o mod_index.o mod_rank.o mod_param.o 
 indexx.o : indexx.f90 
@@ -338,6 +353,7 @@ rstrandz.o : rstrandz.f90 mod_fftcom.o mod_paramt.o mod_index.o
 rstrantq.o : rstrantq.f90 mod_fftcom.o mod_paramt.o mod_index.o 
 sascnv.o : sascnv.f90 
 sascnv_n.o : sascnv_n.f90 
+sascnv_sa.o : sascnv_sa.f90 
 scatter_spec.o : scatter_spec.f90 
 set_soilveg.o : set_soilveg.f90 namelist_soilveg.o 
 setupv.o : setupv.f90 
@@ -350,6 +366,7 @@ sfc_sice.o : sfc_sice.f90 physcons.o machine.o
 sfcuvt.o : sfcuvt.f90 
 sflx.o : sflx.f90 namelist_soilveg.o 
 shalcnv_new.o : shalcnv_new.f90 
+shalcnv_sa.o : shalcnv_sa.f90 
 shlcon.o : shlcon.f90 mod_paramt.o 
 sigful.o : sigful.f90 mod_index.o mod_rank.o mod_mpe.o 
 siimpl.o : siimpl.f90 mod_paramt.o mod_index.o mod_spec.o
@@ -445,3 +462,6 @@ cuini_n.o : cuini_n.f90 mo_constants.o shr_kind_mod.o
 cumastr_n.o : cumastr_n.f90 mo_cumulus_flux.o mo_constants.o shr_kind_mod.o
 ntke_func.o : ntke_func.f90 mo_constants.o
 #xb110<
+get_phi.o : get_phi.f90
+module_mp_radar.o : module_mp_radar.f90
+module_mp_wsm6_fv3.o : module_mp_wsm6_fv3.f90 physcons.o module_mp_radar.o

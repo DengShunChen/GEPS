@@ -1135,6 +1135,7 @@
          do n=1,ncld
             c1(k,n,j,1:i2,i)=ain(i1:i1+i2-1,k,n,j)
          enddo
+         i1=i1+i2
       enddo
       enddo
       enddo

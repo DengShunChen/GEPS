@@ -203,7 +203,9 @@
       crs2    = 6.66600e-10 * zaodt        !test(for Ers)
       ke      = ke * sqrt(rdt)             !test(for Err)
       aa2     = 1.25e-3     * zaodt        !test(for Psaci)
+!      aa1     = 4.0e-4                     !test(for Psaut) original
       aa1     = 4.0e-4                     !test(for Psaut) original
+!byl      aa1     = 8.0e-4                     !TCo639L72
 !      aa1     = 8.0e-4                     !test(for Psaut) test (rrt10)
 !      aa1     = 6.0e-4                     !test(for Psaut) test (rrt11)
 !      aa1     = 5.0e-4                     !test(for Psaut) test (rrt13)
@@ -219,7 +221,8 @@
 !ops      c00 = 1.0e-4 * dt          !05/09/2000
 !test rsas8p2
 !      c00 = 3.0e-4 * dt          !2008/12/5
-      c00 = 1.0e-4 * dt          ! test(for Praut)
+!byl      c00 = 1.0e-4 * dt          ! test(for Praut)
+      c00 = 1.0e-4 * dt          ! TCo639L72
 !
       cmr = 1.0 / 3.0e-4
 !     cmr = 1.0 / 5.0e-4

@@ -33,6 +33,8 @@
       USE mo_cumulus_flux, only : cuparam
       USE mo_constants,    only : inicon
       USE mo_convect_tables, only : set_lookup_tables
+! for WSM6
+      use module_mp_wsm6, only : wsm6init
 
       implicit  none
 
@@ -56,10 +58,14 @@
                       , cutfreq,hdiff,itypbl,cstar,taup,hfilt           &
                       , ptmeans,update,taureg,doincr,numreduce          &
                       , nmcup,nmpbl,nmland,nmshl,cgw,ggdef,gmdef        &
+                      , nmgwor,nmgwcv,mtnvar                            &
                       , ictm,isol,ico2,iaer,ialb,irad,iems,ntcw         &
                       , num_p3d,ntoz,iovr_sw,iovr_lw,isubc_sw,isubc_lw  &
                       , sashal,crick_proof,ccnorm,norad_precip,me,doo3l &
-                      , ioutsigr,domfc,out_green,ndsladvh2
+                      , ioutsigr,domfc,out_green,dosppt,dospptout       &
+                      , de_corretime_500,de_corretime_1000              &
+                      , de_corretime_2000                               &
+                      , facsppt500,facsppt1000,facsppt2000,ndsladvh2
 !
       real    si(lev+1)
       logical flag
@@ -71,7 +77,7 @@
       namelist /filst/ ifilin,cwbout,bckfile,namlsts &
                      , ifilout,crdate,ocards,phyout,cntrl
 
-      namelist /typ/ write_tau, write_mem, trk_intv, min_trk_pres
+      namelist /typ/ write_tau, write_mem, trk_intv
 
       data pathname/'NWPETCGLB'/
       data logicname/'filist'/
@@ -134,6 +140,14 @@
       idtg = 200000000000 + idtg8*100
       write(cdtg,900)idtg
  900  format(i12.12)
+! check for the new gravity wave drag 
+!( now only for TCo639L72, if not changing back to old version )
+      if ( nco .ne. 640 ) then
+        if ( myrank .eq. 0 ) print *,  &
+         'change back to old version gravity wave drag'
+          nmgwor=1
+      endif
+
 !
       if(myrank .eq. 0) print*,' dtg=',cdtg
 !-----------------------------------------------------------------------
@@ -273,13 +287,13 @@
         hdk2   = 36
         hdk3   = 41
       else if ( lev .eq. 72 ) then
-        hdktop = 42
-        hdk1   = 20
+        hdktop = 43
+        hdk1   = 25
         hdk2   = 39
-        hdk3   = 36
+        hdk3   = 29
       endif
 !!      factop = 1.4
-      factop = 3.0
+      factop = 2.5
       
       coefu=factop/float(hdktop-hdk2)
 !
@@ -306,7 +320,7 @@
         if(myrank.eq.0)print *,' pnm_max pnmcut ',pnm_max,pnmcut
         do j=1,my2
           call pnmy (jtrun,sinl(j),pnm)
-          call reducegrid(pnm,jtrun,pnmcut,j,grt,mtrundef(j),nxdef(j),  &
+          call reducegrid(pnm,jtrun,pnmcut,j,mtrundef(j),nxdef(j),  &
                           octahedral)
           if(myrank.eq.0)print *,'j=',j,' mtrundef,nxdef=',mtrundef(j), &
                              nxdef(j),asin(sinl(j))*r2d
@@ -435,6 +449,17 @@
       if (outdir(numout).eq.'nomodata')  go to 85
    80 continue
    85 numout= numout-1
+!-----------------------------------------------------------------------
+!  for WSM6
+!-----------------------------------------------------------------------
+      if (dolsp .and. ncld .eq. 7) then
+        call wsm6init()
+        ntoz=ncld
+        ntcw=2
+        num_p3d=5
+        nclds=2
+      endif
+
 !-----------------------------------------------------------------------
 !  for rrtmg scheme : rad_initialize
 !-----------------------------------------------------------------------

@@ -9,6 +9,7 @@
              ptop,dtlw,dtsw,lsswr,lslwr,lssav,                      &
              nfxr,j,                                                &
              nx,nxj,lev,ncld,lprnt,ipt,iter,solhr,solcon,           &
+             uni_cloud,lmfshal,lmfdeep2,                            &
 !    -  outputs:
              asol,olr,ss,rs,sld,rld,dtrad,                          &
              ctot,chig,cmid,clow,                                   &
@@ -23,7 +24,7 @@
 ! --- for RRTMG scheme :
 !
       use physpara
-      use module_radiation_driver, only :grrad
+      use module_radiation_driver, only : grrad
 ! -------------------------------------------------------------------
       use mpe
       use rank
@@ -47,6 +48,7 @@
       real*8 sinlj,coslj,xlatj,ptop,dtlw,dtsw,d2r
       integer ntrac,nfxr,nx,nxj,lev,ipt,iter,ncld
       logical lsswr,lslwr,lssav,lprnt
+      logical uni_cloud,lmfshal,lmfdeep2
 
 ! --- for grrad input/output (local) :
 !
@@ -56,7 +58,8 @@
       dimension prslk(nx,lev),prsl(nx,lev)          !for odd levels
       dimension qgrs(nx,lev),tgrs(nx,lev)           !for odd levels
 !      dimension tracer(nx,lev,ncld),vvl(nx,lev)
-      dimension tracer(nx,lev,ncld+1),vvl(nx,lev)
+      dimension vvl(nx,lev)
+      real, dimension(:,:,:), allocatable ::  tracer
 
       dimension slmsk(nxj),xlon(nxj),xlat(nxj),tsfc(nxj),            &
                 snowd(nxj),sncovr(nxj),zorl(nxj),hprim(nxj),         &
@@ -125,6 +128,7 @@
       else
         ntrac=ncld
       endif
+      allocate(tracer(nx,lev,ntrac))
 
       do i=1,nxj
         prsi(i,lev+1)=(sigma(1,1)*pst(i)+sigma(1,2)+ptop)*0.1
@@ -142,12 +146,12 @@
       enddo
       enddo
 
-
+      do n = 1, ntrac-1
       do k = 1, lev
          kc=lev-k+1
       do i = 1, nxj
-         tracer(i,kc,1) = qt(i,k)
-         tracer(i,kc,2) = qt(i,k+lev)
+         tracer(i,kc,n) = qt(i,k+(n-1)*lev)
+      enddo
       enddo
       enddo
 !     if (myrank .eq. 0) print *,'### j=',j
@@ -157,7 +161,7 @@
       do k = 1, lev
          kc=lev-k+1
       do i = 1, nxj
-         tracer(i,kc,3) = o3l(i,k)
+         tracer(i,kc,ntoz) = o3l(i,k)
       enddo
       enddo
 
@@ -166,7 +170,7 @@
          if(fac_o3 .le. 0.3) fac_o3=0.3
          kc=lev-k+1
       do i = 1, nxj
-       tracer(i,kc,3) = o3l(i,k)*fac_o3
+       tracer(i,kc,ntoz) = o3l(i,k)*fac_o3
       end do
       end do
 !
@@ -399,6 +403,7 @@
              icsdsw,icsdlw,ntcw,nclds,ntoz,ntrac,nfxr,               &
              dtlw,dtsw,lsswr,lslwr,lssav,                            &
              nx,nxj,lev,me,lprnt,ipt,iter,myrank,                    &
+             ntiw,ntrw,ntsw,ntgl,uni_cloud,lmfshal,lmfdeep2,         &
 !  ---  outputs:
              dummy1,sfalb,coszen,coszdg,                             &
              dummy2,tsflw,semis,dummy3,                              &
@@ -469,6 +474,7 @@
           fdirr(i,kc)=work8(i,k)
        enddo
        enddo
+       deallocate(tracer)
 
        return
        end

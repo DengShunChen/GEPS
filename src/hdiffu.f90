@@ -24,6 +24,7 @@
       integer   jj,j,nxj,k,i,m,n,mf,nc,kk,KL
       real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu,dec,dect
       real      c1,c2,c3
+      logical   windchk
 
       data      windmax1/80./, windmax2/100./, windmax3/130./
 !!      data      windmax1/70./, windmax2/100./, windmax3/130./
@@ -46,7 +47,7 @@
       call mpe_global_max(wmax,lev,mpe_double)
 !
       do k=1,lev
-        if( wmax(k) .gt. windmax2 ) then
+        if( wmax(k) .gt. windmax3 ) then
           if(myrank.eq.0)print *,'wmax gt windmax at','k= ',k,         &
                                  ' windmax=',wmax(k)
         endif
@@ -66,7 +67,7 @@
          KL=Llist(k)
          dec=max(min(coefu*(hdktop-KL),factop),0.)               &
 !!            -max(min(0.4*(hdk3-KL),1.2),0.) 
-            -max(min(1.5*coefu*(hdk3-KL),factop),0.) 
+            -max(min(coefu*(hdk3-KL),factop),0.) 
 
 !!!         dect=max(min(coefu*(hdktop-5-KL),factop),0.)            &
 !!!             -max(min(1.5*coefu*(hdk3-5-KL),factop),0.)
@@ -79,11 +80,11 @@
 
 
 !ch       amp = max(min(0.91*(22-k),15),1)
-          amp = min(1.+1.0*max(hdk1-KL,0.),8.)
+          amp = min(max(2.*(hdk1-KL),1.),30.)
 
           facd = max(fact*amp,1.0)
           facv = max(fact*amp,1.0)
-          fact = 0.25*max(fact*amp,1.0)
+          fact = min(1.,(0.5+0.1*max(KL-hdk1,0.)))*max(fact*amp,1.0)
 !!!          fact = 0.2*amp
 !
         ddiffu =hfilt*facd
@@ -128,8 +129,13 @@
 !  2003/10/7 :
 !  sometimes wind speed greater than 100m/s happens at k=2
 !
-      if (wmax(1).gt.windmax3 .or. wmax(2).gt.windmax3 .or. &
-          wmax(3).gt.windmax3)then
+      windchk=.false.
+      do k=1,8
+        if ( wmax(k) .gt. windmax3 ) windchk=.true.
+      enddo
+!      if (wmax(1).gt.windmax3 .or. wmax(2).gt.windmax3 .or. &
+!          wmax(3).gt.windmax3)then
+      if ( windchk ) then
        call filter_top(jtrun,jtmax,levp,ncld,temnow,vornow,divnow)
       end if
 !--------------------------------------------------------------------
@@ -199,10 +205,10 @@
               flt = min( 1.0, float(nflt) )
               vornow(k,1,n,m)= vornow(k,1,n,m)*flt
               divnow(k,1,n,m)= divnow(k,1,n,m)*flt
-!!              temnow(k,1,n,m)= temnow(k,1,n,m)*flt
+              temnow(k,1,n,m)= temnow(k,1,n,m)*flt
               vornow(k,2,n,m)= vornow(k,2,n,m)*flt
               divnow(k,2,n,m)= divnow(k,2,n,m)*flt
-!!             temnow(k,2,n,m)= temnow(k,2,n,m)*flt
+              temnow(k,2,n,m)= temnow(k,2,n,m)*flt
             enddo
           enddo
 !          do m = 1, mlistnum
@@ -233,10 +239,10 @@
               flt = sin(fac)/fac
               vornow(k,1,n,m)= vornow(k,1,n,m)*flt
               divnow(k,1,n,m)= divnow(k,1,n,m)*flt
-!!              temnow(k,1,n,m)= temnow(k,1,n,m)*flt
+              temnow(k,1,n,m)= temnow(k,1,n,m)*flt
               vornow(k,2,n,m)= vornow(k,2,n,m)*flt
               divnow(k,2,n,m)= divnow(k,2,n,m)*flt
-!!              temnow(k,2,n,m)= temnow(k,2,n,m)*flt
+              temnow(k,2,n,m)= temnow(k,2,n,m)*flt
             enddo
           enddo
 !          do m = 1, mlistnum

@@ -11,10 +11,12 @@
 
       integer,dimension(:),allocatable,save :: jtwv,jtwvp
 
-      real,dimension(:,:),allocatable,save :: uzm
+!!      real,dimension(:,:),allocatable,save :: uzm
 
-      real,dimension(:,:,:,:),allocatable,save :: vornow,divnow,temnow,qnow,             &
-                                                  vorold,divold,temold,qold,trefs,       &
+!byl      real,dimension(:,:,:,:),allocatable,save :: vornow,divnow,temnow,qnow,             &
+!byl                                                  vorold,divold,temold,qold,trefs,       &
+      real,dimension(:,:,:,:),allocatable,save :: vornow,divnow,temnow,                  &
+                                                  vorold,divold,temold,trefs,            &
                                                   vorten,divten,temten,hldten
 !!                                                vorten,divten,temten,qten,hldten
 
@@ -30,9 +32,9 @@
            integer  ierr
 
            allocate (vornow(levp,2,jtrun,jtmax),divnow(levp,     2,jtrun,jtmax), &
-                     temnow(levp,2,jtrun,jtmax),  qnow(levp*ncld,2,jtrun,jtmax), &
+                     temnow(levp,2,jtrun,jtmax),temold(levp     ,2,jtrun,jtmax), &
+!byl                     qnow(levp*ncld,2,jtrun,jtmax),qold(levp*ncld,2,jtrun,jtmax),& 
                      vorold(levp,2,jtrun,jtmax),divold(levp,     2,jtrun,jtmax), &
-                     temold(levp,2,jtrun,jtmax),  qold(levp*ncld,2,jtrun,jtmax), &
                       trefs(levp,2,jtrun,jtmax),                                 &
                      vorten(levp,2,jtrun,jtmax),divten(levp,     2,jtrun,jtmax), &
 !!                   temten(levp,2,jtrun,jtmax),  qten(levp*ncld,2,jtrun,jtmax), &
@@ -58,11 +60,11 @@
            vornow=0.
            divnow=0.
            temnow=0.
-           qnow=0.
+!byl           qnow=0.
            vorold=0.
            divold=0.
            temold=0.
-           qold=0.
+!byl           qold=0.
            trefs=0.
            vorten=0.
            divten=0.
@@ -74,12 +76,12 @@
            dsqgeo=0.
            spgeo=0.
 
-           allocate (uzm(my,lev), stat=ierr)
-
-           if (ierr/= 0) then
-               write(6,*) 'mod_spec : allocate fail 2 '
-               stop
-           end if
+!!           allocate (uzm(my,lev), stat=ierr)
+!!
+!!           if (ierr/= 0) then
+!!               write(6,*) 'mod_spec : allocate fail 2 '
+!!               stop
+!!           end if
 
            return
 
@@ -87,14 +89,17 @@
 
          subroutine deallocate_spec_array
 
-           deallocate (vornow,divnow,temnow,qnow,             &
-                       vorold,divold,temold,qold,trefs,       &
+!byl           deallocate (vornow,divnow,temnow,qnow,             &
+!byl                       vorold,divold,temold,qold,trefs,       &
+           deallocate (vornow,divnow,temnow,                  &
+                       vorold,divold,temold,trefs,            &
                        vorten,divten,temten,hldten,           &
 !!                     vorten,divten,temten,qten,hldten,      &
                        plnow,plold,dsqgeo,spgeo,plten)
 
-           deallocate (uzm)
+!!           deallocate (uzm)
            deallocate (jtwv,jtwvp)
+           deallocate (plnowL,ploldL,pltenL)
 
            return
 

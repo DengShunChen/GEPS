@@ -12,7 +12,8 @@
                         cutfreq,evectr,pmcor,tmcor,poly,dpoly,cim,      &
                         wdfac,wcfac,onocos
       use spec,  only : temold,vorten,vorold,divten,divold,plnow,temnow,&
-                        divnow,vornow,qold,qnow,plold
+                        divnow,vornow,plold
+!byl                        divnow,vornow,qold,qnow,plold
       use grid,  only : pt,tt,rdiv,rvor,dtpl,dlpl,ut,vt
       use fftcom
 
@@ -23,12 +24,15 @@
 !
 !     integer, parameter ::  no=2*((jtrun+1)/2)+(jtrun/2)+10
       real      eval(no),evec(no*no),epos(no*no),x(no*2)
-      real      a(jtrun,jtrun,lev),b(jtrun,jtrun,lev)
-      real mx(no*no),h(jtrun,jtmax,lev),c(jtrun,jtrun,lev)
+!byl      real      a(jtrun,jtrun,lev),b(jtrun,jtrun,lev)
+      real      a(jtrun,jtrun,nnmivm),b(jtrun,jtrun,nnmivm)
+!byl      real      mx(no*no),h(jtrun,jtmax,lev),c(jtrun,jtrun,lev)
+      real      mx(no*no),h(jtrun,jtmax,nnmivm),c(jtrun,jtrun,nnmivm)
       integer   nw(jtrun,jtmax)
       real      phiten(levp,2,jtrun,jtmax)
       real      wk(no*no),wc(no*2),wd(no*2),ew(no*no)
-      real      cc(nx+2,levp,3,my_max),wss(levp,2,3,jtrun,jtmax)
+      real      cc(nx+2,levp,1,my_max)
+!byl      real      cc(nx+2,levp,3,my_max),wss(levp,2,3,jtrun,jtmax)
       real      bal_tmp(jtrun)
       character lab*10,lrec*16
 
@@ -42,8 +46,9 @@
 !
 !  define constants and comput coefficients for initializatin
 !
+!byl      call  inicons (rad,omega,eigval,lev,jtrun,jtmax, &
       call  inicons (rad,omega,eigval,lev,jtrun,jtmax, &
-                     nw,a,b,c,h)
+                     nw,a,b,c,h,nnmivm)
 !
 !  begin to iterration, now doing 3 iterrations
 !
@@ -251,10 +256,16 @@
 !
 !   transform back to phyical space
 !
-        call joinsr(wss,vornow,divnow,temnow,dummy,jtrun,jtmax,levp &
-                   ,mlistnum,3,1)
-        call transr(jtrun,jtmax,nx,my,my_max,levp,poly,wss,cc,3,nsizey)
-        call ujoinsr(cc,rvor,rdiv,tt,dummy,nx,my_max,lev,jlistnum,3,1)
+!!        call joinsr(wss,vornow,divnow,temnow,dummy,jtrun,jtmax,levp &
+!!                   ,mlistnum,3,1)
+!!        call transr(jtrun,jtmax,nx,my,my_max,levp,poly,wss,cc,3,nsizey)
+!!        call ujoinsr(cc,rvor,rdiv,tt,dummy,nx,my_max,lev,jlistnum,3,1)
+        call transr(jtrun,jtmax,nx,my,my_max,levp,poly,vornow,cc,1,nsizey)
+        call ujoinsr(cc,rvor,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+        call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divnow,cc,1,nsizey)
+        call ujoinsr(cc,rdiv,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+        call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temnow,cc,1,nsizey)
+        call ujoinsr(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
         call transr1(jtrun,jtmax,nx,my,my_max,poly,plnow,pt,nsizey)
 !
 !  compute zonal and meridional gradients of terrain pressure
@@ -285,15 +296,15 @@
         enddo
       enddo
 !
-      do m=1,mlistnum
-        mf=mlist(m)
-        do n=mf,jtrun
-          do k= 1, levp*ncld
-            qold(k,1,n,m)= qnow(k,1,n,m)
-            qold(k,2,n,m)= qnow(k,2,n,m)
-          enddo
-        enddo
-      enddo
+!byl      do m=1,mlistnum
+!        mf=mlist(m)
+!        do n=mf,jtrun
+!          do k= 1, levp*ncld
+!            qold(k,1,n,m)= qnow(k,1,n,m)
+!            qold(k,2,n,m)= qnow(k,2,n,m)
+!          enddo
+!        enddo
+!byl      enddo
 !
       do m=1,mlistnum
         mf=mlist(m)

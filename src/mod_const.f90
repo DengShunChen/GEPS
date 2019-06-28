@@ -17,12 +17,14 @@
       integer numout,ipadding,jm2,ksgeo,                     &
               ktpbl,ktshl,ktcup,julian,ldiag,idg,jdg,njump,  &
               nnmiit,nnmivm,itypbl,                          &
+              nmgwor,nmgwcv,mtnvar,                          &
               ktrop,ncpu,nmcup,nmpbl,nmland,numreduce,nmshl
 
       common/constI/                                         &
               numout,ipadding,jm2,ksgeo,                     &
               ktpbl,ktshl,ktcup,julian,ldiag,idg,jdg,njump,  &
               nnmiit,nnmivm,itypbl,                          &
+              nmgwor,nmgwcv,mtnvar,                          &
               ktrop,ncpu,nmcup,nmpbl,nmland,numreduce,nmshl
 
       real, dimension(:), allocatable, save  ::              &
@@ -46,12 +48,17 @@
            hours,frad,evaprh,qgini,                          &
            tice,hice,cutfreq,taup,hfilt,ptmeans,             &
            taureg,cgw
+! sppt parameters
+      real                                                       &
+           de_corretime_500,de_corretime_1000,de_corretime_2000, &
+           facsppt500,facsppt1000,facsppt2000
            
 
  
       logical lsimpl,lzadv, yesdia,dopbl, docup, dorad,      &
               dolsp, dograv,doshl, dodry, donnmi,ozon,       &
-              restrt,hdiff, cstar, update,doincr,hybrid,doo3l
+              restrt,hdiff, cstar, update,doincr,hybrid,     &
+              doo3l, dosppt, dospptout
       logical domfc,out_green
 !for Semi-Lagrangain
       logical ndsladvh2
