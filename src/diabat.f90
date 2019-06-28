@@ -5,11 +5,13 @@
                     , rgas,cp,stbo,s0,evaprh,hltm,ptop,sigma,dsigma,il,ib,cof  &
                     , xlat,xlon,sgeo,z0,alb,land,ocean,ice,snr                 &
                     , tg,tgclim,curate,plcl,cumtop,totalp,raintot,raincu       &
-                    , rainlp,raincu6,rainlp6,hflux,qflux,ustar,tstar,qstar,e   &
+                    , rainlp,raincu6,rainlp6,raincu3,rainlp3,raincu1,rainlp1   &
+                    , hflux,qflux,ustar,tstar,qstar,e                          &
                     , eps,o3l,dtrad,ss,rs,plt,pk,pk2,ps,up,vp,ttp,qp           &
                     , pst,ut,vt,tt,qt,gwclim,tice,hice,qgini                   &
                     , thdai,tengi,acld,std,qbrwtot,asol,olr,drag               &
-                    , ugws,vgws,sdpbl,t2,rh2,u10,v10,gfx                       &
+                    , ugws,vgws,sdpbl,t2,q2,rh2,rh10,u10,v10,gfx               &
+                    , fm,fh,fm10,fh2,srflag                                    &
                     , rld,km_soil,smc,stc,canopy,runoff                        &
                     , sigmaf,istyp,ivegtyp,wlt,ref,tsat,dfkt,xktk,dfk          &
                     , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,sd                          &
@@ -220,28 +222,33 @@
 
       integer   il(nx,4),ib(nx,4)
 
-      real      sigma(lev+1,2),dsigma(lev,2),                                         &
-                cof(nx*3,4),xlat(my),                                                 &
-                xlon(nx,my_max),sgeo(nxp,my_max),z0(nxp,my_max),              &
+      real      sigma(lev+1,2),dsigma(lev,2),                             &
+                cof(nx*3,4),xlat(my),                                     &
+                xlon(nx,my_max),sgeo(nxp,my_max),z0(nxp,my_max),          &
                 alb(nxp,my_max),snr(nxp,my_max),tg(nxp,my_max),           &
                 tgclim(nxp,my_max),curate(nxp,my_max),plcl(nxp,my_max),   &
                 cumtop(nxp,my_max),totalp(nxp,my_max),raincu(nxp,my_max), &
                 hflux(nxp,my_max),qflux(nxp,my_max),ustar(nxp,my_max),    &
-                tstar(nxp,my_max),qstar(nxp,my_max),                          &
-                e(nxp,lev,my_max),eps(nxp,lev,my_max),                        &
+                tstar(nxp,my_max),qstar(nxp,my_max),                      &
+                e(nxp,lev,my_max),eps(nxp,lev,my_max),                    &
                 o3l(nxp,lev,my_max),dtrad(nxp,lev,my_max),ss(nxp,my_max), &
                 rs(nxp,my_max),plt(nxp,lev,my_max),pk(nxp,lev,my_max),    &
                 pk2(nxp,lev,my_max),ps(nxp,my_max),up(nxp,lev,my_max),    &
-                vp(nxp,lev,my_max),ttp(nxp,lev,my_max),                       &
-                qp(nxp,lev*ncld,my_max),rainlp(nxp,my_max),                   &
+                vp(nxp,lev,my_max),ttp(nxp,lev,my_max),                   &
+                qp(nxp,lev*ncld,my_max),rainlp(nxp,my_max),               &
                 pst(nxp,my_max),ut(nxp,lev,my_max),vt(nxp,lev,my_max),    &
-                tt(nxp,lev,my_max),qt(nxp,lev*ncld,my_max),                   &
-                gwclim(nxp,my_max),acld(lev,my),std(nxp,my_max),              &
+                tt(nxp,lev,my_max),qt(nxp,lev*ncld,my_max),               &
+                gwclim(nxp,my_max),acld(lev,my),std(nxp,my_max),          &
                 asol(nxp,my_max),olr(nxp,my_max),drag(nxp,lev,my_max),    &
                 ugws(nxp,my_max),vgws(nxp,my_max),sdpbl(nxp,my_max),      &
                 raintot(nxp,my_max),t2(nxp,my_max),rh2(nxp,my_max),       &
+                rh10(nxp,my_max),                                         &
+                q2(nxp,my_max),fm(nxp,my_max),fh(nxp,my_max),             &
+                fm10(nxp,my_max),fh2(nxp,my_max),srflag(nxp,my_max),      &
                 u10(nxp,my_max),v10(nxp,my_max),hpbl(nxp,my_max),         &
-                raincu6(nxp,my_max),rainlp6(nxp,my_max)
+                raincu6(nxp,my_max),rainlp6(nxp,my_max),                  &
+                raincu3(nxp,my_max),rainlp3(nxp,my_max),                  &
+                raincu1(nxp,my_max),rainlp1(nxp,my_max)
 !soil (2005/01/12)
       integer,  parameter :: ntype=9, ngrid=22
       integer   istyp(nxp,my_max),ivegtyp(nxp,my_max)
@@ -846,9 +853,10 @@
                      , eps(1,1,jj),hflux(1,jj),qflux(1,jj),fwd                &
                      , gwclim(1,jj),tgclim(1,jj),ocean(1,jj),ice(1,jj)        &
                      , snr(1,jj),totalp(1,jj),ss(1,jj),rs(1,jj),albx(1,jj)    &
-                     , ipblmx(1,j),xkmx(1,j),ijdg(j),xkmd,itypbl              & 
-                     , t2(1,jj),rh2(1,jj),u10(1,jj),v10(1,jj)                 & 
-                     , rld(1,jj),stbo                                         &
+                     , ipblmx(1,j),xkmx(1,j),ijdg(j),xkmd,itypbl              &
+                     , t2(1,jj),q2(1,jj),rh2(1,jj),rh10(1,jj),u10(1,jj)       &
+                     , v10(1,jj),fm(1,jj),fh(1,jj),fm10(1,jj),fh2(1,jj)       &
+                     , srflag(1,jj),rld(1,jj),stbo                            &
                      , km_soil,smc(1,1,jj),stc(1,1,jj),canopy(1,jj)           &
                      , runoff(1,jj),sigmaf(1,jj),istyp(1,jj),ivegtyp(1,jj)    &
                      , ncld,dsigma                                            &
@@ -1552,6 +1560,10 @@
       totalp(i,jj) = (rcup(i,jj)  + rlsp(i,jj))*rainfc
       raincu(i,jj) = raincu(i,jj) + rcup(i,jj)*rainfc
       rainlp(i,jj) = rainlp(i,jj) + rlsp(i,jj)*rainfc
+      raincu1(i,jj)= raincu1(i,jj)+ rcup(i,jj)*rainfc
+      rainlp1(i,jj)= rainlp1(i,jj)+ rlsp(i,jj)*rainfc
+      raincu3(i,jj)= raincu3(i,jj)+ rcup(i,jj)*rainfc
+      rainlp3(i,jj)= rainlp3(i,jj)+ rlsp(i,jj)*rainfc
       raincu6(i,jj)= raincu6(i,jj)+ rcup(i,jj)*rainfc
       rainlp6(i,jj)= rainlp6(i,jj)+ rlsp(i,jj)*rainfc
       raintot(i,jj)= raintot(i,jj)+ totalp(i,jj)

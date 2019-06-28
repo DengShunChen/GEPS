@@ -5,7 +5,7 @@
 !lu_q2m_iter [-1L/+2L]: add tsurf, flag_iter 
 !*   &                    USTAR,WIND,DDVEL,FM10,FH2) 
                           USTAR,WIND,DDVEL,FM10,FH2,  &
-                          SIGMAF,VEGTYPE,SHDMAX,      &
+                          FH10,SIGMAF,VEGTYPE,SHDMAX, &
                           tsurf,flag_iter) 
 ! 
       USE MACHINE , ONLY : kind_phys 
@@ -29,7 +29,7 @@
                            SLIMSK(IM),   STRESS(IM),              &
                            FM(IM),       FH(IM),      USTAR(IM),  &
                            WIND(IM),     DDVEL(IM),               &
-                           FM10(IM),     FH2(IM), SIGMAF(IM),     &
+                           FM10(IM),FH2(IM),FH10(IM),SIGMAF(IM),  &
                            SHDMAX(IM) 
       integer VEGTYPE(IM)
  
@@ -43,7 +43,7 @@
 ! 
       real(kind=kind_phys) DTV(IM),     HL1(IM),     HL12(IM), &
                            HLINF(IM),   PH(IM),                &
-                           PH2(IM),     PM(IM),      PM10(IM), &
+                           PH2(IM),PH10(IM),  PM(IM),PM10(IM), &
                            PSURF(IM),   Q0(IM),      RAT(IM),  &
                            THETA1(IM),  THV1(IM),              &
                            TSURF(IM),   TV1(IM),               &
@@ -111,7 +111,8 @@
 !  COMPUTE STABILITY DEPENDENT EXCHANGE COEFFICIENTS 
 ! 
 !  THIS PORTION OF THE CODE IS PRESENTLY SUPPRESSED 
-! 
+!
+ 
       DO I=1,IMj 
        if(flag_iter(i)) then  
         IF(SLIMSK(I).EQ.0.) THEN 
@@ -208,6 +209,7 @@
         HLINF(I) = RB(I) * FM(I) * FM(I) / FH(I) 
         FM10(I) = LOG((Z0MAX(I)+10.) / Z0MAX(I)) 
         FH2(I) = LOG((ZTMAX(I)+2.) / ZTMAX(I)) 
+        FH10(I) = LOG((ZTMAX(I)+10.) / ZTMAX(I)) 
        endif 
       ENDDO 
 !##DG  IF(LAT.EQ.LATD) THEN 
@@ -258,6 +260,8 @@
 !         AA = SQRT(1. + 4. * ALPHA * HL12(I)) 
           BB = SQRT(1. + 4. * ALPHA * HL12(I)) 
           PH2(I) = BB0 - BB + LOG((BB + 1.) / (BB0 + 1.)) 
+          BB = SQRT(1. + 4. * ALPHA * HL110) 
+          PH10(I) = BB0 - BB + LOG((BB + 1.) / (BB0 + 1.)) 
         ENDIF 
        endif 
       ENDDO 
@@ -299,6 +303,8 @@
           HL12(I) = HL1(I) * 2. / Z1(I) 
           PH2(I) = (A0P + A1P * HL12(I)) * HL12(I)  &
                   / (1. + B1P * HL12(I) + B2P * HL12(I) * HL12(I)) 
+          PH10(I) = (A0P + A1P * HL110) * HL110  &
+                  / (1. + B1P * HL110 + B2P * HL110 * HL110) 
         ENDIF 
         IF(DTV(I).LT.0.AND.HLINF(I).LT.-.5) THEN 
           HL1(I) = -HLINF(I) 
@@ -308,6 +314,7 @@
           PM10(I) = LOG(HL110) + 2. * HL110 ** (-.25) - .8776 
           HL12(I) = HL1(I) * 2. / Z1(I) 
           PH2(I) = LOG(HL12(I)) + .5 * HL12(I) ** (-.5) + 1.386 
+          PH10(I) = LOG(HL110) + .5 * HL110 ** (-.5) + 1.386 
         ENDIF 
        endif 
       ENDDO 
@@ -320,6 +327,7 @@
         FH(I) = FH(I) - PH(I) 
         FM10(I) = FM10(I) - PM10(I) 
         FH2(I) = FH2(I) - PH2(I) 
+        FH10(I) = FH10(I) - PH10(I) 
         CM(I) = CA * CA / (FM(I) * FM(I)) 
         CH(I) = CA * CA / (FM(I) * FH(I)) 
         CQ = CH(I) 
@@ -361,4 +369,4 @@
 !      print*,'-----------'
 !      endif
       RETURN 
-      END 
+      END

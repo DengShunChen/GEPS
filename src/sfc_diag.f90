@@ -2,7 +2,7 @@
                         TSKIN,QSURF,                &
                         U10M,V10M,T2M,Q2M,          &
                         RCL,PRSLKI,SLIMSK,          &
-                        EVAP,FM,FH,FM10,FH2,rh2) 
+                        EVAP,FM,FH,FM10,FH2,FH10,rh2,rh10) 
 ! 
       USE MACHINE , ONLY : kind_phys 
 !     USE FUNCPHYS, ONLY : fpvs 
@@ -20,12 +20,13 @@
                            T1(IM),       Q1(IM),                       &
                            TSKIN(IM),    QSURF(IM),                    &
                            F10M(IM),     U10M(IM),                     &
-                           V10M(IM),     T2M(IM),     Q2M(IM),         &
+                           V10M(IM),     T2M(IM),     T10M(IM),        &
+                           Q2M(IM),      Q10M(IM),                     &
                            RCL(IM),      PRSL1(IM),   PRSLKI(IM),      &
                            SLIMSK(IM),   EVAP(IM),                     &
                            FM(IM),       FH(IM),                       &
-                           FM10(IM),     FH2(IM),                      &
-                           rh2(IM),     p2(IM) ,rosfc(im)
+                           FM10(IM),     FH2(IM),   FH10(IM),          &
+                           rh2(IM),rh10(IM),p2(IMj),p10(IMj),rosfc(im)
 ! 
 !     Locals 
 ! 
@@ -64,6 +65,7 @@
 !
         rosfc(i)=psurf(i)/(rd*tskin(i))
         p2(i)=psurf(i)-rosfc(i)*g*2.
+        p10(i)=psurf(i)-rosfc(i)*g*10.
 !
       ENDDO 
 !! 
@@ -76,8 +78,11 @@
          T2M(I) = TSKIN(I) * (1. - FH2(I) / FH(I)) &
                 + THETA1(I) * FH2(I) / FH(I) 
          T2M(I) = T2M(I) * SIG2K 
+        T10M(I) = TSKIN(I) * (1. - FH10(I) / FH(I)) &
+                + THETA1(I) * FH10(I) / FH(I) 
+        T10M(I) = T10M(I) * SIG2K 
 !        Q2M(I) = QSURF(I) * (1. - FH2(I) / FH(I))
-!    &         + Q1(I) * FH2(I) / FH(I) 
+!     &         + Q1(I) * FH2(I) / FH(I) 
 !       T2M(I) = T1 
 !       Q2M(I) = Q1 
         IF(EVAP(I).GE.0.) THEN 
@@ -86,6 +91,8 @@
 ! 
           Q2M(I) = QSURF(I) * (1. - FH2(I) / FH(I)) &
                + max(qmin,Q1(I)) * FH2(I) / FH(I)      !  Moorthi 
+         Q10M(I) = QSURF(I) * (1. - FH10(I) / FH(I)) &
+               + max(qmin,Q1(I)) * FH10(I) / FH(I)      !  Moorthi 
 !!   &         + Q1(I) * FH2(I) / FH(I) 
         ELSE 
 ! 
@@ -100,6 +107,8 @@
           Q2M(I) = QSS(I) * (1. - FH2(I) / FH(I))  &
                + max(qmin,Q1(I)) * FH2(I) / FH(I)      ! Moorthi 
 !!   &         + Q1(I) * FH2(I) / FH(I) 
+         Q10M(I) = QSS(I) * (1. - FH10(I) / FH(I))  &
+               + max(qmin,Q1(I)) * FH10(I) / FH(I)      ! Moorthi 
         ENDIF 
 !       QSS(I) = fpvs(t2m(I)) 
 !       QSS(I) = EPS * QSS(I) / (PSURF(I) + EPSM1 * QSS(I)) 
@@ -107,6 +116,8 @@
           call qsatq(1, t2m(i), psurf(i)*0.01, qss(i))
 !
         Q2M(I) = MIN(Q2M(I),QSS(I)) 
+          call qsatq(1, t10m(i), psurf(i)*0.01, qss(i))
+        Q10M(I) = MIN(Q10M(I),QSS(I)) 
       ENDDO 
 !    
         call qsatq(imj,t2m,p2*0.01,qss)
@@ -115,5 +126,10 @@
         rh2(i)=min(q2m(i)/qss(i),1.)
         enddo
 !
+        call qsatq(imj,t10m,p10*0.01,qss)
+!
+        do i=1,imj
+        rh10(i)=min(q10m(i)/qss(i),1.)
+        enddo
       RETURN 
       END 

@@ -3,7 +3,7 @@
                         , vt,tt,qt,pk,pk2,ustar,tstar,qstar,e,eps,hflux &
                         , qflux,fwd,gwclim,tgclim,ocean,ice,sheleg      &
                         , totalp,ss,rs,alb,imx,xkmx,idg,xkmd,itype      &
-                        , t2,rh2,u10,v10                                &
+                        , t2,q2,rh2,rh10,u10,v10,fm,fh,fm10,fh2,srflag  &
                         , rld,stbo                                      &
                         , km,smc,stc,canopy,runoff,sigmaf,istyp,ivegtyp &
                         , ncld,dsigma,slopetyp,slc,sncover,snwdph       &
@@ -222,12 +222,12 @@
                 slc(nx,km),                                             &
                 sheleg(nx),snwdph(nx),sncover(nx),                      &
                 zice(nx),cice(nx),xtice(nx),                            &
-                rh2(nx),                                                &
+                rh2(nx),rh10(nx),                                       &
                 shdmin(nx),shdmax(nx),snoalb(nx),albedo2(nx)
 ! local
       real      z0rl(nx),work1(nx),slmsk(nx),cd(nx),cdq(nx),            &
                 tsurf(nx),psi(nx),                                      &
-                fm10(nx),fh2(nx),                                       &
+                fm10(nx),fh2(nx),fh10(nx),                              &
                 qsurf(nx),evapc(nx),cmm(nx),chh(nx),ep1d(nx),           &
                 radsl(nx) ,tprcp(nx),                                   &
                 phy_f2d(nx),q2(nx) 
@@ -429,7 +429,7 @@
                     tg,z0rl,cd,cdq,rb,                                  &
                     rcl,prsl(1,1),work1,slmsk,                          &
                     stress,fm,fh,                                       &
-                    ustar,sfcw,phy_f2d,fm10,fh2,                        &
+                    ustar,sfcw,phy_f2d,fm10,fh2,fh10,                   &
                     sigmaf,ivegtyp,shdmax,                              &
                     tsurf,flag_iter)
 !
@@ -497,7 +497,7 @@
 !
       call sfc_diag(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev), &
                     tg,qsurf,u10,v10,t2,q2,rcl,work1,slmsk,             &
-                    qflux,fm,fh,fm10,fh2,rh2)
+                    qflux,fm,fh,fm10,fh2,fh10,rh2,rh10)
 !
 
 !     if(jj.eq.jo)then

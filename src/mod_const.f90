@@ -39,7 +39,7 @@
            ptop,ptmean,tfilt,dt,tau,taui,taue,tauo,          &
            hours,frad,evaprh,qgini,                          &
            tice,hice,cutfreq,taup,hfilt,ptmeans,             &
-           taureg,cgw
+           taureg,cgw,domfc,otgreen
            
  
       common/constR/                                         &
@@ -47,7 +47,7 @@
            ptop,ptmean,tfilt,dt,tau,taui,taue,tauo,          &
            hours,frad,evaprh,qgini,                          &
            tice,hice,cutfreq,taup,hfilt,ptmeans,             &
-           taureg,cgw
+           taureg,cgw,domfc,otgreen
 ! sppt parameters
       real                                                       &
            de_corretime_500,de_corretime_1000,de_corretime_2000, &
@@ -59,7 +59,7 @@
               dolsp, dograv,doshl, dodry, donnmi,ozon,       &
               restrt,hdiff, cstar, update,doincr,hybrid,     &
               doo3l, dosppt, dospptout
-      logical domfc,out_green
+      logical out_green,out_hp
 !for Semi-Lagrangain
       logical ndsladvh2
 
@@ -74,7 +74,7 @@
       common/constL/lsimpl,lzadv,yesdia,dopbl,docup,dorad,   &
               dolsp, dograv,doshl, dodry, donnmi,ozon,       &
               restrt,hdiff, cstar, update,doincr,hybrid,     &
-              doo3l,ndsladvh2
+              doo3l,ndsladvh2,out_green,out_hp
 
  
       character*80 ifilin,cwbout,bckfile,namlsts, &

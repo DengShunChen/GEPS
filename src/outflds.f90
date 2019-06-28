@@ -1,10 +1,10 @@
       subroutine outflds( itau,nx,my,my_max,lev,ncld                 &
              , lmax,numout,idtg,ifilout                              &
-             , outdir,ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo,pdiff  &
-             , ptend,tsave,t1000,pt,plt,pk,pk2,phi,ut,vt,sd          &
+             , outdir,ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo        &
+             , ptend,pt,plt,pk,pk2,phi,ut,vt,sd                      &
              , tt,qt,rdiv,rvor,tg,gwet,z0,hflux,qflux,snr            &
              , raintot,raincu,rainlp,plcl,cumtop,ss,rs,alb,gwclim    &
-             , acld,cosl,drag,ugws,vgws,t2,rh2,u10,v10,gfx,rld,sld   &
+             , acld,cosl,drag,ugws,vgws,t2,rh2,rh10,u10,v10,gfx,rld,sld &
              , km,smc,slc,stc,canopy,ggdef,slptyp,v850,v700,h850,h500   &
              , ctot,chig,cmid,clow,hpbl,lwrite)
 !
@@ -24,27 +24,28 @@
       real      ptop,capa,cp,rgas,grav
 
       real      sigma(lev+1,2),sgeo(nxp,my_max),pdiff(nxp,my_max),ptend(nxp,my_max) &
-              , tsave(nxp,my_max),t1000(nxp,my_max),pt(nxp,my_max),plt(nxp,lev,my_max) &
-              , pk(nxp,lev,my_max),pk2(nxp,lev,my_max),phi(nxp,lev,my_max)     &
-              , ut(nxp,lev,my_max),vt(nxp,lev,my_max),tt(nxp,lev,my_max)       &
-              , sd(nxp,lev,my_max)                                                     &
-              , qt(nxp,lev*ncld,my_max),rdiv(nxp,lev,my_max)                       &
-              , rvor(nxp,lev,my_max),tg(nxp,my_max),gwet(nxp,my_max)           &
-              , z0(nxp,my_max),hflux(nxp,my_max),qflux(nxp,my_max),snr(nxp,my_max)        &
+              , t1000(nxp,my_max),pt(nxp,my_max),plt(nxp,lev,my_max)                &
+              , pk(nxp,lev,my_max),pk2(nxp,lev,my_max),phi(nxp,lev,my_max)          &
+              , ut(nxp,lev,my_max),vt(nxp,lev,my_max),tt(nxp,lev,my_max)            &
+              , sd(nxp,lev,my_max)                                                  &
+              , qt(nxp,lev*ncld,my_max),rdiv(nxp,lev,my_max)                        &
+              , rvor(nxp,lev,my_max),tg(nxp,my_max),gwet(nxp,my_max)                &
+              , z0(nxp,my_max),hflux(nxp,my_max),qflux(nxp,my_max),snr(nxp,my_max)  &
               , raincu(nxp,my_max),rainlp(nxp,my_max),plcl(nxp,my_max),cumtop(nxp,my_max) &
-              , ss(nxp,my_max),rs(nxp,my_max),alb(nxp,my_max),gwclim(nxp,my_max)          &
-              , acld(lev,my),cosl(my),drag(nxp,lev,my_max)                                  &
-              , ugws(nxp,my_max),vgws(nxp,my_max),t2(nxp,my_max),rh2(nxp,my_max)                    &
-              , u10(nxp,my_max),v10(nxp,my_max),gfx(nxp,my_max),rld(nxp,my_max),sld(nxp,my_max) &
-              , raintot(nxp,my_max)                                                    &
+              , ss(nxp,my_max),rs(nxp,my_max),alb(nxp,my_max),gwclim(nxp,my_max)    &
+              , acld(lev,my),cosl(my),drag(nxp,lev,my_max)                          &
+              , ugws(nxp,my_max),vgws(nxp,my_max),t2(nxp,my_max)                    &
+              , rh2(nxp,my_max),rh10(nxp,my_max)                                    &
+              , u10(nxp,my_max),v10(nxp,my_max),gfx(nxp,my_max),rld(nxp,my_max)     &
+              , sld(nxp,my_max),raintot(nxp,my_max)                                 &
 !soil
-              , smc(nxp,km,my_max),stc(nxp,km,my_max),canopy(nxp,my_max)       &
+              , smc(nxp,km,my_max),stc(nxp,km,my_max),canopy(nxp,my_max)            &
 !noah
-              , slc(nxp,km,my_max)                                                     &
+              , slc(nxp,km,my_max)                                                  &
 ! rad-cloud
               , ctot(nxp,my_max),chig(nxp,my_max),cmid(nxp,my_max),clow(nxp,my_max) &
 ! pbl
-              , hpbl(nxp,my_max)                                                       &
+              , hpbl(nxp,my_max)                                                    &
 ! river
               , slptyp(nxp,my_max),v850(nx,my),v700(nx,my),h850(nx,my),h500(nx,my)
 !
@@ -641,7 +642,7 @@
       call out2d (nx,lev,my,my_max,ifilout,itau,idtg,taudir,ntau    &
                  ,hflux,qflux,tg,gwet,snr,z0,raintot,raincu,rainlp  &
                  ,plcl,cumtop,ss,rs,alb,gwclim,glob                 &
-                 ,acld,ugws,vgws,t2,rh2,u10,v10,gfx,rld,sld,wk_xy   &
+                 ,acld,ugws,vgws,t2,rh2,rh10,u10,v10,gfx,rld,sld,wk_xy   &
                  ,soil_xy,canopy,ggdef,lwrite)
 !
       return

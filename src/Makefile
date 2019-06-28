@@ -25,7 +25,8 @@ SRCS  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
 	grdcon.f90 grdtpw.f90 hdiffu.f90 \
 	incrini.f90 inicons.f90 initial.f90 intgrt.f90 invmtx.f90 lgndr.f90 lsp.f90 \
 	maxp.f90 minp.f90 mixpbl.f90 mtxmlp.f90 mtxprt.f90 \
-	nnmi.f90 out24.f90 out2d.f90 out2d_mfc.f90 outflds.f90 outflds_green.f90 outsigs.f90 outsigr.f90 pbltke.f90 \
+	nnmi.f90 out24.f90 out2d.f90 out2d_mfc.f90 outflds.f90 outflds_green.f90 \
+        outflds_fv3.f90 outflds_hp.f90 outsigs.f90 outsigr.f90 pbltke.f90 \
 	postq.f90 qmaxn3.f90 qprint.f90 stemp.f90 vterpj.f90 \
 	qprnt3.f90 qsatq.f90 radir99.f90 radsl99.f90 radtn99.f90 \
 	rcloud.f90 rcmpir24.f90 rcmpir24c.f90 rcmpsl2.f90 rcmpsl2c.f90 \
