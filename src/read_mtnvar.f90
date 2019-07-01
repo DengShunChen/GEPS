@@ -21,7 +21,7 @@
         form='unformatted',status='old',access='direct',recl=nrec )
 !     &   form='binary',status='old' )
        do v =1,mtnv
-         read(22,rec=i) hprime_a
+         read(22,rec=v) hprime_a
          hprime_a8=hprime_a
 !      if( myrank .eq. 0 ) &
 !      print*,' in read_mtnvar hprime_a = ',(hprime_a(1500,155,i),i=1,mtnv)

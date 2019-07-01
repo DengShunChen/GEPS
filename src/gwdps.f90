@@ -2,7 +2,7 @@
                     prsi,del,prsl,prslk,phii, phil,deltim,kdt,           &
                     hprime,oc,oa4,clx4,theta,sigma,gamma,elvmax,         &
                     dusfc,dvsfc,g, cp, rd, rv, imx,                      &
-                    nmtvr, cdmbgwd, me,u1n,v1n,t1n)
+                    nmtvr, cdmbgwd, me)
 !
 !   ********************************************************************
 ! ----->  i m p l e m e n t a t i o n    v e r s i o n   <----------
@@ -117,7 +117,6 @@
 !     real a(iy,km),    b(iy,km),      pstar(im)
       real a(iy,km),    b(iy,km),       c(iy,km),                        &
            u1(ix,km),   v1(ix,km),     t1(ix,km),                        &
-           u1n(ix,km),   v1n(ix,km),     t1n(ix,km),                        &
            q1(ix,km),   prsi(ix,km+1), del(ix,km),                       &
            prsl(ix,km), prslk(ix,km),  phil(ix,km),                      &
            phii(ix,km+1)
@@ -300,7 +299,7 @@
             .and. (hprime(i) .gt. hpmin) )  then
              npt      = npt + 1
              ipt(npt) = i
-!             if (ipr .eq. i) npr = npt
+             if (ipr .eq. i) npr = npt
           endif
         enddo
         if (npt .eq. 0) return     ! no gwd/mb calculation done!
@@ -535,7 +534,7 @@
           if ( hprime(i) .gt. hpmin )  then
              npt      = npt + 1
              ipt(npt) = i
-!!             if (ipr .eq. i) npr = npt
+             if (ipr .eq. i) npr = npt
           endif
         enddo
         if (npt .eq. 0) return     ! no gwd/mb calculation done!
@@ -928,9 +927,9 @@
           endif
           c(j,k) = c(j,k) + max((eng0-eng1),0.0)/cp/deltim
 !
-          u1n(j,k) = u1n(j,k) + b(j,k) * deltim
-          v1n(j,k) = v1n(j,k) + a(j,k) * deltim
-          t1n(j,k) = t1n(j,k) + c(j,k) * deltim
+          u1(j,k) = u1(j,k) + b(j,k) * deltim
+          v1(j,k) = v1(j,k) + a(j,k) * deltim
+          t1(j,k) = t1(j,k) + c(j,k) * deltim
 !
         enddo
       enddo
@@ -949,9 +948,9 @@
 !                                                                       
 !      do k = 1, km
 !        do i = 1, im
-!          u1n(i,k) = u1n(i,k) + b(i,k) * deltim
-!          v1n(i,k) = v1n(i,k) + a(i,k) * deltim
-!          t1n(i,k) = t1n(i,k) + c(i,k) * deltim
+!          u1(i,k) = u1(i,k) + b(i,k) * deltim
+!          v1(i,k) = v1(i,k) + a(i,k) * deltim
+!          t1(i,k) = t1(i,k) + c(i,k) * deltim
 !        enddo
 !      enddo
 !
