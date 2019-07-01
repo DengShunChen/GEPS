@@ -25,7 +25,10 @@
                     , alvsf,alvwf,alnsf,alnwf,facsf,facwf                      &
                     , idtg,doo3l,nfxr                                          &
 ! sppt
-                    , dosppt, sppt3d, itimestep)
+                    , dosppt, sppt3d, itimestep                                &
+!xb110>
+                    , rmr, smr)
+!xb110<
 !--------------------------------------------------------------------------------
 !#######################################################################
 !
@@ -387,6 +390,10 @@
 !xb110>
       real      mdlon
       real      mflon(nx,my)
+!for new precpd
+      real      rmr(nxp,lev,my_max),smr(nxp,lev,my_max),rainr(nxp,lev,my_max)
+      real      slsp(nxp,my_max)
+!rainr : rainfall rate (unit in kg/kg/dt)
 !xb110<
 !CWB2015 
       kuo=0
@@ -1283,9 +1290,14 @@
                     ftp (1,1,jj),fqp (1,1,jj),fpsp (1,jj),&
                     ftp1(1,1,jj),fqp1(1,1,jj),fpsp1(1,jj),&
                     rhc,lprnt)
-        call precpd(nxjp(j),nxp,lev,dta,del,prsl,psfc, &
-                    qtc, qtr, ttc,           &
-                    rlsp(1,jj), rhc, lprnt)
+!xb110>
+!        call precpd(nxjp(j),nxp,lev,dta,del,prsl,psfc, &
+!                    qtc, qtr, ttc,           &
+!                    rlsp(1,jj), rhc, lprnt)
+        call precpd_n(nxjp(j),nxp,lev,dta,del,prsl,psfc,              &
+                    qtc, qtr, rmr(1,1,jj), smr(1,1,jj), phil, ttc,    &
+                    rlsp(1,jj), slsp(1,jj), rainr(1,1,jj), rhc, lprnt)
+!xb110<
         do i=1,nxj
           rlsp(i,jj) = rlsp(i,jj) * 1000.         ! mm/call
         enddo
