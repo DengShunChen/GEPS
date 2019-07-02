@@ -96,7 +96,7 @@ INCLUDE = -I. -I/users/xa09/$(MACHINE)/fftw-3.3.7/include
 #INCLUDE = -I. -I/nwpr/cfsres/b827/fx10/fftw-3.3.7/include
 
 #CMD  =  MTCo639L72_$(MACHINE)
-CMD  =  MTCo383L72_$(MACHINE)
+CMD  =  MTCo383L72_$(MACHINE)_ysu
 
 # MSG  =    -Ec -Qa,d,i,p,t,x -Koptmsg=2 -Nquickdbg
  MSG  =    -Ec -Qa,d,i,p,t,x -Koptmsg=2

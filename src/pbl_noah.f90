@@ -584,7 +584,8 @@
 !     endif
 !
        if(nmpbl.eq.1)then
-         if(myrank.eq.0)print *,' warning !!!, nmpbl can not be 1, reassign nmpbl=2'
+         if(myrank.eq.0)                                               &
+          print *,' warning !!!, nmpbl can not be 1, reassign nmpbl=2'
          nmpbl=2
        endif
        if(nmpbl .eq. 2)then
@@ -613,6 +614,25 @@
                  , hpbl,ice,g,cp,hltm,r,jj)
 !
        endif
+
+!---
+! YSU pbl scheme
+       if(nmpbl .eq. 4)then
+       ntrac=2
+       do k=1,lev
+          kc=lev-k+1
+       do i=1,nxj
+         swh(i,kc)=asl(i,k)/86400.
+         hlw(i,kc)=atl(i,k)/86400.
+       enddo
+       enddo
+        call     ysu2d(u1,v1,t1,q1,prsl,prsi,prslk,pk2(1,lev),        &
+                   nx,nxj,lev,ntrac,del,cp,g,r,hltm,phil,psi,         &
+                   z0,stress,hpbl,fm,fh,slmsk,heat,evap,sfcw,rb,       &
+                   dt,rcl,u10,v10,swh,hlw,xmu)
+!
+       endif
+
 !
        do k=1,lev
 !jh       do k=ktpbl,lev
