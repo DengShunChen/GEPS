@@ -7,7 +7,7 @@
 #PJM --mpi "proc=192"
 #PJM -j
 #PJM -N TCo383L72_fx10
-#PJM -s
+##PJM -s
 
 set -x
 
@@ -58,7 +58,7 @@ XOS_MMM_L_ARENA_FREE=2; export XOS_MMM_L_ARENA_FREE
  indmstail='GIMGM'
  indmsdb='TCo383L72'
 
- outdmshead=${EXP}
+ outdmshead=${EXP}_git
  outdmstail=${indmstail}
  outdmsdb=${indmsdb}
 
@@ -134,7 +134,7 @@ cp $NWPETC/namlsts_tco383 $GFSWRK/namlsts_tco383
 # cd ${GFSDIR}
 
  #FCT_MODEL=$MDIR/src_fpvs/$EXEC
- FCT_MODEL=$MDIR/src_omix/$EXEC
+ FCT_MODEL=$MDIR/src/$EXEC
  /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} 
 
  if [ $? != 0 ] ; then

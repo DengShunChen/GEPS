@@ -1,0 +1,7 @@
+src/*.o
+src/*.lst
+src/*.mod
+src/MT*
+*.ksh
+TCo383L72_fx10*
+wrk/*

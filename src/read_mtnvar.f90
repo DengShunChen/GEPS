@@ -17,7 +17,8 @@
 !!      open(22,file='/nwpr/gfs/p037/data/NCEPGFSGWDlzl/lzlwrkf2/terrain/'  &
 !!      //'terr_640.2576.1280/global_mtnvar.t640.2576.1280.f77',           &
 !!        form='unformatted',status='old',access='direct',recl=nrec )
-      open(22,file='mtnvar.dat',                                      &
+!      open(22,file='mtnvar.dat',                                      &
+      open(22,file='global_mtnvar.t640.2576.1280.f77',                 &
         form='unformatted',status='old',access='direct',recl=nrec )
 !     &   form='binary',status='old' )
        do v =1,mtnv
