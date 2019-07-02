@@ -1065,7 +1065,7 @@
                 rcup(1,jj) ,pk(1,1,jj),pk2(1,1,jj),sd(1,1,jj),qflux(1,jj),&
                 kbot(1,jj) ,ktop(1,jj),fwd        ,ncld      ,sigma      ,&
                 plt(1,1,jj),pst(1,jj) ,j          ,slimsk    ,hflux(1,jj),&
-                xlat(j)    ,mdlon     ,kuo(1,jj) )
+                xlon(1,jj)    ,xlat(j)    ,mdlon     ,kuo(1,jj) )
 
         do i=1,nxj
          if(kbot(i,jj).eq.lev-1 .and. ktop(i,jj).eq.lev-1)then
