@@ -584,7 +584,8 @@
 !     endif
 !
        if(nmpbl.eq.1)then
-         if(myrank.eq.0)print *,' warning !!!, nmpbl can not be 1, reassign nmpbl=2'
+         if(myrank.eq.0)                                               &
+           print *,' warning !!!, nmpbl can not be 1, reassign nmpbl=2'
          nmpbl=2
        endif
        if(nmpbl .eq. 2)then
