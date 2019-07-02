@@ -127,6 +127,9 @@
       character*34 keydoit,keydone
       data keydoit/"DOIT..........................DOIT"/
       data keydone/"DONE..........................DONE"/
+!xb110>
+      real rmr(nxp,lev,my_max),smr(nxp,lev,my_max)
+!xb110<
 
 #ifdef TIMING
 ! for timing
@@ -443,6 +446,10 @@
           enddo
         enddo 
       endif
+!xb110>
+      rmr = 0.
+      smr = 0.
+!xb110<
 !
 !***********************************************************************
 !     start time integration iterations
@@ -876,7 +883,10 @@
                       , ss_clr,rs_clr,asol_clr,olr_clr,sld_clr,rld_clr          &
                       , alvsf,alvwf,alnsf,alnwf,facsf,facwf                     &
                       , idtg,doo3l,nfxr                                         &
-                      , dosppt, sppt3d, itimestep)
+                      , dosppt, sppt3d, itimestep                               &
+!xb110>
+                      , rmr, smr)
+!xb110<
           itimestep=itimestep+1   ! for sppt time evolution)
 !--------------------------------------------------------------------------------
 !
@@ -1035,7 +1045,10 @@
                      , ss_clr,rs_clr,asol_clr,olr_clr,sld_clr,rld_clr           &
                      , alvsf,alvwf,alnsf,alnwf,facsf,facwf                      &
                      , idtg,doo3l,nfxr                                          &
-                     , dosppt, sppt3d, itimestep)
+                     , dosppt, sppt3d, itimestep                                &
+!xb110>
+                      , rmr, smr)
+!xb110<
           itimestep=itimestep+1   ! for sppt time evolution)
 !--------------------------------------------------------------------------------
 !

@@ -51,7 +51,7 @@ SRCS  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
 	mpe_barrier.f90  mpe_init.f90 mpe_finalize.f90 \
 	mpe_gather_io.f90 mpe_scatter_io.f90 sfcuvt.f90 \
 	landpack.f90 landsfc.f90 landsmc.f90 \
-	rstrandz.f90 rstrantq.f90 fpvs.f90 gpvs.f90 gscond.f90 precpd.f90 \
+	rstrandz.f90 rstrantq.f90 fpvs.f90 gpvs.f90 gscond.f90 precpd.f90 precpd_n.f90\
 	sascnv.f90 sascnv_n.f90 sascnv_sa.f90 landsfc_n.f90 mixpbl_n.f90 pbltke_n.f90 \
 	reducepick.f90 reducegrid.f90 pnmy.f90 reduceintp.f90 tracking.f90 smth9.f90 \
 	gridnl_hybrid_ndsl.f90 vstruc_hybrid.f90 \
@@ -325,7 +325,10 @@ physcons.o : physcons.f90 machine.o
 pmatrx_hybrid_cwb.o : pmatrx_hybrid_cwb.f90 mod_param.o 
 pnmy.o : pnmy.f90 
 postq.o : postq.f90 
-precpd.o : precpd.f90 
+precpd.o : precpd.f90
+#xb110> for updated Zhao-Carr MP scheme
+precpd_n.o : precpd_n.f90 
+#xb110<
 prexp_hybrid_cwb.o : prexp_hybrid_cwb.f90 
 qmaxn3.o : qmaxn3.f90 mod_index.o mod_rank.o 
 qmaxn3p.o : qmaxn3p.f90 mod_index.o mod_rank.o mod_mpe.o 
