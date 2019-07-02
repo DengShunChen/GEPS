@@ -4,4 +4,5 @@ src/*.mod
 src/MT*
 *.ksh
 TCo383L72_fx10*
+.d*
 wrk/*

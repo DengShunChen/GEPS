@@ -7,7 +7,7 @@
 #PJM --mpi "proc=192"
 #PJM -j
 #PJM -N TCo383L72_fx10
-##PJM -s
+#PJM -s
 
 set -x
 
