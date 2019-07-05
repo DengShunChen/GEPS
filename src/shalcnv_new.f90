@@ -236,7 +236,8 @@
       evfactl = 0.3
 !
 !     pgcon   = 0.7     ! Gregory et al. (1997, QJRMS)
-      pgcon   = 0.55    ! Zhang & Wu (2003,JAS)
+!byl      pgcon   = 0.55    ! Zhang & Wu (2003,JAS)
+      pgcon   = 0.3    ! Zhang & Wu (2003,JAS)
       fjcap   = (float(jcap) / 126.) ** 2
       val     =           1.
       fjcap   = max(fjcap,val)
