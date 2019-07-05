@@ -2,7 +2,7 @@
        ,hflux,qflux,tg,gwet,snr,z0,raintot,raincu,rainlp               &
        ,plcl,cumtop,ss,rs,alb,gwclim,glob,acld                         &
        ,ugws,vgws,t2,rh2,u10,v10,gfx,rld,sld,wk_xy                     &
-       ,soil_xy,canopy,ggdef,lwrite)
+       ,soil_xy,canopy,ggdef,lwrite,flash)
 !
       use rank
       use mpe
@@ -47,6 +47,9 @@
       real      sfac2,sfac3,sfac4
 !kc <
       logical lwrite
+!xb110>
+      real flash(nxp,my_max)  !flash density (in flashes km^-2 day^-1)
+!xb110<
 
       num= 0
       if(myrank .eq. 0) print *,' out2d ntau=',ntau
@@ -764,6 +767,17 @@
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       go to 30
       endif
+!xb110> flash density
+      if(label(kk).eq.'fshden') then
+      call mpe2d_unify(glob,flash)
+      call syslbl ('x00999',idtg,itau,ggdef,ihdg)
+      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      go to 30
+      endif
+!xb110<
+
    30 continue
 !
       return

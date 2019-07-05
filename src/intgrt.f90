@@ -122,6 +122,8 @@
       data keydone/"DONE..........................DONE"/
 !xb110>
       real rmr(nxp,lev,my_max),smr(nxp,lev,my_max)
+!for lightning scheme from ECMWF
+      real flash(nxp,my_max)
 !xb110<
 
 #ifdef TIMING
@@ -862,7 +864,7 @@
                       , idtg,doo3l,nfxr                                         &
                       , dosppt, sppt3d, itimestep                               &
 !xb110>
-                      , rmr, smr)
+                      , rmr, smr, flash)
 !xb110<
           itimestep=itimestep+1   ! for sppt time evolution)
 !--------------------------------------------------------------------------------
@@ -1022,7 +1024,7 @@
                      , idtg,doo3l,nfxr                                          &
                      , dosppt, sppt3d, itimestep                                &
 !xb110>
-                      , rmr, smr)
+                      , rmr, smr, flash)
 !xb110<
           itimestep=itimestep+1   ! for sppt time evolution)
 !--------------------------------------------------------------------------------
@@ -1407,7 +1409,7 @@
                     , raintot,raincu,rainlp,asol,olr,ss,rs,alb,gwclim          &
                     , acld,cosl,drag,ugws,vgws,t2,rh2,u10,v10,gfx,rld,sld      &
                     , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500 &
-                    , ctot,chig,cmid,clow,hpbl,histim)
+                    , ctot,chig,cmid,clow,hpbl,histim,flash)
 #endif
 ! out green energy plan
       if(out_green)then

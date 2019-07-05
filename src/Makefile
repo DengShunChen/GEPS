@@ -79,7 +79,7 @@ SRCS  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
 	cuadjtq_n.f90 cuasc_n.f90 cubasmc_n.f90 cuddraf_n.f90\
 	cudlfs_n.f90 cudtdq_n.f90 cududv_n.f90 cuentr_n.f90 cuflx_n.f90 \
 	cuini_n.f90 cumastr_driv_n.f90 cumastr_n.f90 cutype_n.f90 ntke_func.f90 \
-        get_phi.f90 module_mp_radar.f90 module_mp_wsm6_fv3.f90
+        get_phi.f90 module_mp_radar.f90 module_mp_wsm6_fv3.f90 lightning_ec.f90
 
 OBJS=	${SRCS:.f90=.o}
 
@@ -468,3 +468,5 @@ ntke_func.o : ntke_func.f90 mo_constants.o
 get_phi.o : get_phi.f90
 module_mp_radar.o : module_mp_radar.f90
 module_mp_wsm6_fv3.o : module_mp_wsm6_fv3.f90 physcons.o module_mp_radar.o
+#xb110, for lightning scheme>
+lightning_ec.o: lightning_ec.f90 mo_constants.o

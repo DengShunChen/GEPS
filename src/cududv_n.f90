@@ -26,9 +26,19 @@
    
     real     zdudt(klon,klev), zdvdt(klon,klev), zdp(klon,klev)
 !
+!xb110>
+    zuen = 0.
+    zven = 0.
+    zdp  = 0.
+    zmfuu = 0.
+    zmfuv = 0.
+    zmfdu = 0.
+    zmfdv = 0.
+    zdudt = 0.
+    zdvdt = 0.
+!xb110<
     do jk = 1 , klev
-!org      do jl = 1, klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
         if ( ldcum(jl) ) then
           zuen(jl,jk) = puen(jl,jk)
           zven(jl,jk) = pven(jl,jk)
@@ -41,8 +51,7 @@
 ! ----------------------------------------------
     do jk = ktopm2 , klev
       ik = jk - 1
-!org      do jl = 1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
         if ( ldcum(jl) ) then
           zmfuu(jl,jk) = pmfu(jl,jk)*(puu(jl,jk)-zuen(jl,ik))
           zmfuv(jl,jk) = pmfu(jl,jk)*(pvu(jl,jk)-zven(jl,ik))
@@ -53,8 +62,7 @@
     end do
     ! linear fluxes below cloud
       do jk = ktopm2 , klev
-!org        do jl = 1, klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
           if ( ldcum(jl) .and. jk > kcbot(jl) ) then
             ikb = kcbot(jl)
             zzp = ((paph(jl,klev+1)-paph(jl,jk))/(paph(jl,klev+1)-paph(jl,ikb)))
@@ -72,8 +80,7 @@
     do jk = ktopm2 , klev
       if ( jk < klev ) then
         ik = jk + 1
-!org        do jl = 1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
           if ( ldcum(jl) ) then
             zdudt(jl,jk) = zdp(jl,jk) * &
         &                  (zmfuu(jl,ik)-zmfuu(jl,jk)+zmfdu(jl,ik)-zmfdu(jl,jk))
@@ -82,8 +89,7 @@
           end if
         end do
       else
-!org        do jl = 1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
           if ( ldcum(jl) ) then
             zdudt(jl,jk) = -zdp(jl,jk)*(zmfuu(jl,jk)+zmfdu(jl,jk))
             zdvdt(jl,jk) = -zdp(jl,jk)*(zmfuv(jl,jk)+zmfdv(jl,jk))
@@ -95,13 +101,10 @@
 !*  3.0        UPDATE TENDENCIES
 !   -----------------
     do jk = ktopm2 , klev
-!org      do jl = 1, klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
         if ( ldcum(jl) ) then
           ptenu(jl,jk) = ptenu(jl,jk) + zdudt(jl,jk)
-!          ptenu(jl,jk) = zdudt(jl,jk)
           ptenv(jl,jk) = ptenv(jl,jk) + zdvdt(jl,jk)
-!          ptenv(jl,jk) = zdvdt(jl,jk)
         end if
       end do
     end do

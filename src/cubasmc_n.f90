@@ -23,7 +23,6 @@
 !   ---------
 !          none
 ! ----------------------------------------------------------------
-!  USE shr_kind_mod, only: r8 => shr_kind_r8
   USE mo_constants,    ONLY: cpd,     &! specific heat at constantpressure
                              rcpd,    &! rcpd=1./cpd
                              g,       &! gravity acceleration
@@ -56,8 +55,7 @@
 !--------------------------------------------------------
 !*    1.      calculate entrainment and detrainment rates
 ! -------------------------------------------------------
-!org         do jl=1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
           if(.not.ldcum(jl) .and. klab(jl,kk+1).eq.0) then
             if(lmfmid .and. pqen(jl,kk) .gt. 0.80*pqsen(jl,kk).and. &
               pgeo(jl,kk)*zrg .gt. 5.0e2  .and.  &

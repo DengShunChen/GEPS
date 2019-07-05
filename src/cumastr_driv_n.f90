@@ -6,10 +6,7 @@
                     rcup ,pk   ,pk2  ,sd   ,qflux,&
                     kcbot,kctop,fwd  ,ncld ,sigma,&
                     plt  ,pt   ,j    ,lndj ,hfx  ,&
-                    xlon ,xlat,mdlon             ,&
-!xb110>
-                    kcnv)
-!xb110<
+                    xlat,mdlon ,kcnv ,flash)
 !c
 !c#######################################################################
 !c                     subroutine description
@@ -72,19 +69,15 @@
             ,phhfl(nx),hfx(nx)
 !
       real rhoh2o,dx,d2r,xlatj,xlat,tt1
-      real xlon(nx)
 !c
       integer klevp1,klevm1,k,i,kc,ncldq,lndj(nx)
       logical fwd,land(nx),ldland(nx)
-
 !xb110>
-      real zew,zqs,zcor
-      real foeewm
+      real zew,zqs,zcor,foeewm,mdlon
       logical locum(nx)
-      real mdlon
       integer kcnv(nx)
+      real flash(nx)        !flash density (in flashes km^-2 s^-1)
 !xb110<
-
       ncldq=2
       rhoh2o=1000.
 !
@@ -153,10 +146,8 @@
               pvom,  pvol, prsfc,pssfc, kcbot,  &
               kctop, dth,  j,    ztu,   zqu,    &
               zmfu,  zmfd, zrain,pcte,  phhfl,  &
-              lndj,  locum,xlon, xlat,mdlon,    &
-!xb110>
-              kcnv)
-!xb110<
+              lndj,  locum,xlat, mdlon, kcnv,   &
+              flash)
 
       do k=1,lev
       kc=k

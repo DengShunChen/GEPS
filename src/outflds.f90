@@ -6,7 +6,7 @@
              , raintot,raincu,rainlp,plcl,cumtop,ss,rs,alb,gwclim    &
              , acld,cosl,drag,ugws,vgws,t2,rh2,u10,v10,gfx,rld,sld   &
              , km,smc,slc,stc,canopy,ggdef,slptyp,v850,v700,h850,h500   &
-             , ctot,chig,cmid,clow,hpbl,lwrite)
+             , ctot,chig,cmid,clow,hpbl,lwrite,flash)
 !
 !  modify to f90 by C-H Lee and sort by River Chen in 2015
 !
@@ -85,6 +85,9 @@
       real      dsigma(lev,2),deodp
 !
       logical :: lwrite
+!xb110>
+      real      flash(nxp,my_max)         !flash density 
+!xb110<
 !
 !p16  data pout/10.0,20.0,30.0,50.0,70.0,100.0,150.0,200.0,250.0
 !p16 1         ,300.0,400.0,500.0,700.0,850.0,925.0,1000.0/
@@ -642,7 +645,7 @@
                  ,hflux,qflux,tg,gwet,snr,z0,raintot,raincu,rainlp  &
                  ,plcl,cumtop,ss,rs,alb,gwclim,glob                 &
                  ,acld,ugws,vgws,t2,rh2,u10,v10,gfx,rld,sld,wk_xy   &
-                 ,soil_xy,canopy,ggdef,lwrite)
+                 ,soil_xy,canopy,ggdef,lwrite,flash)
 !
       return
       end

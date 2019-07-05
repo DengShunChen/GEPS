@@ -1,7 +1,6 @@
       subroutine cuentr_n(nxj,klon,klev,kk,kcbot,ldcum,ldwork, &
                     pgeoh,pmfu,pdmfen,pdmfde)
 !--------------------------------------------------------------------
-!  USE shr_kind_mod, only: r8 => shr_kind_r8
   USE mo_constants, ONLY : g,  & ! gravity acceleration
                            rd, & ! gas constant for dry air
                            zrg        ! 1.0/g
@@ -23,8 +22,7 @@
     !* 1. CALCULATE ENTRAINMENT AND DETRAINMENT RATES
     ! -------------------------------------------
     if ( ldwork ) then
-!org      do jl = 1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
         pdmfen(jl) = 0.
         pdmfde(jl) = 0.
         zentr(jl) = 0.
@@ -32,8 +30,7 @@
       !
       !*  1.1 SPECIFY ENTRAINMENT RATES
       !   -------------------------
-!org      do jl = 1, klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
         if ( ldcum(jl) ) then
           zdz = (pgeoh(jl,kk)-pgeoh(jl,kk+1))*zrg
           zmf = pmfu(jl,kk+1)*zdz

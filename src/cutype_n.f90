@@ -45,7 +45,6 @@
 !                                 3: mid-level  (cuasc)
 !       information for updraft parcel (ptu,pqu,plu,kcbot,klab,kdpl...)
 ! ----------------------------------------------------------------
-!  USE shr_kind_mod, only: r8 => shr_kind_r8
   USE mo_constants,    ONLY: cpd,    &! specific heat at constant pressure
                              rcpd,   &! rcpd=1./cpd
                              vtmpc1, &! vtmpc1=rv/rd-1
@@ -58,9 +57,7 @@
                              c4ies,  &
                              c5ies
   USE mo_cumulus_flux, ONLY: lmfdudv, & ! true if cumulus friction is switched on
-                             zdnoprc, &
-                             MPAS,    &
-                             RWRF
+                             zdnoprc
 
 !-------------------------------------------------------------------
       implicit none
@@ -113,9 +110,18 @@
       logical  needreset, lldcum(klon)
 !--------------------------------------------------------------
       t13 = 1.0/3.0
+!xb110>
+      eta = 0.
+      dz  = 0.
+      coef = 0.
+      zph  = 0.
+      zcbase = 0.
+
+      cubot = klev
+      cutop = klev
+!xb110<
 !
-!org      do jl=1,klon
-      do jl = 1, nxj            !lin
+      do jl = 1, nxj            
         kcbot(jl)=klev
         kctop(jl)=klev
         kdpl(jl) =klev
@@ -130,8 +136,7 @@
 ! define deltat and deltaq
 !-----------------------------------------------------------
       do jk=1,klev
-!org      do jl=1,klon
-       do jl = 1, nxj            !lin
+       do jl = 1, nxj            
           plu(jl,jk)=culu(jl,jk)  ! parcel liquid water
           ptu(jl,jk)=cutu(jl,jk)  ! parcel temperature
           pqu(jl,jk)=cuqu(jl,jk)  ! parcel specific humidity
@@ -146,8 +151,7 @@
       end do
       end do
 
-!org      do jl=1,klon
-       do jl = 1, nxj             !lin
+       do jl = 1, nxj             
          zqold(jl) = 0.
          lldcum(jl) = .false.
          loflag(jl) = .true.
@@ -158,8 +162,7 @@
 
 ! define the variables at the first level      
       if(jk .eq. klevm1) then
-!org      do jl=1,klon
-       do jl = 1, nxj             !Lin
+       do jl = 1, nxj             
         rho=paph(jl,klev+1)/ &
      &         (rd*(pten(jl,klev)*(1.+vtmpc1*pqen(jl,klev))))
         part1 = 1.5*0.4*(pgeoh(jl,klev)-pgeoh(jl,klev+1))/ &
@@ -186,8 +189,7 @@
       end if
  
       is=0
-!org      do jl=1,klon
-       do jl = 1, nxj          !lin
+       do jl = 1, nxj          
          if(loflag(jl))then
             is=is+1
          endif
@@ -195,16 +197,9 @@
       if(is.eq.0) exit
 
 ! the next levels, we use the variables at the first level as initial values
-!org      do jl=1,klon
-       do jl = 1, nxj           !Lin
+       do jl = 1, nxj           
       if(loflag(jl)) then
-        if(MPAS) then            !lin
          eta(jl) = 0.55/((pgeoh(jl,jk)-pgeoh(jl,klev+1))*zrg)+1.0e-4
-!         eta(jl) = eta(jl)*1.5
-        end if
-        if(RWRF) then            !lin
-          eta(jl) = 0.8/(pgeo(jl,jk)*zrg)+2.e-4
-        end if
         dz(jl)  = (pgeoh(jl,jk)-pgeoh(jl,jk+1))*zrg
         coef(jl)= 0.5*eta(jl)*dz(jl)
         dhen(jl,jk) = pgeoh(jl,jk) + cpd*ptenh(jl,jk)
@@ -221,8 +216,7 @@
       ik=jk
       icall=1
       call cuadjtq_n(nxj,klon,klev,ik,zph,ptu,pqu,loflag,icall)
-!org      do jl=1,klon
-        do jl = 1, nxj          !lin
+        do jl = 1, nxj          
         if( loflag(jl) ) then
           zdq = max((zqold(jl) - pqu(jl,jk)),0.)
           plu(jl,jk) = plu(jl,jk+1) + zdq
@@ -292,8 +286,7 @@
 
       end do ! end all the levels
 
-!org      do jl=1,klon
-      do jl = 1, nxj           !lin
+      do jl = 1, nxj           
         ikb = kcbot(jl)
         ikt = kctop(jl)
         if(paph(jl,ikb) - paph(jl,ikt) > zdnoprc) lldcum(jl) = .false.
@@ -314,8 +307,7 @@
       end do
 
       do jk=klev,1,-1
-!org       do jl=1,klon
-        do jl = 1, nxj          !lin
+        do jl = 1, nxj          
            ikt = kctop(jl)
            if(jk .ge. ikt)then
              culab(jl,jk) = klab(jl,jk)
@@ -335,15 +327,13 @@
 ! assume the mix-layer is 60hPa
       deltt = 0.2
       deltq = 1.0e-4
-!org      do jl=1,klon
-      do jl = 1, nxj           !Lin
+      do jl = 1, nxj           
         deepflag(jl) = .false.
       end do
 
       do levels=klevm1-1,p650,-1 ! loop starts
         do jk=1,klev
-!org          do jl=1,klon
-           do jl = 1, nxj              !Lin
+           do jl = 1, nxj              
              plu(jl,jk)=0.0  ! parcel liquid water
              ptu(jl,jk)=0.0  ! parcel temperature
              pqu(jl,jk)=0.0  ! parcel specific humidity
@@ -358,8 +348,7 @@
           end do
         end do
 
-!org        do jl=1,klon
-         do jl = 1, nxj              !Lin
+         do jl = 1, nxj              
            kcbot(jl)    =  levels
            kctop(jl)    =  levels
            zqold(jl)    = 0.
@@ -371,8 +360,7 @@
 ! start the inner loop to search the deep convection points
       do jk=levels,2,-1
         is=0
-!org        do jl=1,klon
-         do jl = 1, nxj              !lin
+         do jl = 1, nxj              
          if(loflag(jl))then
             is=is+1
          endif
@@ -381,8 +369,7 @@
 
 ! define the variables at the departure level 
         if(jk .eq. levels) then
-!org          do jl=1,klon
-         do jl = 1,nxj           !lin
+         do jl = 1,nxj           
           if(loflag(jl)) then
             if((paph(jl,klev+1)-paph(jl,jk)) < 60.e2) then
               tmix=0.
@@ -421,13 +408,11 @@
         end if
 
 ! the next levels, we use the variables at the first level as initial values
-!org        do jl=1,klon
-         do jl = 1, nxj                   !lin
+         do jl = 1, nxj                   
            if(loflag(jl)) then
 ! define the fscale
              fscale = min(1.,(pqsen(jl,jk)/pqsen(jl,levels))**3)
              eta(jl) = 1.75e-3*fscale
-!             eta(jl) = 1.75e-3*fscale*1.5
              dz(jl)  = (pgeoh(jl,jk)-pgeoh(jl,jk+1))*zrg
              coef(jl)= 0.5*eta(jl)*dz(jl)
              dhen(jl,jk) = pgeoh(jl,jk) + cpd*ptenh(jl,jk)
@@ -445,8 +430,7 @@
         icall=1
         call cuadjtq_n(nxj,klon,klev,ik,zph,ptu,pqu,loflag,icall)
  
-!org      do jl=1,klon
-        do jl = 1, nxj              !Lin
+        do jl = 1, nxj              
         if( loflag(jl) ) then
           zdq = max((zqold(jl) - pqu(jl,jk)),0.)
           plu(jl,jk) = plu(jl,jk+1) + zdq
@@ -516,8 +500,7 @@
       end do ! end all the levels
 
       needreset = .false.
-!org      do jl=1,klon
-      do jl = 1, nxj              !lin
+      do jl = 1, nxj              
         ikb = kcbot(jl)
         ikt = kctop(jl)
         if(paph(jl,ikb) - paph(jl,ikt) < zdnoprc) lldcum(jl) = .false.
@@ -536,8 +519,7 @@
 
       if(needreset) then
       do jk=klev,1,-1
-!org        do jl=1,klon
-         do jl = 1, nxj                 !Lin
+         do jl = 1, nxj                 
           if(resetflag(jl)) then
             ikt = kctop(jl)
             ikb = kdpl(jl)

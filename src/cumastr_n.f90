@@ -9,10 +9,8 @@ SUBROUTINE cumastr_n  &
      &       pvom  ,pvol ,prsfc,pssfc ,kcbot  ,&
      &       kctop ,ztmst,jin  ,ptu   ,pqu    ,&
      &       pmfu  ,pmfd ,prain,pcte  ,phhfl  ,&
-     &       lndj  ,ldcum,xlon ,xlat,mdlon    ,&
-!xb110>
-     &       kcnv)
-!xb110<
+     &       lndj  ,ldcum,xlat ,mdlon ,kcnv   ,&
+     &       flash)
 !
 !***cumastrn*  master routine for cumulus massflux-scheme
 !     m.tiedtke      e.c.m.w.f.      1986/1987/1989
@@ -155,7 +153,7 @@ USE mo_cumulus_flux,  only: lmfdudv, &! true if cum. friction is switched on
       
 
 !  local varaiables
-      real     zcons,zcons2,zqumqe,zdqmin,zdh,zmfmax,xlat,xlon(klon)
+      real     zcons,zcons2,zqumqe,zdqmin,zdh,zmfmax,xlat
       real     zalfaw,zalv,zqalv,zc5ldcp,zc4les,zhsat,zgam,zzz,zhhat
       real     zpbmpt,zro,zdz,zdp,zeps,zfac,wspeed
       integer  jl,jk,ik
@@ -170,6 +168,9 @@ USE mo_cumulus_flux,  only: lmfdudv, &! true if cum. friction is switched on
 !xb110>
       real     mdlon,gdx,re,rr
       integer  kcnv(klon)
+!for lightning parameterization
+      real     pluu(klon,klev),pf(klon,klev),rho(klon,klev)
+      real     flash(klon)
 !xb110<
 !-------------------------------------------
 !     1.    specify constants and parameters
@@ -278,6 +279,15 @@ USE mo_cumulus_flux,  only: lmfdudv, &! true if cum. friction is switched on
      &     kctop,    ictop0,   icum,     ztmst,    zqsenh, &
      &     zlglac,   lndj,     wup,      wbase,    kdpl,   &
      &     pmfude_rate,zoentr1 )
+
+!xb110>
+      !storing the cloud water (kg/kg) value within the convective updraft
+       do jk = 1,klev
+        do jl = 1,nxj
+          pluu(jl,jk) = plu(jl,jk)          ! cloud liquid water within updraft
+        enddo
+       enddo
+!xb110<
 
 !*     (b) check cloud depth and change entrainment rate accordingly
 !          calculate precipitation rate (for downdraft calculation)
@@ -603,6 +613,24 @@ USE mo_cumulus_flux,  only: lmfdudv, &! true if cum. friction is switched on
         prsfc(jl) = pmflxr(jl,klev+1)
         pssfc(jl) = pmflxs(jl,klev+1)
       end do
+
+!xb110>
+!for lightning parameterization from ECMWF
+      pf = 0.
+      rho = 0.
+
+      do jk = 1,klev
+       do jl = 1,nxj
+        pf(jl,jk) = pmflxs(jl,jk)
+        rho(jl,jk) = 0.622*pap(jl,jk)/(rd*ztenh(jl,jk)*(zqenh(jl,jk) + 0.622))
+!environment air density
+       end do
+      end do
+      call lightning_ec (nxj,klon,klev,ptu,pqu,ztenh,zqenh     &
+                        ,pluu,plu,rho,kcbot,kctop,pgeo,pap,pf  &
+                        ,flash,lndj,ldcum)
+!xb110<
+
 !----------------------------------------------------------------
 !*    8.0      update tendencies for t and q in subroutine cudtdq
 !----------------------------------------------------------------

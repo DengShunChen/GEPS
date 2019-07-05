@@ -27,7 +27,7 @@
 ! sppt
                     , dosppt, sppt3d, itimestep                                &
 !xb110>
-                    , rmr, smr)
+                    , rmr, smr, flash)
 !xb110<
 !--------------------------------------------------------------------------------
 !#######################################################################
@@ -394,6 +394,8 @@
       real      rmr(nxp,lev,my_max),smr(nxp,lev,my_max),rainr(nxp,lev,my_max)
       real      slsp(nxp,my_max)
 !rainr : rainfall rate (unit in kg/kg/dt)
+!for lightning
+      real      flash(nxp,my_max)        !flash density (unit in flashes km^-2 day^-1)
 !xb110<
 !CWB2015 
       kuo=0
@@ -1057,7 +1059,7 @@
                 rcup(1,jj) ,pk(1,1,jj),pk2(1,1,jj),sd(1,1,jj),qflux(1,jj),&
                 kbot(1,jj) ,ktop(1,jj),fwd        ,ncld      ,sigma      ,&
                 plt(1,1,jj),pst(1,jj) ,j          ,slimsk    ,hflux(1,jj),&
-                xlat(j)    ,mdlon     ,kuo(1,jj) )
+                xlat(j)   ,mdlon      ,kuo(1,jj) ,flash(1,jj))
 
         do i=1,nxj
          if(kbot(i,jj).eq.lev-1 .and. ktop(i,jj).eq.lev-1)then

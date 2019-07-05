@@ -105,8 +105,8 @@ CONTAINS
     rhoh2o = 1000.
     alv    = 2.5008E6
     als    = 2.8345E6
-    alf    = als - alv      !org
-!    alf    = 3.50E5          !ntiedtke    
+    alf    = als - alv      
+!    alf    = 3.50E5          !new Tiedtke (MPAS)
 
     clw    = 4186.84
     tmelt  = 273.16
@@ -126,7 +126,7 @@ CONTAINS
     c5alscp = c5ies*als/cpd
     alvdcp  = alv/cpd
     alsdcp  = als/cpd
-!! lin
+!> xb110
     zrg = 1.0/g
     r5alvcp = c5les*alv*rcpd
     r5alscp = c5ies*als*rcpd
@@ -136,7 +136,7 @@ CONTAINS
     rtwat=tmelt
     rtber=tmelt-5.
     rtice=tmelt-23.
-!! 
+!< xb110
 
   END SUBROUTINE inicon
 

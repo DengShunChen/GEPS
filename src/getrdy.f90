@@ -74,6 +74,9 @@
               lncrec,istat,itaup,isnow,njump1,njump2,njump3,lvlw,lvlw1, &
               lvlw2,lvlw3,ii
       real    fact,xxaa,taux,dummy,q1,dsigp,pi,xx,wet
+!xb110>
+      real    flash(nxp,my_max)
+!xb110<
 
       lmax=26
 !
@@ -1012,6 +1015,7 @@
         rainlp=0.
         gfx=0.
         sld=0.
+        flash=0.   !xb110, flash density
         call outflds ( 0,nx,my,my_max,lev,ncld,lmax,numout,idtg,ifilout &
              , outdir,ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo,pdiff     &
              , ptend,tsave,t1000,pt,plt,pk,pk2,phi,ut,vt,sd             &
@@ -1019,7 +1023,7 @@
              , raintot,raincu,rainlp,plcl,cumtop,ss,rs,alb,gwclim       &
              , acld,cosl,wk1,ww1,ww2,t2,rh2,u10,v10,gfx,rld,sld         &
              , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500 &
-             , ctot,chig,cmid,clow,hpbl,.true.)
+             , ctot,chig,cmid,clow,hpbl,.true.,flash)
 
 ! add 40m 100m output for green energy plan
       if(out_green)then

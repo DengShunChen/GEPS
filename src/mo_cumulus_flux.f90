@@ -21,18 +21,17 @@ MODULE mo_cumulus_flux
   REAL(r8) :: cmfdeps      !    fractional massflux for downdrafts at lfs
   REAL(r8) :: rhcdd        !    relative saturation in downdrafts
   REAL(r8) :: cprcon       !    coefficients for determining conversion
+  REAL(r8) :: cprcon_n       !    coefficients for determining conversion
                        !    from cloud water to rain
-! lin ----
+!> xb110
   REAL(r8) :: zdnoprc  ! deep cloud is thicker than this height (Unit:Pa)
   REAL(r8) :: momtrans ! momentum transport method
-! --------
+!< xb110
   LOGICAL :: lmfpen    !    true if penetrative convection is switched on
   LOGICAL :: lmfscv    !    true if shallow     convection is switched on
   LOGICAL :: lmfmid    !    true if midlevel    convection is switched on
   LOGICAL :: lmfdd     !    true if cumulus downdraft      is switched on
   LOGICAL :: lmfdudv   !    true if cumulus friction       is switched on
-  LOGICAL :: MPAS
-  LOGICAL :: RWRF
 
 CONTAINS
 
@@ -68,8 +67,6 @@ SUBROUTINE cuparam
   lmfmid = .TRUE.
   lmfdd = .TRUE.
   lmfdudv = .TRUE.
-  MPAS = .TRUE.
-  RWRF = .FALSE.
 
 !-- 1. Specify parameters for massflux-scheme
 
@@ -91,14 +88,14 @@ SUBROUTINE cuparam
 
   cmfdeps = 0.3    ! Fractional massflux for downdrafts at lfs
   
-  zdnoprc = 2.0e4  ! deep cloud is thicker than this height (Unit:Pa)     !lin
+  zdnoprc = 2.0e4  ! deep cloud is thicker than this height (Unit:Pa)     !xb110
 
 !  cprcon  = 6.E-4  ! Coefficients for determining conversion from cloud water   (org)
 !  cprcon  = 1.122E-4  ! Coefficients for determining conversion from cloud water(tie4)
 !  cprcon  = 1.0E-3  ! Coefficients for determining conversion from cloud water (tie5)
-!  cprcon  = 1.0E-4  ! Coefficients for determining conversion from cloud water(tie7)
-   cprcon  = 1.4e-3  !Coefficients for determining conversion from cloud water (MPAS) !lin
-   momtrans = 2  ! momentum transport method !lin  
+   cprcon  = 1.0E-4  ! Coefficients for determining conversion from cloud water(tie7)   !xb110, for Tiedtke (1989)
+   cprcon_n  = 1.4e-3  !Coefficients for determining conversion from cloud water (MPAS) !xb110, for new Tiedtke
+   momtrans = 2  ! momentum transport method !xb110
 
   if(jtrun.eq.320)then
     cmfctop = 0.35

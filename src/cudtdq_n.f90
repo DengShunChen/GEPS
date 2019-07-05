@@ -38,14 +38,20 @@
     real     zdtdt(klon,klev) , zdqdt(klon,klev) , zdp(klon,klev)
     !*    1.0          SETUP AND INITIALIZATIONS
     ! -------------------------
-!    ptent = 0.
-!    ptenq = 0.
     pcte  = 0.
     pxtec = 0.
+!xb110>
+    zdp   = 0.
+    zmfus = 0.
+    zmfds = 0.
+    zmfuq = 0.
+    zmfdq = 0.
+    zdtdt = 0.
+    zdqdt = 0.
+!xb110<
 
     do jk = 1 , klev
-!org      do jl = 1, klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
         if ( ldcum(jl) ) then
           zdp(jl,jk) = g/(paph(jl,jk+1)-paph(jl,jk))
           zmfus(jl,jk) = pmfus(jl,jk)
@@ -60,8 +66,7 @@
     ! ------------------
     do jk = ktopm2 , klev
       if ( jk < klev ) then
-!org        do jl = 1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
           if ( ldcum(jl) ) then
             zalv = foelhm(pten(jl,jk))
          zdtdt(jl,jk) = zdp(jl,jk)*rcpd * &
@@ -74,8 +79,7 @@
           end if
         end do
       else
-!org        do jl = 1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
           if ( ldcum(jl) ) then
             zalv = foelhm(pten(jl,jk))
             zdtdt(jl,jk) = -zdp(jl,jk)*rcpd * &
@@ -91,13 +95,10 @@
   !*  3.0          UPDATE TENDENCIES
   !   -----------------
     do jk = ktopm2 , klev
-!org     do jl = 1, klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
        if ( ldcum(jl) ) then
          ptent(jl,jk) = ptent(jl,jk) + zdtdt(jl,jk)
-!         ptent(jl,jk) = zdtdt(jl,jk)
          ptenq(jl,jk) = ptenq(jl,jk) + zdqdt(jl,jk)
-!         ptenq(jl,jk) = zdqdt(jl,jk)
          pcte(jl,jk)  = zdp(jl,jk)*plude(jl,jk)
          pxtec(jl,jk) = (g/(paph(jl,jk+1)-paph(jl,jk)))*plude(jl,jk)
        end if
