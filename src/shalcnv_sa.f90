@@ -1222,7 +1222,7 @@
       do k = 2, km1
         do i = 1, im
           if(cnvflg(i)) then
-            if(k >= kbcon1(i) .and. k < ktcon1(i)) then
+            if(k .ge. kbcon1(i) .and. k .lt. ktcon1(i)) then
               dz = zi(i,k) - zi(i,k-1)
               tem = sqrt(u1(i,k)*u1(i,k)+v1(i,k)*v1(i,k))
               umean(i) = umean(i) + tem * dz
@@ -1441,7 +1441,7 @@
                 delq(i) =  + qevap(i)/dt2
                 delqev(i) = delqev(i) + .001*dp*qevap(i)/g
               endif
-              dellaq(i,k) = dellaq(i,k) + delq(i) / xmb(i)
+!              dellaq(i,k) = dellaq(i,k) + delq(i) / xmb(i)
               delqbar(i) = delqbar(i) + delq(i)*dp/g
               deltbar(i) = deltbar(i) + deltv(i)*dp/g
             endif
@@ -1476,7 +1476,8 @@
       do k = 1, km1
         do i = 1, im
           if (cnvflg(i)) then
-            if (k.ge.kb(i).and.k.le.ktcon(i)) then
+!            if (k.ge.kb(i).and.k.le.ktcon(i)) then
+            if (k.ge.kbcon(i).and.k.le.ktcon(i)) then
               tem  = dellal(i,k) * xmb(i) * dt2
 !cwb
               ql_all(i,k)=ql_all(i,k)+tem

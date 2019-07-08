@@ -428,7 +428,7 @@
       nxmy = nx * my
       nxlev= nx * lev
       levmy= lev* my
-      radus = 6370000.
+      radus = 6371000.
       radsq = radus**2
       d2r   = 3.141592654 / 180.0
       tpr   = 2.*3.141592654*radus
@@ -1126,13 +1126,13 @@
            ttc(i,kc) = tt(i,k,jj)
            utc(i,kc) = ut(i,k,jj)
            vtc(i,kc) = vt(i,k,jj)
-           tem1      = tpr*cosl(j)/float(nxdef(j))
-           jup       = min(j+1,my)
-           jdn       = max(j-1, 1)
-           tem2      = radus*sin(0.5*abs(xlat(jup)-xlat(jdn))*d2r)
-           garea     = tem1*tem2
           enddo
         enddo
+        tem1      = tpr*cosl(j)/float(nxdef(j))
+        jup       = min(j+1,my)
+        jdn       = max(j-1, 1)
+        tem2      = radus*sin(0.5*abs(xlat(jup)-xlat(jdn))*d2r)
+        garea     = tem1*tem2
 !
 ! old version SAS
          if( nmcup .eq. 2)                                 &

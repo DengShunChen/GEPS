@@ -1588,7 +1588,7 @@
 !
       do k = 1, km
         do i = 1, im
-          if(cnvflg(i) .and. k .le. kmax(i)) then
+          if(asqecflg(i) .and. k .le. kmax(i)) then
 !           qeso(i,k) = 0.01 * fpvs(to(i,k))      ! fpvs is in pa
 !           qeso(i,k) = eps * qeso(i,k) / (pfld(i,k)+epsm1*qeso(i,k))
 !cwb qsat
@@ -1611,7 +1611,7 @@
 !
       do k = 1, km1
         do i = 1, im
-          if(cnvflg(i) .and. k .le. kmax(i)-1) then
+          if(asqecflg(i) .and. k .le. kmax(i)-1) then
             dz = .5 * (zo(i,k+1) - zo(i,k))
             dp = .5 * (pfld(i,k+1) - pfld(i,k))
 !           es = 0.01 * fpvs(to(i,k+1))      ! fpvs is in pa
@@ -2272,7 +2272,8 @@
       do k = 1, km
         do i = 1, im
           if (cnvflg(i) .and. rn(i).gt.0.) then
-            if (k.gt.kb(i).and.k.le.ktcon(i)) then
+!            if (k.gt.kb(i).and.k.le.ktcon(i)) then
+            if(k.ge.kbcon(i) .and. k.le.ktcon(i)) then
               tem  = dellal(i,k) * xmb(i) * dt2
 !cwb
               ql_all(i,k)=ql_all(i,k)+tem
