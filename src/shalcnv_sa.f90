@@ -273,8 +273,7 @@
       evfactl = 0.3
 !
 !     pgcon   = 0.7     ! Gregory et al. (1997, QJRMS)
-!      pgcon   = 0.55    ! Zhang & Wu (2003,JAS)
-      pgcon   = 0.3    ! TCo639L72
+      pgcon   = 0.55    ! Zhang & Wu (2003,JAS)
       w1l     = -8.e-3
       w2l     = -4.e-2
       w3l     = -5.e-3

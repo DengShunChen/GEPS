@@ -1078,8 +1078,7 @@
       endif    !(end if nmcup=5)
 !xb110<
 
-      if (  (nmshl.eq.2 .or. nmshl.eq.3) .or. &
-            (nmcup.eq.2 .or. nmcup.eq.3 .or. nmcup.eq. 6) ) then
+      if ( docup .and. (nmcup.eq.2 .or. nmcup.eq.3 .or. nmcup.eq. 6) ) then
 !
 ! setting for nmcup=2,3 and new shallow convection
 ! setting for nmcup=6 and scale-aware shallow convection
@@ -1135,10 +1134,8 @@
           enddo
         enddo
 !
-      if ( docup .and. (nmcup .eq. 2 .or. nmcup .eq. 3) ) then
-!
 ! old version SAS
-         if(docup .and. nmcup .eq. 2)                                 &
+         if( nmcup .eq. 2)                                 &
          call sascnv(nxjp(j),nxp,lev,jcap,dta,del,sl,psfc,prsl,phil,qtr &
           ,qtc,ttc,utc,vtc,dotc,cldwrk(1,jj) &
           ,rcup(1,jj),kbot(1,jj),ktop(1,jj)                     &
@@ -1146,7 +1143,7 @@
           ,grav,cp,hltm,rgas,tice)
 !
 ! new version SAS
-         if(docup .and. nmcup .eq. 3)                                 &
+         if( nmcup .eq. 3)                                 &
          call sascnv_n(nxjp(j),nxp,lev,jcap,dta,del,psfc,prsl,phil,qtr &
           ,qtc,ttc,utc,vtc,dotc,cldwrk(1,jj) &
           ,rcup(1,jj),kbot(1,jj),ktop(1,jj)                     &
@@ -1154,7 +1151,7 @@
           ,grav,cp,hltm,rgas,tice)
 !
 ! scale-aware SAS
-         if(docup .and. nmcup .eq. 6)                                 &
+         if( nmcup .eq. 6)                                 &
          call sascnv_sa(nxjp(j),nxp,lev,jcap,dta,del,psfc,prsl,phil,qtr &
           ,qtc,ttc,utc,vtc,dotc,cldwrk(1,jj) &
           ,rcup(1,jj),kbot(1,jj),ktop(1,jj)                     &
@@ -1177,9 +1174,57 @@
           rcup(i,jj) = rcup(i,jj) * 1000.         ! mm/call
         enddo
 !
-      endif  !(end of nmcup=2,3)
+        do k=1,lev
+          kc=lev-k+1
+          do i=1,nxj
+            qt(i,k    ,jj) = qtc(i,kc)
+            qt(i,k+lev,jj) = qtr(i,kc)
+            tt(i,k    ,jj) = ttc(i,kc)
+            ut(i,k    ,jj) = utc(i,kc)
+            vt(i,k    ,jj) = vtc(i,kc)
+          enddo
+        enddo
 !
-       if( doshl .and. (nmshl.eq.2 .or. nmshl.eq.3) ) then
+      endif  !(end of docup .or. (nmcup .eq. 2 .or. nmcup .eq. 3 .or. nmcup .eq. 6))
+!
+      if( doshl .and. (nmshl.eq.2 .or. nmshl.eq.3) ) then
+!
+        do i=1,nxj
+          psfc(i)  = pst(i,jj)*0.1        ! change to cb
+          if(land(i,jj))slimsk(i)=1
+          if(ocean(i,jj))slimsk(i)=0
+          if(ice(i,jj))slimsk(i)=2
+        enddo
+        do k=2,lev-1
+          kc=lev-k+1
+          do i = 1, nxj
+            dotc(i,kc)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
+            dotc(i,kc)=dotc(i,kc)*0.1
+          enddo
+        enddo
+        do i = 1,nxj
+          dotc(i,1)=0.5*dotc(i,2)
+          dotc(i,lev)=0.5*dotc(i,lev-1)
+        enddo
+        do k=1,lev
+          kc=lev-k+1
+           sl(kc)    = (sigma(k,1)+sigma(k+1,1))*0.5
+          do i=1,nxj
+           prsl(i,kc) = plt(i,k,jj)*0.1 ! change to cb
+           del(i,kc)  = psfc(i)*dsigma(k,1)+dsigma(k,2)*0.1  !unit cb
+           phil(i,kc)= phi(i,k)-sgeo(i,jj)
+           qtc(i,kc) = qt(i,k,jj)
+           qtr(i,kc) = qt(i,lev+k,jj)
+           ttc(i,kc) = tt(i,k,jj)
+           utc(i,kc) = ut(i,k,jj)
+           vtc(i,kc) = vt(i,k,jj)
+           tem1      = tpr*cosl(j)/float(nxdef(j))
+           jup       = min(j+1,my)
+           jdn       = max(j-1, 1)
+           tem2      = radus*sin(0.5*abs(xlat(jup)-xlat(jdn))*d2r)
+           garea     = tem1*tem2
+          enddo
+        enddo
 !
         do i=1,nxj
            heat(i)=-ustar(i,jj)*tstar(i,jj)
@@ -1219,7 +1264,7 @@
           enddo
         enddo
 !
-      endif  !(end of nmshl.eq.2 .or. (nmcup .eq. 2 .or. nmcup .eq. 3))
+
 
       if ( doshl .and. nmshl .eq.1)                                            &
          call shlcon ( nxjp(j),nxp,lev,ktshl,dta,grav,rgas,cp,xkapa,hltm,ptop  &

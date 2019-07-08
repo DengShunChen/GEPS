@@ -534,7 +534,7 @@
           if ( hprime(i) .gt. hpmin )  then
              npt      = npt + 1
              ipt(npt) = i
-             if (ipr .eq. i) npr = npt
+!             if (ipr .eq. i) npr = npt
           endif
         enddo
         if (npt .eq. 0) return     ! no gwd/mb calculation done!
