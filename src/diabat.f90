@@ -1251,8 +1251,6 @@
           rcup(i,jj) = rcup(i,jj)+rcup2(i) * 1000.         ! mm/call
         enddo
 !
-       endif  !(end of nmshl=2)
-!
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
@@ -1263,6 +1261,10 @@
             vt(i,k    ,jj) = vtc(i,kc)
           enddo
         enddo
+!
+       endif  !(end of doshl .and. (nmshl.eq.2 .or. nmshl.eq.3)
+!
+
 !
 
 
