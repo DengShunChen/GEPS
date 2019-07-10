@@ -7,7 +7,7 @@
 #PJM --mpi "proc=192"
 #PJM -j
 #PJM -N TCo383L72_fx10
-#PJM -s
+##PJM -s
 
 set -x
 
@@ -44,15 +44,14 @@ XOS_MMM_L_ARENA_FREE=2; export XOS_MMM_L_ARENA_FREE
  GFSDIR=$MDIR
  GFSFIX=$MDIR/fix
  GFSWRK=${GFSDIR}/wrk
- rm -rf $GFSWRK
+# rm -rf $GFSWRK
  mkdir -p $GFSWRK
 
 #-- dms data
  dd='180901'
  dtg=${dd}'00'
 
- #EXP='TCo383L72_fpvs'
- EXP='TCo383L72_omix'
+ EXP='TCo383L72_omixi_90'
  indmsowner='xb118'
  indmshead='TCo383L72_'
  indmstail='GIMGM'

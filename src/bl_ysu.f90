@@ -1,7 +1,7 @@
 !    call     ysu2d(u1,v1,t1,q1,prsl,prsi,prslk,pk2(1,lve)         &
 !                  nx,nxj,lev,ntrac=2,del                          &
 !                  cp,g,r,hltm,                                    & !constant
-!                  phii,psi,                                       &
+!                  phil,psi,                                       &
 !                  z0,stress,hpbl,fm,fh,                           &
 !                  slmsk,heat,evap,sfcw,rb,                        &
 !                  dt,rcl,                                    &
@@ -113,29 +113,29 @@
    real              ::     rovcp,rovg,ep1,ep2,karman,rv
 !
    real,     dimension( ix, km )       ::                dz8w2d,prslk
-   real,     dimension( im, km )       ::                        pi2d
-!                                                             p2diorg
 !
-   real,     dimension( ix, km )       ::                          tx
    real,     dimension( ix, km,ndiff ) ::                         qxt
-   real,     dimension( ix, km*3 ) ::                              qx
+   real,     dimension( ix, km*3 )     ::                          qx
 !
    real,     dimension( ix, km+1 )     ::                        p2di
 !
    real,     dimension( ix, km )       ::                         p2d
 !
-   real,     dimension( im )           ::  ls,xland,hfx,qfx,heat,evap
+   real,     dimension( ix )           ::                      psfcpa
+   real,     dimension( ix, km )       ::        ux,vx,tx,swh,hlw,del
+   real,     dimension( ix )           ::  ls,heat,evap,hpbl,znt,xmu
+   real,     dimension( ix )           ::                 stress,wspd
+   real,     dimension( ix )           ::                     u10,v10
+   real,     dimension( im, km )       ::                        pi2d
    real,     dimension( im )           ::                      rcl,br
    real,     dimension( im )           ::                   psim,psih
    real,     dimension( im )           ::                         psk
-   real,     dimension( im )           ::                      psfcpa
-   real,     dimension( ix, km )       ::           ux,vx,swh,hlw,del
+   real,     dimension( im )           ::  xland,hfx,qfx
 ! inout
-   real,     dimension( im )           ::            xmu,ust,hpbl,znt
+   real,     dimension( im )           ::                         ust
 !   real,     dimension( im, km )       ::              utnp,vtnp,ttnp
 !   real,     dimension( im, km*ndiff ) ::                        qtnp
 !
-   real,     dimension( im )           ::                 stress,wspd
 ! out
 !   integer,  dimension( im )           ::                      kpbl1d
 !===
@@ -164,7 +164,6 @@
 !
 !===
 ! inout
-   real,    dimension( im )           ::                       u10,v10
 ! in
    real,    dimension( im )           ::                       uox,vox
 !===
@@ -221,19 +220,13 @@
    uox=0.0
    vox=0.0
    do i=1,im
-   if (ls(i).eq.0) then      ! ls=0:sea ; ls=1:land ; ls=2:sea ice
-       xland(i)=2            ! xland=2:sea & sea ice ; xland=1:land
+   if (ls(i).eq.0.) then      ! ls=0:sea ; ls=1:land ; ls=2:sea ice
+       xland(i)=2.            ! xland=2:sea & sea ice ; xland=1:land
    else
        xland(i)=ls(i)
    endif
    enddo
 
-!   do k =1,km
-!    do i=1,im
-!     p2di(i,k)=prsi(i,k)*1000.
-!     p2d(i,k)=prsl(i,k)*1000.
-!    enddo
-!   enddo
 !     p2di(i,km+1)=prsi(i,km+1)*1000.
 !  p2di=prsi*1000.
 !  p2d=prsl*1000.
@@ -350,6 +343,7 @@
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !     compute preliminary variables
 !
+
    dtstep = dt
    dt2 = 2.*dtstep
 !   dt2 = 1.*dtstep
@@ -411,7 +405,7 @@
      sfcflg(i) = .true.
      hfx(i)=heat(i)*rhox(i)*cp     ! heat[m*K/s] * rho[kg/m^3] * cp[J/kg/K] = [W/m^2]
      qfx(i)=evap(i)*rhox(i)        ! evap[m/s] * rho[kg/m^3] = [kg/m^2/s]
-     sflux(i) = hfx(i)/rhox(i)/cp + qfx(i)/rhox(i)*ep1*thx(i,1)
+     sflux(i) = hfx(i)/rhox(i)/cp + qfx(i)/rhox(i)*ep1*thx(i,1)   ![m*K/s]
      if(br(i).gt.0.0) sfcflg(i) = .false.
 !     if(br(i).gt.0.25) sfcflg(i) = .false.
    enddo
@@ -740,6 +734,7 @@
      do i = 1,im
        if(pblflg(i).and.k.ge.kpbl(i))then
          entfac(i,k) = ((zq(i,k+1)-hpbl(i))/delta(i))**2.
+       print*,'i=',i,'k=',k,'entfac=',entfac(i,k)
        else
          entfac(i,k) = 1.e30
        endif
@@ -1143,7 +1138,7 @@
          xkzm(i,k) = sqrt(xkzm(i,k)*xkzml(i,k))
          xkzm(i,k) = max(xkzm(i,k),xkzom(i,k))
          xkzm(i,k) = min(xkzm(i,k),xkzmax)
-         f1(i,k+1) = ux(i,k+1)
+        f1(i,k+1) = ux(i,k+1)
          f2(i,k+1) = vx(i,k+1)
        else
          f1(i,k+1) = ux(i,k+1)

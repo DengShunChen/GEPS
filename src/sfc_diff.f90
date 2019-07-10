@@ -125,7 +125,8 @@
 ! 
 !  COMPUTE STABILITY INDICES (RB AND HLINF) 
 ! 
-        Z0MAX(I) = MIN(Z0(I),1. * Z1(I)) 
+        Z0MAX(I) = max(1.0e-6,MIN(Z0(I),1. * Z1(I)) )
+!        Z0MAX(I) = MIN(Z0(I),1. * Z1(I)) 
 !
 ! **  test XUBN's new z0 for thermal roughness
 !
@@ -159,6 +160,8 @@
 !
         ZTMAX(I)= Z0MAX(I)*exp( - ((1.-SIGMAF(I))**2)      &
                   *0.8*CA*sqrt(USTAR(I)*0.01/(1.5e-05)))
+!        ZTMAX(I)= Z0MAX(I)*exp( - ((1.-SIGMAF(I))**2)      &
+!                  *0.8*CA*sqrt(USTAR(I)*0.01/(1.5e-04)))
 !
 !***       ZTMAX(I) = Z0MAX(I) 
 !

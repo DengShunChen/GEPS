@@ -14,14 +14,14 @@
  taue=120.0,
  tauo=1.0,
  taup=6.0,
- taureg=6.,
- dt=360.0,
+ taureg=48.,
+ dt=90.0,
  cstar=f,
  update=t,
  lzadv=t,
  lsimpl=t,
  tfilt=0.075,
- hfilt=5.3488e12,
+ hfilt=21.3952e12,
  ksgeo=2,
  yesdia=t,
  dopbl=t,
@@ -47,7 +47,7 @@
  ptmeans=800.,
  ptop=0.1,
  nmcup=3,
- nmpbl=3,
+ nmpbl=4,
  nmland=2,
  nmshl=2,
  ktcup=20,
@@ -67,5 +67,7 @@
  &typ
  write_mem=0,
  trk_intv=6,
- min_trk_pres=1002,
 &end
+
+
+ hfilt=5.3488e12,

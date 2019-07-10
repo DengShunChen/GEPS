@@ -241,6 +241,7 @@ minp.o : minp.f90 mod_mpe.o mod_index.o
 mixpbl.o : mixpbl.f90 mod_paramt.o 
 mixpbl_new.o : mixpbl_new.f90 
 mixpbl_n.o : mixpbl_n.f90 
+bl_ysu.o : bl_ysu.f90 
 mod_const.o : mod_const.f90 mod_param.o 
 mod_fftcom.o : mod_fftcom.f90 
 mod_fj_pad.o : mod_fj_pad.f90 

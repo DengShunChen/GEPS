@@ -2,8 +2,10 @@ src/*.o
 src/*.lst
 src/*.mod
 src/MT*
+src/bl_ysu.org.f90
 *.ksh
 TCo383L72_fx10*
 .d*
 wrk/*
+wrk_ysu/*
 etc/gfs.tauchk
