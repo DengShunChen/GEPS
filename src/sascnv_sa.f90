@@ -1317,7 +1317,7 @@
           jmn = jmin(i)
           hcdo(i,jmn) = heo(i,jmn)
           qcdo(i,jmn) = qo(i,jmn)
-          qrcdo(i,jmn)= qeso(i,jmn)
+          qrcdo(i,jmn)= qo(i,jmn)
           ucdo(i,jmn) = uo(i,jmn)
           vcdo(i,jmn) = vo(i,jmn)
           pwevo(i) = 0.
@@ -1371,7 +1371,7 @@
                  tem1 = 0.5 * (xlamd(i)+xlamdd) * dz
               endif
               factor = 1. + tem - tem1
-              qcdo(i,k) = ((1.-tem1)*qcdo(i,k+1)+tem*0.5*  &
+              qcdo(i,k) = ((1.-tem1)*qrcdo(i,k+1)+tem*0.5*  &
                            (qo(i,k)+qo(i,k+1)))/factor
 !j
 !             pwdo(i,k)  = etad(i,k+1) * qcdo(i,k+1) -
@@ -1379,7 +1379,7 @@
 !             pwdo(i,k)  = pwdo(i,k) - detad *
 !                         .5 * (qrcdo(i,k) + qrcdo(i,k+1))
 !j
-              pwdo(i,k)  = etad(i,k+1) * (qcdo(i,k) - qrcdo(i,k))
+              pwdo(i,k)  = etad(i,k) * (qcdo(i,k) - qrcdo(i,k))
 !              qcdo(i,k)  = qrcdo(i,k)
               pwevo(i)   = pwevo(i) + pwdo(i,k)
           endif
@@ -1453,7 +1453,7 @@
           dp = 1000. * del(i,1)
           dellah(i,1) = edto(i) * etad(i,1) * (hcdo(i,1)  &
                          - heo(i,1)) * g / dp
-          dellaq(i,1) = edto(i) * etad(i,1) * (qcdo(i,1)  &
+          dellaq(i,1) = edto(i) * etad(i,1) * (qrcdo(i,1) &
                          - qo(i,1)) * g / dp
           dellau(i,1) = edto(i) * etad(i,1) * (ucdo(i,1)  &
                          - uo(i,1)) * g / dp
@@ -1504,8 +1504,8 @@
            ((aup*eta(i,k)-adw*edto(i)*etad(i,k))*dv1q                   &
           - (aup*eta(i,k-1)-adw*edto(i)*etad(i,k-1))*dv3q               &
           - (aup*tem*eta(i,k-1)+adw*edto(i)*ptem*etad(i,k))*dv2q*dz     &
-          +  aup*tem1*eta(i,k-1)*.5*(qcko(i,k)+qcko(i,k-1))*dz          &
-          +  adw*edto(i)*ptem1*etad(i,k)*.5*(qrcdo(i,k)+qrcdo(i,k-1))*dz &
+          +  aup*tem1*eta(i,k-1)*.5*(qrcko(i,k)+qcko(i,k-1))*dz         &
+          +  adw*edto(i)*ptem1*etad(i,k)*.5*(qrcdo(i,k)+qcdo(i,k-1))*dz &
                ) *g/dp
 !
               tem1=eta(i,k)*(uo(i,k)-ucko(i,k))
@@ -1813,7 +1813,7 @@
 !             xpwd     = xpwd - detad *
 !                      .5 * (qrcd(i,k) + qrcd(i,k+1))
 ! 
-              xpwd     = etad(i,k+1) * (qcdo(i,k) - qrcd(i,k))
+              xpwd     = etad(i,k) * (qcdo(i,k) - qrcd(i,k))
 !              qcdo(i,k)= qrcd(i,k)
               xpwev(i) = xpwev(i) + xpwd
           endif
