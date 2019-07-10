@@ -58,6 +58,7 @@
 
       dolsp=.true.
       dograv=.true.
+      docgrav=.true.
       doshl=.true.
 
       donnmi=.true.
@@ -101,7 +102,8 @@
 !
 ! specify the default option for orographic and convective gwd
 !
-      nmgwor=1
+      nmgwor=2
+      nmgwcv=2
       mtnvar=14
 !
 ! specify the default option for reduced grids

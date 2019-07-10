@@ -19,7 +19,7 @@ SRCS  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
         gensppt3dv5.f90  spptout.f90 \
 	diagrd.f90 dmsread.f90 dmswrit.f90 drychk.f90 drycon.f90 \
 	eeps.f90 eigen.f90 eigrs.f90 evpcup.f90 gwdp.f90 \
-        read_mtnvar.f90 gwdps.f90 \
+        gwdc.f90 read_mtnvar.f90 gwdps.f90 \
 	gathv.f90 gausl3.f90 gauslv.f90 geostd.f90 \
 	getphi.f90 getrdy.f90 gfcst.f90 glbmean.f90 \
 	grdcon.f90 grdtpw.f90 hdiffu.f90 \
@@ -213,6 +213,7 @@ grdcon.o : grdcon.f90
 grdtpw.o : grdtpw.f90 
 gscond.o : gscond.f90 
 gwdp.o : gwdp.f90 mod_paramt.o
+gwdc.o : gwdc.f90 mod_paramt.o mod_rank.o mod_mpe.o mod_index.o
 read_mtnvar.o : read_mtnvar.f90 mod_index.o mod_param.o
 gwdps.o : gwdps.f90 mod_rank.o mod_mpe.o mod_index.o
 hdiffu.o : hdiffu.f90 mod_rank.o mod_mpe.o mod_index.o mod_const.o

@@ -58,7 +58,7 @@
       logical lsimpl,lzadv, yesdia,dopbl, docup, dorad,      &
               dolsp, dograv,doshl, dodry, donnmi,ozon,       &
               restrt,hdiff, cstar, update,doincr,hybrid,     &
-              doo3l, dosppt, dospptout
+              doo3l, dosppt, dospptout,   docgrav
       logical domfc,out_green
 !for Semi-Lagrangain
       logical ndsladvh2

@@ -16,7 +16,7 @@
                     , shdmax,shdmin,snoalb                                     &
                     , slopetyp,sld,slc,zice,cice,xtice,sncover,sndepth         &
                     , ctot,chig,cmid,clow,hpbl,asl,atl,cosz                    &
-                    , nmgwor,nmgwcv,hprime_b,mtnvar                            &
+                    , nmgwor,nmgwcv,hprime_b,mtnvar,docgrav                    &
 !--------------------------------------------------------------------------------
                     , fusl,fdsl,fuir,fdir                                      &
                     , fuslr,fdslr,fuirr,fdirr                                  &
@@ -45,6 +45,7 @@
 !     dorad  : logical variable for including radiation parameterization
 !     doshl  : logical variable for including shallow convection calcul
 !     dograv : logical variable for including gravity wave drag
+!     dograv : logical variable for including convective gravity wave drag
 !     nx     : x-dimension of model grid
 !     my     : y-dimension of model grid
 !     lev     : total vertical levels of model
@@ -184,7 +185,7 @@
       real hprime_b(nxp,mtnvar,my_max)
       real pltn(nxp,lev,my_max),pkn(nxp,lev,my_max),pk2n(nxp,lev,my_max),  &
            ttpn(nxp,lev,my_max)
-      real phie2c(nxp,lev+1),p2ac(nxp,lev+1)
+      real p2c(nxp,lev+1),phie2c(nxp,lev+1),p2ac(nxp,lev+1)
       real utgwc(nxp,lev),vtgwc(nxp,lev),delttcv(nxp,lev),                 &
            dudtc(nxp,lev),dvdtc(nxp,lev),dtdtc(nxp,lev),                   &
            phio2c(nxp,lev),prslk(nxp,lev)
@@ -211,7 +212,8 @@
       integer ipt,jpt
 !-----------------------------------------------------------------------
       logical   fwd,docup,dodry,dolsp,dopbl,dorad,doshl,dograv,ozon, &
-                land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max)
+                land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max),  &
+                docgrav
 
       integer   nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,idg,  &
                 jdg,ldiag,julian,njump,itypbl,ktcup,ktpbl,ktshl,     &
@@ -1062,7 +1064,8 @@
                 xlat(j)   ,mdlon      ,kuo(1,jj) ,flash(1,jj))
 
         do i=1,nxj
-         if(kbot(i,jj).eq.lev-1 .and. ktop(i,jj).eq.lev-1)then
+!byl         if(kbot(i,jj).eq.lev-1 .and. ktop(i,jj).eq.lev-1)then
+         if(kbot(i,jj).le.0 .or. ktop(i,jj).le.0)then
           plcl(i,jj)=0.
           cumtop(i,jj)=0.
          else
@@ -1187,6 +1190,113 @@
 !
       endif  !(end of docup .or. (nmcup .eq. 2 .or. nmcup .eq. 3 .or. nmcup .eq. 6))
 !
+      if( docgrav .and. nmgwcv .eq. 1 )then
+!
+! recompute phi after tt was changed
+!
+        do k = 1, lev
+          do i = 1, nxj
+            theda(i,k) = tt(i,k,jj)*(1.0+0.608*qt(i,k,jj)) / pk(i,k,jj)
+          enddo
+         enddo
+        do i = 1 ,nxj
+          phi(i,lev) = sgeo(i,jj)+  &
+                   cp*theda(i,lev)*(pk2(i,lev,jj)-pk(i,lev,jj))
+        enddo
+        do k = lev-1, 1, -1
+          do i = 1,nxj
+            phi(i,k) = phi(i,k+1)+cp*(theda(i,k)*(pk2(i,k,jj)-pk(i,k,jj))  &
+                            +theda(i,k+1)*(pk(i,k+1,jj)-pk2(i,k,jj)))
+          enddo
+        enddo
+!
+        call nor_gwdp (j,nxjp(j),nxp,lev,                         &
+                  ut(1,1,jj),vt(1,1,jj),tt(1,1,jj),qt(1,1,jj),    &
+                  plt(1,1,jj),pk(1,1,jj),pk2(1,1,jj),phi,dta,&
+                  grav,rgas,sinl(j),cosl(j),drag_u,drag_v,cp)
+        do k=1,lev
+          avgdrag_u(j,k)=drag_u(k)
+          avgdrag_v(j,k)=drag_v(k)
+        enddo
+!
+      endif ! (end of docgrav .and. nmgwcv.eq.1)
+!
+      if( docgrav .and. nmgwcv.eq.2 )then
+!
+        cgwf(1)  = 0.5      ! cloud top fraction for convective gwd scheme
+        cgwf(2)  = 0.05     ! cloud top fraction for convective gwd scheme
+!
+        do  k = 1,lev+1
+!          kc=(lev+1)-k+1
+          do  i = 1, nxj
+            p2c(i,k) = 100.0*( sigma(k,1)*pst(i,jj)+sigma(k,2) ) !pa
+          enddo
+        enddo
+!
+        do k=1,lev
+!          kc=lev-k+1
+          do i=1,nxj
+            prsl(i,k) = 100.0*plt(i,k,jj) ! pa
+            del(i,k) = 100.0*( dsigma(k,1)*pst(i,jj)+dsigma(k,2))  !pa
+!            qtc(i,kc) = qt(i,k,jj)
+!            ttc(i,kc) = tt(i,k,jj)
+!            utc(i,kc) = ut(i,k,jj)
+!            vtc(i,kc) = vt(i,k,jj)
+            delttcv(i,k) = tt(i,k,jj) - ttpn(i,k,jj)
+          enddo
+        enddo
+!
+        do i = 1, nxj
+          cumabs(i) = 0.0
+          work3(i)  = 0.0
+        enddo
+!
+!        do i =1,nxj
+!          kbotc(i,jj)   =lev-kbot(i,jj)
+!          ktopc(i,jj)   =lev-ktop(i,jj)
+!        enddo
+!
+        do k = 1, lev
+          do i = 1, nxj
+            if (k >= kbot(i,jj) .and. k <= ktop(i,jj)) then
+              cumabs(i) = cumabs(i) + delttcv(i,k) * del(i,k)
+              work3(i)  = work3(i)  + del(i,k)
+            endif
+          enddo
+        enddo
+!
+        do i=1,nxj
+          if (work3(i) > 0.0) cumabs(i) = cumabs(i) / (dt*work3(i))
+        enddo
+!
+        latg =my
+!
+        do i = 1,nxj
+          tem1        = con_rerth * (con_pi+con_pi)*cosl(j)/nxdef(j)
+          tem2        = con_rerth * con_pi/latg
+          dlength(i)  = sqrt( tem1*tem1+tem2*tem2 )
+          work1(i)    = (log(cosl(j) / (nxdef(j)*latg)) - dxmin) * dxinv
+          work1(i)    = max(0.0, min(1.0,work1(i)))
+          work2(i)    = 1.0 - work1(i)
+          cldf(i)     = cgwf(1)*work1(i) + cgwf(2)*work2(i)
+        enddo
+!
+        call gwdc (nxjp(j),nxp,nxp,lev,ut(1,1,jj),vt(1,1,jj),        &
+                     tt(1,1,jj),qt(1,1,jj),prsl,p2c,del,             &
+                     ktop(1,jj),kbot(1,jj),kuo(1,jj),cldf,cumabs,    &
+                     grav,cp,con_rd,con_fvirt,dta,dlength,           &
+                     utgwc,vtgwc,tauctx,taucty,j)
+!
+!        do k=1,lev
+!          kc=lev-k+1
+!          do i=1,nxj
+!            ut(i,k    ,jj) = utc(i,kc)
+!            vt(i,k    ,jj) = vtc(i,kc)
+!          enddo
+!        enddo
+!
+      endif  !(end of docgrav and nmgwcv=2)
+!
       if( doshl .and. (nmshl.eq.2 .or. nmshl.eq.3) ) then
 !
         do i=1,nxj
@@ -1264,9 +1374,6 @@
 !
        endif  !(end of doshl .and. (nmshl.eq.2 .or. nmshl.eq.3)
 !
-
-!
-
 
       if ( doshl .and. nmshl .eq.1)                                            &
          call shlcon ( nxjp(j),nxp,lev,ktshl,dta,grav,rgas,cp,xkapa,hltm,ptop  &
@@ -1404,16 +1511,7 @@
          call drychk ( j,tt(1,1,jj),pk(1,1,jj),dsigpp,nxjp(j),nxp,lev,ndry(j) )
       endif
 !
-      if( upnor )then
-        call nor_gwdp (j,nxjp(j),nxp,lev,                                 &
-                  ut(1,1,jj),vt(1,1,jj),tt(1,1,jj),qt(1,1,jj),    &
-                  plt(1,1,jj),pk(1,1,jj),pk2(1,1,jj),phi,dta,&
-                  grav,rgas,sinl(j),cosl(j),drag_u,drag_v,cp)
-        do k=1,lev
-          avgdrag_u(j,k)=drag_u(k)
-          avgdrag_v(j,k)=drag_v(k)
-        enddo
-      endif
+
 !
 !-------------------------------------------------------------------------
 !     update radiation heating/cooling rate for next time step
