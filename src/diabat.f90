@@ -1065,7 +1065,7 @@
 
         do i=1,nxj
 !byl         if(kbot(i,jj).eq.lev-1 .and. ktop(i,jj).eq.lev-1)then
-         if(kbot(i,jj).le.0 .or. ktop(i,jj).le.0)then
+         if(kbot(i,jj).eq.-1 .and. ktop(i,jj).eq.-1)then
           plcl(i,jj)=0.
           cumtop(i,jj)=0.
          else
