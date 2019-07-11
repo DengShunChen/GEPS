@@ -522,8 +522,16 @@
 ! 5.       final calculations
 ! ------------------
        do jl = 1, nxj         
+
        if ( kctop(jl) == -1 ) ldcum(jl) = .false.
         kcbot(jl) = max(kcbot(jl),kctop(jl))
+!xb110> 20190711
+       if (.not.ldcum(jl)) then
+          kcbot(jl) = -1
+          kctop(jl) = -1
+       end if
+!xb110< 20190711
+
         if ( ldcum(jl) ) then
           wup(jl) = max(1.e-2,wup(jl)/max(1.,zdpmean(jl)))
           wup(jl) = sqrt(2.*wup(jl))
