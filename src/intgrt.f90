@@ -1069,7 +1069,7 @@
           mf=mlist(m)
           do n = mf, jtrun
             do k = 1, levp*2
-              vorold(k,1,n,m)= vornow(k,1,n,m) + tfilt*( vorold(k,1,n,m) &
+              vorold(k,1,n,m)= vornow(k,1,n,m) + 0.8*tfilt*( vorold(k,1,n,m) &
                              - 2.0*vornow(k,1,n,m)+vorten(k,1,n,m) )
               vornow(k,1,n,m)= vorten(k,1,n,m)
               divold(k,1,n,m)= divnow(k,1,n,m) + tfilt*( divold(k,1,n,m) &
@@ -1086,7 +1086,7 @@
           nxj=nxdef_2d(j)
           do k = 1, lev*ncld
             do i = 1, nxj
-              qm(i,k,jj) = qp(i,k,jj) + tfilt*( qm(i,k,jj)           &
+              qm(i,k,jj) = qp(i,k,jj) + 0.8*tfilt*( qm(i,k,jj)           &
                          - 2.0*qp(i,k,jj) + qt(i,k,jj) )
             enddo
           enddo
