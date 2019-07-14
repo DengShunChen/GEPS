@@ -21,7 +21,7 @@
  lzadv=t,
  lsimpl=t,
  tfilt=0.04,
- hfilt=4.1068e12,
+ hfilt=6.1068e12,
  ksgeo=2,
  yesdia=t,
  dopbl=t,
