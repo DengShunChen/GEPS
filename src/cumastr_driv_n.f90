@@ -43,7 +43,7 @@
       use mpe
       use rank
       use index
-      use mo_constants, only:vtmpc1
+      use mo_constants, only:vtmpc1,alv
       implicit none
 !c input & output variable
       integer nx,nxj,lev,ncld,j,jj
@@ -97,7 +97,7 @@
       zrain(i) = 0.0
       locum(i) =.false.
       phhfl(i) = hfx(i)
-      pqhfl(i) = qflux(i)
+      pqhfl(i) = qflux(i)/alv   !xb110 20190715, convert to upward surface moisture flux (kgm^-2s^-1)
       ldland(i)= land(i)
       enddo
 !c transfer t from potential temp to real temp

@@ -425,7 +425,7 @@ mpe_recv_key.o : mpe_recv_key.f90
 #---------------------------------------------------------------------------------------
 #  for cumastr
 #---------------------------------------------------------------------------------------
-cumastr_driv.o : cumastr_driv.f90 mod_index.o mod_mpe.o mod_rank.o
+cumastr_driv.o : cumastr_driv.f90 mod_index.o mod_mpe.o mod_rank.o mo_constants.o
 cuadjtq.o : cuadjtq.f90 mo_convect_tables.o mo_constants.o shr_kind_mod.o 
 cuasc.o : cuasc.f90 mo_cumulus_flux.o mo_constants.o shr_kind_mod.o 
 cubase.o : cubase.f90 mo_cumulus_flux.o mo_constants.o shr_kind_mod.o 
@@ -453,7 +453,7 @@ ndslfv_monoadvh.o : ndslfv_monoadvh.f90 mod_rank.o mod_index.o mod_grid.o mod_pa
 ndslfv_monoadvv.o : ndslfv_monoadvv.f90 mod_rank.o mod_index.o mod_grid.o mod_param.o
 mpe2d.o : mpe2d.f90 mod_param.o mod_index.o
 #xb110, for modified new Tiedtke scheme>
-cumastr_driv_n.o : cumastr_driv_n.f90 mod_index.o mod_mpe.o mod_rank.o mod_grid.o
+cumastr_driv_n.o : cumastr_driv_n.f90 mod_index.o mod_mpe.o mod_rank.o mod_grid.o mo_constants.o
 cuadjtq_n.o:cuadjtq_n.f90 mo_convect_tables.o mo_constants.o shr_kind_mod.o ntke_func.o
 cuasc_n.o : cuasc_n.f90 mo_cumulus_flux.o mo_constants.o shr_kind_mod.o ntke_func.o
 cutype_n.o : cutype_n.f90 mo_cumulus_flux.o mo_constants.o shr_kind_mod.o ntke_func.o

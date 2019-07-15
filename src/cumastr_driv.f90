@@ -41,6 +41,7 @@
       use mpe
       use rank
       use index
+      use mo_constants, only:alv
 !
       implicit none
 !c input & output variable
