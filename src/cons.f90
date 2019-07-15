@@ -24,6 +24,7 @@
       use spec
       use fftcom
       use mod_typhoon
+      use mod_sit_control,       ONLY:sit_nml
 !-----------------------------------------------------------------------
       use radn
 !-----------------------------------------------------------------------
@@ -65,7 +66,9 @@
                       , ioutsigr,domfc,out_green,dosppt,dospptout       &
                       , de_corretime_500,de_corretime_1000              &
                       , de_corretime_2000                               &
-                      , facsppt500,facsppt1000,facsppt2000,ndsladvh2
+                      , facsppt500,facsppt1000,facsppt2000,ndsladvh2    &
+                      , ldailyFCTsst,ldailyFCTicesndpt,lFCTweight       &
+                      , dailyClm_option,lopgsst,do_sit,fsit
 !
       real    si(lev+1)
       logical flag
@@ -75,9 +78,12 @@
       character*80 pathname,logicname,truefile
       character*64 type_r,type_w,argument
       namelist /filst/ ifilin,cwbout,bckfile,namlsts &
-                     , ifilout,crdate,ocards,phyout,cntrl
+                     , ifilout,crdate,ocards,phyout,cntrl &
+                     , ifilin_ncep, ifilin_sst, ifilin_nc &
+                     , ifilin_ClmANA,ifilin_ClmFCT
 
       namelist /typ/ write_tau, write_mem, trk_intv
+      integer istat4,istat5,istat6,istat7
 
       data pathname/'NWPETCGLB'/
       data logicname/'filist'/
@@ -131,23 +137,31 @@
       read (1,typ,end=121)
   121 continue
 !
+      close(1)
+      open (unit=1,file=trim(namlsts),form='formatted')
+
+      if(do_sit) then
+        read (1,sit_nml,end=130)
+        if(myrank .eq. 0) then
+          print *, 'chlee debug...'
+          print sit_nml
+        endif
+  130 continue
+      endif
 !
       open (unit=2,file=trim(crdate),form='formatted')
 !
 ! read in idtg*12
       read(2,'(i8.8)')idtg8
 ! transfer idtg8 to idtg*12
-      idtg = 200000000000 + idtg8*100
+      if(idtg8.gt.60000000)then
+        idtg = 200000000000 + idtg8*100
+      else
+        idtg = 200000000000 + idtg8*100
+      endif
+!
       write(cdtg,900)idtg
  900  format(i12.12)
-! check for the new gravity wave drag 
-!( now only for TCo639L72, if not changing back to old version )
-      if ( nco .ne. 640 ) then
-        if ( myrank .eq. 0 ) print *,  &
-         'change back to old version gravity wave drag'
-          nmgwor=1
-      endif
-
 !
       if(myrank .eq. 0) print*,' dtg=',cdtg
 !-----------------------------------------------------------------------
@@ -421,6 +435,31 @@
       call dmsopn(ifilout,"w",istat3)
 
       istat = abs(istat1) + abs(istat2) + abs(istat3)
+!
+! ldailyFCTsst=true, restore sst, snow depth, sea ice fraction from ncep
+! data
+! open ncep data dms
+!
+       if(ldailyFCTsst) then
+          istat4=0
+          call dmsopn(ifilin_sst,"r",istat4)
+          istat = istat + abs(istat4)
+        endif
+        if(ldailyFCTicesndpt) then
+          istat5=0
+          call dmsopn(ifilin_ncep,"r",istat5)
+          istat = istat + abs(istat5)
+        endif
+        if(dailyClm_option .ge. 1) then
+          istat6=0
+          istat7=0
+          call dmsopn(ifilin_ClmANA,"r",istat6)
+          if(dailyClm_option .eq. 2) then
+            call dmsopn(ifilin_ClmFCT,"r",istat7)
+          endif
+          istat = istat + abs(istat6)+abs(istat7)
+        endif
+
       end if
 !ch   call mpe_broadcast(istat,1,flag,mpe_integer)
       call mpe_bcast(istat,1,0,mpe_integer)
@@ -430,6 +469,10 @@
          if(istat1.ne.0) print*,' BCKFILE=',bckfile,' dms open failed !'
          if(istat2.ne.0) print*,' IFILEIN=',ifilin,' dms open failed!'
          if(istat3.ne.0) print*,' IFILEOUT=',ifilout,' dms open failed!'
+         if(istat4.ne.0) print*,' IFILE_SST=',ifilin_sst,' dms open failed!'
+         if(istat5.ne.0) print*,' IFILE_NCEP=',ifilin_ncep,' dms open failed!'
+         if(istat6.ne.0) print*,' IFILE_ClmANA=',ifilin_ClmANA,' dmsopen failed!'
+         if(istat7.ne.0) print*,' IFILE_ClmFCT=',ifilin_ClmFCT,' dmsopen failed!'
         endif
         call mpe_finalize
         call dmsexit(-1)

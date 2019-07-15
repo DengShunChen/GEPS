@@ -6,7 +6,7 @@
              , raintot,raincu,rainlp,plcl,cumtop,ss,rs,alb,gwclim    &
              , acld,cosl,drag,ugws,vgws,t2,rh2,u10,v10,gfx,rld,sld   &
              , km,smc,slc,stc,canopy,ggdef,slptyp,v850,v700,h850,h500   &
-             , ctot,chig,cmid,clow,hpbl,lwrite,flash)
+             , ctot,chig,cmid,clow,hpbl,lwrite,flash,lwritesit)
 !
 !  modify to f90 by C-H Lee and sort by River Chen in 2015
 !
@@ -84,7 +84,7 @@
 !
       real      dsigma(lev,2),deodp
 !
-      logical :: lwrite
+      logical :: lwrite,lwritesit
 !xb110>
       real      flash(nxp,my_max)         !flash density 
 !xb110<
@@ -554,6 +554,14 @@
       if(myrank.eq.0)print*,' outfld : start dragout, lwrite = ',lwrite
         call dragout (nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,num &
                   ,whtlev,pkout,plog,pllp,drag,bt1,pres3d,ggdef,lwrite)
+      endif
+!
+      if(lwritesit) then
+        labx='sit   '
+        call whtrec (labx,ntau,taudir,whtlev,num)
+        if(num.gt.0) then
+          call sitout(nx,my,itau,ifilout,idtg,num,whtlev,ggdef)
+        endif
       endif
 !
 !  wk_xy(-,-,1) : temperature at the lowest sigma level

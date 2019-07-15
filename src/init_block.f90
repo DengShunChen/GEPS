@@ -100,6 +100,16 @@
 
       cgw=1.0e-4
 !
+!---for using forecast daily sst, sea ice fraction, snow depth
+      ldailyFCTsst=.false.
+      ldailyFCTicesndpt=.false.
+      lFCTweight=.false.
+      lopgsst=.false.
+      dailyClm_option=-99
+!--for SIT
+      do_sit=.false.
+      fsit=-99.
+!
 ! specify the default option for orographic and convective gwd
 !
       nmgwor=2

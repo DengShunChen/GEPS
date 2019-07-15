@@ -1,3 +1,7 @@
+#define myrank_check 46
+#define jj_check 11
+#define ii_check 206
+!
       subroutine diabat ( fwd,docup,dodry,dolsp,dopbl,dorad,doshl,dograv       &
                     , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw       &
                     , idg,jdg,ldiag,dt,tau,hours,julian                        &
@@ -25,7 +29,7 @@
                     , alvsf,alvwf,alnsf,alnwf,facsf,facwf                      &
                     , idtg,doo3l,nfxr                                          &
 ! sppt
-                    , dosppt, sppt3d, itimestep                                &
+                    , dosppt,sppt3d,itimestep,lrun_sitvdiff,ic_sit             &
 !xb110>
                     , rmr, smr, flash)
 !xb110<
@@ -161,6 +165,15 @@
       use mpe
       use rank
       use index
+      use const,                 ONLY:do_sit,ldailyFCTsst,dailyClm_option
+      use mod_sitgrid
+      USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
+      USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt
+      USE mod_eos_ocean,         ONLY:AirVaporPressure,CalcSm
+      USE mod_sst,               ONLY:time_weights,now1,now2,wgto1,wgto2     &
+                                     ,obswtbnmw1,obswtbnmw2,obswtbwgt1       &
+                                     ,obswtbwgt2,dailyFCTsst
+      USE mo_netcdf,             ONLY:lkvl
 !-----------------------------------------------------------------------
       use radn
       use physpara
@@ -303,10 +316,7 @@
 !---------------------------------------------------------------------------
       real      avgdrag_u(my,lev),avgdrag_v(my,lev),drag_u(lev),drag_v(lev)
       real      fnor
-      logical   donor, upnor
-!     data      donor/.true./, fnor/1./
-      data      donor/.true./, fnor/0.5/
-!     data      donor/.false./,fnor/1./
+      data      fnor/0.5/
 !
 !#######################################################################
 !
@@ -399,8 +409,29 @@
 !for lightning
       real      flash(nxp,my_max)        !flash density (unit in flashes km^-2 day^-1)
 !xb110<
+!ps
+      logical lrun_sitvdiff
+      integer ic_sit
+      real liw, t_surf
+      real sitlat(nxp)
+      real sitlon(nxp,my_max)
+      integer istep,icurrenttau
+      real rnuw,z0w,d0w,Pairvapor,rhoa,ps1w,ustra,vstra
+      integer*8 idtg_sitvdiff
+      real tauleft, dtsit
+      real, dimension(:,:), allocatable :: sstm, rstm,hfluxtm,qfluxtm, &
+                                          u10tm,v10tm, rlsptm, rcuptm, &
+                                        ustartm, t2tm,  rh2tm,  psttm, &
+                                         cicetm,snrtm, zicetm,xticetm, &
+                                       obswtbtm, tgtm
+      character*12 cdtg
+      integer yr, mo, dy, hr, mn
+      real tauhr
+      INTEGER, PARAMETER :: nerr = 6
+!ps
 !CWB2015 
       kuo=0
+      kdt=0
 
 !CWB2016 
       icsdsw=0
@@ -483,9 +514,6 @@
 ! for nonorographic gravity wave drag
 !
       icnor = fnor*3600.0/dt + 0.0001
-      upnor = .false.
-      if ( (mod(iter,icnor).eq.0) .or. (iter.eq.1) )  upnor = .true.
-      upnor  = upnor  .and. donor
 !
       if (.not. dopbl)  then
         do jj = 1, jlistnum
@@ -1625,6 +1653,403 @@
 !          print *,'### rrtmg ok !!'
 !      endif
       endif  ! for uprad .and. irad=2
+!-------------------------------------------------------
+! SIT scheme, update tg
+!-------------------------------------------------------
+      if(myrank .EQ. myrank_check .AND. jj .EQ. jj_check ) then
+        print*,'before do_sit: myrank=',myrank,',jj=',jj       &
+              ,'ii=',ii_check,',tg=',tg(ii_check,jj)
+      endif
+
+      if(do_sit) then
+        if(fwd) then
+         dtsit=dta
+        else
+         dtsit=dta*0.5
+        endif
+
+        istep= int(tau/(dt/3600.)+0.01)
+        tauleft=float(int((tau-int(tau)+0.001)*3600./dt))*dt
+        icurrenttau=int(tau)
+        call dtgfix12(idtg,idtg_sitvdiff,icurrenttau)
+        call time_weights(idtg_sitvdiff,tauleft)
+        write(cdtg,'(i12)')idtg_sitvdiff
+        read(cdtg,'(i4,i2,i2,i2,i2)')yr,mo,dy,hr,mn
+!        ssttau = mod(tau+0.001, 24.)
+        tauhr=float(hr)+tauleft/3600.
+
+        if (jj .eq. 1) then
+          allocate(sstm(nxp,my_max))
+          allocate(rstm(nxp,my_max))
+          allocate(hfluxtm(nxp,my_max))
+          allocate(qfluxtm(nxp,my_max))
+          allocate(u10tm(nxp,my_max))
+          allocate(v10tm(nxp,my_max))
+          allocate(rlsptm(nxp,my_max))
+          allocate(rcuptm(nxp,my_max))
+          allocate(ustartm(nxp,my_max))
+          allocate(t2tm(nxp,my_max))
+          allocate(rh2tm(nxp,my_max))
+          allocate(psttm(nxp,my_max))
+          allocate(cicetm(nxp,my_max))
+          allocate(snrtm(nxp,my_max))
+          allocate(zicetm(nxp,my_max))
+          allocate(xticetm(nxp,my_max))
+          allocate(obswtbtm(nxp,my_max))
+          allocate(tgtm(nxp,my_max))
+
+          dtfsit=dtfsit+dtsit
+          if(myrank .EQ. myrank_check ) then
+            print*,'myrank=',myrank,',jj=',jj   &
+                  ,',dtfsit=',dtfsit,',dtsit=',dtsit
+          endif
+        endif
+        do ii = 1, nxj
+          i=nxjstart(j)+ii-1
+          sitlat(ii)=xlat(j)
+          IF(xlon(i,jj).LT. 0.) THEN
+            sitlon(ii,jj)=xlon(i,jj)+360.
+          ELSE
+            sitlon(ii,jj)=xlon(i,jj)
+          ENDIF
+
+          if (.NOT. lrun_sitvdiff .or. ic_sit .eq. 1) then
+            ssfsit(ii,jj)=ssfsit(ii,jj)+ss(ii,jj)*dtsit
+            rsfsit(ii,jj)=rsfsit(ii,jj)+rs(ii,jj)*dtsit
+            hfluxfsit(ii,jj)=hfluxfsit(ii,jj)+hflux(ii,jj)*dtsit
+            qfluxfsit(ii,jj)=qfluxfsit(ii,jj)+qflux(ii,jj)*dtsit
+            u10fsit(ii,jj)=u10fsit(ii,jj)+u10(ii,jj)*dtsit
+            v10fsit(ii,jj)=v10fsit(ii,jj)+v10(ii,jj)*dtsit
+            rlspfsit(ii,jj)=rlspfsit(ii,jj)+rlsp(ii,jj)*dtsit
+            rcupfsit(ii,jj)=rcupfsit(ii,jj)+rcup(ii,jj)*dtsit
+            ustarfsit(ii,jj)=ustarfsit(ii,jj)+ustar(ii,jj)*dtsit
+            t2fsit(ii,jj)=t2fsit(ii,jj)+t2(ii,jj)*dtsit
+            rh2fsit(ii,jj)=rh2fsit(ii,jj)+rh2(ii,jj)*dtsit
+            pstfsit(ii,jj)=pstfsit(ii,jj)+pst(ii,jj)*dtsit
+            cicefsit(ii,jj)=cicefsit(ii,jj)+cice(ii,jj)*dtsit
+            snrfsit(ii,jj)=snrfsit(ii,jj)+snr(ii,jj)*dtsit
+            zicefsit(ii,jj)=zicefsit(ii,jj)+zice(ii,jj)*dtsit
+            xticefsit(ii,jj)=xticefsit(ii,jj)+xtice(ii,jj)*dtsit
+            obswtbfsit(ii,jj)=obswtbfsit(ii,jj)+obswtb(ii,jj)*dtsit
+            tgfsit(ii,jj)=tgfsit(ii,jj)+tg(ii,jj)*dtsit
+            if(myrank .EQ. myrank_check .AND. jj .EQ. jj_check .AND. ii.EQ. ii_check) then
+              print*,'in not lrun_sitvdiff:myrank=',myrank,',jj=',jj &
+                 ,',j=',j,',sitlat(',ii_check,')=',sitlat(ii)        &
+                 ,',sitlon(',ii_check,',jj)=',sitlon(ii,jj)          &
+                 ,',sitlclass=',sitlclass(ii,jj)                     &
+                 ,',sitmask=',sitmask(ii,jj),',tg=',tg(ii,jj)        &
+                 ,',obswtb=',obswtb(ii,jj),',obswtbfsit=',obswtbfsit(ii,jj) &
+                 ,',dta=',dta,',dt=',dt,',dtfsit=',dtfsit
+             endif
+         endif
+
+         if(lrun_sitvdiff)then
+            if(ic_sit .eq. 1) then
+              sstm(ii,jj)=ssfsit(ii,jj)/dtfsit
+              rstm(ii,jj)=rsfsit(ii,jj)/dtfsit
+              hfluxtm(ii,jj)=hfluxfsit(ii,jj)/dtfsit
+              qfluxtm(ii,jj)=qfluxfsit(ii,jj)/dtfsit
+              u10tm(ii,jj)=u10fsit(ii,jj)/dtfsit
+              v10tm(ii,jj)=v10fsit(ii,jj)/dtfsit
+              rlsptm(ii,jj)=rlspfsit(ii,jj)/dtfsit
+              rcuptm(ii,jj)=rcupfsit(ii,jj)/dtfsit
+              ustartm(ii,jj)=ustarfsit(ii,jj)/dtfsit
+              t2tm(ii,jj)=t2fsit(ii,jj)/dtfsit
+              rh2tm(ii,jj)=rh2fsit(ii,jj)/dtfsit
+              psttm(ii,jj)=pstfsit(ii,jj)/dtfsit
+              cicetm(ii,jj)=cicefsit(ii,jj)/dtfsit
+              snrtm(ii,jj)=snrfsit(ii,jj)/dtfsit
+              zicetm(ii,jj)=zicefsit(ii,jj)/dtfsit
+              xticetm(ii,jj)=xticefsit(ii,jj)/dtfsit
+              obswtbtm(ii,jj)=obswtbfsit(ii,jj)/dtfsit
+              tgtm(ii,jj)=tgfsit(ii,jj)/dtfsit
+
+
+              ssfsit(ii,jj)=0.
+              rsfsit(ii,jj)=0.
+              hfluxfsit(ii,jj)=0.
+              qfluxfsit(ii,jj)=0.
+              u10fsit(ii,jj)=0.
+              v10fsit(ii,jj)=0.
+              rlspfsit(ii,jj)=0.
+              rcupfsit(ii,jj)=0.
+              ustarfsit(ii,jj)=0.
+              t2fsit(ii,jj)=0.
+              rh2fsit(ii,jj)=0.
+              pstfsit(ii,jj)=0.
+              cicefsit(ii,jj)=0.
+              snrfsit(ii,jj)=0.
+              zicefsit(ii,jj)=0.
+              xticefsit(ii,jj)=0.
+              obswtbfsit(ii,jj)=0.
+              tgfsit(ii,jj)=0.
+            else
+              sstm(ii,jj)=ss(ii,jj)
+              rstm(ii,jj)=rs(ii,jj)
+              hfluxtm(ii,jj)=hflux(ii,jj)
+              qfluxtm(ii,jj)=qflux(ii,jj)
+              u10tm(ii,jj)=u10(ii,jj)
+              v10tm(ii,jj)=v10(ii,jj)
+              rlsptm(ii,jj)=rlsp(ii,jj)
+              rcuptm(ii,jj)=rcup(ii,jj)
+              ustartm(ii,jj)=ustar(ii,jj)
+              t2tm(ii,jj)=t2(ii,jj)
+              rh2tm(ii,jj)=rh2(ii,jj)
+              psttm(ii,jj)=pst(ii,jj)
+              cicetm(ii,jj)=cice(ii,jj)
+              snrtm(ii,jj)=snr(ii,jj)
+              zicetm(ii,jj)=zice(ii,jj)
+              xticetm(ii,jj)=xtice(ii,jj)
+              obswtbtm(ii,jj)=obswtb(ii,jj)
+              tgtm(ii,jj)=tg(ii,jj)
+              dtfsit=dtsit
+            endif
+
+            fluxw(ii,jj)=-(1.-cicetm(ii,jj))*(sstm(ii,jj)-rstm(ii,jj)-hfluxtm(ii,jj)-qfluxtm(ii,jj))
+            fluxi(ii,jj)=-cicetm(ii,jj)*(sstm(ii,jj)-rstm(ii,jj)-hfluxtm(ii,jj)-qfluxtm(ii,jj))
+            soflw(ii,jj)=(1.-cicetm(ii,jj))*sstm(ii,jj)
+            sofli(ii,jj)=cicetm(ii,jj)*sstm(ii,jj)
+            wind10w(ii,jj)=sqrt(u10tm(ii,jj)**2+v10tm(ii,jj)**2)
+            obsseaice(ii,jj)=cicetm(ii,jj)
+            evapw(ii,jj)=-qfluxtm(ii,jj)/hltm
+            rsf(ii,jj)=(rlsptm(ii,jj)+rcuptm(ii,jj))/dta
+
+!ustrw, vstrw
+            rnuw = 1.14E-6
+            z0w = 0.11*rnuw/ustartm(ii,jj)+0.1*SQRT(rnuw*ustartm(ii,jj)/grav) &
+                   +0.015*ustartm(ii,jj)**2/grav  ! Kraus & Businger(1994, page 146)
+            d0w = 0.
+
+            Pairvapor= AirVaporPressure(t2tm(ii,jj),rh2tm(ii,jj))
+            rhoa = 100.*psttm(ii,jj)/(287.04*t2tm(ii,jj))*(1.0-0.378*Pairvapor/psttm(ii,jj))
+                 ! 287.04 [k.g-1.K-1]  Gas constant of dry air
+            liw = -(0.4*grav*((hfluxtm(ii,jj)/(t2tm(ii,jj)*cp)+0.61*(qfluxtm(ii,jj)/hltm)))/(ustartm(ii,jj)**3.)*rhoa)
+            ps1w = log((10.0-d0w)/z0w)-CalcSm((10.0-d0w)*liw,z0w,liw)+CalcSm(z0w*liw,z0w,liw)
+            ustra = u10tm(ii,jj)*0.4/ps1w
+            vstra = v10tm(ii,jj)*0.4/ps1w
+            ustrw(ii,jj) = rhoa*ustra**2
+            vstrw(ii,jj) = rhoa*vstra**2
+
+!in&out
+            seaice(ii,jj)=cicetm(ii,jj)
+            thickness(ii,jj)=zicetm(ii,jj)
+            sni(ii,jj)=snrtm(ii,jj)/1000.   !mm->m
+            t_surf   =obswtbtm(ii,jj)
+            t_surf = MAX( t_surf, ctfreez )
+            tsi(ii,jj)= MIN( t_surf, ctfreez )
+            tgold(ii,jj)=tgtm(ii,jj)
+            dtswdt(ii,jj)=0.
+
+
+
+              if(myrank .eq. myrank_check .AND. jj .eq. jj_check .AND. ii .eq. ii_check)then
+              print*,"now1=",now1,",now2=",now2,",wgto1=",wgto1   &
+                    ,",wgto2=",wgto2,",obswtbnmw1=",obswtbnmw1    &
+                    ,",obswtbnmw2=",obswtbnmw2                    &
+                    ,"obswtbwgt1=",obswtbwgt1,",obswtbwgt2=",obswtbwgt2 &
+                    ,",obswtbtm=",obswtbtm(ii,jj)
+              endif
+          endif    !end (lrun_sitvdiff)
+
+          if(myrank .EQ. myrank_check .AND. jj .EQ. jj_check .AND. ii .EQ. ii_check) then
+            print*,'before sit_vidff:myrank=',myrank,',jj=',jj     &
+                 ,',j=',j,',sitlat(',ii_check,')=',sitlat(ii)        &
+                 ,',sitlon(',ii_check,',jj)=',sitlon(ii,jj)          &
+                 ,',sitlclass=',sitlclass(ii,jj)                    &
+                 ,',sitmask=',sitmask(ii,jj),',tg=',tg(ii,jj)        &
+                 ,',tgold=',tgold(ii,jj)                            &
+                 ,',tsw=',tsw(ii,jj),',dtswdt=',dtswdt(ii,jj)        &
+                 ,',dta=',dta,',dt=',dt,',dtfsit=',dtfsit
+          endif
+        enddo    !end i=1,nxj
+
+        if(lrun_sitvdiff) then
+         if( myrank.EQ.myrank_check .AND. jj.EQ.jj_check) then
+            ii=ii_check
+          print *,"myrank=",myrank,",jj=",jj
+          print *,"sitlat=",sitlat(ii),"sitlon=",sitlon(ii,jj)
+          print *,"sitcor=",sitcor(ii,jj),",slm=",slm(ii,jj)
+          print *,"sitclass=",sitlclass(ii,jj),"sitmask=",sitmask(ii,jj)
+          print *,"tg=",tg(ii,jj)
+
+      2300 FORMAT(1X,24(A11,E13.5))
+      2301 FORMAT(1X,22(A11,E13.5))
+      2302 FORMAT(1X,24(A11,E13.5))
+      2303 FORMAT(1X,11(A11,E13.5))
+
+
+          WRITE(nerr,2300)           &
+           "1tau,",tau,",tg,",tg(ii,jj),",tgold,",tgold(ii,jj),",tsw," &
+          ,tsw(ii,jj),",fluxw,",fluxw(ii,jj),",dfluxs,",dfluxs(ii,jj)  &
+          ,",soflw,",soflw(ii,jj),",fluxi,",fluxi(ii,jj),",sofli,"     &
+          ,sofli(ii,jj),",ustrw,",ustrw(ii,jj),",vstrw,",vstrw(ii,jj)  &
+          ,",hflux,",hflux(ii,jj),",qflux,",qflux(ii,jj),",cice,"      &
+          ,cice(ii,jj),",zice,",zice(ii,jj),",rsf,",rsf(ii,jj),",ssf," &
+          ,ssf(ii,jj),",evapw,",evapw(ii,jj),",disch,",disch(ii,jj)    &
+          ,",t2tm,",t2tm(ii,jj),",wind10w,",wind10w(ii,jj),",obsseaice," &
+          ,obsseaice(ii,jj),",sitws0,",sitws(ii,jj,0),",obswtbtm,",obswtbtm(ii,jj)
+
+
+          WRITE(nerr,2301)           &
+           "2tau,",tau,",obswtbtm,",obswtbtm(ii,jj),",sitwtb,",sitwtb(ii,jj) &
+          ,",sitwub,",sitwub(ii,jj),",sitwvb,",sitwvb(ii,jj),",obswsb,"   &
+          ,obswsb(ii,jj),",sitwsb,",sitwsb(ii,jj),",fluxiw,",fluxiw(ii,jj)&
+          ,",pme2,",pme2(ii,jj),",subfluxw,",subfluxw(ii,jj),",wsubsal,"  &
+          ,wsubsal(ii,jj),",sitcc,",sitcc(ii,jj),",sithc,",sithc(ii,jj)   &
+          ,",engwac,",engwac(ii,jj),",sc,",sc(ii,jj),",saltwac,"          &
+          ,saltwac(ii,jj),",wtfns,",wtfns(ii,jj),",wsfns,",wsfns(ii,jj)   &
+          ,",zsi0,",zsi(ii,jj,0),",zsi1,",zsi(ii,jj,1),",silw0,"          &
+          ,silw(ii,jj,0),",silw1,",silw(ii,jj,1)
+
+
+          WRITE(nerr,2302)           &
+          "3tau,",tau,",tsnic0,",tsnic(ii,jj,0),",tsnic1,",tsnic(ii,jj,1) &
+         ,",tsnic2,",tsnic(ii,jj,2),",tsnic3,",tsnic(ii,jj,3),",seaice,"  &
+          ,seaice(ii,jj),",sni,",sni(ii,jj),",thickness,",thickness(ii,jj)&
+          ,",xticetm,",xticetm(ii,jj),",tsl,",tsl(ii,jj),",tslm,"         &
+          ,tslm(ii,jj),",tslm1,",tslm1(ii,jj),",ocu,",ocu(ii,jj),",ocv,"  &
+          ,ocv(ii,jj),",ctfreez2,",ctfreez2(ii,jj),",grndcapc,"           &
+          ,grndcapc(ii,jj),",grndhflx,",grndhflx(ii,jj),",grndflux,"      &
+          ,grndflux(ii,jj),",hltm,",hltm,",hflux,",hflux(ii,jj)           &
+          ,",hfluxtm,",hfluxtm(ii,jj),",qflux,",qflux(ii,jj),",qfluxtm,"  &
+          ,qfluxtm(ii,jj),",evapw,",evapw(ii,jj)
+
+
+          WRITE(nerr,2303)          &
+           "4tau,",tau,",u10tm,",u10tm(ii,jj),",v10tm,",v10tm(ii,jj)      &
+          ,",sstm,",sstm(ii,jj),",rstm,",rstm(ii,jj),",rlsptm,"           &
+          ,rlsptm(ii,jj),",rcuptm,",rcuptm(ii,jj),",cicetm,",cicetm(ii,jj)&
+          ,",zice,",zice(ii,jj),",pst,",pst(ii,jj),",rh2tm,",rh2tm(ii,jj)
+
+
+         WRITE(nerr,*) "sitwt=",sitwt(ii,jj,:)
+         WRITE(nerr,*) "sitwu=",sitwu(ii,jj,:)
+         WRITE(nerr,*) "sitwv=",sitwv(ii,jj,:)
+         WRITE(nerr,*) "sitwtke=",sitwtke(ii,jj,:)
+        endif
+
+          call sit_vdiff ( nxjp(j), nxp, jj, istep, dtfsit,            &
+              sitlat, sitlon(:,jj), tau, tauhr,                        &
+              sitcor(:,jj), slm(:,jj), sitlclass(:,jj),                &
+              sitmask(:,jj),sitmask2(:,jj), bathy(:,jj), wlvl(:,jj),   &
+              ocnmask(:,jj), obox_mask(:,jj),                          &
+!            ! - same as lake and ml_ocean
+              fluxw(:,jj), dfluxs(:,jj), soflw(:,jj),                  &
+              fluxi(:,jj), sofli(:,jj),                                &
+!            ! - 1D from mo_memory_g3b (wind stress)
+              ustrw(:,jj), vstrw(:,jj),                                &
+!            ! -    water mass variables(rain, snow, evap and runoff):
+              rsf(:,jj), ssf(:,jj), evapw(:,jj), disch(:,jj),          &
+!            ! - 1D from mo_memory_g3b
+!              t2(:,j), wind10w(:,jj),                                 &
+              t2tm(:,jj), wind10w(:,jj),                               &
+!            ! - 1D from mo_memory_g3b (sit variables)
+              obsseaice(:,jj), obswtbtm(:,jj), obswsb(:,jj),           &
+              sitwtb(:,jj), sitwub(:,jj), sitwvb(:,jj),                &
+              sitwsb(:,jj), fluxiw(:,jj), pme2(:,jj),                  &
+              subfluxw(:,jj), wsubsal(:,jj),                           &
+              sitcc(:,jj), sithc(:,jj), engwac(:,jj),                  &
+              sc(:,jj), saltwac(:,jj), wtfns(:,jj), wsfns(:,jj),       &
+!            ! 3-d SIT vars: snow/ice
+              zsi(:,jj,0:1), silw(:,jj,0:1), tsnic(:,jj,0:3),          &
+!            ! 3-d SIT vars: water column
+              obswt(:,jj,0:lkvl+1),obsws(:,jj,0:lkvl+1),               &
+              obswu(:,jj,0:lkvl+1),obswv(:,jj,0:lkvl+1),               &
+              sitwt(:,jj,0:lkvl+1),sitwu(:,jj,0:lkvl+1),               &
+              sitwv(:,jj,0:lkvl+1),sitww(:,jj,0:lkvl+1),               &
+              sitws(:,jj,0:lkvl+1),sitwtke(:,jj,0:lkvl+1),             &
+              wlmx(:,jj,0:lkvl+1),wldisp(:,jj,0:lkvl+1),               &
+              wkm(:,jj,0:lkvl+1),wkh(:,jj,0:lkvl+1),                   &
+              wrho1000(:,jj,0:lkvl+1),wtfn(:,jj,0:lkvl+1),             &
+              wsfn(:,jj,0:lkvl+1), wtfn0(:,jj,0:lkvl+1),               &
+              wsfn0(:,jj,0:lkvl+1),awufl(:,jj,0:lkvl+1),               &
+              awvfl(:,jj,0:lkvl+1),awtfl(:,jj,0:lkvl+1),               &
+              awsfl(:,jj,0:lkvl+1),awtfl0(:,jj,0:lkvl+1),              &
+              awsfl0(:,jj,0:lkvl+1),awtkefl(:,jj,0:lkvl+1),            &
+!             ! final output only
+!              cice(:,j), snr(:,j), zice(:,j), xtice(:,j), tg(:,j),
+!              &
+              seaice(:,jj),sni(:,jj),thickness(:,jj),xticetm(:,jj),    &
+              tsw(:,jj), tsl(:,jj), tslm(:,jj), tslm1(:,jj),           &
+              ocu(:,jj), ocv(:,jj),  ctfreez2(:,jj),                   &
+!            ! implicit with vdiff
+              grndcapc(:,jj), grndhflx(:,jj), grndflux(:,jj),          &
+              oldsitwt(:,jj,0:lkvl+1,0:1),oldsitwu(:,jj,0:lkvl+1,0:1), &
+              oldsitwv(:,jj,0:lkvl+1,0:1),oldsitww(:,jj,0:lkvl+1,0:1), &
+             oldsitws(:,jj,0:lkvl+1,0:1),oldsitwtke(:,jj,0:lkvl+1,0:1),&
+              dtswdt(:,jj), sftobswt(:,jj,0:lkvl+1) )
+            if (jj .eq. 1) then
+              dtsittau=dtsittau+dtfsit
+              dtsitmon=dtsitmon+dtfsit
+              dtsit24=dtsit24+dtfsit
+            endif
+            call storesittau(nxjp(j),jj,nxp,my_max,lkvl,sitwt,sitws,sitwu,sitwv,dtfsit)
+            call storesit24(nxjp(j),jj,nxp,my_max,lkvl,sitwt,sitws,sitwu,sitwv,dtfsit)
+
+        do ii = 1, nxj
+          if(ocean(ii,jj) .AND. (sitmask(ii,jj).EQ.1)) then
+              tg(ii,jj)=tgold(ii,jj)+dtswdt(ii,jj)*dtfsit
+              tgold(ii,jj)=tsw(ii,jj)
+            if(sitmask2(ii,jj) .eq. 0. .AND. sitmask(ii,jj) .eq. 1. ) then
+              sitmask(ii,jj)=0.
+              print*,'myrank=',myrank,',ii=',ii,',jj=',jj,',j=',j &
+                    ,'sitmask(',ii,',',jj,')=0'
+            endif
+          endif
+          if(myrank .EQ. myrank_check .AND. jj .EQ. jj_check .AND. ii .EQ. ii_check) then
+            print*,'after sit_vdiff:myrank=',myrank                &
+                 ,',ii=',ii,',jj=',jj,',i=',i,',j=',j              &
+                 ,',sitlat(',ii_check,')=',sitlat(ii)              &
+                 ,',sitlon(',ii_check,',jj)=',sitlon(ii,jj)        &
+                 ,',sitlclass=',sitlclass(ii,jj)                   &
+                 ,',sitmask=',sitmask(ii,jj),',tg=',tg(ii,jj)      &
+                 ,',tsw=',tsw(ii,jj),',dtswdt=',dtswdt(ii,jj)      &
+                 ,',tgold=',tgold(ii,jj)                           &
+                 ,',dta=',dta,',dt=',dt,',dtfsit=',dtfsit          &
+                 ,',lsftobswt=',lsftobswt
+         endif
+
+        enddo
+        endif  !end lrun_sitvdiff
+
+
+         if(myrank.eq.myrank_check .AND. jj.EQ.jj_check .AND. ii .EQ. ii_check) then
+           print*,'after sit_vdiff: sitlat(',ii_check,')=',sitlat(ii_check)  &
+                 ,',sitlon(',ii_check,',jj)=',sitlon(ii_check,jj)            &
+                 ,',sitlclass=',sitlclass(ii_check,jj)                       &
+                 ,',sitmask=',sitmask(ii_check,jj),',tg=',tg(ii_check,jj)    &
+                 ,',tsw=',tsw(ii_check,jj),',dtswdt=',dtswdt(ii_check,jj)    &
+                 ,',tgold=',tgold(ii_check,jj)
+         endif
+
+        if(jj .eq. jlistnum) then
+          deallocate(sstm)
+          deallocate(rstm)
+          deallocate(hfluxtm)
+          deallocate(qfluxtm)
+          deallocate(u10tm)
+          deallocate(v10tm)
+          deallocate(rlsptm)
+          deallocate(rcuptm)
+          deallocate(ustartm)
+          deallocate(t2tm)
+          deallocate(rh2tm)
+          deallocate(psttm)
+          deallocate(cicetm)
+          deallocate(snrtm)
+          deallocate(zicetm)
+          deallocate(xticetm)
+          deallocate(obswtbtm)
+          deallocate(tgtm)
+          if (lrun_sitvdiff) dtfsit=0.
+
+        endif
+      endif  !end do_sit
+
+      if(myrank .EQ. myrank_check .AND. jj .EQ. jj_check ) then
+        print*,'after do_sit: myrank=',myrank,',jj=',jj       &
+              ,'ii=',ii_check,',tg=',tg(ii_check,jj)
+      endif
 !--------------------------------------------------------------------------------
 !     weight back u and v by cosl/radus and
 !     change real temp back to virtual potential temperature
@@ -1973,22 +2398,22 @@
 !
       dtradg = dtradg*isign
 !
-      if(upnor)then
-        call mpe_unify(avgdrag_u,my,lev,1,mpe_double)
-        call maxpp2l( lev,my,avgdrag_u,dragmax,kmax,jmax )
-        call minpp2l( lev,my,avgdrag_u,dragmin,kmin,jmin )
-        if(myrank .eq. 0) then
-          print *,'norographic gravity wave drag u_max,kmax,jmax,u_min,kmin,jmin'
-          print *, dragmax,kmax,jmax,dragmin,kmin,jmin
-        endif
-        call mpe_unify(avgdrag_v,my,lev,1,mpe_double)
-        call maxpp2l( lev,my,avgdrag_v,dragmax,kmax,jmax )
-        call minpp2l( lev,my,avgdrag_v,dragmin,kmin,jmin )
-        if(myrank .eq. 0) then
-          print *,'norographic gravity wave drag v_max,kmax,jmax,v_min,kmin,jmin'
-          print *, dragmax,kmax,jmax,dragmin,kmin,jmin
-        endif
-      endif
+!      if(docgrav)then
+!        call mpe_unify(avgdrag_u,my,lev,1,mpe_double)
+!        call maxpp2l( lev,my,avgdrag_u,dragmax,kmax,jmax )
+!        call minpp2l( lev,my,avgdrag_u,dragmin,kmin,jmin )
+!        if(myrank .eq. 0) then
+!          print *,'norographic gravity wave drag u_max,kmax,jmax,u_min,kmin,jmin'
+!          print *, dragmax,kmax,jmax,dragmin,kmin,jmin
+!        endif
+!        call mpe_unify(avgdrag_v,my,lev,1,mpe_double)
+!        call maxpp2l( lev,my,avgdrag_v,dragmax,kmax,jmax )
+!        call minpp2l( lev,my,avgdrag_v,dragmin,kmin,jmin )
+!        if(myrank .eq. 0) then
+!          print *,'norographic gravity wave drag v_max,kmax,jmax,v_min,kmin,jmin'
+!          print *, dragmax,kmax,jmax,dragmin,kmin,jmin
+!        endif
+!      endif
 !fj
 !
 !      diagnoctics

@@ -1023,7 +1023,7 @@
              , raintot,raincu,rainlp,plcl,cumtop,ss,rs,alb,gwclim       &
              , acld,cosl,wk1,ww1,ww2,t2,rh2,u10,v10,gfx,rld,sld         &
              , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500 &
-             , ctot,chig,cmid,clow,hpbl,.true.,flash)
+             , ctot,chig,cmid,clow,hpbl,.true.,flash,do_sit)
 
 ! add 40m 100m output for green energy plan
       if(out_green)then

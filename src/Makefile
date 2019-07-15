@@ -79,7 +79,9 @@ SRCS  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
 	cuadjtq_n.f90 cuasc_n.f90 cubasmc_n.f90 cuddraf_n.f90\
 	cudlfs_n.f90 cudtdq_n.f90 cududv_n.f90 cuentr_n.f90 cuflx_n.f90 \
 	cuini_n.f90 cumastr_driv_n.f90 cumastr_n.f90 cutype_n.f90 ntke_func.f90 \
-        get_phi.f90 module_mp_radar.f90 module_mp_wsm6_fv3.f90 lightning_ec.f90
+        get_phi.f90 module_mp_radar.f90 module_mp_wsm6_fv3.f90 lightning_ec.f90 \
+        mod_sitgrid.f90 mod_eos_ocean.f90 mod_sit_vdiff.f90 outsit.f90 \
+        mod_sst.f90 mod_netcdf.f90 mod_sit_control.f90
 
 OBJS=	${SRCS:.f90=.o}
 
@@ -91,7 +93,7 @@ FC90 =  mpifrtpx100
 FC   =  /package/$(MACHINE)/dms/bin/dmsmpif90
 
 
-INCLUDE = -I. -I/users/xa09/$(MACHINE)/fftw-3.3.7/include
+INCLUDE = -I. -I/users/xa09/$(MACHINE)/fftw-3.3.7/include -I/package/$(MACHINE)/netcdf-3.6.3/include
 #INCLUDE = -I. -I/nwpr/cfsres/b827/fx10/fftw-3.3.7/include
 
 CMD  =  MTCo639L72_$(MACHINE)
@@ -139,7 +141,7 @@ INSTALL = /usr/bin/install
 LDFLAGS = -Kopenmp,parallel -L/package/$(MACHINE)/dms/dms.v4/lib -lrdms -lgdbm -L/package/$(MACHINE)/operlib/lib -lnwp \
           -L/users/xa09/$(MACHINE)/fftw-3.3.7/lib -lfftw3_threads -lfftw3 -SSL2BLAMP
 
-LIBS	=
+LIBS	= -L/package/$(MACHINE)/netcdf-3.6.3/lib -lnetcdf
 
 all :	$(CMD)
 
@@ -166,7 +168,7 @@ cem1.o : cem1.f90 mod_paramt.o
 check.o : check.f90 mod_fftcom.o mod_index.o mod_rank.o mod_mpe.o 
 chlen.o : chlen.f90 
 coftrix.o : coftrix.f90 
-cons.o : cons.f90 mod_typhoon.o mod_fftcom.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o mo_convect_tables.o mod_spec.o module_mp_wsm6_fv3.o
+cons.o : cons.f90 mod_typhoon.o mod_fftcom.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o mo_convect_tables.o mod_spec.o module_mp_wsm6_fv3.o mod_sit_control.o
 correct.o : correct.f90 mod_index.o 
 ccoszen.o : ccoszen.f90 mod_index.o
 coszenpm.o : coszenpm.f90 mod_index.o 
@@ -181,7 +183,7 @@ cwb.o : cwb.f90
 dayfil.o : dayfil.f90 mod_rank.o 
 days.o : days.f90 
 dcbase.o : dcbase.f90 
-diabat.o : diabat.f90 mod_index.o mod_rank.o mod_mpe.o mod_radn.o physpara.o module_mp_wsm6_fv3.o
+diabat.o : diabat.f90 mod_index.o mod_rank.o mod_mpe.o mod_radn.o physpara.o module_mp_wsm6_fv3.o mod_sitgrid.o mod_sit_vdiff.o mod_eos_ocean.o mod_netcdf.o mod_sit_control.o physcons.o mod_sst.o
 diagrd.o : diagrd.f90 mod_index.o mod_rank.o mod_mpe.o 
 dmsread.o : dmsread.f90 mod_index.o mod_rank.o mod_mpe.o 
 dmswrit.o : dmswrit.f90 mod_index.o mod_rank.o mod_mpe.o 
@@ -222,7 +224,7 @@ indexx.o : indexx.f90
 inicons.o : inicons.f90 mod_index.o 
 init_block.o : init_block.f90 mod_noah.o mod_const.o mod_param.o
 initial.o : initial.f90 mod_fftcom.o mod_grid.o mod_spec.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o 
-intgrt.o : intgrt.f90 mod_raddiag.o mod_radn.o mod_albn.o mod_noah.o mod_typhoon.o mod_phygrid.o mod_fftcom.o mod_grid.o mod_spec.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o
+intgrt.o : intgrt.f90 mod_raddiag.o mod_radn.o mod_albn.o mod_noah.o mod_typhoon.o mod_phygrid.o mod_fftcom.o mod_grid.o mod_spec.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o  mod_sitgrid.o mod_sit_vdiff.o mod_netcdf.o mod_sit_control.o mod_sst.o
 invmtx.o : invmtx.f90 mod_rank.o 
 joinrs.o : joinrs.f90 mod_index.o 
 joinsr.o : joinsr.f90 
@@ -471,3 +473,11 @@ module_mp_radar.o : module_mp_radar.f90
 module_mp_wsm6_fv3.o : module_mp_wsm6_fv3.f90 physcons.o module_mp_radar.o
 #xb110, for lightning scheme>
 lightning_ec.o: lightning_ec.f90 mo_constants.o
+#----------SIT---------------
+mod_sitgrid.o : mod_sitgrid.f90 mod_sit_control.o mod_netcdf.o
+mod_sit_vdiff.o : mod_sit_vdiff.f90 mod_eos_ocean.o mod_netcdf.o mod_sst.o mod_sit_control.o
+mod_sst.o: mod_sst.f90 mod_param.o mod_mpe.o mod_index.o mod_const.o mod_sit_control.o mod_netcdf.o mod_eos_ocean.o
+mod_netcdf.o: mod_netcdf.f90 mod_mpe.o mod_const.o mod_sit_control.o
+mod_eos_ocean.o: mod_eos_ocean.f90 
+mod_sit_control.o: mod_sit_control.f90
+outsit.o : outsit.f90 mod_index.o mod_rank.o mod_mpe.o mod_sitgrid.o
