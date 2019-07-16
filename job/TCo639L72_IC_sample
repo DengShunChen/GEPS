@@ -99,7 +99,6 @@ export O3FORC=${O3FORC:-${FIXDIR}/global_o3prdlos.f77}
 export O3CLIM=${O3CLIM:-${FIXDIR}/global_o3clim.txt}
 export AEROSOL_FILE=${AEROSOL_FILE:-${FIXDIR}/global_climaeropac_global.txt}
 export EMMISSIVITY_FILE=${EMMISSIVITY_FILE:-${IXDIR}/global_sfc_emissivity_idx.txt}
-export MTNVAR=${MTNVAR:-${FIXDIR}/global_mtnvar.t640.2576.1280.f77}
 
 
 cd $GFSWRK
@@ -108,7 +107,6 @@ ln -fs $O3FORC fort.28
 ln -fs $O3CLIM fort.48
 ln -fs $AEROSOL_FILE  aerosol.dat
 ln -fs $EMMISSIVITY_FILE sfc_emissivity_idx.txt
-ln -fs $MTNVAR mtnvar.dat
 
 ln -fs $FIXDIR/* .
 cp $NWPETC/gfsctl $GFSWRK/gfsctl
