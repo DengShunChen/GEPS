@@ -132,6 +132,7 @@ INSTALL = /usr/bin/install
  FFLAGS  = -c -X9 -Free -CcdRR8 -Cpp -DTIMING -DMULTIPLE -DUSE_FFTW \
            -Kfast,parallel,openmp,ocl,autoobjstack \
 	   -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE)
+#          -Kfast,parallel,openmp,ocl,autoobjstack -Nquickdbg\
 
 #---------------------------------------------------------------------------------------------
 # For fx10 compiler, some subroutine, such as rcloud, can not use auto-parallel option.

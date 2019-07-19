@@ -4,8 +4,10 @@ src/*.mod
 src/MT*
 src/bl_ysu.org.f90
 *.ksh
+run*
 TCo383L72_fx10*
 .d*
 wrk/*
 wrk_ysu/*
 etc/gfs.tauchk
+etc/namlsts_tco383*

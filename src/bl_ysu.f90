@@ -90,6 +90,7 @@
    real,parameter    ::  phifac = 8.,sfcfrac = 0.1
 !   real,parameter    ::  phifac = 7.,sfcfrac = 0.1
    real,parameter    ::  d1 = 0.02, d2 = 0.05, d3 = 0.001
+!   real,parameter    ::  d1 = 0.01, d2 = 0.05, d3 = 0.001
    real,parameter    ::  h1 = 0.33333335, h2 = 0.6666667
    real,parameter    ::  zfmin = 1.e-8,aphi5 = 5.,aphi16 = 16.
    real,parameter    ::  tmin=1.e-2
@@ -121,16 +122,16 @@
 !
    real,     dimension( ix, km )       ::                         p2d
 !
-   real,     dimension( ix )           ::                      psfcpa
    real,     dimension( ix, km )       ::        ux,vx,tx,swh,hlw,del
-   real,     dimension( ix )           ::  ls,heat,evap,hpbl,znt,xmu
-   real,     dimension( ix )           ::                 stress,wspd
-   real,     dimension( ix )           ::                     u10,v10
+   real,     dimension( im )           ::                     u10,v10
    real,     dimension( im, km )       ::                        pi2d
    real,     dimension( im )           ::                      rcl,br
    real,     dimension( im )           ::                   psim,psih
    real,     dimension( im )           ::                         psk
-   real,     dimension( im )           ::  xland,hfx,qfx
+   real,     dimension( im )           ::  ls,xland,hfx,qfx,heat,evap
+   real,     dimension( im )           ::                      psfcpa
+   real,     dimension( im )           ::                hpbl,znt,xmu
+   real,     dimension( im )           ::                 stress,wspd
 ! inout
    real,     dimension( im )           ::                         ust
 !   real,     dimension( im, km )       ::              utnp,vtnp,ttnp
@@ -345,8 +346,8 @@
 !
 
    dtstep = dt
-   dt2 = 2.*dtstep
-!   dt2 = 1.*dtstep
+!   dt2 = 2.*dtstep
+   dt2 = 1.*dtstep
    rdt = 1./dt2
 !
    do i = 1,im
@@ -734,7 +735,6 @@
      do i = 1,im
        if(pblflg(i).and.k.ge.kpbl(i))then
          entfac(i,k) = ((zq(i,k+1)-hpbl(i))/delta(i))**2.
-       print*,'i=',i,'k=',k,'entfac=',entfac(i,k)
        else
          entfac(i,k) = 1.e30
        endif
@@ -865,6 +865,7 @@
          f1(i,k)   = f1(i,k)+dtodsd*dsdzt
          f1(i,k+1) = thx(i,k+1)-300.-dtodsu*dsdzt
        elseif(pblflg(i).and.k.ge.kpbl(i).and.entfac(i,k).lt.4.6) then
+!       print*,'i=',i,'k=',k,'entfac=',entfac(i,k)
          xkzh(i,k) = -we(i)*dza(i,kpbl(i))*exp(-entfac(i,k))
          xkzh(i,k) = sqrt(xkzh(i,k)*xkzhl(i,k))
          xkzh(i,k) = max(xkzh(i,k),xkzoh(i,k))
