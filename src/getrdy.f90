@@ -432,7 +432,8 @@
               ii=ii+1
             enddo
           enddo
-          if( myrank .eq. 0 )print*,"get ncep's sea ice analysis, at dtg=",idtg
+          if( myrank .eq. 0 )print*,  &
+            "get ncep's sea ice analysis, at dtg=",idtg
 !
 ! reset albedo and tgclim at seaice grids                 
 !
