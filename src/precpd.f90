@@ -316,18 +316,18 @@
 !  the global qsat computation is done in pa
             pres1   = pres(n)
 !           qw      = es(n)
-!           qw      = min(pres1, fpvs(tt(n)))
-!           qw      = eps * qw / (pres1 + epsm1 * qw)
+            qw      = min(pres1, fpvs(tt(n)))
+            qw      = eps * qw / (pres1 + epsm1 * qw)
 !
-!           call qsatq(1,tt(n),pres(n)/100.,qw)
-          t1 = max(1.00001, min(190.999, tt(n)-182.16))
-          ic = int(t1)
-          pqs = pres(n)/100.
-          qqq = min(temx*pqs, vpsat(ic)+(vpsat(1+ic)-vpsat(ic))  &
-                                     *(t1-float(ic)))
-!         qw = 0.622*qqq/(pqs-qqq)
-          qw = 0.622*qqq/(pqs+epsm1*qqq)
-
+!!           call qsatq(1,tt(n),pres(n)/100.,qw)
+!          t1 = max(1.00001, min(190.999, tt(n)-182.16))
+!         ic = int(t1)
+!         pqs = pres(n)/100.
+!         qqq = min(temx*pqs, vpsat(ic)+(vpsat(1+ic)-vpsat(ic))  &
+!                                    *(t1-float(ic)))
+!!         qw = 0.622*qqq/(pqs-qqq)
+!         qw = 0.622*qqq/(pqs+epsm1*qqq)
+!
           qw = max(qw,epsq)
 !
 !

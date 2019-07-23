@@ -188,18 +188,18 @@
 !
 !  the global qsat computation is done in cb
           pres    = prsl(i,k)
-!
-!          qw      = min(pres, 0.001 * fpvs(t(i,k)))
-!          qw      = eps * qw / (pres + epsm1 * qw)
-!
+!fpvs
+           qw      = min(pres, 0.001 * fpvs(t(i,k)))
+           qw      = eps * qw / (pres + epsm1 * qw)
+!qsatq
 !          call qsatq(1,t(i,k),pres*10.,qw)  !prsl in unit of cb
-          t1 = max(1.00001, min(190.999, t(i,k)-182.16))
-          ic = int(t1)
-          pqs = pres*10.
-          qqq = min(tem*pqs, vpsat(ic)+(vpsat(1+ic)-vpsat(ic))  &
-                                     *(t1-float(ic)))
-!          qw = 0.622*qqq/(pqs-qqq)
-          qw = 0.622*qqq/(pqs+epsm1*qqq)
+!         t1 = max(1.00001, min(190.999, t(i,k)-182.16))
+!         ic = int(t1)
+!         pqs = pres*10.
+!         qqq = min(tem*pqs, vpsat(ic)+(vpsat(1+ic)-vpsat(ic))  &
+!                                    *(t1-float(ic)))
+!!         qw = 0.622*qqq/(pqs-qqq)
+!          qw = 0.622*qqq/(pqs+epsm1*qqq)
 !
           qw      = max(qw,epsq)
           qi(i)   = qw
@@ -289,20 +289,20 @@
 !
             tx1 = tik
             tx3 = qik
-!
-!            es   = min(pres, fpvs(tx1))
-!            qs   = u00ik * eps * es / (pres + epsm1*es)
-! 
-!            call qsatq(1,tx1,pres/100.,qs)     !pres in unit of pa
-            t1 = max(1.00001, min(190.999, tx1-182.16))
-            ic = int(t1)
-            pqs = pres*0.01
-            qqq = min(tem*pqs, vpsat(ic)+(vpsat(1+ic)-vpsat(ic))  &
-                                     *(t1-float(ic)))
-!            qs = 0.622*qqq/(pqs-qqq)
-            qs = 0.622*qqq/(pqs+epsm1*qqq)
-
-            qs   = u00ik*qs
+!fpvs
+!pres in unit pa
+             es   = min(pres, fpvs(tx1))
+             qs   = u00ik * eps * es / (pres + epsm1*es)
+!qsatq
+!!           call qsatq(1,tx1,pres/100.,qs)     !pres in unit of pa
+!           t1 = max(1.00001, min(190.999, tx1-182.16))
+!           ic = int(t1)
+!           pqs = pres*0.01
+!           qqq = min(tem*pqs, vpsat(ic)+(vpsat(1+ic)-vpsat(ic))  &
+!                                    *(t1-float(ic)))
+!!            qs = 0.622*qqq/(pqs-qqq)
+!!            qs = 0.622*qqq/(pqs+epsm1*qqq)
+!            qs   = u00ik*qs
 !
             tsq  = tx1 * tx1
             delq = 0.5 * (qs - tx3) * tsq / (tsq + el2orc * qs)
@@ -313,19 +313,18 @@
 !
 !   second iteration
 !
-!            es   = min(pres, fpvs(tx1))
-!            qs   = u00ik * eps * es / (pres + epsm1*es)
+             es   = min(pres, fpvs(tx1))
+             qs   = u00ik * eps * es / (pres + epsm1*es)
 !
-!            call qsatq(1,tx1,pres/100.,qs)     !pres in unit of pa
-            t1 = max(1.00001, min(190.999, tx1-182.16))
-            ic = int(t1)
-            pqs = pres*0.01
-            qqq = min(tem*pqs, vpsat(ic)+(vpsat(1+ic)-vpsat(ic)) &
-                                     *(t1-float(ic)))
-!            qs = 0.622*qqq/(pqs-qqq)
-            qs = 0.622*qqq/(pqs+epsm1*qqq)
-
-            qs   = u00ik*qs
+!!           call qsatq(1,tx1,pres/100.,qs)     !pres in unit of pa
+!           t1 = max(1.00001, min(190.999, tx1-182.16))
+!           ic = int(t1)
+!           pqs = pres*0.01
+!           qqq = min(tem*pqs, vpsat(ic)+(vpsat(1+ic)-vpsat(ic)) &
+!                                    *(t1-float(ic)))
+!           qs = 0.622*qqq/(pqs-qqq)
+!           qs = 0.622*qqq/(pqs+epsm1*qqq)
+!            qs   = u00ik*qs
 !
             tsq  = tx1 * tx1
             delq = (qs - tx3) * tsq / (tsq + el2orc * qs)
@@ -335,20 +334,19 @@
             tx3  = tx3 + delq
 !
 !   third iteration
-!
-!            es   = min(pres, fpvs(tx1))
-!            qs   = u00ik * eps * es / (pres + epsm1*es)
-!
-!            call qsatq(1,tx1,pres/100.,qs)     !pres in unit of pa
-            t1 = max(1.00001, min(190.999, tx1-182.16))
-            ic = int(t1)
-            pqs = pres*0.01
-            qqq = min(tem*pqs, vpsat(ic)+(vpsat(1+ic)-vpsat(ic))  &
-                                     *(t1-float(ic)))
-!            qs = 0.622*qqq/(pqs-qqq)
-            qs = 0.622*qqq/(pqs+epsm1*qqq)
-
-            qs   = u00ik*qs
+!fpvs
+             es   = min(pres, fpvs(tx1))
+             qs   = u00ik * eps * es / (pres + epsm1*es)
+!qsatq
+!!            call qsatq(1,tx1,pres/100.,qs)     !pres in unit of pa
+!           t1 = max(1.00001, min(190.999, tx1-182.16))
+!           ic = int(t1)
+!           pqs = pres*0.01
+!           qqq = min(tem*pqs, vpsat(ic)+(vpsat(1+ic)-vpsat(ic))  &
+!                                    *(t1-float(ic)))
+!!           qs = 0.622*qqq/(pqs-qqq)
+!!           qs = 0.622*qqq/(pqs+epsm1*qqq)
+!            qs   = u00ik*qs
 !
             tsq  = tx1 * tx1
             delq = (qs - tx3) * tsq / (tsq + el2orc * qs)
