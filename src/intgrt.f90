@@ -882,7 +882,7 @@
                       , asl_clr,atl_clr,clds                                    &
                       , ss_clr,rs_clr,asol_clr,olr_clr,sld_clr,rld_clr          &
                       , alvsf,alvwf,alnsf,alnwf,facsf,facwf                     &
-                      , idtg,doo3l,nfxr                                         &
+                      , idtg,doo3l,nfxr,sfalb,sfemis,isot,ivegsrc               &
                       , dosppt, sppt3d, itimestep                               &
 !xb110>
                       , rmr, smr)
@@ -1044,7 +1044,7 @@
                      , asl_clr,atl_clr,clds                                     &
                      , ss_clr,rs_clr,asol_clr,olr_clr,sld_clr,rld_clr           &
                      , alvsf,alvwf,alnsf,alnwf,facsf,facwf                      &
-                     , idtg,doo3l,nfxr                                          &
+                     , idtg,doo3l,nfxr,sfalb,sfemis,isot,ivegsrc                &
                      , dosppt, sppt3d, itimestep                                &
 !xb110>
                       , rmr, smr)

@@ -26,6 +26,7 @@
       use mod_typhoon
 !-----------------------------------------------------------------------
       use radn
+      use noah
 !-----------------------------------------------------------------------
 !
 
@@ -120,6 +121,7 @@
       read (12,filst,end=110)
 !
   110 continue
+      close(12)
 !
       if(myrank .eq. 0) print filst
 !
@@ -131,12 +133,14 @@
   120 continue
       read (1,typ,end=121)
   121 continue
+      close(1)
 !
 !
       open (unit=2,file=trim(crdate),form='formatted')
 !
 ! read in idtg*12
       read(2,'(i8.8)')idtg8
+      close(2)
 ! transfer idtg8 to idtg*12
       idtg = 200000000000 + idtg8*100
       write(cdtg,900)idtg
@@ -450,6 +454,7 @@
       if (outdir(numout).eq.'nomodata')  go to 85
    80 continue
    85 numout= numout-1
+      close(4)
 !-----------------------------------------------------------------------
 !  for WSM6
 !-----------------------------------------------------------------------

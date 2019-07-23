@@ -24,6 +24,7 @@
       use phygrid
       use mod_typhoon
       use noah
+      use namelist_soilveg
 !-----------------------------------------------------------------------
       use ozne_def
       use radn
@@ -83,7 +84,7 @@
 ! osu
       call landpack(tsat,dfkt,xktk,dfk)
 ! noah
-      call set_soilveg
+      call set_soilveg(isot,ivegsrc)
 
 ! ------------------------------------------------------------
 !   read ozone prognostic parameters
@@ -308,7 +309,7 @@
 !
         call readclx( nx,my,my_max,julian,land,ocean,ice,tgclim,gwclim  &
                    ,z0,alb,sst,bckfile,sigmaf,istyp,ivegtyp,ls   &
-                   ,shdmax,shdmin,slopetyp,snoalb,ggdef )
+                   ,shdmax,shdmin,slopetyp,snoalb,ggdef,isot,ivegsrc )
 !
 !  read sst analysis data
 !
@@ -451,6 +452,7 @@
                 alb(i,jj)    = 0.55
                 tgclim(i,jj) = 271.2
 ! for noah
+                z0(i,jj)=0.0002
 ! initial sea ice temperature is set as tg(grid average temperature from first guess)
 !
                 cice(i,jj)    = max(0.5,cice(i,jj))
