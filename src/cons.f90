@@ -63,8 +63,8 @@
                       , ictm,isol,ico2,iaer,ialb,irad,iems,ntcw         &
                       , num_p3d,ntoz,iovr_sw,iovr_lw,isubc_sw,isubc_lw  &
                       , sashal,crick_proof,ccnorm,norad_precip,me,doo3l &
-                      , ioutsigr,domfc,out_green,otgreen,out_hp,dosppt  &
-                      , dospptout                                       &
+                      , ioutsigr,domfc,out_green,isot,ivegsrc           &
+                      , otgreen,out_hp,dosppt,dospptout                 &
                       , de_corretime_500,de_corretime_1000              &
                       , de_corretime_2000                               &
                       , facsppt500,facsppt1000,facsppt2000,ndsladvh2

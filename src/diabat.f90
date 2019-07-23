@@ -211,6 +211,9 @@
       integer*8 idtg
       logical doo3l
       integer ipt,jpt
+! for land_noah_new
+       real      sfalb(nxp,my_max),sfemis(nxp,my_max)
+       integer   isot,ivegsrc
 !-----------------------------------------------------------------------
       logical   fwd,docup,dodry,dolsp,dopbl,dorad,doshl,dograv,ozon, &
                 land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max)
