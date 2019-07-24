@@ -79,7 +79,7 @@
       namelist /filst/ ifilin,cwbout,bckfile,namlsts &
                      , ifilout,crdate,ocards,phyout,cntrl
 
-      namelist /typ/ write_tau, write_mem, trk_intv
+      namelist /typ/ write_tau, write_mem, trk_intv, min_trk_pres
 
       data pathname/'NWPETCGLB'/
       data logicname/'filist'/

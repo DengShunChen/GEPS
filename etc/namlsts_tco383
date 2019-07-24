@@ -14,7 +14,7 @@
  taue=120.0,
  tauo=1.0,
  taup=6.0,
- taureg=6.,
+ taureg=48.,
  dt=360.0,
  cstar=f,
  update=t,

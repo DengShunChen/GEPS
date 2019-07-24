@@ -34,7 +34,7 @@
                        ,ntyphfile,nWtyphfile,otyphfile,oWtyphfile
 
      !  tracker
-      real :: tau_trk, dt_trk
+      real :: tau_trk, dt_trk, min_trk_pres=1002.
       logical :: ltrack=.false.
 
       integer :: write_tau=6, trk_intv=6
