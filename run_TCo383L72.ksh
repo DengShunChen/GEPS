@@ -103,6 +103,12 @@ EOF
  export FCSTDMS=${outdmsfile}
  export BCKOPS=BCK_TCo383_GI30S@${dmsdb_home}/bckdms
 
+mkdir -p /nwpr/gfs/xb118/data2/dmsdb/ana.ufs/TCo383L72/20${dtg}
+#for 2018 and before
+#ln -fs /nwpr/gfs/xb126/data2/Tool/Nemsio2Dms_v2/OUTPUT/ncep_ana.ufs/TCo383l72_${dtg}/* /nwpr/gfs/xb118/data2/dmsdb/ana.ufs/TCo383L72/20${dtg}
+#for 2019
+ln -fs /nwpr/gfs/xb126/data2/Tool/Nemsio2Dms_v2/OUTPUT/ncep_ana_rt.ufs/TCo383l72_${dtg}/* /nwpr/gfs/xb118/data2/dmsdb/ana.ufs/TCo383L72/20${dtg}
+
 ${DMSPATH}/rdmspurge -f FCSTDMS
 ${DMSPATH}/rdmscrt -l34 FCSTDMS
 
