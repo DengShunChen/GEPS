@@ -19,10 +19,14 @@
       if ( nco .gt. 999 ) then
         write(rfile,100) nco,nx,my
       else
-        write(rfile,101) nco,nx,my
+        if ( nx .gt. 999 .and. my .gt. 999 ) write(rfile,101) nco,nx,my
+        if ( nx .gt. 999 .and. my .le. 999 ) write(rfile,102) nco,nx,my
+        if ( nx .le. 999 .and. my .le. 999 ) write(rfile,103) nco,nx,my
       endif
  100  format('global_mtnvar.t',i4.4,'.',i4.4,'.',i4.4,'.f77')
  101  format('global_mtnvar.t',i3.3,'.',i4.4,'.',i4.4,'.f77')
+ 102  format('global_mtnvar.t',i3.3,'.',i4.4,'.',i3.3,'.f77')
+ 103  format('global_mtnvar.t',i3.3,'.',i3.3,'.',i3.3,'.f77')
 
       open(22,file=rfile,form='unformatted',status='old'         &
           ,access='direct',recl=nrec )
