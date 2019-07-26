@@ -1183,11 +1183,10 @@
 !
 ! scale-aware SAS
          if( nmcup .eq. 6)                                 &
-         call sascnv_sa(nxjp(j),nxp,lev,jcap,dta,del,psfc,prsl,phil,qtr &
-          ,qtc,ttc,utc,vtc,dotc,cldwrk(1,jj) &
-          ,rcup(1,jj),kbot(1,jj),ktop(1,jj)                     &
-          ,kuo(1,jj),slimsk,garea,xkt2,ncld                     &
-          ,grav,cp,hltm,rgas,tice)
+         call sascnv_sa(nxjp(j),nxp,lev,jcap,dta,del,psfc,prsl,phil    &
+          ,qtr,qtc,ttc,utc,vtc,dotc,cldwrk(1,jj),rcup(1,jj),kbot(1,jj) &
+          ,ktop(1,jj),kuo(1,jj),slimsk,garea,ncld,grav,cp,hltm,rgas    &
+          ,tice)
 
 ! for rad input of convection cloud information
 ! bottom(plcl) layer and top(cumtop) layer in pressure(mb)

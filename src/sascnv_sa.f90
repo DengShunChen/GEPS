@@ -13,13 +13,13 @@
       implicit none
 !
       integer            im, ix,  km, jcap, ncloud,                     &
-                         kbot(im), ktop(im), kcnv(im)
+                         kbot(ix), ktop(ix), kcnv(ix)
 !     ,                  me
       real delt
       real ps(im),     del(ix,km),  prsl(ix,km),                        &
                            ql(ix,km,2),q1(ix,km),   t1(ix,km),          &
                            u1(ix,km),  v1(ix,km),   rcs(im),            &
-                           cldwrk(im), rn(im),      slimsk(im),         &
+                           cldwrk(ix), rn(ix),      slimsk(ix),         &
                            dot(ix,km), phil(ix,km),ql_all(ix,km),       &
 ! hchuang code change mass flux output
                            ud_mf(im,km),dd_mf(im,km),dt_mf(im,km)
