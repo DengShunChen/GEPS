@@ -1479,6 +1479,7 @@
 !
 !!            if(rhc(i,kc).ge.0.98)rhc(i,kc)=0.98
             prsl(i,kc) = plt(i,k,jj)*0.1 ! change to cb
+            phil(i,kc) = phi(i,k)-sgeo(i,jj)
             del(i,kc) = (dsigma(k,1)*pst(i,jj)+dsigma(k,2))*0.1  ! change to cb
             qtc(i,kc) = qt(i,k,jj)
             qtr(i,kc) = qt(i,lev+k,jj)

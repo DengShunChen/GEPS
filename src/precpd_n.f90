@@ -114,14 +114,14 @@
       real                  q(ix,km),   t(ix,km),    cwm(ix,km)          &
       ,                                 del(ix,km),  prsl(ix,km)         &
 !    &,                     cll(im,km), del(ix,km),  prsl(ix,km)         &
-      ,                     ps(im),     rn(im),      sr(im)              &
+      ,                     ps(ix),     rn(ix),      sr(ix)              &
       ,                     dt                                           &
 !->rsun 
       ,                     qr(ix,km), qs(ix,km), dzl(ix,km),sn(im)      &
 !<-rsun 
 !hchuang code change [+1l] : add record to record information in vertical in
 !                       addition to total column precrl
-      ,                     rainp(im,km), rnp(im),                       &
+      ,                     rainp(ix,km), rnp(im),                       &
                             psautco, prautco, evpco, wminco(2)
 !
 !
@@ -133,7 +133,7 @@
       ,                     wmin(im,km),  wmink(im),   pres(im)           &
       ,                     wmini(im,km), ccr(im)                         &
       ,                     tt(im),       qq(im),      ww(im)             &
-      ,                     u00k(im,km)                                   &
+      ,                     u00k(ix,km)                                   &
       ,                     zaodt                                         &
 !->rsun 
       ,                     rho(im,km),seds(im,km),sedr(im,km)            &
