@@ -140,6 +140,7 @@
 ! out
 !   integer,  dimension( im )           ::                      kpbl1d
 !===
+   real,     dimension( im )            ::                ctopo,ctopo2
 !   real,     dimension( im )                                         , &
 !!             optional                                               , &
 !             intent(in   )   ::                         ctopo,ctopo2
@@ -210,6 +211,10 @@
 !
 !------------------------------------------------------------------------
 !
+!for topo_wind=0
+  ctopo=1.
+  ctopo2=1.
+
    klpbl = km
 !=== xb118
    rovcp=rd/cp
@@ -1058,61 +1063,62 @@
      enddo
    enddo
 !
-!!************************************************************************* xb118
-!! paj: ctopo=1 if topo_wind=0 (default)
-!!raquel---paj tke code (could be replaced with shin-hong tke in future
+!************************************************************************* xb118
+! paj: ctopo=1 if topo_wind=0 (default)
+!raquel---paj tke code (could be replaced with shin-hong tke in future
    do i = 1,im
-!      do k= 1, km-1
-!        shear_ysu(i,k)=xkzm(i,k)*((-hgamu(i)/hpbl(i)+(ux(i,k+1)-ux(i,k))/dza(i,k+1))*(ux(i,k+1)-ux(i,k))/dza(i,k+1) &
-!        + (-hgamv(i)/hpbl(i)+(vx(i,k+1)-vx(i,k))/dza(i,k+1))*(vx(i,k+1)-vx(i,k))/dza(i,k+1))
-!         buoy_ysu(i,k)=xkzh(i,k)*g*(1.0/thx(i,k))*(-hgamt(i)/hpbl(i)+(thx(i,k+1)-thx(i,k))/dza(i,k+1))
-!
-!       zk = karman*zq(i,k+1)
-! !over pbl
-!       if (k.ge.kpbl(i)) then
-!        rlamdz = min(max(0.1*dza(i,k+1),rlam),300.)
-!        rlamdz = min(dza(i,k+1),rlamdz)
-!       else
-! !in pbl
-!        rlamdz = 150.0
-!       endif
-!       el_ysu(i,k) = zk*rlamdz/(rlamdz+zk)
-!       tke_ysu(i,k)=16.6*el_ysu(i,k)*(shear_ysu(i,k)-buoy_ysu(i,k))
-! !q2 when q3 positive
-!       if(tke_ysu(i,k).le.0) then
-!        tke_ysu(i,k)=0.0
-!       else
-!        tke_ysu(i,k)=(tke_ysu(i,k))**0.66
-!       endif
-!      enddo
-! !Hybrid pblh of MYNN
-! !tke is q2
-!      CALL GET_PBLH(KTS,KTE,pblh_ysu(i),thvx(i,1:km),&
-!      &    tke_ysu(i,1:km),zq(i,1:km+1),dzq(i,1:km),xland(i))
-!
-!!--- end of paj tke
-!! compute vconv
-!!      Use Beljaars over land
-!        if (xland(i).lt.1.5) then
-!        fluxc = max(sflux(i),0.0)
-!        vconvc=1.
-!        VCONV = vconvc*(g/thvx(i,1)*pblh_ysu(i)*fluxc)**.33
-!        else
-!! for water there is no topo effect so vconv not needed
-!        VCONV = 0.
-!        endif
-!        vconvfx(i) = vconv
+      do k= 1, km-1
+        shear_ysu(i,k)=xkzm(i,k)*((-hgamu(i)/hpbl(i)+(ux(i,k+1)-ux(i,k))/dza(i,k+1))*(ux(i,k+1)-ux(i,k))/dza(i,k+1) &
+        + (-hgamv(i)/hpbl(i)+(vx(i,k+1)-vx(i,k))/dza(i,k+1))*(vx(i,k+1)-vx(i,k))/dza(i,k+1))
+         buoy_ysu(i,k)=xkzh(i,k)*g*(1.0/thx(i,k))*(-hgamt(i)/hpbl(i)+(thx(i,k+1)-thx(i,k))/dza(i,k+1))
+
+       zk = karman*zq(i,k+1)
+ !over pbl
+       if (k.ge.kpbl(i)) then
+        rlamdz = min(max(0.1*dza(i,k+1),rlam),300.)
+        rlamdz = min(dza(i,k+1),rlamdz)
+       else
+ !in pbl
+        rlamdz = 150.0
+       endif
+       el_ysu(i,k) = zk*rlamdz/(rlamdz+zk)
+       tke_ysu(i,k)=16.6*el_ysu(i,k)*(shear_ysu(i,k)-buoy_ysu(i,k))
+ !q2 when q3 positive
+       if(tke_ysu(i,k).le.0) then
+        tke_ysu(i,k)=0.0
+       else
+        tke_ysu(i,k)=(tke_ysu(i,k))**0.66
+       endif
+      enddo
+ !Hybrid pblh of MYNN
+ !tke is q2
+      CALL GET_PBLH(1,km,pblh_ysu(i),thvx(i,1:km),&
+      &    tke_ysu(i,1:km),zq(i,1:km+1),dzq(i,1:km),xland(i))
+
+!--- end of paj tke
+! compute vconv
+!      Use Beljaars over land
+        if (xland(i).lt.1.5) then
+        fluxc = max(sflux(i),0.0)
+        vconvc=1.
+        VCONV = vconvc*(g/thvx(i,1)*pblh_ysu(i)*fluxc)**.33
+        else
+! for water there is no topo effect so vconv not needed
+        VCONV = 0.
+        endif
+        vconvfx(i) = vconv
 !raquel
 !ctopo stability correction
       fric(i,1)=ust(i)**2/wspd1(i)*rhox(i)*g/del(i,1)*dt2         &
         *(wspd1(i)/wspd(i))**2
+      if(.true.) then
 !      if(present(ctopo)) then
-!        vconvnew=0.9*vconvfx(i)+1.5*(max((pblh_ysu(i)-500)/1000.0,0.0))
-!        vconvlim = min(vconvnew,1.0)
-!        ad(i,1) = 1.+fric(i,1)*vconvlim+ctopo(i)*fric(i,1)*(1-vconvlim)
-!      else
+        vconvnew=0.9*vconvfx(i)+1.5*(max((pblh_ysu(i)-500)/1000.0,0.0))
+        vconvlim = min(vconvnew,1.0)
+        ad(i,1) = 1.+fric(i,1)*vconvlim+ctopo(i)*fric(i,1)*(1-vconvlim)
+      else
        ad(i,1) = 1.+fric(i,1)
-!      endif
+      endif
      f1(i,1) = ux(i,1)+uox(i)*ust(i)**2*rhox(i)*g/del(i,1)*dt2/wspd1(i)*(wspd1(i)/wspd(i))**2
      f2(i,1) = vx(i,1)+vox(i)*ust(i)**2*rhox(i)*g/del(i,1)*dt2/wspd1(i)*(wspd1(i)/wspd(i))**2
    enddo
@@ -1182,14 +1188,15 @@
    enddo
 !
 !******************************************************************************* xb118
-!! paj: ctopo2=1 if topo_wind=0 (default)
-!!
-!   do i = 1,im
+! paj: ctopo2=1 if topo_wind=0 (default)
+!
+   do i = 1,im
+     if(.true.) then ! mchen for NMM
 !     if(present(ctopo).and.present(ctopo2)) then ! mchen for NMM
-!       u10(i) = ctopo2(i)*u10(i)+(1-ctopo2(i))*ux(i,1)
-!       v10(i) = ctopo2(i)*v10(i)+(1-ctopo2(i))*vx(i,1)
-!     endif !mchen
-!   enddo
+       u10(i) = ctopo2(i)*u10(i)+(1-ctopo2(i))*ux(i,1)
+       v10(i) = ctopo2(i)*v10(i)+(1-ctopo2(i))*vx(i,1)
+     endif !mchen
+   enddo
 !********************************************************************************
 !
 !---- end of vertical diffusion

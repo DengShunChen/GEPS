@@ -310,7 +310,8 @@
       real      fnor
       logical   donor, upnor
 !     data      donor/.true./, fnor/1./
-      data      donor/.true./, fnor/0.5/
+!      data      donor/.false./, fnor/0.5/
+      data      donor/.true./, fnor/0.5/  !!origin
 !     data      donor/.false./,fnor/1./
 !
 !#######################################################################
