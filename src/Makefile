@@ -222,7 +222,7 @@ hdiffu.o : hdiffu.f90 mod_rank.o mod_mpe.o mod_index.o mod_const.o
 incrini.o : incrini.f90 mod_fftcom.o mod_spec.o mod_grid.o mod_const.o mod_index.o mod_rank.o mod_param.o 
 indexx.o : indexx.f90 
 inicons.o : inicons.f90 mod_index.o 
-init_block.o : init_block.f90 mod_noah.o mod_const.o mod_param.o
+init_block.o : init_block.f90 mod_noah.o mod_const.o mod_param.o physcons.o
 initial.o : initial.f90 mod_fftcom.o mod_grid.o mod_spec.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o 
 intgrt.o : intgrt.f90 mod_raddiag.o mod_radn.o mod_albn.o mod_noah.o mod_typhoon.o mod_phygrid.o mod_fftcom.o mod_grid.o mod_spec.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o  mod_sitgrid.o mod_sit_vdiff.o mod_netcdf.o mod_sit_control.o mod_sst.o
 invmtx.o : invmtx.f90 mod_rank.o 
