@@ -115,9 +115,11 @@
       real     zhsk,zttest,zqtest,zbuo,zmftop,foelhm
 !----------------------------------------------------------------------          
 !     1.           set default values for downdrafts                             
-!                  ---------------------------------                             
-!org      do jl=1,klon                                                   
-       do jl = 1, nxj         !lin
+!                  ---------------------------------                            
+!xb110>
+      zcond = 0.
+!xb110< 
+       do jl = 1, nxj         
         lddraf(jl)=.false.                                              
         kdtop(jl)=klev+1      
         ikhsmin(jl)=klev+1
@@ -145,8 +147,7 @@
 !                  evaporation of rain and cloud water)                          
 !                  ----------------------------------------------------          
       do jk=3,klev-2
-!org         do jl=1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
            zhsk=cpd*pten(jl,jk)+pgeo(jl,jk) +  &
      &         foelhm(pten(jl,jk))*pqsen(jl,jk)
            if(zhsk .lt. zhsmin(jl)) then
@@ -164,8 +165,7 @@
 !                  for environmental air in *cuadjtq*                            
 !                  -------------------------------------------                   
         is=0                                                          
-!org        do jl=1,klon                                                  
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
           ztenwb(jl,jk)=ptenh(jl,jk)                                  
           zqenwb(jl,jk)=pqenh(jl,jk)                                  
           zph(jl)=paph(jl,jk)                                           
@@ -186,8 +186,7 @@
 !                  and check for negative buoyancy.                              
 !                  then set values for downdraft at lfs.                         
 !                  ----------------------------------------                      
-!org        do jl=1,klon                                                    
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
           if(llo2(jl)) then                                             
             zttest=0.5*(ptu(jl,jk)+ztenwb(jl,jk))                      
             zqtest=0.5*(pqu(jl,jk)+zqenwb(jl,jk))                      

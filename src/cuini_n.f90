@@ -54,18 +54,25 @@
 !  local variables
       integer  jl,jk,jin
       integer  icall,ik
-!org      real     zzs
-      real zzs, zdp          !lin
+      real zzs, zdp          
 !------------------------------------------------------------
 !*    1.       specify large scale parameters at half levels
 !*             adjust temperature fields if staticly unstable
 !*             find level of maximum vertical velocity
 ! -----------------------------------------------------------
-      zdp = 0.5         !lin
+!xb110>
+      pgeoh = 0.
+      ptenh = 0.
+      pqenh = 0.
+      pqsenh = 0.
+      pxenh = 0.
+      zwmax = 0.
+      klwmin = 0
+!xb110<
+      zdp = 0.5         
       do jk=2,klev
-!org      do jl=1,klon
-       do jl = 1, nxj        !lin
-        pgeoh(jl,jk) = pgeo(jl,jk) + (pgeo(jl,jk-1)-pgeo(jl,jk))*zdp !lin
+       do jl = 1, nxj        
+        pgeoh(jl,jk) = pgeo(jl,jk) + (pgeo(jl,jk-1)-pgeo(jl,jk))*zdp 
         ptenh(jl,jk)=(max(cpd*pten(jl,jk-1)+pgeo(jl,jk-1), &
      &             cpd*pten(jl,jk)+pgeo(jl,jk))-pgeoh(jl,jk))*rcpd
         pqenh(jl,jk) = pqen(jl,jk-1)
@@ -77,33 +84,29 @@
       if ( jk >= klev-1 .or. jk < 2 ) cycle
       ik=jk
       icall=0
-!org      call cuadjtqn(klon,klev,ik,zph,ptenh,pqsenh,loflag,icall)
-      call cuadjtq_n(nxj,klon,klev,ik,zph,ptenh,pqsenh,loflag,icall)   !lin
-!org      do jl=1,klon
-      do jl = 1, nxj          !lin
-        pxenh(jl,jk) = (pxen(jl,jk)+pxen(jl,jk-1))*zdp              !lin
+      call cuadjtq_n(nxj,klon,klev,ik,zph,ptenh,pqsenh,loflag,icall)   
+      do jl = 1, nxj          
+        pxenh(jl,jk) = (pxen(jl,jk)+pxen(jl,jk-1))*zdp              
         pqenh(jl,jk)=min(pqen(jl,jk-1),pqsen(jl,jk-1)) &
      &            +(pqsenh(jl,jk)-pqsen(jl,jk-1))
         pqenh(jl,jk)=max(pqenh(jl,jk),0.)
       end do
       end do
 
-!org      do jl=1,klon
-      do jl = 1, nxj             !lin
+      do jl = 1, nxj             
         ptenh(jl,klev) = (cpd*pten(jl,klev)+pgeo(jl,klev)-pgeoh(jl,klev))*rcpd
         pxenh(jl,klev) = pxen(jl,klev)
         pqenh(jl,klev) = pqen(jl,klev)
         ptenh(jl,1) = pten(jl,1)
-        pxenh(jl,1) = pxen(jl,1)             !lin
+        pxenh(jl,1) = pxen(jl,1)             
         pqenh(jl,1) = pqen(jl,1)
-        pgeoh(jl,1) = pgeo(jl,1)          !lin
+        pgeoh(jl,1) = pgeo(jl,1)          
         klwmin(jl) = klev
         zwmax(jl) = 0.
       end do
 
       do jk=klevm1,2,-1
-!org      do jl=1,klon
-       do jl = 1, nxj                !lin
+       do jl = 1, nxj                
         zzs=max(cpd*ptenh(jl,jk)+pgeoh(jl,jk), &
      &        cpd*ptenh(jl,jk+1)+pgeoh(jl,jk+1))
         ptenh(jl,jk)=(zzs-pgeoh(jl,jk))*rcpd
@@ -111,8 +114,7 @@
       end do
 
       do jk=klev,3,-1
-!org      do jl=1,klon
-       do jl = 1,nxj                !lin
+       do jl = 1,nxj                
         if(pverv(jl,jk).lt.zwmax(jl)) then
            zwmax(jl)=pverv(jl,jk)
            klwmin(jl)=jk
@@ -125,8 +127,7 @@
       do jk=1,klev
       ik=jk-1
       if(jk.eq.1) ik=1
-!org      do jl=1,klon
-        do jl = 1, nxj                !lin
+        do jl = 1, nxj                
       ptu(jl,jk)=ptenh(jl,jk)
       ptd(jl,jk)=ptenh(jl,jk)
       pqu(jl,jk)=pqenh(jl,jk)

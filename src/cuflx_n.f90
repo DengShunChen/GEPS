@@ -114,9 +114,9 @@
 
 !*    1.0          determine final convective fluxes                           
 !                  ---------------------------------                           
-!org      do jl=1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
         prain(jl)=0.
+        rhevap(jl)=0.          !xb110
         if(.not.ldcum(jl).or.kdtop(jl).lt.kctop(jl)) lddraf(jl)=.false.
         if(.not.ldcum(jl)) ktype(jl)=0
         idbas(jl) = klev
@@ -130,8 +130,7 @@
       ktopm2= 2
       do jk=ktopm2,klev
         ikb = min(jk+1,klev)
-!org        do jl=1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj        
           pmflxr(jl,jk) = 0.
           pmflxs(jl,jk) = 0.
           pdpmel(jl,jk) = 0.
@@ -171,13 +170,11 @@
         enddo
       enddo
 
-!org      do jl=1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
         pmflxr(jl,klev+1) = 0.
         pmflxs(jl,klev+1) = 0.
       end do
-!org      do jl=1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
         if(ldcum(jl)) then
           ikb=kcbot(jl)
           ik=ikb+1
@@ -195,8 +192,7 @@
       enddo
 
       do jk=ktopm2,klev
-!org        do jl=1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
           if(ldcum(jl).and.jk.gt.kcbot(jl)+1) then
             ikb=kcbot(jl)+1
             zzp=((paph(jl,klev+1)-paph(jl,jk))/                &
@@ -229,8 +225,7 @@
 !                   -------------------------------                            
 
         do jk=ktopm2,klev
-!org        do jl=1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
           if(ldcum(jl) .and. jk >=kctop(jl)-1 ) then
             prain(jl)=prain(jl)+pdmfup(jl,jk)
             if(pmflxs(jl,jk).gt.0..and.pten(jl,jk).gt.tmelt) then
@@ -268,8 +263,7 @@
         enddo
       enddo
       do jk=ktopm2,klev
-!org        do jl=1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
           if(ldcum(jl).and.jk.ge.kcbot(jl)) then
             zrfl=pmflxr(jl,jk)+pmflxs(jl,jk)
             if(zrfl.gt.1.e-20) then

@@ -41,6 +41,7 @@
       use mpe
       use rank
       use index
+      use mo_constants, only:alv
 !
       implicit none
 !c input & output variable
@@ -145,7 +146,7 @@
 !c
 !      do  i=1,nx
       do  i=1,nxj
-      pqhfl(i)=qflux(i)
+      pqhfl(i)=qflux(i)/alv     !xb110 20190715, convert to upward surface moisture flux (kgm^-2s^-1)
       ldland(i)=land(i)
       enddo
 !c                                                                      c

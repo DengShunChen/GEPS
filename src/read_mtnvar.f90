@@ -2,7 +2,7 @@
 
 !
       use index
-      use param ,only : my_max
+      use param ,only : nco,my_max
 !
 !      parameter (nx=3072, my=1536, mtnv=14)
 !      parameter ( mtnv=14)
@@ -11,16 +11,26 @@
       real*4 hprime_a(nx,my)
       real hprime_b(nxp,mtnv,my_max),hprime_a8(nx,my)
 !      real hprime_a(nx,my),hprime_aa(nx,my)
+      character rfile*40
 ! 
 !--------------------------------------------
       nrec=nx*my*4
-!!      open(22,file='/nwpr/gfs/p037/data/NCEPGFSGWDlzl/lzlwrkf2/terrain/'  &
-!!      //'terr_640.2576.1280/global_mtnvar.t640.2576.1280.f77',           &
-!!        form='unformatted',status='old',access='direct',recl=nrec )
-!      open(22,file='mtnvar.dat',                                      &
-      open(22,file='global_mtnvar.t640.2576.1280.f77',                 &
-        form='unformatted',status='old',access='direct',recl=nrec )
-!     &   form='binary',status='old' )
+
+      if ( nco .gt. 999 ) then
+        write(rfile,100) nco,nx,my
+      else
+        if ( nx .gt. 999 .and. my .gt. 999 ) write(rfile,101) nco,nx,my
+        if ( nx .gt. 999 .and. my .le. 999 ) write(rfile,102) nco,nx,my
+        if ( nx .le. 999 .and. my .le. 999 ) write(rfile,103) nco,nx,my
+      endif
+ 100  format('global_mtnvar.t',i4.4,'.',i4.4,'.',i4.4,'.f77')
+ 101  format('global_mtnvar.t',i3.3,'.',i4.4,'.',i4.4,'.f77')
+ 102  format('global_mtnvar.t',i3.3,'.',i4.4,'.',i3.3,'.f77')
+ 103  format('global_mtnvar.t',i3.3,'.',i3.3,'.',i3.3,'.f77')
+
+      open(22,file=rfile,form='unformatted',status='old'         &
+          ,access='direct',recl=nrec )
+!
        do v =1,mtnv
          read(22,rec=v) hprime_a
          hprime_a8=hprime_a

@@ -19,7 +19,7 @@ SRCS  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
         gensppt3dv5.f90  spptout.f90 \
 	diagrd.f90 dmsread.f90 dmswrit.f90 drychk.f90 drycon.f90 \
 	eeps.f90 eigen.f90 eigrs.f90 evpcup.f90 gwdp.f90 \
-        read_mtnvar.f90 gwdps.f90 \
+        gwdc.f90 read_mtnvar.f90 gwdps.f90 \
 	gathv.f90 gausl3.f90 gauslv.f90 geostd.f90 \
 	getphi.f90 getrdy.f90 gfcst.f90 glbmean.f90 \
 	grdcon.f90 grdtpw.f90 hdiffu.f90 \
@@ -80,7 +80,9 @@ SRCS  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
 	cuadjtq_n.f90 cuasc_n.f90 cubasmc_n.f90 cuddraf_n.f90\
 	cudlfs_n.f90 cudtdq_n.f90 cududv_n.f90 cuentr_n.f90 cuflx_n.f90 \
 	cuini_n.f90 cumastr_driv_n.f90 cumastr_n.f90 cutype_n.f90 ntke_func.f90 \
-        get_phi.f90 module_mp_radar.f90 module_mp_wsm6_fv3.f90
+        get_phi.f90 module_mp_radar.f90 module_mp_wsm6_fv3.f90 lightning_ec.f90 \
+        mod_sitgrid.f90 mod_eos_ocean.f90 mod_sit_vdiff.f90 outsit.f90 \
+        mod_sst.f90 mod_netcdf.f90 mod_sit_control.f90
 
 OBJS=	${SRCS:.f90=.o}
 
@@ -92,7 +94,7 @@ FC90 =  mpifrtpx100
 FC   =  /package/$(MACHINE)/dms/bin/dmsmpif90
 
 
-INCLUDE = -I. -I/users/xa09/$(MACHINE)/fftw-3.3.7/include
+INCLUDE = -I. -I/users/xa09/$(MACHINE)/fftw-3.3.7/include -I/package/$(MACHINE)/netcdf-3.6.3/include
 #INCLUDE = -I. -I/nwpr/cfsres/b827/fx10/fftw-3.3.7/include
 
 CMD  =  MTCo639L72_$(MACHINE)
@@ -140,7 +142,7 @@ INSTALL = /usr/bin/install
 LDFLAGS = -Kopenmp,parallel -L/package/$(MACHINE)/dms/dms.v4/lib -lrdms -lgdbm -L/package/$(MACHINE)/operlib/lib -lnwp \
           -L/users/xa09/$(MACHINE)/fftw-3.3.7/lib -lfftw3_threads -lfftw3 -SSL2BLAMP
 
-LIBS	=
+LIBS	= -L/package/$(MACHINE)/netcdf-3.6.3/lib -lnetcdf
 
 all :	$(CMD)
 
@@ -167,7 +169,7 @@ cem1.o : cem1.f90 mod_paramt.o
 check.o : check.f90 mod_fftcom.o mod_index.o mod_rank.o mod_mpe.o 
 chlen.o : chlen.f90 
 coftrix.o : coftrix.f90 
-cons.o : cons.f90 mod_typhoon.o mod_fftcom.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o mo_convect_tables.o mod_spec.o module_mp_wsm6_fv3.o
+cons.o : cons.f90 mod_typhoon.o mod_fftcom.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o mo_convect_tables.o mod_spec.o module_mp_wsm6_fv3.o mod_sit_control.o
 correct.o : correct.f90 mod_index.o 
 ccoszen.o : ccoszen.f90 mod_index.o
 coszenpm.o : coszenpm.f90 mod_index.o 
@@ -182,7 +184,7 @@ cwb.o : cwb.f90
 dayfil.o : dayfil.f90 mod_rank.o 
 days.o : days.f90 
 dcbase.o : dcbase.f90 
-diabat.o : diabat.f90 mod_index.o mod_rank.o mod_mpe.o mod_radn.o physpara.o module_mp_wsm6_fv3.o
+diabat.o : diabat.f90 mod_index.o mod_rank.o mod_mpe.o mod_radn.o physpara.o module_mp_wsm6_fv3.o mod_sitgrid.o mod_sit_vdiff.o mod_eos_ocean.o mod_netcdf.o mod_sit_control.o physcons.o mod_sst.o
 diagrd.o : diagrd.f90 mod_index.o mod_rank.o mod_mpe.o 
 dmsread.o : dmsread.f90 mod_index.o mod_rank.o mod_mpe.o 
 dmswrit.o : dmswrit.f90 mod_index.o mod_rank.o mod_mpe.o 
@@ -214,6 +216,7 @@ grdcon.o : grdcon.f90
 grdtpw.o : grdtpw.f90 
 gscond.o : gscond.f90 
 gwdp.o : gwdp.f90 mod_paramt.o
+gwdc.o : gwdc.f90 mod_paramt.o mod_rank.o mod_mpe.o mod_index.o
 read_mtnvar.o : read_mtnvar.f90 mod_index.o mod_param.o
 gwdps.o : gwdps.f90 mod_rank.o mod_mpe.o mod_index.o
 hdiffu.o : hdiffu.f90 mod_rank.o mod_mpe.o mod_index.o mod_const.o
@@ -222,7 +225,7 @@ indexx.o : indexx.f90
 inicons.o : inicons.f90 mod_index.o 
 init_block.o : init_block.f90 mod_noah.o mod_const.o mod_param.o
 initial.o : initial.f90 mod_fftcom.o mod_grid.o mod_spec.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o 
-intgrt.o : intgrt.f90 mod_raddiag.o mod_radn.o mod_albn.o mod_noah.o mod_typhoon.o mod_phygrid.o mod_fftcom.o mod_grid.o mod_spec.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o
+intgrt.o : intgrt.f90 mod_raddiag.o mod_radn.o mod_albn.o mod_noah.o mod_typhoon.o mod_phygrid.o mod_fftcom.o mod_grid.o mod_spec.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o  mod_sitgrid.o mod_sit_vdiff.o mod_netcdf.o mod_sit_control.o mod_sst.o
 invmtx.o : invmtx.f90 mod_rank.o 
 joinrs.o : joinrs.f90 mod_index.o 
 joinsr.o : joinsr.f90 
@@ -423,7 +426,7 @@ mpe_recv_key.o : mpe_recv_key.f90
 #---------------------------------------------------------------------------------------
 #  for cumastr
 #---------------------------------------------------------------------------------------
-cumastr_driv.o : cumastr_driv.f90 mod_index.o mod_mpe.o mod_rank.o
+cumastr_driv.o : cumastr_driv.f90 mod_index.o mod_mpe.o mod_rank.o mo_constants.o
 cuadjtq.o : cuadjtq.f90 mo_convect_tables.o mo_constants.o shr_kind_mod.o 
 cuasc.o : cuasc.f90 mo_cumulus_flux.o mo_constants.o shr_kind_mod.o 
 cubase.o : cubase.f90 mo_cumulus_flux.o mo_constants.o shr_kind_mod.o 
@@ -451,7 +454,7 @@ ndslfv_monoadvh.o : ndslfv_monoadvh.f90 mod_rank.o mod_index.o mod_grid.o mod_pa
 ndslfv_monoadvv.o : ndslfv_monoadvv.f90 mod_rank.o mod_index.o mod_grid.o mod_param.o
 mpe2d.o : mpe2d.f90 mod_param.o mod_index.o
 #xb110, for modified new Tiedtke scheme>
-cumastr_driv_n.o : cumastr_driv_n.f90 mod_index.o mod_mpe.o mod_rank.o mod_grid.o
+cumastr_driv_n.o : cumastr_driv_n.f90 mod_index.o mod_mpe.o mod_rank.o mod_grid.o mo_constants.o
 cuadjtq_n.o:cuadjtq_n.f90 mo_convect_tables.o mo_constants.o shr_kind_mod.o ntke_func.o
 cuasc_n.o : cuasc_n.f90 mo_cumulus_flux.o mo_constants.o shr_kind_mod.o ntke_func.o
 cutype_n.o : cutype_n.f90 mo_cumulus_flux.o mo_constants.o shr_kind_mod.o ntke_func.o
@@ -469,3 +472,13 @@ ntke_func.o : ntke_func.f90 mo_constants.o
 get_phi.o : get_phi.f90
 module_mp_radar.o : module_mp_radar.f90
 module_mp_wsm6_fv3.o : module_mp_wsm6_fv3.f90 physcons.o module_mp_radar.o
+#xb110, for lightning scheme>
+lightning_ec.o: lightning_ec.f90 mo_constants.o
+#----------SIT---------------
+mod_sitgrid.o : mod_sitgrid.f90 mod_sit_control.o mod_netcdf.o
+mod_sit_vdiff.o : mod_sit_vdiff.f90 mod_eos_ocean.o mod_netcdf.o mod_sst.o mod_sit_control.o
+mod_sst.o: mod_sst.f90 mod_param.o mod_mpe.o mod_index.o mod_const.o mod_sit_control.o mod_netcdf.o mod_eos_ocean.o
+mod_netcdf.o: mod_netcdf.f90 mod_mpe.o mod_const.o mod_sit_control.o
+mod_eos_ocean.o: mod_eos_ocean.f90 
+mod_sit_control.o: mod_sit_control.f90
+outsit.o : outsit.f90 mod_index.o mod_rank.o mod_mpe.o mod_sitgrid.o

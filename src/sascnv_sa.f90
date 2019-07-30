@@ -13,13 +13,13 @@
       implicit none
 !
       integer            im, ix,  km, jcap, ncloud,                     &
-                         kbot(im), ktop(im), kcnv(im)
+                         kbot(ix), ktop(ix), kcnv(ix)
 !     ,                  me
       real delt
       real ps(im),     del(ix,km),  prsl(ix,km),                        &
                            ql(ix,km,2),q1(ix,km),   t1(ix,km),          &
                            u1(ix,km),  v1(ix,km),   rcs(im),            &
-                           cldwrk(im), rn(im),      slimsk(im),         &
+                           cldwrk(ix), rn(ix),      slimsk(ix),         &
                            dot(ix,km), phil(ix,km),ql_all(ix,km),       &
 ! hchuang code change mass flux output
                            ud_mf(im,km),dd_mf(im,km),dt_mf(im,km)
@@ -318,8 +318,7 @@
       xlamdd  = 1.0e-4
 !
 !     pgcon   = 0.7     ! Gregory et al. (1997, QJRMS)
-!      pgcon   = 0.55    ! Zhang & Wu (2003,JAS)
-      pgcon   = 0.3    ! TCo639L72
+      pgcon   = 0.55    ! Zhang & Wu (2003,JAS)
 !
       w1l     = -8.e-3
       w2l     = -4.e-2
@@ -1318,7 +1317,7 @@
           jmn = jmin(i)
           hcdo(i,jmn) = heo(i,jmn)
           qcdo(i,jmn) = qo(i,jmn)
-          qrcdo(i,jmn)= qeso(i,jmn)
+          qrcdo(i,jmn)= qo(i,jmn)
           ucdo(i,jmn) = uo(i,jmn)
           vcdo(i,jmn) = vo(i,jmn)
           pwevo(i) = 0.
@@ -1372,7 +1371,7 @@
                  tem1 = 0.5 * (xlamd(i)+xlamdd) * dz
               endif
               factor = 1. + tem - tem1
-              qcdo(i,k) = ((1.-tem1)*qcdo(i,k+1)+tem*0.5*  &
+              qcdo(i,k) = ((1.-tem1)*qrcdo(i,k+1)+tem*0.5*  &
                            (qo(i,k)+qo(i,k+1)))/factor
 !j
 !             pwdo(i,k)  = etad(i,k+1) * qcdo(i,k+1) -
@@ -1380,7 +1379,7 @@
 !             pwdo(i,k)  = pwdo(i,k) - detad *
 !                         .5 * (qrcdo(i,k) + qrcdo(i,k+1))
 !j
-              pwdo(i,k)  = etad(i,k+1) * (qcdo(i,k) - qrcdo(i,k))
+              pwdo(i,k)  = etad(i,k) * (qcdo(i,k) - qrcdo(i,k))
 !              qcdo(i,k)  = qrcdo(i,k)
               pwevo(i)   = pwevo(i) + pwdo(i,k)
           endif
@@ -1454,7 +1453,7 @@
           dp = 1000. * del(i,1)
           dellah(i,1) = edto(i) * etad(i,1) * (hcdo(i,1)  &
                          - heo(i,1)) * g / dp
-          dellaq(i,1) = edto(i) * etad(i,1) * (qcdo(i,1)  &
+          dellaq(i,1) = edto(i) * etad(i,1) * (qrcdo(i,1) &
                          - qo(i,1)) * g / dp
           dellau(i,1) = edto(i) * etad(i,1) * (ucdo(i,1)  &
                          - uo(i,1)) * g / dp
@@ -1505,8 +1504,8 @@
            ((aup*eta(i,k)-adw*edto(i)*etad(i,k))*dv1q                   &
           - (aup*eta(i,k-1)-adw*edto(i)*etad(i,k-1))*dv3q               &
           - (aup*tem*eta(i,k-1)+adw*edto(i)*ptem*etad(i,k))*dv2q*dz     &
-          +  aup*tem1*eta(i,k-1)*.5*(qcko(i,k)+qcko(i,k-1))*dz          &
-          +  adw*edto(i)*ptem1*etad(i,k)*.5*(qrcdo(i,k)+qrcdo(i,k-1))*dz &
+          +  aup*tem1*eta(i,k-1)*.5*(qrcko(i,k)+qcko(i,k-1))*dz         &
+          +  adw*edto(i)*ptem1*etad(i,k)*.5*(qrcdo(i,k)+qcdo(i,k-1))*dz &
                ) *g/dp
 !
               tem1=eta(i,k)*(uo(i,k)-ucko(i,k))
@@ -1589,7 +1588,7 @@
 !
       do k = 1, km
         do i = 1, im
-          if(cnvflg(i) .and. k .le. kmax(i)) then
+          if(asqecflg(i) .and. k .le. kmax(i)) then
 !           qeso(i,k) = 0.01 * fpvs(to(i,k))      ! fpvs is in pa
 !           qeso(i,k) = eps * qeso(i,k) / (pfld(i,k)+epsm1*qeso(i,k))
 !cwb qsat
@@ -1612,7 +1611,7 @@
 !
       do k = 1, km1
         do i = 1, im
-          if(cnvflg(i) .and. k .le. kmax(i)-1) then
+          if(asqecflg(i) .and. k .le. kmax(i)-1) then
             dz = .5 * (zo(i,k+1) - zo(i,k))
             dp = .5 * (pfld(i,k+1) - pfld(i,k))
 !           es = 0.01 * fpvs(to(i,k+1))      ! fpvs is in pa
@@ -1814,7 +1813,7 @@
 !             xpwd     = xpwd - detad *
 !                      .5 * (qrcd(i,k) + qrcd(i,k+1))
 ! 
-              xpwd     = etad(i,k+1) * (qcdo(i,k) - qrcd(i,k))
+              xpwd     = etad(i,k) * (qcdo(i,k) - qrcd(i,k))
 !              qcdo(i,k)= qrcd(i,k)
               xpwev(i) = xpwev(i) + xpwd
           endif
@@ -2273,7 +2272,8 @@
       do k = 1, km
         do i = 1, im
           if (cnvflg(i) .and. rn(i).gt.0.) then
-            if (k.gt.kb(i).and.k.le.ktcon(i)) then
+!            if (k.gt.kb(i).and.k.le.ktcon(i)) then
+            if(k.ge.kbcon(i) .and. k.le.ktcon(i)) then
               tem  = dellal(i,k) * xmb(i) * dt2
 !cwb
               ql_all(i,k)=ql_all(i,k)+tem

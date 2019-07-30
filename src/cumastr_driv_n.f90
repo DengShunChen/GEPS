@@ -6,10 +6,7 @@
                     rcup ,pk   ,pk2  ,sd   ,qflux,&
                     kcbot,kctop,fwd  ,ncld ,sigma,&
                     plt  ,pt   ,j    ,lndj ,hfx  ,&
-                    xlon ,xlat,mdlon             ,&
-!xb110>
-                    kcnv)
-!xb110<
+                    xlat,mdlon ,kcnv ,flash)
 !c
 !c#######################################################################
 !c                     subroutine description
@@ -46,7 +43,7 @@
       use mpe
       use rank
       use index
-      use mo_constants, only:vtmpc1
+      use mo_constants, only:vtmpc1,alv
       implicit none
 !c input & output variable
       integer nx,nxj,lev,ncld,j,jj
@@ -72,19 +69,15 @@
             ,phhfl(nx),hfx(nx)
 !
       real rhoh2o,dx,d2r,xlatj,xlat,tt1
-      real xlon(nx)
 !c
       integer klevp1,klevm1,k,i,kc,ncldq,lndj(nx)
       logical fwd,land(nx),ldland(nx)
-
 !xb110>
-      real zew,zqs,zcor
-      real foeewm
+      real zew,zqs,zcor,foeewm,mdlon
       logical locum(nx)
-      real mdlon
       integer kcnv(nx)
+      real flash(nx)        !flash density (in flashes km^-2 s^-1)
 !xb110<
-
       ncldq=2
       rhoh2o=1000.
 !
@@ -104,7 +97,7 @@
       zrain(i) = 0.0
       locum(i) =.false.
       phhfl(i) = hfx(i)
-      pqhfl(i) = qflux(i)
+      pqhfl(i) = qflux(i)/alv   !xb110 20190715, convert to upward surface moisture flux (kgm^-2s^-1)
       ldland(i)= land(i)
       enddo
 !c transfer t from potential temp to real temp
@@ -153,10 +146,8 @@
               pvom,  pvol, prsfc,pssfc, kcbot,  &
               kctop, dth,  j,    ztu,   zqu,    &
               zmfu,  zmfd, zrain,pcte,  phhfl,  &
-              lndj,  locum,xlon, xlat,mdlon,    &
-!xb110>
-              kcnv)
-!xb110<
+              lndj,  locum,xlat, mdlon, kcnv,   &
+              flash)
 
       do k=1,lev
       kc=k

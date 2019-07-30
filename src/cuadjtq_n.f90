@@ -37,7 +37,6 @@
 !          for condensation calculations.                                           
 !          the tables are initialised in *suphec*.                                  
 !----------------------------------------------------------------------             
-!  USE shr_kind_mod, only: r8 => shr_kind_r8
   USE mo_constants,      ONLY: vtmpc1,   &
                                r5alvcp,  &
                                r5alscp,  &
@@ -61,11 +60,10 @@
      &         psp(klon)                                               
       logical  ldflag(klon)                                           
 ! local variables
-!org  integer  jl,jk
-      integer  jl,jk,nxj           !lin
+      integer  jl,jk,nxj           
       integer  isum,kcall,kk
       real     zqmax,zqsat,zcor,zqp,zcond,zcond1,zl,zi,zf
-      real     foealfa,foeldcpm,foeewm,foedem     !lin
+      real     foealfa,foeldcpm,foeewm,foedem     
 !------------- ---------------------------------------------------------             
 !     1.           define constants                                                 
 !                  ----------------                                                 
@@ -73,8 +71,7 @@
 !     2.           calculate condensation and adjust t and q accordingly            
 !                  -----------------------------------------------------            
       if ( kcall == 1 ) then
-!org      do jl = 1,klon
-       do jl = 1, nxj           !lin
+       do jl = 1, nxj           
         if ( ldflag(jl) ) then
           zqp = 1./psp(jl)
           zl = 1./(pt(jl,kk)-c4les)
@@ -108,8 +105,7 @@
         end if
       end do
       elseif ( kcall == 2 ) then
-!org     do jl = 1,klon
-      do jl = 1, nxj           !lin
+      do jl = 1, nxj           
         if ( ldflag(jl) ) then
           zqp = 1./psp(jl)
           zqsat = foeewm(pt(jl,kk))*zqp
@@ -131,8 +127,7 @@
         end if
       end do
       else if ( kcall == 0 ) then
-!org      do jl = 1,klon
-       do jl = 1, nxj              !lin
+       do jl = 1, nxj              
         zqp = 1./psp(jl)
         zqsat = foeewm(pt(jl,kk))*zqp
         zqsat = min(0.5,zqsat)

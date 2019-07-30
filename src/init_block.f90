@@ -58,6 +58,7 @@
 
       dolsp=.true.
       dograv=.true.
+      docgrav=.true.
       doshl=.true.
 
       donnmi=.true.
@@ -101,9 +102,20 @@
 
       cgw=1.0e-4
 !
+!---for using forecast daily sst, sea ice fraction, snow depth
+      ldailyFCTsst=.false.
+      ldailyFCTicesndpt=.false.
+      lFCTweight=.false.
+      lopgsst=.false.
+      dailyClm_option=-99
+!--for SIT
+      do_sit=.false.
+      fsit=-99.
+!
 ! specify the default option for orographic and convective gwd
 !
-      nmgwor=1
+      nmgwor=2
+      nmgwcv=2
       mtnvar=14
 !
 ! specify the default option for reduced grids

@@ -79,10 +79,6 @@
 !       kctop0 [ictop0] - estimate of cloud top. (cumastr)
 !       kcum [icum] - flag to control the call
 !-------------------------------------------------------------------
-!  USE shr_kind_mod, only: r8 => shr_kind_r8
-! USE time_manager,     ONLY: is_first_step,         &! initial run
-!                             is_first_restart_step, &! restart run
-!                             get_step_size           ! step size
   USE mo_constants,     ONLY: g,       & ! gravity acceleration
                               cpd,     & ! specific heat at constant pressure
                               rd,      & ! gas constant for dry air
@@ -97,7 +93,7 @@
   USE mo_cumulus_flux,  ONLY: lmfdudv, & !
                               lmfmid,  & !
                               cmfcmin, & !
-                              cprcon,  & !
+                              cprcon_n,  & !xb110
                               cmfctop
 
 !-------------------------------------------------------------------
@@ -141,8 +137,7 @@
       integer  kdpl(klon)
       real     zoentr(klon),           zdpmean(klon)
       real     pdmfen(klon,klev),      pmfude_rate(klon,klev)
-      real     ushear(klon,klev),      zoentr1(klon,klev)      !lin
-! local variables
+      real     ushear(klon,klev),      zoentr1(klon,klev)      
       integer  jl,jk
       integer  ikb,icum,itopm2,ik,icall,is,kcum,jlm,jll
       integer  jlx(klon)
@@ -154,7 +149,7 @@
       real     zrnew,zz,zdmfeu,zdmfdu,dp
       real     zfac,zbuoc,zdkbuo,zdken,zvv,zarg,zchange,zxe,zxs,zdshrd
       real     atop1,atop2,abot
-      real     foealfa,ushmax                 !lin
+      real     foealfa,ushmax                 
 !--------------------------------
 !*    1.       specify parameters
 !--------------------------------
@@ -166,7 +161,7 @@
       enddo
       zcons2=3./(g*ztmst)
       zfacbuo = 0.5/(1.+0.5)
-      zprcdgw = cprcon*zrg
+      zprcdgw = cprcon_n*zrg
       z_cldmax = 5.e-3
       z_cwifrac = 0.5
       z_cprc2 = 0.5
@@ -174,9 +169,14 @@
 !---------------------------------
 !     2.        set default values
 !---------------------------------
+!xb110>
+      kctop = 0.
+      jlx   = 0
+      zph   = 0.
+      zbuoc = 0.
+!xb110<
       llo3 = .false.
-!org      do jl=1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
         zluold(jl)=0.
         wup(jl)=0.
         zdpmean(jl)=0.
@@ -191,8 +191,7 @@
 
 ! initialize variout quantities     
       do jk=1,klev
-!org      do jl=1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
           if(jk.ne.kcbot(jl)) plu(jl,jk)=0.
           pmfu(jl,jk)=0.
           pmfus(jl,jk)=0.
@@ -211,15 +210,13 @@
       end do
       end do
 
-!org      do jl = 1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
         if ( ktype(jl) == 3 ) ldcum(jl) = .false.
       end do
 !------------------------------------------------
 !     3.0      initialize values at cloud base level
 !------------------------------------------------
-!org      do jl=1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
         kctop(jl)=kcbot(jl)
         if(ldcum(jl)) then
           ikb = kcbot(jl)
@@ -252,8 +249,7 @@
      &     pmfuq,    pmful,    pdmfup)
       is = 0
       jlm = 0
-!org      do jl = 1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
         loflag(jl) = .false.
         zprecip(jl) = 0.
         llo1(jl) = .false.
@@ -291,8 +287,7 @@
       if(llo3) then
 ! -------------------------------------------------------
 !
-!org        do jl = 1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
           zqold(jl) = 0.
         end do
         do jll = 1 , jlm
@@ -344,8 +339,7 @@
           zluold(jl) = plu(jl,jk)
         end do
 ! reset to environmental values if below departure level
-!org        do jl = 1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
           if ( jk > kdpl(jl) ) then
             ptu(jl,jk) = ptenh(jl,jk)
             pqu(jl,jk) = pqenh(jl,jk)
@@ -424,20 +418,11 @@
               end if
               if ( zbuo(jl,jk) > 0.  ) then
                 ikb = kcbot(jl)
-!                ushmax=5.
-!                ushear(jl,jk)=abs((puen(jl,jk)-puen(jl,jk-1))/ushmax)
-!                ushear(jl,jk)=max(0.,ushear(jl,jk))
-!                ushear(jl,jk)=min(1.,ushear(jl,jk))
                 zoentr(jl) = 1.75e-3*(0.3-(min(1.,pqen(jl,jk-1) /    &
                   pqsen(jl,jk-1))-1.))*(pgeoh(jl,jk-1)-pgeoh(jl,jk)) * &
                   zrg*min(1.,pqsen(jl,jk)/pqsen(jl,ikb))**3
-!                  zrg*(min(1.,pqsen(jl,jk)/pqsen(jl,ikb))**3)* &
-!                  (1+ushear(jl,jk))
                 zoentr1(jl,jk)=zoentr(jl)
-!                call qmax2d (zoentr1,1,1,nxj,klev)
-!             eq.A.1, PPT slide.23, 170327 Lin
                 zoentr(jl) = min(0.4,zoentr(jl))*pmfu(jl,jk)
-!                tmp1(jl,jk)=zoentr(jl)
               else
                 zoentr(jl) = 0.
               end if
@@ -469,8 +454,7 @@
           end if
         end do
 
-!org        do jl = 1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
           if ( llo1(jl) ) then
 ! conversions only proceeds if plu is greater than a threshold liquid water
 ! content of 0.3 g/kg over water and 0.5 g/kg over land to prevent precipitation
@@ -508,8 +492,7 @@
             end if
           end if
         end do
-!org        do jl = 1, klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
           if ( llo1(jl) ) then
             if ( zlrain(jl,jk) > 0. ) then
               zvw = 21.18*zlrain(jl,jk)**0.2
@@ -538,10 +521,17 @@
 !----------------------------------------------------------------------
 ! 5.       final calculations
 ! ------------------
-!org      do jl = 1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
+
        if ( kctop(jl) == -1 ) ldcum(jl) = .false.
         kcbot(jl) = max(kcbot(jl),kctop(jl))
+!xb110> 20190711
+       if (.not.ldcum(jl)) then
+          kcbot(jl) = -1
+          kctop(jl) = -1
+       end if
+!xb110< 20190711
+
         if ( ldcum(jl) ) then
           wup(jl) = max(1.e-2,wup(jl)/max(1.,zdpmean(jl)))
           wup(jl) = sqrt(2.*wup(jl))

@@ -80,7 +80,7 @@
 
 
 !ch       amp = max(min(0.91*(22-k),15),1)
-          amp = min(max(2.*(hdk1-KL),1.),30.)
+          amp = min(max(0.75*(hdk1-KL),1.),8.)
 
           facd = max(fact*amp,1.0)
           facv = max(fact*amp,1.0)

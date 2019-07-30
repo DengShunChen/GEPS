@@ -40,6 +40,9 @@
            hours,frad,evaprh,qgini,                          &
            tice,hice,cutfreq,taup,hfilt,ptmeans,             &
            taureg,cgw,domfc,otgreen
+!sit
+      real fsit           !fsit>0., turn on sit_vdiff when mod(tau/fsit)<0.001
+                          !default fsit<=0., turn on sit_vdiff every tau
            
  
       common/constR/                                         &
@@ -47,7 +50,7 @@
            ptop,ptmean,tfilt,dt,tau,taui,taue,tauo,          &
            hours,frad,evaprh,qgini,                          &
            tice,hice,cutfreq,taup,hfilt,ptmeans,             &
-           taureg,cgw,domfc,otgreen
+           taureg,cgw,fsit,domfc,otgreen
 ! sppt parameters
       real                                                       &
            de_corretime_500,de_corretime_1000,de_corretime_2000, &
@@ -58,7 +61,7 @@
       logical lsimpl,lzadv, yesdia,dopbl, docup, dorad,      &
               dolsp, dograv,doshl, dodry, donnmi,ozon,       &
               restrt,hdiff, cstar, update,doincr,hybrid,     &
-              doo3l, dosppt, dospptout
+              doo3l, dosppt, dospptout,   docgrav
       logical out_green,out_hp
 !for Semi-Lagrangain
       logical ndsladvh2
@@ -70,18 +73,30 @@
 !for 2dMPI
       logical idg_jdg_owner
       integer idg_listnum,jdg_listnum
+! daily forecast sst, sea ice fraction, water equivlent snow depth, time weighting
+      logical ldailyFCTsst,ldailyFCTicesndpt,lFCTweight
+      integer dailyClm_option
+      logical lopgsst
+! sit
+      logical do_sit
 
       common/constL/lsimpl,lzadv,yesdia,dopbl,docup,dorad,   &
               dolsp, dograv,doshl, dodry, donnmi,ozon,       &
               restrt,hdiff, cstar, update,doincr,hybrid,     &
-              doo3l,ndsladvh2,out_green,out_hp
+              doo3l,ndsladvh2,docgrav,out_green,out_hp,      &
+              ldailyFCTsst,ldailyFCTicesndpt,lFCTweight,     &
+              dailyClm_option,lopgsst,do_sit
 
  
       character*80 ifilin,cwbout,bckfile,namlsts, &
-              ifilout,crdate,ocards,phyout,cntrl
+              ifilout,crdate,ocards,phyout,cntrl, &
+              ifilin_ncep,ifilin_sst,ifilin_nc,   &
+              ifilin_ClmANA,ifilin_ClmFCT
 
       common/files/ifilin,cwbout,bckfile,namlsts, &
-              ifilout,crdate,ocards,phyout,cntrl
+              ifilout,crdate,ocards,phyout,cntrl, &
+              ifilin_ncep,ifilin_sst,ifilin_nc,   &
+              ifilin_ClmANA,ifilin_ClmFCT
  
       character(len=16), dimension(:), allocatable, save  :: outdir
 

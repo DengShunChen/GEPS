@@ -70,7 +70,6 @@
 !          *cuadjtq* for adjusting t and q due to evaporation in          
 !          saturated descent                                              
 !----------------------------------------------------------------------
-!  USE shr_kind_mod, only: r8 => shr_kind_r8
   USE mo_constants,    ONLY: rd,      &! gas constant for dry air
                              cpd,     &! specific heat at constant pressure
                              rcpd,    &! rcpd=1./cpd
@@ -79,9 +78,7 @@
                              zrg        ! 1.0/g
   USE mo_cumulus_flux, ONLY: entrdd,  &! entrainment rate for cumulus downdrafts
                              cmfcmin, &! minimum massflux value (for safety)
-                             lmfdudv, &  ! true if cumulus friction is switched on
-                             MPAS,    &
-                             RWRF
+                             lmfdudv   ! true if cumulus friction is switched on
   
 !---------------------------------------------------------------------- 
       implicit none
@@ -123,18 +120,19 @@
 !                     (c) checking for negative buoyancy and              
 !                         specifying final t,q,u,v and downward fluxes    
 !                    -------------------------------------------------    
-!org      do jl=1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
         zoentr(jl)=0.
         zbuoy(jl)=0.
         zdmfen(jl)=0.
         zdmfde(jl)=0.
+!xb110>
+        itopde(jl)=klev
+        zcond(jl) = 0.
+!xb110<
       enddo
 
-!      do jk=1,klev
-      do jk=klev,1,-1              !WRF
-!org       do jl=1,klon
-       do jl = 1, nxj         !lin
+      do jk=klev,1,-1              
+       do jl = 1, nxj         
          pmfdde_rate(jl,jk) = 0.
          if((paph(jl,klev+1)-paph(jl,jk)).lt. 60.e2) itopde(jl)=jk
        end do
@@ -142,8 +140,7 @@
      
       do jk=3,klev
       is=0
-!org      do jl=1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
       zph(jl)=paph(jl,jk)
       llo2(jl)=lddraf(jl).and.pmfd(jl,jk-1).lt.0.
       if(llo2(jl)) then
@@ -152,8 +149,7 @@
       end do
 
       if(is.eq.0) cycle
-!org      do jl=1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
       if(llo2(jl)) then
          zentr = entrdd*pmfd(jl,jk-1)*(pgeoh(jl,jk-1)-pgeoh(jl,jk))*zrg
          zdmfen(jl)=zentr
@@ -161,8 +157,7 @@
       end if
       end do
 
-!org         do jl=1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
          if(llo2(jl)) then
          if(jk.gt.itopde(jl)) then
             zdmfen(jl)=0.
@@ -173,7 +168,6 @@
          end if
         end do
 
-!         do jl=1,klon
          do jl = 1,nxj
           if(llo2(jl)) then
           if(jk.le.itopde(jl)) then
@@ -188,8 +182,7 @@
          endif
         enddo
 
-!org      do jl=1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
          if(llo2(jl)) then
             pmfd(jl,jk)=pmfd(jl,jk-1)+zdmfen(jl)-zdmfde(jl)
             zseen=(cpd*ptenh(jl,jk-1)+pgeoh(jl,jk-1))*zdmfen(jl)
@@ -210,8 +203,7 @@
       ik=jk
       icall=2
       call cuadjtq_n(nxj, klon,klev,ik,zph,ptd,pqd,llo2,icall)
-!org      do jl=1,klon
-       do jl = 1, nxj         !lin
+       do jl = 1, nxj         
          if(llo2(jl)) then
             zcond(jl)=zcond(jl)-pqd(jl,jk)
             zbuo=ptd(jl,jk)*(1.+vtmpc1*pqd(jl,jk))- &

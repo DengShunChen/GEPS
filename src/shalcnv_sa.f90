@@ -12,15 +12,15 @@
       implicit none
 !
       integer            im, ix,  km, jcap, ncloud,                     &
-                         kbot(im), ktop(im), kcnv(im)
+                         kbot(ix), ktop(ix), kcnv(ix)
 !                        me
       real delt
       real ps(im),     del(ix,km),  prsl(ix,km),                        &
                            ql(ix,km,2),q1(ix,km),   t1(ix,km),          &
                            u1(ix,km),  v1(ix,km),   rcs(im),            &
-                           rn(im),     slimsk(im),                      &
-                           dot(ix,km), phil(ix,km), hpbl(im),           &
-                           heat(im),   evap(im)                         &
+                           rn(ix),     slimsk(ix),                      &
+                           dot(ix,km), phil(ix,km), hpbl(ix),           &
+                           heat(ix),   evap(ix)                         &
                           ,ql_all(ix,km)                                &
 ! hchuang code change mass flux output
       ,                    ud_mf(im,km),dt_mf(im,km)
@@ -273,8 +273,7 @@
       evfactl = 0.3
 !
 !     pgcon   = 0.7     ! Gregory et al. (1997, QJRMS)
-!      pgcon   = 0.55    ! Zhang & Wu (2003,JAS)
-      pgcon   = 0.3    ! TCo639L72
+      pgcon   = 0.55    ! Zhang & Wu (2003,JAS)
       w1l     = -8.e-3
       w2l     = -4.e-2
       w3l     = -5.e-3
@@ -1223,7 +1222,7 @@
       do k = 2, km1
         do i = 1, im
           if(cnvflg(i)) then
-            if(k >= kbcon1(i) .and. k < ktcon1(i)) then
+            if(k .ge. kbcon1(i) .and. k .lt. ktcon1(i)) then
               dz = zi(i,k) - zi(i,k-1)
               tem = sqrt(u1(i,k)*u1(i,k)+v1(i,k)*v1(i,k))
               umean(i) = umean(i) + tem * dz
@@ -1442,7 +1441,7 @@
                 delq(i) =  + qevap(i)/dt2
                 delqev(i) = delqev(i) + .001*dp*qevap(i)/g
               endif
-              dellaq(i,k) = dellaq(i,k) + delq(i) / xmb(i)
+!              dellaq(i,k) = dellaq(i,k) + delq(i) / xmb(i)
               delqbar(i) = delqbar(i) + delq(i)*dp/g
               deltbar(i) = deltbar(i) + deltv(i)*dp/g
             endif
@@ -1477,7 +1476,8 @@
       do k = 1, km1
         do i = 1, im
           if (cnvflg(i)) then
-            if (k.ge.kb(i).and.k.le.ktcon(i)) then
+!            if (k.ge.kb(i).and.k.le.ktcon(i)) then
+            if (k.ge.kbcon(i).and.k.le.ktcon(i)) then
               tem  = dellal(i,k) * xmb(i) * dt2
 !cwb
               ql_all(i,k)=ql_all(i,k)+tem

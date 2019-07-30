@@ -942,10 +942,10 @@
 !
 !  pbl height for diagnostic purpose
 !
-!      do i = 1, im
-!         hpbl(i) = hpblx(i)
-!         kpbl(i) = kpblx(i)
-!      enddo
+      do i = 1, im
+         hpbl(i) = hpblx(i)
+         kpbl(i) = kpblx(i)
+      enddo
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       return
