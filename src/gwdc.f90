@@ -399,10 +399,8 @@
 
       do i = 1, npt
         ii = ipt(i)
-!byl        kcldtop(i)   = km - ktop(ii) + 1
-!byl        kcldbot(i)   = km - kbot(ii) + 1
-        kcldtop(i)   = ktop(ii) 
-        kcldbot(i)   = kbot(ii) 
+        kcldtop(i)   = km - ktop(ii) + 1
+        kcldbot(i)   = km - kbot(ii) + 1
         dlen(i)      = dlength(ii)
 !                                    (g*qmax(ii)*cldf(ii)*dlength(ii))
         gqmcldlen(i) = grav*qmax(ii)*cldf(ii)*dlen(i)
