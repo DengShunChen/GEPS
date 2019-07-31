@@ -404,7 +404,7 @@
       real      mflon(nx,my)
 !for new precpd
       real      rmr(nxp,lev,my_max),smr(nxp,lev,my_max),rainr(nxp,lev,my_max)
-      real      slsp(nxp,my_max)
+      real      slsp(nxp,my_max),rm(nxp,lev),sm(nxp,lev),rainp(nxp,lev)
 !rainr : rainfall rate (unit in kg/kg/dt)
 !for lightning
       real      flash(nxp,my_max)        !flash density (unit in flashes km^-2 day^-1)
@@ -1484,6 +1484,8 @@
             qtc(i,kc) = qt(i,k,jj)
             qtr(i,kc) = qt(i,lev+k,jj)
             ttc(i,kc) = tt(i,k,jj)
+            rm(i,kc)  = rmr(i,k,jj)
+            sm(i,kc)  = smr(i,k,jj)
           enddo
         enddo
         call gscond(nxjp(j),nxp,lev,dta,prsl,psfc,  &
@@ -1496,19 +1498,22 @@
 !                    qtc, qtr, ttc,           &
 !                    rlsp(1,jj), rhc, lprnt)
         call precpd_n(nxjp(j),nxp,lev,dta,del,prsl,psfc,              &
-                    qtc, qtr, rmr(1,1,jj), smr(1,1,jj), phil, ttc,    &
-                    rlsp(1,jj), slsp(1,jj), rainr(1,1,jj), rhc, lprnt)
+                    qtc, qtr, rm, sm, phil, ttc,                      &
+                    rlsp(1,jj), slsp(1,jj), rainp, rhc, lprnt)
 !xb110<
         do i=1,nxj
           rlsp(i,jj) = rlsp(i,jj) * 1000.         ! mm/call
         enddo
-!jh        do k=1,lev
-        do k=ktcup,lev
+        do k=1,lev
+!byl        do k=ktcup,lev
           kc=lev-k+1
           do i=1,nxj
             qt(i,k    ,jj) = qtc(i,kc)
             qt(i,k+lev,jj) = qtr(i,kc)
             tt(i,k    ,jj) = ttc(i,kc)
+            rmr(i,k   ,jj) = rm(i,kc)
+            smr(i,k   ,jj) = sm(i,kc)
+            rainr(i,k ,jj) = rainp(i,kc)
           enddo
         enddo
 !byl      endif
