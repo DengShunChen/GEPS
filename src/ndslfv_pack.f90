@@ -1509,7 +1509,7 @@
 !
 ! ------------------------------------------------------------------------
 !
-      subroutine ndslfv_update (lonsperlat,vdzonl,vdmerd,deltim)
+      subroutine ndslfv_update (lonsperlat,vdzonl,vdmerd,vdzonlr,vdmerdr,deltim)
 
 !  update all horizontal components into momentum eqs
 !  for Semi-Lagrangian vertical advection
@@ -1517,7 +1517,7 @@
       use index
       use param, only : nx,my,lev,my_max
       use const, only : onocos,radsq
-      use grid , only : dlphi,dtphi,up,vp
+      use grid , only : dlphi,dtphi
 
       integer,intent(in):: lonsperlat(my)
       real,   intent(in):: deltim
@@ -1539,10 +1539,10 @@
 !
         do k=1,lev
          do i=1,lons_lat
-           vdzonl(i,k,lan) = (vdzonl(i,k,lan)-dlphi(i,k,lan)/radsq) &
-                             * dt2 + up(i,k,lan)
-           vdmerd(i,k,lan) = (vdmerd(i,k,lan)-dtphi(i,k,lan)/radsq  &
-                             / onocos(lat))*dt2 + vp(i,k,lan)
+           vdzonl(i,k,lan) = (vdzonlr(i,k,lan)-dlphi(i,k,lan)/radsq) &
+                             * dt2 + vdzonl(i,k,lan)
+           vdmerd(i,k,lan) = (vdmerdr(i,k,lan)-dtphi(i,k,lan)/radsq  &
+                             / onocos(lat))*dt2 + vdmerd(i,k,lan)
          enddo
         enddo
       enddo
