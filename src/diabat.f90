@@ -1179,7 +1179,7 @@
         tem1      = tpr*cosl(j)/float(nxdef(j))
         jup       = min(j+1,my)
         jdn       = max(j-1, 1)
-        tem2      = radus*sin(0.5*abs(xlat(jup)-xlat(jdn))*d2r)
+        tem2      = radus*0.5*abs(xlat(jup)-xlat(jdn))*d2r
         garea     = tem1*tem2
 !
 ! old version SAS
@@ -1372,13 +1372,13 @@
            ttc(i,kc) = tt(i,k,jj)
            utc(i,kc) = ut(i,k,jj)
            vtc(i,kc) = vt(i,k,jj)
+          enddo
+        enddo
            tem1      = tpr*cosl(j)/float(nxdef(j))
            jup       = min(j+1,my)
            jdn       = max(j-1, 1)
-           tem2      = radus*sin(0.5*abs(xlat(jup)-xlat(jdn))*d2r)
+           tem2      = radus*0.5*abs(xlat(jup)-xlat(jdn))*d2r
            garea     = tem1*tem2
-          enddo
-        enddo
 !
         do i=1,nxj
            heat(i)=-ustar(i,jj)*tstar(i,jj)
