@@ -1155,8 +1155,8 @@
           enddo
         enddo
         do i = 1,nxj
-          dotc(i,1)=0.5*dotc(i,2)
-          dotc(i,lev)=0.5*dotc(i,lev-1)
+          dotc(i,1)=0.5*sd(i,lev,jj)*0.1
+          dotc(i,lev)=0.5*sd(i,2,jj)*0.1
         enddo
         do k=1,lev
           kc=lev-k+1
@@ -1357,8 +1357,8 @@
           enddo
         enddo
         do i = 1,nxj
-          dotc(i,1)=0.5*dotc(i,2)
-          dotc(i,lev)=0.5*dotc(i,lev-1)
+          dotc(i,1)=0.5*sd(i,lev,jj)*0.1
+          dotc(i,lev)=0.5*sd(i,2,jj)*0.1
         enddo
         do k=1,lev
           kc=lev-k+1
