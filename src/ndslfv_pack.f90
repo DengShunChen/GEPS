@@ -1524,6 +1524,7 @@
 
 !ch   real    vdmerd(nx+3,lev,my_max),vdzonl(nx+3,lev,my_max)
       real    vdmerd(nxp,lev,my_max),vdzonl(nxp,lev,my_max)
+      real    vdmerdr(nxp,lev,my_max),vdzonlr(nxp,lev,my_max)
       integer i,ii,k,lan,lat,lons_lat
       integer dt2
 

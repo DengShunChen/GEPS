@@ -15,7 +15,7 @@
                              ,vdmerd,lonsperlat,deltim,levs)
       if(xy .lt.-0.5) call ndslfv_monoadvh2_yx(ddtemp,qvadv,pten,vdzonl &
                              ,vdmerd,lonsperlat,deltim,levs)
-      xy = -1 * xy
+!      xy = -1 * xy
       return
       end
 !
