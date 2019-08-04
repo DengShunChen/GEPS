@@ -81,7 +81,7 @@ SRCS  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
 	cuini_n.f90 cumastr_driv_n.f90 cumastr_n.f90 cutype_n.f90 ntke_func.f90 \
         get_phi.f90 module_mp_radar.f90 module_mp_wsm6_fv3.f90 lightning_ec.f90 \
         mod_sitgrid.f90 mod_eos_ocean.f90 mod_sit_vdiff.f90 outsit.f90 \
-        mod_sst.f90 mod_netcdf.f90 mod_sit_control.f90
+        mod_sst.f90 mod_netcdf.f90 mod_sit_control.f90 samfdeepcnv.f90 samfshalcnv.f90
 
 OBJS=	${SRCS:.f90=.o}
 
@@ -359,7 +359,9 @@ rstrandz.o : rstrandz.f90 mod_fftcom.o mod_paramt.o mod_index.o
 rstrantq.o : rstrantq.f90 mod_fftcom.o mod_paramt.o mod_index.o 
 sascnv.o : sascnv.f90 
 sascnv_n.o : sascnv_n.f90 
-sascnv_sa.o : sascnv_sa.f90 
+sascnv_sa.o : sascnv_sa.f90
+samfdeepcnv.o : samfdeepcnv.f90 machine.o physcons.o funcphys.o
+samfshalcnv.o : samfshalcnv.f90 machine.o physcons.o funcphys.o
 scatter_spec.o : scatter_spec.f90 
 set_soilveg.o : set_soilveg.f90 namelist_soilveg.o 
 setupv.o : setupv.f90 
