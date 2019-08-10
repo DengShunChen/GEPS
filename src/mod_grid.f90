@@ -17,8 +17,9 @@
 !! for Semi-Lagrangian
       real, dimension(:,:,:),allocatable,save :: qm
       real, dimension(:,:,:),allocatable,save :: dlphi,dtphi,     &
-                             ut_sl,vt_sl,uum_sl,vvm_sl,ttm_sl
-      real, dimension(:,:,:,:),allocatable,save :: qm_sl
+                             ut_sl,vt_sl
+!!                             ut_sl,vt_sl,uum_sl,vvm_sl,ttm_sl
+!!      real, dimension(:,:,:,:),allocatable,save :: qm_sl
 !!    real, dimension(:,:),allocatable,save :: pt_sl,ptp_sl
 
       integer   lonfull,lonhalf,lonpart,lonlenmax,mylonlen
@@ -53,10 +54,10 @@
 !! for Semi-Lagrangian
                   ut_sl(nx,levp,my_max),      &
                   vt_sl(nx,levp,my_max),      &
-                 uum_sl(nx,levp,my_max),      &
-                 vvm_sl(nx,levp,my_max),      &
-                 ttm_sl(nx,levp,my_max),      &
-                  qm_sl(nx,levp,ncld,my_max), &
+!!                 uum_sl(nx,levp,my_max),      &
+!!                 vvm_sl(nx,levp,my_max),      &
+!!                 ttm_sl(nx,levp,my_max),      &
+!!                  qm_sl(nx,levp,ncld,my_max), &
 !!                pt_sl(nx,my_max),           &
 !!               ptp_sl(nx,my_max),           &
                  stat=ierr)
@@ -114,7 +115,7 @@
            deallocate (gslati,gglati,lonstr,lonlen,latstr,latlen)
            deallocate (dlphi,dtphi)
 !!         deallocate (ut_sl,vt_sl,uum_sl,vvm_sl,ttm_sl,qm_sl,pt_sl,ptp_sl)
-           deallocate (ut_sl,vt_sl,uum_sl,vvm_sl,ttm_sl,qm_sl             )
+           deallocate (ut_sl,vt_sl)
 
            return
 
