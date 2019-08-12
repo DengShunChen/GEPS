@@ -1229,8 +1229,8 @@
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
-            qt(i,k    ,jj) = qtc(i,kc)
-            qt(i,k+lev,jj) = qtr(i,kc)
+            qt(i,k    ,jj) = max(qtc(i,kc),0.)
+            qt(i,k+lev,jj) = max(qtr(i,kc),0.)
             tt(i,k    ,jj) = ttc(i,kc)
             ut(i,k    ,jj) = utc(i,kc)
             vt(i,k    ,jj) = vtc(i,kc)
