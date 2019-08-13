@@ -532,6 +532,7 @@
       do i = 1, nxj
        rcup(i,jj)  = 0.0
        rlsp(i,jj)  = 0.0
+       rainp(i,jj) = 0.0
 !      cosz(i,jj)  = 0.0
        xmu(i,jj)  = 0.0
 ! for wsm6
@@ -1503,12 +1504,15 @@
                     ftp1(1,1,jj),fqp1(1,1,jj),fpsp1(1,jj),&
                     rhc,lprnt)
 !xb110>
-!        call precpd(nxjp(j),nxp,lev,dta,del,prsl,psfc, &
-!                    qtc, qtr, ttc,           &
-!                    rlsp(1,jj), rhc, lprnt)
-        call precpd_n(nxjp(j),nxp,lev,dta,del,prsl,psfc,              &
-                    qtc, qtr, rm, sm, phil, ttc,                      &
-                    rlsp(1,jj), slsp(1,jj), rainp, rhc, lprnt)
+        call precpd(nxjp(j),nxp,lev,dta,del,prsl,psfc, &
+                    qtc, qtr, ttc,           &
+                    rlsp(1,jj), rhc, lprnt)
+! precipitation over mid-latitude perform not very well, especially
+! in climatology.
+!!        call precpd_n(nxjp(j),nxp,lev,dta,del,prsl,psfc,              &
+!!                    qtc, qtr, rm, sm, phil, ttc,                      &
+!!                    rlsp(1,jj), slsp(1,jj), rainp, rhc, lprnt)
+!
 !xb110<
         do i=1,nxj
           rlsp(i,jj) = rlsp(i,jj) * 1000.         ! mm/call
