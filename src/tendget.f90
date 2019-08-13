@@ -258,7 +258,7 @@
 !ch              ,plten,nsize)
       call mpe2d_unify_nx(ww1,deldm)
       call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1           &
-                 ,plten,nsize)
+                 ,plten,nsizey)
 !
       call rstrandz (jtrun,jtmax,nx,my,my_max,levp,vdmerd,vdzonl      &
                     ,weight,cim,onocos,poly,dpoly,divten,vorten,nsizey)
