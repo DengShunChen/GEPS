@@ -1473,7 +1473,7 @@
 !
 !!!            rhc(i,kc)=0.999-0.08*cos(d2r*arg)**2    !a3
 !byl            rhc(i,kc)=0.95-0.07*cos(d2r*xlat(j))    !v2
-            rhc(i,kc)=0.98-0.07*cos(d2r*arg)**2.0    !v3
+            rhc(i,kc)=0.98-0.12*cos(d2r*arg)**2.0    !v3
 !!!!             rhc(i,kc)=(1.-coefrhc)*(0.7+0.15*cos(d2r*xlat(j))**2)  &
 !!!!                     +coefrhc*(0.6+0.1*max(cos(4.*d2r*xlat(j))**3,0.))   !PYL vertical profile
 !

@@ -363,7 +363,6 @@
       xlamdd  = 1.0e-4
 !
 !     pgcon   = 0.7     ! Gregory et al. (1997, QJRMS)
-!byl      pgcon   = 0.55    ! Zhang & Wu (2003,JAS)
       pgcon   = 0.55    ! Zhang & Wu (2003,JAS)
 !
       w1l     = -8.e-3
@@ -1220,8 +1219,10 @@
 !      bb1 = 2.0
 !      bb2 = 4.0
 !
+!byl      bb1 = 4.0
+!byl      bb2 = 0.8
       bb1 = 4.0
-      bb2 = 0.8
+      bb2 = 0.4
 !
 !     do i = 1, im
 !       if (cnvflg(i)) then
