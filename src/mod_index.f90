@@ -62,7 +62,7 @@
 
            allocate (mlist(jtmax),nlist(jtmax*nsize),ilist(jtmax*nsize), &
                      jlist1(my_max),jlist2(my),jlist2_2d(nsizex,my),     &
-                     jlistnum_sl(nsizey), nxdef(my),mtrundef(my),        &
+                     jlistnum_sl(nsize), nxdef(my),mtrundef(my),        &
                      Llist(levp),Llist_ncld(levp*ncld),                  &
                      jtlen_all(nsizex),nxjp(my),   &
                      nxjstart(my),nxjend(my),nxjlen(my),nxdef_2d(my),    &
@@ -74,7 +74,7 @@
                stop
            end if
 
-           allocate (jlist1_sl(my_max,nsizey),stat=ierr)
+           allocate (jlist1_sl(my_max,nsize),stat=ierr)
 
            if (ierr/= 0) then
                write(6,*) 'mod_index : allocate fail 2'
