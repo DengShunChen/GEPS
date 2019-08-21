@@ -671,7 +671,7 @@
         call     ysu2d(u1,v1,t1,q1,prsl,prsi,prslk,pk2(1,lev),        &
 !                   nx,nxj,lev,ntrac,del,cp,g,r,hltm,phil,psi,         &
                    nx,nxj,lev,ntrac,del,cp,g,r,hltm,phii,phil,psi,    &
-                   z0,stress,hpbl,kpbl,fm,fh,slmsk,heat,evap,sfcw,rb, &
+                   z0,stress,hpbl,kpbl,fm,fh,islmsk,heat,evap,sfcw,rb, &
                    dt,rcl,u10,v10,swh,hlw,xmu,ttnp,qtnp,utnp,vtnp,jj)
 !
        endif
