@@ -12,7 +12,8 @@
       integer, parameter :: km_soil=4
       integer, parameter :: ntype=9
       integer, parameter :: ngrid=22
- 
+
+      integer isot,ivegsrc
 
       integer, allocatable,save ::                                   &
               slopetyp(:,:),istyp(:,:),ivegtyp(:,:)
@@ -20,7 +21,7 @@
       real, dimension(:,:),allocatable,save ::                       &
               canopy,runoff,rld,sigmaf,sld,gfx,                      &
               zice,cice,xtice, sncover,sndepth,                      &
-              shdmax,shdmin,snoalb                                    
+              shdmax,shdmin,snoalb,sfalb,sfemis                                    
 
       real    ref(ntype),wlt(ntype),tsat(ntype),                     &
               dfkt(ngrid,ntype),                                     &
@@ -50,7 +51,7 @@
               xtice(nxp,my_max),                          &
               sncover(nxp,my_max),sndepth(nxp,my_max),&
               shdmax(nxp,my_max),shdmin(nxp,my_max),  &
-              snoalb(nxp,my_max), stat=ierr)
+              snoalb(nxp,my_max),sfalb(nx,my_max),sfemis(nx,my_max), stat=ierr)
            if (ierr/= 0) then
                write(6,*) 'mod_noah : allocate fail 2 '
                stop
@@ -75,7 +76,7 @@
            deallocate (smc,stc,slc)
 
            deallocate (canopy,runoff,rld,sigmaf, sld,gfx,zice,cice,xtice,&
-                       sncover,sndepth,shdmax,shdmin,snoalb)
+                       sncover,sndepth,shdmax,shdmin,snoalb,sfalb,sfemis)
 
            deallocate (slopetyp,istyp,ivegtyp)
 

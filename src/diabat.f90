@@ -29,7 +29,7 @@
                     , asl_clr,atl_clr,clds                                     &
                     , ss_clr,rs_clr,asol_clr,olr_clr,sld_clr,rld_clr           &
                     , alvsf,alvwf,alnsf,alnwf,facsf,facwf                      &
-                    , idtg,doo3l,nfxr                                          &
+                    , idtg,doo3l,nfxr,sfalb,sfemis,isot,ivegsrc                &
                     , ttnp,qtnp,utnp,vtnp                                  &
 ! sppt
                     , dosppt,sppt3d,itimestep,lrun_sitvdiff,ic_sit             &
@@ -226,6 +226,9 @@
       integer*8 idtg
       logical doo3l
       integer ipt,jpt
+! for land_noah_new
+       real      sfalb(nxp,my_max),sfemis(nxp,my_max)
+       integer   isot,ivegsrc
 !-----------------------------------------------------------------------
       logical   fwd,docup,dodry,dolsp,dopbl,dorad,doshl,dograv,ozon, &
                 land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max),  &
@@ -888,7 +891,7 @@
       if ( dopbl .and. nmland.eq.2)                                           &
        call pbl_noah ( nxjp(j),nxp,lev,ktpbl,dta,grav,rgas,cp,xkapa,hltm,ptop &
                      , tice,hice,tg(1,jj),z0(1,jj),land(1,jj)                 &
-                     , sgeo(1,jj),phi,pst(1,jj),up(1,1,jj),vp(1,1,jj)  &
+                      , sgeo(1,jj),phi,pst(1,jj),up(1,1,jj),vp(1,1,jj)  &
                      , ttp(1,1,jj),qp(1,1,jj),ut(1,1,jj),vt(1,1,jj)           &
                      , tt(1,1,jj),qt(1,1,jj),pk(1,1,jj),pk2(1,1,jj)           &
                      , ustar(1,jj),tstar(1,jj),qstar(1,jj),e(1,1,jj)          &
@@ -907,7 +910,7 @@
                      , shdmax(1,jj),shdmin(1,jj),snoalb(1,jj),albedo2(1,jj)   &
                      , sld(1,jj),zice(1,jj),cice(1,jj),xtice(1,jj)            &
                      , hpbl(1,jj),asl(1,1,jj),atl(1,1,jj),xmu(1,jj),gfx(1,jj) &
-                     , kpbl(1,jj),nmpbl,j                                     &
+                     , kpbl(1,jj),nmpbl,j,isot,ivegsrc,sfemis(1,jj)           &
                      , ttnp(1,1,jj),qtnp(1,1,jj),utnp(1,1,jj),vtnp(1,1,jj))
 !
 ! SHUM process
@@ -1678,7 +1681,7 @@
              fuslr(1,1,jj),fdslr(1,1,jj),fuirr(1,1,jj),fdirr(1,1,jj),      &
              asl_clr(1,1,jj),atl_clr(1,1,jj),                              &
              asol_clr(1,jj),olr_clr(1,jj),ss_clr(1,jj),rs_clr(1,jj),       &
-             sld_clr(1,jj),rld_clr(1,jj))
+             sld_clr(1,jj),rld_clr(1,jj),sfalb(1,jj),sfemis(1,jj))
 !      if (myrank .eq. 0) then
 !          print *,'### rrtmg ok !!'
 !      endif

@@ -3,6 +3,7 @@ src/*.lst
 src/*.mod
 src/MT*
 src/bl_ysu.org.f90
+run_TCo383L72.ksh
 *.ksh
 run*
 TCo383L72_fx10*
@@ -12,4 +13,3 @@ wrk_omix/*
 wrk_ysu/*
 wrk_ysu2/*
 etc/gfs.tauchk
-etc/namlsts_tco383*

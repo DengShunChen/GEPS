@@ -31,7 +31,7 @@
  doshl=t,
  dodry=f,
  dograv=t,
- docgrav=t,
+ docgrav=f,
  donnmi=t,
  dosppt=f,
  dospptout=f,
@@ -48,7 +48,7 @@
  ptmeans=800.,
  ptop=0.1,
  nmcup=6,
- nmpbl=3,
+ nmpbl=4,
  nmland=2,
  nmshl=3,
  nmgwor=2,
@@ -66,8 +66,6 @@
  otgreen=3.,
  out_hp=t,
  ndsladvh2=f,
- isot=0
- ivegsrc=0
  &end
 
  &typ
