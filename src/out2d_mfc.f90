@@ -1,6 +1,6 @@
       subroutine out2d_mfc (nx,lev,my,my_max,ifilout,itau,idtg,ntau     &
                             ,rain1,raintot,glob,t2,q2,rh2,rh10,u10,v10  &
-                            ,tmax,tmin,td,rld,sld,ctot,slpty,ggdef) 
+                            ,tmax,tmin,td,rld,sld,ctot,slpty,ggdef )
 !
       use rank
       use mpe
@@ -245,3 +245,4 @@
 
       return
       end
+

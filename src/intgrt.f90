@@ -80,6 +80,12 @@
                 sdpbl(nxp,my_max),slpty(nxp,my_max),rain1(nx,my_max),                &
                 rh2100(nxp,my_max),rh10100(nxp,my_max)
 
+       real     ttnp(nxp,lev,my_max),qtnp(nxp,lev*2,my_max),           &
+                utnp(nxp,lev,my_max),vtnp(nxp,lev,my_max),work(nx,my)
+       real*4   workn(nx,my)
+       integer  kn
+      character*26 ihdg
+
       real      tmin(nxp,my_max),tmax(nxp,my_max),td(nxp,my_max),temp
 !
       real      cc(nx+2,levp,1,my_max),ww1(nx,my_max)
@@ -976,6 +982,7 @@
                       , ss_clr,rs_clr,asol_clr,olr_clr,sld_clr,rld_clr          &
                       , alvsf,alvwf,alnsf,alnwf,facsf,facwf                     &
                       , idtg,doo3l,nfxr                                         &
+                    , ttnp,qtnp,utnp,vtnp                                  &
                       , dosppt,sppt3d,itimestep,lrun_sitvdiff,ic_sit            &
 !xb110>
                       , rmr,smr,flash)
@@ -1139,6 +1146,7 @@
                      , ss_clr,rs_clr,asol_clr,olr_clr,sld_clr,rld_clr           &
                      , alvsf,alvwf,alnsf,alnwf,facsf,facwf                      &
                      , idtg,doo3l,nfxr                                          &
+                    , ttnp,qtnp,utnp,vtnp                                  &
                      , dosppt,sppt3d,itimestep,lrun_sitvdiff,ic_sit             &
 !xb110>
                      , rmr,smr,flash)
@@ -1593,11 +1601,6 @@
 !          call zilch (runoff,nxmy)
         endif
 !
-        if( histim .and. (mod(float(itau)+0.00001, 6.) .lt. 0.01) )then
-          raincu6=0.
-          rainlp6=0.
-        endif
-!
         ifromtau = taui
         itotau   = taue
         flag =.false.
@@ -1680,6 +1683,63 @@
 !==xb118
 ! change domfc type from logical to real
 !==xb118
+!======================================================================
+      if(tau.lt.8.4  .and.  tau .ge. 8.29)then
+!
+!     output UVTQ tendency from YSU PBL
+!
+      call syslbl ("MLRten",idtg,itau,"GIMG",ihdg)
+          if(myrank .eq. 0) then
+         print*,'open ',ihdg
+      open(11,file=ihdg//'.bin',access='direct',form='unformatted',   &
+              recl=nxmy*4,status='unknown')
+          endif
+       kn=0
+          if(myrank .eq. 0) print*,'output T'
+      do k=1,lev
+       kn=kn+1
+      call unify_reduceintp(nx,my,my_max,ttnp(:,k,:),work)
+       workn=work
+          if(myrank .eq. 0)       write(11,rec=kn)workn
+      enddo
+!!!! 
+          if(myrank .eq. 0) print*,'output U'
+      do k=1,lev
+       kn=kn+1
+      call unify_reduceintp(nx,my,my_max,utnp(:,k,:),work)
+       workn=work
+          if(myrank .eq. 0)       write(11,rec=kn)workn
+      enddo
+!!!!
+          if(myrank .eq. 0) print*,'output V'
+      do k=1,lev
+       kn=kn+1
+      call unify_reduceintp(nx,my,my_max,vtnp(:,k,:),work)
+       workn=work
+          if(myrank .eq. 0)       write(11,rec=kn)workn
+      enddo
+!!!!
+          if(myrank .eq. 0) print*,'output Q'
+      do k=1,lev
+       kn=kn+1
+      call unify_reduceintp(nx,my,my_max,qtnp(:,k,:),work)
+       workn=work
+          if(myrank .eq. 0)       write(11,rec=kn)workn
+      enddo
+!!!!
+          if(myrank .eq. 0) print*,'output C'
+      do k=lev+1,lev*2
+       kn=kn+1
+      call unify_reduceintp(nx,my,my_max,qtnp(:,k,:),work)
+       workn=work
+          if(myrank .eq. 0)       write(11,rec=kn)workn
+      enddo
+! 
+          if(myrank .eq. 0)       close(11)
+          if(myrank .eq. 0)       print*,'close ',ihdg
+      endif
+!======================================================================
+
         dtaup = mod(tau+0.001, 1.)
 !        if(myrank .eq. 0) print*,'domfc at tau,dtaup=',tau,dtaup
 !        if(tau.le.192. .and. dtaup.lt.0.01)then
@@ -1954,3 +2014,33 @@
 !
       return
       end
+!=======================================================================
+      subroutine unify_reduceintp(nx,my,my_max,fp,ff)
+      use mpe
+      use index
+
+      implicit none
+
+      integer   nx,my,my_max
+      integer   i,j,jj,nxj
+      real      fp(nxp,my_max),ff(nx,my)
+
+      do jj =1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        do i=1,nxj
+         ff(i,j)=fp(i,jj)
+        enddo
+      enddo
+
+      call mpe_unify(ff,nx,my,2,mpe_double)
+
+      if( lreduce.eq.1 ) then
+        do jj =1, jlistnum
+          j=jlist1(jj)
+          call reduceintp(ff(1,j),nxdef(j),nx,1)
+        enddo
+        call mpe_unify(ff,nx,my,5,mpe_double)
+      endif
+      end subroutine unify_reduceintp
+

@@ -123,13 +123,13 @@
         call qsatq(imj,t2m,p2*0.01,qss)
 !
         do i=1,imj
-        rh2(i)=min(q2m(i)/qss(i),1.)
+        rh2(i)=max(min(q2m(i)/qss(i),1.),0.)
         enddo
 !
         call qsatq(imj,t10m,p10*0.01,qss)
 !
         do i=1,imj
-        rh10(i)=min(q10m(i)/qss(i),1.)
+        rh10(i)=max(min(q10m(i)/qss(i),1.),0.)
         enddo
       RETURN 
       END 

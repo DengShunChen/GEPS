@@ -30,6 +30,7 @@
                     , ss_clr,rs_clr,asol_clr,olr_clr,sld_clr,rld_clr           &
                     , alvsf,alvwf,alnsf,alnwf,facsf,facwf                      &
                     , idtg,doo3l,nfxr                                          &
+                    , ttnp,qtnp,utnp,vtnp                                  &
 ! sppt
                     , dosppt,sppt3d,itimestep,lrun_sitvdiff,ic_sit             &
 !xb110>
@@ -267,6 +268,8 @@
                 raincu6(nxp,my_max),rainlp6(nxp,my_max),                  &
                 raincu3(nxp,my_max),rainlp3(nxp,my_max),                  &
                 raincu1(nxp,my_max),rainlp1(nxp,my_max)
+       real     ttnp(nxp,lev,my_max),qtnp(nxp,lev*2,my_max),           &
+                utnp(nxp,lev,my_max),vtnp(nxp,lev,my_max)
 !soil (2005/01/12)
       integer,  parameter :: ntype=9, ngrid=22
       integer   istyp(nxp,my_max),ivegtyp(nxp,my_max)
@@ -904,7 +907,8 @@
                      , shdmax(1,jj),shdmin(1,jj),snoalb(1,jj),albedo2(1,jj)   &
                      , sld(1,jj),zice(1,jj),cice(1,jj),xtice(1,jj)            &
                      , hpbl(1,jj),asl(1,1,jj),atl(1,1,jj),xmu(1,jj),gfx(1,jj) &
-                     , kpbl(1,jj),nmpbl,j )
+                     , kpbl(1,jj),nmpbl,j                                     &
+                     , ttnp(1,1,jj),qtnp(1,1,jj),utnp(1,1,jj),vtnp(1,1,jj))
 !
 ! SHUM process
 !  John Tseng
@@ -1114,11 +1118,7 @@
                 rcup(1,jj) ,pk(1,1,jj),pk2(1,1,jj),sd(1,1,jj),qflux(1,jj),&
                 kbot(1,jj) ,ktop(1,jj),fwd        ,ncld      ,sigma      ,&
                 plt(1,1,jj),pst(1,jj) ,j          ,slimsk    ,hflux(1,jj),&
-<<<<<<< HEAD
-                xlon(1,jj),  xlat(j)    ,mdlon     ,kuo(1,jj) )
-=======
                 xlat(j)   ,mdlon      ,kuo(1,jj) ,flash(1,jj))
->>>>>>> 6fb0b616b083bf54f272ebd46d688a4a856daeb4
 
         do i=1,nxj
 !byl         if(kbot(i,jj).eq.lev-1 .and. ktop(i,jj).eq.lev-1)then
@@ -1561,6 +1561,7 @@
         enddo
       endif
 !
+!
       if ( dodry ) then
          do k=1,lev
            dsigpp(k) = dsigma(k,1)+dsigma(k,2)/1000.
@@ -1682,6 +1683,7 @@
 !          print *,'### rrtmg ok !!'
 !      endif
       endif  ! for uprad .and. irad=2
+!
 !-------------------------------------------------------
 ! SIT scheme, update tg
 !-------------------------------------------------------

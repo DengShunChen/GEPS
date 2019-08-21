@@ -51,7 +51,7 @@ XOS_MMM_L_ARENA_FREE=2; export XOS_MMM_L_ARENA_FREE
  dd='180901'
  dtg=${dd}'00'
 
- EXP='TCo383L72_omixi'
+ EXP='TCo383L72_omixnew'
  indmsowner='xb118'
  indmshead='TCo383L72_'
  indmstail='GIMGM'

@@ -638,7 +638,7 @@
 !ch     call mpe_unify_1(ww1,sgeo,nx,my,2,mpe_double)
 
         call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww3,spgeo,nsizey)
-        call transr1(jtrun,jtmax,nx,my,my_max,poly,spgeo,sgeo,nsize)
+        call transr1(jtrun,jtmax,nx,my,my_max,poly,spgeo,sgeo,nsizey)
         call mpe2d_unify(ww1,sgeo)
 
         call qmaxn3 (ww1,'sgeo',' ',1,1,1,nx,my,1)

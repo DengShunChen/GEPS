@@ -9,7 +9,7 @@
                         , ncld,dsigma,slopetyp,slc,sncover,snwdph       &
                         , shdmax,shdmin,snoalb,albedo2                  &
                         , sld,zice,cice,xtice,hpbl,asl,atl,xmu,gfx      &
-                        , kpbl,nmpbl,jj )
+                        , kpbl,nmpbl,jj,ttnp,qtnp,utnp,vtnp )
 !
 !#######################################################################
 !                     subroutine description
@@ -231,6 +231,7 @@
                 qsurf(nx),evapc(nx),cmm(nx),chh(nx),ep1d(nx),           &
                 radsl(nx) ,tprcp(nx),                                   &
                 phy_f2d(nx),q2(nx) 
+      real      ttnp(nx,lev),qtnp(nx,lev,2),utnp(nx,lev),vtnp(nx,lev)
 !
       real      srflag(nx)
 !orig logical   flag_guess(nx),flag_iter(nx),mom4ice(nx)
@@ -627,9 +628,10 @@
        enddo
        enddo
         call     ysu2d(u1,v1,t1,q1,prsl,prsi,prslk,pk2(1,lev),        &
-                   nx,nxj,lev,ntrac,del,cp,g,r,hltm,phil,psi,         &
-                   z0,stress,hpbl,fm,fh,slmsk,heat,evap,sfcw,rb,       &
-                   dt,rcl,u10,v10,swh,hlw,xmu)
+!                   nx,nxj,lev,ntrac,del,cp,g,r,hltm,phil,psi,         &
+                   nx,nxj,lev,ntrac,del,cp,g,r,hltm,phii,phil,psi,    &
+                   z0,stress,hpbl,kpbl,fm,fh,slmsk,heat,evap,sfcw,rb, &
+                   dt,rcl,u10,v10,swh,hlw,xmu,ttnp,qtnp,utnp,vtnp,jj)
 !
        endif
 

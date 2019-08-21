@@ -11,12 +11,14 @@
    subroutine ysu2d(ux,vx,tx,qxt,p2d,p2di,prslk,psk,              &
                   ix,im,km,ndiff,del,                             &
                   cp,g,rd,xlv,                                    &!const
-                  dz8w2d,psfcpa,                                  &
-                  znt,stress,hpbl,psim,psih,                      &
+!                  dz8w2d,psfcpa,                                  &
+                  phii,phil,psfcpa,                                  &
+                  znt,stress,hpbl,kpbl,psim,psih,                 &
                   ls,heat,evap,wspd,br,                           &
                   dt,rcl,                                         &
                   u10,v10,                                        &
-                  swh,hlw,xmu)
+                  swh,hlw,xmu,txx,qxxt,uxx,vxx,jj)
+!                  swh,hlw,xmu,ttnp,qtnp,utnp,vtnp)
 !-------------------------------------------------------------------------------
     use rank
 
@@ -104,19 +106,21 @@
 !                                 j,ndiff
 !===
 !in
-   integer           ::     im,ix,km,ndiff
+   integer           ::     im,ix,km,ndiff,jj
 
-!   integer,  intent(in)      ::     ysu_topdown_pblmix 
    integer,parameter ::     ysu_topdown_pblmix = 1
+!   integer,parameter ::     ysu_topdown_pblmix = 0
 !
    real              ::     dt,cp,g,xlv,rd
 !
    real              ::     rovcp,rovg,ep1,ep2,karman,rv
 !
    real,     dimension( ix, km )       ::                dz8w2d,prslk
+   real,     dimension( ix, km+1 )     ::                        phii
+   real,     dimension( ix, km )       ::                        phil
 !
    real,     dimension( ix, km,ndiff ) ::                         qxt
-   real,     dimension( ix, km*3 )     ::                          qx
+   real,     dimension( im, km*3 )     ::                          qx
 !
    real,     dimension( ix, km+1 )     ::                        p2di
 !
@@ -134,8 +138,10 @@
    real,     dimension( im )           ::                 stress,wspd
 ! inout
    real,     dimension( im )           ::                         ust
-!   real,     dimension( im, km )       ::              utnp,vtnp,ttnp
-!   real,     dimension( im, km*ndiff ) ::                        qtnp
+   real,     dimension( ix, km )       ::              utnp,vtnp,ttnp
+   real,     dimension( ix, km )       ::              uxx,vxx,txx
+   real,     dimension( ix, km,ndiff ) ::                qxxt
+   real,     dimension( ix, km*ndiff ) ::                        qtnp
 !
 ! out
 !   integer,  dimension( im )           ::                      kpbl1d
@@ -210,6 +216,7 @@
    real     :: tem,ho,sfx
 !
 !------------------------------------------------------------------------
+      if (ix .lt. im) stop
 !
 !for topo_wind=0
   ctopo=1.
@@ -291,32 +298,36 @@
 !
    do i = 1,im
      tvcon = (1.+ep1*qx(i,1))
-     rhox(i) = psfcpa(i)*1000./(rd*tx(i,1)*tvcon)
+     rhox(i) = (psfcpa(i)*1000.)/(rd*tx(i,1)*tvcon)
      govrth(i) = g/thx(i,1)
    enddo
 !
 !-----compute the height of full- and half-sigma levels above ground
 !     level, and the layer thicknesses.
 !
-   do i = 1,im
-     zq(i,1) = 0.
-   enddo
+!   do i = 1,im
+!     zq(i,1) = 0.
+!   enddo
 !
    do k = 1,km
      do i = 1,im
 !=== xb118
 !       zq(i,k+1) = dz8w2d(i,k)+zq(i,k)
-       zq(i,k+1) = dz8w2d(i,k)*conw
+!       zq(i,k+1) = dz8w2d(i,k)*conw
+       zq(i,k) = phii(i,k)*conw
+       za(i,k)= phil(i,k)*conw
 !===
        tvcon = (1.+ep1*qx(i,k))
        rhox2(i,k) = p2d(i,k)/(rd*tx(i,k)*tvcon)
      enddo
    enddo
+   do i = 1,im
+       zq(i,km+1) = phii(i,km+1)*conw
+   enddo
 !
    do k = 1,km
      do i = 1,im
-       za(i,k) = 0.5*(zq(i,k)+zq(i,k+1))
-!       za(i,k)= zq(i,k+1)
+!       za(i,k) = 0.5*(zq(i,k)+zq(i,k+1))
        dzq(i,k) = zq(i,k+1)-zq(i,k)
 !       del(i,k) = p2di(i,k)-p2di(i,k+1)
      enddo
@@ -335,10 +346,10 @@
 !
 !-----initialize vertical tendencies and
 !
-!   utnp(:,:) = 0.
-!   vtnp(:,:) = 0.
-!   ttnp(:,:) = 0.
-!   qtnp(:,:) = 0.
+   utnp(:,:) = 0.
+   vtnp(:,:) = 0.
+   ttnp(:,:) = 0.
+   qtnp(:,:) = 0.
 !
    do i = 1,im
      wspd1(i) = sqrt( (ux(i,1)-uox(i))*(ux(i,1)-uox(i)) + (vx(i,1)-vox(i))*(vx(i,1)-vox(i)) )+1.e-9
@@ -412,8 +423,8 @@
      hfx(i)=heat(i)*rhox(i)*cp     ! heat[m*K/s] * rho[kg/m^3] * cp[J/kg/K] = [W/m^2]
      qfx(i)=evap(i)*rhox(i)        ! evap[m/s] * rho[kg/m^3] = [kg/m^2/s]
      sflux(i) = hfx(i)/rhox(i)/cp + qfx(i)/rhox(i)*ep1*thx(i,1)   ![m*K/s]
-     if(br(i).gt.0.0) sfcflg(i) = .false.
-!     if(br(i).gt.0.25) sfcflg(i) = .false.
+!     if(br(i).gt.0.0) sfcflg(i) = .false.
+     if(br(i).gt.0.25) sfcflg(i) = .false.
    enddo
 !
 !     compute the first guess of pbl height
@@ -530,10 +541,13 @@
        endif
      enddo
    enddo
+       if (im .ge.359)print*,'first,kpbl=',kpbl(359)
+
 !
 !     enhance pbl by theta-li
 !
    if (ysu_topdown_pblmix.eq.1)then
+!   if (ysu_topdown_pblmix.eq.2)then
      do i = 1,im
         kpblold(i) = kpbl(i)
         definebrup=.false.
@@ -554,6 +568,7 @@
         enddo
      enddo
    endif
+       if (im .ge.359)print*,'second,kpbl=',kpbl(359)
 
    do i = 1,im
      if(pblflg(i)) then
@@ -642,6 +657,7 @@
        bfxpbl(i) = -0.15*thvx(i,1)/g*wm3/hpbl(i)
        dthvx(i)  = max(thvx(i,k+1)-thvx(i,k),tmin)
        we(i) = max(bfxpbl(i)/dthvx(i),-sqrt(wm2(i)))
+       if (i .eq.359)print*,'out,we=',we(i)
        if((qx(i,ktrace2+k)+qx(i,ktrace3+k)).gt.0.01e-3.and.ysu_topdown_pblmix.eq.1)then
            if ( kpbl(i) .ge. 2) then
                 cloudflg(i)=.true. 
@@ -673,27 +689,32 @@
                 radsum=max(radsum,0.0)
 
                 !recompute entrainment from sfc thermals
-                bfx0 = max(max(sflux(i),0.0)-radsum/rhox2(i,k)/cp,0.)
+!                bfx0 = max(max(sflux(i),0.0)-radsum/rhox2(i,k)/cp,0.)
                 bfx0 = max(sflux(i),0.0)
                 wm3 = (govrth(i)*bfx0*hpbl(i))+5. * ust3(i)
                 wm2(i)    = wm3**h2
                 bfxpbl(i) = -0.15*thvx(i,1)/g*wm3/hpbl(i)
-                dthvx(i)  = max(thvx(i,k+1)-thvx(i,k),tmin)
+                dthvx(i)  = max(thvx(i,k+1)-thvx(i,k),0.1)
+!                dthvx(i)  = max(thvx(i,k+1)-thvx(i,k),tmin)
                 we(i) = max(bfxpbl(i)/dthvx(i),-sqrt(wm2(i)))
+                 if (.not.sfcflg(i))  we(i) =0.0
+       if (i .eq.359)print*,'in,we=',we(i),'-wm=',-sqrt(wm2(i))
 
                 !entrainment from PBL top thermals
-                bfx0 = max(radsum/rhox2(i,k)/cp-max(sflux(i),0.0),0.)
+!                bfx0 = max(radsum/rhox2(i,k)/cp-max(sflux(i),0.0),0.)
                 bfx0 = max(radsum/rhox2(i,k)/cp,0.)
                 wm3       = (g/thvx(i,k)*bfx0*hpbl(i)) ! this is wstar3(i)
                 wm2(i)    = wm2(i)+wm3**h2
                 bfxpbl(i) = - ent_eff * bfx0
                 dthvx(i)  = max(thvx(i,k+1)-thvx(i,k),0.1)
-                we(i) = we(i) + max(bfxpbl(i)/dthvx(i),-sqrt(wm3**h2))
+                we(i) =max( we(i) + max(bfxpbl(i)/dthvx(i),-sqrt(wm3**h2)) ,-2.0)
+!                we(i) = we(i) + max(bfxpbl(i)/dthvx(i),-sqrt(wm3**h2))
+       if (i .eq.359)print*,'second,we=',we(i),'-wm=',-sqrt(wm3**h2)
 
-                !wstar3_2
+!                !wstar3_2
                 bfx0 = max(radsum/rhox2(i,k)/cp,0.)
                 wstar3_2(i) =  (g/thvx(i,k)*bfx0*hpbl(i))
-                !recompute hgamt 
+!                !recompute hgamt 
                 wscale(i) = (ust3(i)+phifac*karman*(wstar3(i)+wstar3_2(i))*0.5)**h1
                 wscale(i) = min(wscale(i),ust(i)*aphi16)
                 wscale(i) = max(wscale(i),ust(i)/aphi5)
@@ -704,7 +725,6 @@
                 hgamt2(i,k) = min(gamfac*radsum/cp,gamcrt)
                 hgamt(i) = max(hgamt(i),0.0) + max(hgamt2(i,k),0.0)
                 brint    = -15.9*ust(i)*ust(i)/wspd(i)*(wstar3(i)+wstar3_2(i))/(wscale(i)**4.)
-!                brint    = -5.9*ust(i)*ust(i)/wspd(i)*(wstar3(i)+wstar3_2(i))/(wscale(i)**4.)
                 hgamu(i) = brint*ux(i,1)
                 hgamv(i) = brint*vx(i,1)
            endif
@@ -733,6 +753,7 @@
        endif
        delb  = govrth(i)*d3*hpbl(i)
        delta(i) = min(d1*hpbl(i) + d2*wm2(i)/delb,100.)
+       if (i.eq.359)print*,'hfxpbl=',hfxpbl(i),'qfxpbl=',qfxpbl(i),'ufxpbl=',ufxpbl(i),'vfxpbl=',vfxpbl(i)
      endif
    enddo
 !
@@ -753,9 +774,9 @@
        if(k.lt.kpbl(i)) then
          zfac(i,k) = min(max((1.-(zq(i,k+1)-zl1(i))/(hpbl(i)-zl1(i))),zfmin),1.)
          zfacent(i,k) = (1.-zfac(i,k))**3.
+!         zfacent(i,k) = (1.-zfac(i,k))**4.
          wscalek(i,k) = (ust3(i)+phifac*karman*wstar3(i)*(1.-zfac(i,k)))**h1
          wscalek2(i,k) = (phifac*karman*wstar3_2(i)*(zfac(i,k)))**h1
-!         wscalek2(i,k) = 0.0
          if(sfcflg(i)) then
            prfac = conpr
            prfac2 = 15.9*(wstar3(i)+wstar3_2(i))/ust3(i)/(1.+4.*karman*(wstar3(i)+wstar3_2(i))/ust3(i))
@@ -790,6 +811,7 @@
        endif
      enddo
    enddo
+
 !
 !     compute diffusion coefficients over pbl (free atmosphere)
 !
@@ -870,7 +892,6 @@
          f1(i,k)   = f1(i,k)+dtodsd*dsdzt
          f1(i,k+1) = thx(i,k+1)-300.-dtodsu*dsdzt
        elseif(pblflg(i).and.k.ge.kpbl(i).and.entfac(i,k).lt.4.6) then
-!       print*,'i=',i,'k=',k,'entfac=',entfac(i,k)
          xkzh(i,k) = -we(i)*dza(i,kpbl(i))*exp(-entfac(i,k))
          xkzh(i,k) = sqrt(xkzh(i,k)*xkzhl(i,k))
          xkzh(i,k) = max(xkzh(i,k),xkzoh(i,k))
@@ -904,7 +925,7 @@
    do k = km,1,-1
      do i = 1,im
        ttend = (f1(i,k)-thx(i,k)+300.)*rdt*pi2d(i,k)
-!       ttnp(i,k) = ttnp(i,k)+ttend
+       ttnp(i,k) = ttnp(i,k)+ttend
        dtsfc(i) = dtsfc(i)+ttend*cont*del(i,k)/pi2d(i,k)
      enddo
    enddo
@@ -964,7 +985,6 @@
        tem1   = dsig*xkzq(i,k)*rdz
        if(pblflg(i).and.k.lt.kpbl(i)) then
          dsdzq = tem1*(-qfxpbl(i)*zfacent(i,k)/xkzq(i,k))
-!         dsdzq = tem1*(-hgamq(i)/hpbl(i)-qfxpbl(i)*zfacent(i,k)/xkzq(i,k))
          f3(i,k,1) = f3(i,k,1)+dtodsd*dsdzq
          f3(i,k+1,1) = qx(i,k+1)-dtodsu*dsdzq
        elseif(pblflg(i).and.k.ge.kpbl(i).and.entfac(i,k).lt.4.6) then
@@ -982,6 +1002,7 @@
        al(i,k)   = -dtodsu*dsdz2
        ad(i,k)   = ad(i,k)-au(i,k)
        ad(i,k+1) = 1.-al(i,k)
+         if (f3(i,k,1).lt.-1e-3)print*,i,k,'f3(i,k,1)=',f3(i,k,1),'xkzm=',xkzm(i,k),'xkzh=',xkzh(i,k),'xkzq=',xkzq(i,k),'sfcflg=',sfcflg(i),'wscale=',wscale(i),'wscalek=',wscalek(i,k),'wscalek2=',wscalek2(i,k),'ust3=',ust3(i),'wstar3=',wstar3(i),'zfac=',zfac(i,k),'qfxpbl=',qfxpbl(i),'we=',we(i)
      enddo
    enddo
 !
@@ -1021,7 +1042,7 @@
    do k = km,1,-1
      do i = 1,im
        qtend = (f3(i,k,1)-qx(i,k))*rdt
-!       qtnp(i,k) = qtnp(i,k)+qtend
+       qtnp(i,k) = qtnp(i,k)+qtend
        dqsfc(i) = dqsfc(i)+qtend*conq*del(i,k)
      enddo
    enddo
@@ -1032,7 +1053,7 @@
        do k = km,1,-1
          do i = 1,im
            qtend = (f3(i,k,ic)-qx(i,k+is))*rdt
-!           qtnp(i,k+is) = qtnp(i,k+is)+qtend
+           qtnp(i,k+is) = qtnp(i,k+is)+qtend
          enddo
        enddo
      enddo
@@ -1134,8 +1155,6 @@
        if(pblflg(i).and.k.lt.kpbl(i))then
          dsdzu     = tem1*(-hgamu(i)/hpbl(i)-ufxpbl(i)*zfacent(i,k)/xkzm(i,k))
          dsdzv     = tem1*(-hgamv(i)/hpbl(i)-vfxpbl(i)*zfacent(i,k)/xkzm(i,k))
-!         dsdzu     = tem1*(-ufxpbl(i)*zfacent(i,k)/xkzm(i,k))
-!         dsdzv     = tem1*(-vfxpbl(i)*zfacent(i,k)/xkzm(i,k))
          f1(i,k)   = f1(i,k)+dtodsd*dsdzu
          f1(i,k+1) = ux(i,k+1)-dtodsu*dsdzu
          f2(i,k)   = f2(i,k)+dtodsd*dsdzv
@@ -1180,8 +1199,8 @@
      do i = 1,im
        utend = (f1(i,k)-ux(i,k))*rdt
        vtend = (f2(i,k)-vx(i,k))*rdt
-!       utnp(i,k) = utnp(i,k)+utend
-!       vtnp(i,k) = vtnp(i,k)+vtend
+       utnp(i,k) = utnp(i,k)+utend
+       vtnp(i,k) = vtnp(i,k)+vtend
        dusfc(i) = dusfc(i) + utend*conwrc*del(i,k)
        dvsfc(i) = dvsfc(i) + vtend*conwrc*del(i,k)
      enddo
@@ -1215,6 +1234,13 @@
 !   enddo
 !
 !
+   if(myrank.eq.0 )print*,'i=im-1,tx=',tx(im-1,:)
+   if(myrank.eq.0 )print*,'i=im-1, qxt1=',qxt(im-1,:,1)
+   if(myrank.eq.0 )print*,'i=im-1, qxt2=',qxt(im-1,:,2)
+     txx=tx
+     qxxt=qxt
+     uxx=ux
+     vxx=vx
    end subroutine ysu2d
 !-------------------------------------------------------------------------------
 !
