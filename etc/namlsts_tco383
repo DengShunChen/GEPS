@@ -66,11 +66,12 @@
  otgreen=3.,
  out_hp=t,
  ndsladvh2=f,
- isot=0
- ivegsrc=0
+ isot=1,
+ ivegsrc=1,
  &end
 
  &typ
  write_mem=0,
  trk_intv=6,
+ min_trk_pres=1002.,
 &end
