@@ -41,8 +41,7 @@
                                  ,ANAsstT0,dailyClmANAsst,dailyClmFCTsst        &
                                  ,allocate_opgsst_array,read_opgsst             &
                                  ,opgsst,deallocate_opgsst_array                &
-                                 ,obswtbnmw1,obswtbnmw2,obswtbwgt1,obswtbwgt2   &
-                                 ,sit_zdepth
+                                 ,obswtbnmw1,obswtbnmw2,obswtbwgt1,obswtbwgt2
       USE mo_netcdf,           ONLY:lkvl,cleanup_netcdf
 !-----------------------------------------------------------------------
       use raddiag
@@ -169,7 +168,7 @@
       integer ic_sit,nc_sit
       logical turn_sit,lrun_sitvdiff
       real wweight
-      integer kkk
+
 !
 !xb110>
       real rmr(nxp,lev,my_max),smr(nxp,lev,my_max)
@@ -182,8 +181,7 @@
       real*8 tm_1,tm_2,tm_use,mpi_wtime
       tm_2=mpi_wtime()
 #endif
-!      fsit=-99.             !fsit>0., turn on sit_vdiff when
-!      mod(tau/fsit)<0.001
+!      fsit=-99.             !fsit>0., turn on sit_vdiff when mod(tau/fsit)<0.001
                              !default fsit<=0., turn on sit_vdiff every tau
       ic_sit=-99             !if fsit>0., store now tau is the ic_sit times when sit_vidff is turn on
       nc_sit=1               !if fsit>0., when mod(tau/fsit)<0.001, turn on sit_vdiff for "nc_sit" timesteps
@@ -1736,7 +1734,9 @@
                       tgclim(ii,jj)=271.2
                       xtice(ii,jj)=max(271.2,sst(ii,j))
                       cice(ii,jj)=max(0.5,cice(ii,jj))
-                      if( myrank .eq. 0 ) print *, "ocean to ice(",ii,",",jj,"),sst=",sst(ii,jj)
+                      if( myrank .eq. 0 ) then
+                        print *, "ocean to ice(",ii,",",jj,"),sst=",sst(ii,jj)
+                      endif
                     else
                       if(.not. oceanold(i,jj))then
                         alb(ii,jj)=0.09
@@ -1752,7 +1752,7 @@
 !                  tgold(i,jj)=max(271.,sst(i,j))
 !                  tsw(i,jj)=max(271.,sst(i,j))
               else
-                  tg(ii,jj)=max(271.,sst(ii,jj))
+                tg(ii,jj)=max(271.,sst(ii,jj))
               endif
             endif
             if(myrank .eq. myrank_check .AND. jj .eq. jj_check .AND. ii .eq. ii_check) then

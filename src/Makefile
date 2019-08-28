@@ -207,7 +207,7 @@ spptout.o : spptout.f90 mod_mpe.o mod_rank.o mod_index.o
 geostd.o : geostd.f90 
 get_model_param.o : get_model_param.f90 mod_rank.o mod_paramt.o mod_const.o mod_param.o 
 getphi.o : getphi.f90 
-getrdy.o : getrdy.f90 mod_ozne_def.o mod_albn.o mod_radn.o mod_noah.o mod_typhoon.o mod_phygrid.o mod_fftcom.o mod_spec.o mod_grid.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o
+getrdy.o : getrdy.f90 mod_ozne_def.o mod_albn.o mod_radn.o mod_noah.o mod_typhoon.o mod_phygrid.o mod_fftcom.o mod_spec.o mod_grid.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o mod_sitgrid.o mod_sit_vdiff.o mod_eos_ocean.o mod_sst.o mod_netcdf.o mod_sit_control.o
 gfcst.o : gfcst.f90 mod_const.o mod_param.o 
 glbmean.o : glbmean.f90 mod_index.o mod_mpe.o 
 gpvs.o : gpvs.f90 
@@ -224,7 +224,7 @@ indexx.o : indexx.f90
 inicons.o : inicons.f90 mod_index.o 
 init_block.o : init_block.f90 mod_noah.o mod_const.o mod_param.o physcons.o
 initial.o : initial.f90 mod_fftcom.o mod_grid.o mod_spec.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o 
-intgrt.o : intgrt.f90 mod_raddiag.o mod_radn.o mod_albn.o mod_noah.o mod_typhoon.o mod_phygrid.o mod_fftcom.o mod_grid.o mod_spec.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o  mod_sitgrid.o mod_sit_vdiff.o mod_netcdf.o mod_sit_control.o mod_sst.o
+intgrt.o : intgrt.f90 mod_raddiag.o mod_radn.o mod_albn.o mod_noah.o mod_typhoon.o mod_phygrid.o mod_fftcom.o mod_grid.o mod_spec.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o mod_sitgrid.o mod_sit_vdiff.o mod_netcdf.o mod_sit_control.o mod_sst.o
 invmtx.o : invmtx.f90 mod_rank.o 
 joinrs.o : joinrs.f90 mod_index.o 
 joinsr.o : joinsr.f90 
@@ -478,6 +478,6 @@ mod_sitgrid.o : mod_sitgrid.f90 mod_sit_control.o mod_netcdf.o
 mod_sit_vdiff.o : mod_sit_vdiff.f90 mod_eos_ocean.o mod_netcdf.o mod_sst.o mod_sit_control.o
 mod_sst.o: mod_sst.f90 mod_param.o mod_mpe.o mod_index.o mod_const.o mod_sit_control.o mod_netcdf.o mod_eos_ocean.o
 mod_netcdf.o: mod_netcdf.f90 mod_mpe.o mod_const.o mod_sit_control.o
-mod_eos_ocean.o: mod_eos_ocean.f90 
+mod_eos_ocean.o: mod_eos_ocean.f90
 mod_sit_control.o: mod_sit_control.f90
 outsit.o : outsit.f90 mod_index.o mod_rank.o mod_mpe.o mod_sitgrid.o

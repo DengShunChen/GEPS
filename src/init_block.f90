@@ -191,6 +191,19 @@
       crdate ='crdate'
       ocards ='ocards'
       cntrl  ='gfsctl'
+!---for restore ncep sst, snowdepth, sea ice fraction
+      ifilin_ncep='ifilin_ncep'
+
+!---for restore opgsst
+      ifilin_sst='ifilin_sst'
+
+!---for read netcdf data
+      ifilin_nc='ifilin_nc'
+!---for read climatology daily analysis data
+      ifilin_ClmANA='ifilin_ClmANA'
+!---for read climatology daily forecast data
+       ifilin_ClmFCT='ifilin_ClmFCT'
+
 !
 !dms
 !t512l60

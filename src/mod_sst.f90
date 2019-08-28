@@ -36,7 +36,7 @@
         PUBLIC :: nodepth, odepths, ot12, os12, ou12, ov12,mixedlayer12
         PUBLIC :: nodepth0, odepth0, ot0, os0, ou0, ov0, mixedlayer0  
         PUBLIC :: lou, lov
-        PUBLIC :: nwdepth, wdepths, wtfn12, wsfn12,wtfn1st,wsfn1st
+        PUBLIC :: nwdepth, wdepths, wtfn12, wsfn12,wtfn1st,mask1st
         PUBLIC :: albice,albsn,albw,csn,cice,rhosn,rhoice,xkice,xksn,xkw,         &
                   omegas,wcri
         PUBLIC :: deallocate_ocaf_array,deallocate_woa0_array,deallocate_godas_array
@@ -96,7 +96,7 @@
         REAL, ALLOCATABLE :: wsfn12(:,:,:,:) ! (nlon,nwdepth,ngl,0:13) in global coordinates,
         REAL, ALLOCATABLE :: wtfn1st(:,:,:) ! (nlon,nwdepth,ngl) in global coordinates,
                                              ! observed water tempeature profile (K): "ot"       
-        REAL, ALLOCATABLE :: wsfn1st(:,:,:) ! (nlon,nwdepth,ngl) in global coordinates,
+        REAL, ALLOCATABLE :: mask1st(:,:) ! (nlon,nwdepth,ngl) in global coordinates,
 
   !! memory pointer for pentad GODAS OCEAN data (lgodas & ldailysst)
         REAL      :: timevals_godas(3) = 0.  ! absoulte time (e.g., 19971003.25) GODAS PENTAD Data
@@ -631,7 +631,7 @@
             call dmsread(nx,my,lrec,lncrec,'H',ifilin_ClmFCT,sstFCT0(:,:),istat)
 
    14       format('W00100',i4.4,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
-            write(lrec,14) itau,ggdef,imm2,idd2
+            write(lrec,14) itau+24,ggdef,imm,idd
             call dmsread(nx,my,lrec,lncrec,'H',ifilin_ClmFCT,sstFCT1(:,:),istat)
 
 
@@ -772,7 +772,7 @@
         subroutine deallocate_ocaf_array  
 
            deallocate (wdepths,wtfn12,wsfn12)
-           if(locaf0) deallocate (wtfn1st,wsfn1st)
+           if(locaf0) deallocate (wtfn1st,mask1st)
            return
         
         end subroutine
@@ -940,63 +940,30 @@
 
           if(.not. ALLOCATED(wdepths)) ALLOCATE(wdepths(1:lkvl+2))
           if(.not. ALLOCATED(wtfn1st)) ALLOCATE(wtfn1st(nxp,1:lkvl+2,my_max))
-!          if(.not. ALLOCATED(wsfn0)) ALLOCATE(wsfn0(nxp,1:lkvl+2,my_max))
+          if(.not. ALLOCATED(mask1st)) ALLOCATE(mask1st(nxp,my_max))
 
           nwdepth=lkvl+2
           wdepths(1:lkvl+2)=sit_zdepth(0:lkvl+1)
           wtfn1st=0.
-!          wsfn0=0.
+          mask1st=0.
 
           write(cdtg,'(i12)') idtg1
 !          read(cdtg,'(i4,i2,i8)')iyyyy,mm,ddhhmn
 
 
   11     format(i3.3,'TFN','0000',a4,a12)  ! ???TFM
-  12     format(i3.3,'SFN','0000',a4,a12)  ! ???SFM
-
-!          flag=.false.
-!          if(myrank.eq.0) then
-!            call dmsmsg("ALL",istat)
-!            print *,'ready to open ifilin_ocaf'
-!            call dmsopn(ifilin_ocaf,"r",istat)
-!            flag=.true.
-!          endif
-!          call mpe_broadcast(istat,1,flag,mpe_integer)
-!          if(istat.ne.0)then
-!            if(myrank.eq.0) print *,'dmsopn ocaf error'
-!            stop
-!            call mpe_finalize
-!            call dmsexit(-1)
-!          endif
-
+  12     format(i3.3,'MSK','0000',a4,a12)  ! ???SFM
 
 !          do k=1,lkvl+2
           do k=1,1
-!           if(myrank.eq.0) call dmsopn(ifilin_sst,"r",istat)
-!           call mpe_broadcast(istat,1,flag,mpe_integer)
-!           if(istat.ne.0)then
-!             if(myrank.eq.0) print *,'dmsopn sst error'
-!               call mpe_finalize
-!               call dmsexit(-1)
-!           endif
-
-
-!            write(cdtg,'(i12)') idtg1
-!            read(cdtg,'(i4,i8)')iyyyy,mmddhhmn
-
-!              iy=idtg_sst/1000000
 
            lncrec=nx*my
            write(lrec,11) k-1,ggdef,cdtg
            if(myrank .eq. 0) print *, 'lrec11=',lrec
            call dmsread(nx,my,lrec,lncrec,'H',ifilin,temp1(:,:),istat)
-!           write(lrec,12) k-1,ggdef,cdtg
-!           if(myrank .eq. 0) print *, 'lrec12=',lrec
-!           call dmsread(nx,my,lrec,lncrec,'H',ifilin,temp2(:,:),istat)
-!           if( myrank .eq. 72) then
-!             print *,"ocaf 1: wtfn(914,265)=",temp1(914,265)
-!             print *,"ocaf 2: wsfn(914,265)=",temp2(914,265)
-!           endif
+           write(lrec,12) k-1,ggdef,cdtg
+           if(myrank .eq. 0) print *, 'lrec12=',lrec
+           call dmsread(nx,my,lrec,lncrec,'H',ifilin,temp2(:,:),istat)
 
 !           if( lreduce.eq.1 ) call reducepick(temp1(1,1),nxdef,nx,my)
 !           if( lreduce.eq.1 ) call reducepick(temp2(1,1),nxdef,nx,my)
@@ -1007,26 +974,12 @@
               nxj=nxdef_2d(j)
               if( lreduce.eq.1 )then
                 call reducepick (temp1(1,j),nxdef(j),nx,1)
-!                call reducepick (temp2(1,j),nxdef(j),nx,1)
+                call reducepick (temp2(1,j),nxdef(j),nx,1)
               endif
               do ii = 1, nxj
-!                  if(sitmask(i,jj).eq. 1)then
                  i=nxjstart(j)+ii-1
-                 wtfn1st(i,k,jj)=temp1(i,j)
-!                 wsfn0(i,k,jj)=temp2(i,j)
-!                  endif
-!                  if((myrank .EQ.72 ) .AND. (jj .EQ. 3) .AND. (i .EQ.
-!                  913))then
-!                    print
-!                    *,"wtfn12(913,",k,",3,",mm,")=",wtfn12(i,k,jj,mm) &
-!                           ,"wsfn12(913,",k,",3,",mm,")=",wsfn12(i,k,jj,mm)
-!                  endif
-!                  if((myrank .EQ.72 ) .AND. (jj .EQ. 3) .AND. (i .EQ.
-!                  914))then
-!                    print
-!                    *,"wtfn12(914,",k,",3,",mm,")=",wtfn12(i,k,jj,mm) &
-!                           ,"wsfn12(914,",k,",3,",mm,")=",wsfn12(i,k,jj,mm)
-!                  endif
+                 wtfn1st(ii,k,jj)=temp1(i,j)
+                 mask1st(ii,jj)=temp2(i,j)
               enddo   !end of ii
             enddo    !end of jj
          
@@ -2403,6 +2356,8 @@
            ALLOCATE (timevals2(nts))
            CALL IO_INQ_VARID (gpnc2%file_id, 'time', io_var_id)
            CALL IO_GET_VAR_DOUBLE(gpnc2%file_id, io_var_id, timevals2)
+           IF (tsID.EQ.LAST_RECORD) tsID=nts     !!! modify tsID for LAST_RECORD
+
            recdate=timevals2(tsID)
            
            WRITE (nerr,*) 'read_godas_1record: nts=',nts &
@@ -2411,13 +2366,7 @@
              print *, 'read_godas_1record: timevals(tsID+1)=',timevals2(tsID+1)
            ENDIF
            DEALLOCATE (timevals2)
-           CALL IO_INQ_VARID (gpnc2%file_id, 'ot', otid2)
-           CALL IO_INQ_VARID (gpnc2%file_id, 'os', osid2)
-           CALL IO_INQ_VARID (gpnc2%file_id, 'ou', ouid2)
-           CALL IO_INQ_VARID (gpnc2%file_id, 'ov', ovid2)
-           CALL IO_INQ_VARID (gpnc2%file_id, 'mixedlayer', mixedid2)
-!!!       CALL IO_INQ_VARID (gpnc2%file_id, 'ow', owid2)
-           CALL io_get_att_double (gpnc2%file_id, otid2, '_FillValue', missing_value)
+
            IF (tsID.EQ.LAST_RECORD) tsID=nts     !!! modify tsID for LAST_RECORD
            IF (tsID .gt. nts) THEN
          !!! data out range, set to be missing value
@@ -2429,6 +2378,15 @@
              WRITE (nerr,*) 'read_dailygodas, date=',recdate &
                            ,'DATA out of range!!! Set to MISSING DATA!'
            ELSE
+
+           CALL IO_INQ_VARID (gpnc2%file_id, 'ot', otid2)
+           CALL IO_INQ_VARID (gpnc2%file_id, 'os', osid2)
+           CALL IO_INQ_VARID (gpnc2%file_id, 'ou', ouid2)
+           CALL IO_INQ_VARID (gpnc2%file_id, 'ov', ovid2)
+           CALL IO_INQ_VARID (gpnc2%file_id, 'mixedlayer', mixedid2)
+!!!       CALL IO_INQ_VARID (gpnc2%file_id, 'ow', owid2)
+           CALL io_get_att_double (gpnc2%file_id, otid2, '_FillValue', missing_value)
+
              DO jk=1, nodepth
                io_start(:) = (/ 1, 1, jk, tsID /)
                io_count(:) = (/ nlon, nlat, 1, 1 /)
@@ -2742,15 +2700,15 @@
           obswtbnmw1 = 1
           obswtbnmw2 = 2
         
-          if(myrank .eq. 49) then
-            print *,'time weight, idtg1=',idtg1,',yr=',yr,',mo=',mo &
-                   ,',dy=',dy,',hr=',hr,',tauleft=',tauleft  & 
-                   ,',ydate=',ydate,',ydate1=',ydate1        &
-                   ,',ydate2=',ydate2,',ydatejd=',ydate_jd   &
-                  ,',ydate1jd=',ydate1_jd,',ydate2jd=',ydate2_jd &
-                  ,',obswtbwgt1=',obswtbwgt1   &
-                  ,',obswtbwgt2=',obswtbwgt2
-          endif
+!          if(myrank .eq. 49) then
+!            print *,'time weight, idtg1=',idtg1,',yr=',yr,',mo=',mo &
+!                   ,',dy=',dy,',hr=',hr,',tauleft=',tauleft  & 
+!                   ,',ydate=',ydate,',ydate1=',ydate1        &
+!                   ,',ydate2=',ydate2,',ydatejd=',ydate_jd   &
+!                  ,',ydate1jd=',ydate1_jd,',ydate2jd=',ydate2_jd &
+!                  ,',obswtbwgt1=',obswtbwgt1   &
+!                  ,',obswtbwgt2=',obswtbwgt2
+!          endif
 
          ENDIF
 

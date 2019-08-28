@@ -158,6 +158,9 @@
 !     ftp, fqp, fpsp : for temperature, specific humidity and surface
 !              pressure for past time step for micro cloud scheme
 !
+!   lrun_sitvdiff: logical variable for run sit_vdiff
+!   ic_sit   : the 'ic_sit'th times run sit_vdiff
+!
 ! modify to f90 by C-H Lee and sort by River Chen in 2015
 !
 !#######################################################################
@@ -170,8 +173,8 @@
       USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
       USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt
       USE mod_eos_ocean,         ONLY:AirVaporPressure,CalcSm
-      USE mod_sst,               ONLY:time_weights,now1,now2,wgto1,wgto2     &
-                                     ,obswtbnmw1,obswtbnmw2,obswtbwgt1       &
+      USE mod_sst,               ONLY:time_weights,now1,now2,wgto1,wgto2 &
+                                     ,obswtbnmw1,obswtbnmw2,obswtbwgt1   &
                                      ,obswtbwgt2,dailyFCTsst
       USE mo_netcdf,             ONLY:lkvl
 !-----------------------------------------------------------------------
@@ -1762,10 +1765,10 @@
                  ,',sitmask=',sitmask(ii,jj),',tg=',tg(ii,jj)        &
                  ,',obswtb=',obswtb(ii,jj),',obswtbfsit=',obswtbfsit(ii,jj) &
                  ,',dta=',dta,',dt=',dt,',dtfsit=',dtfsit
-             endif
-         endif
+            endif
+          endif
 
-         if(lrun_sitvdiff)then
+          if(lrun_sitvdiff)then
             if(ic_sit .eq. 1) then
               sstm(ii,jj)=ssfsit(ii,jj)/dtfsit
               rstm(ii,jj)=rsfsit(ii,jj)/dtfsit
@@ -1875,12 +1878,12 @@
 
           if(myrank .EQ. myrank_check .AND. jj .EQ. jj_check .AND. ii .EQ. ii_check) then
             print*,'before sit_vidff:myrank=',myrank,',jj=',jj     &
-                 ,',j=',j,',sitlat(',ii_check,')=',sitlat(ii)        &
-                 ,',sitlon(',ii_check,',jj)=',sitlon(ii,jj)          &
-                 ,',sitlclass=',sitlclass(ii,jj)                    &
-                 ,',sitmask=',sitmask(ii,jj),',tg=',tg(ii,jj)        &
-                 ,',tgold=',tgold(ii,jj)                            &
-                 ,',tsw=',tsw(ii,jj),',dtswdt=',dtswdt(ii,jj)        &
+                 ,',j=',j,',sitlat(',ii_check,')=',sitlat(ii)      &
+                 ,',sitlon(',ii_check,',jj)=',sitlon(ii,jj)        &
+                 ,',sitlclass=',sitlclass(ii,jj)                   &
+                 ,',sitmask=',sitmask(ii,jj),',tg=',tg(ii,jj)      &
+                 ,',tgold=',tgold(ii,jj)                           &
+                 ,',tsw=',tsw(ii,jj),',dtswdt=',dtswdt(ii,jj)      &
                  ,',dta=',dta,',dt=',dt,',dtfsit=',dtfsit
           endif
         enddo    !end i=1,nxj
@@ -1953,7 +1956,7 @@
           call sit_vdiff ( nxjp(j), nxp, jj, istep, dtfsit,            &
               sitlat, sitlon(:,jj), tau, tauhr,                        &
               sitcor(:,jj), slm(:,jj), sitlclass(:,jj),                &
-              sitmask(:,jj),sitmask2(:,jj), bathy(:,jj), wlvl(:,jj),   &
+              sitmask(:,jj), bathy(:,jj), wlvl(:,jj),   &
               ocnmask(:,jj), obox_mask(:,jj),                          &
 !            ! - same as lake and ml_ocean
               fluxw(:,jj), dfluxs(:,jj), soflw(:,jj),                  &
@@ -1989,8 +1992,7 @@
               awsfl(:,jj,0:lkvl+1),awtfl0(:,jj,0:lkvl+1),              &
               awsfl0(:,jj,0:lkvl+1),awtkefl(:,jj,0:lkvl+1),            &
 !             ! final output only
-!              cice(:,j), snr(:,j), zice(:,j), xtice(:,j), tg(:,j),
-!              &
+!              cice(:,j), snr(:,j), zice(:,j), xtice(:,j), tg(:,j),    &
               seaice(:,jj),sni(:,jj),thickness(:,jj),xticetm(:,jj),    &
               tsw(:,jj), tsl(:,jj), tslm(:,jj), tslm1(:,jj),           &
               ocu(:,jj), ocv(:,jj),  ctfreez2(:,jj),                   &
@@ -2010,13 +2012,8 @@
 
         do ii = 1, nxj
           if(ocean(ii,jj) .AND. (sitmask(ii,jj).EQ.1)) then
-              tg(ii,jj)=tgold(ii,jj)+dtswdt(ii,jj)*dtfsit
-              tgold(ii,jj)=tsw(ii,jj)
-            if(sitmask2(ii,jj) .eq. 0. .AND. sitmask(ii,jj) .eq. 1. ) then
-              sitmask(ii,jj)=0.
-              print*,'myrank=',myrank,',ii=',ii,',jj=',jj,',j=',j &
-                    ,'sitmask(',ii,',',jj,')=0'
-            endif
+            tg(ii,jj)=tgold(ii,jj)+dtswdt(ii,jj)*dtfsit
+            tgold(ii,jj)=tsw(ii,jj)
           endif
           if(myrank .EQ. myrank_check .AND. jj .EQ. jj_check .AND. ii .EQ. ii_check) then
             print*,'after sit_vdiff:myrank=',myrank                &
@@ -2029,10 +2026,11 @@
                  ,',tgold=',tgold(ii,jj)                           &
                  ,',dta=',dta,',dt=',dt,',dtfsit=',dtfsit          &
                  ,',lsftobswt=',lsftobswt
-         endif
+          endif
 
         enddo
-        endif  !end lrun_sitvdiff
+
+      endif  !end lrun_sitvdiff
 
 
          if(myrank.eq.myrank_check .AND. jj.EQ.jj_check .AND. ii .EQ. ii_check) then

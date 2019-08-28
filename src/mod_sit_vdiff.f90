@@ -267,7 +267,7 @@ MODULE mod_sit_vdiff
                                omegas,wcri,lou,lov  &
                               ,nodepth,odepths,ot12,os12,ou12,ov12,mixedlayer12   &
                               ,nodepth0,odepth0,ot0,os0,ou0,ov0,mixedlayer0  &
-                              ,nwdepth,wdepths,wtfn12, wsfn12 &
+                              ,nwdepth,wdepths,wtfn12, wsfn12,mask1st &
                               ,wgt1,wgt2,nmw1,nmw2,obswtbwgt1,obswtbwgt2,obswtbnmw1,obswtbnmw2 &
                               ,now1,now2,wgto1,wgto2   
 !ps							   ,wlvlref,dpthmx
@@ -512,7 +512,7 @@ SUBROUTINE sit_vdiff_init ( kproma, kbdim, jrow, istep,               &
        ! 1-input only, original ATM/SIT variabels
        !
                   plat,       plon,                                   &
-                  psitmask,   psitmask2,  pbathy,     pwlvl,          &
+                  psitmask,   pbathy,     pwlvl,          &
                   pocnmask,   obox_mask,                              &
                   psni,       psiced,     ptsi,                       &
                   pobsseaice, pobswtb,    pobswsb,                    &
@@ -569,7 +569,6 @@ SUBROUTINE sit_vdiff_init ( kproma, kbdim, jrow, istep,               &
 !  pobswtb     : observed bulk sea surface temperature (K)                         I
 !  pobswsb    : observed salinity (PSU, 0/00)                                      I
 !  psitmask : mask for sit(1=.TRUE., 0=.FALSE.)                                    I
-!  psitmask2 : mask for sit(1=.TRUE., 0=.FALSE.)                                    I
 !  pbathy  : bathymeter (topography or orography) of ocean (m)                     I
 !  pctfreez2 : ref water freezing temperature (K)                                  I
 !  pwlvl  : current water level (ice/water interface) a water body grid            I/O
@@ -676,7 +675,6 @@ SUBROUTINE sit_vdiff_init ( kproma, kbdim, jrow, istep,               &
   real, INTENT(in out):: pobswtb(kbdim),      pobswsb(kbdim)
 ! 2-d SIT vars                                                
   real, INTENT(in)::   psitmask(kbdim)         ! grid mask for lsit (1 or 0)      
-  real, INTENT(in)::   psitmask2(kbdim)         ! grid mask for lsit (1 or 0)      
   real, INTENT(in out) ::   pbathy(kbdim)
   real, INTENT(in out) :: pctfreez2(kbdim)
   real, INTENT(in out) :: pwlvl(kbdim)
@@ -2013,7 +2011,7 @@ END SUBROUTINE sit_vdiff_init
    SUBROUTINE sit_vdiff ( kproma, kbdim, jrow, istep,  delta_time,    & 
                   plat,       plon, tau, tauhr,                       &
                   pcoriol,    pslm,       plclass,                    &
-                  psitmask,   psitmask2,  pbathy,     pwlvl,          &
+                  psitmask,   pbathy,     pwlvl,          &
                   pocnmask,   obox_mask,                              &
 ! - same as lake and ml_ocean
                   pfluxw,     pdfluxs,    psoflw,                     &
@@ -2127,7 +2125,6 @@ END SUBROUTINE sit_vdiff_init
 !  pobswtb     : observed bulk sea surface temperature (K)                         I
 !  pobswsb    : observed salinity (PSU, 0/00)                                      I
 !  psitmask : mask for sit(1=.TRUE., 0=.FALSE.)                                    I
-!  psitmask2 : mask for sit(1=.TRUE., 0=.FALSE.)                                    I
 !  pbathy  : bathymeter (topography or orography) of ocean (m)                     I
 !  pctfreez2 : ref water freezing temperature (K)                                  I
 !  pwlvl  : current water level (ice/water interface) a water body grid            I/O
@@ -2304,8 +2301,7 @@ END SUBROUTINE sit_vdiff_init
   real, INTENT(in):: tau,  tauhr             ! current forecast time (tau:in hours, tauhr: 00-24z)
   real, INTENT(in):: pcoriol(kbdim)
   real, INTENT(in):: pslm(kbdim), plclass(kbdim)
-  real, INTENT(in):: psitmask(kbdim)         ! grid mask for lsit (1 or 0)      
-  real, INTENT(in out):: psitmask2(kbdim)         ! grid mask for lsit (1 or 0)      
+  real, INTENT(in out):: psitmask(kbdim)         ! grid mask for lsit (1 or 0)      
   real, INTENT(in out):: pbathy(kbdim)
   real, INTENT(in out):: pwlvl(kbdim)
   real, INTENT(in):: pocnmask(kbdim)         ! (fractional) grid mask for 3-D ocean (DIECAST)
@@ -3035,7 +3031,7 @@ CONTAINS
     IF(ptsw(jl) .lt. pctfreez2(jl) .or. ptsw(jl) .gt. 350.) then
       ptsw(jl)=pobswtb(jl)
       pdtswdt(jl)=(ptsw(jl)-poldtsw(jl))/(n_sit_step*zdtime)
-      psitmask2(jl)=0.
+      psitmask(jl)=0.
     ELSE 
       IF( plon(jl).GT.sit_domain_e) THEN
         rre=min(sit_domain_e+sit_domain_extgrd,360.)
@@ -3340,6 +3336,7 @@ SUBROUTINE thermocline(jl,jrow)
 !
       pfluxwm=pfluxw(jl)
       if(locaf0) then
+!ps        pfluxw2=pfluxw(jl)
         pfluxw2=pfluxw(jl)-(pawtfl0(jl,0)+ocaf0_add)
       else
         pfluxw2=pfluxw(jl)
@@ -3959,7 +3956,7 @@ SUBROUTINE thermocline(jl,jrow)
             +zdtime*(                                                               &
               zsoflw*( FFN(zlk(nls+jk)-pwlvl(jl))-FFN(zlk(nls+jk+1)-pwlvl(jl)) )    &
                 /rhoh2o/clw/hw(nls+jk)                                              &
-              +pawtfl(jl,nls+jk)                        &
+              +pawtfl(jl,nls+jk)                     &
               )
 
           AA(4+jk,1)=-beta*X(4+jk)-hew/hw(nls+jk)
@@ -6882,7 +6879,7 @@ END SUBROUTINE thermocline
   USE mod_sst,       ONLY: nmw1, nmw2, wgt1, wgt2
   USE mod_sit_control,       ONLY: locaf0
 !!!  USE mo_mpi,           ONLY: p_parallel_io, p_bcast, p_io, p_pe
-  USE mod_sst,           ONLY: nwdepth, wdepths, wtfn1st, wsfn1st
+  USE mod_sst,           ONLY: nwdepth, wdepths, wtfn1st, mask1st
 
 
   IMPLICIT NONE

@@ -27,14 +27,14 @@
 
   
       allocate(tm1(nx,my))
-      allocate(tm2(nx,my))
-      allocate(tm3(nx,my))
-      allocate(tm4(nx,my))
+!      allocate(tm2(nx,my))
+!      allocate(tm3(nx,my))
+!      allocate(tm4(nx,my))
       allocate(tm5(nx,my))
       allocate(tm6(nx,my))
       allocate(tm10(nx,my))
-      allocate(tm11(nx,my))
-      allocate(tm12(nx,my))
+!      allocate(tm11(nx,my))
+!      allocate(tm12(nx,my))
 
       lenc= nx*my
   
@@ -47,49 +47,49 @@
               nxj=nxdef_2d(j)
               do ii = 1, nxj
                 tm1(ii,j)  = sitwt(ii,jj,k)
-                tm2(ii,j)  = sitwu(ii,jj,k)
-                tm3(ii,j)  = sitwv(ii,jj,k)
-                tm4(ii,j)  = sitww(ii,jj,k)
+!                tm2(ii,j)  = sitwu(ii,jj,k)
+!                tm3(ii,j)  = sitwv(ii,jj,k)
+!                tm4(ii,j)  = sitww(ii,jj,k)
                 tm5(ii,j)  = sitws(ii,jj,k)
                 tm6(ii,j)  = sitwtke(ii,jj,k)
                 tm10(ii,j)  = obswt(ii,jj,k)
-                tm11(ii,j)  = wkm(ii,jj,k)
-                tm12(ii,j)  = wkh(ii,jj,k)
+!                tm11(ii,j)  = wkm(ii,jj,k)
+!                tm12(ii,j)  = wkh(ii,jj,k)
               enddo
             enddo
       
             call mpe_unify(tm1,nx,my,2,mpe_double)
-            call mpe_unify(tm2,nx,my,2,mpe_double)
-            call mpe_unify(tm3,nx,my,2,mpe_double)
-            call mpe_unify(tm4,nx,my,2,mpe_double)
+!            call mpe_unify(tm2,nx,my,2,mpe_double)
+!            call mpe_unify(tm3,nx,my,2,mpe_double)
+!            call mpe_unify(tm4,nx,my,2,mpe_double)
             call mpe_unify(tm5,nx,my,2,mpe_double)
             call mpe_unify(tm6,nx,my,2,mpe_double)
             call mpe_unify(tm10,nx,my,2,mpe_double)
-            call mpe_unify(tm11,nx,my,2,mpe_double)
-            call mpe_unify(tm12,nx,my,2,mpe_double)
+!            call mpe_unify(tm11,nx,my,2,mpe_double)
+!            call mpe_unify(tm12,nx,my,2,mpe_double)
 
             if( lreduce.eq.1 ) then
               do jj = 1, jlistnum
                 j=jlist1(jj)
                 call reduceintp (tm1(1,j),nxdef(j),nx,1)
-                call reduceintp (tm2(1,j),nxdef(j),nx,1)
-                call reduceintp (tm3(1,j),nxdef(j),nx,1)
-                call reduceintp (tm4(1,j),nxdef(j),nx,1)
+!                call reduceintp (tm2(1,j),nxdef(j),nx,1)
+!                call reduceintp (tm3(1,j),nxdef(j),nx,1)
+!                call reduceintp (tm4(1,j),nxdef(j),nx,1)
                 call reduceintp (tm5(1,j),nxdef(j),nx,1)
                 call reduceintp (tm6(1,j),nxdef(j),nx,1)
                 call reduceintp (tm10(1,j),nxdef(j),nx,1)
-                call reduceintp (tm11(1,j),nxdef(j),nx,1)
-                call reduceintp (tm12(1,j),nxdef(j),nx,1)
+!                call reduceintp (tm11(1,j),nxdef(j),nx,1)
+!                call reduceintp (tm12(1,j),nxdef(j),nx,1)
               enddo
               call mpe_unify(tm1,nx,my,5,mpe_double)
-              call mpe_unify(tm2,nx,my,5,mpe_double)
-              call mpe_unify(tm3,nx,my,5,mpe_double)
-              call mpe_unify(tm4,nx,my,5,mpe_double)
+!              call mpe_unify(tm2,nx,my,5,mpe_double)
+!              call mpe_unify(tm3,nx,my,5,mpe_double)
+!              call mpe_unify(tm4,nx,my,5,mpe_double)
               call mpe_unify(tm5,nx,my,5,mpe_double)
               call mpe_unify(tm6,nx,my,5,mpe_double)
               call mpe_unify(tm10,nx,my,5,mpe_double)
-              call mpe_unify(tm11,nx,my,5,mpe_double)
-              call mpe_unify(tm12,nx,my,5,mpe_double)
+!              call mpe_unify(tm11,nx,my,5,mpe_double)
+!              call mpe_unify(tm12,nx,my,5,mpe_double)
             endif
 
 
@@ -99,20 +99,20 @@
 !            if( lreduce.eq.1 ) call reduceintp (tm1,nxdef,nx,my)
             call dmswrit(nx,my,lrec,lenc,'H',ifilout,tm1,istat)
 
-            write( typ, '(i3.3,a3)' ) k,'SWU'         !!sit wu
-            call syslbl (typ,idtg,itau,ggdef,lrec)
-!            if( lreduce.eq.1 ) call reduceintp (tm2,nxdef,nx,my)
-            call dmswrit(nx,my,lrec,lenc,'H',ifilout,tm2,istat)
+!            write( typ, '(i3.3,a3)' ) k,'SWU'         !!sit wu
+!            call syslbl (typ,idtg,itau,ggdef,lrec)
+!!            if( lreduce.eq.1 ) call reduceintp (tm2,nxdef,nx,my)
+!            call dmswrit(nx,my,lrec,lenc,'H',ifilout,tm2,istat)
 
-            write( typ, '(i3.3,a3)' ) k,'SWV'         !!sit wv
-            call syslbl (typ,idtg,itau,ggdef,lrec)
-!            if( lreduce.eq.1 ) call reduceintp (tm3,nxdef,nx,my)
-            call dmswrit(nx,my,lrec,lenc,'H',ifilout,tm3,istat)
+!            write( typ, '(i3.3,a3)' ) k,'SWV'         !!sit wv
+!            call syslbl (typ,idtg,itau,ggdef,lrec)
+!!            if( lreduce.eq.1 ) call reduceintp (tm3,nxdef,nx,my)
+!            call dmswrit(nx,my,lrec,lenc,'H',ifilout,tm3,istat)
 
-            write( typ, '(i3.3,a3)' ) k,'SWW'         !!sit ww
-            call syslbl (typ,idtg,itau,ggdef,lrec)
-!            if( lreduce.eq.1 ) call reduceintp (tm4,nxdef,nx,my)
-            call dmswrit(nx,my,lrec,lenc,'H',ifilout,tm4,istat)
+!            write( typ, '(i3.3,a3)' ) k,'SWW'         !!sit ww
+!            call syslbl (typ,idtg,itau,ggdef,lrec)
+!!            if( lreduce.eq.1 ) call reduceintp (tm4,nxdef,nx,my)
+!            call dmswrit(nx,my,lrec,lenc,'H',ifilout,tm4,istat)
 
             write( typ, '(i3.3,a3)' ) k,'SWS'         !!sit ws
             call syslbl (typ,idtg,itau,ggdef,lrec)
@@ -129,29 +129,29 @@
 !            if( lreduce.eq.1 ) call reduceintp (tm10,nxdef,nx,my)
             call dmswrit(nx,my,lrec,lenc,'H',ifilout,tm10,istat)
 
-            write( typ, '(i3.3,a3)' ) k,'WKM'
-            call syslbl (typ,idtg,itau,ggdef,lrec)
-!            if( lreduce.eq.1 ) call reduceintp (tm11,nxdef,nx,my)
-            call dmswrit(nx,my,lrec,lenc,'H',ifilout,tm11,istat)
+!            write( typ, '(i3.3,a3)' ) k,'WKM'
+!            call syslbl (typ,idtg,itau,ggdef,lrec)
+!!            if( lreduce.eq.1 ) call reduceintp (tm11,nxdef,nx,my)
+!            call dmswrit(nx,my,lrec,lenc,'H',ifilout,tm11,istat)
             
-            write( typ, '(i3.3,a3)' ) k,'WKH'
-            call syslbl (typ,idtg,itau,ggdef,lrec)
-!            if( lreduce.eq.1 ) call reduceintp (tm12,nxdef,nx,my)
-            call dmswrit(nx,my,lrec,lenc,'H',ifilout,tm12,istat)
+!            write( typ, '(i3.3,a3)' ) k,'WKH'
+!            call syslbl (typ,idtg,itau,ggdef,lrec)
+!!            if( lreduce.eq.1 ) call reduceintp (tm12,nxdef,nx,my)
+!            call dmswrit(nx,my,lrec,lenc,'H',ifilout,tm12,istat)
 
 
    30   continue
    40 continue
       
       deallocate(tm1)
-      deallocate(tm2)
-      deallocate(tm3)
-      deallocate(tm4)
+!      deallocate(tm2)
+!      deallocate(tm3)
+!      deallocate(tm4)
       deallocate(tm5)
       deallocate(tm6)
       deallocate(tm10)
-      deallocate(tm11)
-      deallocate(tm12)
+!      deallocate(tm11)
+!      deallocate(tm12)
   
       end subroutine sitout
 
@@ -418,9 +418,9 @@
         if( lreduce.eq.1 ) then
           do jj = 1, jlistnum
             j=jlist1(jj)
-            call reduceintp (tm1(1,j),nxdef_2d(j),nx,1)
-            call reduceintp (tm2(1,j),nxdef_2d(j),nx,1)
-            call reduceintp (tm3(1,j),nxdef_2d(j),nx,1)
+            call reduceintp (tm1(1,j),nxdef(j),nx,1)
+            call reduceintp (tm2(1,j),nxdef(j),nx,1)
+            call reduceintp (tm3(1,j),nxdef(j),nx,1)
           enddo
           call mpe_unify(tm1,nx,my,5,mpe_double)
           call mpe_unify(tm2,nx,my,5,mpe_double)
@@ -433,15 +433,15 @@
 !        if( lreduce.eq.1 ) call reduceintp (tm1,nxdef,nx,my)
         call dmswrit(nx,my,ihdg,lenc,'H',ifilout,tm1,istat)
 
-        write( lrec, '(i3.3,a3)' ) k,'TFN'
-        call syslbl (lrec,idtg,itau,ggdef,ihdg)
-!        if( lreduce.eq.1 ) call reduceintp (tm2,nxdef,nx,my)
-        call dmswrit(nx,my,ihdg,lenc,'H',ifilout,tm2,istat)
+!        write( lrec, '(i3.3,a3)' ) k,'TFN'
+!        call syslbl (lrec,idtg,itau,ggdef,ihdg)
+!!        if( lreduce.eq.1 ) call reduceintp (tm2,nxdef,nx,my)
+!        call dmswrit(nx,my,ihdg,lenc,'H',ifilout,tm2,istat)
 
-        write( lrec, '(i3.3,a3)' ) k,'SFN'
-        call syslbl (lrec,idtg,itau,ggdef,ihdg)
-!        if( lreduce.eq.1 ) call reduceintp (tm3,nxdef,nx,my)
-        call dmswrit(nx,my,ihdg,lenc,'H',ifilout,tm3,istat)
+!        write( lrec, '(i3.3,a3)' ) k,'SFN'
+!        call syslbl (lrec,idtg,itau,ggdef,ihdg)
+!!        if( lreduce.eq.1 ) call reduceintp (tm3,nxdef,nx,my)
+!        call dmswrit(nx,my,ihdg,lenc,'H',ifilout,tm3,istat)
 
 !        write( lrec, '(i3.3,a3)' ) k,'WSF'
 !        call syslbl (lrec,idtg,itau,ggdef,ihdg)
@@ -536,11 +536,11 @@
         if( lreduce.eq.1 ) then
           do jj = 1, jlistnum
            j=jlist1(jj)
-           call reduceintp (tm1(1,j),nxdef_2d(j),nx,1)
-           call reduceintp (tm2(1,j),nxdef_2d(j),nx,1)
+           call reduceintp (tm1(1,j),nxdef(j),nx,1)
+           call reduceintp (tm2(1,j),nxdef(j),nx,1)
            if(k.eq.0)then
-             call reduceintp (tm3(1,j),nxdef_2d(j),nx,1)
-             call reduceintp (tm4(1,j),nxdef_2d(j),nx,1)
+             call reduceintp (tm3(1,j),nxdef(j),nx,1)
+             call reduceintp (tm4(1,j),nxdef(j),nx,1)
            endif
           enddo
           call mpe_unify(tm1,nx,my,5,mpe_double)
