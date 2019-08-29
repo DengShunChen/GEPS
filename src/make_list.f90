@@ -58,14 +58,16 @@
 
       jlistnum=0
 ! for Semi-Lagrangian
-      do ipe=1,nsize
+!byl      do ipe=1,nsize
+      do ipe=1,nsizey
          jlistnum_sl(ipe)=0
       enddo
 
       do jj=1,my_max
          jlist1(jj)=0
 ! for Semi-Lagrangian
-       do ipe=1,nsize
+!byl       do ipe=1,nsize
+       do ipe=1,nsizey
           jlist1_sl(jj,ipe)=0
        enddo
       enddo
