@@ -363,7 +363,8 @@
 !--------
 !
 ! for sascnv
-      integer   kbot(nxp,my_max),ktop(nxp,my_max),kuo(nxp,my_max)
+      integer   kbot(nxp,my_max),ktop(nxp,my_max),kuo(nxp,my_max),  &
+                islimsk(nxp)
       real      sl(lev),delcup(lev),slimsk(nxp)
       real      dotc(nxp,lev),phil(nxp,lev),utc(nxp,lev),vtc(nxp,lev)
       real      cldwrk(nxp,my_max),sd(nxp,lev,my_max),xkt2(nx)
@@ -1154,6 +1155,9 @@
           if(land(i,jj))slimsk(i)=1
           if(ocean(i,jj))slimsk(i)=0
           if(ice(i,jj))slimsk(i)=2
+          if(land(i,jj))islimsk(i)=1
+          if(ocean(i,jj))islimsk(i)=0
+          if(ice(i,jj))islimsk(i)=2
         enddo
         do k=2,lev-1
           kc=lev-k+1
@@ -1209,7 +1213,7 @@
 !!          ,tice)
          call samfdeepcnv(nxjp(j),nxp,lev,dta,del,prsl,psfc,phil       &
           ,qtr,qtc,ttc,utc,vtc,cldwrk(1,jj),rcup(1,jj),kbot(1,jj)      &
-          ,ktop(1,jj),kuo(1,jj),slimsk,garea,dotc,ncld)
+          ,ktop(1,jj),kuo(1,jj),islimsk,garea,dotc,ncld)
 
 ! for rad input of convection cloud information
 ! bottom(plcl) layer and top(cumtop) layer in pressure(mb)
@@ -1360,6 +1364,9 @@
           if(land(i,jj))slimsk(i)=1
           if(ocean(i,jj))slimsk(i)=0
           if(ice(i,jj))slimsk(i)=2
+          if(land(i,jj))islimsk(i)=1
+          if(ocean(i,jj))islimsk(i)=0
+          if(ice(i,jj))islimsk(i)=2
         enddo
         do k=2,lev-1
           kc=lev-k+1
@@ -1409,7 +1416,7 @@
 !!          ,grav,cp,hltm,rgas,tice)
         call samfshalcnv(nxjp(j),nxp,lev,dta,del,prsl,psfc,phil,qtr   &
           ,qtc,ttc,utc,vtc,rcup2,kbot(1,jj),ktop(1,jj),kuo(1,jj)      &
-          ,slimsk,garea,dotc,ncld,hpbl(1,jj))
+          ,islimsk,garea,dotc,ncld,hpbl(1,jj))
 !
         do i=1,nxj
           rcup(i,jj) = rcup(i,jj)+rcup2(i) * 1000.         ! mm/call
