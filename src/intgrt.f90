@@ -74,7 +74,7 @@
       real      ndsldta,ndsldtah
       integer   ierr,itter,itt
 !
-      real      pllp(nx,my),glob(nx,my), &
+      real      glob(nx,my), &
                 hf24(nxp,my_max),qf24(nxp,my_max),ss24(nxp,my_max),rs24(nxp,my_max), &
                 asol24(nxp,my_max),olr24(nxp,my_max),rain24(nxp,my_max),     &
                 drag(nxp,lev,my_max),ugws(nxp,my_max),vgws(nxp,my_max),      &
@@ -305,7 +305,7 @@
 !        call  outsigs ( 1,nx,my,my_max,lev,ncld                                    &
 !                    , idtg,ifilout,ptop,rad,grav                                   &
 !                    , cp,cosl,pt,sgeo,snr,gwr,tg,pk,pk2                            &
-!                    , ut,vt,tt,qt,phi,rdiv,pllp,glob                               &
+!                    , ut,vt,tt,qt,phi,rdiv                                         &
 !                    , km_soil,smc,slc,stc,canopy,zice,ggdef,gmdef )
 !
       endif     ! end of (wrestrt)
@@ -319,7 +319,7 @@
 !      call  outsigs ( 0,nx,my,my_max,lev,ncld                                    &
 !                    , idtg,ifilout,ptop,rad,grav                                 &
 !                    , cp,cosl,pt,sgeo,snr,gwr,tg,pk,pk2                          &
-!                    , ut,vt,tt,qt,phi,rdiv,pllp,glob                             &
+!                    , ut,vt,tt,qt,phi,rdiv                                       &
 !                    , km_soil,smc,slc,stc,canopy,zice,ggdef,gmdef )
 
       raintot=0.
@@ -1508,8 +1508,8 @@
         call outsigs ( itau,nx,my,my_max,lev,ncld        &
                      , idtg,ifilout,ptop,rad,grav        &
                      , cp,cosl,pt,sgeo,snr,gwr,tg,pk,pk2 &
-                     , ut,vt,tt,qt,phi,rdiv,pllp,glob    &
-                     , km_soil,smc,slc,stc,canopy,zice,ggdef,gmdef,up )
+                     , ut,vt,tt,qt,phi,rdiv,km_soil,smc  &
+                     , slc,stc,canopy,zice,ggdef,gmdef )
 #endif
         endif
 !-------------------------------------------------------------------------------
