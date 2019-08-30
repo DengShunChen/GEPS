@@ -1704,6 +1704,7 @@
                      +obswtbwgt1*dailyClmANAsst(ii,jj,obswtbnmw1) &
                      +obswtbwgt2*dailyClmANAsst(ii,jj,obswtbnmw2)
             elseif(dailyClm_option .eq. 2 )then   !idea from Yuejian Zhu(2018 JGR)
+              tautemp=tau+dtx/3600.
               wweight=min(tautemp/24./35.,1.)
               ssttemp=(1.-wweight)*(ANAsstT0(ii,jj)-dailyClmANAsst(ii,jj,0) &
                      +dailyClmANAsst(ii,jj,1) ) +wweight*(dailyFCTsst(ii,jj,1) &
