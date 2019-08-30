@@ -46,7 +46,8 @@
 ! pbl
               , hpbl(nxp,my_max)                                                       &
 ! river
-              , slptyp(nxp,my_max),v850(nx,my),v700(nx,my),h850(nx,my),h500(nx,my)
+!byl              , slptyp(nxp,my_max),v850(nx,my),v700(nx,my),h850(nx,my),h500(nx,my)
+              , slptyp(nx,my),v850(nx,my),v700(nx,my),h850(nx,my),h500(nx,my)
 !
       character ifilout*80, ggdef*4
       integer*8 idtg

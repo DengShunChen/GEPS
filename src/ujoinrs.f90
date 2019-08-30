@@ -6,7 +6,7 @@
       integer   jtrun,jtmax,lev,mlistnum,num,ncld
 !
       if(num .eq. 1)                                                    &
-        call ujoin1rs(wss,s1,s2,jtrun,jtmax,lev,mlistnum,ncld)
+        call ujoin1rs(wss,s1,jtrun,jtmax,lev,mlistnum,ncld)
       if(num .eq. 2)                                                    &
         call ujoin2rs(wss,s1,s2,jtrun,jtmax,lev,mlistnum,ncld)
       if(num .eq. 3)                                                    &

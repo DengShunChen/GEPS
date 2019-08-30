@@ -189,7 +189,7 @@
 !ch            dhgt(im,lm),ro2(im,lm),dhgtz(im,lm)
       real     hgt(nx,lev),xkm(nx,lev),xkh(nx,lev),ts(nx),                    &
                qsfc(nx),zl(nx),czh(nx),ps(nx),sfcw(nx),                    &
-               dhgt(nx,lev),ro2(nx,lev),dhgtz(nx,lev)
+               dhgt,ro2(nx,lev),dhgtz(nx,lev)
 !soil
       real     rhscnpy(nx),rhsmc(nx,km),aim(nx,km),bim(nx,km),             &
                cim(nx,km),drain(nx),snomt(nx),zsoil(nx,km),                &
@@ -209,8 +209,9 @@
       real      rb(nx),fm(nx),fh(nx),hpbl(nx),                          &
                 heat(nx),evap(nx),stress(nx),                           &
                 prsl(nx,lev),prslk(nx,lev),phil(nx,lev),del(nx,lev),        &
-                prsi(nx,lev+1),phi2(nx,lev+1),phii(nx,lev+1),              &
-                dsigma(lev,2),rcl(nx),                                   &
+!byl                prsi(nx,lev+1),phi2(nx,lev+1),phii(nx,lev+1),              &
+                prsi(nx,lev+1),phii(nx,lev+1),                          &
+                dsigma(lev,2),rcl(nx),                                  &
                 u1(nx,lev),v1(nx,lev),t1(nx,lev),q1(nx,lev,2)
 !
       real      pk2x(nx,lev),pkx(nx,lev)
@@ -239,7 +240,7 @@
 ! for new pbl: asl,atl,xmu
       real      asl(nx,lev),atl(nx,lev),swh(nx,lev),hlw(nx,lev),xmu(nx)
 
-      integer  lsm,i,k,iter,kc,ntrac
+      integer  lsm,i,k,iter,kc,ntrac,ntcw
       real     ppd,ppp,ttt,ppu,dth,p850,ddd,cc
 !
 ! noah mode
@@ -284,20 +285,23 @@
 !
       do 105 i = 1, nxj
       ppd = pk2x(i,1) * 1000.
-      dhgt(i,1) = ( ppd - ptop ) * 100. / g
-      ppp = pkx(i,1) * 1000.+ptop
+      dhgt= ( ppd - ptop ) * 100. / g
+!byl      ppp = pkx(i,1) * 1000.+ptop
+      ppp = pkx(i,1) * 1000.
       ttt = tt(i,1)*(1.+0.608*qt(i,1))
-      dhgtz(i,1)= dhgt(i,1) * r * ttt / (100.*ppp)
+      dhgtz(i,1)= dhgt * r * ttt / (100.*ppp)
   105 continue
 !
       do 110 k=2, lev
       do 110 i=1, nxj
-      ppu=pk2x(i,k-1) * 1000.
-      ppd=pk2x(i,k) * 1000.
-      dhgt(i,k) = ( ppd - ppu ) * 100. / g
-      ppp = pkx(i,k) * 1000.+ptop
+      ppu = pk2x(i,k-1) * 1000.
+      ppd = pk2x(i,k) * 1000.
+!byl      dhgt(i,k) = ( ppd - ppu ) * 100. / g
+      dhgt= ( ppd - ppu ) * 100. / g
+!byl      ppp = pkx(i,k) * 1000.+ptop
+      ppp = pkx(i,k) * 1000.
       ttt = tt(i,k)*(1.+0.608*qt(i,k))
-      dhgtz(i,k)= dhgt(i,k) * r * ttt / (100.*ppp)
+      dhgtz(i,k)= dhgt * r * ttt / (100.*ppp)
   110 continue
 
       do 120 i = 1, nxj
@@ -526,11 +530,14 @@
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !
       do i=1,nxj
-         phi2(i,lev+1)=0.
+!byl         phi2(i,lev+1)=0.
+         phii(i,1)=0.
       enddo
        do k=lev,1,-1
+          kc=lev-k+2
        do i = 1, nxj
-          phi2(i,k)=phi2(i,k+1)+dhgtz(i,k)*g
+!byl          phi2(i,k)=phi2(i,k+1)+dhgtz(i,k)*g
+          phii(i,kc)=phii(i,kc-1)+dhgtz(i,k)*g
       enddo
       enddo
 !
@@ -548,13 +555,13 @@
            prsi(i,kc)=pk2x(i,k)*100000.    !Pa
            del(i,kc)=(pss(i)*dsigma(k,1)+dsigma(k,2))*100. !Pa
            phil(i,kc)=phi(i,k)-topo(i)
-           phii(i,kc+1)=phi2(i,k)
+!byl           phii(i,kc+1)=phi2(i,k)
            enddo
        enddo
 !
        do i=1,nxj
        prsi(i,lev+1)=ptop*100.     !Pa
-       phii(i,1)=phi2(i,lev+1)
+!byl       phii(i,1)=phi2(i,lev+1)
        enddo
 !
        do i=1,nxj
@@ -611,6 +618,24 @@
                  , tg,heat,evap,stress,sfcw,kpbl                        &
                  , prsi,del,prsl,prslk,phii,phil,rcl,dt                 &
                  , hpbl,ice,g,cp,hltm,r,jj)
+!
+       endif
+!
+! NCEP GFS moninedmf
+       if(nmpbl .eq. 4)then
+       ntrac=2
+       ntcw=2
+       do k=1,lev
+          kc=lev-k+1
+       do i=1,nxj
+         swh(i,kc)=asl(i,k)/86400.
+         hlw(i,kc)=atl(i,k)/86400.
+       enddo
+       enddo
+       call moninedmf( nx,nxj,lev,ntrac,ntcw,u1,v1,t1,q1,swh,hlw,xmu   &
+                 , pk2(1,lev),rb,z0rl,u10,v10,fm,fh                    &
+                 , tg,heat,evap,stress,sfcw,kpbl                   &
+                 , prsi,del,prsl,prslk,phii,phil,dt,hpbl)
 !
        endif
 !

@@ -301,15 +301,15 @@
         hdk2   = 36
         hdk3   = 41
       else if ( lev .eq. 72 ) then
-        hdktop = 43
-        hdk1   = 25
+        hdktop =  1
+        hdk1   = 35
         hdk2   = 39
-        hdk3   = 29
+        hdk3   = 43
       endif
-      factop = 0.0
+      factop = 1.5
 !!      factop = 2.5
       
-      coefu=factop/float(hdktop-hdk2)
+      coefu=factop/float(hdk3-hdk2)
 !
 !
 !  define coriolis parameter for each latitude

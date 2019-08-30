@@ -39,7 +39,7 @@
 !
       real      cc(nx+2,2,my_max)
 !
-      real      gwk1(nx+2,1,6,my_max)
+      real      gwk1(nx+2,2,my_max)
 !
       real      twcc_fk(my_max,jtmax*nsize,2)
       real      twdd_fk(my_max,jtmax*nsize,2)
@@ -163,7 +163,7 @@
       do jj=1,jlistnum
         j= jlist1(jj)
         nxj=nxdef(j)
-        call rfftmlt(cc(1,1,jj),gwk1,trigsj(1,j),ifaxj(1,j),1,nx+2,nxj,2,1)
+        call rfftmlt(cc(1,1,jj),gwk1(1,1,jj),trigsj(1,j),ifaxj(1,j),1,nx+2,nxj,2,1)
       enddo
 !$omp end parallel do
       endif
