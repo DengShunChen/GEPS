@@ -317,7 +317,7 @@ nnmi.o : nnmi.f90 mod_rank.o
 nor_gwdp.o : nor_gwdp.f90 mod_index.o
 normalize.o : normalize.f90 
 out24.o : out24.f90 mod_index.o mod_mpe.o mod_rank.o mod_mpe.o
-out2d.o : out2d.f90 mod_index.o mod_mpe.o mod_rank.o 
+out2d.o : out2d.f90 mod_index.o mod_mpe.o mod_rank.o mod_outflds.o
 out2d_mfc.o : out2d_mfc.f90 mod_index.o mod_mpe.o mod_rank.o 
 outflds.o : outflds.f90 mod_index.o mod_rank.o mod_mpe.o mod_outflds.o
 outflds_green.o : outflds_green.f90 mod_index.o mod_rank.o mod_mpe.o
