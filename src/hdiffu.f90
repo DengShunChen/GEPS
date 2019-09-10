@@ -65,9 +65,9 @@
 !ch         +0.8*min(max(k-k3,0),ktop-k3)+0.3*min(19-k,0)
 
          KL=Llist(k)
-         dec=max(min(coefu*(hdktop-KL),factop),0.)               &
+         dec=max(min(coefu*(hdk3-KL),factop),0.)               &
 !!            -max(min(0.4*(hdk3-KL),1.2),0.) 
-            -max(min(coefu*(hdk3-KL),factop),0.) 
+            -max(min(coefu*(hdktop-KL),factop),0.) 
 
 !!!         dect=max(min(coefu*(hdktop-5-KL),factop),0.)            &
 !!!             -max(min(1.5*coefu*(hdk3-5-KL),factop),0.)
@@ -80,11 +80,13 @@
 
 
 !ch       amp = max(min(0.91*(22-k),15),1)
-          amp = min(max(0.75*(hdk1-KL),1.),8.)
+!byl          amp = min(max(0.75*(hdk1-KL),1.),8.)
+          amp = max(1.+min(0.5*(hdk1-KL),5.0),1.)
 
           facd = max(fact*amp,1.0)
           facv = max(fact*amp,1.0)
-          fact = min(1.,(0.5+0.1*max(KL-hdk1,0.)))*max(fact*amp,1.0)
+          fact = max(fact*amp*0.5,1.0)
+!byl          fact = min(1.,(0.5+0.1*max(KL-hdk1,0.)))*max(fact*amp,1.0)
 !!!          fact = 0.2*amp
 !
         ddiffu =hfilt*facd

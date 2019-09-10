@@ -6,13 +6,25 @@
       use const
       use noah
       use radn
+      use physcons, only :con_cp  ,con_rerth,con_omega,con_g   , &
+                          con_sbc ,con_solr ,con_hvap ,con_hfus, &
+                          con_tice
 
       implicit none
-!
-      cp=1004.24
-      rad=6.371e6
-      omega=7.292e-5
-      grav=9.80616
+
+      cp   = con_cp
+      rad  = con_rerth
+      omega= con_omega
+      grav = con_g
+      stbo= con_sbc
+      s0  = con_solr
+      hltm= con_hvap
+      tice= con_tice
+      hice= con_hfus!
+!!      cp=1004.24
+!!      rad=6.371e6
+!!      omega=7.292e-5
+!!      grav=9.80616
 
       dt=900.0
       tfilt=0.02
@@ -30,12 +42,12 @@
       idg=16
       jdg=16
 
-      stbo=5.669e-8
-      s0=1368.3
-      hltm=2.52e6
-      tice=273.15
+!!      stbo=5.669e-8
+!!      s0=1368.3
+!!      hltm=2.52e6
+!!      tice=273.15
 
-      hice=3.336e5
+!!      hice=3.336e5
       evaprh=0.98
       hfilt=1.5e15
 

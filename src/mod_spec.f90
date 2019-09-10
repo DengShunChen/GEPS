@@ -75,6 +75,7 @@
            plold=0.
            dsqgeo=0.
            spgeo=0.
+           jtwv=0.
 
 !!           allocate (uzm(my,lev), stat=ierr)
 !!

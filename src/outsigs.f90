@@ -1,8 +1,8 @@
-      subroutine outsigs ( itau,nx,my,my_max,lev,ncld                   &
-                         , idtg,ifilout,ptop,rad,grav                   &
-                         , cp,cosl,pt,sgeo,snr,gwr,tg,pk,pk2            &
-                         , ut,vt,tt,qt,phi,rdiv,work,hld1               &
-                         , km,smc,slc,stc,canopy,zice,ggdef,gmdef)
+      subroutine outsigs ( itau,nx,my,my_max,lev,ncld                &
+                         , idtg,ifilout,ptop,rad,grav                &
+                         , cp,cosl,pt,sgeo,snr,gwr,tg,pk,pk2         &
+                         , ut,vt,tt,qt,phi,rdiv,km,smc               &
+                         , slc,stc,canopy,zice,ggdef,gmdef)
       use index
       use mpe
       use radn, only : ntoz
@@ -13,14 +13,16 @@
 
       real      ptop,rad,grav,cp
 
-      real      cosl(my),pt(nx,my_max),sgeo(nxp,my_max),snr(nxp,my_max),gwr(nxp,my_max),   &
+      real      cosl(my),pt(nx,my_max),sgeo(nxp,my_max),        &
+                snr(nxp,my_max),gwr(nxp,my_max),                &
                 tg(nxp,my_max),pk(nxp,lev,my_max),              &
-                pk2(nxp,lev,my_max),ut(nxp,lev,my_max),vt(nxp,lev,my_max), &
-                tt(nxp,lev,my_max),qt(nxp,lev*ncld,my_max),               &
-                phi(nxp,lev,my_max),                                     &
-                rdiv(nxp,lev,my_max),work(nx,my),hld1(nx,my),            &
-                smc(nxp,km,my_max),stc(nxp,km,my_max),canopy(nxp,my_max),  &
-                slc(nxp,km,my_max),zice(nxp,my_max)
+                pk2(nxp,lev,my_max),ut(nxp,lev,my_max),         &
+                vt(nxp,lev,my_max),tt(nxp,lev,my_max),          &
+                qt(nxp,lev*ncld,my_max),phi(nxp,lev,my_max),    &
+                rdiv(nxp,lev,my_max),work(nx,my),               &
+                smc(nxp,km,my_max),stc(nxp,km,my_max),          &
+                canopy(nxp,my_max),slc(nxp,km,my_max),          &
+                zice(nxp,my_max)
       integer*8 idtg
       character*80 ifilout
       character typ*6,ihdg*26

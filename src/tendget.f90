@@ -32,11 +32,12 @@
       , pten(nxp,lev,my_max),pdot(nxp,lev+1,latpart)       &
       , qvadv(nxp,lev*ncld,my_max),diveng(nxp,lev,my_max)  &
       , vdmerd(nxp,lev,my_max),vdzonl(nxp,lev,my_max)      &
-      ,ddtemp_sl(nx,levp,my_max)                           &
+      , vdmerdr(nxp,lev,my_max),vdzonlr(nxp,lev,my_max)    &
+      ,ttm_sl(nx,levp,my_max)                              &
       ,pten_sl(nx,levp,my_max)                             &
-      ,qvadv_sl(nx,levp*ncld,my_max)                       &
-      ,vdmerd_sl(nx,levp,my_max)                           &
-      ,vdzonl_sl(nx,levp,my_max)
+      ,qm_sl(nx,levp*ncld,my_max)                          &
+      ,vvm_sl(nx,levp,my_max)                              &
+      ,uum_sl(nx,levp,my_max)
 
 !byl      real cc(nx+2,levp,1+ncld,my_max)
       real cc(nx+2,levp,1,my_max)
@@ -176,28 +177,28 @@
 !
 !     Semi-Lagrangian
 !       Horizontal Advection
-        call ndslfv_monoadvh2(ddtemp_sl,qvadv_sl,pten_sl,vdzonl_sl,vdmerd_sl   &
-                             ,nxdef,dta,levp)
+        call ndslfv_monoadvh2(ttm_sl,qm_sl,pten_sl,uum_sl,vvm_sl,nxdef &
+                             ,dta,levp)
 
 
 !ch>
-! transpose full to partial: ddtemp_sl -> ddtemp,  pten_sl -> pten, vdzonl_sl -> vdzonl
-!                            vdmerd_sl -> vdmerd,  qvadv_sl -> qvadv
+! transpose full to partial: ttm_sl -> ddtemp,  pten_sl -> pten, uum_sl -> vdzonl
+!                            vvm_sl -> vdmerd,  qm_sl -> qvadv
 
 #ifdef MULTIPLE
-      call mpe2d_transpose_ndsl_f2p_multi(ddtemp_sl,pten_sl,vdzonl_sl,vdmerd_sl,qvadv_sl, &
+      call mpe2d_transpose_ndsl_f2p_multi(ttm_sl,pten_sl,uum_sl,vvm_sl,qm_sl, &
                                     ddtemp   ,pten   ,vdzonl   ,vdmerd   ,qvadv   , &
                                     nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 #else
-      call mpe2d_transpose_ndsl_f2p(ddtemp_sl,ddtemp, &
+      call mpe2d_transpose_ndsl_f2p(ttm_sl,ddtemp, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_f2p(pten_sl,pten, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_f2p(vdzonl_sl,vdzonl, &
+      call mpe2d_transpose_ndsl_f2p(uum_sl,vdzonl, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_f2p(vdmerd_sl,vdmerd, &
+      call mpe2d_transpose_ndsl_f2p(vvm_sl,vdmerd, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_f2p(qvadv_sl,qvadv,   &
+      call mpe2d_transpose_ndsl_f2p(qm_sl,qvadv,   &
                                     nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 #endif
 
@@ -218,7 +219,7 @@
         , cp,radsq,ut(1,1,jj),vt(1,1,jj),rdiv(1,1,jj),tt(1,1,jj)       &
         , qt(1,1,jj),phi(1,1,jj),pt(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
         , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)         &
-        , diveng(1,1,jj),vdmerd(1,1,jj),vdzonl(1,1,jj),pten(1,1,jj)    &
+        , diveng(1,1,jj),vdmerdr(1,1,jj),vdzonlr(1,1,jj),pten(1,1,jj)  &
         , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),sgeo(1,jj) )
 
       enddo !jj = 1,jlistnum
@@ -234,7 +235,7 @@
 !
 !       update all horizontal informations
 !
-        call ndslfv_update(nxjp,vdzonl,vdmerd,dta)
+        call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlr,vdmerdr,dta)
 !
 !
 !       Vertical Advection
@@ -257,7 +258,7 @@
 !ch              ,plten,nsize)
       call mpe2d_unify_nx(ww1,deldm)
       call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1           &
-                 ,plten,nsize)
+                 ,plten,nsizey)
 !
       call rstrandz (jtrun,jtmax,nx,my,my_max,levp,vdmerd,vdzonl      &
                     ,weight,cim,onocos,poly,dpoly,divten,vorten,nsizey)

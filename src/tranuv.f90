@@ -46,7 +46,7 @@
                ,vor(lev,2,jtrun,jtmax),div(lev,2,jtrun,jtmax)     &
                ,ut(nxp,levF,my_max),vt(nxp,levF,my_max)
 !
-      real       gwk1(nx+2,lev,6,my_max)
+      real       gwk1(nx+2,lev,2,my_max)
       real      wcc_fk (lev,2,2,jtmax,my_max*nsize)
       real      twcc_fk(lev,2,2,jtmax*nsize,my_max)
       real      cc(nx+2,lev,2,my_max)
@@ -439,7 +439,7 @@
       do jj = 1, jlistnum
         j= jlist1(jj)
         nxj=nxdef(j)
-        call rfftmlt(cc(1,1,1,jj),gwk1,trigsj(1,j),ifaxj(1,j), &
+        call rfftmlt(cc(1,1,1,jj),gwk1(1,1,1,jj),trigsj(1,j),ifaxj(1,j), &
                      1,nx+2,nxj,lev*2,1)
       end do
 !$omp end parallel do

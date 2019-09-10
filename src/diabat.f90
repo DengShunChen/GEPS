@@ -376,14 +376,15 @@
 !--------
 !
 ! for sascnv
-      integer   kbot(nxp,my_max),ktop(nxp,my_max),kuo(nxp,my_max)
+      integer   kbot(nxp,my_max),ktop(nxp,my_max),kuo(nxp,my_max),  &
+                islimsk(nxp)
       real      sl(lev),delcup(lev),slimsk(nxp)
       real      dotc(nxp,lev),phil(nxp,lev),utc(nxp,lev),vtc(nxp,lev)
       real      cldwrk(nxp,my_max),sd(nxp,lev,my_max),xkt2(nx)
 ! for new shlcon
       real      rcup2(nxp)
 ! for scale-aware convection
-      real      garea,tpr,tem1,tem2,jup,jdn
+      real      garea(nxp),tpr,tem1,tem2,jup,jdn
 ! for wsm6
       real      phii(nxp,lev+1)
       real      qti(nxp,lev),qtrw(nxp,lev),qtsw(nxp,lev),qtgl(nxp,lev)
@@ -417,7 +418,7 @@
       real      mflon(nx,my)
 !for new precpd
       real      rmr(nxp,lev,my_max),smr(nxp,lev,my_max),rainr(nxp,lev,my_max)
-      real      slsp(nxp,my_max)
+      real      slsp(nxp,my_max),rm(nxp,lev),sm(nxp,lev),rainp(nxp,lev)
 !rainr : rainfall rate (unit in kg/kg/dt)
 !for lightning
       real      flash(nxp,my_max)        !flash density (unit in flashes km^-2 day^-1)
@@ -545,6 +546,7 @@
       do i = 1, nxj
        rcup(i,jj)  = 0.0
        rlsp(i,jj)  = 0.0
+       rainp(i,jj) = 0.0
 !      cosz(i,jj)  = 0.0
        xmu(i,jj)  = 0.0
 ! for wsm6
@@ -1154,13 +1156,23 @@
         call random_seed(put=isize(1:2))
         call random_number(XKT2)
 ! CWB <<<
+! for scale-aware
+        tem1      = tpr*cosl(j)/float(nxdef(j))
+        jup       = min(j+1,my)
+        jdn       = max(j-1, 1)
+        tem2      = radus*0.5*abs(xlat(jup)-xlat(jdn))*d2r
+!
         lprnt=.false.
         jcap = 240
         do i=1,nxj
           psfc(i)  = pst(i,jj)*0.1        ! change to cb
+          garea(i)  = tem1*tem2
           if(land(i,jj))slimsk(i)=1
           if(ocean(i,jj))slimsk(i)=0
           if(ice(i,jj))slimsk(i)=2
+          if(land(i,jj))islimsk(i)=1
+          if(ocean(i,jj))islimsk(i)=0
+          if(ice(i,jj))islimsk(i)=2
         enddo
         do k=2,lev-1
           kc=lev-k+1
@@ -1170,8 +1182,8 @@
           enddo
         enddo
         do i = 1,nxj
-          dotc(i,1)=0.5*dotc(i,2)
-          dotc(i,lev)=0.5*dotc(i,lev-1)
+          dotc(i,1)=0.5*sd(i,lev,jj)*0.1
+          dotc(i,lev)=0.5*sd(i,2,jj)*0.1
         enddo
         do k=1,lev
           kc=lev-k+1
@@ -1191,11 +1203,6 @@
            vtc(i,kc) = vt(i,k,jj)
           enddo
         enddo
-        tem1      = tpr*cosl(j)/float(nxdef(j))
-        jup       = min(j+1,my)
-        jdn       = max(j-1, 1)
-        tem2      = radus*sin(0.5*abs(xlat(jup)-xlat(jdn))*d2r)
-        garea     = tem1*tem2
 !
 ! old version SAS
          if( nmcup .eq. 2)                                 &
@@ -1215,10 +1222,13 @@
 !
 ! scale-aware SAS
          if( nmcup .eq. 6)                                 &
-         call sascnv_sa(nxjp(j),nxp,lev,jcap,dta,del,psfc,prsl,phil    &
-          ,qtr,qtc,ttc,utc,vtc,dotc,cldwrk(1,jj),rcup(1,jj),kbot(1,jj) &
-          ,ktop(1,jj),kuo(1,jj),slimsk,garea,ncld,grav,cp,hltm,rgas    &
-          ,tice)
+!!         call sascnv_sa(nxjp(j),nxp,lev,jcap,dta,del,psfc,prsl,phil    &
+!!          ,qtr,qtc,ttc,utc,vtc,dotc,cldwrk(1,jj),rcup(1,jj),kbot(1,jj) &
+!!          ,ktop(1,jj),kuo(1,jj),slimsk,garea,ncld,grav,cp,hltm,rgas    &
+!!          ,tice)
+         call samfdeepcnv(nxjp(j),nxp,lev,dta,del,prsl,psfc,phil       &
+          ,qtr,qtc,ttc,utc,vtc,cldwrk(1,jj),rcup(1,jj),kbot(1,jj)      &
+          ,ktop(1,jj),kuo(1,jj),islimsk,garea,dotc,ncld)
 
 ! for rad input of convection cloud information
 ! bottom(plcl) layer and top(cumtop) layer in pressure(mb)
@@ -1239,8 +1249,8 @@
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
-            qt(i,k    ,jj) = qtc(i,kc)
-            qt(i,k+lev,jj) = qtr(i,kc)
+            qt(i,k    ,jj) = max(qtc(i,kc),0.)
+            qt(i,k+lev,jj) = max(qtr(i,kc),0.)
             tt(i,k    ,jj) = ttc(i,kc)
             ut(i,k    ,jj) = utc(i,kc)
             vt(i,k    ,jj) = vtc(i,kc)
@@ -1317,7 +1327,7 @@
 !
         do k = 1, lev
           do i = 1, nxj
-            if (k >= kbot(i,jj) .and. k <= ktop(i,jj)) then
+            if (k >= lev-kbot(i,jj) .and. k <= lev-ktop(i,jj)) then
               cumabs(i) = cumabs(i) + delttcv(i,k) * del(i,k)
               work3(i)  = work3(i)  + del(i,k)
             endif
@@ -1357,12 +1367,21 @@
       endif  !(end of docgrav and nmgwcv=2)
 !
       if( doshl .and. (nmshl.eq.2 .or. nmshl.eq.3) ) then
+!for scale-aware
+           tem1      = tpr*cosl(j)/float(nxdef(j))
+           jup       = min(j+1,my)
+           jdn       = max(j-1, 1)
+           tem2      = radus*0.5*abs(xlat(jup)-xlat(jdn))*d2r
 !
         do i=1,nxj
           psfc(i)  = pst(i,jj)*0.1        ! change to cb
+          garea(i) = tem1*tem2
           if(land(i,jj))slimsk(i)=1
           if(ocean(i,jj))slimsk(i)=0
           if(ice(i,jj))slimsk(i)=2
+          if(land(i,jj))islimsk(i)=1
+          if(ocean(i,jj))islimsk(i)=0
+          if(ice(i,jj))islimsk(i)=2
         enddo
         do k=2,lev-1
           kc=lev-k+1
@@ -1372,8 +1391,8 @@
           enddo
         enddo
         do i = 1,nxj
-          dotc(i,1)=0.5*dotc(i,2)
-          dotc(i,lev)=0.5*dotc(i,lev-1)
+          dotc(i,1)=0.5*sd(i,lev,jj)*0.1
+          dotc(i,lev)=0.5*sd(i,2,jj)*0.1
         enddo
         do k=1,lev
           kc=lev-k+1
@@ -1387,11 +1406,6 @@
            ttc(i,kc) = tt(i,k,jj)
            utc(i,kc) = ut(i,k,jj)
            vtc(i,kc) = vt(i,k,jj)
-           tem1      = tpr*cosl(j)/float(nxdef(j))
-           jup       = min(j+1,my)
-           jdn       = max(j-1, 1)
-           tem2      = radus*sin(0.5*abs(xlat(jup)-xlat(jdn))*d2r)
-           garea     = tem1*tem2
           enddo
         enddo
 !
@@ -1410,11 +1424,14 @@
 !
 ! scale-aware shalcon
         if( nmshl.eq.3 )                                                &
-        call shalcnv_sa(nxjp(j),nxp,lev,jcap,dta,del,prsl,psfc,phil,qtr &
-          ,qtc,ttc,utc,vtc                         &
-          ,rcup2,kbot(1,jj),ktop(1,jj)                                &
-          ,kuo(1,jj),slimsk,garea,dotc,ncld,hpbl(1,jj),heat,evap      &
-          ,grav,cp,hltm,rgas,tice)
+!!        call shalcnv_sa(nxjp(j),nxp,lev,jcap,dta,del,prsl,psfc,phil,qtr &
+!!          ,qtc,ttc,utc,vtc                         &
+!!          ,rcup2,kbot(1,jj),ktop(1,jj)                                &
+!!          ,kuo(1,jj),slimsk,garea,dotc,ncld,hpbl(1,jj),heat,evap      &
+!!          ,grav,cp,hltm,rgas,tice)
+        call samfshalcnv(nxjp(j),nxp,lev,dta,del,prsl,psfc,phil,qtr   &
+          ,qtc,ttc,utc,vtc,rcup2,kbot(1,jj),ktop(1,jj),kuo(1,jj)      &
+          ,islimsk,garea,dotc,ncld,hpbl(1,jj))
 !
         do i=1,nxj
           rcup(i,jj) = rcup(i,jj)+rcup2(i) * 1000.         ! mm/call
@@ -1478,7 +1495,7 @@
 !
 !!!            rhc(i,kc)=0.999-0.08*cos(d2r*arg)**2    !a3
 !byl            rhc(i,kc)=0.95-0.07*cos(d2r*xlat(j))    !v2
-            rhc(i,kc)=0.98-0.06*cos(d2r*arg)**0.5    !v3
+            rhc(i,kc)=0.98-0.12*cos(d2r*arg)**2.0    !v3
 !!!!             rhc(i,kc)=(1.-coefrhc)*(0.7+0.15*cos(d2r*xlat(j))**2)  &
 !!!!                     +coefrhc*(0.6+0.1*max(cos(4.*d2r*xlat(j))**3,0.))   !PYL vertical profile
 !
@@ -1499,6 +1516,8 @@
             qtc(i,kc) = qt(i,k,jj)
             qtr(i,kc) = qt(i,lev+k,jj)
             ttc(i,kc) = tt(i,k,jj)
+            rm(i,kc)  = rmr(i,k,jj)
+            sm(i,kc)  = smr(i,k,jj)
           enddo
         enddo
         call gscond(nxjp(j),nxp,lev,dta,prsl,psfc,  &
@@ -1507,23 +1526,29 @@
                     ftp1(1,1,jj),fqp1(1,1,jj),fpsp1(1,jj),&
                     rhc,lprnt)
 !xb110>
-!        call precpd(nxjp(j),nxp,lev,dta,del,prsl,psfc, &
-!                    qtc, qtr, ttc,           &
-!                    rlsp(1,jj), rhc, lprnt)
-        call precpd_n(nxjp(j),nxp,lev,dta,del,prsl,psfc,              &
-                    qtc, qtr, rmr(1,1,jj), smr(1,1,jj), phil, ttc,    &
-                    rlsp(1,jj), slsp(1,jj), rainr(1,1,jj), rhc, lprnt)
+        call precpd(nxjp(j),nxp,lev,dta,del,prsl,psfc, &
+                    qtc, qtr, ttc,           &
+                    rlsp(1,jj), rhc, lprnt)
+! precipitation over mid-latitude perform not very well, especially
+! in climatology.
+!!        call precpd_n(nxjp(j),nxp,lev,dta,del,prsl,psfc,              &
+!!                    qtc, qtr, rm, sm, phil, ttc,                      &
+!!                    rlsp(1,jj), slsp(1,jj), rainp, rhc, lprnt)
+!
 !xb110<
         do i=1,nxj
           rlsp(i,jj) = rlsp(i,jj) * 1000.         ! mm/call
         enddo
-!jh        do k=1,lev
-        do k=ktcup,lev
+        do k=1,lev
+!byl        do k=ktcup,lev
           kc=lev-k+1
           do i=1,nxj
             qt(i,k    ,jj) = qtc(i,kc)
             qt(i,k+lev,jj) = qtr(i,kc)
             tt(i,k    ,jj) = ttc(i,kc)
+            rmr(i,k   ,jj) = rm(i,kc)
+            smr(i,k   ,jj) = sm(i,kc)
+            rainr(i,k ,jj) = rainp(i,kc)
           enddo
         enddo
 !byl      endif

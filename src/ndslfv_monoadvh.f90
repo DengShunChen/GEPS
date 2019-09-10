@@ -15,7 +15,7 @@
                              ,vdmerd,lonsperlat,deltim,levs)
       if(xy .lt.-0.5) call ndslfv_monoadvh2_yx(ddtemp,qvadv,pten,vdzonl &
                              ,vdmerd,lonsperlat,deltim,levs)
-      xy = -1 * xy
+!      xy = -1 * xy
       return
       end
 !
@@ -149,9 +149,9 @@
 !ch         qqlon(i,kt,lan) = ttm(i,kk,lan)
 !!            qqlon(i,kp,lan) = dsigma(kk,1)*ptp(i,lan)+dsigma(kk,2)
 
-            qqlon(i,ku,lan) = uum_sl(i,k,lan)
-            qqlon(i,kv,lan) = vvm_sl(i,k,lan)
-            qqlon(i,kt,lan) = ttm_sl(i,k,lan)
+            qqlon(i,ku,lan) = vdzonl(i,k,lan)
+            qqlon(i,kv,lan) = vdmerd(i,k,lan)
+            qqlon(i,kt,lan) = ddtemp(i,k,lan)
 !!            qqlon(i,kp,lan) = dsigma(KL,1)*ptp_sl(i,lan)+dsigma(KL,2)
           enddo
         enddo
@@ -162,7 +162,7 @@
           kk=levs-k+1+(n-1)*levs
           do i=1,lons_lat
 !ch         qqlon(i,kq,lan) = qm(i,kk,lan)
-            qqlon(i,kq,lan) = qm_sl(i,k,n,lan)
+            qqlon(i,kq,lan) = qvadv(i,k,n,lan)
           enddo
         enddo
         enddo
@@ -505,8 +505,8 @@
 !ch         pten(i,kk,lan)    =(qqlon(i,kp,lan)-(dsigma(kk,1)          &
 !ch                            *ptp(i,lan)+dsigma(kk,2)))*rdt2
 
-            vdzonl(i,k ,lan) = (qqlon(i,ku,lan)-uum_sl(i,k ,lan))*rdt2
-            vdmerd(i,k ,lan) = (qqlon(i,kv,lan)-vvm_sl(i,k ,lan))*rdt2
+            vdzonl(i,k ,lan) = qqlon(i,ku,lan)
+            vdmerd(i,k ,lan) = qqlon(i,kv,lan)
             ddtemp(i,k ,lan) = qqlon(i,kt,lan)
 !            pten(i,k ,lan)    =(qqlon(i,kp,lan)-(dsigma(KL,1)          &
 !                               *ptp_sl(i,lan)+dsigma(KL,2)))*rdt2
@@ -682,9 +682,9 @@
 !ch         qqlon(i,kt,lan) = ttm(i,kk,lan)
 !!          qqlon(i,kp,lan) = dsigma(kk,1)*ptp(i,lan)+dsigma(kk,2)
 
-            qqlon(i,ku,lan) = uum_sl(i,k,lan)
-            qqlon(i,kv,lan) = vvm_sl(i,k,lan)
-            qqlon(i,kt,lan) = ttm_sl(i,k,lan)
+            qqlon(i,ku,lan) = vdzonl(i,k,lan)
+            qqlon(i,kv,lan) = vdmerd(i,k,lan)
+            qqlon(i,kt,lan) = ddtemp(i,k,lan)
 !!            qqlon(i,kp,lan) = dsigma(KL,1)*ptp_sl(i,lan)+dsigma(KL,2)
           enddo
         enddo
@@ -695,7 +695,7 @@
           kk=levs-k+1+(n-1)*levs
           do i=1,lons_lat
 !ch         qqlon(i,kq,lan) = qm(i,kk,lan)
-            qqlon(i,kq,lan) = qm_sl(i,k,n,lan)
+            qqlon(i,kq,lan) = qvadv(i,k,n,lan)
           enddo
         enddo
         enddo
@@ -1034,8 +1034,8 @@
 !!          pten(i,kk,lan)    =(qqlon(i,kp,lan)-(dsigma(kk,1)          &
 !!                             *ptp(i,lan)+dsigma(kk,2)))*rdt2
 
-            vdzonl(i,k ,lan) = (qqlon(i,ku,lan)-uum_sl(i,k ,lan))*rdt2
-            vdmerd(i,k ,lan) = (qqlon(i,kv,lan)-vvm_sl(i,k ,lan))*rdt2
+            vdzonl(i,k ,lan) = qqlon(i,ku,lan)
+            vdmerd(i,k ,lan) = qqlon(i,kv,lan)
             ddtemp(i,k ,lan) = qqlon(i,kt,lan)
 !!            pten(i,k ,lan)    =(qqlon(i,kp,lan)-(dsigma(KL,1)          &
 !!                               *ptp_sl(i,lan)+dsigma(KL,2)))*rdt2
@@ -1211,9 +1211,9 @@
 !ch         qqlon(i,kt,lan) = ttm(i,kk,lan)
 !!          qqlon(i,kp,lan) = dsigma(kk,1)*ptp(i,lan)+dsigma(kk,2)
 
-            qqlon(i,ku,lan) = uum_sl(i,k,lan)
-            qqlon(i,kv,lan) = vvm_sl(i,k,lan)
-            qqlon(i,kt,lan) = ttm_sl(i,k,lan)
+            qqlon(i,ku,lan) = vdzonl(i,k,lan)
+            qqlon(i,kv,lan) = vdmerd(i,k,lan)
+            qqlon(i,kt,lan) = ddtemp(i,k,lan)
 !!            qqlon(i,kp,lan) = dsigma(KL,1)*ptp_sl(i,lan)+dsigma(KL,2)
           enddo
         enddo
@@ -1224,7 +1224,7 @@
           kk=levs-k+1+(n-1)*levs
           do i=1,lons_lat
 !ch         qqlon(i,kq,lan) = qm(i,kk,lan)
-            qqlon(i,kq,lan) = qm_sl(i,k,n,lan)
+            qqlon(i,kq,lan) = qvadv(i,k,n,lan)
           enddo
         enddo
         enddo
@@ -1563,8 +1563,8 @@
 !!          pten(i,kk,lan)    =(qqlon(i,kp,lan)-(dsigma(kk,1)          &
 !!                             *ptp(i,lan)+dsigma(kk,2)))*rdt2
 
-            vdzonl(i,k ,lan) = (qqlon(i,ku,lan)-uum_sl(i,k ,lan))*rdt2
-            vdmerd(i,k ,lan) = (qqlon(i,kv,lan)-vvm_sl(i,k ,lan))*rdt2
+            vdzonl(i,k ,lan) = qqlon(i,ku,lan)
+            vdmerd(i,k ,lan) = qqlon(i,kv,lan)
             ddtemp(i,k ,lan) = qqlon(i,kt,lan)
 !!          pten(i,k ,lan)    =(qqlon(i,kp,lan)-(dsigma(KL,1)          &
 !!                             *ptp_sl(i,lan)+dsigma(KL,2)))*rdt2

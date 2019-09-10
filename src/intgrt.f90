@@ -63,17 +63,18 @@
                 pten(nxp,lev,my_max),pdot(nxp,lev+1,latpart),      &
                 qvadv(nxp,lev*ncld,my_max),diveng(nxp,lev,my_max), &
                 vdmerd(nxp,lev,my_max),vdzonl(nxp,lev,my_max),     &
+                vdmerdr(nxp,lev,my_max),vdzonlr(nxp,lev,my_max),   &
 !                qmt(nxp,lev*ncld,my_max),                      &
-                ddtemp_sl(nx,levp,my_max),                         &
+                ttm_sl(nx,levp,my_max),                            &
                 pten_sl(nx,levp,my_max),                           &
-                qvadv_sl(nx,levp*ncld,my_max),                     &
-                vdmerd_sl(nx,levp,my_max),                         &
-                vdzonl_sl(nx,levp,my_max)
+                qm_sl(nx,levp*ncld,my_max),                        &
+                vvm_sl(nx,levp,my_max),                            &
+                uum_sl(nx,levp,my_max)
 !
-      real      ndsldta
-      integer   ierr
+      real      ndsldta,ndsldtah
+      integer   ierr,itter,itt
 !
-      real      pllp(nx,my),glob(nx,my), &
+      real      glob(nx,my), &
                 hf24(nxp,my_max),qf24(nxp,my_max),ss24(nxp,my_max),rs24(nxp,my_max), &
                 asol24(nxp,my_max),olr24(nxp,my_max),rain24(nxp,my_max),             &
                 drag(nxp,lev,my_max),ugws(nxp,my_max),vgws(nxp,my_max),              &
@@ -319,7 +320,7 @@
 !        call  outsigs ( 1,nx,my,my_max,lev,ncld                                    &
 !                    , idtg,ifilout,ptop,rad,grav                                   &
 !                    , cp,cosl,pt,sgeo,snr,gwr,tg,pk,pk2                            &
-!                    , ut,vt,tt,qt,phi,rdiv,pllp,glob                               &
+!                    , ut,vt,tt,qt,phi,rdiv                                         &
 !                    , km_soil,smc,slc,stc,canopy,zice,ggdef,gmdef )
 !
       endif     ! end of (wrestrt)
@@ -333,7 +334,7 @@
 !      call  outsigs ( 0,nx,my,my_max,lev,ncld                                    &
 !                    , idtg,ifilout,ptop,rad,grav                                 &
 !                    , cp,cosl,pt,sgeo,snr,gwr,tg,pk,pk2                          &
-!                    , ut,vt,tt,qt,phi,rdiv,pllp,glob                             &
+!                    , ut,vt,tt,qt,phi,rdiv                                       &
 !                    , km_soil,smc,slc,stc,canopy,zice,ggdef,gmdef )
 
       raintot=0.
@@ -681,11 +682,15 @@
        pdot=0.
        vdmerd=0.
        vdzonl=0.
+       vdmerdr=0.
+       vdzonlr=0.
        qvadv=0.
        ddtemp=0.
        pten=0.
 !
+       itter=1
        ndsldta = 0.5*dta
+       ndsldtah= ndsldta/float(itter)
 
 !ch>
 ! transpose partial to full: ut -> ut_sl, vt -> vt_sl, up -> uum_sl, vp -> vvm_sl, ttp -> ttm_sl, qm -> qm_sl
@@ -716,27 +721,30 @@
 
 !     Semi-Lagrangian
 !       Horizontal Advection
-        call ndslfv_monoadvh(ddtemp_sl,qvadv_sl,pten_sl,vdzonl_sl,vdmerd_sl  &
+        do itt = 1,itter
+        call ndslfv_monoadvh(ttm_sl,qm_sl,pten_sl,uum_sl,vvm_sl  &
                              ,nxdef,ndsldta,xy,levp)
+        enddo
+        xy = -1 * xy
 
 !ch>
-! transpose full to partial: ddtemp_sl -> ddtemp,  pten_sl -> pten, vdzonl_sl -> vdzonl
-!                            vdmerd_sl -> vdmerd,  qvadv_sl -> qvadv
+! transpose full to partial: ttm_sl -> ddtemp,  pten_sl -> pten, uum_sl -> vdzonl
+!                            vvm_sl -> vdmerd,  qm_sl -> qvadv
 
 #ifdef MULTIPLE
-      call mpe2d_transpose_ndsl_f2p_multi(ddtemp_sl,pten_sl,vdzonl_sl,vdmerd_sl,qvadv_sl, &
+      call mpe2d_transpose_ndsl_f2p_multi(ttm_sl,pten_sl,uum_sl,vvm_sl,qm_sl, &
                                     ddtemp   ,pten   ,vdzonl   ,vdmerd   ,qvadv   , &
                                     nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 #else
-      call mpe2d_transpose_ndsl_f2p(ddtemp_sl,ddtemp, &
+      call mpe2d_transpose_ndsl_f2p(ttm_sl,ddtemp, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_f2p(pten_sl,pten,     &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_f2p(vdzonl_sl,vdzonl, &
+      call mpe2d_transpose_ndsl_f2p(uum_sl,vdzonl, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_f2p(vdmerd_sl,vdmerd, &
+      call mpe2d_transpose_ndsl_f2p(vvm_sl,vdmerd, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_f2p(qvadv_sl,qvadv,   &
+      call mpe2d_transpose_ndsl_f2p(qm_sl,qvadv,   &
                                     nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 #endif
 
@@ -765,7 +773,7 @@
         , cp,radsq,ut(1,1,jj),vt(1,1,jj),rdiv(1,1,jj),tt(1,1,jj)       &
         , qt(1,1,jj),phi(1,1,jj),pt(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
         , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)         &
-        , diveng(1,1,jj),vdmerd(1,1,jj),vdzonl(1,1,jj),pten(1,1,jj)    &
+        , diveng(1,1,jj),vdmerdr(1,1,jj),vdzonlr(1,1,jj),pten(1,1,jj)  &
         , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),sgeo(1,jj) )
 !
       enddo !jj = 1,jlistnum
@@ -779,7 +787,7 @@
 !
 !       update all horizontal informations
 !
-        call ndslfv_update(nxjp,vdzonl,vdmerd,ndsldta)
+        call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlr,vdmerdr,ndsldta)
 !
 !       Vertical Advection
 !
@@ -1194,7 +1202,7 @@
           mf=mlist(m)
           do n = mf, jtrun
             do k = 1, levp*2
-              vorold(k,1,n,m)= vornow(k,1,n,m) + 0.8*tfilt*( vorold(k,1,n,m) &
+              vorold(k,1,n,m)= vornow(k,1,n,m) + tfilt*( vorold(k,1,n,m) &
                              - 2.0*vornow(k,1,n,m)+vorten(k,1,n,m) )
               vornow(k,1,n,m)= vorten(k,1,n,m)
               divold(k,1,n,m)= divnow(k,1,n,m) + tfilt*( divold(k,1,n,m) &
@@ -1211,7 +1219,7 @@
           nxj=nxdef_2d(j)
           do k = 1, lev*ncld
             do i = 1, nxj
-              qm(i,k,jj) = qp(i,k,jj) + 0.8*tfilt*( qm(i,k,jj)           &
+              qm(i,k,jj) = qp(i,k,jj) + tfilt*( qm(i,k,jj)           &
                          - 2.0*qp(i,k,jj) + qt(i,k,jj) )
             enddo
           enddo
@@ -1533,8 +1541,8 @@
         call outsigs ( itau,nx,my,my_max,lev,ncld        &
                      , idtg,ifilout,ptop,rad,grav        &
                      , cp,cosl,pt,sgeo,snr,gwr,tg,pk,pk2 &
-                     , ut,vt,tt,qt,phi,rdiv,pllp,glob    &
-                     , km_soil,smc,slc,stc,canopy,zice,ggdef,gmdef,up )
+                     , ut,vt,tt,qt,phi,rdiv,km_soil,smc  &
+                     , slc,stc,canopy,zice,ggdef,gmdef )
 #endif
         endif
 !-------------------------------------------------------------------------------
