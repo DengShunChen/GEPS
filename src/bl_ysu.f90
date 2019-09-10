@@ -132,7 +132,8 @@
    real,     dimension( im )           ::                      rcl,br
    real,     dimension( im )           ::                   psim,psih
    real,     dimension( im )           ::                         psk
-   real,     dimension( im )           ::  ls,xland,hfx,qfx,heat,evap
+   real,     dimension( im )           ::     xland,hfx,qfx,heat,evap
+   integer,  dimension( im )           ::  ls
    real,     dimension( im )           ::                      psfcpa
    real,     dimension( im )           ::                hpbl,znt,xmu
    real,     dimension( im )           ::                 stress,wspd
@@ -233,10 +234,10 @@
    uox=0.0
    vox=0.0
    do i=1,im
-   if (ls(i).eq.0.) then      ! ls=0:sea ; ls=1:land ; ls=2:sea ice
+   if (ls(i).eq.0) then      ! ls=0:sea ; ls=1:land ; ls=2:sea ice
        xland(i)=2.            ! xland=2:sea & sea ice ; xland=1:land
    else
-       xland(i)=ls(i)
+       xland(i)=real(ls(i))
    endif
    enddo
 
@@ -298,9 +299,12 @@
 !
    do i = 1,im
      tvcon = (1.+ep1*qx(i,1))
-     rhox(i) = (psfcpa(i)*1000.)/(rd*tx(i,1)*tvcon)
+     rhox(i) = (psfcpa(i))/(rd*tx(i,1)*tvcon)
      govrth(i) = g/thx(i,1)
    enddo
+   if(myrank.eq.0 )print*,'i=im-1,in,tx=',tx(im-1,:)
+   if(myrank.eq.0 )print*,'i=im-1,in,qxt1=',qxt(im-1,:,1)
+   if(myrank.eq.0 )print*,'i=im-1,in,qxt2=',qxt(im-1,:,2)
 !
 !-----compute the height of full- and half-sigma levels above ground
 !     level, and the layer thicknesses.
@@ -541,7 +545,6 @@
        endif
      enddo
    enddo
-       if (im .ge.359)print*,'first,kpbl=',kpbl(359)
 
 !
 !     enhance pbl by theta-li
@@ -568,7 +571,6 @@
         enddo
      enddo
    endif
-       if (im .ge.359)print*,'second,kpbl=',kpbl(359)
 
    do i = 1,im
      if(pblflg(i)) then
@@ -657,7 +659,6 @@
        bfxpbl(i) = -0.15*thvx(i,1)/g*wm3/hpbl(i)
        dthvx(i)  = max(thvx(i,k+1)-thvx(i,k),tmin)
        we(i) = max(bfxpbl(i)/dthvx(i),-sqrt(wm2(i)))
-       if (i .eq.359)print*,'out,we=',we(i)
        if((qx(i,ktrace2+k)+qx(i,ktrace3+k)).gt.0.01e-3.and.ysu_topdown_pblmix.eq.1)then
            if ( kpbl(i) .ge. 2) then
                 cloudflg(i)=.true. 
@@ -698,7 +699,8 @@
 !                dthvx(i)  = max(thvx(i,k+1)-thvx(i,k),tmin)
                 we(i) = max(bfxpbl(i)/dthvx(i),-sqrt(wm2(i)))
                  if (.not.sfcflg(i))  we(i) =0.0
-       if (i .eq.359)print*,'in,we=',we(i),'-wm=',-sqrt(wm2(i))
+                  if(i .eq. im)print*,'first,we(max)=',maxval(we(1:im)),maxloc(we(1:im))
+                  if(i .eq. im)print*,'first,we(min)=',minval(we(1:im)),minloc(we(1:im))
 
                 !entrainment from PBL top thermals
 !                bfx0 = max(radsum/rhox2(i,k)/cp-max(sflux(i),0.0),0.)
@@ -707,9 +709,9 @@
                 wm2(i)    = wm2(i)+wm3**h2
                 bfxpbl(i) = - ent_eff * bfx0
                 dthvx(i)  = max(thvx(i,k+1)-thvx(i,k),0.1)
-                we(i) =max( we(i) + max(bfxpbl(i)/dthvx(i),-sqrt(wm3**h2)) ,-2.0)
-!                we(i) = we(i) + max(bfxpbl(i)/dthvx(i),-sqrt(wm3**h2))
-       if (i .eq.359)print*,'second,we=',we(i),'-wm=',-sqrt(wm3**h2)
+                we(i) = we(i) + max(bfxpbl(i)/dthvx(i),-sqrt(wm3**h2))
+                  if(i .eq. im)print*,'second,we(max)=',maxval(we(1:im)),maxloc(we(1:im))
+                  if(i .eq. im)print*,'second,we(min)=',minval(we(1:im)),minloc(we(1:im))
 
 !                !wstar3_2
                 bfx0 = max(radsum/rhox2(i,k)/cp,0.)
@@ -753,7 +755,6 @@
        endif
        delb  = govrth(i)*d3*hpbl(i)
        delta(i) = min(d1*hpbl(i) + d2*wm2(i)/delb,100.)
-       if (i.eq.359)print*,'hfxpbl=',hfxpbl(i),'qfxpbl=',qfxpbl(i),'ufxpbl=',ufxpbl(i),'vfxpbl=',vfxpbl(i)
      endif
    enddo
 !

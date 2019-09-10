@@ -1591,8 +1591,8 @@
 !  every 24-hour output without 12-hour output points
 !  (in order to be consistent to the rule followed by nfs, 11/30/2000)
 !
-!        if( mod(float(itau)+0.00001, 12.) .lt. 0.01 ) then
-        if( histim .and. (mod(float(itau)+0.00001, 12.) .lt. 0.01) ) then
+        if( mod(float(itau)+0.00001, 12.) .lt. 0.01 ) then
+!        if( histim .and. (mod(float(itau)+0.00001, 12.) .lt. 0.01) ) then
           raincu=0.
           rainlp=0.
           runoff=0.

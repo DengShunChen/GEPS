@@ -659,7 +659,7 @@
 
 !---
 ! YSU pbl scheme
-       if(nmpbl .eq. 4)then
+       if(nmpbl .eq. 5)then
        ntrac=2
        do k=1,lev
           kc=lev-k+1

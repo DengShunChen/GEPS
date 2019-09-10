@@ -127,7 +127,7 @@
             z0max = exp( tem2*log01 + tem1*log(z0max) )
           endif
 
-         elseif (ivegsrc == 2 ) then
+         elseif (ivegsrc == 0 ) then
 
             if (vegtype(i) == 7) then
               z0max = exp( tem2*log01 + tem1*log07 )
