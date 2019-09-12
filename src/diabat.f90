@@ -30,7 +30,6 @@
                     , ss_clr,rs_clr,asol_clr,olr_clr,sld_clr,rld_clr           &
                     , alvsf,alvwf,alnsf,alnwf,facsf,facwf                      &
                     , idtg,doo3l,nfxr,sfalb,sfemis,isot,ivegsrc                &
-                    , ttnp,qtnp,utnp,vtnp                                  &
 ! sppt
                     , dosppt,sppt3d,itimestep,lrun_sitvdiff,ic_sit             &
 !xb110>
@@ -271,8 +270,6 @@
                 raincu6(nxp,my_max),rainlp6(nxp,my_max),                  &
                 raincu3(nxp,my_max),rainlp3(nxp,my_max),                  &
                 raincu1(nxp,my_max),rainlp1(nxp,my_max)
-       real     ttnp(nxp,lev,my_max),qtnp(nxp,lev*2,my_max),           &
-                utnp(nxp,lev,my_max),vtnp(nxp,lev,my_max)
 !soil (2005/01/12)
       integer,  parameter :: ntype=9, ngrid=22
       integer   istyp(nxp,my_max),ivegtyp(nxp,my_max)
@@ -912,8 +909,7 @@
                      , shdmax(1,jj),shdmin(1,jj),snoalb(1,jj),albedo2(1,jj)   &
                      , sld(1,jj),zice(1,jj),cice(1,jj),xtice(1,jj)            &
                      , hpbl(1,jj),asl(1,1,jj),atl(1,1,jj),xmu(1,jj),gfx(1,jj) &
-                     , kpbl(1,jj),nmpbl,j,isot,ivegsrc,sfemis(1,jj)           &
-                     , ttnp(1,1,jj),qtnp(1,1,jj),utnp(1,1,jj),vtnp(1,1,jj))
+                     , kpbl(1,jj),nmpbl,j,isot,ivegsrc,sfemis(1,jj) )
 !
 ! SHUM process
 !  John Tseng

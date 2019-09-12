@@ -57,7 +57,7 @@ SRCS  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
 	gridnl_hybrid_ndsl.f90 vstruc_hybrid.f90 \
 	matrix_hybrid_cwb.f90 pmatrx_hybrid_cwb.f90 prexp_hybrid_cwb.f90 \
 	vstruc_hybrid_cwb.f90 rayleifr.f90 pbl_noah.f90 cwb.f90 nor_gwdp.f90 normalize.f90 \
-	coszenpm.f90 shalcnv_new.f90 mixpbl_new.f90 shalcnv_sa.f90\
+	coszenpm.f90 shalcnv_new.f90 mixpbl_new.f90 bl_ysu.f90 shalcnv_sa.f90\
 	qmax2d.f90 iw3jdn.f90 w3fs26.f90\
 	physpara.f90 funcphys.f90 iounitdef.f90 \
 	module_bfmicrophysics.f90 \
@@ -246,6 +246,7 @@ mixpbl_new.o : mixpbl_new.f90
 mixpbl_n.o : mixpbl_n.f90
 moninedmf.o : moninedmf.f90 machine.o physcons.o 
 mfpbl.o : mfpbl.f90 machine.o physcons.o
+bl_ysu.o : bl_ysu.f90 
 mod_const.o : mod_const.f90 mod_param.o 
 mod_fftcom.o : mod_fftcom.f90 
 mod_fj_pad.o : mod_fj_pad.f90 

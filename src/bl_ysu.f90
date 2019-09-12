@@ -17,8 +17,7 @@
                   ls,heat,evap,wspd,br,                           &
                   dt,rcl,                                         &
                   u10,v10,                                        &
-                  swh,hlw,xmu,txx,qxxt,uxx,vxx,jj)
-!                  swh,hlw,xmu,ttnp,qtnp,utnp,vtnp)
+                  swh,hlw,xmu,jj)
 !-------------------------------------------------------------------------------
     use rank
 
@@ -140,8 +139,6 @@
 ! inout
    real,     dimension( im )           ::                         ust
    real,     dimension( ix, km )       ::              utnp,vtnp,ttnp
-   real,     dimension( ix, km )       ::              uxx,vxx,txx
-   real,     dimension( ix, km,ndiff ) ::                qxxt
    real,     dimension( ix, km*ndiff ) ::                        qtnp
 !
 ! out
@@ -302,9 +299,6 @@
      rhox(i) = (psfcpa(i))/(rd*tx(i,1)*tvcon)
      govrth(i) = g/thx(i,1)
    enddo
-   if(myrank.eq.0 )print*,'i=im-1,in,tx=',tx(im-1,:)
-   if(myrank.eq.0 )print*,'i=im-1,in,qxt1=',qxt(im-1,:,1)
-   if(myrank.eq.0 )print*,'i=im-1,in,qxt2=',qxt(im-1,:,2)
 !
 !-----compute the height of full- and half-sigma levels above ground
 !     level, and the layer thicknesses.
@@ -699,8 +693,6 @@
 !                dthvx(i)  = max(thvx(i,k+1)-thvx(i,k),tmin)
                 we(i) = max(bfxpbl(i)/dthvx(i),-sqrt(wm2(i)))
                  if (.not.sfcflg(i))  we(i) =0.0
-                  if(i .eq. im)print*,'first,we(max)=',maxval(we(1:im)),maxloc(we(1:im))
-                  if(i .eq. im)print*,'first,we(min)=',minval(we(1:im)),minloc(we(1:im))
 
                 !entrainment from PBL top thermals
 !                bfx0 = max(radsum/rhox2(i,k)/cp-max(sflux(i),0.0),0.)
@@ -710,8 +702,6 @@
                 bfxpbl(i) = - ent_eff * bfx0
                 dthvx(i)  = max(thvx(i,k+1)-thvx(i,k),0.1)
                 we(i) = we(i) + max(bfxpbl(i)/dthvx(i),-sqrt(wm3**h2))
-                  if(i .eq. im)print*,'second,we(max)=',maxval(we(1:im)),maxloc(we(1:im))
-                  if(i .eq. im)print*,'second,we(min)=',minval(we(1:im)),minloc(we(1:im))
 
 !                !wstar3_2
                 bfx0 = max(radsum/rhox2(i,k)/cp,0.)
@@ -1003,7 +993,6 @@
        al(i,k)   = -dtodsu*dsdz2
        ad(i,k)   = ad(i,k)-au(i,k)
        ad(i,k+1) = 1.-al(i,k)
-         if (f3(i,k,1).lt.-1e-3)print*,i,k,'f3(i,k,1)=',f3(i,k,1),'xkzm=',xkzm(i,k),'xkzh=',xkzh(i,k),'xkzq=',xkzq(i,k),'sfcflg=',sfcflg(i),'wscale=',wscale(i),'wscalek=',wscalek(i,k),'wscalek2=',wscalek2(i,k),'ust3=',ust3(i),'wstar3=',wstar3(i),'zfac=',zfac(i,k),'qfxpbl=',qfxpbl(i),'we=',we(i)
      enddo
    enddo
 !
@@ -1235,13 +1224,6 @@
 !   enddo
 !
 !
-   if(myrank.eq.0 )print*,'i=im-1,tx=',tx(im-1,:)
-   if(myrank.eq.0 )print*,'i=im-1, qxt1=',qxt(im-1,:,1)
-   if(myrank.eq.0 )print*,'i=im-1, qxt2=',qxt(im-1,:,2)
-     txx=tx
-     qxxt=qxt
-     uxx=ux
-     vxx=vx
    end subroutine ysu2d
 !-------------------------------------------------------------------------------
 !
