@@ -302,11 +302,11 @@
         hdk3   = 41
       else if ( lev .eq. 72 ) then
         hdktop =  1
-        hdk1   = 35
+        hdk1   = 20
         hdk2   = 39
         hdk3   = 43
       endif
-      factop = 1.5
+      factop = 2.5
 !!      factop = 2.5
       
       coefu=factop/float(hdk3-hdk2)

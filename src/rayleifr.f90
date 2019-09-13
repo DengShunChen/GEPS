@@ -11,7 +11,7 @@
       real      ut(nxp,lev,my_max),vt(nxp,lev,my_max),cosl(my)
       real      wmax(lev)
 !
-      integer, parameter :: levtop=3,lev2=2
+      integer, parameter :: levtop=6,lev2=3
 
       real     ckdx,day,windmax
 !     data ckdx/20./, day/1./

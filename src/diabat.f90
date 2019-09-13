@@ -187,50 +187,15 @@
       integer nfxr, ntrac, kk, nk, n
       real slag,sdec,cdec,solcon,dtlw,dtsw,solhr
 
-! --- for radupdat
-      integer idat(8),jdat(8)
 
-! --- for new albedo
-      real alvsf(nxp,my_max),alvwf(nxp,my_max),alnsf(nxp,my_max), &
-           alnwf(nxp,my_max),facsf(nxp,my_max),facwf(nxp,my_max)
-!for gravity wave drag ====== #
-      integer nmgwor,nmgwcv,mtnvar
-      real hprime_b(nxp,mtnvar,my_max)
-      real pltn(nxp,lev,my_max),pkn(nxp,lev,my_max),pk2n(nxp,lev,my_max),  &
-           ttpn(nxp,lev,my_max)
-      real p2c(nxp,lev+1),phie2c(nxp,lev+1),p2ac(nxp,lev+1)
-      real utgwc(nxp,lev),vtgwc(nxp,lev),delttcv(nxp,lev),                 &
-           dudtc(nxp,lev),dvdtc(nxp,lev),dtdtc(nxp,lev),                   &
-           phio2c(nxp,lev),prslk(nxp,lev)
-      real oc(nxp),theta(nxp),gamma(nxp),sigmaog(nxp),elvmax(nxp),hprime(nxp),    &
-           dlength(nxp),cldf(nxp),cumabs(nxp),work3(nxp),tauctx(nxp),taucty(nxp), &
-           dvsfcg(nxp),dusfcg(nxp),facg(lev)
-      real oa4(nxp,4),clx(nxp,4),cgwf(2),cdmbgwd(2)
-      real ograv
-      integer kpbl(nxp,my_max), kpblc(nxp,my_max)
-      integer kdt,latg
-
-! --- for random number generator (thread safe mode)
-      integer ixseed(nx,my,2)
-      integer icsdlw(nx),icsdsw(nx)
-
-! --- for rrtmg : input
-!     logical lsswr,lslwr,lssav,lprnt
-      logical lsswr,lslwr,lssav
-      real xlonr(nx,my_max)
-
-! --- new variables setting :
-      integer*8 idtg
-      logical doo3l
-      integer ipt,jpt
 !-----------------------------------------------------------------------
-      logical   fwd,docup,dodry,dolsp,dopbl,dorad,doshl,dograv,ozon, &
-                land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max),  &
-                docgrav
-
       integer   nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,idg,  &
                 jdg,ldiag,julian,njump,itypbl,ktcup,ktpbl,ktshl,     &
                 km_soil
+
+      logical   fwd,docup,dodry,dolsp,dopbl,dorad,doshl,dograv,ozon, &
+                land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max),  &
+                docgrav
 
       real      tice,hice,qgini,thdai,tengi,qbrwtot,ptop,            &
                 hltm,evaprh,s0,stbo,cp,rgas,grav,frad,               &
@@ -282,6 +247,42 @@
                 snoalb(nxp,my_max),albedo2(nxp,my_max),heat(nxp),evap(nxp),  &
 ! for new pbl
                 asl(nxp,lev,my_max),atl(nxp,lev,my_max),xmu(nxp,my_max) 
+! --- for radupdat
+      integer idat(8),jdat(8)
+
+! --- for new albedo
+      real alvsf(nxp,my_max),alvwf(nxp,my_max),alnsf(nxp,my_max), &
+           alnwf(nxp,my_max),facsf(nxp,my_max),facwf(nxp,my_max)
+!for gravity wave drag ====== #
+      integer nmgwor,nmgwcv,mtnvar
+      real hprime_b(nxp,mtnvar,my_max)
+      real pltn(nxp,lev,my_max),pkn(nxp,lev,my_max),pk2n(nxp,lev,my_max),  &
+           ttpn(nxp,lev,my_max)
+      real p2c(nxp,lev+1),phie2c(nxp,lev+1),p2ac(nxp,lev+1)
+      real utgwc(nxp,lev),vtgwc(nxp,lev),delttcv(nxp,lev),                 &
+           dudtc(nxp,lev),dvdtc(nxp,lev),dtdtc(nxp,lev),                   &
+           phio2c(nxp,lev),prslk(nxp,lev)
+      real oc(nxp),theta(nxp),gamma(nxp),sigmaog(nxp),elvmax(nxp),hprime(nxp),    &
+           dlength(nxp),cldf(nxp),cumabs(nxp),work3(nxp),tauctx(nxp),taucty(nxp), &
+           dvsfcg(nxp),dusfcg(nxp),facg(lev)
+      real oa4(nxp,4),clx(nxp,4),cgwf(2),cdmbgwd(2)
+      real ograv
+      integer kpbl(nxp,my_max), kpblc(nxp,my_max)
+      integer kdt,latg
+
+! --- for random number generator (thread safe mode)
+      integer ixseed(nx,my,2)
+      integer icsdlw(nx),icsdsw(nx)
+
+! --- for rrtmg : input
+!     logical lsswr,lslwr,lssav,lprnt
+      logical lsswr,lslwr,lssav
+      real xlonr(nx,my_max)
+
+! --- new variables setting :
+      integer*8 idtg
+      logical doo3l
+      integer ipt,jpt
 !---------------------------------------------------------------------------
 ! for new rad
 !---------------------------------------------------------------------------
