@@ -528,7 +528,7 @@
       do i=1,nxj
 !byl       glob(i,j)=glob1(i,j)*sfac2+glob2(i,j)*sfac3 &
 !byl                  +glob3(i,j)*sfac4
-       globp(i,j)=soil_xy(i,jj,2)*sfac2+soil_xy(i,jj,3)*sfac3 &
+       globp(i,jj)=soil_xy(i,jj,2)*sfac2+soil_xy(i,jj,3)*sfac3 &
                   +soil_xy(i,jj,4)*sfac4
       end do
       end do
