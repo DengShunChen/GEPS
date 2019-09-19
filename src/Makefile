@@ -82,7 +82,7 @@ SRCS  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
         get_phi.f90 module_mp_radar.f90 module_mp_wsm6_fv3.f90 lightning_ec.f90 \
         mod_sitgrid.f90 mod_eos_ocean.f90 mod_sit_vdiff.f90 outsit.f90 \
         mod_sst.f90 mod_netcdf.f90 mod_sit_control.f90 samfdeepcnv.f90 samfshalcnv.f90 \
-        moninedmf.f90 mfpbl.f90
+        moninedmf.f90 mfpbl.f90 unify_reduceintp.f90 unify_reducepick.f90
 
 OBJS=	${SRCS:.f90=.o}
 
@@ -486,3 +486,6 @@ mod_netcdf.o: mod_netcdf.f90 mod_mpe.o mod_const.o mod_sit_control.o
 mod_eos_ocean.o: mod_eos_ocean.f90 
 mod_sit_control.o: mod_sit_control.f90
 outsit.o : outsit.f90 mod_index.o mod_rank.o mod_mpe.o mod_sitgrid.o
+#-------I/O speed up-------
+unify_reducepick.o: unify_reducepick.f90 mod_mpe.o mod_index.o
+unify_reduceintp.o: unify_reduceintp.f90 mod_mpe.o mod_index.o
