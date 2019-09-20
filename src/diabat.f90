@@ -267,7 +267,7 @@
            dvsfcg(nxp),dusfcg(nxp),facg(lev)
       real oa4(nxp,4),clx(nxp,4),cgwf(2),cdmbgwd(2)
       real ograv
-      integer kpbl(nxp,my_max), kpblc(nxp,my_max)
+      integer kpbl(nxp,my_max)
       integer kdt,latg
 
 ! --- for random number generator (thread safe mode)
@@ -990,10 +990,6 @@
           enddo
         enddo
 !
-        do i=1,nxj
-          kpblc(i,jj) = kpbl(i,jj)
-        enddo
-!
         do k=1,lev
           kc=lev-k+1
           facg(kc)=0.15*(1.0*exp(-0.1*kc))
@@ -1025,7 +1021,7 @@
 !
         call gwdps(nxjp(j), nxp, nxp,  lev,                        &
                dvdtc, dudtc, dtdtc,utc, vtc, ttc,qtc,              &
-               kpblc(1,jj),   p2ac, del,   prsl, prslk,            &
+               kpbl(1,jj),   p2ac, del,   prsl, prslk,             &
                phie2c,    phio2c, dta,                             &
                kdt,    hprime, oc, oa4, clx,                       &
                theta,sigmaog,gamma,elvmax,dusfcg, dvsfcg,          &
@@ -2129,21 +2125,39 @@
       tt(i,k,jj)=(1+ru)*tt(i,k,jj)-ru*tt_sppt_old(i,k,jj)
       enddo
       enddo
+! there's no need to add perturbation for ozone tracer. (
+! modified by PangYen Liu
+      if (ntoz .eq. 0 ) then
+        nk = ncld
+      else
+        nk = ncld-1
+      endif
 !
-      do k=1,lev
-      do i=1,nxj
-      ru=sppt3d(i,k,jj)
-      qt(i,k,jj)=(1+ru)*qt(i,k,jj)-ru*qt_sppt_old(i,k,jj)
-      if (qt(i,k,jj).lt.0) qt(i,k,j)=0.
+      do n=1,nk
+        do k=1,lev
+          kk = (n-1)*lev+k
+          do i=1,nxj
+            ru=sppt3d(i,k,jj)
+            qt(i,kk,jj)=(1+ru)*qt(i,kk,jj)-ru*qt_sppt_old(i,kk,jj)
+            if (qt(i,kk,jj).lt.0) qt(i,kk,jj)=0.
+          enddo
+        enddo
       enddo
-      enddo
-      do k=lev+1,lev*ncld
-      do i=1,nxj
-      ru=sppt3d(i,k-lev,jj)
-      qt(i,k,jj)=(1+ru)*qt(i,k,jj)-ru*qt_sppt_old(i,k,jj)
-      if (qt(i,k,jj).lt.0) qt(i,k,jj)=0.
-      enddo
-      enddo
+!
+!!      do k=1,lev
+!!      do i=1,nxj
+!!      ru=sppt3d(i,k,jj)
+!!      qt(i,k,jj)=(1+ru)*qt(i,k,jj)-ru*qt_sppt_old(i,k,jj)
+!!      if (qt(i,k,jj).lt.0) qt(i,k,j)=0.
+!!      enddo
+!!      enddo
+!!      do k=lev+1,lev*ncld
+!!      do i=1,nxj
+!!      ru=sppt3d(i,k-lev,jj)
+!!      qt(i,k,jj)=(1+ru)*qt(i,k,jj)-ru*qt_sppt_old(i,k,jj)
+!!      if (qt(i,k,jj).lt.0) qt(i,k,jj)=0.
+!!      enddo
+!!      enddo
 !
       enddo
 !
