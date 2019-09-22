@@ -424,11 +424,12 @@
 !
           call syslbl('w00091',idtg,0,ggdef,lrec)
           call dmsread(nx,my,lrec,nxmy,'H',ifilin,ww1,istat)
-          if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
+!byl          if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
           do jj=1,jlistnum
             j=jlist1(jj)
             ii=nxjstart(j)
             nxj=nxdef_2d(j)
+            if( lreduce.eq.1 ) call reducepick (ww1(1,j),nxdef(j),nx,1)
             do i=1,nxj
               cice(i,jj)=ww1(ii,j)
               ii=ii+1
@@ -617,7 +618,7 @@
         end if
         write(lrec,'("s00060",a4,a4,12x)')topohgt,ggdef
         call dmsread(nx,my,lrec,nxmy,'H',bckfile,ww1,istat)
-        if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
+!byl        if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
         if(istat.ne.0)then
           call mpe_finalize
           call dmsexit(-1)
@@ -625,6 +626,7 @@
         do jj = 1, jlistnum
           j=jlist1(jj)    
           nxj=nxdef(j)
+          if( lreduce.eq.1 ) call reducepick (ww1(1,j),nxdef(j),nx,1)
           do i = 1, nxj
             ww3(i,jj) = ww1(i,j)*grav
           enddo
@@ -650,11 +652,12 @@
           call mpe_finalize
           call dmsexit(-1)
         endif
-        if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
+!byl        if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
         do jj = 1, jlistnum
           j=jlist1(jj)    
           ii=nxjstart(j)
           nxj=nxdef_2d(j)
+          if( lreduce.eq.1 ) call reducepick (ww1(1,j),nxdef(j),nx,1)
           do i=1,nxj
             std(i,jj)=ww1(ii,j)*ww1(ii,j)
 !byl            if(std(i,jj).le.0. .or. ocean(i,jj)) std(i,jj)=0.
