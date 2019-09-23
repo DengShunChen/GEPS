@@ -267,7 +267,8 @@
            dvsfcg(nxp),dusfcg(nxp),facg(lev)
       real oa4(nxp,4),clx(nxp,4),cgwf(2),cdmbgwd(2)
       real ograv
-      integer kpbl(nxp,my_max), kpblc(nxp,my_max)
+!byl      integer kpbl(nxp,my_max), kpblc(nxp,my_max)
+      integer kpbl(nxp,my_max)
       integer kdt,latg
 
 ! --- for random number generator (thread safe mode)
@@ -819,7 +820,9 @@
       up(i,k,jj) = up(i,k,jj)*xx
       vp(i,k,jj) = vp(i,k,jj)*xx
       tt(i,k,jj) = tt(i,k,jj)*pk(i,k,jj) / (1.0+0.608*qt(i,k,jj))
-      ttpn(i,k,jj) = ttp(i,k,jj)*pkn(i,k,jj)/(1.0+0.608*qp(i,k,jj))
+!byl      ttpn(i,k,jj) = ttp(i,k,jj)*pkn(i,k,jj)/(1.0+0.608*qp(i,k,jj))
+!quick fix for convective GWD
+      ttpn(i,k,jj) = tt(i,k,jj)
       ttp(i,k,jj) = ttp(i,k,jj) / (1.0+0.608*qp(i,k,jj))
   230 continue
 !
@@ -990,15 +993,15 @@
           enddo
         enddo
 !
-        do i=1,nxj
-          kpblc(i,jj) = kpbl(i,jj)
-        enddo
+!byl        do i=1,nxj
+!byl          kpblc(i,jj) = kpbl(i,jj)
+!byl        enddo
 !
         do k=1,lev
           kc=lev-k+1
-          facg(kc)=0.15*(1.0*exp(-0.1*kc))
-          if(facg(kc).le.0.01) facg(kc) = 0.01
-          if(facg(kc).ge.0.1) facg(kc) = 0.1
+!byl          facg(kc)=0.15*(1.0*exp(-0.1*kc))
+!byl          if(facg(kc).le.0.01) facg(kc) = 0.01
+!byl          if(facg(kc).ge.0.1) facg(kc) = 0.1
           do i=1,nxj
             prsl(i,kc) = 100.0*plt(i,k,jj) ! pa
             prslk(i,kc)=(plt(i,k,jj)/1000.)**xkapa
@@ -1007,9 +1010,13 @@
             ttc(i,kc) = tt(i,k,jj)
             utc(i,kc) = ut(i,k,jj)
             vtc(i,kc) = vt(i,k,jj)
-            dudtc(i,kc) = facg(kc)*( ut(i,k,jj) - up(i,k,jj) )/dt
-            dvdtc(i,kc) = facg(kc)*( vt(i,k,jj) - vp(i,k,jj) )/dt
-            dtdtc(i,kc) = facg(kc)*( tt(i,k,jj) - ttpn(i,k,jj))/dt
+!byl            dudtc(i,kc) = facg(kc)*( ut(i,k,jj) - up(i,k,jj) )/dt
+!byl            dvdtc(i,kc) = facg(kc)*( vt(i,k,jj) - vp(i,k,jj) )/dt
+!byl            dtdtc(i,kc) = facg(kc)*( tt(i,k,jj) - ttpn(i,k,jj))/dt
+!quick fix for orographic GWD
+            dudtc(i,kc) = 0.
+            dvdtc(i,kc) = 0.
+            dtdtc(i,kc) = 0.
             phio2c(i,kc) = phi(i,k)
           enddo
         enddo
@@ -1025,7 +1032,7 @@
 !
         call gwdps(nxjp(j), nxp, nxp,  lev,                        &
                dvdtc, dudtc, dtdtc,utc, vtc, ttc,qtc,              &
-               kpblc(1,jj),   p2ac, del,   prsl, prslk,            &
+               kpbl(1,jj),   p2ac, del,   prsl, prslk,             &
                phie2c,    phio2c, dta,                             &
                kdt,    hprime, oc, oa4, clx,                       &
                theta,sigmaog,gamma,elvmax,dusfcg, dvsfcg,          &
