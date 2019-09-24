@@ -19,10 +19,10 @@
       implicit none
 
 
+      integer i,j,jj,nxj,nx,my,my_max,me,k
       integer numrdm(nx*my*2),ixseed(nx,my,2),ipsdlim
       type (random_stat)::stat
 !
-      integer i,j,jj,nxj,nx,my,my_max,me,k
       integer idat(8),jdat(8)
       integer*8 idtg,idtg2
       character cdtg*12

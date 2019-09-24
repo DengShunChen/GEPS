@@ -33,6 +33,7 @@
 ! -------------------------------------------------------------------
 ! --- for rrtmg input :
 !
+      integer ntrac,nfxr,nx,nxj,lev,ipt,iter,ncld
 ! --- 3d parameters
 !
       dimension sigma(lev+1,2),pst(nx),plt(nx,lev),std(nx),tg(nx),  &
@@ -44,9 +45,8 @@
                 snoalb(nx),z0(nx)
       dimension alvsg(nx),alvwg(nx),alnsg(nx),alnwg(nx),facsg(nx),  &
                 facwg(nx),curate(nx),xlonr(nx)
-      integer icsdlwg(nx),icsdswg(nx),jdat(8)
-      real*8 sinlj,coslj,xlatj,ptop,dtlw,dtsw,d2r
-      integer ntrac,nfxr,nx,nxj,lev,ipt,iter,ncld
+      integer icsdlwg(nx),icsdswg(nx),jdat(8),j
+      real    sinlj,coslj,xlatj,ptop,dtlw,dtsw,d2r,xkapa,solhr,solcon
       logical lsswr,lslwr,lssav,lprnt
       logical uni_cloud,lmfshal,lmfdeep2
 
