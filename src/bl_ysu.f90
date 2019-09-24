@@ -993,6 +993,7 @@
        al(i,k)   = -dtodsu*dsdz2
        ad(i,k)   = ad(i,k)-au(i,k)
        ad(i,k+1) = 1.-al(i,k)
+         if (f3(i,k,1).lt.-1e-3)print*,i,k,'f3(i,k,1)=',f3(i,k,1),'xkzm=',xkzm(i,k),'xkzh=',xkzh(i,k),'xkzq=',xkzq(i,k),'sfcflg=',sfcflg(i),'wscale=',wscale(i),'wscalek=',wscalek(i,k),'wscalek2=',wscalek2(i,k),'ust3=',ust3(i),'wstar3=',wstar3(i),'zfac=',zfac(i,k),'qfxpbl=',qfxpbl(i),'we=',we(i)
      enddo
    enddo
 !

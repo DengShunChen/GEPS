@@ -241,7 +241,7 @@
 
       real      tqs(imjm),pqs(imjm),qss(imjm)
       real      vpsat(191)
-      real      tem,epsm1,t1,qqq(imjm)
+      real      tem,epsm1,t1,qqq(imjm),fpvs
 !
 !
 ! est1 are the saturated vapor pressure over ice for the temperatures
@@ -318,6 +318,7 @@
       ic = int(t1)
       qqq(i) = min(tem*pqs(i), vpsat(ic)+(vpsat(1+ic)-vpsat(ic))        &
                                      *(t1-float(ic)))
+      qqq(i)=0.01*fpvs(tqs(i))
 !      qss(i) = 0.622*qqq/(pqs(i)-qqq)
 !      qss(i) = 0.622*qqq/(pqs(i)+epsm1*qqq)
   100 continue
