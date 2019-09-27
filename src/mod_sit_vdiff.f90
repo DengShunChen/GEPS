@@ -85,9 +85,9 @@
 #define GDCHK0 (mpp_pe().EQ.2)
 #define GDCHK1 (1 .eq. 0).AND.(mpp_pe().EQ.44).AND.(jrow.EQ.3)
 !#define GDCHK2 (1 .eq. 0).AND.(mpp_pe().EQ.44).AND.(jrow.EQ.3).AND.(jl.EQ.212)
-#define GDCHK2 (1 .eq. 0).AND.(mpp_pe().EQ.21).AND.(jrow.EQ.4).AND.(jl.EQ.319)
+#define GDCHK2 (1 .eq. 0).AND.(mpp_pe().EQ.254).AND.(jrow.EQ.3).AND.(jl.EQ.1)
 !#define GDCHK3 (1 .eq. 1).AND.(mpp_pe().EQ.49).AND.(jrow.EQ.3).AND.(jl.EQ.212)
-#define GDCHK3 (1 .eq. 1).AND.(mpp_pe().EQ.46).AND.(jrow.EQ.11).AND.(jl.EQ.206)
+#define GDCHK3 (1 .eq. 1).AND.(mpp_pe().EQ.254).AND.(jrow.EQ.3).AND.(jl.EQ.1)
 !#define GDCHK3 (1 .eq. 1).AND.(mpp_pe().EQ.21).AND.(jrow.EQ.4).AND.(jl.EQ.319)
 !#define GDCHK3 (1 .eq. 1).AND.(mpp_pe().EQ.24).AND.(jrow.EQ.3).AND.(jl.EQ.188)
 !#define GDCHK3 (mpp_pe().EQ.35).AND.(jrow.EQ.4).AND.(jl.EQ.495) 
@@ -6421,7 +6421,8 @@ END SUBROUTINE thermocline
     WRITE(nerr,*) "l_no_expolation_ws=",l_no_expolation_ws
     WRITE(nerr,*) "l_no_expolation_wu=",l_no_expolation_wu
     WRITE(nerr,*) "l_no_expolation_wv=",l_no_expolation_wv
-    WRITE(nerr,*) "godas2: nmw1=",nmw1,"nmw2=",nmw2,"wgt1=",wgt1,"wgt2=",wgt2
+    WRITE(nerr,*) "godas2: nmw1=",nmw1,",nmw2=",nmw2,",wgt1=",wgt1,",wgt2=",wgt2 &
+                          ,",now1=",now1,",now2=",now2,",wgto1=",wgto1,",wgto2=",wgto2
     WRITE(nerr,2300) "pe,","jl,","row,","lat,","lon,","step,","k,","z,", "ot1,", "ot2", "os1,", "os2"
     WRITE(nerr,2300) "pe,","jl,","row,","lat,","lon,","step,","k,","z,", "obswt,", "obsws", "obswu", "obswv"
     DO jk = 0, nle+1
@@ -6551,6 +6552,16 @@ END SUBROUTINE thermocline
     l_upperdata=.FALSE.
     ttt=pobswtb(jl)
     ttt1=pobswtb(jl)    
+    IF(GDCHK2) then
+      print *,"lgodas=",lgodas,",ttt=",ttt,",kkk=",kkk          &
+             ,",ot12(jl,kkk,jrow,now1)=",ot12(jl,kkk,jrow,now1) &
+             ,",ot12(jl,kkk,jrow,now2)=",ot12(jl,kkk,jrow,now2) &
+             ,",ot12(jl,kkk+1,jrow,now1)=",ot12(jl,kkk+1,jrow,now1) &
+             ,",ot12(jl,kkk+1,jrow,now2)=",ot12(jl,kkk+1,jrow,now2) &
+             ,",depth=",depth,",nodepth=",nodepth                   &
+             ,",odepths(nodepth)=",odepths(nodepth)
+
+    ENDIF
     IF ( lgodas .AND.                                    &
          (ot12(jl,kkk,jrow,now1).NE.xmissing)      .AND. &
          (ot12(jl,kkk,jrow,now2).NE.xmissing)      .AND. &

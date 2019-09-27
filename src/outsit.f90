@@ -1,6 +1,6 @@
-#define myrank_check 50
-#define i_check 428
-#define jj_check 2
+#define myrank_check 254
+#define ii_check 1
+#define jj_check 3
 
       SUBROUTINE sitout(nx,my,itau,ifilout,idtg,num  &
                        ,whtlev,ggdef)

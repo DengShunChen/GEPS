@@ -1,6 +1,6 @@
-#define myrank_check 46
-#define jj_check 11
-#define ii_check 206
+#define myrank_check 254
+#define ii_check 1 
+#define jj_check 3
 !
       subroutine diabat ( fwd,docup,dodry,dolsp,dopbl,dorad,doshl,dograv       &
                     , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw       &
@@ -1777,7 +1777,8 @@
             xticefsit(ii,jj)=xticefsit(ii,jj)+xtice(ii,jj)*dtsit
             obswtbfsit(ii,jj)=obswtbfsit(ii,jj)+obswtb(ii,jj)*dtsit
             tgfsit(ii,jj)=tgfsit(ii,jj)+tg(ii,jj)*dtsit
-            if(myrank .EQ. myrank_check .AND. jj .EQ. jj_check .AND. ii.EQ. ii_check) then
+            if(myrank .EQ. myrank_check .AND.    &
+              jj .EQ. jj_check .AND. ii.EQ. ii_check) then
               print*,'in not lrun_sitvdiff:myrank=',myrank,',jj=',jj &
                  ,',j=',j,',sitlat(',ii_check,')=',sitlat(ii)        &
                  ,',sitlon(',ii_check,',jj)=',sitlon(ii,jj)          &
@@ -1887,7 +1888,8 @@
 
 
 
-              if(myrank .eq. myrank_check .AND. jj .eq. jj_check .AND. ii .eq. ii_check)then
+            if(myrank .eq. myrank_check .AND.      &
+              jj .eq. jj_check .AND. ii .eq. ii_check)then
               print*,"now1=",now1,",now2=",now2,",wgto1=",wgto1   &
                     ,",wgto2=",wgto2,",obswtbnmw1=",obswtbnmw1    &
                     ,",obswtbnmw2=",obswtbnmw2                    &
@@ -1896,7 +1898,8 @@
               endif
           endif    !end (lrun_sitvdiff)
 
-          if(myrank .EQ. myrank_check .AND. jj .EQ. jj_check .AND. ii .EQ. ii_check) then
+          if(myrank .EQ. myrank_check .AND.         &
+            jj .EQ. jj_check .AND. ii .EQ. ii_check) then
             print*,'before sit_vidff:myrank=',myrank,',jj=',jj     &
                  ,',j=',j,',sitlat(',ii_check,')=',sitlat(ii)      &
                  ,',sitlon(',ii_check,',jj)=',sitlon(ii,jj)        &
@@ -1909,7 +1912,7 @@
         enddo    !end i=1,nxj
 
         if(lrun_sitvdiff) then
-         if( myrank.EQ.myrank_check .AND. jj.EQ.jj_check) then
+         if(myrank.EQ.myrank_check .AND. jj.EQ.jj_check) then
             ii=ii_check
           print *,"myrank=",myrank,",jj=",jj
           print *,"sitlat=",sitlat(ii),"sitlon=",sitlon(ii,jj)
@@ -2035,7 +2038,8 @@
             tg(ii,jj)=tgold(ii,jj)+dtswdt(ii,jj)*dtfsit
             tgold(ii,jj)=tsw(ii,jj)
           endif
-          if(myrank .EQ. myrank_check .AND. jj .EQ. jj_check .AND. ii .EQ. ii_check) then
+          if(myrank .EQ. myrank_check .AND.         &
+            jj .EQ. jj_check .AND. ii .EQ. ii_check) then
             print*,'after sit_vdiff:myrank=',myrank                &
                  ,',ii=',ii,',jj=',jj,',i=',i,',j=',j              &
                  ,',sitlat(',ii_check,')=',sitlat(ii)              &
@@ -2053,7 +2057,8 @@
       endif  !end lrun_sitvdiff
 
 
-         if(myrank.eq.myrank_check .AND. jj.EQ.jj_check .AND. ii .EQ. ii_check) then
+         if(myrank.eq.myrank_check .AND.            &
+           jj.EQ.jj_check .AND. ii .EQ. ii_check) then
            print*,'after sit_vdiff: sitlat(',ii_check,')=',sitlat(ii_check)  &
                  ,',sitlon(',ii_check,',jj)=',sitlon(ii_check,jj)            &
                  ,',sitlclass=',sitlclass(ii_check,jj)                       &

@@ -1,3 +1,4 @@
+
       subroutine getrdy
 !
 !***********************************************************************
@@ -98,6 +99,7 @@
       real  sitlat(nxp)
       real  sitlon(nxp,my_max)
       real, parameter:: specified_ice_thickness  = 2.0
+      integer myrank_check,ii_check,jj_check
 
       lmax=26
 !
@@ -342,6 +344,7 @@
           j=jlist1(jj)
           ii=nxjstart(j)
           nxj=nxdef_2d(j)
+
         if( lreduce.eq.1 ) call reducepick (ww1(1,j),nxdef(j),nx,1)
           do i=1,nxj
             sst(i,jj)=ww1(ii,j)
@@ -1020,11 +1023,16 @@
             ELSE
               sitlon(ii,jj)=xlon(i,jj)
             ENDIF
-            if((abs(sitlon(ii,jj)-240.) .le. 0.25) .AND. &
-               (abs(sitlat(ii)-50.) .le. 0.25) ) then
-              print *,'myrank=',myrank,',ii=',ii,',jj=' &
-                     ,jj,',sitlat=',sitlat(ii),',sitlon=' &
-                     ,sitlon(ii,jj)
+
+            if( (abs(sitlon(ii,jj)-180.) .le. 0.25) .AND. &
+               (abs(sitlat(ii)+30.) .le. 0.25) ) then
+                myrank_check=myrank
+                ii_check=ii
+                jj_check=jj
+              print *,'in getrdy, myrank=',myrank,',ii=',ii,',jj=' &
+                     ,jj,',i=',i,',j=',j,',sitlat=',sitlat(ii)     &
+                     ,',sitlon=',sitlon(ii,jj),',xlon(i,jj)='      &
+                     ,xlon(i,jj),',xlat(j)=',xlat(j)
             endif
 
 !    !  2.0 set sst, sss and sic

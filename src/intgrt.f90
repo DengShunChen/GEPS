@@ -1,6 +1,6 @@
-#define myrank_check 55
+#define myrank_check 254
 #define ii_check 1
-#define jj_check 4
+#define jj_check 3
 
        subroutine intgrt
 !
@@ -1712,6 +1712,13 @@
             else
               ssttemp=obswtbwgt1*dailyFCTsst(ii,jj,obswtbnmw1) &
                       +obswtbwgt2*dailyFCTsst(ii,jj,obswtbnmw2)
+              if((myrank.eq.myrank_check).AND.        &
+                (ii.eq.ii_check) .AND. (jj.eq.jj_check) ) then
+                print *,'intgrt:ssttemp=',ssttemp,',obswtbwgt1=',obswtbwgt1 &
+                       ,',obswtbnmw1=',obswtbnmw1,',obswtbnmw2=',obswtbnmw2 &
+                       ,',dailyFCTsst(..,obswtbnmw1)=',dailyFCTsst(ii,jj,obswtbnmw1) &
+                       ,',dailyFCTsst(..,obswtbnmw2)=',dailyFCTsst(ii,jj,obswtbnmw2)
+              endif
             endif
             sst(ii,jj)=merge(ssttemp,tg(ii,jj),(ssttemp.GE.271. .AND. ssttemp.LT.400.))
             if(ldailyFCTicesndpt)then
@@ -1756,7 +1763,8 @@
                 tg(ii,jj)=max(271.,sst(ii,jj))
               endif
             endif
-            if(myrank .eq. myrank_check .AND. jj .eq. jj_check .AND. ii .eq. ii_check) then
+            if(myrank .eq. myrank_check .AND. &
+              jj .eq. jj_check .AND. ii .eq. ii_check) then
               print *,"ssttau=",ssttau,",dtx_tau=",dtx_tau   &
                ,",obswtbwgt1=",obswtbwgt1,",obswtbwgt2=",obswtbwgt2 &
                ,",tautemp=",tautemp,",ssttau=",ssttau &

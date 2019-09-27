@@ -6,9 +6,9 @@
 #define mpp_root_pe() 0
 #define p_parallel_io (myrank .eq. 0)
 #define p_pe myrank
-#define myrank_check 55 
-#define jj_check 4
+#define myrank_check 254 
 #define ii_check 1
+#define jj_check 3
 #endif
 
 !    read wtfn12, wsfn12 data
@@ -347,7 +347,7 @@
             endif
 
             timevals_dailyFCT(2)=ydate2
-            if( myrank .eq. myrank_check) then
+            if(myrank .eq. myrank_check) then
               print*,"read_dailyFCT: tg1=",tg1(ii_check,jj_check)
               if(ldailyFCTsst) then
                 print*,"1. dailyFCTsst(ii_check,jj_check,1)=" &
@@ -396,16 +396,16 @@
             endif
 
             timevals_dailyFCT(2)=ydate2
-            if( myrank .eq. myrank_check) then
+            if(myrank .eq. myrank_check) then
               print*,"read_dailyFCT: tg1=",tg1(ii_check,jj_check)
               if(ldailyFCTsst) then
-                print*,"1. dailyFCTsst(ii_check,jj_check,1)=" &
+                print*,"2. dailyFCTsst(ii_check,jj_check,1)=" &
                       , dailyFCTsst(ii_check,jj_check,1)      &
                       ,",dailyFCTsst(ii_check,jj_check,2)="   &
                       , dailyFCTsst(ii_check,jj_check,2)
               endif
               if(dailyClm_option .ge. 1)then
-                print*,"dailyClmANAssst(",ii_check,",",jj_check,",0)="  &
+                print*,"2.dailyClmANAssst(",ii_check,",",jj_check,",0)="  &
                       , dailyClmANAsst(ii_check,jj_check,0)     &
                       ,",dailyClmANAsst(",ii_check,",",jj_check,",1)="  &
                       , dailyClmANAsst(ii_check,jj_check,1)     &
@@ -482,7 +482,8 @@
 
             DO ii=1,nxj
               i=nxjstart(j)+ii-1
-              if( myrank .eq. myrank_check .AND. i .eq. ii_check .AND. jj .eq. jj_check) then
+              if(myrank .eq. myrank_check .AND. &
+                 i .eq. ii_check .AND. jj .eq. jj_check) then
                  print*,"read_dailyFCT_dayp1: ssttemp(",ii_check,"," &
                        ,j,")=",ssttemp(ii_check,j)
               endif
@@ -561,7 +562,8 @@
                 endif
               endif
 
-              if (myrank .eq. myrank_check .AND. ii .eq. ii_check .AND. jj.eq. jj_check) then
+              if(myrank .eq. myrank_check .AND. &
+                ii .eq. ii_check .AND. jj.eq. jj_check) then
                 print*,"myrank=",myrank,",i=",i,",j=",j   &
                       ,",ii=",ii, ",jj=",jj               &
                       ,",ssttemp(i,j)=",ssttemp(i,j)      &
@@ -572,7 +574,7 @@
           ENDDO    !end do jj
 
 
-          if( myrank .eq. myrank_check) then
+          if(myrank .eq. myrank_check) then
             print*,"read_dailyFCT_dayp1: dailyFCTsst(",ii_check,",",jj_check,",2)=" &
                    ,dailyFCTsst(ii_check,jj_check,2)
           endif
@@ -669,7 +671,8 @@
                 dailyClmFCTsst(ii,jj,2)=sstFCT1(i,j)
               endif
 
-              if (myrank.eq.myrank_check .AND. i.eq.ii_check .AND. jj.eq.jj_check) then
+              if(myrank.eq.myrank_check .AND.    &
+                i.eq.ii_check .AND. jj.eq.jj_check) then
                 print*,"myrank=",myrank,",i=",i,",j=",j                &
                   ,",ii=",ii,",jj=",jj                                 &
                   ,",dailyClmANAsst(ii,jj,0)=",dailyClmANAsst(ii,jj,0)   &
@@ -751,7 +754,8 @@
                 dailyClmFCTsst(ii,jj,2)=sstFCT(i,j)
               endif
 
-              if (myrank.eq.myrank_check .AND. ii.eq.ii_check .AND. jj.eq.jj_check) then
+              if(myrank.eq.myrank_check .AND.    &
+                ii.eq.ii_check .AND. jj.eq.jj_check) then
                 print*,"myrank=",myrank,",i=",i,",j=",j              &
                   ,",ii=",ii,",jj=",jj                                   &
                   ,",dailyClmANAsst(ii,jj,2)=",dailyClmANAsst(ii,jj,2)
@@ -1027,7 +1031,7 @@
           CHARACTER (12) :: cname, cwoa(nrec)
           
           REAL, ALLOCATABLE, TARGET :: zin(:,:,:,:)
-!          REAL, ALLOCATABLE, TARGET :: zintemp(:,:)
+          REAL, ALLOCATABLE, TARGET :: zintemp(:,:)
 !          REAL, POINTER :: gl_woa(:,:,:,:)
           REAL      :: missing_value
           
@@ -1249,6 +1253,7 @@
           cwoa(5) = 'mixedlayer'    ! ocean mixed layer (m)
           DO irec = 1, nrec
             IF (.NOT. ALLOCATED(zin)) ALLOCATE (zin(nlon,nodepth,ngl,0:13))
+            IF (.NOT. ALLOCATED(zintemp)) ALLOCATE (zintemp(nlon,ngl))
             IF (p_parallel_io) THEN
             !WRITE(nerr,'(/,A,I2)') ' Read GODAS 7.0 '
             !     Allocate memory for godas global fields
@@ -1268,6 +1273,7 @@
                                             '_FillValue', missing_value)
 !!          WRITE(nerr,*) 'pe=',p_pe,', read GODAS 7.1 _FillValue= ',missing_value
                   IF(irec .eq. 5) then
+                      jk=1
                       io_start(:) = (/       1,   1,  1,        1 /)
                       io_count(:) = (/ io_nlon, ngl,  1, io_ntime /)
                     ! for depth jk: read io_nlon longitudes, ngl latitudes and 12 months
@@ -1305,6 +1311,7 @@
                     ! read world ocean atlas data december of last year
                     CALL io_inq_varid (woanc0%file_id, cname, io_var_id)
                     IF(irec .eq. 5) then
+                      jk=1
                       io_start(:) = (/       1,   1,  1, 12 /)
                       io_count(:) = (/ io_nlon, ngl,  1, 1 /)
                       ! for depth jk: read io_nlon longitudes, ngl latitudes and 1 months
@@ -1335,6 +1342,7 @@
                     ! read world ocean atlas data january of next year
                     CALL io_inq_varid (woanc2%file_id, cname, io_var_id)
                     IF(irec .eq. 5) then
+                      jk=1
                       io_start(:) = (/       1,   1,  1, 1 /)
                       io_count(:) = (/ io_nlon, ngl,  1, 1 /)
                       ! for depth jk: read io_nlon longitudes, ngl latitudes and 1 months
@@ -1408,26 +1416,33 @@
                       ',zin(212,',jk,',235,',im,')=',zin(212,jk,ngl+1-235,im)
                 endif
 !                if( lreduce.eq.1 ) call reducepick(zin(1,jk,1,im),nxdef,nx,my)
+                Do j=1,ngl
+                  if(irec .eq. 5) then
+                    zintemp(:,j)=zin(:,1,ngl-j+1,im)
+                  else
+                    zintemp(:,j)=zin(:,jk,ngl-j+1,im)
+                  endif
+                ENDDO
     
                 DO jj = 1, jlistnum
                   j=jlist1(jj)
                   nxj=nxdef_2d(j)
-                  if( lreduce.eq.1 )call reducepick(zin(1,jk,j,im),nxdef(j),nx,1)
+                  if( lreduce.eq.1 )call reducepick(zintemp(1,j),nxdef(j),nx,1)
                   DO ii=1,nxj
                     i=nxjstart(j)+ii-1
                     IF(irec .eq. 1) THEN
-                      ot12(ii,jk,jj,im) = zin(i,jk,ngl-j+1,im)
+                      ot12(ii,jk,jj,im) = zintemp(i,j)
 !                      if((myrank.eq.44).AND.(i.eq.212).AND.(jj.eq.3).AND.(j.eq.235)) then
 !                        print *,'ot12(',i,',',jk,',',jj,',',im,')=',ot12(i,jk,jj,im) 
 !                      endif
                     ELSE IF(irec .eq. 2) THEN
-                      os12(ii,jk,jj,im) = zin(i,jk,ngl-j+1,im)
+                      os12(ii,jk,jj,im) = zintemp(i,j)
                     ELSE IF(irec .eq. 3) THEN
-                      ou12(ii,jk,jj,im) = zin(i,jk,ngl-j+1,im)
+                      ou12(ii,jk,jj,im) = zintemp(i,j)
                     ELSE IF(irec .eq. 4) THEN
-                      ov12(ii,jk,jj,im) = zin(i,jk,ngl-j+1,im)
+                      ov12(ii,jk,jj,im) = zintemp(i,j)
                     ELSE IF(irec .eq. 5) THEN
-                      mixedlayer12(ii,jj,im) = zin(i,1,ngl-j+1,im)
+                      mixedlayer12(ii,jj,im) = zintemp(i,j)
                     ENDIF
                   ENDDO
                 ENDDO
@@ -1453,8 +1468,8 @@
             WRITE(nerr,*) 'read GODAS'
           END IF
           
-!          DEALLOCATE (zintemp)
           DEALLOCATE (zin)
+          DEALLOCATE (zintemp)
         END SUBROUTINE read_godas
 
 
@@ -1528,6 +1543,7 @@
       CHARACTER (12) :: cname, cwoa0(nrec)
 
       REAL, ALLOCATABLE, TARGET :: zin(:,:,:)
+      REAL, ALLOCATABLE, TARGET :: zintemp(:,:)
       REAL, POINTER :: gl_woa0(:,:,:)
       REAL      :: missing_value
 
@@ -1651,6 +1667,7 @@
       cwoa0( 5) = 'mixedlayer'    ! ocean mixed layer (m)
       DO irec = 1, nrec
         IF (.NOT. ALLOCATED(zin)) ALLOCATE (zin(nlon,nodepth0,ngl))
+        IF (.NOT. ALLOCATED(zintemp)) ALLOCATE (zintemp(nlon,ngl))
       IF (p_parallel_io) THEN
 !!      WRITE(nerr,'(/,A,I2)') ' Read WOA0 7.0 '
       !     Allocate memory for WOA0 global fields
@@ -1758,41 +1775,47 @@
 !            print *,"after broadcast,woa0: irec=",irec,  &
 !                         ",zin:(212,",jk,",235)=",zin(212,jk,ngl+1-235)
 !          ENDIF
+          DO j=1,ngl
+            if(irec .eq. 5) then
+              zintemp(:,j)=zin(:,1,ngl-j+1)
+            else
+              zintemp(:,j)=zin(:,jk,ngl-j+1)
+            endif
+          ENDDO
 
           DO jj = 1, jlistnum
             j=jlist1(jj)
             nxj=nxdef_2d(j)
-            if( lreduce.eq.1 )call reducepick (zin(1,jk,j),nxdef(j),nx,1)
+            if( lreduce.eq.1 )call reducepick (zintemp(1,j),nxdef(j),nx,1)
             DO ii=1,nxj
               i=nxjstart(j)+ii-1
               IF (irec .eq. 1) THEN
-                ot0(ii,jk,jj)=zin(i,jk,ngl-j+1)
-!                IF((myrank.eq.44) .and. (jj.eq.3) .and. (ii.eq.1))THEN
-                IF((i.eq.768) .and. (j.eq.492) )THEN
+                ot0(ii,jk,jj)=zintemp(i,j)
+                IF((myrank.eq.myrank_check) .and.     &
+                  (jj.eq.jj_check) .and. (ii.eq.ii_check))THEN
                   print *,"myrank=",myrank
                   print *,"WOA0:ot0(",ii,",",jk,",",jj,")=",ot0(ii,jk,jj)
                 ENDIF
               ELSE IF(irec .eq. 2) THEN
-                os0(ii,jk,jj)=zin(i,jk,ngl-j+1)
-!                IF((myrank.eq.44) .and. (jj.eq.3) .and. (i.eq.1))THEN
-                IF((i.eq.768) .and. (j.eq.492) )THEN
-                  print *,"myrank=",myrank
-                  print *,"WOA0:os0(",ii,",",jk,",",jj,")=",os0(ii,jk,jj)
-                ENDIF
+                os0(ii,jk,jj)=zintemp(i,j)
+!                IF((myrank.eq.myrank_check) .and. (jj.eq.jj_check) .and. (ii.eq.ii_check))THEN
+!                  print *,"myrank=",myrank
+!                  print *,"WOA0:os0(",ii,",",jk,",",jj,")=",os0(ii,jk,jj)
+!                ENDIF
               ELSE IF(irec .eq. 3) THEN
-                ou0(ii,jk,jj)=zin(i,jk,ngl-j+1)
-!                IF((myrank.eq.44) .and. (jj.eq.3) .and. (i.eq.1))THEN
+                ou0(ii,jk,jj)=zintemp(i,j)
+!                IF((myrank.eq.myrank_check) .and. (jj.eq.jj_check) .and. (ii.eq.ii_check))THEN
 !                  print *,"WOA0:ou0(",ii,",",jk,",",jj,")=",ou0(ii,jk,jj)
 !                ENDIF
               ELSE IF(irec .eq. 4) THEN
-                ov0(ii,jk,jj)=zin(i,jk,ngl-j+1)
-!                IF((myrank.eq.44) .and. (jj.eq.3) .and. (i.eq.1))THEN
+                ov0(ii,jk,jj)=zintemp(i,j)
+!                IF((myrank.eq.myrank_check) .and. (jj.eq.jj_check) .and. (ii.eq.ii_check))THEN
 !                  print *,"WOA0:ov0(",ii,",",jk,",",jj,")=",ov0(ii,jk,jj)
 !                ENDIF
               ELSE IF(irec .eq. 5) THEN
-                mixedlayer0(ii,jj)=zin(i,jk,ngl-j+1)
-!                IF((myrank.eq.44) .and. (jj.eq.3) .and. (i.eq.1))THEN
-                IF((i.eq.768) .and. (j.eq.492) )THEN
+                mixedlayer0(ii,jj)=zintemp(i,j)
+                IF((myrank.eq.myrank_check) .and.     &
+                  (jj.eq.jj_check) .and. (ii.eq.ii_check))THEN
                   print *,"WOA0:mixedlayer0(",ii,",",jj,")=",mixedlayer0(ii,jj)
                 ENDIF
               ENDIF
@@ -2152,6 +2175,11 @@
 !ps       REAL, POINTER :: gl_ov(:,:,:)
 !!!       REAL(dp), POINTER :: gl_ow(:,:,:)
 !ps
+       REAL, ALLOCATABLE:: ottemp(:,:)
+       REAL, ALLOCATABLE:: ostemp(:,:)
+       REAL, ALLOCATABLE:: outemp(:,:)
+       REAL, ALLOCATABLE:: ovtemp(:,:)
+
        INTEGER jk,jj,j,nxj,i,ii
        INTEGER istat
 
@@ -2161,6 +2189,10 @@
        IF(.NOT. ALLOCATED(zou)) ALLOCATE (zou(nx,nodepth,my))
        IF(.NOT. ALLOCATED(zov)) ALLOCATE (zov(nx,nodepth,my))
        IF(.NOT. ALLOCATED(zmixedlayer)) ALLOCATE (zmixedlayer(nx,my))
+       IF(.NOT. ALLOCATED(ottemp)) ALLOCATE (ottemp(nx,my))
+       IF(.NOT. ALLOCATED(ostemp)) ALLOCATE (ostemp(nx,my))
+       IF(.NOT. ALLOCATED(outemp)) ALLOCATE (outemp(nx,my))
+       IF(.NOT. ALLOCATED(ovtemp)) ALLOCATE (ovtemp(nx,my))
 
        flag=.false.     
        IF (p_parallel_io) THEN
@@ -2254,6 +2286,11 @@
 !           call mpe_broadcast(zmixedlayer(:,:),nx*my,flag,mpe_double)
            call mpe_bcast(zmixedlayer(:,:),nx*my,0,mpe_double)
          endif
+         ottemp(:,:)=zot(:,jk,:)
+         ostemp(:,:)=zos(:,jk,:)
+         outemp(:,:)=zou(:,jk,:)
+         ovtemp(:,:)=zov(:,jk,:)
+         
 !         if( lreduce.eq.1 ) then
 !           call reducepick(zot(1,jk,1),nxdef,nx,my)
 !           call reducepick(zos(1,jk,1),nxdef,nx,my)
@@ -2266,26 +2303,41 @@
          DO jj = 1, jlistnum
            j=jlist1(jj)
            nxj=nxdef_2d(j)
+           if((myrank.eq.myrank_check).AND.(jj.eq.jj_check)) then
+             print *,'before pick, ottemp(521,',j,')=' &
+                    ,ottemp(521,j)
+             print *,'before pick, ottemp(777,',j,')=' &
+                    ,ottemp(777,j)
+           endif  
            if( lreduce.eq.1 ) then
-             call reducepick(zot(1,jk,j),nxdef(j),nx,1)
-             call reducepick(zos(1,jk,j),nxdef(j),nx,1)
-             call reducepick(zou(1,jk,j),nxdef(j),nx,1)
-             call reducepick(zov(1,jk,j),nxdef(j),nx,1)
+             call reducepick(ottemp(1,j),nxdef(j),nx,1)
+             call reducepick(ostemp(1,j),nxdef(j),nx,1)
+             call reducepick(outemp(1,j),nxdef(j),nx,1)
+             call reducepick(ovtemp(1,j),nxdef(j),nx,1)
              if(jk .eq. 1) then
                call reducepick(zmixedlayer(1,j),nxdef(j),nx,1)
+             endif
+             if((myrank.eq.myrank_check).AND.(jj.eq.jj_check)) then
+               print *,'after pick, ottemp(521,',j,')=' &
+                    ,ottemp(521,j)
+               print *,'after pick, ottemp(777,',j,')=' &
+                    ,ottemp(777,j)
              endif
            endif
            DO ii=1,nxj
              i=nxjstart(j)+ii-1
-             ot12(ii,jk,jj,dayID) = zot(i,jk,ngl-j+1)
-!             if((myrank.eq.44).AND.(i.eq.212).AND.(jj.eq.3).AND.(j.eq.235)) then
-!                print *,'ot12(',ii,',',jk,',',jj,',',dayID,')=',ot12(ii,jk,jj,dayID)
-!             endif
-             os12(ii,jk,jj,dayID) = zos(i,jk,ngl-j+1)
-             ou12(ii,jk,jj,dayID) = zou(i,jk,ngl-j+1)
-             ov12(ii,jk,jj,dayID) = zov(i,jk,ngl-j+1)
+             ot12(ii,jk,jj,dayID) = ottemp(i,j)
+             if((myrank.eq.myrank_check).AND.   &
+                (ii.eq.ii_check).AND.(jj.eq.jj_check)) then
+                print *,'i=',i,',j=',j,',ngl=',ngl     &
+                       ,',ot12(',ii,',',jk,',',jj,',',dayID,')=' &
+                       ,ot12(ii,jk,jj,dayID)
+             endif
+             os12(ii,jk,jj,dayID) = ostemp(i,j)
+             ou12(ii,jk,jj,dayID) = outemp(i,j)
+             ov12(ii,jk,jj,dayID) = ovtemp(i,j)
              if(jk .eq. 1) then
-               mixedlayer12(ii,jj,dayID) = zmixedlayer(i,ngl-j+1)
+               mixedlayer12(ii,jj,dayID) = zmixedlayer(i,j)
              endif
            ENDDO
          ENDDO
@@ -2298,6 +2350,10 @@
          DEALLOCATE (zou)
          DEALLOCATE (zov)
          DEALLOCATE (zmixedlayer)
+         DEALLOCATE (ottemp)
+         DEALLOCATE (ostemp)
+         DEALLOCATE (outemp)
+         DEALLOCATE (ovtemp)
 !!!         DEALLOCATE (zow)
 !ps       ENDIF
        END SUBROUTINE read_godas_dayp1
@@ -2312,8 +2368,8 @@
        INTEGER, INTENT(out):: nts
        INTEGER, INTENT(out):: istat
        REAL, INTENT(out):: recdate    ! record data in absolute time foremat, e.g., 20130911.1350
-       REAL, DIMENSION(nlon,nodepth,nlat), INTENT(out):: zot, zos, zou, zov
-       REAL, DIMENSION(nlon,nlat), INTENT(out):: zmixedlayer
+       REAL, DIMENSION(nlon,nodepth,nlat), INTENT(in out):: zot, zos, zou, zov
+       REAL, DIMENSION(nlon,nlat), INTENT(in out):: zmixedlayer
      
        REAL      :: missing_value
        INTEGER               :: io_ntime  ! number of timesteps in NetCDF file
@@ -2327,8 +2383,11 @@
        !!! INTEGER       :: start(4), COUNT(4), nvarid, ndimid, nts, tsID
        INTEGER       :: otid2,osid2,ouid2,ovid2,ndimid2,mixedid2
        REAL, ALLOCATABLE :: timevals2(:)
+       REAL, ALLOCATABLE :: ottemp(:,:),ostemp(:,:)
+       REAL, ALLOCATABLE :: outemp(:,:),ovtemp(:,:)
+       REAL, ALLOCATABLE :: mixlayertemp(:,:)
      
-     
+        
        ! read one-record godas data
        istat=0
        IF (.NOT.p_parallel_io) RETURN    !!! Only for p_parallel_io, else return
@@ -2353,14 +2412,22 @@
            WRITE(nerr,*) 'read_godas_1record:', 'To few time steps < 1'
            istat=-1
          ELSE
-           ALLOCATE (timevals2(nts))
+           IF(.NOT. ALLOCATED(timevals2)) ALLOCATE (timevals2(nts))
+           IF(.NOT. ALLOCATED(ottemp)) ALLOCATE (ottemp(nlon,nlat))
+           IF(.NOT. ALLOCATED(ostemp)) ALLOCATE (ostemp(nlon,nlat))
+           IF(.NOT. ALLOCATED(outemp)) ALLOCATE (outemp(nlon,nlat))
+           IF(.NOT. ALLOCATED(ovtemp)) ALLOCATE (ovtemp(nlon,nlat))
+           IF(.NOT. ALLOCATED(mixlayertemp)) ALLOCATE (mixlayertemp(nlon,nlat))
+
            CALL IO_INQ_VARID (gpnc2%file_id, 'time', io_var_id)
            CALL IO_GET_VAR_DOUBLE(gpnc2%file_id, io_var_id, timevals2)
            IF (tsID.EQ.LAST_RECORD) tsID=nts     !!! modify tsID for LAST_RECORD
 
            recdate=timevals2(tsID)
            
-           WRITE (nerr,*) 'read_godas_1record: nts=',nts &
+           WRITE (nerr,*) 'read_godas_1record: nlon=',nlon &
+                        ,',nlat=',nlat,',nts=',nts &
+                        ,',tsID=',tsID   &
                         ,',timevals(tsID)=',timevals2(tsID)
            IF(tsID .lt. nts) THEN
              print *, 'read_godas_1record: timevals(tsID+1)=',timevals2(tsID+1)
@@ -2390,15 +2457,24 @@
              DO jk=1, nodepth
                io_start(:) = (/ 1, 1, jk, tsID /)
                io_count(:) = (/ nlon, nlat, 1, 1 /)
-               CALL IO_GET_VARA_DOUBLE (gpnc2%file_id,otid2,io_start,io_count, zot(1:nlon,jk,1:nlat))
-               CALL IO_GET_VARA_DOUBLE (gpnc2%file_id,osid2,io_start,io_count, zos(1:nlon,jk,1:nlat))
-               CALL IO_GET_VARA_DOUBLE (gpnc2%file_id,ouid2,io_start,io_count, zou(1:nlon,jk,1:nlat))
-               CALL IO_GET_VARA_DOUBLE (gpnc2%file_id,ovid2,io_start,io_count, zov(1:nlon,jk,1:nlat))
+               CALL IO_GET_VARA_DOUBLE (gpnc2%file_id,otid2,io_start,io_count, ottemp(1:nlon,1:nlat))
+               CALL IO_GET_VARA_DOUBLE (gpnc2%file_id,osid2,io_start,io_count, ostemp(1:nlon,1:nlat))
+               CALL IO_GET_VARA_DOUBLE (gpnc2%file_id,ouid2,io_start,io_count, outemp(1:nlon,1:nlat))
+               CALL IO_GET_VARA_DOUBLE (gpnc2%file_id,ovid2,io_start,io_count, ovtemp(1:nlon,1:nlat))
                imixed_start(:) = (/ 1, 1, 1, tsID /)
                imixed_count(:) = (/ nlon, nlat, 1, 1 /)
                if(jk .eq. 1) then
-                 CALL IO_GET_VARA_DOUBLE (gpnc2%file_id,mixedid2,imixed_start,imixed_count, zmixedlayer(1:nlon,1:nlat))
+                 CALL IO_GET_VARA_DOUBLE (gpnc2%file_id,mixedid2,imixed_start,imixed_count, mixlayertemp(1:nlon,1:nlat))
                endif
+               DO j=1,nlat
+                 zot(:,jk,j)=ottemp(:,nlat-j+1)
+                 zos(:,jk,j)=ostemp(:,nlat-j+1)
+                 zou(:,jk,j)=outemp(:,nlat-j+1)
+                 zov(:,jk,j)=ovtemp(:,nlat-j+1)
+                 if(jk .eq. 1) then
+                   zmixedlayer(:,j)=mixlayertemp(:,nlat-j+1)
+                 endif
+               ENDDO
              ENDDO
              zot(:,:,:)=MERGE(zot(:,:,:),xmissing,zot(:,:,:).NE.missing_value)
              zos(:,:,:)=MERGE(zos(:,:,:),xmissing,zos(:,:,:).NE.missing_value)
@@ -2406,16 +2482,25 @@
              zov(:,:,:)=MERGE(zov(:,:,:),xmissing,zov(:,:,:).NE.missing_value)
              zmixedlayer(:,:)=MERGE(zmixedlayer(:,:),xmissing,zmixedlayer(:,:).NE.missing_value)
 !!!         zow(:,:,:,3)=MERGE(zow(:,:,:,3),xmissing,zow(:,:,:).NE.missing_value)
+
+             if(ALLOCATED(ottemp)) DEALLOCATE(ottemp)
+             if(ALLOCATED(ostemp)) DEALLOCATE(ostemp)
+             if(ALLOCATED(outemp)) DEALLOCATE(outemp)
+             if(ALLOCATED(ovtemp)) DEALLOCATE(ovtemp)
+             if(ALLOCATED(mixlayertemp)) DEALLOCATE(mixlayertemp)
+
            ENDIF
          ENDIF
          CALL IO_close(gpnc2)
          IF ( lwarning_msg.GE.2 ) THEN
-            WRITE (nerr,*) 'read_dailygodas, date=',recdate
+            WRITE (nerr,*) 'read_dailygodas, date=',recdate &
+                          ,'ot(777,1,256)=',zot(777,1,256)
          ENDIF
        ENDIF
+
        END SUBROUTINE read_godas_1record
       END SUBROUTINE read_dailygodas
-  ! ----------------------------------------------------------------------
+! ----------------------------------------------------------------------
 
 !------------------------------------------------------------------------------		
       SUBROUTINE fill_missing2(finout,io_nlon,io_ngl,ndepth,ldeep)
