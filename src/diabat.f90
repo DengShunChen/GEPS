@@ -257,7 +257,7 @@
       integer nmgwor,nmgwcv,mtnvar
       real hprime_b(nxp,mtnvar,my_max)
       real pltn(nxp,lev,my_max),pkn(nxp,lev,my_max),pk2n(nxp,lev,my_max),  &
-           ttpn(nxp,lev,my_max)
+           tt_bfcnv(nxp,lev,my_max)
       real p2c(nxp,lev+1),phie2c(nxp,lev+1),p2ac(nxp,lev+1)
       real utgwc(nxp,lev),vtgwc(nxp,lev),delttcv(nxp,lev),                 &
            dudtc(nxp,lev),dvdtc(nxp,lev),dtdtc(nxp,lev),                   &
@@ -821,8 +821,6 @@
       vp(i,k,jj) = vp(i,k,jj)*xx
       tt(i,k,jj) = tt(i,k,jj)*pk(i,k,jj) / (1.0+0.608*qt(i,k,jj))
 !byl      ttpn(i,k,jj) = ttp(i,k,jj)*pkn(i,k,jj)/(1.0+0.608*qp(i,k,jj))
-!quick fix for convective GWD
-      ttpn(i,k,jj) = tt(i,k,jj)
       ttp(i,k,jj) = ttp(i,k,jj) / (1.0+0.608*qp(i,k,jj))
   230 continue
 !
@@ -1050,6 +1048,12 @@
 !
       endif  !(end of topo dograv and nmgwor=2)
 !
+!quick fix for convective GWD
+      do k=1,lev
+        do i=1,nxj
+          tt_bfcnv(i,k,jj) = tt(i,k,jj)
+        enddo
+      enddo
 !
       if ( docup .and. nmcup.eq. 1 )                               &
        call cupcwb (j,nxjp(j),nxp,my,lev,ktcup,dta,grav,rgas,cp,hltm,etop,prevap  &
@@ -1304,7 +1308,7 @@
 !            ttc(i,kc) = tt(i,k,jj)
 !            utc(i,kc) = ut(i,k,jj)
 !            vtc(i,kc) = vt(i,k,jj)
-            delttcv(i,k) = tt(i,k,jj) - ttpn(i,k,jj)
+            delttcv(i,k) = tt(i,k,jj) - tt_bfcnv(i,k,jj)
           enddo
         enddo
 !
