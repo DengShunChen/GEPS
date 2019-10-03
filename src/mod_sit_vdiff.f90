@@ -87,7 +87,7 @@
 !#define GDCHK2 (1 .eq. 0).AND.(mpp_pe().EQ.44).AND.(jrow.EQ.3).AND.(jl.EQ.212)
 #define GDCHK2 (1 .eq. 0).AND.(mpp_pe().EQ.254).AND.(jrow.EQ.3).AND.(jl.EQ.1)
 !#define GDCHK3 (1 .eq. 1).AND.(mpp_pe().EQ.49).AND.(jrow.EQ.3).AND.(jl.EQ.212)
-#define GDCHK3 (1 .eq. 1).AND.(mpp_pe().EQ.254).AND.(jrow.EQ.3).AND.(jl.EQ.1)
+#define GDCHK3 (1 .eq. 1).AND.(mpp_pe().EQ.209).AND.(jrow.EQ.5).AND.(jl.EQ.12)
 !#define GDCHK3 (1 .eq. 1).AND.(mpp_pe().EQ.21).AND.(jrow.EQ.4).AND.(jl.EQ.319)
 !#define GDCHK3 (1 .eq. 1).AND.(mpp_pe().EQ.24).AND.(jrow.EQ.3).AND.(jl.EQ.188)
 !#define GDCHK3 (mpp_pe().EQ.35).AND.(jrow.EQ.4).AND.(jl.EQ.495) 

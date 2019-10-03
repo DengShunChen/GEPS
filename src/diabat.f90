@@ -1,6 +1,6 @@
-#define myrank_check 254
-#define ii_check 1 
-#define jj_check 3
+#define myrank_check 45
+#define ii_check 104
+#define jj_check 5
 !
       subroutine diabat ( fwd,docup,dodry,dolsp,dopbl,dorad,doshl,dograv       &
                     , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw       &
@@ -171,7 +171,8 @@
       use const,                 ONLY:do_sit,ldailyFCTsst,dailyClm_option
       use mod_sitgrid
       USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
-      USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt
+      USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt &
+                                     ,timebl_option,timebl_start
       USE mod_eos_ocean,         ONLY:AirVaporPressure,CalcSm
       USE mod_sst,               ONLY:time_weights,now1,now2,wgto1,wgto2 &
                                      ,obswtbnmw1,obswtbnmw2,obswtbwgt1   &
@@ -1784,6 +1785,7 @@
                  ,',sitlon(',ii_check,',jj)=',sitlon(ii,jj)          &
                  ,',sitlclass=',sitlclass(ii,jj)                     &
                  ,',sitmask=',sitmask(ii,jj),',tg=',tg(ii,jj)        &
+                 ,',tgfsit=',tgfsit(ii,jj)                           &
                  ,',obswtb=',obswtb(ii,jj),',obswtbfsit=',obswtbfsit(ii,jj) &
                  ,',dta=',dta,',dt=',dt,',dtfsit=',dtfsit
             endif
@@ -1975,8 +1977,7 @@
          WRITE(nerr,*) "sitwv=",sitwv(ii,jj,:)
          WRITE(nerr,*) "sitwtke=",sitwtke(ii,jj,:)
         endif
-
-          call sit_vdiff ( nxjp(j), nxp, jj, istep, dtfsit,            &
+         call sit_vdiff ( nxjp(j), nxp, jj, istep, dtfsit,             &
               sitlat, sitlon(:,jj), tau, tauhr,                        &
               sitcor(:,jj), slm(:,jj), sitlclass(:,jj),                &
               sitmask(:,jj), bathy(:,jj), wlvl(:,jj),   &
@@ -2025,18 +2026,22 @@
               oldsitwv(:,jj,0:lkvl+1,0:1),oldsitww(:,jj,0:lkvl+1,0:1), &
              oldsitws(:,jj,0:lkvl+1,0:1),oldsitwtke(:,jj,0:lkvl+1,0:1),&
               dtswdt(:,jj), sftobswt(:,jj,0:lkvl+1) )
-            if (jj .eq. 1) then
-              dtsittau=dtsittau+dtfsit
-              dtsitmon=dtsitmon+dtfsit
-              dtsit24=dtsit24+dtfsit
-            endif
-            call storesittau(nxjp(j),jj,nxp,my_max,lkvl,sitwt,sitws,sitwu,sitwv,dtfsit)
-            call storesit24(nxjp(j),jj,nxp,my_max,lkvl,sitwt,sitws,sitwu,sitwv,dtfsit)
-
+        
+        if(jj .eq. 1) then
+          dtsittau=dtsittau+dtfsit
+          dtsitmon=dtsitmon+dtfsit
+          dtsit24=dtsit24+dtfsit
+        endif
+        call storesittau(nxjp(j),jj,nxp,my_max,lkvl,sitwt,sitws,sitwu,sitwv,dtfsit)
+        call storesit24(nxjp(j),jj,nxp,my_max,lkvl,sitwt,sitws,sitwu,sitwv,dtfsit)
+        
         do ii = 1, nxj
-          if(ocean(ii,jj) .AND. (sitmask(ii,jj).EQ.1)) then
-            tg(ii,jj)=tgold(ii,jj)+dtswdt(ii,jj)*dtfsit
-            tgold(ii,jj)=tsw(ii,jj)
+          if(ocean(ii,jj) .AND. sitmask(ii,jj).EQ.1) then
+            if(timebl_option .eq. 1 .AND. (tau .lt. timebl_start*24.)) then
+              tg(ii,jj)=tg(ii,jj)
+            else
+              tg(ii,jj)=tgold(ii,jj)+dtswdt(ii,jj)*dtfsit
+            endif
           endif
           if(myrank .EQ. myrank_check .AND.         &
             jj .EQ. jj_check .AND. ii .EQ. ii_check) then
@@ -2056,16 +2061,6 @@
 
       endif  !end lrun_sitvdiff
 
-
-         if(myrank.eq.myrank_check .AND.            &
-           jj.EQ.jj_check .AND. ii .EQ. ii_check) then
-           print*,'after sit_vdiff: sitlat(',ii_check,')=',sitlat(ii_check)  &
-                 ,',sitlon(',ii_check,',jj)=',sitlon(ii_check,jj)            &
-                 ,',sitlclass=',sitlclass(ii_check,jj)                       &
-                 ,',sitmask=',sitmask(ii_check,jj),',tg=',tg(ii_check,jj)    &
-                 ,',tsw=',tsw(ii_check,jj),',dtswdt=',dtswdt(ii_check,jj)    &
-                 ,',tgold=',tgold(ii_check,jj)
-         endif
 
         if(jj .eq. jlistnum) then
           deallocate(sstm)

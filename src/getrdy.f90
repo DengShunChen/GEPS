@@ -1024,8 +1024,8 @@
               sitlon(ii,jj)=xlon(i,jj)
             ENDIF
 
-            if( (abs(sitlon(ii,jj)-180.) .le. 0.25) .AND. &
-               (abs(sitlat(ii)+30.) .le. 0.25) ) then
+            if( (abs(sitlon(ii,jj)-113.9) .le. 0.25) .AND. &
+               (abs(sitlat(ii)-2.7) .le. 0.25) ) then
                 myrank_check=myrank
                 ii_check=ii
                 jj_check=jj

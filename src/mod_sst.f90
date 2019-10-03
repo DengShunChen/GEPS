@@ -6,9 +6,9 @@
 #define mpp_root_pe() 0
 #define p_parallel_io (myrank .eq. 0)
 #define p_pe myrank
-#define myrank_check 254 
-#define ii_check 1
-#define jj_check 3
+#define myrank_check 209 
+#define ii_check 12
+#define jj_check 5
 #endif
 
 !    read wtfn12, wsfn12 data

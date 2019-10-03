@@ -1,6 +1,6 @@
-#define myrank_check 254
-#define ii_check 1
-#define jj_check 3
+#define myrank_check 45
+#define ii_check 101
+#define jj_check 5
 
        subroutine intgrt
 !
@@ -147,11 +147,11 @@
 !for sst_restore_tau>0., update sst(W00100), seaice(W00091), snowdepth(B00650)
       integer*8 idtg_sst,idtg1_sst,idtg_temp
       integer icurrenttau,yyyymmdd,hhii
-      logical lsstrestore,iceold(nxp,my),oceanold(nxp,my)
+      logical lsstrestore,iceold(nxp,my_max),oceanold(nxp,my_max)
       character lrec*26
       character*12 cdtg
       real    ssttemp,cicetemp,snrtemp
-      real    sst(nx,my),ssttau,tautemp
+      real    sst(nxp,my_max),ssttau,tautemp
       integer yr, mo, dy, hr, mn
 
 !for opgsst sst
@@ -1717,7 +1717,8 @@
                 print *,'intgrt:ssttemp=',ssttemp,',obswtbwgt1=',obswtbwgt1 &
                        ,',obswtbnmw1=',obswtbnmw1,',obswtbnmw2=',obswtbnmw2 &
                        ,',dailyFCTsst(..,obswtbnmw1)=',dailyFCTsst(ii,jj,obswtbnmw1) &
-                       ,',dailyFCTsst(..,obswtbnmw2)=',dailyFCTsst(ii,jj,obswtbnmw2)
+                       ,',dailyFCTsst(..,obswtbnmw2)=',dailyFCTsst(ii,jj,obswtbnmw2) &
+                       ,',tg=',tg(ii,jj)
               endif
             endif
             sst(ii,jj)=merge(ssttemp,tg(ii,jj),(ssttemp.GE.271. .AND. ssttemp.LT.400.))
@@ -1756,7 +1757,7 @@
             if(ocean(ii,jj)) then
               if(do_sit .and. (sitmask(ii,jj) .eq. 1.)) then
                 obswtb(ii,jj)=max(271.,sst(ii,jj))
-!                  tg(i,jj)=max(271.,sst(i,j))
+                tg(ii,jj)=max(271.,sst(ii,jj))
 !                  tgold(i,jj)=max(271.,sst(i,j))
 !                  tsw(i,jj)=max(271.,sst(i,j))
               else
