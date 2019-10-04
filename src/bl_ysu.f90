@@ -86,8 +86,8 @@
    real,parameter    ::  rlam = 30.,prmin = 0.25,prmax = 4.
 !   real,parameter    ::  brcr_ub = 0.0,brcr_sb = 0.25,cori = 1.e-4
    real,parameter    ::  brcr_ub = 0.25,brcr_sb = 0.25,cori = 1.e-4
-   real,parameter    ::  afac = 6.8,bfac = 6.8,pfac = 2.0,pfac_q = 2.0
-!   real,parameter    ::  afac = 6.8,bfac = 7.8,pfac = 2.0,pfac_q = 2.0
+!   real,parameter    ::  afac = 6.8,bfac = 6.8,pfac = 2.0,pfac_q = 2.0
+   real,parameter    ::  afac = 6.8,bfac = 6.8,pfac = 3.5,pfac_q = 3.4
    real,parameter    ::  phifac = 8.,sfcfrac = 0.1
 !   real,parameter    ::  phifac = 7.,sfcfrac = 0.1
    real,parameter    ::  d1 = 0.02, d2 = 0.05, d3 = 0.001
@@ -993,7 +993,7 @@
        al(i,k)   = -dtodsu*dsdz2
        ad(i,k)   = ad(i,k)-au(i,k)
        ad(i,k+1) = 1.-al(i,k)
-         if (f3(i,k,1).lt.-1e-3)print*,i,k,'f3(i,k,1)=',f3(i,k,1),'xkzm=',xkzm(i,k),'xkzh=',xkzh(i,k),'xkzq=',xkzq(i,k),'sfcflg=',sfcflg(i),'wscale=',wscale(i),'wscalek=',wscalek(i,k),'wscalek2=',wscalek2(i,k),'ust3=',ust3(i),'wstar3=',wstar3(i),'zfac=',zfac(i,k),'qfxpbl=',qfxpbl(i),'we=',we(i)
+!        if (f3(i,k,1).lt.-1e-3)print*,i,k,'f3(i,k,1)=',f3(i,k,1),'xkzm=',xkzm(i,k),'xkzh=',xkzh(i,k),'xkzq=',xkzq(i,k),'sfcflg=',sfcflg(i),'wscale=',wscale(i),'wscalek=',wscalek(i,k),'wscalek2=',wscalek2(i,k),'ust3=',ust3(i),'wstar3=',wstar3(i),'zfac=',zfac(i,k),'qfxpbl=',qfxpbl(i),'we=',we(i)
      enddo
    enddo
 !
