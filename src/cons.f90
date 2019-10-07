@@ -27,6 +27,7 @@
       use mod_sit_control,       ONLY:sit_nml
 !-----------------------------------------------------------------------
       use radn
+      use noah
 !-----------------------------------------------------------------------
 !
 
@@ -63,7 +64,8 @@
                       , ictm,isol,ico2,iaer,ialb,irad,iems,ntcw         &
                       , num_p3d,ntoz,iovr_sw,iovr_lw,isubc_sw,isubc_lw  &
                       , sashal,crick_proof,ccnorm,norad_precip,me,doo3l &
-                      , ioutsigr,domfc,out_green,dosppt,dospptout       &
+                      , ioutsigr,domfc,out_green,isot,ivegsrc           &
+                      , otgreen,out_hp,dosppt,dospptout                 &
                       , de_corretime_500,de_corretime_1000              &
                       , de_corretime_2000                               &
                       , facsppt500,facsppt1000,facsppt2000,ndsladvh2    &
@@ -82,7 +84,7 @@
                      , ifilin_ncep, ifilin_sst, ifilin_nc &
                      , ifilin_ClmANA,ifilin_ClmFCT
 
-      namelist /typ/ write_tau, write_mem, trk_intv
+      namelist /typ/ write_tau, write_mem, trk_intv, min_trk_pres
       integer istat4,istat5,istat6,istat7
 
       data pathname/'NWPETCGLB'/
@@ -125,6 +127,7 @@
       read (12,filst,end=110)
 !
   110 continue
+      close(12)
 !
       if(myrank .eq. 0) print filst
 !
@@ -136,6 +139,7 @@
   120 continue
       read (1,typ,end=121)
   121 continue
+      close(1)
 !
       close(1)
       open (unit=1,file=trim(namlsts),form='formatted')
@@ -153,6 +157,7 @@
 !
 ! read in idtg*12
       read(2,'(i8.8)')idtg8
+      close(2)
 ! transfer idtg8 to idtg*12
       if(idtg8.gt.60000000)then
         idtg = 200000000000 + idtg8*100
@@ -492,6 +497,7 @@
       if (outdir(numout).eq.'nomodata')  go to 85
    80 continue
    85 numout= numout-1
+      close(4)
 !-----------------------------------------------------------------------
 !  for WSM6
 !-----------------------------------------------------------------------

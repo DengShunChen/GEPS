@@ -20,7 +20,9 @@
              alb       ,gwclim       ,   acld       , &
             ctot       ,  chig       ,   cmid       , &
             clow       ,  hpbl       ,   cosz       , & 
-         rainlp6       ,raincu6
+         rainlp6       ,raincu6      ,                &
+         rainlp3       ,raincu3      ,                &
+         rainlp1       ,raincu1
 
       logical, allocatable,save :: land(:,:),ice(:,:),ocean(:,:)
 
@@ -30,7 +32,8 @@
       real, dimension(:,:),allocatable,save :: xlon
       real, dimension(:)  ,allocatable,save :: xlat
 
-      real, dimension(:,:),allocatable,save :: u10,v10,t2,rh2
+      real, dimension(:,:),allocatable,save :: u10,v10,t2,rh2,rh10,q2  &
+                                              ,fm,fm10,fh,fh2,srflag
  
       real, dimension(:,:),allocatable,save :: fpsp,fpsp1
 
@@ -66,6 +69,8 @@
             ctot(nxp,my_max),  chig(nxp,my_max),   cmid(nxp,my_max), &
             clow(nxp,my_max),  hpbl(nxp,my_max),   cosz(nxp,my_max), &
          rainlp6(nxp,my_max),raincu6(nxp,my_max),                    &
+         rainlp3(nxp,my_max),raincu3(nxp,my_max),                    &
+         rainlp1(nxp,my_max),raincu1(nxp,my_max),                    &
                                           stat=ierr)
 
            if (ierr/= 0) then
@@ -113,8 +118,10 @@
            ib=0
            cof=0.
 
-           allocate (u10(nxp,my_max),v10(nxp,my_max),&
-                     t2(nxp,my_max),rh2(nxp,my_max), stat=ierr)
+           allocate (u10(nxp,my_max),v10(nxp,my_max),srflag(nxp,my_max) &
+                     ,t2(nxp,my_max),rh2(nxp,my_max),rh10(nxp,my_max)   &
+                     ,q2(nxp,my_max),fm(nxp,my_max),fm10(nxp,my_max)    &
+                     ,fh(nxp,my_max),fh2(nxp,my_max), stat=ierr)
 
            if (ierr/= 0) then
                write(6,*) 'mod_phygrid : allocate fail 6 '
@@ -144,9 +151,9 @@
            deallocate (land,ice,ocean)
            deallocate (il,ib)
            deallocate (cof,xlon,xlat)
-           deallocate (u10,v10,t2,rh2)
+           deallocate (u10,v10,t2,rh2,rh10,srflag,q2,fm,fm10,fh,fh2)
            deallocate (fpsp,fpsp1)
-           deallocate (rainlp6,raincu6)
+           deallocate (rainlp6,raincu6,rainlp3,raincu3,rainlp1,raincu1)
 
            return
 

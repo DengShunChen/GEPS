@@ -19,7 +19,7 @@
              fuslr,fdslr,fuirr,fdirr,                               &
              htrsw0,htrlw0,                                         &
              asol_clr,olr_clr,ss_clr,rs_clr,                        &
-             sld_clr,rld_clr)
+             sld_clr,rld_clr,sfalb_g,semis_g)
 ! -------------------------------------------------------------------
 ! --- for RRTMG scheme :
 !
@@ -77,6 +77,7 @@
 ! -------------------------------------------------------------------
 ! --- for rrtmg output:
       dimension asol(nx),olr(nx),ss(nx),rs(nx),sld(nx),rld(nx)
+      dimension sfalb_g(nx),semis_g(nx)
 !
 ! --- 3d
 !
@@ -442,6 +443,8 @@
           clow(i)=fluxr(i,10)  ! low cloud fraction
           ctot(i)=fluxr(i,20)  ! total cloud fraction
 !
+          sfalb_g(i)=sfalb(i)
+          semis_g(i)=semis(i)  ! surface emissivity
        enddo
 
        do k = 1, lev

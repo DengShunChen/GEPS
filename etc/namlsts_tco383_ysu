@@ -5,8 +5,8 @@
  octahedral=t,
  nout=9000,
  io_quilting=f,
- npex=4,
- npey=384,
+ npex=2,
+ npey=96,
  &end
 
  &modlst
@@ -14,7 +14,7 @@
  taue=120.0,
  tauo=1.0,
  taup=6.0,
- taureg=6.,
+ taureg=48.,
  dt=360.0,
  cstar=f,
  update=t,
@@ -31,7 +31,7 @@
  doshl=t,
  dodry=f,
  dograv=t,
- docgrav=t,
+ docgrav=f,
  donnmi=t,
  dosppt=f,
  dospptout=f,
@@ -61,13 +61,11 @@
  ioutsigr=1,
  ggdef='gi0g',
  gmdef='gimg',
- domfc=f,
- out_green=f,
+ domfc=48.,
+ out_green=t,
  otgreen=3.,
- out_hp=f,
+ out_hp=t,
  ndsladvh2=f,
- isot=0,
- ivegsrc=0,
  &end
 
  &typ

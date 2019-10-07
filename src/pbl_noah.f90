@@ -3,13 +3,13 @@
                         , vt,tt,qt,pk,pk2,ustar,tstar,qstar,e,eps,hflux &
                         , qflux,fwd,gwclim,tgclim,ocean,ice,sheleg      &
                         , totalp,ss,rs,alb,imx,xkmx,idg,xkmd,itype      &
-                        , t2,rh2,u10,v10                                &
+                        , t2,q2,rh2,rh10,u10,v10,fm,fh,fm10,fh2,srflag  &
                         , rld,stbo                                      &
                         , km,smc,stc,canopy,runoff,sigmaf,istyp,ivegtyp &
-                        , ncld,dsigma,slopetyp,slc,sncover,snwdph       &
+                        , ncld,dsigma,islopetyp,slc,sncover,snwdph       &
                         , shdmax,shdmin,snoalb,albedo2                  &
                         , sld,zice,cice,xtice,hpbl,asl,atl,xmu,gfx      &
-                        , kpbl,nmpbl,jj )
+                        , kpbl,nmpbl,jj,isot,ivegsrc,sfemis_g )
 !
 !#######################################################################
 !                     subroutine description
@@ -218,24 +218,29 @@
 !
 ! noah  ------------
 ! input and output
-      integer slopetyp(nx),io,jo
+      integer islopetyp(nx),islmsk(nx),io,jo
       real      sld(nx),                                                &
                 slc(nx,km),                                             &
                 sheleg(nx),snwdph(nx),sncover(nx),                      &
                 zice(nx),cice(nx),xtice(nx),                            &
-                rh2(nx),                                                &
-                shdmin(nx),shdmax(nx),snoalb(nx),albedo2(nx)
+                rh2(nx),rh10(nx),                                       &
+                shdmin(nx),shdmax(nx),snoalb(nx),albedo2(nx),sfemis_g(nx)
 ! local
-      real      z0rl(nx),work1(nx),slmsk(nx),cd(nx),cdq(nx),            &
-                tsurf(nx),psi(nx),                                      &
-                fm10(nx),fh2(nx),                                       &
+      real      z0rl(nx),prslki(nx),cd(nx),cdq(nx),                     &
+                tsurf(nx),psi(nx),prsl1(nx),                            &
+                fm10(nx),fh2(nx),fh10(nx),                              &
                 qsurf(nx),evapc(nx),cmm(nx),chh(nx),ep1d(nx),           &
                 radsl(nx) ,tprcp(nx),                                   &
-                phy_f2d(nx),q2(nx) 
+!                phy_f2d(nx),q2(nx) 
+                ddvel(nx),q2(nx) 
 !
-      real      srflag(nx)
+      real      srflag(nx),sfemis(nx)
 !orig logical   flag_guess(nx),flag_iter(nx),mom4ice(nx)
       logical   flag_guess(nx),flag_iter(nx),mom4ice
+!
+!2018 new
+      logical   redrag
+      integer   ivegsrc,isot
 !----------------------------------------------------
 ! for new pbl: asl,atl,xmu
       real      asl(nx,lev),atl(nx,lev),swh(nx,lev),hlw(nx,lev),xmu(nx)
@@ -246,6 +251,7 @@
 ! noah mode
       lsm   =  1
       mom4ice =.false.
+      redrag =.false.
 !------------------------------------------------------------
 !     io=67
 !     jo=251
@@ -338,14 +344,16 @@
 !..........................................
        do i=1,nxj
 ! build slimsk table for input
-        if(ocean(i))slmsk(i)=0.
-        if(land(i))slmsk(i) =1.
-        if(ice(i))slmsk(i)  =2.
+        if(ocean(i))islmsk(i)=0
+        if(land(i))islmsk(i) =1
+        if(ice(i))islmsk(i)  =2
 ! build roughness from ustar over ocean for input
         if(fwd.and.ocean(i))z0(i)=ustar(i)*ustar(i)*0.014/g ! get z0 from ustar
 !
-        work1(i)            =pk2(i,lev)/pk(i,lev)   !(ps/p1)**r/cp
-        rcl(i)              =1.
+        prslki(i)            =pk2(i,lev)/pk(i,lev)   !(ps/p1)**r/cp
+!     sfemis   - real, sfc lw emissivity (fractional)
+        sfemis(i)          =sfemis_g(i)
+        radsl(i)           =-ss(i)-rld(i)  ! snet + rld  upward
 !
         tprcp(i)            =totalp(i)/1000.  ! dth precip (m)
 !
@@ -354,7 +362,9 @@
 !       shdmin(i)           =0.01
 !       shdmax(i)           =0.99
 !       snoalb(i)           =0.6
-        phy_f2d(i)          =0.
+!        phy_f2d(i)          =0.
+        ddvel(i)            =0.
+        rcl(i)              =1.
        enddo
 !..............................................................
 !  some variable pass from input and may be changed in this sub
@@ -378,8 +388,11 @@
         z0rl(i)             =z0(i)*100.         ! transport from m to cm
 !       sheleg(i)           =snr(i)    !snow equiv water depth (mm)
 !       snwdph(i)           =snr(i)*10. !snow real depth (mm)
-        psi(i)              =ps(i)*0.1  ! surface pressure (mb to cb)
-        prsl(i,1)           =pkx(i,lev)*100.     !cb
+!        psi(i)              =ps(i)*0.1  ! surface pressure (mb to cb)
+!        prsl(i,1)           =pkx(i,lev)*100.     !cb
+!noah new
+        psi(i)              =ps(i)*100.  ! surface pressure (mb to pa)
+        prsl1(i)            =pkx(i,lev)*1000.*100.     !pa
        enddo
 !...........................
 ! initialize  variable
@@ -430,12 +443,17 @@
 !surface exchange coefficient
 !
       call sfc_diff(nxj,nx,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev), &
-                    tg,z0rl,cd,cdq,rb,                                  &
-                    rcl,prsl(1,1),work1,slmsk,                          &
+!                    tg,z0rl,cd,cdq,rb,                                  &
+!                    rcl,prsl(1,1),work1,slmsk,                          &
+!                    ustar,sfcw,phy_f2d,fm10,fh2,                        &
+!                    sigmaf,ivegtyp,shdmax,                              &
+!                    tsurf,flag_iter)
+                    hgt(1,lev),snwdph,tg,z0rl,cd,cdq,rb,                &
+                    prsl1,prslki,islmsk,                                &
                     stress,fm,fh,                                       &
-                    ustar,sfcw,phy_f2d,fm10,fh2,                        &
-                    sigmaf,ivegtyp,shdmax,                              &
-                    tsurf,flag_iter)
+                    ustar,sfcw,ddvel,fm10,fh2,fh10,                   &
+                    sigmaf,ivegtyp,shdmax,ivegsrc,                      &
+                    tsurf,flag_iter,redrag)
 !
 !     print*,'pblnoah,diff'
          do i=1,nxj
@@ -445,10 +463,13 @@
 !
 ! surface flux over ocean
 !
-      call sfc_ocean(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev), &
-                     tg,qsurf,evapc,gfx,cd,cdq,rcl,prsl(1,1),work1,     &
-                     slmsk,qflux,hflux,ep1d,phy_f2d,                    &
-                     flag_iter)
+!      call sfc_ocean(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev), &
+!                     tg,qsurf,evapc,gfx,cd,cdq,rcl,prsl(1,1),work1,     &
+!                     slmsk,qflux,hflux,ep1d,phy_f2d,                    &
+!                     flag_iter)
+      call sfc_ocean(nxj,nx,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev), &
+                     tg,cd,cdq,prsl1,prslki,islmsk,ddvel,flag_iter,      &
+                     qsurf,gfx,qflux,hflux,ep1d)
 !
 !     print*,'pblnoah,ocean'
 !
@@ -470,28 +491,43 @@
 !     enddo
 !     endif
 !
-      call sfc_drv(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev), &
-                     sheleg,sncover,snwdph,tg,qsurf,tprcp,SRFLAG,       &
-                     smc,stc,slc,evapc,istyp,sigmaf,                    &
-                     ivegtyp,canopy,rld,sld,                            &
-                     radsl,dth,tgclim,gfx,cd,cdq,                       &
-                     rcl,prsl(1,1),work1,slmsk,                         &
-                     drain,qflux,hflux,ep1d,phy_f2d,                    &
-                     runof,SLOPETYP,SHDMIN,SHDMAX,SNOALB,alb,           &
-                     tsurf, flag_iter, flag_guess,albedo2,jj,io,jo)
+!      call sfc_drv(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev), &
+!                     sheleg,sncover,snwdph,tg,qsurf,tprcp,SRFLAG,       &
+!                     smc,stc,slc,evapc,istyp,sigmaf,                    &
+!                     ivegtyp,canopy,rld,sld,                            &
+!                     radsl,dth,tgclim,gfx,cd,cdq,                       &
+!                     rcl,prsl(1,1),work1,slmsk,                         &
+!                     drain,qflux,hflux,ep1d,phy_f2d,                    &
+!                     runof,SLOPETYP,SHDMIN,SHDMAX,SNOALB,alb,           &
+!                     tsurf, flag_iter, flag_guess,albedo2,jj,io,jo)
+      call sfc_drv(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev),   &
+                     istyp,ivegtyp,sigmaf,sfemis,rld,sld,ss,dth,tgclim,     &
+                     cd,cdq,prsl1,prslki,hgt(1,lev),islmsk,ddvel,islopetyp, &
+                     shdmin,shdmax,snoalb,alb,flag_iter,flag_guess,         &
+                     isot,ivegsrc,                                          &
+                     sheleg,snwdph,tg,tprcp,srflag,                         &
+                     smc,stc,slc,canopy,tsurf,z0rl,                         &
+                     sncover,qsurf,gfx,                                     &
+                     drain,qflux,hflux,ep1d,runof,                          &
+                     albedo2,jj,io,jo)
 !
-       call sfc_sice(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev),    &
-                      zice,cice,xtice,sld,        &    ! FOR SEA-ICE - XW Nov04
-                      sheleg,snwdph,tg,qsurf,tprcp,SRFLAG,stc,evapc,    &
-                      rld,radsl,SNOMT,dth,gfx,cd,cdq,                   &
-                      rcl,prsl(1,1),work1,slmsk,                        &
-                      qflux,hflux,ep1d,phy_f2d,flag_iter,               &
-                      mom4ice,lsm)
+!       call sfc_sice(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev),    &
+!                      zice,cice,xtice,sld,        &    ! FOR SEA-ICE - XW Nov04
+!                      sheleg,snwdph,tg,qsurf,tprcp,SRFLAG,stc,evapc,    &
+!                      rld,radsl,SNOMT,dth,gfx,cd,cdq,                   &
+!                      rcl,prsl(1,1),work1,slmsk,                        &
+!                      qflux,hflux,ep1d,phy_f2d,flag_iter,               &
+!                      mom4ice,lsm)
+       call sfc_sice(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev),  &
+                     dth,sfemis,rld,ss,sld,srflag,cd,cdq,prsl1,prslki,       &
+                     islmsk,ddvel,flag_iter,mom4ice,lsm,                     &
+                     zice,cice,xtice,sheleg,tg,tprcp,stc,ep1d,               &
+                     snwdph,qsurf,snomt,gfx,qflux,hflux) 
 !
         do i=1, nxj
           flag_iter(i)  = .False.
           flag_guess(i) = .False.
-          if((slmsk(i) .eq. 1.) .and. (iter .eq. 1)) then
+          if((islmsk(i) .eq. 1) .and. (iter .eq. 1)) then
             if(sfcw(i).lt.2.) flag_iter(i) = .true.
           endif
         enddo
@@ -499,9 +535,13 @@
 !
 !** update near surface fields
 !
-      call sfc_diag(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev), &
-                    tg,qsurf,u10,v10,t2,q2,rcl,work1,slmsk,             &
-                    qflux,fm,fh,fm10,fh2,rh2)
+!      call sfc_diag(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev), &
+!                    tg,qsurf,u10,v10,t2,q2,rcl,work1,slmsk,             &
+!                    qflux,fm,fh,fm10,fh2,fh10,rh2,rh10)
+      call sfc_diag(nxj,nx,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev),  &
+                    tg,qsurf,u10,v10,t2,q2,prslki,                       &
+                    qflux,fm,fh,fm10,fh2,fh10,rh2,rh10)    
+
 !
 
 !     if(jj.eq.jo)then
@@ -591,7 +631,8 @@
 !     endif
 !
        if(nmpbl.eq.1)then
-         if(myrank.eq.0)print *,' warning !!!, nmpbl can not be 1, reassign nmpbl=2'
+         if(myrank.eq.0)                                               &
+          print *,' warning !!!, nmpbl can not be 1, reassign nmpbl=2'
          nmpbl=2
        endif
        if(nmpbl .eq. 2)then
@@ -620,6 +661,25 @@
                  , hpbl,ice,g,cp,hltm,r,jj)
 !
        endif
+
+!---
+! YSU pbl scheme
+       if(nmpbl .eq. 5)then
+       ntrac=2
+       do k=1,lev
+          kc=lev-k+1
+       do i=1,nxj
+         swh(i,kc)=asl(i,k)/86400.
+         hlw(i,kc)=atl(i,k)/86400.
+       enddo
+       enddo
+        call     ysu2d(u1,v1,t1,q1,prsl,prsi,prslk,pk2(1,lev),        &
+                   nx,nxj,lev,ntrac,del,cp,g,r,hltm,phii,phil,psi,    &
+                   z0,stress,hpbl,kpbl,fm,fh,islmsk,heat,evap,sfcw,rb, &
+                   dt,rcl,u10,v10,swh,hlw,xmu,jj)
+!
+       endif
+
 !
 ! NCEP GFS moninedmf
        if(nmpbl .eq. 4)then

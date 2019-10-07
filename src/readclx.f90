@@ -1,6 +1,6 @@
       subroutine readclx(nx,my,my_max,julian,land,sea,ice,solt,wet,z0, &
                          alb,sst,bckfile,sigmaf,istyp,ivegtyp,ls       &
-                        ,shdmax,shdmin,slopetyp,snoalb,ggdef)
+                        ,shdmax,shdmin,slopetyp,snoalb,ggdef,isot,ivegsrc)
 !
 !  read climt data from data base
 !
@@ -27,7 +27,7 @@
 !
       implicit  none
 
-      integer   nx,my,my_max,julian
+      integer   nx,my,my_max,julian,isot,ivegsrc
 
       real      solt(nxp,my_max),wet(nxp,my_max),z0(nxp,my_max),alb(nxp,my_max),  &
                 sst(nxp,my_max)                           &
@@ -97,6 +97,9 @@
   24  format('S000VN','gbck',a4,11x,a1)      ! for new soil
   25  format('S00063','gbck',a4,11x,a1)      ! for new soil
   26  format('S0003X','gbck',a4,11x,a1)      ! for new soil
+!source 2(19-soil, 20-veg)
+  28  format('S00XST','gbck',a4,11x,a1)      ! for new soil
+  31  format('S00XVT','gbck',a4,11x,a1)      ! for new soil
 !
 !  to interpolat linearly based on julian day
 !
@@ -326,7 +329,10 @@
 
 !soil
 !-- soiltyp
-      write(lrec,18)ggdef,blnk
+!      write(lrec,18)ggdef,blnk
+      if(isot .eq. 0)write(lrec,18)ggdef,blnk
+      if(isot .eq. 1)write(lrec,28)ggdef,blnk
+!
       call dmsreadi(nx,my,lrec,lncrec,'I',bckfile,iglob,istat)
 !byl      if( lreduce.eq.1 ) call reducepicki(iglob,nxdef,nx,my)
       do jj=1,jlistnum
@@ -340,7 +346,10 @@
          enddo
       enddo
 !-- vegtyp
-      write(lrec,21)ggdef,blnk
+!      write(lrec,21)ggdef,blnk
+      if(ivegsrc .eq. 0)write(lrec,21)ggdef,blnk
+      if(ivegsrc .eq. 1)write(lrec,31)ggdef,blnk
+!
       call dmsreadi(nx,my,lrec,lncrec,'I',bckfile,iglob,istat)
 !byl      if( lreduce.eq.1 ) call reducepicki(iglob,nxdef,nx,my)
       do jj=1,jlistnum

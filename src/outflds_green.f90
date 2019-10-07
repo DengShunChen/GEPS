@@ -1,7 +1,7 @@
       subroutine outflds_green( itau,nx,my,my_max,lev,ncld       &
              , idtg,ifilout,cp,rgas,grav,t2,u10,v10              &
              , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6 &
-             , ggdef,lwrite)
+             , ggdef)
 !
 !  output driver subroutine to process sigma level data to 40m & 100m
 !
@@ -45,7 +45,6 @@
       character layer(2)*3,var(6)*3,wtemp*6
       data layer/'H10','B40'/
       data var/'010','500','200','210','100','550'/
-      logical :: lwrite
 !
       rcp=rgas/cp
       lenc = nx*my
@@ -150,48 +149,50 @@
       write(wtemp,'(a3,a3)')layer(mm),var(1)
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
       if( lreduce.eq.1 ) call reduceintp (pla,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,pla,istat)
+       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,pla,istat)
 
 !output Q
       write(wtemp,'(a3,a3)')layer(mm),var(2)
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
       if( lreduce.eq.1 ) call reduceintp (oqt,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,oqt,istat)
+       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,oqt,istat)
 
       write(wtemp,'(a3,a3)')layer(mm),var(6)
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
       if( lreduce.eq.1 ) call reduceintp (oqc,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,oqc,istat)
+       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,oqc,istat)
 
 !output U,V
       write(wtemp,'(a3,a3)')layer(mm),var(3)
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
       if( lreduce.eq.1 ) call reduceintp (globu,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,globu,istat)
+       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,globu,istat)
 
       write(wtemp,'(a3,a3)')layer(mm),var(4)
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
       if( lreduce.eq.1 ) call reduceintp (globv,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,globv,istat)
+       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,globv,istat)
 
 !output T
       write(wtemp,'(a3,a3)')layer(mm),var(5)
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
       if( lreduce.eq.1 ) call reduceintp (ot,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,ot,istat)
+       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,ot,istat)
 !-----------------------------------------------------------------------
       enddo  ! end (mm)
 !=======================================================================
+!output 6hr prec.
+      if (mod(float(itau)+0.00001, 6. ) .lt. 0.01) then
       call mpe2d_unify(glob,raincu6)
-      call mpe_unify(glob1,rainlp6)
+      call mpe2d_unify(glob1,rainlp6)
       call syslbl ('b00633',idtg,itau,ggdef,ihdg)
       if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
 !
       call syslbl ('b00643',idtg,itau,ggdef,ihdg)
       if( lreduce.eq.1 ) call reduceintp (glob1,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob1,istat)
+       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob1,istat)
       call qmaxn3 (glob1,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
 !
       call syslbl ('b00623',idtg,itau,ggdef,ihdg)
@@ -199,9 +200,9 @@
       do 98 i=1,nx
        glob(i,j)=glob(i,j)+glob1(i,j)
  98   continue
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-
+      endif
 !=======================================================================
       return
       end

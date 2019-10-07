@@ -24,6 +24,7 @@
       use phygrid
       use mod_typhoon
       use noah
+      use namelist_soilveg
 !-----------------------------------------------------------------------
       use ozne_def
       use radn
@@ -35,6 +36,7 @@
 !  local working array
 !
       real      sst(nxp,my_max),ww1(nx,my),ww2(nx,my),          &
+                rh2100(nxp,my_max),rh10100(nxp,my_max),         &
                 wk1(nxp,lev,my_max),wk2(nxp,lev,my_max),        &
                 cc(nx+2,levp,1,my_max),ww3(nx,my_max)
 !byl                wss3(levp,2,3,jtrun,jtmax),cc3(nx+2,levp,3,my_max)
@@ -84,7 +86,7 @@
 ! osu
       call landpack(tsat,dfkt,xktk,dfk)
 ! noah
-      call set_soilveg
+      call set_soilveg(isot,ivegsrc)
 
 ! ------------------------------------------------------------
 !   read ozone prognostic parameters
@@ -309,7 +311,7 @@
 !
         call readclx( nx,my,my_max,julian,land,ocean,ice,tgclim,gwclim  &
                    ,z0,alb,sst,bckfile,sigmaf,istyp,ivegtyp,ls   &
-                   ,shdmax,shdmin,slopetyp,snoalb,ggdef )
+                   ,shdmax,shdmin,slopetyp,snoalb,ggdef,isot,ivegsrc )
 !
 !  read sst analysis data
 !
@@ -434,7 +436,8 @@
               ii=ii+1
             enddo
           enddo
-          if( myrank .eq. 0 )print*,"get ncep's sea ice analysis, at dtg=",idtg
+          if( myrank .eq. 0 ) &
+             print*,"get ncep's sea ice analysis, at dtg=",idtg
 !
 ! reset albedo and tgclim at seaice grids                 
 !
@@ -453,6 +456,7 @@
                 alb(i,jj)    = 0.55
                 tgclim(i,jj) = 271.2
 ! for noah
+                z0(i,jj)=0.0002
 ! initial sea ice temperature is set as tg(grid average temperature from first guess)
 !
                 cice(i,jj)    = max(0.5,cice(i,jj))
@@ -993,11 +997,11 @@
               qsfc(i) = min(qs(i),qsfc(i) )
             endif
           enddo
-          call sfcuvt( nxjp(j),nxp,dt,grav,rgas,cp,hltm                        &
-                    ,tgp,z0(1,jj),ocean(1,jj),ps,tsx                       &
+          call sfcuvt( nxjp(j),nxp,dt,grav,rgas,cp,hltm                 &
+                    ,tgp,z0(1,jj),ocean(1,jj),ps,tsx                    &
                     ,hs,ux,vx,tx,qx,ustar(1,jj),tstar(1,jj),qstar(1,jj) &
-                    ,hflux(1,jj),qflux(1,jj),qsfc,t2(1,jj),rh2(1,jj),u10(1,jj) &
-                    ,v10(1,jj) )
+                    ,hflux(1,jj),qflux(1,jj),qsfc,t2(1,jj),rh2(1,jj)    &
+                    ,rh10(1,jj),u10(1,jj),v10(1,jj) )
         enddo
 !        call mpe_unify(ustar,nx,my,2,mpe_double)
 !        call mpe_unify(tstar,nx,my,2,mpe_double)
@@ -1019,15 +1023,19 @@
         raintot=0.
         raincu=0.
         rainlp=0.
+        raincu6=0.
+        rainlp6=0.
         gfx=0.
         sld=0.
+       rh2100=rh2*100.
+       rh10100=rh10*100.
         flash=0.   !xb110, flash density
         call outflds ( 0,nx,my,my_max,lev,ncld,lmax,numout,idtg,ifilout &
-             , outdir,ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo,pdiff     &
-             , ptend,tsave,t1000,pt,plt,pk,pk2,phi,ut,vt,sd             &
+             , outdir,ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo           &
+             , ptend,pt,plt,pk,pk2,phi,ut,vt,sd                         &
              , tt,qt,rdiv,rvor,tg,gwr,z0,hflux,qflux,snr                &
              , raintot,raincu,rainlp,plcl,cumtop,ss,rs,alb,gwclim       &
-             , acld,cosl,wk1,ww1,ww2,t2,rh2,u10,v10,gfx,rld,sld         &
+             , acld,cosl,wk1,ww1,ww2,t2,rh2100,rh10100,u10,v10,gfx,rld,sld &
              , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500 &
              , ctot,chig,cmid,clow,hpbl,.true.,flash,do_sit)
 

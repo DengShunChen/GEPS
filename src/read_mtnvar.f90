@@ -44,7 +44,8 @@
           jt = my - j + 1
           ii=nxjstart(j)
           nxj=nxdef_2d(j)
-          if( lreduce.eq.1 )call reducepick (hprime_a8(1,jt),nxdef(j),nx,1)        
+          if( lreduce.eq.1 ) &
+             call reducepick(hprime_a8(1,jt),nxdef(j),nx,1)        
           do i = 1, nxj
             hprime_b(i,v,jj) = hprime_a8(ii,jt)
             ii=ii+1

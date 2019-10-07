@@ -1,7 +1,7 @@
       subroutine out2d (nx,lev,my,my_max,ifilout,itau,idtg,taudir,ntau &
        ,hflux,qflux,tg,gwet,snr,z0,raintot,raincu,rainlp               &
        ,plcl,cumtop,ss,rs,alb,gwclim,glob,acld                         &
-       ,ugws,vgws,t2,rh2,u10,v10,gfx,rld,sld,wk_xy                     &
+       ,ugws,vgws,t2,rh2,rh10,u10,v10,gfx,rld,sld,wk_xy                &
        ,soil_xy,canopy,ggdef,lwrite,flash)
 !
       use rank
@@ -13,15 +13,16 @@
 
       integer   nx,lev,my,my_max,itau,ntau 
 
-      real      hflux(nxp,my_max),qflux(nxp,my_max),    &
-                tg(nxp,my_max),gwet(nxp,my_max),        &
-                snr(nxp,my_max),z0(nxp,my_max),         &
+      real      hflux(nxp,my_max),qflux(nxp,my_max),                       &
+                tg(nxp,my_max),gwet(nxp,my_max),                           &
+                snr(nxp,my_max),z0(nxp,my_max),                            &
                 raintot(nxp,my_max),raincu(nxp,my_max),rainlp(nxp,my_max), &
-                plcl(nxp,my_max),cumtop(nxp,my_max),    &
-                ss(nxp,my_max),rs(nxp,my_max),          &
-                alb(nxp,my_max),gwclim(nxp,my_max),acld(lev,my), &
-                ugws(nxp,my_max),vgws(nxp,my_max),t2(nxp,my_max),rh2(nxp,my_max),   &
-                u10(nxp,my_max),v10(nxp,my_max),gfx(nxp,my_max),      &
+                plcl(nxp,my_max),cumtop(nxp,my_max),                       &
+                ss(nxp,my_max),rs(nxp,my_max),                             &
+                alb(nxp,my_max),gwclim(nxp,my_max),acld(lev,my),           &
+                ugws(nxp,my_max),vgws(nxp,my_max),t2(nxp,my_max),          &
+                rh2(nxp,my_max),rh10(nxp,my_max),                          &
+                u10(nxp,my_max),v10(nxp,my_max),gfx(nxp,my_max),           &
                 rld(nxp,my_max),sld(nxp,my_max)
 
       character*16 taudir(ntau)
@@ -390,15 +391,14 @@
       go to 30
       endif
 !
-      if(label(kk).eq.'b10510') then
-      call unify_reduceintp(nx,my,my_max,wk_xy(1,1,5),glob)
-!byl      call mpe2d_unify(glob,wk_xy(1,1,5))
-      call syslbl ('b10510',idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      go to 30
-      endif
+!      if(label(kk).eq.'b10510') then
+!      call mpe2d_unify(glob,wk_xy(1,1,5))
+!      call syslbl ('b10510',idtg,itau,ggdef,ihdg)
+!      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+!      go to 30
+!      endif
 !
       if(label(kk).eq.'b02100') then
       call unify_reduceintp(nx,my,my_max,t2,glob)
@@ -435,6 +435,15 @@
 !byl      call mpe2d_unify(glob,v10)
       call syslbl ('b10210',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      go to 30
+      endif
+!
+      if(label(kk).eq.'b10510') then
+      call mpe2d_unify(glob,rh10)
+      call syslbl ('b02510',idtg,itau,ggdef,ihdg)
+      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
       if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       go to 30

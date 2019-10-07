@@ -39,7 +39,7 @@
            ptop,ptmean,tfilt,dt,tau,taui,taue,tauo,          &
            hours,frad,evaprh,qgini,                          &
            tice,hice,cutfreq,taup,hfilt,ptmeans,             &
-           taureg,cgw
+           taureg,cgw,domfc,otgreen
 !sit
       real fsit           !fsit>0., turn on sit_vdiff when mod(tau/fsit)<0.001
                           !default fsit<=0., turn on sit_vdiff every tau
@@ -50,7 +50,7 @@
            ptop,ptmean,tfilt,dt,tau,taui,taue,tauo,          &
            hours,frad,evaprh,qgini,                          &
            tice,hice,cutfreq,taup,hfilt,ptmeans,             &
-           taureg,cgw,fsit
+           taureg,cgw,fsit,domfc,otgreen
 ! sppt parameters
       real                                                       &
            de_corretime_500,de_corretime_1000,de_corretime_2000, &
@@ -62,7 +62,7 @@
               dolsp, dograv,doshl, dodry, donnmi,ozon,       &
               restrt,hdiff, cstar, update,doincr,hybrid,     &
               doo3l, dosppt, dospptout,   docgrav
-      logical domfc,out_green
+      logical out_green,out_hp
 !for Semi-Lagrangain
       logical ndsladvh2
 
@@ -83,7 +83,7 @@
       common/constL/lsimpl,lzadv,yesdia,dopbl,docup,dorad,   &
               dolsp, dograv,doshl, dodry, donnmi,ozon,       &
               restrt,hdiff, cstar, update,doincr,hybrid,     &
-              doo3l,ndsladvh2,docgrav,                       &
+              doo3l,ndsladvh2,docgrav,out_green,out_hp,      &
               ldailyFCTsst,ldailyFCTicesndpt,lFCTweight,     &
               dailyClm_option,lopgsst,do_sit
 
