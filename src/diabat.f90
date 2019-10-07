@@ -1885,7 +1885,7 @@
             t_surf   =obswtbtm(ii,jj)
             t_surf = MAX( t_surf, ctfreez )
             tsi(ii,jj)= MIN( t_surf, ctfreez )
-            tgold(ii,jj)=tgtm(ii,jj)
+            tgold(ii,jj)=tg(ii,jj)
             dtswdt(ii,jj)=0.
 
 
@@ -1993,7 +1993,8 @@
 !              t2(:,j), wind10w(:,jj),                                 &
               t2tm(:,jj), wind10w(:,jj),                               &
 !            ! - 1D from mo_memory_g3b (sit variables)
-              obsseaice(:,jj), obswtbtm(:,jj), obswsb(:,jj),           &
+!              obsseaice(:,jj), obswtbtm(:,jj), obswsb(:,jj),           &
+              obsseaice(:,jj), obswtb(:,jj), obswsb(:,jj),             &
               sitwtb(:,jj), sitwub(:,jj), sitwvb(:,jj),                &
               sitwsb(:,jj), fluxiw(:,jj), pme2(:,jj),                  &
               subfluxw(:,jj), wsubsal(:,jj),                           &
@@ -2037,11 +2038,7 @@
         
         do ii = 1, nxj
           if(ocean(ii,jj) .AND. sitmask(ii,jj).EQ.1) then
-            if(timebl_option .eq. 1 .AND. (tau .lt. timebl_start*24.)) then
-              tg(ii,jj)=tg(ii,jj)
-            else
-              tg(ii,jj)=tgold(ii,jj)+dtswdt(ii,jj)*dtfsit
-            endif
+            tg(ii,jj)=tgold(ii,jj)+dtswdt(ii,jj)*dtfsit
           endif
           if(myrank .EQ. myrank_check .AND.         &
             jj .EQ. jj_check .AND. ii .EQ. ii_check) then

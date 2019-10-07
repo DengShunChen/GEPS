@@ -3090,7 +3090,7 @@ CONTAINS
   ELSE
     ptsw(jl)=pobswtb(jl)
     pwt(jl,0)=ptsw(jl)
-    pdtswdt(jl)=(ptsw(jl)-poldtsw(jl))/delta_time
+    pdtswdt(jl)=0.
   ENDIF   !ENDIF ltrigsit
     IF(GDCHK3) then
       print *,"sitvdiff:ltrigsit=",ltrigsit,",ptsw(jl)=",ptsw(jl) &
@@ -7330,6 +7330,11 @@ END SUBROUTINE thermocline
           fratio=(sin((tauhr-6.)/12.*api)+1.)*0.5
         ENDIF
       ENDIF
+      IF(fratio .eq. 0.) then
+        ltrigsit=.false.
+      else
+        ltrigsit=.true.
+      endif
       IF(GDCHK3) then
        WRITE(nerr,*) "ltimeblending=",ltimeblending  &
                   ,",timebl_start=",timebl_start,",timebl_allsit=",timebl_allsit  &
