@@ -15,7 +15,7 @@
 !
 ! local work arrays
 !
-      real      glob(nx,my),glob1(nx,my) 
+      real      glob(nx,my),wrk(nxp,my_max) 
 
       integer   jj,j,nxj,i
 !
@@ -23,25 +23,30 @@
 !=======================================================================
       if(myrank .eq. 0) print*,'   in outflds_hp for tau= ',itau
 !=======================================================================
-      call mpe2d_unify(glob,raincu3)
-      call mpe2d_unify(glob1,rainlp3)
+!byl      call mpe2d_unify(glob,raincu3)
+!byl      call mpe2d_unify(glob1,rainlp3)
 !      call mpe_unify_1(glob,raincu3,nx,my,2,mpe_double)
 !      call mpe_unify_1(glob1,rainlp3,nx,my,2,mpe_double)
       call syslbl ('b00632',idtg,itau,ggdef,ihdg)
-      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+      call unify_reduceintp(nx,my,my_max,raincu3,glob)
       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
 !
       call syslbl ('b00642',idtg,itau,ggdef,ihdg)
-      if( lreduce.eq.1 ) call reduceintp (glob1,nxdef,nx,my)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob1,istat)
-      call qmaxn3 (glob1,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+!byl      if( lreduce.eq.1 ) call reduceintp (glob1,nxdef,nx,my)
+      call unify_reduceintp(nx,my,my_max,rainlp3,glob)
+      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
 !
       call syslbl ('b00622',idtg,itau,ggdef,ihdg)
-      do 98 j=1,my
-      do 98 i=1,nx
-       glob(i,j)=glob(i,j)+glob1(i,j)
+      do 98 jj = 1, jlistnum
+      j=jlist1(jj)
+      nxj=nxdef_2d(j)
+      do 98 i=1,nxj
+       wrk(i,jj)=raincu3(i,jj)+rainlp3(i,jj)
  98   continue
+      call unify_reduceintp(nx,my,my_max,wrk,glob)
       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
 

@@ -2149,21 +2149,39 @@
       tt(i,k,jj)=(1+ru)*tt(i,k,jj)-ru*tt_sppt_old(i,k,jj)
       enddo
       enddo
+! there's no need to add perturbation for ozone tracer. (
+! modified by PangYen Liu
+      if (ntoz .eq. 0 ) then
+        nk = ncld
+      else
+        nk = ncld-1
+      endif
 !
-      do k=1,lev
-      do i=1,nxj
-      ru=sppt3d(i,k,jj)
-      qt(i,k,jj)=(1+ru)*qt(i,k,jj)-ru*qt_sppt_old(i,k,jj)
-      if (qt(i,k,jj).lt.0) qt(i,k,j)=0.
+      do n=1,nk
+        do k=1,lev
+          kk = (n-1)*lev+k
+          do i=1,nxj
+            ru=sppt3d(i,k,jj)
+            qt(i,kk,jj)=(1+ru)*qt(i,kk,jj)-ru*qt_sppt_old(i,kk,jj)
+            if (qt(i,kk,jj).lt.0) qt(i,kk,jj)=0.
+          enddo
+        enddo
       enddo
-      enddo
-      do k=lev+1,lev*ncld
-      do i=1,nxj
-      ru=sppt3d(i,k-lev,jj)
-      qt(i,k,jj)=(1+ru)*qt(i,k,jj)-ru*qt_sppt_old(i,k,jj)
-      if (qt(i,k,jj).lt.0) qt(i,k,jj)=0.
-      enddo
-      enddo
+!
+!!      do k=1,lev
+!!      do i=1,nxj
+!!      ru=sppt3d(i,k,jj)
+!!      qt(i,k,jj)=(1+ru)*qt(i,k,jj)-ru*qt_sppt_old(i,k,jj)
+!!      if (qt(i,k,jj).lt.0) qt(i,k,j)=0.
+!!      enddo
+!!      enddo
+!!      do k=lev+1,lev*ncld
+!!      do i=1,nxj
+!!      ru=sppt3d(i,k-lev,jj)
+!!      qt(i,k,jj)=(1+ru)*qt(i,k,jj)-ru*qt_sppt_old(i,k,jj)
+!!      if (qt(i,k,jj).lt.0) qt(i,k,jj)=0.
+!!      enddo
+!!      enddo
 !
       enddo
 !

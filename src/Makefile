@@ -83,7 +83,7 @@ SRCS  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
         get_phi.f90 module_mp_radar.f90 module_mp_wsm6_fv3.f90 lightning_ec.f90 \
         mod_sitgrid.f90 mod_eos_ocean.f90 mod_sit_vdiff.f90 outsit.f90 \
         mod_sst.f90 mod_netcdf.f90 mod_sit_control.f90 samfdeepcnv.f90 samfshalcnv.f90 \
-        moninedmf.f90 mfpbl.f90
+        moninedmf.f90 mfpbl.f90 unify_reduceintp.f90 unify_reducepick.f90
 
 OBJS=	${SRCS:.f90=.o}
 
@@ -319,10 +319,12 @@ nnmi.o : nnmi.f90 mod_rank.o
 nor_gwdp.o : nor_gwdp.f90 mod_index.o
 normalize.o : normalize.f90 
 out24.o : out24.f90 mod_index.o mod_mpe.o mod_rank.o mod_mpe.o
-out2d.o : out2d.f90 mod_index.o mod_mpe.o mod_rank.o 
+out2d.o : out2d.f90 mod_index.o mod_mpe.o mod_rank.o mod_outflds.o
 out2d_mfc.o : out2d_mfc.f90 mod_index.o mod_mpe.o mod_rank.o 
 outflds.o : outflds.f90 mod_index.o mod_rank.o mod_mpe.o mod_outflds.o
 outflds_green.o : outflds_green.f90 mod_index.o mod_rank.o mod_mpe.o
+outflds_fv3.o : outflds_fv3.f90 mod_index.o mod_rank.o mod_mpe.o
+outflds_hp.o : outflds_hp.f90 mod_index.o mod_rank.o mod_mpe.o
 outsigs.o : outsigs.f90 mod_mpe.o mod_index.o 
 pbl_noah.o : pbl_noah.f90 mod_paramt.o mod_index.o mod_rank.o mod_mpe.o 
 	$(FC90) $(FFLAGS) -Knosimd pbl_noah.f90
@@ -488,3 +490,6 @@ mod_netcdf.o: mod_netcdf.f90 mod_mpe.o mod_const.o mod_sit_control.o
 mod_eos_ocean.o: mod_eos_ocean.f90 
 mod_sit_control.o: mod_sit_control.f90
 outsit.o : outsit.f90 mod_index.o mod_rank.o mod_mpe.o mod_sitgrid.o
+#-------I/O speed up-------
+unify_reducepick.o: unify_reducepick.f90 mod_mpe.o mod_index.o
+unify_reduceintp.o: unify_reduceintp.f90 mod_mpe.o mod_index.o

@@ -20,7 +20,8 @@
                                                   vorten,divten,temten,hldten
 !!                                                vorten,divten,temten,qten,hldten
 
-      real,dimension(:,:,:),  allocatable,save :: plnow,plold,dsqgeo,spgeo,plten
+!byl      real,dimension(:,:,:),  allocatable,save :: plnow,plold,dsqgeo,spgeo,plten
+      real,dimension(:,:,:),  allocatable,save :: plnow,plold,plten
 
       real,dimension(:,:),  allocatable,save :: plnowL,ploldL,pltenL   !  for 2dMPI, allocated in cons.f90
 
@@ -41,7 +42,7 @@
                      temten(levp,2,jtrun,jtmax),                                 &
                      hldten(levp,2,jtrun,jtmax),                                 &
                       plnow(jtrun,jtmax,2),     plold(jtrun,jtmax,2),            &
-                     dsqgeo(jtrun,jtmax,2),     spgeo(jtrun,jtmax,2),            &
+!byl                     dsqgeo(jtrun,jtmax,2),     spgeo(jtrun,jtmax,2),            &
                      plten(jtrun,jtmax,2), stat=ierr)
 
            if (ierr/= 0) then
@@ -73,8 +74,8 @@
            hldten=0.
            plnow=0.
            plold=0.
-           dsqgeo=0.
-           spgeo=0.
+!byl           dsqgeo=0.
+!byl           spgeo=0.
            jtwv=0.
 
 !!           allocate (uzm(my,lev), stat=ierr)
@@ -96,7 +97,8 @@
                        vorold,divold,temold,trefs,            &
                        vorten,divten,temten,hldten,           &
 !!                     vorten,divten,temten,qten,hldten,      &
-                       plnow,plold,dsqgeo,spgeo,plten)
+!byl                       plnow,plold,dsqgeo,spgeo,plten)
+                       plnow,plold,plten)
 
 !!           deallocate (uzm)
            deallocate (jtwv,jtwvp)

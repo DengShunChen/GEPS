@@ -157,6 +157,7 @@
       g=grav
       gor=g/rd
       gocp=g/cp
+!units of pressure change to Pa from cb
 !      cont=1000.*cp/g
 !      conq=1000.*hvap/g
 !      conw=1000./g
@@ -942,10 +943,10 @@
 !
 !  pbl height for diagnostic purpose
 !
-!      do i = 1, im
-!         hpbl(i) = hpblx(i)
-!         kpbl(i) = kpblx(i)
-!      enddo
+      do i = 1, im
+         hpbl(i) = hpblx(i)
+         kpbl(i) = kpblx(i)
+      enddo
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       return
