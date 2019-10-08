@@ -145,8 +145,8 @@
       nxj=nxdef_2d(j)
       xxx= rad/cosl(j)
       do 50 i=1,nxj
-       ou(i,j)= ou(i,j)*xxx
-       ov(i,j)= ov(i,j)*xxx
+       ou(i,jj)= ou(i,jj)*xxx
+       ov(i,jj)= ov(i,jj)*xxx
    50 continue
 
 !      call mpe_unify(globu,nx,my,2,mpe_double)
