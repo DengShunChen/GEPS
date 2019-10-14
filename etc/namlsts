@@ -48,7 +48,7 @@
  ptmeans=800.,
  ptop=0.1,
  nmcup=6,
- nmpbl=3,
+ nmpbl=4,
  nmland=2,
  nmshl=3,
  nmgwor=2,

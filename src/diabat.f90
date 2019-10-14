@@ -191,50 +191,15 @@
       integer nfxr, ntrac, kk, nk, n
       real slag,sdec,cdec,solcon,dtlw,dtsw,solhr
 
-! --- for radupdat
-      integer idat(8),jdat(8)
 
-! --- for new albedo
-      real alvsf(nxp,my_max),alvwf(nxp,my_max),alnsf(nxp,my_max), &
-           alnwf(nxp,my_max),facsf(nxp,my_max),facwf(nxp,my_max)
-!for gravity wave drag ====== #
-      integer nmgwor,nmgwcv,mtnvar
-      real hprime_b(nxp,mtnvar,my_max)
-      real pltn(nxp,lev,my_max),pkn(nxp,lev,my_max),pk2n(nxp,lev,my_max),  &
-           ttpn(nxp,lev,my_max)
-      real p2c(nxp,lev+1),phie2c(nxp,lev+1),p2ac(nxp,lev+1)
-      real utgwc(nxp,lev),vtgwc(nxp,lev),delttcv(nxp,lev),                 &
-           dudtc(nxp,lev),dvdtc(nxp,lev),dtdtc(nxp,lev),                   &
-           phio2c(nxp,lev),prslk(nxp,lev)
-      real oc(nxp),theta(nxp),gamma(nxp),sigmaog(nxp),elvmax(nxp),hprime(nxp),    &
-           dlength(nxp),cldf(nxp),cumabs(nxp),work3(nxp),tauctx(nxp),taucty(nxp), &
-           dvsfcg(nxp),dusfcg(nxp),facg(lev)
-      real oa4(nxp,4),clx(nxp,4),cgwf(2),cdmbgwd(2)
-      real ograv
-      integer kpbl(nxp,my_max), kpblc(nxp,my_max)
-      integer kdt,latg
-
-! --- for random number generator (thread safe mode)
-      integer ixseed(nx,my,2)
-      integer icsdlw(nx),icsdsw(nx)
-
-! --- for rrtmg : input
-!     logical lsswr,lslwr,lssav,lprnt
-      logical lsswr,lslwr,lssav
-      real xlonr(nx,my_max)
-
-! --- new variables setting :
-      integer*8 idtg
-      logical doo3l
-      integer ipt,jpt
 !-----------------------------------------------------------------------
-      logical   fwd,docup,dodry,dolsp,dopbl,dorad,doshl,dograv,ozon, &
-                land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max),  &
-                docgrav
-
       integer   nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,idg,  &
                 jdg,ldiag,julian,njump,itypbl,ktcup,ktpbl,ktshl,     &
                 km_soil
+
+      logical   fwd,docup,dodry,dolsp,dopbl,dorad,doshl,dograv,ozon, &
+                land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max),  &
+                docgrav
 
       real      tice,hice,qgini,thdai,tengi,qbrwtot,ptop,            &
                 hltm,evaprh,s0,stbo,cp,rgas,grav,frad,               &
@@ -286,6 +251,43 @@
                 snoalb(nxp,my_max),albedo2(nxp,my_max),heat(nxp),evap(nxp),  &
 ! for new pbl
                 asl(nxp,lev,my_max),atl(nxp,lev,my_max),xmu(nxp,my_max) 
+! --- for radupdat
+      integer idat(8),jdat(8)
+
+! --- for new albedo
+      real alvsf(nxp,my_max),alvwf(nxp,my_max),alnsf(nxp,my_max), &
+           alnwf(nxp,my_max),facsf(nxp,my_max),facwf(nxp,my_max)
+!for gravity wave drag ====== #
+      integer nmgwor,nmgwcv,mtnvar
+      real hprime_b(nxp,mtnvar,my_max)
+      real pltn(nxp,lev,my_max),pkn(nxp,lev,my_max),pk2n(nxp,lev,my_max),  &
+           ttpn(nxp,lev,my_max)
+      real p2c(nxp,lev+1),phie2c(nxp,lev+1),p2ac(nxp,lev+1)
+      real utgwc(nxp,lev),vtgwc(nxp,lev),delttcv(nxp,lev),                 &
+           dudtc(nxp,lev),dvdtc(nxp,lev),dtdtc(nxp,lev),                   &
+           phio2c(nxp,lev),prslk(nxp,lev)
+      real oc(nxp),theta(nxp),gamma(nxp),sigmaog(nxp),elvmax(nxp),hprime(nxp),    &
+           dlength(nxp),cldf(nxp),cumabs(nxp),work3(nxp),tauctx(nxp),taucty(nxp), &
+           dvsfcg(nxp),dusfcg(nxp),facg(lev)
+      real oa4(nxp,4),clx(nxp,4),cgwf(2),cdmbgwd(2)
+      real ograv
+!byl      integer kpbl(nxp,my_max), kpblc(nxp,my_max)
+      integer kpbl(nxp,my_max)
+      integer kdt,latg
+
+! --- for random number generator (thread safe mode)
+      integer ixseed(nx,my,2)
+      integer icsdlw(nx),icsdsw(nx)
+
+! --- for rrtmg : input
+!     logical lsswr,lslwr,lssav,lprnt
+      logical lsswr,lslwr,lssav
+      real xlonr(nx,my_max)
+
+! --- new variables setting :
+      integer*8 idtg
+      logical doo3l
+      integer ipt,jpt
 !---------------------------------------------------------------------------
 ! for new rad
 !---------------------------------------------------------------------------
@@ -822,7 +824,9 @@
       up(i,k,jj) = up(i,k,jj)*xx
       vp(i,k,jj) = vp(i,k,jj)*xx
       tt(i,k,jj) = tt(i,k,jj)*pk(i,k,jj) / (1.0+0.608*qt(i,k,jj))
-      ttpn(i,k,jj) = ttp(i,k,jj)*pkn(i,k,jj)/(1.0+0.608*qp(i,k,jj))
+!byl      ttpn(i,k,jj) = ttp(i,k,jj)*pkn(i,k,jj)/(1.0+0.608*qp(i,k,jj))
+!quick fix for convective GWD
+      ttpn(i,k,jj) = tt(i,k,jj)
       ttp(i,k,jj) = ttp(i,k,jj) / (1.0+0.608*qp(i,k,jj))
   230 continue
 !
@@ -993,15 +997,15 @@
           enddo
         enddo
 !
-        do i=1,nxj
-          kpblc(i,jj) = kpbl(i,jj)
-        enddo
+!byl        do i=1,nxj
+!byl          kpblc(i,jj) = kpbl(i,jj)
+!byl        enddo
 !
         do k=1,lev
           kc=lev-k+1
-          facg(kc)=0.15*(1.0*exp(-0.1*kc))
-          if(facg(kc).le.0.01) facg(kc) = 0.01
-          if(facg(kc).ge.0.1) facg(kc) = 0.1
+!byl          facg(kc)=0.15*(1.0*exp(-0.1*kc))
+!byl          if(facg(kc).le.0.01) facg(kc) = 0.01
+!byl          if(facg(kc).ge.0.1) facg(kc) = 0.1
           do i=1,nxj
             prsl(i,kc) = 100.0*plt(i,k,jj) ! pa
             prslk(i,kc)=(plt(i,k,jj)/1000.)**xkapa
@@ -1010,9 +1014,13 @@
             ttc(i,kc) = tt(i,k,jj)
             utc(i,kc) = ut(i,k,jj)
             vtc(i,kc) = vt(i,k,jj)
-            dudtc(i,kc) = facg(kc)*( ut(i,k,jj) - up(i,k,jj) )/dt
-            dvdtc(i,kc) = facg(kc)*( vt(i,k,jj) - vp(i,k,jj) )/dt
-            dtdtc(i,kc) = facg(kc)*( tt(i,k,jj) - ttpn(i,k,jj))/dt
+!byl            dudtc(i,kc) = facg(kc)*( ut(i,k,jj) - up(i,k,jj) )/dt
+!byl            dvdtc(i,kc) = facg(kc)*( vt(i,k,jj) - vp(i,k,jj) )/dt
+!byl            dtdtc(i,kc) = facg(kc)*( tt(i,k,jj) - ttpn(i,k,jj))/dt
+!quick fix for orographic GWD
+            dudtc(i,kc) = 0.
+            dvdtc(i,kc) = 0.
+            dtdtc(i,kc) = 0.
             phio2c(i,kc) = phi(i,k)
           enddo
         enddo
@@ -1028,7 +1036,7 @@
 !
         call gwdps(nxjp(j), nxp, nxp,  lev,                        &
                dvdtc, dudtc, dtdtc,utc, vtc, ttc,qtc,              &
-               kpblc(1,jj),   p2ac, del,   prsl, prslk,            &
+               kpbl(1,jj),   p2ac, del,   prsl, prslk,             &
                phie2c,    phio2c, dta,                             &
                kdt,    hprime, oc, oa4, clx,                       &
                theta,sigmaog,gamma,elvmax,dusfcg, dvsfcg,          &
