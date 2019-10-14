@@ -425,6 +425,7 @@ contains
       integer   nx,my,my_max,i,j,jj,kk,n,lev,nxj,itau,ntau,num,lenc,istat
 
       real      pdiff(nxp,my_max),pt(nxp,my_max),ptend(nxp,my_max),slp(nx,my),glob(nx,my)
+      real      tmp(nxp,my_max)
       character*16 taudir(ntau)
       character*4 ggdef
 !
@@ -441,17 +442,19 @@ contains
         j=jlist1(jj)
         nxj=nxdef_2d(j)
         do i=1,nxj
-          slp(i,j)= pt(i,jj)+pdiff(i,jj)
+!byl          slp(i,j)= pt(i,jj)+pdiff(i,jj)
+          tmp(i,jj)= pt(i,jj)+pdiff(i,jj)
           ptend(i,jj)= ptend(i,jj)*3600.0
         enddo
       enddo
 !
-      call mpe_unify(slp,nx,my,2,mpe_double)
-      if( lreduce.eq.1 ) call reduceintp (slp,nxdef,nx,my)
-      call smth9(nx,my,slp,glob,1)
-      slp=glob
-      call smth9(nx,my,slp,glob,2)
-      slp=glob
+      call unify_reduceintp(nx,my,my_max,tmp,slp)
+!byl      call mpe_unify(slp,nx,my,2,mpe_double)
+!byl      if( lreduce.eq.1 ) call reduceintp (slp,nxdef,nx,my)
+!byl      call smth9(nx,my,slp,glob,1)
+!byl      slp=glob
+!byl      call smth9(nx,my,slp,glob,2)
+!byl      slp=glob
 !
       num= 0
       do 20 n=1,ntau
@@ -482,12 +485,14 @@ contains
           j=jlist1(jj)
           nxj=nxdef_2d(j)
           do i=1,nxj
-            glob(i,j) = pt(i,jj) + ptop
+!byl            glob(i,j) = pt(i,jj) + ptop
+            tmp(i,jj) = pt(i,jj) + ptop
           enddo
         enddo
-        call mpe_unify(glob,nx,my,2,mpe_double)
+        call unify_reduceintp(nx,my,my_max,tmp,glob)
+!byl        call mpe_unify(glob,nx,my,2,mpe_double)
         call syslbl('b00010',idtg,itau,ggdef,lrec)
-        if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+!byl        if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
         if(lwrite) call dmswrit(nx,my,lrec,lenc,'H',ifilout,glob,istat)
         call qmaxn3(glob,lrec(1:14),lrec(15:26),1,1,1,nx,my,1)
 !
