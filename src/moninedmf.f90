@@ -230,7 +230,8 @@
 !     parameter (actei = 0.23)
       parameter (actei = 0.7)
 !
-      dspheat=.false.
+!byl      dspheat=.false. reference from NCEP fv3GFS, it should be .true.
+      dspheat=.true.
 !
 !c-----------------------------------------------------------------------
 !
