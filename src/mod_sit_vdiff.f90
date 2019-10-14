@@ -1758,7 +1758,7 @@ SUBROUTINE sit_vdiff_init ( kproma, kbdim, jrow, istep,               &
          .AND. pobswt10m .NE. xmissing)then
 
         if(jk .le. 1)then
-           pobswt(jl,jk)=MAX(pctfreez2(jl), psftobswt(jl,jk)+ttt+ &
+           pobswt(jl,jk)=MAX(pctfreez2(jl), ttt+ &
             (depth-odepths(kkk))/(odepths(kkk+1)-odepths(kkk))* (ttt1-ttt) )
           if(GDCHK3)then
             print*,"int_godas0:jk=",jk,",pobswtb=",pobswtb(jl),",pobswt_jk=",pobswt(jl,jk)
@@ -2878,18 +2878,18 @@ CONTAINS
 
 #if defined(LCWBGFS)
     Do jk=nls,nle+1
-!       pwt(jl,jk)=0.2*pwt(jl,jk)+0.3*poldsitwt(jl,jk,1)+0.5*poldsitwt(jl,jk,0)
-!       pwu(jl,jk)=0.2*pwu(jl,jk)+0.3*poldsitwu(jl,jk,1)+0.5*poldsitwu(jl,jk,0)
-!       pwv(jl,jk)=0.2*pwv(jl,jk)+0.3*poldsitwv(jl,jk,1)+0.5*poldsitwv(jl,jk,0)
-!       pww(jl,jk)=0.2*pww(jl,jk)+0.3*poldsitww(jl,jk,1)+0.5*poldsitww(jl,jk,0)
-!       pws(jl,jk)=0.2*pws(jl,jk)+0.3*poldsitws(jl,jk,1)+0.5*poldsitws(jl,jk,0)
-!       pwtke(jl,jk)=0.2*pwtke(jl,jk)+0.3*poldwtke(jl,jk,1)+0.5*poldwtke(jl,jk,0)
-       pwt(jl,jk)=1.*pwt(jl,jk)+0.*poldsitwt(jl,jk,1)+0.*poldsitwt(jl,jk,0)
-       pwu(jl,jk)=1.*pwu(jl,jk)+0.*poldsitwu(jl,jk,1)+0.*poldsitwu(jl,jk,0)
-       pwv(jl,jk)=1.*pwv(jl,jk)+0.*poldsitwv(jl,jk,1)+0.*poldsitwv(jl,jk,0)
-       pww(jl,jk)=1.*pww(jl,jk)+0.*poldsitww(jl,jk,1)+0.*poldsitww(jl,jk,0)
-       pws(jl,jk)=1.*pws(jl,jk)+0.*poldsitws(jl,jk,1)+0.*poldsitws(jl,jk,0)
-       pwtke(jl,jk)=1.*pwtke(jl,jk)+0.*poldwtke(jl,jk,1)+0.*poldwtke(jl,jk,0)
+       pwt(jl,jk)=0.2*pwt(jl,jk)+0.3*poldsitwt(jl,jk,1)+0.5*poldsitwt(jl,jk,0)
+       pwu(jl,jk)=0.2*pwu(jl,jk)+0.3*poldsitwu(jl,jk,1)+0.5*poldsitwu(jl,jk,0)
+       pwv(jl,jk)=0.2*pwv(jl,jk)+0.3*poldsitwv(jl,jk,1)+0.5*poldsitwv(jl,jk,0)
+       pww(jl,jk)=0.2*pww(jl,jk)+0.3*poldsitww(jl,jk,1)+0.5*poldsitww(jl,jk,0)
+       pws(jl,jk)=0.2*pws(jl,jk)+0.3*poldsitws(jl,jk,1)+0.5*poldsitws(jl,jk,0)
+       pwtke(jl,jk)=0.2*pwtke(jl,jk)+0.3*poldwtke(jl,jk,1)+0.5*poldwtke(jl,jk,0)
+!       pwt(jl,jk)=1.*pwt(jl,jk)+0.*poldsitwt(jl,jk,1)+0.*poldsitwt(jl,jk,0)
+!       pwu(jl,jk)=1.*pwu(jl,jk)+0.*poldsitwu(jl,jk,1)+0.*poldsitwu(jl,jk,0)
+!       pwv(jl,jk)=1.*pwv(jl,jk)+0.*poldsitwv(jl,jk,1)+0.*poldsitwv(jl,jk,0)
+!       pww(jl,jk)=1.*pww(jl,jk)+0.*poldsitww(jl,jk,1)+0.*poldsitww(jl,jk,0)
+!       pws(jl,jk)=1.*pws(jl,jk)+0.*poldsitws(jl,jk,1)+0.*poldsitws(jl,jk,0)
+!       pwtke(jl,jk)=1.*pwtke(jl,jk)+0.*poldwtke(jl,jk,1)+0.*poldwtke(jl,jk,0)
     ENDDO
       if(GDCHK3) print *,"final,jk=0,oldwt(0)=",poldsitwt(jl,0,0),",oldwt(1)=",poldsitwt(jl,0,1)
       if(GDCHK3) print *,"final,jk=1,oldwt(0)=",poldsitwt(jl,1,0),",oldwt(1)=",poldsitwt(jl,1,1)
@@ -7002,11 +7002,15 @@ END SUBROUTINE thermocline
 
     IF ((pobswtb(jl).NE.xmissing).AND.(st_restore_time.GT.0.)) THEN
       restore_temp=(pobswtb(jl)-pwt(jl,jk))*(1.-0.5**(zdtime/st_restore_time))
-      IF(ltimeblending .AND. timebl_option .EQ. 1 ) THEN
-        restore_temp=(pobswtb(jl)-pwt(jl,jk))*(1.-fratio)
-      ENDIF
       IF(lgodas .AND. ltimeblending .AND. timebl_option .EQ. 1 ) THEN
-        restore_temp=(pobswt(jl,jk)-pwt(jl,jk))*(1.-fratio)
+!        restore_temp=(pobswt(jl,jk)-pwt(jl,jk))*(1.-fratio)
+        restore_temp=(pobswt(jl,jk)-pwt(jl,jk))*(1.-0.5**(zdtime/st_restore_time))
+        restore_temp=(pobswt(jl,jk)-pwt(jl,jk))*(1.-fratio)+restore_temp*fratio
+      ELSE
+        IF(ltimeblending .AND. timebl_option .EQ. 1 ) THEN
+!        restore_temp=(pobswtb(jl)-pwt(jl,jk))*(1.-fratio)
+          restore_temp=(pobswtb(jl)-pwt(jl,jk))*(1.-fratio)+restore_temp*fratio
+        ENDIF
       ENDIF
     ELSEIF ((pobswtb(jl).NE.xmissing).AND.(st_restore_time.EQ.0.)) THEN
       restore_temp=(pobswtb(jl)-pwt(jl,jk))
@@ -7026,7 +7030,8 @@ END SUBROUTINE thermocline
     IF ((pobswsb(jl).NE.xmissing).AND.(ss_restore_time.GT.0.)) THEN
       restore_salt=(pobswsb(jl)-pws(jl,jk))*(1.-0.5**(zdtime/ss_restore_time))
       IF(ltimeblending .AND. timebl_option .EQ. 1) THEN
-        restore_salt=(pobswsb(jl)-pws(jl,jk))*(1.-fratio)
+!        restore_salt=(pobswsb(jl)-pws(jl,jk))*(1.-fratio)
+        restore_salt=(pobswsb(jl)-pws(jl,jk))*(1.-fratio)+restore_salt*fratio
       ENDIF
     ELSEIF ((pobswsb(jl).NE.xmissing).AND.(ss_restore_time.EQ.0.)) THEN
       restore_salt=(pobswsb(jl)-pws(jl,jk))
@@ -7046,7 +7051,8 @@ END SUBROUTINE thermocline
     IF ((pobswu(jl,jk).NE.xmissing).AND.(suv_restore_time.GT.0.)) THEN
        restore_u=(pobswu(jl,jk)-pwu(jl,jk))*(1.-0.5**(zdtime/suv_restore_time))
        IF(ltimeblending .AND. timebl_option .EQ. 1) THEN
-         restore_u=(pobswu(jl,jk)-pwu(jl,jk))*(1.-fratio)
+!         restore_u=(pobswu(jl,jk)-pwu(jl,jk))*(1.-fratio)
+         restore_u=(pobswu(jl,jk)-pwu(jl,jk))*(1.-fratio)+restore_u*fratio
        ENDIF
     ELSEIF ((pobswu(jl,jk).NE.xmissing).AND.(suv_restore_time.EQ.0.)) THEN
        restore_u=(pobswu(jl,jk)-pwu(jl,jk))
@@ -7066,7 +7072,8 @@ END SUBROUTINE thermocline
     IF ((pobswv(jl,jk).NE.xmissing).AND.(suv_restore_time.GT.0.)) THEN
        restore_v=(pobswv(jl,jk)-pwv(jl,jk))*(1.-0.5**(zdtime/suv_restore_time))
        IF(ltimeblending .AND. timebl_option .EQ. 1) THEN
-         restore_v=(pobswv(jl,jk)-pwv(jl,jk))*(1.-fratio)
+!         restore_v=(pobswv(jl,jk)-pwv(jl,jk))*(1.-fratio)
+         restore_v=(pobswv(jl,jk)-pwv(jl,jk))*(1.-fratio)+restore_v*fratio
        ENDIF
     ELSEIF ((pobswv(jl,jk).NE.xmissing).AND.(suv_restore_time.EQ.0.)) THEN
        restore_v=(pobswv(jl,jk)-pwv(jl,jk))
@@ -7110,7 +7117,8 @@ END SUBROUTINE thermocline
       IF ((pobswtb(jl).NE.xmissing).AND.(st_restore_time_all.GT.0.)) THEN
          restore_temp2=(pobswtb(jl)-pwt(jl,jk))*(1.-0.5**(zdtime/st_restore_time_all))
          IF(ltimeblending .AND. timebl_option .EQ. 1) THEN
-           restore_temp2=(pobswtb(jl)-pwt(jl,jk))*(1.-fratio)
+!           restore_temp2=(pobswtb(jl)-pwt(jl,jk))*(1.-fratio)
+           restore_temp2=(pobswtb(jl)-pwt(jl,jk))*(1.-fratio)+restore_temp2*fratio
          ENDIF
       ELSEIF ((pobswtb(jl).NE.xmissing).AND.(st_restore_time_all.EQ.0.)) THEN
          restore_temp2=(pobswtb(jl)-pwt(jl,jk))
@@ -7129,7 +7137,8 @@ END SUBROUTINE thermocline
       IF ((pobswsb(jl).NE.xmissing).AND.(ss_restore_time_all.GT.0.)) THEN
         restore_salt2=(pobswsb(jl)-pws(jl,jk))*(1.-0.5**(zdtime/ss_restore_time_all))
         IF(ltimeblending .AND. timebl_option .EQ. 1) THEN
-          restore_salt2=(pobswsb(jl)-pws(jl,jk))*(1.-fratio)
+!          restore_salt2=(pobswsb(jl)-pws(jl,jk))*(1.-fratio)
+          restore_salt2=(pobswsb(jl)-pws(jl,jk))*(1.-fratio)+restore_salt2*fratio
         ENDIF
       ELSEIF ((pobswsb(jl).NE.xmissing).AND.(ss_restore_time_all.EQ.0.)) THEN
         restore_salt2=(pobswsb(jl)-pws(jl,jk))
@@ -7148,7 +7157,8 @@ END SUBROUTINE thermocline
       IF ((pobswu(jl,jk).NE.xmissing).AND.(suv_restore_time_all.GT.0.)) THEN
          restore_u2=(pobswu(jl,jk)-pwu(jl,jk))*(1.-0.5**(zdtime/suv_restore_time_all))
          IF(ltimeblending .AND. timebl_option .EQ. 1) THEN
-           restore_u2=(pobswu(jl,jk)-pwu(jl,jk))*(1.-fratio)
+!           restore_u2=(pobswu(jl,jk)-pwu(jl,jk))*(1.-fratio)
+           restore_u2=(pobswu(jl,jk)-pwu(jl,jk))*(1.-fratio)+restore_u2*fratio
          ENDIF
       ELSEIF ((pobswu(jl,jk).NE.xmissing).AND.(suv_restore_time_all.EQ.0.)) THEN
          restore_u2=(pobswu(jl,jk)-pwu(jl,jk))
@@ -7167,7 +7177,8 @@ END SUBROUTINE thermocline
       IF ((pobswv(jl,jk).NE.xmissing).AND.(suv_restore_time_all.GT.0.)) THEN
          restore_v2=(pobswv(jl,jk)-pwv(jl,jk))*(1.-0.5**(zdtime/suv_restore_time_all))
          IF(ltimeblending .AND. timebl_option .EQ. 1) THEN
-           restore_v2=(pobswv(jl,jk)-pwv(jl,jk))*(1.-fratio)
+!           restore_v2=(pobswv(jl,jk)-pwv(jl,jk))*(1.-fratio)
+           restore_v2=(pobswv(jl,jk)-pwv(jl,jk))*(1.-fratio)+restore_v2*fratio
          ENDIF
       ELSEIF ((pobswv(jl,jk).NE.xmissing).AND.(suv_restore_time_all.EQ.0.)) THEN
          restore_v2=(pobswv(jl,jk)-pwv(jl,jk))
@@ -7513,14 +7524,14 @@ END SUBROUTINE thermocline
         ENDIF
 
 
-        IF(GDCHK3 .AND. jk.EQ.1) print *,"ltimeblending=",ltimeblending, &
-                       ",fratio=",fratio,",jk=",jk, &
-                       ",st_restore_time=",st_restore_time, &
-                       ",ss_restore_time=",ss_restore_time, &
-                       ",suv_restore_time=",suv_restore_time, &
-                       ",st_restore_time_all=",st_restore_time_all, &
-                       ",ss_restore_time_all=",ss_restore_time_all, &
-                       ",suv_restore_time_all=",suv_restore_time_all
+!        IF(GDCHK3 .AND. jk.EQ.1) print *,"ltimeblending=",ltimeblending, &
+!                       ",fratio=",fratio,",jk=",jk, &
+!                       ",st_restore_time=",st_restore_time, &
+!                       ",ss_restore_time=",ss_restore_time, &
+!                       ",suv_restore_time=",suv_restore_time, &
+!                       ",st_restore_time_all=",st_restore_time_all, &
+!                       ",ss_restore_time_all=",ss_restore_time_all, &
+!                       ",suv_restore_time_all=",suv_restore_time_all
       ENDIF
 
 !      
