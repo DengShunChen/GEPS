@@ -183,7 +183,7 @@
       enddo  ! end (mm)
 !=======================================================================
       call mpe2d_unify(glob,raincu6)
-      call mpe_unify(glob1,rainlp6)
+      call mpe2d_unify(glob1,rainlp6)
       call syslbl ('b00633',idtg,itau,ggdef,ihdg)
       if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
       if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
