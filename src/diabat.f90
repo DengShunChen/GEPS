@@ -403,10 +403,10 @@
                 vd,    ttd,    qqd,    dqcu,   deg_ju, arg,    tem
 
 !xb110>
-      real      mdlon
-      real      mflon(nx,my)
-!for new precpd
-      real      rmr(nxp,lev,my_max),smr(nxp,lev,my_max),rainr(nxp,lev,my_max)
+!for new precpd & nTDK
+      real      rmr(nxp,lev,my_max),smr(nxp,lev,my_max),rainr(nxp,lev,my_max),&
+                u0(nxp,lev,my_max),v0(nxp,lev,my_max),t0(nxp,lev,my_max),     &
+                q0(nxp,lev*ncld,my_max)
       real      slsp(nxp,my_max),rm(nxp,lev),sm(nxp,lev),rainp(nxp,lev)
 !rainr : rainfall rate (unit in kg/kg/dt)
 !for lightning
@@ -839,6 +839,21 @@
       tt(i,k,jj) = tt(i,k,jj) + dta*dtrad(i,k,jj)/86400.0
   240 continue
 !
+!xb110> save the variables for TDK before doing PBL parameterization
+      do k = 1,lev
+       do i = 1,nxj
+        u0(i,k,jj) = ut(i,k,jj)
+        v0(i,k,jj) = vt(i,k,jj)
+        t0(i,k,jj) = tt(i,k,jj)
+       end do
+      end do
+
+      do k = 1,lev*ncld
+       do i = 1,nxj
+        q0(i,k,jj) = qt(i,k,jj)
+       end do
+      end do
+!xb110<
 !
       if ( dopbl .and. nmpbl.eq.1 .and. nmland.eq.1)                          &
          call pbltke ( nxjp(j),nxp,lev,ktpbl,dta,grav,rgas,cp,xkapa,hltm,ptop &
@@ -1095,28 +1110,26 @@
 !xb110>
       if ( docup .and. nmcup .eq. 5 .and. ncld .ge. 2 ) then
 
+        tem1      = tpr*cosl(j)/float(nxdef(j))
+        jup       = min(j+1,my)
+        jdn       = max(j-1, 1)
+        tem2      = radus*0.5*abs(xlat(jup)-xlat(jdn))*d2r
+
         do i=1,nxj
           if(land(i,jj))slimsk(i)=1
           if(ocean(i,jj))slimsk(i)=0
           if(ice(i,jj))slimsk(i)=2
         enddo
 
-        mflon(1,j) = 0.
-        mdlon = 0.
-          do i=2,nxj
-            mflon(i,j)=mflon(1,j)+float(i-1)*360./nxj
-          enddo
-        mdlon = mflon(nxj,j) - mflon(nxj-1,j)
-
         call cumastr_driv_n                                               &
-               (nxjp(j)    ,nxp       ,lev        ,dta        ,grav      ,&
+               (nxjp(j)    ,nxp       ,lev        ,dt         ,grav      ,&
                 rgas       ,cp        ,hltm       ,ptop      ,land(1,jj) ,&
-                sgeo(1,jj) ,phi       ,up(1,1,jj) ,vp(1,1,jj),ttp(1,1,jj),&
-                qp(1,1,jj) ,ut(1,1,jj),vt(1,1,jj) ,tt(1,1,jj),qt(1,1,jj) ,&
+                sgeo(1,jj) ,phi       ,u0(1,1,jj) ,v0(1,1,jj),t0(1,1,jj) ,&
+                q0(1,1,jj) ,ut(1,1,jj),vt(1,1,jj) ,tt(1,1,jj),qt(1,1,jj) ,&
                 rcup(1,jj) ,pk(1,1,jj),pk2(1,1,jj),sd(1,1,jj),qflux(1,jj),&
                 kbot(1,jj) ,ktop(1,jj),fwd        ,ncld      ,sigma      ,&
                 plt(1,1,jj),pst(1,jj) ,j          ,slimsk    ,hflux(1,jj),&
-                xlat(j)   ,mdlon      ,kuo(1,jj) ,flash(1,jj))
+                garea      ,kuo(1,jj) ,flash(1,jj))
 
         do i=1,nxj
 !byl         if(kbot(i,jj).eq.lev-1 .and. ktop(i,jj).eq.lev-1)then

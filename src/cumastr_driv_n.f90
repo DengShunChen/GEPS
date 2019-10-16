@@ -6,7 +6,7 @@
                     rcup ,pk   ,pk2  ,sd   ,qflux,&
                     kcbot,kctop,fwd  ,ncld ,sigma,&
                     plt  ,pt   ,j    ,lndj ,hfx  ,&
-                    xlat,mdlon ,kcnv ,flash)
+                    garea ,kcnv ,flash)
 !c
 !c#######################################################################
 !c                     subroutine description
@@ -68,7 +68,7 @@
       real pqhfl(nx),prsfc(nx),pssfc(nx),rcup(nx),zrain(nx)        &
             ,phhfl(nx),hfx(nx)
 !
-      real rhoh2o,dx,d2r,xlatj,xlat,tt1
+      real rhoh2o,d2r,xlatj,xlat,tt1
 !c
       integer klevp1,klevm1,k,i,kc,ncldq,lndj(nx)
       logical fwd,land(nx),ldland(nx)
@@ -76,11 +76,15 @@
       real zew,zqs,zcor,foeewm,mdlon
       logical locum(nx)
       integer kcnv(nx)
-      real flash(nx)        !flash density (in flashes km^-2 s^-1)
+      real flash(nx),garea(nx),dx(nx)  
 !xb110<
       ncldq=2
       rhoh2o=1000.
 !
+      do i = 1,nxj
+       dx(i) = sqrt(garea(i))
+      end do
+
       do k=1,lev
       do i=1,nxj
         papp1(i,k)=plt(i,k)*100.  ! from mb to pa
@@ -146,7 +150,7 @@
               pvom,  pvol, prsfc,pssfc, kcbot,  &
               kctop, dth,  j,    ztu,   zqu,    &
               zmfu,  zmfd, zrain,pcte,  phhfl,  &
-              lndj,  locum,xlat, mdlon, kcnv,   &
+              lndj,  locum,dx   , kcnv,   &
               flash)
 
       do k=1,lev
@@ -156,7 +160,7 @@
         qt(i,k)=q(i,k)+pqte(i,kc)*dt
         ut(i,k)=u(i,k)+pvom(i,kc)*dt
         vt(i,k)=v(i,k)+pvol(i,kc)*dt
-        qt(i,k+(ncldq-1)*lev)=qt(i,k+(ncldq-1)*lev)+pxtec(i,kc)*dt
+        qt(i,k+(ncldq-1)*lev)=q(i,k+(ncldq-1)*lev)+pxtec(i,kc)*dt
       enddo
       enddo
 
