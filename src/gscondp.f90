@@ -1,6 +1,6 @@
-      subroutine gscondp (im,ix,km,dt,dtf,prsl,ps,q,cwm,t &
+      subroutine gscondp (im,ix,km,dt,prsl,ps,q,cwm,t &
       ,                  tp, qp, psp, tp1, qp1, psp1 &
-      ,			 u,deltaq, sup, lprnt, ipr, kdt)
+      ,                  u,deltaq, sup, lprnt, ipr, kdt)
 !
 !     ******************************************************************
 !     *                                                                *
@@ -19,48 +19,55 @@
 !----------------------------------------------------------------------
 !----------------------------------------------------------------------
 !
-      use machine , only : kind_phys
-      use funcphys , only : fpvs
-      use physcons, psat => con_psat, hvap => con_hvap, grav => con_g &
-      ,             hfus => con_hfus, ttp => con_ttp, rd => con_rd &
-      ,             cp => con_cp, eps => con_eps, epsm1 => con_epsm1 &
-      ,             rv => con_rv, thgni => con_thgni
 !      use namelist_def, only: nsdfi,fhdfi
 
       implicit none
+      real  psat, hvap, grav, hfus, ttp, rd, rv, cp, eps, epsm1
+      parameter(  psat = 6.1078e+2 )
+      parameter(  hvap = 2.5000e+6 )
+      parameter(  grav = 9.80665e+0 )
+      parameter(  hfus = 3.3358e+5 )
+      parameter(   ttp = 2.7316e+2 )
+      parameter(    rd = 2.8705e+2 )
+      parameter(    rv = 4.6150e+2 )
+      parameter(    cp = 1.0046e+3 )
+      parameter(   eps = rd/rv )
+      parameter( epsm1 = eps-1 )
+      real fpvs
 !
-      real (kind=kind_phys) g,    h1,   h2, h1000 &
-      ,                     d00,  d125,  d5,   elwv, eliv &
-      ,                     epsq, tm10,  eliw, arcp &
+      real                    g,    h1,   h2, h1000                  &
+      ,                     d00,  d125,  d5,   elwv, eliv            &
+      ,                     epsq, tm10,  eliw, arcp                  &
       ,                     a1,   r,     cpr,  rcpr, rcp
-      parameter (h1=1.e0,       h2=2.e0,               h1000=1000.0 &
-      ,          d00=0.e0,      d125=.125e0,           d5=0.5e0 &
-      ,          a1=psat &
-      ,          elwv=hvap,     eliv=hvap+hfus, g=grav &
+      parameter (h1=1.e0,       h2=2.e0,               h1000=1000.0  &
+      ,          d00=0.e0,      d125=.125e0,           d5=0.5e0      &
+      ,          a1=psat                                             &
+      ,          elwv=hvap,     eliv=hvap+hfus, g=grav               &
       ,          epsq=2.e-12,   tm10=ttp-10.,   r=rd &
       ,          cpr=cp*r,      rcpr=h1/cpr,    rcp=h1/cp)
 !
-      real(kind=kind_phys), parameter :: cons_0=0.0, cons_m15=-15.0
+      real, parameter :: cons_0=0.0, cons_m15=-15.0
 !
       integer im, ix, km, ipr
-      real (kind=kind_phys) q(ix,km),    t(ix,km),    cwm(ix,km) &
-      ,                     prsl(ix,km), ps(im), dt,  dtf &
-      ,                     tp(ix,km),   qp(ix,km),   psp(im) &
-      ,                     tp1(ix,km),  qp1(ix,km),  psp1(im) &
+      real                  q(ix,km),    t(ix,km),    cwm(ix,km)     &
+!      ,                     prsl(ix,km), ps(im), dt,  dtf &
+      ,                     prsl(ix,km), ps(im), dt                  &
+      ,                     tp(ix,km),   qp(ix,km),   psp(im)        &
+      ,                     tp1(ix,km),  qp1(ix,km),  psp1(im)       &
       ,                     deltaq(ix,km),deltaqik
-       real (kind=kind_phys) qtmp,qwtmp,qtpd,qsc,usc
-       real (kind=kind_phys), intent(in) ::  sup
+       real                 qtmp,qwtmp,qtpd,qsc,usc
+       real, intent(in) ::  sup
        logical iice
 
 !
-      real (kind=kind_phys)  qi(im), qint(im), u(im,km), ccrik, e0 &
-      ,                      cond,   rdt, us, cclimit, climit &
-      ,                      u00b,   u00t, tmt0, tmt15, qik, cwmik &
+      real                   qi(im), qint(im), u(im,km), ccrik, e0   &
+      ,                      cond,   rdt, us, cclimit, climit        &
+      ,                      u00b,   u00t, tmt0, tmt15, qik, cwmik   &
       ,                 ai, bi, qw(im,km), u00ik, tik, pres, pp0, fi &
-      ,                      at, aq, ap, fiw, elv, qc, rqik &
-      ,                      rqikk, tx1, tx2, tx3, es, qs &
-      ,                      tsq, delq, condi, cone0, us00, ccrik1 &
-      ,                      aa, ab, ac, ad, ae, af, ag &
+      ,                      at, aq, ap, fiw, elv, qc, rqik          &
+      ,                      rqikk, tx1, tx2, tx3, es, qs            &
+      ,                      tsq, delq, condi, cone0, us00, ccrik1   &
+      ,                      aa, ab, ac, ad, ae, af, ag              &
       ,                      el2orc, albycp, vprs(im)
       integer iw(im,km), i, k, iwik, kdt
       logical lprnt
@@ -79,10 +86,10 @@
       do  i = 1, im
         iw(i,km) = d00
       enddo
-!  the global qsat computation is done in cb
+!  the global qsat computation is done in Pa
       do i = 1, im
       do k = 1, km
-          pres  = prsl(i,k)
+          pres  = prsl(i,k)*h1000
           qwtmp = min(pres, fpvs(t(i,k)))
           qw(i,k) = eps * qwtmp / (pres + epsm1 * qwtmp)
           qw(i,k) = max(qw(i,k),epsq)
@@ -165,7 +172,7 @@
           iice = .false.
           deltaqik = deltaq(i,k)
           tik   = t(i,k)
-          pres  = prsl(i,k)
+          pres  = prsl(i,k) * h1000
           pp0   = (pres / ps(i)) * psp(i)
           at    = (tik-tp(i,k)) * rdt
           aq    = (qik-qp(i,k)) * rdt
@@ -324,7 +331,7 @@
 !
 !----------------store t, q, ps for next time step
 
-      if (dt > dtf+0.001) then     ! three time level
+!      if (dt > dtf+0.001) then     ! three time level
         do k = 1, km
           do i = 1, im
             tp(i,k)  = tp1(i,k)
@@ -338,21 +345,21 @@
           psp(i)  = psp1(i)
           psp1(i) = ps(i)
         enddo
-      else                   ! two time level scheme - tp1, qp1, psp1 not used
-        do k = 1, km
-          do i = 1, im
-            tp(i,k)  = t(i,k)
-            qp(i,k)  = max(q(i,k),epsq)
-            qp(i,k)  = q(i,k)
-            tp1(i,k) = tp(i,k)
-            qp1(i,k) = qp(i,k)
-          enddo
-        enddo
-        do i = 1, im
-          psp(i)  = ps(i)
-          psp1(i) = ps(i)
-        enddo
-      endif
+!      else                   ! two time level scheme - tp1, qp1, psp1 not used
+!        do k = 1, km
+!          do i = 1, im
+!            tp(i,k)  = t(i,k)
+!            qp(i,k)  = max(q(i,k),epsq)
+!            qp(i,k)  = q(i,k)
+!            tp1(i,k) = tp(i,k)
+!            qp1(i,k) = qp(i,k)
+!          enddo
+!        enddo
+!        do i = 1, im
+!          psp(i)  = ps(i)
+!          psp1(i) = ps(i)
+!        enddo
+!      endif
 !-----------------------------------------------------------------------
       return
       end

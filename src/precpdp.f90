@@ -1,7 +1,5 @@
-       subroutine precpdp (im,ix,km,dt,del,prsl,ps,q,cwm,t,rn,sr &
-      ,                   rainp,u00k,deltaq &
-      ,                   psautco,prautco,evpco,wminco &
-      ,                   lprnt,jpr)
+       subroutine precpdp (im,ix,km,dt,del,prsl,ps,q,cwm,t,rn  &
+      ,                   u00k,deltaq,lprnt)
 !
 !
 !     ******************************************************************
@@ -49,14 +47,23 @@
 !hchuang rn(im) unit in m per time step
 !        precipitation rate conversion 1 mm/s = 1 kg/m2/s
 !
-      use machine , only : kind_phys
-      use funcphys , only : fpvs
-      use physcons, grav => con_g, hvap => con_hvap, hfus => con_hfus &
-      ,             ttp => con_ttp, cp => con_cp &
-      ,             eps => con_eps, epsm1 => con_epsm1
       implicit none
+
+      real hvap,grav,hfus,ttp,rd,rv,cp,eps,epsm1
+
+      parameter(  hvap = 2.5000e+6 )
+      parameter(  grav = 9.80665e+0 )
+      parameter(  hfus = 3.3358e+5 )
+      parameter(   ttp = 2.7316e+2 )
+      parameter(    rd = 2.8705e+2 )
+      parameter(    rv = 4.6150e+2 )
+      parameter(    cp = 1.0046e+3 )
+      parameter(   eps = rd/rv )
+      parameter( epsm1 = eps-1 )
+
+      real fpvs
 !
-      real (kind=kind_phys) g,      h1,    h2,   h1000 &
+      real                  g,      h1,    h2,   h1000 &
       ,                     h1000g, d00,   d125, d5 &
       ,                     elwv,   eliv,  row &
       ,                     epsq,   dldt,  tm10, eliw &
@@ -67,12 +74,12 @@
       ,           epsq=2.e-12,    dldt=2274.e0,tm10=ttp-10.0 &
       ,           eliw=eliv-elwv, rcp=h1/cp,   rrow=h1/row)
 !
-      real(kind=kind_phys), parameter :: cons_0=0.0,     cons_p01=0.01 &
+      real, parameter ::                 cons_0=0.0,     cons_p01=0.01 &
       ,                                  cons_20=20.0 &
       ,                                  cons_m30=-30.0, cons_50=50.0
 !
-      integer im, ix, km, lat, jpr
-      real (kind=kind_phys) q(ix,km),   t(ix,km),    cwm(ix,km) &
+      integer im, ix, km, lat
+      real                  q(ix,km),   t(ix,km),    cwm(ix,km) &
       ,                                 del(ix,km),  prsl(ix,km)
 !    &,                     cll(im,km), del(ix,km),  prsl(ix,km) &
       ,                     ps(im),     rn(im),      sr(im) &
@@ -81,11 +88,10 @@
 !                       addition to total column precrl &
       ,                     rainp(im,km), rnp(im), &
                             deltaq(ix,km),deltaqik,qtmp,qsmqr, &
-                            cwmik,qik,prestmp, &
-                            psautco, prautco, evpco, wminco(2)
+                            cwmik,qik,prestmp
 !
 !
-      real (kind=kind_phys) err(im),      ers(im),     precrl(im) &
+      real                  err(im),      ers(im),     precrl(im) &
       ,                     precsl(im),   precrl1(im), precsl1(im) &
       ,                     rq(im),       condt(im) &
       ,                     conde(im),    rconde(im),  tmt0(im) &
@@ -100,9 +106,9 @@
        logical comput(im)
        logical lprnt
 !
-      real (kind=kind_phys) ke,   rdt,  us, cclimit, climit, cws, csm1 &
+      real                  ke,   rdt,  us, cclimit, climit, cws, csm1 &
       ,                     crs1, crs2, cr, aa2,     dtcp,   c00, cmr &
-      ,                     tem,  c1,   c2, wwn
+      ,                     tem,  c1,   c2, wwn,     aa1
 !    &,                     tem,  c1,   c2, u00b,    u00t,   wwn &
       ,                     precrk, precsk, pres1,   qk,     qw,  qi &
       ,                     ai,     bi, qint, fiw, wws, cwmk, expf &
@@ -124,12 +130,12 @@
 !     enddo
 !
       rdt     = h1 / dt
-!     ke      = 2.0e-5  ! commented on 09/10/99  -- opr value
+      ke      = 2.0e-5  ! commented on 09/10/99  -- opr value
 !     ke      = 2.0e-6
 !     ke      = 1.0e-5
 !!!   ke      = 5.0e-5
 !!    ke      = 7.0e-5
-      ke      = evpco
+!      ke      = evpco
 !     ke      = 7.0e-5
       us      = h1
       cclimit = 1.0e-3
@@ -143,6 +149,7 @@
       crs2    = 6.66600e-10 * zaodt
       cr      = 5.0e-4      * zaodt
       aa2     = 1.25e-3     * zaodt
+      aa1     = 4.0e-4
 !
       ke      = ke * sqrt(rdt)
 !     ke      = ke * sqrt(zaodt)
@@ -153,7 +160,7 @@
 !     c00 = 10.0e-1 * dt
 !     c00 = 3.0e-1 * dt          !05/09/2000
 !     c00 = 1.0e-4 * dt          !05/09/2000
-      c00 = prautco * dt         !05/09/2000
+      c00 = 1.0e-4 * dt         !05/09/2000
 !     c00 = 5.0e-5 * dt          !06/28/2012
       cmr = 1.0 / 3.0e-4
 !     cmr = 1.0 / 5.0e-4
@@ -166,15 +173,15 @@
 !
       do k=1,km
         do i=1,im
-          tem   = (prsl(i,k)*0.00001)
+          tem   = (prsl(i,k)*0.01)
 !         tem   = sqrt(tem)
           iw(i,k)    = 0.0
 !         wmin(i,k)  = 1.0e-5 * tem
 !         wmini(i,k) = 1.0e-5 * tem       ! testing for ras
 !
 
-          wmin(i,k)  = wminco(1) * tem
-          wmini(i,k) = wminco(2) * tem
+          wmin(i,k)  = 0.5e-5 * tem
+          wmini(i,k) = 0.5e-5 * tem
 
 
           rainp(i,k) = 0.0
@@ -226,7 +233,7 @@
           qq(n)     = q(i,k)
           ww(n)     = cwm(i,k)
           wmink(n)  = wmin(i,k)
-          pres(n)   = prsl(i,k)
+          pres(n)   = h1000 * prsl(i,k)
 !
           precrk = max(cons_0,    precrl1(n))
           precsk = max(cons_0,    precsl1(n))
@@ -353,7 +360,7 @@
             if (iwl(n) == 1) then                 !  ice phase
                amaxcm = max(cons_0, cwmk - wmini(ipr(n),k))
                expf      = dt * exp(0.025*tmt0(n))
-               psaut     = min(cwmk, psautco*expf*amaxcm)
+               psaut     = min(cwmk, aa1*expf*amaxcm)
 
 !              psaut     = min(cwmk, 2.0e-3*expf*amaxcm)
 !              psaut     = min(cwmk, 1.0e-3*expf*amaxcm)
