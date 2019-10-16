@@ -63,42 +63,42 @@
 
       real fpvs
 !
-      real                  g,      h1,    h2,   h1000 &
-      ,                     h1000g, d00,   d125, d5 &
-      ,                     elwv,   eliv,  row &
-      ,                     epsq,   dldt,  tm10, eliw &
+      real                  g,      h1,    h2,   h1000                 &
+      ,                     h1000g, d00,   d125, d5                    &
+      ,                     elwv,   eliv,  row                         &
+      ,                     epsq,   dldt,  tm10, eliw                  &
       ,                     rcp,    rrow
        parameter (g=grav,         h1=1.e0,     h2=2.e0,     h1000=1000.0 &
-      ,           h1000g=h1000/g, d00=0.e0,    d125=.125e0, d5=0.5e0 &
-      ,           elwv=hvap,      eliv=hvap+hfus,   row=1.e3 &
-      ,           epsq=2.e-12,    dldt=2274.e0,tm10=ttp-10.0 &
+      ,           h1000g=h1000/g, d00=0.e0,    d125=.125e0, d5=0.5e0   &
+      ,           elwv=hvap,      eliv=hvap+hfus,   row=1.e3           &
+      ,           epsq=2.e-12,    dldt=2274.e0,tm10=ttp-10.0           &
       ,           eliw=eliv-elwv, rcp=h1/cp,   rrow=h1/row)
 !
       real, parameter ::                 cons_0=0.0,     cons_p01=0.01 &
-      ,                                  cons_20=20.0 &
+      ,                                  cons_20=20.0                  &
       ,                                  cons_m30=-30.0, cons_50=50.0
 !
       integer im, ix, km, lat
-      real                  q(ix,km),   t(ix,km),    cwm(ix,km) &
-      ,                                 del(ix,km),  prsl(ix,km)
-!    &,                     cll(im,km), del(ix,km),  prsl(ix,km) &
-      ,                     ps(im),     rn(im),      sr(im) &
-      ,                     tcw(im),    dt
+      real                  q(ix,km),   t(ix,km),    cwm(ix,km)        &
+      ,                                 del(ix,km),  prsl(ix,km)       &
+!    &,                     cll(im,km), del(ix,km),  prsl(ix,km)      &
+      ,                     ps(im),     rn(im),      sr(im)            &
+      ,                     tcw(im),    dt                             &
 !hchuang code change [+1l] : add record to record information in vertical in
 !                       addition to total column precrl &
-      ,                     rainp(im,km), rnp(im), &
-                            deltaq(ix,km),deltaqik,qtmp,qsmqr, &
+      ,                     rainp(im,km), rnp(im),                     &
+                            deltaq(ix,km),deltaqik,qtmp,qsmqr,         &
                             cwmik,qik,prestmp
 !
 !
-      real                  err(im),      ers(im),     precrl(im) &
-      ,                     precsl(im),   precrl1(im), precsl1(im) &
-      ,                     rq(im),       condt(im) &
-      ,                     conde(im),    rconde(im),  tmt0(im) &
-      ,                     wmin(im,km),  wmink(im),   pres(im) &
-      ,                     wmini(im,km), ccr(im),     cclim(km) &
-      ,                     tt(im),       qq(im),      ww(im) &
-      ,                     wfix(km),     u00k(im,km), es(im) &
+      real                  err(im),      ers(im),     precrl(im)      &
+      ,                     precsl(im),   precrl1(im), precsl1(im)     &
+      ,                     rq(im),       condt(im)                    &
+      ,                     conde(im),    rconde(im),  tmt0(im)        &
+      ,                     wmin(im,km),  wmink(im),   pres(im)        &
+      ,                     wmini(im,km), ccr(im),     cclim(km)       &
+      ,                     tt(im),       qq(im),      ww(im)          &
+      ,                     wfix(km),     u00k(im,km), es(im)          &
       ,                     zaodt
 !
       integer iw(im,km), ipr(im), iwl(im),     iwl1(im)
@@ -107,14 +107,14 @@
        logical lprnt
 !
       real                  ke,   rdt,  us, cclimit, climit, cws, csm1 &
-      ,                     crs1, crs2, cr, aa2,     dtcp,   c00, cmr &
-      ,                     tem,  c1,   c2, wwn,     aa1
+      ,                     crs1, crs2, cr, aa2,     dtcp,   c00, cmr  &
+      ,                     tem,  c1,   c2, wwn,     aa1               &
 !    &,                     tem,  c1,   c2, u00b,    u00t,   wwn &
-      ,                     precrk, precsk, pres1,   qk,     qw,  qi &
-      ,                     ai,     bi, qint, fiw, wws, cwmk, expf &
-      ,                     psaut, psaci, amaxcm, tem1, tem2 &
-      ,                     tmt0k, tmt15, psm1, psm2, ppr &
-      ,                     rprs,  erk,   pps, sid, rid, amaxps &
+      ,                     precrk, precsk, pres1,   qk,     qw,  qi   &
+      ,                     ai,     bi, qint, fiw, wws, cwmk, expf     &
+      ,                     psaut, psaci, amaxcm, tem1, tem2           &
+      ,                     tmt0k, tmt15, psm1, psm2, ppr              &
+      ,                     rprs,  erk,   pps, sid, rid, amaxps        &
       ,                     praut, pracw, fi, qc, amaxrq, rqkll
       integer i, k, ihpr, n
 
@@ -250,7 +250,7 @@
         do n=1,ihpr
           if (comput(n)) then
             i = ipr(n)
-            conde(n)  = (dt/g) * del(i,k)
+            conde(n)  = (h1000*dt/g) * del(i,k)
             condt(n)  = conde(n) * rdt
             rconde(n) = h1 / conde(n)
             qk        = max(epsq,  qq(n))

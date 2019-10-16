@@ -61,7 +61,7 @@
       logical lsimpl,lzadv, yesdia,dopbl, docup, dorad,      &
               dolsp, dograv,doshl, dodry, donnmi,ozon,       &
               restrt,hdiff, cstar, update,doincr,hybrid,     &
-              doo3l, dosppt, dospptout,   docgrav
+              doo3l, dosppt, dospptout,   docgrav 
       logical domfc,out_green
 !for Semi-Lagrangain
       logical ndsladvh2
@@ -69,6 +69,8 @@
 !for horizontal diffusion
       integer hdktop,hdk1,hdk2,hdk3
       real    factop,coefu
+!for pdf cloud
+      logical pdfcloud
 
 !for 2dMPI
       logical idg_jdg_owner

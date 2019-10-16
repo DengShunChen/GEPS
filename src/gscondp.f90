@@ -1,6 +1,6 @@
       subroutine gscondp (im,ix,km,dt,prsl,ps,q,cwm,t &
       ,                  tp, qp, psp, tp1, qp1, psp1 &
-      ,                  u,deltaq, sup, lprnt, ipr, kdt)
+      ,                  u,deltaq, sup, lprnt, kdt)
 !
 !     ******************************************************************
 !     *                                                                *
@@ -22,7 +22,7 @@
 !      use namelist_def, only: nsdfi,fhdfi
 
       implicit none
-      real  psat, hvap, grav, hfus, ttp, rd, rv, cp, eps, epsm1
+      real  psat, hvap, grav, hfus, ttp, rd, rv, cp, eps, epsm1, thgni
       parameter(  psat = 6.1078e+2 )
       parameter(  hvap = 2.5000e+6 )
       parameter(  grav = 9.80665e+0 )
@@ -33,6 +33,7 @@
       parameter(    cp = 1.0046e+3 )
       parameter(   eps = rd/rv )
       parameter( epsm1 = eps-1 )
+      parameter( thgni = -38.15 )
       real fpvs
 !
       real                    g,    h1,   h2, h1000                  &
@@ -48,7 +49,7 @@
 !
       real, parameter :: cons_0=0.0, cons_m15=-15.0
 !
-      integer im, ix, km, ipr
+      integer im, ix, km
       real                  q(ix,km),    t(ix,km),    cwm(ix,km)     &
 !      ,                     prsl(ix,km), ps(im), dt,  dtf &
       ,                     prsl(ix,km), ps(im), dt                  &
@@ -117,9 +118,22 @@
       if(kdt == 1) then
         do k = 1, km
           do i = 1, im
+            tp(i,k) = t(i,k)
+            qp(i,k) = max(q(i,k),epsq)
+            tp1(i,k) = t(i,k)
+            qp1(i,k) = max(q(i,k),epsq)
+          enddo
+        enddo
+        do i = 1, im
+          psp(i)  = ps(i)
+          psp1(i) = ps(i)
+        enddo
+        do k = 1, km
+          do i = 1, im
             deltaq(i,k) = (1-u(i,k))*qw(i,k)
           enddo
         enddo
+        kdt=0
       endif
 !
 !c*************************************************************

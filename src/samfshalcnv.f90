@@ -60,7 +60,7 @@
 !!  @{
       subroutine samfshalcnv(im,ix,km,delt,delp,prslp,psp,phil,ql, &
            q1,t1,u1,v1,rn,kbot,ktop,kcnv,islimsk,garea, &
-           dot,ncloud,hpbl)
+           dot,ncloud,hpbl,cnvw,cnvc)
 !byl           dot,ncloud,hpbl,ud_mf,dt_mf,cnvw,cnvc,
 !    &     dot,ncloud,hpbl,ud_mf,dt_mf,cnvw,cnvc,me) &
 !byl           clam,c0s,c1,pgcon,asolfac)

@@ -16,7 +16,7 @@
                     , ugws,vgws,sdpbl,t2,rh2,u10,v10,gfx                       &
                     , rld,km_soil,smc,stc,canopy,runoff                        &
                     , sigmaf,istyp,ivegtyp,wlt,ref,tsat,dfkt,xktk,dfk          &
-                    , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,sd                          &
+                    , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,deltaq,sd                   &
                     , shdmax,shdmin,snoalb                                     &
                     , slopetyp,sld,slc,zice,cice,xtice,sncover,sndepth         &
                     , ctot,chig,cmid,clow,hpbl,asl,atl,cosz                    &
@@ -165,7 +165,8 @@
       use mpe
       use rank
       use index
-      use const,                 ONLY:do_sit,ldailyFCTsst,dailyClm_option
+      use const,                 ONLY:do_sit,ldailyFCTsst,dailyClm_option    &
+                                     ,pdfcloud   
       use mod_sitgrid
       USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
       USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt
@@ -269,7 +270,7 @@
       real ograv
 !byl      integer kpbl(nxp,my_max), kpblc(nxp,my_max)
       integer kpbl(nxp,my_max)
-      integer kdt,latg
+      integer latg
 
 ! --- for random number generator (thread safe mode)
       integer ixseed(nx,my,2)
@@ -357,6 +358,12 @@
       real      qtc(nxp,lev), qtr(nxp,lev), ttc(nxp,lev)
       real      ftp(nxp,lev,my_max), fqp(nxp,lev,my_max), fpsp(nxp,my_max)
       real      ftp1(nxp,lev,my_max), fqp1(nxp,lev,my_max), fpsp1(nxp,my_max)
+!-------
+!for pdf cloud
+      integer   kdt
+      real      sup
+      real      cnvw(nxp,lev),cnvc(nxp,lev),deltaq(nxp,lev,my_max)
+      real      cnvwr(nxp,lev),cnvcr(nxp,lev)
 
 ! vertcal rhc
 !      real      ct,cs,px
@@ -434,7 +441,6 @@
 !ps
 !CWB2015 
       kuo=0
-      kdt=0
 
 !CWB2016 
       icsdsw=0
@@ -461,6 +467,7 @@
 !-------------------------------
       prevap= 0.2
       etop= 1.0
+      sup=  1.0
       nxmy = nx * my
       nxlev= nx * lev
       levmy= lev* my
@@ -491,10 +498,12 @@
          dta    = dt
          rainfc = 1.0
          doozon = .true.
+         kdt    = 1
       else
          dta    = 2.0*dt
          rainfc = 0.5
          doozon = .false.
+         kdt    = 0
       endif
 !------------------------------------------------------------------------------
 !     set hours, iter, icrad, julian, uprad, doozon
@@ -557,6 +566,13 @@
        nflx(k,j)  = 0
        ilsp(k,j)  = 0
        nlsp(k,j)  = 0
+!for pdfcloud
+        do i = 1, nxp
+          cnvw(i,k) = 0.
+          cnvc(i,k) = 0.
+          cnvwr(i,k) = 0.
+          cnvcr(i,k) = 0.
+        enddo
       enddo
 
       do k = 1, lev+2
@@ -1221,7 +1237,7 @@
 !!          ,tice)
          call samfdeepcnv(nxjp(j),nxp,lev,dta,del,prsl,psfc,phil       &
           ,qtr,qtc,ttc,utc,vtc,cldwrk(1,jj),rcup(1,jj),kbot(1,jj)      &
-          ,ktop(1,jj),kuo(1,jj),islimsk,garea,dotc,ncld)
+          ,ktop(1,jj),kuo(1,jj),islimsk,garea,dotc,ncld,cnvw,cnvc)
 
 ! for rad input of convection cloud information
 ! bottom(plcl) layer and top(cumtop) layer in pressure(mb)
@@ -1247,6 +1263,8 @@
             tt(i,k    ,jj) = ttc(i,kc)
             ut(i,k    ,jj) = utc(i,kc)
             vt(i,k    ,jj) = vtc(i,kc)
+            cnvwr(i,kc)    = cnvw(i,kc)
+            cnvcr(i,kc)    = cnvc(i,kc)
           enddo
         enddo
 !
@@ -1424,7 +1442,7 @@
 !!          ,grav,cp,hltm,rgas,tice)
         call samfshalcnv(nxjp(j),nxp,lev,dta,del,prsl,psfc,phil,qtr   &
           ,qtc,ttc,utc,vtc,rcup2,kbot(1,jj),ktop(1,jj),kuo(1,jj)      &
-          ,islimsk,garea,dotc,ncld,hpbl(1,jj))
+          ,islimsk,garea,dotc,ncld,hpbl(1,jj),cnvw,cnvc)
 !
         do i=1,nxj
           rcup(i,jj) = rcup(i,jj)+rcup2(i) * 1000.         ! mm/call
@@ -1438,6 +1456,8 @@
             tt(i,k    ,jj) = ttc(i,kc)
             ut(i,k    ,jj) = utc(i,kc)
             vt(i,k    ,jj) = vtc(i,kc)
+            cnvwr(i,kc)    = cnvwr(i,kc) + cnvw(i,kc)
+            cnvcr(i,kc)    = cnvcr(i,kc) + cnvc(i,kc)
           enddo
         enddo
 !
@@ -1513,15 +1533,27 @@
             sm(i,kc)  = smr(i,k,jj)
           enddo
         enddo
-        call gscond(nxjp(j),nxp,lev,dta,prsl,psfc,  &
-                    qtc,qtr,ttc,           &
-                    ftp (1,1,jj),fqp (1,1,jj),fpsp (1,jj),&
-                    ftp1(1,1,jj),fqp1(1,1,jj),fpsp1(1,jj),&
-                    rhc,lprnt)
+        if ( pdfcloud ) then
+          call gscondp(nxjp(j),nxp,lev,dta,prsl,psfc,  &
+                      qtc,qtr,ttc,           &
+                      ftp (1,1,jj),fqp (1,1,jj),fpsp (1,jj),&
+                      ftp1(1,1,jj),fqp1(1,1,jj),fpsp1(1,jj),&
+                      rhc,deltaq(1,1,jj),sup,lprnt,kdt)
 !xb110>
-        call precpd(nxjp(j),nxp,lev,dta,del,prsl,psfc, &
-                    qtc, qtr, ttc,           &
-                    rlsp(1,jj), rhc, lprnt)
+          call precpdp(nxjp(j),nxp,lev,dta,del,prsl,psfc, &
+                      qtc, qtr, ttc,           &
+                      rlsp(1,jj),rhc,deltaq(1,1,jj),lprnt)
+        else
+          call gscond(nxjp(j),nxp,lev,dta,prsl,psfc,  &
+                      qtc,qtr,ttc,           &
+                      ftp (1,1,jj),fqp (1,1,jj),fpsp (1,jj),&
+                      ftp1(1,1,jj),fqp1(1,1,jj),fpsp1(1,jj),&
+                      rhc,lprnt)
+!xb110>
+          call precpd(nxjp(j),nxp,lev,dta,del,prsl,psfc, &
+                      qtc, qtr, ttc,           &
+                      rlsp(1,jj), rhc, lprnt)
+        endif
 ! precipitation over mid-latitude perform not very well, especially
 ! in climatology.
 !!        call precpd_n(nxjp(j),nxp,lev,dta,del,prsl,psfc,              &
@@ -1687,8 +1719,9 @@
              sinl(j),cosl(j),xlat(j),xlonr(nxjstart(j),jj),jdat,d2r,xkapa, &
              ptrad,dtlw,dtsw,lsswr,lsswr,lssav,                            &
              nfxr,j,                                                       &
-             nxp,nxjp(j),lev,ncld,lprnt,ipt,iter,solhr,solcon,             &
+             nxp,nxjp(j),lev,ncld,lprnt,ipt,kdt,solhr,solcon,              &
              uni_cloud,lmfshal,lmfdeep2,                                   &
+             deltaq(1,1,jj),sup,cnvw,cnvc,                                 &
 !  ---  outputs:
              asol(1,jj),olr(1,jj),ss(1,jj),rs(1,jj),                       &
              sld(1,jj),rld(1,jj),dtrad(1,1,jj),                            &

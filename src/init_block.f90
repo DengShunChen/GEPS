@@ -87,6 +87,8 @@
 !
       domfc=.false.
       out_green=.false.
+! pdf cloud
+      pdfcloud=.true.
 ! sppt
       dosppt=.false.
       dospptout=.false.

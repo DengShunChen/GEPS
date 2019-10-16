@@ -8,8 +8,9 @@
              sinlj,coslj,xlatj,xlonr,jdat,d2r,xkapa,                &
              ptop,dtlw,dtsw,lsswr,lslwr,lssav,                      &
              nfxr,j,                                                &
-             nx,nxj,lev,ncld,lprnt,ipt,iter,solhr,solcon,           &
+             nx,nxj,lev,ncld,lprnt,ipt,kdt,solhr,solcon,            &
              uni_cloud,lmfshal,lmfdeep2,                            &
+             deltaq,sup,cnvw,cnvc,                                  &
 !    -  outputs:
              asol,olr,ss,rs,sld,rld,dtrad,                          &
              ctot,chig,cmid,clow,                                   &
@@ -33,7 +34,7 @@
 ! -------------------------------------------------------------------
 ! --- for rrtmg input :
 !
-      integer ntrac,nfxr,nx,nxj,lev,ipt,iter,ncld
+      integer ntrac,nfxr,nx,nxj,lev,ipt,ncld,kdt
 ! --- 3d parameters
 !
       dimension sigma(lev+1,2),pst(nx),plt(nx,lev),std(nx),tg(nx),  &
@@ -49,6 +50,9 @@
       real    sinlj,coslj,xlatj,ptop,dtlw,dtsw,d2r,xkapa,solhr,solcon
       logical lsswr,lslwr,lssav,lprnt
       logical uni_cloud,lmfshal,lmfdeep2
+! --- for pdf cloud
+      real    sup
+      real    deltaq(nx,lev),cnvw(nx,lev),cnvc(nx,lev)
 
 ! --- for grrad input/output (local) :
 !
@@ -402,8 +406,9 @@
              cv,cvt,cvb,                                             &
              icsdsw,icsdlw,ntcw,nclds,ntoz,ntrac,nfxr,               &
              dtlw,dtsw,lsswr,lslwr,lssav,                            &
-             nx,nxj,lev,me,lprnt,ipt,iter,myrank,                    &
+             nx,nxj,lev,me,lprnt,ipt,kdt,myrank,                     &
              ntiw,ntrw,ntsw,ntgl,uni_cloud,lmfshal,lmfdeep2,         &
+             deltaq,sup,cnvw,cnvc,                                   &
 !  ---  outputs:
              dummy1,sfalb,coszen,coszdg,                             &
              dummy2,tsflw,semis,dummy3,                              &
