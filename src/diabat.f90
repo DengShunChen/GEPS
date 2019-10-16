@@ -1324,7 +1324,7 @@
 !
         do k = 1, lev
           do i = 1, nxj
-            if (k >= lev-kbot(i,jj) .and. k <= lev-ktop(i,jj)) then
+            if (k <= lev-kbot(i,jj)+1 .and. k >= lev-ktop(i,jj)+1) then
               cumabs(i) = cumabs(i) + delttcv(i,k) * del(i,k)
               work3(i)  = work3(i)  + del(i,k)
             endif
