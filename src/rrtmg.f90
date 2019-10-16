@@ -34,92 +34,95 @@
 ! -------------------------------------------------------------------
 ! --- for rrtmg input :
 !
+      integer i,k,kc,n
       integer ntrac,nfxr,nx,nxj,lev,ipt,ncld,kdt
 ! --- 3d parameters
 !
-      dimension sigma(lev+1,2),pst(nx),plt(nx,lev),std(nx),tg(nx),  &
-                tt(nx,lev),qt(nx,lev*ncld),o3l(nx,lev),sd(nx,lev)
+      real    sigma(lev+1,2),pst(nx),plt(nx,lev),std(nx),tg(nx),  &
+              tt(nx,lev),qt(nx,lev*ncld),o3l(nx,lev),sd(nx,lev)
 !
 ! --- 2d parameters
 !
-      dimension slimsk(nx),cice(nx),xtice(nx),snr(nx),sncover(nx),  &
-                snoalb(nx),z0(nx)
-      dimension alvsg(nx),alvwg(nx),alnsg(nx),alnwg(nx),facsg(nx),  &
-                facwg(nx),curate(nx),xlonr(nx)
+      real    slimsk(nx),cice(nx),xtice(nx),snr(nx),sncover(nx),  &
+              snoalb(nx),z0(nx)
+      real    alvsg(nx),alvwg(nx),alnsg(nx),alnwg(nx),facsg(nx),  &
+              facwg(nx),curate(nx),xlonr(nx)
       integer icsdlwg(nx),icsdswg(nx),jdat(8),j
       real    sinlj,coslj,xlatj,ptop,dtlw,dtsw,d2r,xkapa,solhr,solcon
       logical lsswr,lslwr,lssav,lprnt
       logical uni_cloud,lmfshal,lmfdeep2
-! --- for pdf cloud
-      real    sup
-      real    deltaq(nx,lev),cnvw(nx,lev),cnvc(nx,lev)
+      real    www,fac_o3,cmax,cmin,imax,imin,tem1,tem2
+
 
 ! --- for grrad input/output (local) :
 !
 ! --- 3d
 !
-      dimension prsi(nx,lev+1)                      !for even levels
-      dimension prslk(nx,lev),prsl(nx,lev)          !for odd levels
-      dimension qgrs(nx,lev),tgrs(nx,lev)           !for odd levels
-!      dimension tracer(nx,lev,ncld),vvl(nx,lev)
-      dimension vvl(nx,lev)
+      real    prsi(nx,lev+1)                      !for even levels
+      real    prslk(nx,lev),prsl(nx,lev)          !for odd levels
+      real    qgrs(nx,lev),tgrs(nx,lev)           !for odd levels
+!      real    tracer(nx,lev,ncld),vvl(nx,lev)
+      real    vvl(nx,lev)
       real, dimension(:,:,:), allocatable ::  tracer
 
-      dimension slmsk(nxj),xlon(nxj),xlat(nxj),tsfc(nxj),            &
-                snowd(nxj),sncovr(nxj),zorl(nxj),hprim(nxj),         &
-                cv(nxj),cvt(nxj),cvb(nxj),snalb(nxj)
+      real    slmsk(nxj),xlon(nxj),xlat(nxj),tsfc(nxj),            &
+              snowd(nxj),sncovr(nxj),zorl(nxj),hprim(nxj),         &
+              cv(nxj),cvt(nxj),cvb(nxj),snalb(nxj)
 
-      dimension alvsf(nxj),alvwf(nxj),alnsf(nxj),alnwf(nxj),         &
-                facsf(nxj),facwf(nxj),                               &
-                fice(nxj),tisfc(nxj),sinlat(nxj),coslat(nxj)
+      real    alvsf(nxj),alvwf(nxj),alnsf(nxj),alnwf(nxj),         &
+              facsf(nxj),facwf(nxj),                               &
+              fice(nxj),tisfc(nxj),sinlat(nxj),coslat(nxj)
 
-      dimension sfalb(nxj),coszen(nxj),coszdg(nxj)
-      dimension tsflw(nxj),semis(nxj) 
+      real    sfalb(nxj),coszen(nxj),coszdg(nxj)
+      real    tsflw(nxj),semis(nxj) 
 
       integer icsdlw(nxj),icsdsw(nxj)
+! --- for pdf cloud
+      real    sup
+      real    deltaq(nx,lev),cnvw(nx,lev),cnvc(nx,lev)
 
 ! -------------------------------------------------------------------
 ! --- for rrtmg output:
-      dimension asol(nx),olr(nx),ss(nx),rs(nx),sld(nx),rld(nx)
+      real    asol(nx),olr(nx),ss(nx),rs(nx),sld(nx),rld(nx)
 !
 ! --- 3d
 !
-      dimension htrsw(nx,lev),htrlw(nx,lev)
-      dimension fusl(nx,lev+1),fdsl(nx,lev+1)
-      dimension fuir(nx,lev+1),fdir(nx,lev+1)
+      real    htrsw(nx,lev),htrlw(nx,lev)
+      real    fusl(nx,lev+1),fdsl(nx,lev+1)
+      real    fuir(nx,lev+1),fdir(nx,lev+1)
      
-      dimension dummy1(nx,lev),dummy2(nx,lev)
-      dimension work1(nx,lev+1),work2(nx,lev+1)
-      dimension work3(nx,lev+1),work4(nx,lev+1)
+      real    dummy1(nx,lev),dummy2(nx,lev)
+      real    work1(nx,lev+1),work2(nx,lev+1)
+      real    work3(nx,lev+1),work4(nx,lev+1)
 !
 ! --- 2d
 !
-      dimension dtrad(nx,lev)
-      dimension ctot(nx),chig(nx),cmid(nx),clow(nx),csbl(nx)
+      real    dtrad(nx,lev)
+      real    ctot(nx),chig(nx),cmid(nx),clow(nx),csbl(nx)
 
-      dimension cldcov(nx,lev)
-      dimension dummy3(nx,lev)
+      real    cldcov(nx,lev)
+      real    dummy3(nx,lev)
       
 
 !
 ! --- for clear sky
 !
-      dimension asol_clr(nx),olr_clr(nx),ss_clr(nx),rs_clr(nx)
-      dimension sld_clr(nx),rld_clr(nx)
+      real    asol_clr(nx),olr_clr(nx),ss_clr(nx),rs_clr(nx)
+      real    sld_clr(nx),rld_clr(nx)
 !
 ! --- 3d 
 !
-      dimension htrsw0(nx,lev),htrlw0(nx,lev)
-      dimension fuslr(nx,lev+1),fdslr(nx,lev+1)
-      dimension fuirr(nx,lev+1),fdirr(nx,lev+1)
+      real    htrsw0(nx,lev),htrlw0(nx,lev)
+      real    fuslr(nx,lev+1),fdslr(nx,lev+1)
+      real    fuirr(nx,lev+1),fdirr(nx,lev+1)
 !
-      dimension dummy4(nx,lev),dummy5(nx,lev)
-      dimension work5(nx,lev+1),work6(nx,lev+1)
-      dimension work7(nx,lev+1),work8(nx,lev+1)
+      real    dummy4(nx,lev),dummy5(nx,lev)
+      real    work5(nx,lev+1),work6(nx,lev+1)
+      real    work7(nx,lev+1),work8(nx,lev+1)
 !
 ! --- 2d
 !
-      dimension fluxr(nx,nfxr)
+      real    fluxr(nx,nfxr)
 !
 !     if (myrank .eq. 0) print *,'### in rrtmg.f ###'
 !     if (myrank .eq. 0) print *,'### j=',j
