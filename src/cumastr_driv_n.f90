@@ -104,12 +104,6 @@
       pqhfl(i) = qflux(i)/alv   !xb110 20190715, convert to upward surface moisture flux (kgm^-2s^-1)
       ldland(i)= land(i)
       enddo
-!c transfer t from potential temp to real temp
-      do  k = 1, lev
-      do  i = 1, nxj
-      t(i,k) = t(i,k)*pk(i,k)
-      enddo
-      enddo
 
       dth = dt
 
