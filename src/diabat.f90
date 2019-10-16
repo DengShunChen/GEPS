@@ -1132,6 +1132,7 @@
         tem2      = radus*0.5*abs(xlat(jup)-xlat(jdn))*d2r
 
         do i=1,nxj
+          garea(i)  = tem1*tem2
           if(land(i,jj))slimsk(i)=1
           if(ocean(i,jj))slimsk(i)=0
           if(ice(i,jj))slimsk(i)=2
