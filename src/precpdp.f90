@@ -267,6 +267,7 @@
 !           qw      = es(n)
 !byl            qw      = min(pres1, fpvs(tt(n)))
             call qsatq_cwb(1,tt(n),0.01*pres1,qw)
+            qw      = qw * 100.
             qw      = eps * qw / (pres1 + epsm1 * qw)
             qw      = max(qw,epsq)
 !
@@ -525,6 +526,7 @@
             prestmp  = prsl(i,k)*h1000
 !byl            qw = min(prestmp, fpvs(t(i,k)))
             call qsatq_cwb(1,t(i,k),0.01*prestmp,qw)
+            qw = qw * 100.
             qw = eps * qw / (prestmp+ epsm1 * qw)
             qw = max(qw,epsq)
             qsmqr = qw-qik
