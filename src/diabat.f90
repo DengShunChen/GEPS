@@ -1735,7 +1735,7 @@
              nfxr,j,                                                       &
              nxp,nxjp(j),lev,ncld,lprnt,ipt,kdt,solhr,solcon,              &
              uni_cloud,lmfshal,lmfdeep2,                                   &
-             deltaq(1,1,jj),sup,cnvw,cnvc,                                 &
+             deltaq(1,1,jj),sup,cnvwr,cnvcr,                               &
 !  ---  outputs:
              asol(1,jj),olr(1,jj),ss(1,jj),rs(1,jj),                       &
              sld(1,jj),rld(1,jj),dtrad(1,1,jj),                            &
