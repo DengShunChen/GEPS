@@ -265,7 +265,8 @@
 !  the global qsat computation is done in pa
             pres1   = pres(n)
 !           qw      = es(n)
-            qw      = min(pres1, fpvs(tt(n)))
+!byl            qw      = min(pres1, fpvs(tt(n)))
+            call qsatq_cwb(1,tt(n),0.01*pres1,qw)
             qw      = eps * qw / (pres1 + epsm1 * qw)
             qw      = max(qw,epsq)
 !
@@ -521,8 +522,9 @@
         do i = 1, im
             cwmik = max(cwm(i,k),climit)
             qik   = max(q(i,k),epsq) ! or qp1
-            prestmp  = prsl(i,k)
-            qw = min(prestmp, fpvs(t(i,k)))
+            prestmp  = prsl(i,k)*h1000
+!byl            qw = min(prestmp, fpvs(t(i,k)))
+            call qsatq_cwb(1,t(i,k),0.01*prestmp,qw)
             qw = eps * qw / (prestmp+ epsm1 * qw)
             qw = max(qw,epsq)
             qsmqr = qw-qik
