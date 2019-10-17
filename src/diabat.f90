@@ -1279,6 +1279,8 @@
             vt(i,k    ,jj) = vtc(i,kc)
             cnvwr(i,kc)    = cnvw(i,kc)
             cnvcr(i,kc)    = cnvc(i,kc)
+            cnvw(i,kc)     = 0.
+            cnvc(i,kc)     = 0.
           enddo
         enddo
 !
