@@ -91,9 +91,7 @@
       do i = 1, im
       do k = 1, km
           pres  = prsl(i,k)*h1000
-!byl          qwtmp = min(pres, fpvs(t(i,k)))
-          call qsatq_cwb(1,t(i,k),0.01*pres,qwtmp)
-          qwtmp   = qwtmp * 100.
+          qwtmp = min(pres, fpvs(t(i,k)))
           qw(i,k) = eps * qwtmp / (pres + epsm1 * qwtmp)
           qw(i,k) = max(qw(i,k),epsq)
       enddo
@@ -253,9 +251,7 @@
             tx1 = tik
             tx3 = qik
 
-!byl            es   = min(pres, fpvs(tx1))
-            call qsatq_cwb(1,tx1,0.01*pres,es)
-            es   = es * 100.
+            es   = min(pres, fpvs(tx1))
             qs   = eps * es / (pres + epsm1*es)
             if(qs < cons_0) then
               print*, 'warning : qs - deltaqik < 0.0'
@@ -270,9 +266,7 @@
 !
 !   second iteration
 !
-!byl            es   = min(pres, fpvs(tx1))
-            call qsatq_cwb(1,tx1,0.01*pres,es)
-            es   = es * 100.
+            es   = min(pres, fpvs(tx1))
             qs   = eps * es / (pres + epsm1*es)
             if(qs < cons_0) then
               print*, 'warning : qs - deltaqik < 0.0'
@@ -287,9 +281,7 @@
 !
 !   third iteration
 !
-!byl            es   = min(pres, fpvs(tx1))
-            call qsatq_cwb(1,tx1,0.01*pres,es)
-            es   = es * 100.
+            es   = min(pres, fpvs(tx1))
             qs   = eps * es / (pres + epsm1*es)
             if(qs < cons_0) then
               print*, 'warning : qs - deltaqik < 0.0'

@@ -73,7 +73,7 @@
       ,             eps => con_eps, epsm1 => con_epsm1
       implicit none
 !
-!      real fpvs
+      real fpvs
 !
       integer            im, ix,  km, ncloud, &
                          kbot(ix), ktop(ix), kcnv(ix)
@@ -396,8 +396,8 @@
       do k = 1, km
         do i=1,im
           if (cnvflg(i) .and. k <= kmax(i)) then
-!byl            qeso(i,k) = 0.01 * fpvs(to(i,k))      ! fpvs is in pa
-            call qsatq_cwb(1,to(i,k),pfld(i,k),qeso(i,k))
+            qeso(i,k) = 0.01 * fpvs(to(i,k))      ! fpvs is in pa
+!byl            call qsatq_cwb(1,to(i,k),pfld(i,k),qeso(i,k))
             qeso(i,k) = eps * qeso(i,k) / (pfld(i,k) + epsm1*qeso(i,k))
             val1      =             1.e-8
             qeso(i,k) = max(qeso(i,k), val1)
@@ -452,8 +452,8 @@
           if (cnvflg(i) .and. k <= kmax(i)-1) then
             dz      = .5 * (zo(i,k+1) - zo(i,k))
             dp      = .5 * (pfld(i,k+1) - pfld(i,k))
-!byl            es      = 0.01 * fpvs(to(i,k+1))      ! fpvs is in pa
-            call qsatq_cwb(1,to(i,k+1),pfld(i,k+1),es)
+            es      = 0.01 * fpvs(to(i,k+1))      ! fpvs is in pa
+!byl            call qsatq_cwb(1,to(i,k+1),pfld(i,k+1),es)
             pprime  = pfld(i,k+1) + epsm1 * es
             qs      = eps * es / pprime
             dqsdp   = - qs / pprime
@@ -473,8 +473,8 @@
       do k = 1, km1
         do i=1,im
           if (cnvflg(i) .and. k <= kmax(i)-1) then
-!byl            qeso(i,k) = 0.01 * fpvs(to(i,k))      ! fpvs is in pa
-            call qsatq_cwb(1,to(i,k),po(i,k),qeso(i,k))
+            qeso(i,k) = 0.01 * fpvs(to(i,k))      ! fpvs is in pa
+!byl            call qsatq_cwb(1,to(i,k),po(i,k),qeso(i,k))
             qeso(i,k) = eps * qeso(i,k) / (po(i,k) + epsm1*qeso(i,k))
             val1      =             1.e-8
             qeso(i,k) = max(qeso(i,k), val1)
@@ -1348,8 +1348,8 @@
       do k = 1, km
         do i = 1, im
           if (cnvflg(i) .and. k <= kmax(i)) then
-!byl            qeso(i,k) = 0.01 * fpvs(t1(i,k))      ! fpvs is in pa
-            call qsatq_cwb(1,t1(i,k),pfld(i,k),qeso(i,k))
+            qeso(i,k) = 0.01 * fpvs(t1(i,k))      ! fpvs is in pa
+!byl            call qsatq_cwb(1,t1(i,k),pfld(i,k),qeso(i,k))
             qeso(i,k) = eps * qeso(i,k) / (pfld(i,k) + epsm1*qeso(i,k))
             val     =             1.e-8
             qeso(i,k) = max(qeso(i,k), val )
@@ -1397,8 +1397,8 @@
         do i = 1, im
           if (cnvflg(i)) then
             if(k > kb(i) .and. k <= ktcon(i)) then
-!byl              qeso(i,k) = 0.01 * fpvs(t1(i,k))      ! fpvs is in pa
-              call qsatq_cwb(1,t1(i,k),pfld(i,k),qeso(i,k))
+              qeso(i,k) = 0.01 * fpvs(t1(i,k))      ! fpvs is in pa
+!byl              call qsatq_cwb(1,t1(i,k),pfld(i,k),qeso(i,k))
               qeso(i,k) = eps * qeso(i,k)/(pfld(i,k) + epsm1*qeso(i,k))
               val     =             1.e-8
               qeso(i,k) = max(qeso(i,k), val )
