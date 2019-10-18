@@ -455,6 +455,7 @@ shr_kind_mod.o : shr_kind_mod.f90
 trngra3.o : trngra3.f90 mod_fftcom.o mod_paramt.o mod_index.o
 gridnl_hybrid_ndsl.o : gridnl_hybrid_ndsl.f90
 ndslfv_pack.o : ndslfv_pack.f90 mod_rank.o mod_index.o mod_grid.o mod_param.o
+	 $(FC90) $(FFLAGS) -Knoparallel $*.f90
 ndslfv_para.o : ndslfv_para.f90 mod_rank.o mod_index.o mod_grid.o
 ndslfv_monoadvh.o : ndslfv_monoadvh.f90 mod_rank.o mod_index.o mod_grid.o mod_param.o
 ndslfv_monoadvv.o : ndslfv_monoadvv.f90 mod_rank.o mod_index.o mod_grid.o mod_param.o
