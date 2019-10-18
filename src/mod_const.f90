@@ -69,6 +69,8 @@
 !for horizontal diffusion
       integer hdktop,hdk1,hdk2,hdk3
       real    factop,coefu
+!for pdf cloud
+      logical pdfcloud
 
 !for 2dMPI
       logical idg_jdg_owner

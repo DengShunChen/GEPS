@@ -75,7 +75,7 @@
 !!  @{
       subroutine samfdeepcnv(im,ix,km,delt,delp,prslp,psp,phil,ql, &
            q1,t1,u1,v1,cldwrk,rn,kbot,ktop,kcnv,islimsk,garea, &
-           dot,ncloud)
+           dot,ncloud,cnvw,cnvc)
 !,ud_mf,dd_mf,dt_mf,cnvw,cnvc, &
 !           clam,c0s,c1,betal,betas,evfact,evfactl,pgcon,asolfac)
 !

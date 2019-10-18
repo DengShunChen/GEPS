@@ -83,7 +83,8 @@ SRCS  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
         get_phi.f90 module_mp_radar.f90 module_mp_wsm6_fv3.f90 lightning_ec.f90 \
         mod_sitgrid.f90 mod_eos_ocean.f90 mod_sit_vdiff.f90 outsit.f90 \
         mod_sst.f90 mod_netcdf.f90 mod_sit_control.f90 samfdeepcnv.f90 samfshalcnv.f90 \
-        moninedmf.f90 mfpbl.f90 unify_reduceintp.f90 unify_reducepick.f90
+        moninedmf.f90 mfpbl.f90 unify_reduceintp.f90 unify_reducepick.f90 \
+        gscondp.f90 precpdp.f90
 
 OBJS=	${SRCS:.f90=.o}
 
@@ -216,6 +217,7 @@ gpvs.o : gpvs.f90
 grdcon.o : grdcon.f90 
 grdtpw.o : grdtpw.f90 
 gscond.o : gscond.f90 
+gscondp.o : gscondp.f90 
 gwdp.o : gwdp.f90 mod_paramt.o
 gwdc.o : gwdc.f90 mod_paramt.o mod_rank.o mod_mpe.o mod_index.o
 read_mtnvar.o : read_mtnvar.f90 mod_index.o mod_param.o
@@ -338,6 +340,7 @@ precpd.o : precpd.f90
 #xb110> for updated Zhao-Carr MP scheme
 precpd_n.o : precpd_n.f90 
 #xb110<
+precpdp.o : precpdp.f90
 prexp_hybrid_cwb.o : prexp_hybrid_cwb.f90 
 qmaxn3.o : qmaxn3.f90 mod_index.o mod_rank.o 
 qmaxn3p.o : qmaxn3p.f90 mod_index.o mod_rank.o mod_mpe.o 
@@ -457,6 +460,7 @@ shr_kind_mod.o : shr_kind_mod.f90
 trngra3.o : trngra3.f90 mod_fftcom.o mod_paramt.o mod_index.o
 gridnl_hybrid_ndsl.o : gridnl_hybrid_ndsl.f90
 ndslfv_pack.o : ndslfv_pack.f90 mod_rank.o mod_index.o mod_grid.o mod_param.o
+	 $(FC90) $(FFLAGS) -Knoparallel $*.f90
 ndslfv_para.o : ndslfv_para.f90 mod_rank.o mod_index.o mod_grid.o
 ndslfv_monoadvh.o : ndslfv_monoadvh.f90 mod_rank.o mod_index.o mod_grid.o mod_param.o
 ndslfv_monoadvv.o : ndslfv_monoadvv.f90 mod_rank.o mod_index.o mod_grid.o mod_param.o

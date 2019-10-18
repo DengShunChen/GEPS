@@ -976,7 +976,7 @@
                       , fm,fh,fm10,fh2,srflag                                   &
                       , rld,km_soil,smc,stc,canopy,runoff                       &
                       , sigmaf,istyp,ivegtyp,wlt,ref,tsat,dfkt,xktk,dfk         &
-                      , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,sd                         &
+                      , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,deltaq,sd                  &
                       , shdmax,shdmin,snoalb                                    &
                       , slopetyp,sld,slc,zice,cice,xtice,sncover,sndepth        &
                       , ctot,chig,cmid,clow,hpbl,asl,atl,cosz                   &
@@ -1139,7 +1139,7 @@
                      , fm,fh,fm10,fh2,srflag                                    &
                      , rld,km_soil,smc,stc,canopy,runoff                        &
                      , sigmaf,istyp,ivegtyp,wlt,ref,tsat,dfkt,xktk,dfk          &
-                     , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,sd                          &
+                     , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,deltaq,sd                   &
                      , shdmax,shdmin,snoalb                                     &
                      , slopetyp,sld,slc,zice,cice,xtice,sncover,sndepth         &
                      , ctot,chig,cmid,clow,hpbl,asl,atl,cosz                    &
