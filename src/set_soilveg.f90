@@ -411,7 +411,7 @@
          DO I = 1,DEFINED_SOIL
            if (satdk(i) /= 0.0 .and. bb(i) > 0.0) then
            SATDW(I)  = BB(I)*SATDK(I)*(SATPSI(I)/MAXSMC(I))
-           F11(I)    = ALOG10(SATPSI(I)) + BB(I)*ALOG10(MAXSMC(I)) + 2.0
+           F11(I)    = DLOG10(SATPSI(I)) + BB(I)*DLOG10(MAXSMC(I)) + 2.0
            REFSMC1   = MAXSMC(I)*(5.79E-9/SATDK(I)) &
                         **(1.0/(2.0*BB(I)+3.0))
            REFSMC(I) = REFSMC1 + (MAXSMC(I)-REFSMC1) / SMHIGH
