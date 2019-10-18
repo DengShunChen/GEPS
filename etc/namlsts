@@ -64,6 +64,7 @@
  domfc=f,
  out_green=f,
  ndsladvh2=f,
+ pdfcloud=f,
  &end
 
  &typ

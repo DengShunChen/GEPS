@@ -1573,7 +1573,7 @@
 
         if (icmphys == 1) then           ! zhao/moorthi's prognostic cloud scheme
  
-      if (myrank ==0)                                                   &
+      if (me==0 .and. myrank ==0)                                       &
           print *,'### call progcld1 -zhao/moorhi ###' 
           call progcld1                                                 &
 !  ---  inputs:
@@ -1599,7 +1599,7 @@
 
        elseif(icmphys == 3) then      ! zhao/moorthi's prognostic cloud+pdfcld
 !
-      if (myrank ==0)                                                   &
+      if (me==0 .and. myrank ==0)                                       &
           print *,'### call progcld3 -zhao/moorhi with PDF cloud###' 
          call progcld3                                                  &
 !  ---  inputs:
