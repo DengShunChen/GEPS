@@ -61,8 +61,10 @@
  ioutsigr=1,
  ggdef='gj0g',
  gmdef='gjmg',
- domfc=f,
+ domfc=0,
  out_green=f,
+ otgreen=3,
+ out_hp=f,
  ndsladvh2=f,
  pdfcloud=f,
  &end
