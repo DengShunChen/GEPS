@@ -998,11 +998,6 @@
       real      dpp,dqq,c1,c2,cc,r3,r6
       integer   i,k, kl, kh, kk, kkl, kkh, n
       integer, parameter :: mono=1
-!ch>
-      real      qmi_tmp   (nv,3*lonp)
-      real      qpi_tmp   (nv,3*lonp)
-      real      mass_tmp  (nv,3*lonp)
-!ch<
 !
 !     cyclic_length = pp(lonp+1) - pp(1)
       cyclic_length = sc
@@ -1158,17 +1153,6 @@
         enddo
         enddo
       endif
-
-!ch>
-        do n=1,nv
-        do i=kstr-1,kend+1
-            mass_tmp(n,i)=mass(i,n)
-            qmi_tmp(n,i)=qmi(i,n)
-            qpi_tmp(n,i)=qpi(i,n)
-        enddo
-        enddo
-!ch<
-
 !
 ! start interpolation by integral of ppm
 !
@@ -1179,10 +1163,8 @@
       tlp = tl3-tl2
       tlm = tl3-2.*tl2+tl
       tlc = -2.*tl3+3.*tl2
-
       do n=1,nv
-!ch     dql(n)=tlp*qpi(kkl,n)+tlm*qmi(kkl,n)+tlc*mass(kkl,n)
-        dql(n)=tlp*qpi_tmp(n,kkl)+tlm*qmi_tmp(n,kkl)+tlc*mass_tmp(n,kkl)
+        dql(n)=tlp*qpi(kkl,n)+tlm*qmi(kkl,n)+tlc*mass(kkl,n)
       enddo
 
       do i=1,lonn
@@ -1216,8 +1198,7 @@
         thm = th3-2.*th2+th
         thc = -2.*th3+3.*th2
         do n=1,nv
-!ch       dqh(n)=thp*qpi(kkh,n)+thm*qmi(kkh,n)+thc*mass(kkh,n)
-          dqh(n)=thp*qpi_tmp(n,kkh)+thm*qmi_tmp(n,kkh)+thc*mass_tmp(n,kkh)
+          dqh(n)=thp*qpi(kkh,n)+thm*qmi(kkh,n)+thc*mass(kkh,n)
         enddo
         if( kkh.eq.kkl ) then
           do n=1,nv
@@ -1229,8 +1210,7 @@
             dpp = dpp + hh(kk)
           enddo
           do n=1,nv
-!ch         dql(n) = mass(kkl,n)-dql(n)
-            dql(n) = mass_tmp(n,kkl)-dql(n)
+            dql(n) = mass(kkl,n)-dql(n)
             dqq  = dql(n)*hh(kkl) + dqh(n)*hh(kkh)
             do kk=kkl+1,kkh-1
               dqq = dqq + mass(kk,n)*hh(kk)
