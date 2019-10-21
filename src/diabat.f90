@@ -189,12 +189,7 @@
 !-----------------------------------------------------------------------
       integer nfxr, ntrac, kk, nk, n
       real slag,sdec,cdec,solcon,dtlw,dtsw,solhr
-
-
-! --- new variables setting :
-      integer*8 idtg
-      logical doo3l
-      integer ipt,jpt
+!
 ! for land_noah_new
        real      sfalb(nxp,my_max),sfemis(nxp,my_max)
        integer   isot,ivegsrc
