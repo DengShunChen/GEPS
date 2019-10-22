@@ -35,7 +35,7 @@
 
 !  local working array
 !
-      real      sst(nxp,my_max),ww1(nx,my),ww2(nx,my),          &
+      real      sst(nxp,my_max),ww1(nx,my),ww2(nxp,my_max),     &
                 rh2100(nxp,my_max),rh10100(nxp,my_max),         &
                 wk1(nxp,lev,my_max),wk2(nxp,lev,my_max),        &
                 cc(nx+2,levp,1,my_max),ww3(nx,my_max)
@@ -1018,7 +1018,7 @@
 !
       if (.not.restrt)then
         wk1 = 0.
-        ww1 = 0.
+!byl        ww1 = 0.
         ww2 = 0.
         raintot=0.
         raincu=0.
@@ -1035,7 +1035,7 @@
              , ptend,pt,plt,pk,pk2,phi,ut,vt,sd                         &
              , tt,qt,rdiv,rvor,tg,gwr,z0,hflux,qflux,snr                &
              , raintot,raincu,rainlp,plcl,cumtop,ss,rs,alb,gwclim       &
-             , acld,cosl,wk1,ww1,ww2,t2,rh2100,rh10100,u10,v10,gfx,rld,sld &
+             , acld,cosl,wk1,ww2,ww2,t2,rh2100,rh10100,u10,v10,gfx,rld,sld &
              , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500 &
              , ctot,chig,cmid,clow,hpbl,.true.,flash,do_sit)
 
