@@ -1,6 +1,6 @@
       subroutine sfcuvt ( nxj,mn,dt,g,r,cp,hltm,tg,z0,ocean,ps,ts,hgt &
                         , ut,vt,tt,qt,ustar,tstar,qstar,hflux,qflux   &
-                        , qsfc,t2,rh2,u10,v10 )
+                        , qsfc,t2,rh2,rh10,u10,v10 )
 !
 !##################################################################
 !                     subroutine description
@@ -99,7 +99,7 @@
               , ut(mn),vt(mn),tt(mn),qt(mn),sfcw(mn)                 &
               , ustar(mn),tstar(mn),qstar(mn)                        &
               , qsfc(mn),ts(mn),hflux(mn),qflux(mn)                  &
-              , u10(mn),v10(mn),t2(mn),rh2(mn)
+              , u10(mn),v10(mn),t2(mn),t10(mn),rh2(mn),rh10(mn)
 
       logical ocean(mn)
 !
@@ -109,10 +109,12 @@
 !     include '../include/paramt.h'
 !
       real      phim(mn),phih(mn),zsz0(mn),rosfc(mn)                 &
-              , wu(mn),wv(mn),wt(mn),wq(mn),zl(mn),q2(mn),p2(mn)
+              , wu(mn),wv(mn),wt(mn),wq(mn),zl(mn)                   &
+              , q2(mn),p2(mn),q10(mn),p10(mn)
 
       integer   i,it1
-      real      xkapa,g04,pihalf,xx,yy,btest,bl,al,zl2,zl10,xx10,phim10,phih2
+      real      xkapa,g04,pihalf,xx,yy,btest,bl,al,zl2,zl10,xx10,phim10 &
+                ,phih2,phih10
 !
 !
 !
@@ -240,34 +242,48 @@
          phim10 = 2.0*log(0.5*(1.0+xx10)) + log(0.5*(1.0+xx10*xx10))  &
                           - 2.0*atan(xx10) + pihalf
          phih2 = 2.0*log(0.5*(1.0 +sqrt(1.0 -9.0*zl2)))
+         phih10 = 2.0*log(0.5*(1.0 +sqrt(1.0 -9.0*zl10)))
       else
          phim10 = -4.7  * zl10
          phih2 = -6.35 * zl2
+         phih10 = -6.35 * zl10
       endif
       phim10 =log( 10./z0(i)) - phim10
       phih2 =log( 2./z0(i)) - phih2
+      phih10 =log( 10./z0(i)) - phih10
       phim10= max(phim10,1.0e-3)
       phih2= max(phih2,1.0e-3)
+      phih10= max(phih10,1.0e-3)
 !
       v10(i)=wv(i)*phim10/phim(i)
       u10(i)=wu(i)*phim10/phim(i)
 !
       t2(i)=tg(i)*(1.-phih2/phih(i))+wt(i)*phih2/phih(i)
+      t10(i)=tg(i)*(1.-phih10/phih(i))+wt(i)*phih10/phih(i)
 !
       q2(i)=qsfc(i)*(1.-phih2/phih(i))+wq(i)*phih2/phih(i)
+      q10(i)=qsfc(i)*(1.-phih10/phih(i))+wq(i)*phih10/phih(i)
 !
 ! convert t2 from potential temp. to temp
       p2(i)=(ps(i)*100.-rosfc(i)*g*2.)/100.
+      p10(i)=(ps(i)*100.-rosfc(i)*g*10.)/100.
       t2(i)=t2(i)*(p2(i)/1000.)**xkapa
+      t10(i)=t10(i)*(p10(i)/1000.)**xkapa
       enddo
 !
       call qsatq( nxj, t2, p2, wq)
 !
       do i=1,nxj
        q2(i)=min(wq(i),q2(i))
-       rh2(i)=q2(i)/wq(i)
+       rh2(i)=max(min(q2(i)/wq(i),1.),0.0)
       enddo
 !
+      call qsatq( nxj, t10, p10, wq)
+!
+      do i=1,nxj
+       q10(i)=min(wq(i),q10(i))
+       rh10(i)=max(min(q10(i)/wq(i),1.),0.0)
+      enddo
 !
       return
       end

@@ -1,13 +1,14 @@
       subroutine outflds_green( itau,nx,my,my_max,lev,ncld       &
              , idtg,ifilout,cp,rgas,grav,t2,u10,v10              &
              , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6 &
-             , ggdef,lwrite)
+             , ggdef)
 !
 !  output driver subroutine to process sigma level data to 40m & 100m
 !
       use mpe
       use rank
       use index
+      use const ,only:aki,bki
 
       implicit  none
 
@@ -26,29 +27,33 @@
 !
 ! local work arrays
 !
-      real      slp(nx,my),glob(nx,my),glob1(nx,my)                   &
-                ,globu(nx,my),globv(nx,my)
+      real      glob(nx,my),wrk(nxp,my_max)
 !
       real      whtlev(100),whtlevq(100),whtlevz(100)
       character*6 labx
 
-      integer   jj,j,nxj,k,i,n,nk,ntrac,ll,mm,la
+      integer   jj,j,nxj,k,i,n,nk,ntrac,ll,mm,la,kk
 !
-      real oqt(nx,my),oqc(nx,my),ou(nx,my),ov(nx,my),ot(nx,my),pla(nx,my) &
-           ,wrk(nx,1),pp(nx,my),p2(nx,my),p10(nx,my)
+      real oqt(nxp,my_max),oqc(nxp,my_max),ou(nxp,my_max),  &
+           ov(nxp,my_max),ot(nxp,my_max),pla(nxp,my_max),   &
+           pp(nxp,my_max),p2(nxp,my_max),p10(nxp,my_max)
       real, parameter ::rad=6.371e6
       integer,parameter :: l= 4, m= 2
-      real   avett,p(l),hm(m),aki(l),bki(l),xxx,temp,tepl(nx,l,my)
+      real   avett,p(l),hm(m),akir(l),bkir(l),xxx,temp,tepl(nxp,l,my_max)
       data hm/100.0,40.0/
-      data aki/   .00000,   .02193,   .26557,   .97701/ !M60~M57
-      data bki/.99058760,.98124505,.96996497,.95697164/
+!      data aki/   .00000,   .02193,   .26557,   .97701/ !M60~M57
+!      data bki/.99058760,.98124505,.96996497,.95697164/
       character layer(2)*3,var(6)*3,wtemp*6
       data layer/'H10','B40'/
       data var/'010','500','200','210','100','550'/
-      logical :: lwrite
 !
       rcp=rgas/cp
       lenc = nx*my
+      do k=1,l
+        kk=lev-k+1
+        akir(k)=aki(kk)
+        bkir(k)=bki(kk)
+      enddo
 !=======================================================================
       if(myrank .eq. 0) print*,'   in outflds_green for tau= ',itau
 !----------------------------------------------------------------------
@@ -64,62 +69,62 @@
                 ((plt(i,lev,jj)+plt(i,lev-1,jj))/2./1000.)**rcp/     &
                 (1.+0.608*(qt(i,lev-1,jj)+qt(i,lev-1,jj))/2.)
 ! calculate 40m&100m P, 2m P, 10m P.
-        pp(i,j)=(pt(i,jj)+ptop)*(exp(-(hm(mm)*grav)/(rgas*avett)))
-        p2(i,j)=(pt(i,jj)+ptop)*(exp(-(2.0*grav)/(rgas*avett)))
-        p10(i,j)=(pt(i,jj)+ptop)*(exp(-(10.0*grav)/(rgas*avett)))
-         pla(i,j)=pp(i,j)
+        pp(i,jj)=(pt(i,jj)+ptop)*(exp(-(hm(mm)*grav)/(rgas*avett)))
+        p2(i,jj)=(pt(i,jj)+ptop)*(exp(-(2.0*grav)/(rgas*avett)))
+        p10(i,jj)=(pt(i,jj)+ptop)*(exp(-(10.0*grav)/(rgas*avett)))
+        pla(i,jj)=pp(i,jj)
 ! transfer temperature from tt(virtual theta) to tepl(temperature).
-          la=0
-           do ll=lev,lev-3,-1
-           la=la+1
-        tepl(i,la,j)=(tt(i,ll,jj)*(pla(i,j)/1000.)**rcp)/(1.+0.608*qt(i,ll,jj))
-           enddo
+        la=0
+        do ll=lev,lev-3,-1
+          la=la+1
+          tepl(i,la,jj)=(tt(i,ll,jj)*(pla(i,jj)/1000.)**rcp)/(1.+0.608*qt(i,ll,jj))
+        enddo
 
-        call sigmap(l,aki(:),bki(:),pt(i,jj),p)
+        call sigmap(l,akir(:),bkir(:),pt(i,jj),p)
 ! find pp pressure position
-         if(pp(i,j).gt.p(1))then
-          temp=(pp(i,j)-p(2))/(p(1)-p(2))-1.0
-          oqt(i,j)=qt(i,lev,jj)+temp*(qt(i,lev,jj)-qt(i,lev-1,jj))
-          oqt(i,j)=max(oqt(i,j),1.e-8)
-          oqc(i,j)=qt(i,lev*2,jj)+temp*(qt(i,lev*2,jj)-qt(i,lev*2-1,jj))
-          oqc(i,j)=max(oqc(i,j),1.e-8)
+         if(pp(i,jj).gt.p(1))then
+          temp=(pp(i,jj)-p(2))/(p(1)-p(2))-1.0
+          oqt(i,jj)=qt(i,lev,jj)+temp*(qt(i,lev,jj)-qt(i,lev-1,jj))
+          oqt(i,jj)=max(oqt(i,jj),1.e-8)
+          oqc(i,jj)=qt(i,lev*2,jj)+temp*(qt(i,lev*2,jj)-qt(i,lev*2-1,jj))
+          oqc(i,jj)=max(oqc(i,jj),1.e-8)
 
          xxx= rad/cosl(j)
-         ou(i,j)=u10(i,jj)/xxx
-         ov(i,j)=v10(i,jj)/xxx
-          temp=(p(1)-pp(i,j))/(p(1)-p10(i,j))
-          ou(i,j)=ou(i,j)*temp+ut(i,lev,jj)*(1.0-temp)
-          ov(i,j)=ov(i,j)*temp+vt(i,lev,jj)*(1.0-temp)
+         ou(i,jj)=u10(i,jj)/xxx
+         ov(i,jj)=v10(i,jj)/xxx
+          temp=(p(1)-pp(i,jj))/(p(1)-p10(i,jj))
+          ou(i,jj)=ou(i,jj)*temp+ut(i,lev,jj)*(1.0-temp)
+          ov(i,jj)=ov(i,jj)*temp+vt(i,lev,jj)*(1.0-temp)
 
-          temp=(p(1)-pp(i,j))/(p(1)-p2(i,j))
-          ot(i,j)=t2(i,jj)*temp+tepl(i,1,j)*(1.0-temp)
+          temp=(p(1)-pp(i,jj))/(p(1)-p2(i,jj))
+          ot(i,jj)=t2(i,jj)*temp+tepl(i,1,jj)*(1.0-temp)
 
           goto 99
           endif
 
         do ll=1,l-1
-         if((pp(i,j).le.p(ll)).and.(pp(i,j)).gt.p(ll+1))then
-          temp=(p(ll)-pp(i,j))/(p(ll)-p(ll+1))
-          oqt(i,j)=qt(i,lev-ll+1,jj)*temp+qt(i,lev-ll,jj)*(1.0-temp)
-          oqt(i,j)=max(oqt(i,j),1.e-8)
-          oqc(i,j)=qt(i,lev*2-ll+1,jj)*temp+qt(i,lev*2-ll,jj)*(1.0-temp)
-          oqc(i,j)=max(oqc(i,j),1.e-8)
-          ou(i,j)=ut(i,lev-ll+1,jj)*temp+ut(i,lev-ll,jj)*(1.0-temp)
-          ov(i,j)=vt(i,lev-ll+1,jj)*temp+vt(i,lev-ll,jj)*(1.0-temp)
-          ot(i,j)=tepl(i,ll,j)*temp+tepl(i,ll+1,j)*(1.0-temp)
+         if((pp(i,jj).le.p(ll)).and.(pp(i,jj)).gt.p(ll+1))then
+          temp=(p(ll)-pp(i,jj))/(p(ll)-p(ll+1))
+          oqt(i,jj)=qt(i,lev-ll+1,jj)*temp+qt(i,lev-ll,jj)*(1.0-temp)
+          oqt(i,jj)=max(oqt(i,jj),1.e-8)
+          oqc(i,jj)=qt(i,lev*2-ll+1,jj)*temp+qt(i,lev*2-ll,jj)*(1.0-temp)
+          oqc(i,jj)=max(oqc(i,jj),1.e-8)
+          ou(i,jj)=ut(i,lev-ll+1,jj)*temp+ut(i,lev-ll,jj)*(1.0-temp)
+          ov(i,jj)=vt(i,lev-ll+1,jj)*temp+vt(i,lev-ll,jj)*(1.0-temp)
+          ot(i,jj)=tepl(i,ll,jj)*temp+tepl(i,ll+1,jj)*(1.0-temp)
           goto 99
          endif
         enddo
 
-         if(pp(i,j).le.p(l))then
-          temp=(p(l-1)-pp(i,j))/(p(l-1)-p(l))-1.0
-          oqt(i,j)=qt(i,lev-l+1,jj)+temp*(qt(i,lev-l+1,jj)-qt(i,lev-l+2,jj))
-          oqt(i,j)=max(oqt(i,j),1.e-8)
-          oqc(i,j)=qt(i,lev*2-l+1,jj)+temp*(qt(i,lev*2-l+1,jj)-qt(i,lev*2-l+2,jj))
-          oqc(i,j)=max(oqc(i,j),1.e-8)
-          ou(i,j)=ut(i,lev-l+1,jj)+temp*(ut(i,lev-l+1,jj)-ut(i,lev-l+2,jj))
-          ov(i,j)=vt(i,lev-l+1,jj)+temp*(vt(i,lev-l+1,jj)-vt(i,lev-l+2,jj))
-          ot(i,j)=tepl(i,l,j)+temp*(tepl(i,l,j)-tepl(i,l-1,j))
+         if(pp(i,jj).le.p(l))then
+          temp=(p(l-1)-pp(i,jj))/(p(l-1)-p(l))-1.0
+          oqt(i,jj)=qt(i,lev-l+1,jj)+temp*(qt(i,lev-l+1,jj)-qt(i,lev-l+2,jj))
+          oqt(i,jj)=max(oqt(i,jj),1.e-8)
+          oqc(i,jj)=qt(i,lev*2-l+1,jj)+temp*(qt(i,lev*2-l+1,jj)-qt(i,lev*2-l+2,jj))
+          oqc(i,jj)=max(oqc(i,jj),1.e-8)
+          ou(i,jj)=ut(i,lev-l+1,jj)+temp*(ut(i,lev-l+1,jj)-ut(i,lev-l+2,jj))
+          ov(i,jj)=vt(i,lev-l+1,jj)+temp*(vt(i,lev-l+1,jj)-vt(i,lev-l+2,jj))
+          ot(i,jj)=tepl(i,l,jj)+temp*(tepl(i,l,jj)-tepl(i,l-1,jj))
           goto 99
          endif
 !-----------------------------------------------------------------------
@@ -130,78 +135,93 @@
         enddo  ! end (i)
       enddo  ! end (jj)
 
-      call mpe_unify(pla,nx,my,2,mpe_double)
-      call mpe_unify(oqt,nx,my,2,mpe_double)
-      call mpe_unify(oqc,nx,my,2,mpe_double)
+!      call mpe_unify(pla,nx,my,2,mpe_double)
+!      call mpe_unify(oqt,nx,my,2,mpe_double)
+!      call mpe_unify(oqc,nx,my,2,mpe_double)
 !      call mpe_unify(tepl,nx,my,2,mpe_double)
-      call mpe_unify(ot,nx,my,2,mpe_double)
-      do 50 j=1,my
+!      call mpe_unify(ot,nx,my,2,mpe_double)
+      do 50 jj = 1, jlistnum
+      j=jlist1(jj)
+      nxj=nxdef_2d(j)
       xxx= rad/cosl(j)
-      do 50 i=1,nx
-      globu(i,j)= ou(i,j)*xxx
-      globv(i,j)= ov(i,j)*xxx
+      do 50 i=1,nxj
+       ou(i,jj)= ou(i,jj)*xxx
+       ov(i,jj)= ov(i,jj)*xxx
    50 continue
 
-      call mpe_unify(globu,nx,my,2,mpe_double)
-      call mpe_unify(globv,nx,my,2,mpe_double)
+!      call mpe_unify(globu,nx,my,2,mpe_double)
+!      call mpe_unify(globv,nx,my,2,mpe_double)
 !-----------------------------------------------------------------------
 
 !output P
       write(wtemp,'(a3,a3)')layer(mm),var(1)
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
-      if( lreduce.eq.1 ) call reduceintp (pla,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,pla,istat)
+!byl      if( lreduce.eq.1 ) call reduceintp (pla,nxdef,nx,my)
+      call unify_reduceintp(nx,my,my_max,pla,glob)
+      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
 
 !output Q
       write(wtemp,'(a3,a3)')layer(mm),var(2)
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
-      if( lreduce.eq.1 ) call reduceintp (oqt,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,oqt,istat)
+!byl      if( lreduce.eq.1 ) call reduceintp (oqt,nxdef,nx,my)
+      call unify_reduceintp(nx,my,my_max,oqt,glob)
+      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
 
       write(wtemp,'(a3,a3)')layer(mm),var(6)
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
-      if( lreduce.eq.1 ) call reduceintp (oqc,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,oqc,istat)
+!byl      if( lreduce.eq.1 ) call reduceintp (oqc,nxdef,nx,my)
+      call unify_reduceintp(nx,my,my_max,oqc,glob)
+      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
 
 !output U,V
       write(wtemp,'(a3,a3)')layer(mm),var(3)
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
-      if( lreduce.eq.1 ) call reduceintp (globu,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,globu,istat)
+!byl      if( lreduce.eq.1 ) call reduceintp (globu,nxdef,nx,my)
+      call unify_reduceintp(nx,my,my_max,ou,glob)
+      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
 
       write(wtemp,'(a3,a3)')layer(mm),var(4)
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
-      if( lreduce.eq.1 ) call reduceintp (globv,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,globv,istat)
+!byl      if( lreduce.eq.1 ) call reduceintp (globv,nxdef,nx,my)
+      call unify_reduceintp(nx,my,my_max,ov,glob)
+      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
 
 !output T
       write(wtemp,'(a3,a3)')layer(mm),var(5)
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
-      if( lreduce.eq.1 ) call reduceintp (ot,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,ot,istat)
+!byl      if( lreduce.eq.1 ) call reduceintp (ot,nxdef,nx,my)
+      call unify_reduceintp(nx,my,my_max,ov,glob)
+      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
 !-----------------------------------------------------------------------
       enddo  ! end (mm)
 !=======================================================================
-      call mpe2d_unify(glob,raincu6)
-      call mpe_unify(glob1,rainlp6)
+!output 6hr prec.
+      if (mod(float(itau)+0.00001, 6. ) .lt. 0.01) then
+!byl      call mpe2d_unify(glob,raincu6)
+!byl      call mpe2d_unify(glob1,rainlp6)
       call syslbl ('b00633',idtg,itau,ggdef,ihdg)
-      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+      call unify_reduceintp(nx,my,my_max,raincu6,glob)
+      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
 !
       call syslbl ('b00643',idtg,itau,ggdef,ihdg)
-      if( lreduce.eq.1 ) call reduceintp (glob1,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob1,istat)
-      call qmaxn3 (glob1,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+!byl      if( lreduce.eq.1 ) call reduceintp (glob1,nxdef,nx,my)
+      call unify_reduceintp(nx,my,my_max,rainlp6,glob)
+      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
 !
       call syslbl ('b00623',idtg,itau,ggdef,ihdg)
-      do 98 j=1,my
-      do 98 i=1,nx
-       glob(i,j)=glob(i,j)+glob1(i,j)
+      do 98 jj = 1, jlistnum
+      j=jlist1(jj)
+      nxj=nxdef_2d(j)
+      do 98 i=1,nxj
+       wrk(i,jj)=raincu6(i,jj)+rainlp6(i,jj)
  98   continue
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call unify_reduceintp(nx,my,my_max,wrk,glob)
+      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-
+      endif
 !=======================================================================
       return
       end

@@ -14,7 +14,7 @@
       integer            im, ix,  km, jcap, ncloud,                     &
                          kbot(im), ktop(im), kcnv(im)
 !                        me
-      real delt
+      real delt,fpvs
       real ps(im),     del(ix,km),  prsl(ix,km),                        &
                            ql(ix,km,2),q1(ix,km),   t1(ix,km),          &
                            u1(ix,km),  v1(ix,km),   rcs(im),            &
@@ -338,15 +338,15 @@
       do k = 1, km
         do i=1,im
           if (cnvflg(i) .and. k .le. kmax(i)) then
-!         qeso(i,k) = 0.01 * fpvs(to(i,k))      ! fpvs is in pa
-!         qeso(i,k) = eps * qeso(i,k) / (pfld(i,k) + epsm1*qeso(i,k))
+          qeso(i,k) = 0.01 * fpvs(to(i,k))      ! fpvs is in pa
+          qeso(i,k) = eps * qeso(i,k) / (pfld(i,k) + epsm1*qeso(i,k))
 !cwb qsat
-          t11 = max(1.00001, min(190.999, to(i,k)-182.16))
-          ic = int(t11)
-          pqs = pfld(i,k)
-          qqq = min(temx*pqs, vpsat(ic)+(vpsat(1+ic)-vpsat(ic)) &
-                                     *(t11-float(ic)))
-          qeso(i,k) = 0.622*qqq/(pqs+epsm1*qqq)
+!         t11 = max(1.00001, min(190.999, to(i,k)-182.16))
+!         ic = int(t11)
+!         pqs = pfld(i,k)
+!         qqq = min(temx*pqs, vpsat(ic)+(vpsat(1+ic)-vpsat(ic)) &
+!                                    *(t11-float(ic)))
+!         qeso(i,k) = 0.622*qqq/(pqs+epsm1*qqq)
 !cwb
             val1      =             1.e-8
             qeso(i,k) = max(qeso(i,k), val1)
@@ -397,13 +397,13 @@
           if (cnvflg(i) .and. k .le. kmax(i)-1) then
             dz      = .5 * (zo(i,k+1) - zo(i,k))
             dp      = .5 * (pfld(i,k+1) - pfld(i,k))
-!           es      = 0.01 * fpvs(to(i,k+1))      ! fpvs is in pa
+            es      = 0.01 * fpvs(to(i,k+1))      ! fpvs is in pa
 !cwb qsat
-          t11 = max(1.00001, min(190.999, to(i,k+1)-182.16))
-          ic = int(t11)
-          pqs =pfld(i,k+1)
-          es = min(temx*pqs, vpsat(ic)+(vpsat(1+ic)-vpsat(ic)) &
-                                     *(t11-float(ic)))
+!         t11 = max(1.00001, min(190.999, to(i,k+1)-182.16))
+!         ic = int(t11)
+!         pqs =pfld(i,k+1)
+!         es = min(temx*pqs, vpsat(ic)+(vpsat(1+ic)-vpsat(ic)) &
+!                                    *(t11-float(ic)))
 !cwb
             pprime  = pfld(i,k+1) + epsm1 * es
             qs      = eps * es / pprime
@@ -423,15 +423,15 @@
       do k = 1, km1
         do i=1,im
           if (cnvflg(i) .and. k .le. kmax(i)-1) then
-!           qeso(i,k) = 0.01 * fpvs(to(i,k))      ! fpvs is in pa
-!           qeso(i,k) = eps * qeso(i,k) / (po(i,k) + epsm1*qeso(i,k))
+            qeso(i,k) = 0.01 * fpvs(to(i,k))      ! fpvs is in pa
+            qeso(i,k) = eps * qeso(i,k) / (po(i,k) + epsm1*qeso(i,k))
 !cwb qsat
-          t11 = max(1.00001, min(190.999, to(i,k)-182.16))
-          ic = int(t11)
-          pqs =po(i,k)
-          qqq = min(temx*pqs, vpsat(ic)+(vpsat(1+ic)-vpsat(ic)) &
-                                     *(t11-float(ic)))
-          qeso(i,k) = 0.622*qqq/(pqs+epsm1*qqq)
+!         t11 = max(1.00001, min(190.999, to(i,k)-182.16))
+!         ic = int(t11)
+!         pqs =po(i,k)
+!         qqq = min(temx*pqs, vpsat(ic)+(vpsat(1+ic)-vpsat(ic)) &
+!                                    *(t11-float(ic)))
+!         qeso(i,k) = 0.622*qqq/(pqs+epsm1*qqq)
 !cwb
             val1      =             1.e-8
             qeso(i,k) = max(qeso(i,k), val1)
@@ -1014,15 +1014,15 @@
       do k = 1, km
         do i = 1, im
           if (cnvflg(i) .and. k .le. kmax(i)) then
-!           qeso(i,k) = 0.01 * fpvs(t1(i,k))      ! fpvs is in pa
-!           qeso(i,k) = eps * qeso(i,k) / (pfld(i,k) + epsm1*qeso(i,k))
+            qeso(i,k) = 0.01 * fpvs(t1(i,k))      ! fpvs is in pa
+            qeso(i,k) = eps * qeso(i,k) / (pfld(i,k) + epsm1*qeso(i,k))
 !cwb qsat
-          t11 = max(1.00001, min(190.999, t1(i,k)-182.16))
-          ic = int(t11)
-          pqs =pfld(i,k)
-          qqq = min(temx*pqs, vpsat(ic)+(vpsat(1+ic)-vpsat(ic)) &
-                                     *(t11-float(ic)))
-          qeso(i,k) = 0.622*qqq/(pqs+epsm1*qqq)
+!         t11 = max(1.00001, min(190.999, t1(i,k)-182.16))
+!         ic = int(t11)
+!         pqs =pfld(i,k)
+!         qqq = min(temx*pqs, vpsat(ic)+(vpsat(1+ic)-vpsat(ic)) &
+!                                    *(t11-float(ic)))
+!         qeso(i,k) = 0.622*qqq/(pqs+epsm1*qqq)
 !cwb
             val     =             1.e-8
             qeso(i,k) = max(qeso(i,k), val )
@@ -1063,15 +1063,15 @@
         do i = 1, im
           if (cnvflg(i)) then
             if(k.gt.kb(i).and.k.le.ktcon(i)) then
-!             qeso(i,k) = 0.01 * fpvs(t1(i,k))      ! fpvs is in pa
-!             qeso(i,k) = eps * qeso(i,k)/(pfld(i,k) + epsm1*qeso(i,k))
+              qeso(i,k) = 0.01 * fpvs(t1(i,k))      ! fpvs is in pa
+              qeso(i,k) = eps * qeso(i,k)/(pfld(i,k) + epsm1*qeso(i,k))
 !cwb qsat
-          t11 = max(1.00001, min(190.999, t1(i,k)-182.16))
-          ic = int(t11)
-          pqs =pfld(i,k)
-          qqq = min(temx*pqs, vpsat(ic)+(vpsat(1+ic)-vpsat(ic)) &
-                                     *(t11-float(ic)))
-          qeso(i,k) = 0.622*qqq/(pqs+epsm1*qqq)
+!         t11 = max(1.00001, min(190.999, t1(i,k)-182.16))
+!         ic = int(t11)
+!         pqs =pfld(i,k)
+!         qqq = min(temx*pqs, vpsat(ic)+(vpsat(1+ic)-vpsat(ic)) &
+!                                    *(t11-float(ic)))
+!         qeso(i,k) = 0.622*qqq/(pqs+epsm1*qqq)
 !cwb
               val     =             1.e-8
               qeso(i,k) = max(qeso(i,k), val )

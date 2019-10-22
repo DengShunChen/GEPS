@@ -24,6 +24,7 @@
       use phygrid
       use mod_typhoon
       use noah
+      use namelist_soilveg
 !-----------------------------------------------------------------------
       use ozne_def
       use radn
@@ -35,6 +36,7 @@
 !  local working array
 !
       real      sst(nxp,my_max),ww1(nx,my),ww2(nx,my),          &
+                rh2100(nxp,my_max),rh10100(nxp,my_max),         &
                 wk1(nxp,lev,my_max),wk2(nxp,lev,my_max),        &
                 cc(nx+2,levp,1,my_max),ww3(nx,my_max)
 !byl                wss3(levp,2,3,jtrun,jtmax),cc3(nx+2,levp,3,my_max)
@@ -45,7 +47,6 @@
 !
 !!      real, dimension(:), allocatable :: work_io
 !
-      real      spgeo_work(mlmax,2)
 !
 ! restart  : read(10) work array
 !
@@ -85,7 +86,7 @@
 ! osu
       call landpack(tsat,dfkt,xktk,dfk)
 ! noah
-      call set_soilveg
+      call set_soilveg(isot,ivegsrc)
 
 ! ------------------------------------------------------------
 !   read ozone prognostic parameters
@@ -310,7 +311,7 @@
 !
         call readclx( nx,my,my_max,julian,land,ocean,ice,tgclim,gwclim  &
                    ,z0,alb,sst,bckfile,sigmaf,istyp,ivegtyp,ls   &
-                   ,shdmax,shdmin,slopetyp,snoalb,ggdef )
+                   ,shdmax,shdmin,slopetyp,snoalb,ggdef,isot,ivegsrc )
 !
 !  read sst analysis data
 !
@@ -424,17 +425,19 @@
 !
           call syslbl('w00091',idtg,0,ggdef,lrec)
           call dmsread(nx,my,lrec,nxmy,'H',ifilin,ww1,istat)
-          if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
+!byl          if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
           do jj=1,jlistnum
             j=jlist1(jj)
             ii=nxjstart(j)
             nxj=nxdef_2d(j)
+            if( lreduce.eq.1 ) call reducepick (ww1(1,j),nxdef(j),nx,1)
             do i=1,nxj
               cice(i,jj)=ww1(ii,j)
               ii=ii+1
             enddo
           enddo
-          if( myrank .eq. 0 )print*,"get ncep's sea ice analysis, at dtg=",idtg
+          if( myrank .eq. 0 ) &
+             print*,"get ncep's sea ice analysis, at dtg=",idtg
 !
 ! reset albedo and tgclim at seaice grids                 
 !
@@ -453,6 +456,7 @@
                 alb(i,jj)    = 0.55
                 tgclim(i,jj) = 271.2
 ! for noah
+                z0(i,jj)=0.0002
 ! initial sea ice temperature is set as tg(grid average temperature from first guess)
 !
                 cice(i,jj)    = max(0.5,cice(i,jj))
@@ -600,7 +604,7 @@
 !     read terrain geopotential from data base
 !
       if (ksgeo.lt.0)  then
-        call zilch (spgeo,jtrun*jtmax*2)
+!byl        call zilch (spgeo,jtrun*jtmax*2)
         do jj = 1, jlistnum
           j=jlist1(jj)    
           nxj=nxdef_2d(j)
@@ -617,16 +621,21 @@
         end if
         write(lrec,'("s00060",a4,a4,12x)')topohgt,ggdef
         call dmsread(nx,my,lrec,nxmy,'H',bckfile,ww1,istat)
-        if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
+!byl        if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
         if(istat.ne.0)then
           call mpe_finalize
           call dmsexit(-1)
         endif
         do jj = 1, jlistnum
-          j=jlist1(jj)    
-          nxj=nxdef(j)
+          j=jlist1(jj)
+          ii=nxjstart(j)
+!byl          nxj=nxdef(j)
+          nxj=nxdef_2d(j)
+          if( lreduce.eq.1 ) call reducepick (ww1(1,j),nxdef(j),nx,1)
           do i = 1, nxj
-            ww3(i,jj) = ww1(i,j)*grav
+!byl            ww3(i,jj) = ww1(i,j)*grav
+            sgeo(i,jj) = ww1(ii,j)*grav
+            ii=ii+1
           enddo
         enddo
 
@@ -635,8 +644,8 @@
 !ch     call transr1(jtrun,jtmax,nx,my,my_max,poly,spgeo,sgeo,nsize)
 !ch     call mpe_unify_1(ww1,sgeo,nx,my,2,mpe_double)
 
-        call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww3,spgeo,nsizey)
-        call transr1(jtrun,jtmax,nx,my,my_max,poly,spgeo,sgeo,nsizey)
+!byl        call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww3,spgeo,nsizey)
+!byl        call transr1(jtrun,jtmax,nx,my,my_max,poly,spgeo,sgeo,nsizey)
         call mpe2d_unify(ww1,sgeo)
 
         call qmaxn3 (ww1,'sgeo',' ',1,1,1,nx,my,1)
@@ -650,11 +659,12 @@
           call mpe_finalize
           call dmsexit(-1)
         endif
-        if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
+!byl        if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
         do jj = 1, jlistnum
           j=jlist1(jj)    
           ii=nxjstart(j)
           nxj=nxdef_2d(j)
+          if( lreduce.eq.1 ) call reducepick (ww1(1,j),nxdef(j),nx,1)
           do i=1,nxj
             std(i,jj)=ww1(ii,j)*ww1(ii,j)
 !byl            if(std(i,jj).le.0. .or. ocean(i,jj)) std(i,jj)=0.
@@ -666,12 +676,12 @@
 !
 !     laplacian of terrain geopotential for divergence equation
 !
-      do 200 m=1,mlistnum
-       mf=mlist(m)
-      do 200 n=mf,jtrun
-       dsqgeo(n,m,1)= spgeo(n,m,1)*eps4(n,m)
-       dsqgeo(n,m,2)= spgeo(n,m,2)*eps4(n,m)
-  200 continue
+!byl      do 200 m=1,mlistnum
+!byl       mf=mlist(m)
+!byl      do 200 n=mf,jtrun
+!byl       dsqgeo(n,m,1)= spgeo(n,m,1)*eps4(n,m)
+!byl       dsqgeo(n,m,2)= spgeo(n,m,2)*eps4(n,m)
+!byl  200 continue
 !
       if(doincr)then
        call incrini
@@ -987,11 +997,11 @@
               qsfc(i) = min(qs(i),qsfc(i) )
             endif
           enddo
-          call sfcuvt( nxjp(j),nxp,dt,grav,rgas,cp,hltm                        &
-                    ,tgp,z0(1,jj),ocean(1,jj),ps,tsx                       &
+          call sfcuvt( nxjp(j),nxp,dt,grav,rgas,cp,hltm                 &
+                    ,tgp,z0(1,jj),ocean(1,jj),ps,tsx                    &
                     ,hs,ux,vx,tx,qx,ustar(1,jj),tstar(1,jj),qstar(1,jj) &
-                    ,hflux(1,jj),qflux(1,jj),qsfc,t2(1,jj),rh2(1,jj),u10(1,jj) &
-                    ,v10(1,jj) )
+                    ,hflux(1,jj),qflux(1,jj),qsfc,t2(1,jj),rh2(1,jj)    &
+                    ,rh10(1,jj),u10(1,jj),v10(1,jj) )
         enddo
 !        call mpe_unify(ustar,nx,my,2,mpe_double)
 !        call mpe_unify(tstar,nx,my,2,mpe_double)
@@ -1013,15 +1023,19 @@
         raintot=0.
         raincu=0.
         rainlp=0.
+        raincu6=0.
+        rainlp6=0.
         gfx=0.
         sld=0.
+       rh2100=rh2*100.
+       rh10100=rh10*100.
         flash=0.   !xb110, flash density
         call outflds ( 0,nx,my,my_max,lev,ncld,lmax,numout,idtg,ifilout &
-             , outdir,ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo,pdiff     &
-             , ptend,tsave,t1000,pt,plt,pk,pk2,phi,ut,vt,sd             &
+             , outdir,ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo           &
+             , ptend,pt,plt,pk,pk2,phi,ut,vt,sd                         &
              , tt,qt,rdiv,rvor,tg,gwr,z0,hflux,qflux,snr                &
              , raintot,raincu,rainlp,plcl,cumtop,ss,rs,alb,gwclim       &
-             , acld,cosl,wk1,ww1,ww2,t2,rh2,u10,v10,gfx,rld,sld         &
+             , acld,cosl,wk1,ww1,ww2,t2,rh2100,rh10100,u10,v10,gfx,rld,sld &
              , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500 &
              , ctot,chig,cmid,clow,hpbl,.true.,flash,do_sit)
 

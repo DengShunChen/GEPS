@@ -7,7 +7,7 @@
 !soil
           , smc,slc,stc,canopy,sigmaf,istyp,ivegtyp,km_soil,temp1,temp2 &
 !    6    , temp3,rld)
-          , temp3,rld,zice,asl,atl)
+          , temp3,rld,zice,asl,atl,sfalb,sfemis)
 
 !
 !     include "../include/index.h"
@@ -32,7 +32,7 @@
                ,ivegtyp(nx,my)                                          &
 ! noah
                ,slc(nx,km_soil,my_max),temp3(nx,km_soil,my)             &
-               ,zice(nx,my_max)
+               ,zice(nx,my_max),sfalb(nx,my_max),sfemis(nx,my_max)
 !
       dimension snr(nx,my_max),gwr(nx,my_max),tg(nx,my_max)             &
       , ts(nx,my_max),ss(nx,my_max),rs(nx,my_max)                       &
@@ -119,6 +119,10 @@
       call mpe_unify_1(tm2d(1,1,31),canopy,nx,my,2,mpe_double)
 !
       call mpe_unify_1(tm2d(1,1,32),sigmaf,nx,my,2,mpe_double)
+!
+      call mpe_unify_1(tm2d(1,1,33),sfalb,nx,my,2,mpe_double)
+!
+      call mpe_unify_1(tm2d(1,1,34),sfemis,nx,my,2,mpe_double)
 !
       call mpe_unify(land,nx,my,2,mpe_logical)
 !

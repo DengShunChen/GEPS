@@ -63,7 +63,11 @@
  gmdef='gimg',
  domfc=f,
  out_green=f,
+ otgreen=3.,
+ out_hp=f,
  ndsladvh2=f,
+ isot=0,
+ ivegsrc=0,
  &end
 
  &typ
