@@ -3,6 +3,7 @@
 ! modify to f90 by C-H Lee and sort by River Chen in 2015
 !
       use param
+      use index,  only: nxp
 
       implicit none
 
@@ -16,8 +17,10 @@
 !     arrays(cases,fields,typhoons)
       real, dimension(0:168,5,5) ::  tflon,tflat,tensity 
  
-      real, dimension(:,:), allocatable, save :: tlon, tydom,  &
-                                slp, v850, v700, h850, h500
+!byl      real, dimension(:,:), allocatable, save :: tlon, tydom,  &
+!byl                                slp, v850, v700, h850, h500
+      real, dimension(:,:), allocatable, save :: tlon, tydom
+      real, dimension(:,:,:), allocatable,save ::  typtrk
 
       real, dimension(:),   allocatable, save :: tlat
 
@@ -46,22 +49,25 @@
 
            integer  ierr
 
+!byl           allocate (tlon(nx,my),tlat(my),tydom(nx,my),             &
+!byl                     slp(nx,my),v850(nx,my),v700(nx,my),h850(nx,my),&
+!by                     h500(nx,my), stat=ierr)
            allocate (tlon(nx,my),tlat(my),tydom(nx,my),             &
-                     slp(nx,my),v850(nx,my),v700(nx,my),h850(nx,my),&
-                     h500(nx,my), stat=ierr)
+                     typtrk(nxp,my_max,5), stat=ierr)
 
            if (ierr/= 0) then
                write(6,*) 'mod_typhoon : allocate fail 1 '
                stop
            end if
-
+!
            return
 
          end subroutine
 
          subroutine deallocate_typhoon_array
 
-           deallocate (tlon, tydom, slp, v850, v700, h850, h500, tlat)
+!byl           deallocate (tlon, tydom, slp, v850, v700, h850, h500, tlat)
+           deallocate (tlon, tydom, typtrk)
 
            return
 

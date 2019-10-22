@@ -1575,7 +1575,8 @@
                     , tt,qt,rdiv,rvor,tg,gwr,z0,hflux,qflux,snr                &
                     , raintot,raincu,rainlp,asol,olr,ss,rs,alb,gwclim          &
                     , acld,cosl,drag,ugws,vgws,t2,rh2100,rh10100,u10,v10,gfx,rld,sld &
-                    , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500 &
+!byl                    , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500 &
+                    , km_soil,smc,slc,stc,canopy,ggdef,typtrk                  &
                     , ctot,chig,cmid,clow,hpbl,histim,flash,do_sit)
 #endif
 !
@@ -1583,7 +1584,7 @@
          if(typhoon .and. ltrack .and. itau .le. 384 )then
           if(myrank .eq. 0)print *,' calling tracking,  tau= ',tau
 !          if(myrank .eq. 0)print *,'dt_trk=',dt_trk
-          call tracking(tau,dt_trk,dt,nx,my,slp,v850,v700,h850,h500,    &
+          call tracking(tau,dt_trk,dt,nx,my,                            &
                   ntyph,typname,ixtyp,jytyp,tlon,tlat,tflon,tflat,idtg, &
                   nrec,typhoon,tensity)
         endif

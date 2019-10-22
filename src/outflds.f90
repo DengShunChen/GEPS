@@ -5,7 +5,8 @@
              , tt,qt,rdiv,rvor,tg,gwet,z0,hflux,qflux,snr            &
              , raintot,raincu,rainlp,plcl,cumtop,ss,rs,alb,gwclim    &
              , acld,cosl,drag,ugws,vgws,t2,rh2,rh10,u10,v10,gfx,rld,sld &
-             , km,smc,slc,stc,canopy,ggdef,slptyp,v850,v700,h850,h500   &
+!byl             , km,smc,slc,stc,canopy,ggdef,slptyp,v850,v700,h850,h500   &
+             , km,smc,slc,stc,canopy,ggdef,typtrk                    &
              , ctot,chig,cmid,clow,hpbl,lwrite,flash,lwritesit)
 !
 !  modify to f90 by C-H Lee and sort by River Chen in 2015
@@ -48,7 +49,8 @@
               , hpbl(nxp,my_max)                                                    &
 ! river
 !byl              , slptyp(nxp,my_max),v850(nx,my),v700(nx,my),h850(nx,my),h500(nx,my)
-              , slptyp(nx,my),v850(nx,my),v700(nx,my),h850(nx,my),h500(nx,my)
+!byl              , slptyp(nx,my),v850(nx,my),v700(nx,my),h850(nx,my),h500(nx,my)
+              , typtrk(nxp,my_max,5)
 !
       character ifilout*80, ggdef*4
       integer*8 idtg
@@ -299,7 +301,7 @@
 !
       if(myrank.eq.0)print*,' outfld : start surfout, lwrite = ',lwrite
       call surfout (nx,my,my_max,ifilout,itau,idtg,taudir,ntau,pdiff,pt  &
-                   ,ptop,slptyp,ptend,glob,ggdef,lwrite)
+                   ,ptop,typtrk(1,1,1),ptend,glob,ggdef,lwrite)
 !
 !  obtain the the bottom pressure for the following interpolations
 !  bt2 will be used in geoptential interpolations
@@ -486,7 +488,7 @@
         if(myrank.eq.0)print*,' outfld : start geopout, lwrite = ',lwrite
         call geopout (nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,numz &
               ,whtlevz,pkout,plog,pllp,tmp,bt1,pres3d,glob,ggdef,phistd  &
-              ,h850,h500,lwrite)
+              ,typtrk(1,1,4),typtrk(1,1,5),lwrite)
 !
       endif   ! end of geopotential height output
 !
@@ -505,7 +507,8 @@
 !!        call mpe_unify(bt1,nx,my,2,mpe_double)
         if(myrank.eq.0)print*,' outfld : start vorout, lwrite = ',lwrite
         call vortout (nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,num  &
-                 ,whtlev,pkout,plog,pllp,rvor,bt1,pres3d,ggdef,v850,v700,lwrite)
+                 ,whtlev,pkout,plog,pllp,rvor,bt1,pres3d,ggdef           &
+                 ,typtrk(1,1,2),typtrk(1,1,3),lwrite)
       endif
 !
       labx='div   '
