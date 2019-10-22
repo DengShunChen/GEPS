@@ -1143,9 +1143,12 @@
 
         do i=1,nxj
           garea(i)  = tem1*tem2
-          if(land(i,jj))slimsk(i)=1
-          if(ocean(i,jj))slimsk(i)=0
-          if(ice(i,jj))slimsk(i)=2
+!byl          if(land(i,jj))slimsk(i)=1
+!byl          if(ocean(i,jj))slimsk(i)=0
+!byl          if(ice(i,jj))slimsk(i)=2
+          if(land(i,jj))islimsk(i)=1
+          if(ocean(i,jj))islimsk(i)=0
+          if(ice(i,jj))islimsk(i)=2
         enddo
 
         call cumastr_driv_n                                               &
@@ -1155,7 +1158,7 @@
                 q0(1,1,jj) ,ut(1,1,jj),vt(1,1,jj) ,tt(1,1,jj),qt(1,1,jj) ,&
                 rcup(1,jj) ,pk(1,1,jj),pk2(1,1,jj),sd(1,1,jj),qflux(1,jj),&
                 kbot(1,jj) ,ktop(1,jj),fwd        ,ncld      ,sigma      ,&
-                plt(1,1,jj),pst(1,jj) ,j          ,slimsk    ,hflux(1,jj),&
+                plt(1,1,jj),pst(1,jj) ,j          ,islimsk   ,hflux(1,jj),&
                 garea      ,kuo(1,jj) ,flash(1,jj))
 
         do i=1,nxj
