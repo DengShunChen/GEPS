@@ -157,6 +157,7 @@
       g=grav
       gor=g/rd
       gocp=g/cp
+!units of pressure change to Pa from cb
 !      cont=1000.*cp/g
 !      conq=1000.*hvap/g
 !      conw=1000./g
@@ -371,29 +372,15 @@
            tem1      = ustar(i)**3.
            wscale(i) = (tem1+wfac*vk*wstar3(i)*sfcfrac)**h1
 !
-!byl           wscale(i) = min(wscale(i),ustar(i)*aphi16)
-           wscale(i) = max(wscale(i),ustar(i)/aphi5)
-         else if (sfcflg(i).and.sflux.le.0.) then
-           hol = min(hol,-zfmin)
-!
-           hol1 = hol*hpbl(i)/zl(i,1)*sfcfrac
-!          phim(i) = (1.-aphi16*hol1)**(-1./4.)
-!          phih(i) = (1.-aphi16*hol1)**(-1./2.)
-           tem     = 1.0 / (1. - aphi16*hol1)
-           phih(i) = sqrt(tem)
-           phim(i) = sqrt(phih(i))
-           wscale(i) = ustar(i)/phim(i)
-!           wscale(i) = min(wscale(i),ustar(i)*aphi16)
+           wscale(i) = min(wscale(i),ustar(i)*aphi16)
            wscale(i) = max(wscale(i),ustar(i)/aphi5)
          else
 ! phon add
            hol = max(hol,zfmin)
-           hol1 = hol*hpbl(i)/zl(i,1)*sfcfrac
-!byl           phim(i) = (1.+aphi5*hol)
-           phim(i) = (1.+aphi5*hol1)
+           phim(i) = (1.+aphi5*hol)
            phih(i) = phim(i)
            wscale(i) = ustar(i)/phim(i)
-!byl           wscale(i) = min(wscale(i),ustar(i)*aphi16)
+           wscale(i) = min(wscale(i),ustar(i)*aphi16)
            wscale(i) = max(wscale(i),ustar(i)/aphi5)
 ! phon add over
            pblflg(i)=.false.
@@ -645,14 +632,12 @@
 ! new
             zfac = max((1.-zi(i,k+1)/hpbl(i)), zfmin)
             tem = wscale(i)*vk*zi(i,k+1)*zfac**pfac
-!byl            dku(i,k) = xkzmu + tem
-!byl            dkt(i,k) = xkzo(i,k) + tem * prinv(i)
-            dku(i,k) = tem
-            dkt(i,k) = tem * prinv(i)
+            dku(i,k) = xkzmu + tem
+            dkt(i,k) = xkzo(i,k) + tem * prinv(i)
             dku(i,k) = min(dku(i,k),dkmax)
             dkt(i,k) = min(dkt(i,k),dkmax)
-            dku(i,k) = max(dku(i,k),xkzmu)
-            dkt(i,k) = max(dkt(i,k),xkzo(i,k))
+!           dku(i,k) = max(dku(i,k),xkzmu)
+!           dkt(i,k) = max(dkt(i,k),xkzo(i,k))
             dktx(i,k)= dkt(i,k)
             dkux(i,k)= dku(i,k)
          endif
@@ -680,10 +665,8 @@
                   rl2      = zk*rlamun/(rlamun+zk)
                   dk       = rl2*rl2*sqrt(shr2)
                   sri      = sqrt(-ri)
-!byl                  dku(i,k) = xkzmu + dk*(1+8.*(-ri)/(1+1.746*sri))
-!byl                  dkt(i,k) = xkzo(i,k) + dk*(1+8.*(-ri)/(1+1.286*sri))
-                  dku(i,k) = dk*(1+8.*(-ri)/(1+1.746*sri))
-                  dkt(i,k) = dk*(1+8.*(-ri)/(1+1.286*sri))
+                  dku(i,k) = xkzmu + dk*(1+8.*(-ri)/(1+1.746*sri))
+                  dkt(i,k) = xkzo(i,k) + dk*(1+8.*(-ri)/(1+1.286*sri))
                else             ! stable regime
                   rl2      = zk*rlam/(rlam+zk)
 !!                tem      = rlam * sqrt(0.01*prsi(i,k))
@@ -696,16 +679,14 @@
                   else
                     prnum = 1.0
                   endif
-!byl                  dkt(i,k) = xkzo(i,k) + tem1
-!byl                  dku(i,k) = xkzmu + tem1 * prnum
-                  dkt(i,k) = tem1
-                  dku(i,k) = tem1 * prnum
+                  dkt(i,k) = xkzo(i,k) + tem1
+                  dku(i,k) = xkzmu + tem1 * prnum
                endif
 !
                dku(i,k) = min(dku(i,k),dkmax)
                dkt(i,k) = min(dkt(i,k),dkmax)
-               dku(i,k) = max(dku(i,k),xkzmu)
-               dkt(i,k) = max(dkt(i,k),xkzo(i,k))
+!              dku(i,k) = max(dku(i,k),xkzmu)
+!              dkt(i,k) = max(dkt(i,k),xkzo(i,k))
 !
             endif
 !
@@ -962,10 +943,10 @@
 !
 !  pbl height for diagnostic purpose
 !
-!!      do i = 1, im
-!!         hpbl(i) = hpblx(i)
-!!         kpbl(i) = kpblx(i)
-!!      enddo
+      do i = 1, im
+         hpbl(i) = hpblx(i)
+         kpbl(i) = kpblx(i)
+      enddo
 !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       return

@@ -93,7 +93,6 @@
          prsi,del,prsl,prslk,phii,phil,delt,hpbl)
 !
       use machine  , only : kind_phys
-!      use funcphys , only : fpvs
       use physcons, grav => con_g, rd => con_rd, cp => con_cp &
       ,             hvap => con_hvap, fv => con_fvirt
       implicit none
@@ -230,7 +229,8 @@
 !     parameter (actei = 0.23)
       parameter (actei = 0.7)
 !
-      dspheat=.false.
+!byl      dspheat=.false. reference from NCEP fv3GFS, it should be .true.
+      dspheat=.true.
 !
 !c-----------------------------------------------------------------------
 !

@@ -20,7 +20,9 @@
              alb       ,gwclim       ,   acld       , &
             ctot       ,  chig       ,   cmid       , &
             clow       ,  hpbl       ,   cosz       , & 
-         rainlp6       ,raincu6      ,  tgori       , &
+         rainlp6       ,raincu6      ,                &
+         rainlp3       ,raincu3      ,                &
+         rainlp1       ,raincu1      ,  tgori       , &
           tgdiff       ,tgmask
 
       logical, allocatable,save :: land(:,:),ice(:,:),ocean(:,:)
@@ -31,12 +33,13 @@
       real, dimension(:,:),allocatable,save :: xlon
       real, dimension(:)  ,allocatable,save :: xlat
 
-      real, dimension(:,:),allocatable,save :: u10,v10,t2,rh2
+      real, dimension(:,:),allocatable,save :: u10,v10,t2,rh2,rh10,q2  &
+                                              ,fm,fm10,fh,fh2,srflag
  
       real, dimension(:,:),allocatable,save :: fpsp,fpsp1
 
       real, dimension(:,:,:),allocatable,save :: e,eps,o3l,dtrad,asl,atl
-      real, dimension(:,:,:),allocatable,save :: ftp,fqp,ftp1,fqp1
+      real, dimension(:,:,:),allocatable,save :: ftp,fqp,ftp1,fqp1,deltaq
 
       contains 
 
@@ -48,7 +51,8 @@
                      o3l(nxp,lev,my_max),dtrad(nxp,lev,my_max),  &
                      asl(nxp,lev,my_max),  atl(nxp,lev,my_max),  &
                      ftp(nxp,lev,my_max),  fqp(nxp,lev,my_max),  &
-                    ftp1(nxp,lev,my_max), fqp1(nxp,lev,my_max) , stat=ierr)
+                    ftp1(nxp,lev,my_max), fqp1(nxp,lev,my_max),  &
+                    deltaq(nxp,lev,my_max), stat=ierr)
 
            if (ierr/= 0) then
                write(6,*) 'mod_phygrid : allocate fail 1 '
@@ -66,8 +70,14 @@
              alb(nxp,my_max),gwclim(nxp,my_max),  acld(lev,my), &
             ctot(nxp,my_max),  chig(nxp,my_max),   cmid(nxp,my_max), &
             clow(nxp,my_max),  hpbl(nxp,my_max),   cosz(nxp,my_max), &
+<<<<<<< HEAD
          rainlp6(nxp,my_max),raincu6(nxp,my_max), tgori(nxp,my_max), &
           tgdiff(nxp,my_max), tgmask(nxp,my_max),                    &
+=======
+         rainlp6(nxp,my_max),raincu6(nxp,my_max),                    &
+         rainlp3(nxp,my_max),raincu3(nxp,my_max),                    &
+         rainlp1(nxp,my_max),raincu1(nxp,my_max),                    &
+>>>>>>> 05b64d3b078b99d9b2a2f5b7c42f396763ae4ddf
                                           stat=ierr)
 
            if (ierr/= 0) then
@@ -115,8 +125,10 @@
            ib=0
            cof=0.
 
-           allocate (u10(nxp,my_max),v10(nxp,my_max),&
-                     t2(nxp,my_max),rh2(nxp,my_max), stat=ierr)
+           allocate (u10(nxp,my_max),v10(nxp,my_max),srflag(nxp,my_max) &
+                     ,t2(nxp,my_max),rh2(nxp,my_max),rh10(nxp,my_max)   &
+                     ,q2(nxp,my_max),fm(nxp,my_max),fm10(nxp,my_max)    &
+                     ,fh(nxp,my_max),fh2(nxp,my_max), stat=ierr)
 
            if (ierr/= 0) then
                write(6,*) 'mod_phygrid : allocate fail 6 '
@@ -136,7 +148,7 @@
 
          subroutine deallocate_phygrid_array
 
-           deallocate (e,eps,o3l,dtrad,asl,atl,ftp,fqp,ftp1,fqp1)
+           deallocate (e,eps,o3l,dtrad,asl,atl,ftp,fqp,ftp1,fqp1,deltaq)
            deallocate (                                           &
                        snr,gwr,tg,   ss,rs,                       &
              ustar,tstar,qstar,hflux,qflux,raintot,raincu,rainlp, &
@@ -147,9 +159,9 @@
            deallocate (land,ice,ocean)
            deallocate (il,ib)
            deallocate (cof,xlon,xlat)
-           deallocate (u10,v10,t2,rh2)
+           deallocate (u10,v10,t2,rh2,rh10,srflag,q2,fm,fm10,fh,fh2)
            deallocate (fpsp,fpsp1)
-           deallocate (rainlp6,raincu6)
+           deallocate (rainlp6,raincu6,rainlp3,raincu3,rainlp1,raincu1)
 
            return
 

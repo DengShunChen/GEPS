@@ -75,9 +75,16 @@
 !
       real      glob(nx,my), &
                 hf24(nxp,my_max),qf24(nxp,my_max),ss24(nxp,my_max),rs24(nxp,my_max), &
-                asol24(nxp,my_max),olr24(nxp,my_max),rain24(nxp,my_max),     &
-                drag(nxp,lev,my_max),ugws(nxp,my_max),vgws(nxp,my_max),      &
-                sdpbl(nxp,my_max),slpty(nxp,my_max)
+                asol24(nxp,my_max),olr24(nxp,my_max),rain24(nxp,my_max),             &
+                drag(nxp,lev,my_max),ugws(nxp,my_max),vgws(nxp,my_max),              &
+                sdpbl(nxp,my_max),slpty(nxp,my_max),rain1(nx,my_max),                &
+                rh2100(nxp,my_max),rh10100(nxp,my_max)
+
+       real*4   workn(nx,my)
+       integer  kn
+      character*26 ihdg
+
+      real      tmin(nxp,my_max),tmax(nxp,my_max),td(nxp,my_max),temp
 !
       real      cc(nx+2,levp,1,my_max),ww1(nx,my_max)
 !byl      real      cc3(nx+2,levp,3,my_max),wss3(levp,2,3,jtrun,jtmax)
@@ -96,6 +103,10 @@
 ! for topographic gravity wave drag
 !
       real hprime_b(nxp,mtnvar,my_max)
+
+! for due point temperature
+      real tda,tdb
+      parameter (tda=17.27,tdb=237.7)
 
 !
 !   restart  : write(7) work array
@@ -291,13 +302,15 @@
 !!        call mpe_unify(gwet,nx,my,2,mpe_double)
 !!        call mpe_unify(gwr,nx,my,2,mpe_double)
 !
+!       rh2100=rh2*100. 
+!       rh10100=rh10*100. 
 !        call  outflds( 1,nx,my,my_max,lev,ncld                                     &
 !                     , lmax,numout,idtg,ifilout,outdir                             &
-!                     , ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo,pdiff               &
-!                     , ptend,tsave,t1000,pt,plt,pk,pk2,phi,ut,vt,sd                &
+!                     , ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo                     &
+!                     , ptend,pt,plt,pk,pk2,phi,ut,vt,sd                            &
 !                     , tt,qt,rdiv,rvor,tg,gwr,z0,hflux,qflux,snr                   &
 !                     , raintot,raincu,rainlp,asol,olr,ss,rs,alb,gwclim             &
-!                     , acld,cosl,drag,ugws,vgws,t2,rh2,u10,v10,gfx,rld,sld         &
+!                     , acld,cosl,drag,ugws,vgws,t2,rh2100,rh10100,u10,v10,gfx,rld,sld &
 !                     , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500    &
 !                     , ctot,chig,cmid,clow,hpbl,.true.,flash,do_sit)
 !        call  outsigs ( 1,nx,my,my_max,lev,ncld                                    &
@@ -325,6 +338,10 @@
       rainlp=0.
       raincu6=0.
       rainlp6=0.
+      raincu3=0.
+      rainlp3=0.
+      raincu1=0.
+      rainlp1=0.
       gfx=0.
       rld=0.
       sld=0.
@@ -341,13 +358,15 @@
 !
 
 !#ifndef NO_OUT
+!       rh2100=rh2*100. 
+!       rh10100=rh10*100. 
 !      call  outflds( 0,nx,my,my_max,lev,ncld                                       &
 !                     , lmax,numout,idtg,ifilout,outdir                             &
-!                     , ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo,pdiff               &
-!                     , ptend,tsave,t1000,pt,plt,pk,pk2,phi,ut,vt,sd                &
+!                     , ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo                     &
+!                     , ptend,pt,plt,pk,pk2,phi,ut,vt,sd                            &
 !                     , tt,qt,rdiv,rvor,tg,gwr,z0,hflux,qflux,snr                   &
 !                     , raintot,raincu,rainlp,asol,olr,ss,rs,alb,gwclim             &
-!                     , acld,cosl,drag,ugws,vgws,t2,rh2,u10,v10,gfx,rld,sld         &
+!                     , acld,cosl,drag,ugws,vgws,t2,rh2100,rh10100,u10,v10,gfx,rld,sld &
 !                     , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500    &
 !                     , ctot,chig,cmid,clow,hpbl,.true.,flash,do_sit)
 !#endif
@@ -465,8 +484,14 @@
           rainlp(i,jj) = 0.
           raincu6(i,jj)= 0.
           rainlp6(i,jj)= 0.
+          raincu3(i,jj)= 0.
+          rainlp3(i,jj)= 0.
+          raincu1(i,jj)= 0.
+          rainlp1(i,jj)= 0.
           raintot(i,jj)= 0.
           runoff(i,jj) = 0.  ! soil
+          tmax(i,jj)   = 0.
+          tmin(i,jj)   = 0.
         enddo
       enddo
 !
@@ -940,14 +965,16 @@
                       , rgas,cp,stbo,s0,evaprh,hltm,ptop,sigma,dsigma,il,ib     &
                       , cof,xlat,xlon,sgeo,z0,alb,land,ocean,ice                &
                       , snr,tg,tgclim,curate,plcl,cumtop,totalp,raintot,raincu  &
-                      , rainlp,raincu6,rainlp6,hflux,qflux,ustar,tstar,qstar,e  &
+                      , rainlp,raincu6,rainlp6,raincu3,rainlp3,raincu1,rainlp1  &
+                      , hflux,qflux,ustar,tstar,qstar,e                         &
                       , eps,o3l,dtrad,ss,rs,plt,pk,pk2,ptp,up,vp,ttp,qp,pt,ut   &
                       , vt,tt,qt,gwclim,tice,hice,qgini,thdai,tengi             &
                       , acld,std,qbrwtot,asol,olr,drag,ugws,vgws                &
-                      , sdpbl,t2,rh2,u10,v10,gfx                                &
+                      , sdpbl,t2,q2,rh2,rh10,u10,v10,gfx                        &
+                      , fm,fh,fm10,fh2,srflag                                   &
                       , rld,km_soil,smc,stc,canopy,runoff                       &
                       , sigmaf,istyp,ivegtyp,wlt,ref,tsat,dfkt,xktk,dfk         &
-                      , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,sd                         &
+                      , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,deltaq,sd                  &
                       , shdmax,shdmin,snoalb                                    &
                       , slopetyp,sld,slc,zice,cice,xtice,sncover,sndepth        &
                       , ctot,chig,cmid,clow,hpbl,asl,atl,cosz                   &
@@ -958,7 +985,7 @@
                       , asl_clr,atl_clr,clds                                    &
                       , ss_clr,rs_clr,asol_clr,olr_clr,sld_clr,rld_clr          &
                       , alvsf,alvwf,alnsf,alnwf,facsf,facwf                     &
-                      , idtg,doo3l,nfxr                                         &
+                      , idtg,doo3l,nfxr,sfalb,sfemis,isot,ivegsrc               &
                       , dosppt,sppt3d,itimestep,lrun_sitvdiff,ic_sit            &
 !xb110>
                       , rmr,smr,flash,tgori,tgdiff,tgmask)
@@ -1113,14 +1140,16 @@
                      , rgas,cp,stbo,s0,evaprh,hltm,ptop,sigma,dsigma,il,ib      &
                      , cof,xlat,xlon,sgeo,z0,alb,land,ocean,ice                 &
                      , snr,tg,tgclim,curate,plcl,cumtop,totalp,raintot,raincu   &
-                     , rainlp,raincu6,rainlp6,hflux,qflux,ustar,tstar,qstar,e   &
+                     , rainlp,raincu6,rainlp6,raincu3,rainlp3,raincu1,rainlp1   &
+                     , hflux,qflux,ustar,tstar,qstar,e                          &
                      , eps,o3l,dtrad,ss,rs,plt,pk,pk2,ptp,up,vp,ttp,qp,pt,ut    &
                      , vt,tt,qt,gwclim,tice,hice,qgini,thdai,tengi              &
                      , acld,std,qbrwtot,asol,olr,drag,ugws,vgws                 &
-                     , sdpbl,t2,rh2,u10,v10,gfx                                 &
+                     , sdpbl,t2,q2,rh2,rh10,u10,v10,gfx                         &
+                     , fm,fh,fm10,fh2,srflag                                    &
                      , rld,km_soil,smc,stc,canopy,runoff                        &
                      , sigmaf,istyp,ivegtyp,wlt,ref,tsat,dfkt,xktk,dfk          &
-                     , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,sd                          &
+                     , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,deltaq,sd                   &
                      , shdmax,shdmin,snoalb                                     &
                      , slopetyp,sld,slc,zice,cice,xtice,sncover,sndepth         &
                      , ctot,chig,cmid,clow,hpbl,asl,atl,cosz                    &
@@ -1131,7 +1160,7 @@
                      , asl_clr,atl_clr,clds                                     &
                      , ss_clr,rs_clr,asol_clr,olr_clr,sld_clr,rld_clr           &
                      , alvsf,alvwf,alnsf,alnwf,facsf,facwf                      &
-                     , idtg,doo3l,nfxr                                          &
+                     , idtg,doo3l,nfxr,sfalb,sfemis,isot,ivegsrc                &
                      , dosppt,sppt3d,itimestep,lrun_sitvdiff,ic_sit             &
 !xb110>
                      , rmr,smr,flash,tgori,tgdiff,tgmask)
@@ -1559,27 +1588,18 @@
 !  write operational fields (p-levels and surface)
 !
 #ifndef NO_OUT
+       rh2100=rh2*100.
+       rh10100=rh10*100.
         call  outflds( itau,nx,my,my_max,lev,ncld                              &
                     , lmax,numout,idtg,ifilout,outdir                          &
-                    , ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo,pdiff            &
-                    , ptend,tsave,t1000,pt,plt,pk,pk2,phi,ut,vt,sd             &
+                    , ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo                  &
+                    , ptend,pt,plt,pk,pk2,phi,ut,vt,sd                         &
                     , tt,qt,rdiv,rvor,tg,gwr,z0,hflux,qflux,snr                &
                     , raintot,raincu,rainlp,asol,olr,ss,rs,alb,gwclim          &
-                    , acld,cosl,drag,ugws,vgws,t2,rh2,u10,v10,gfx,rld,sld      &
+                    , acld,cosl,drag,ugws,vgws,t2,rh2100,rh10100,u10,v10,gfx,rld,sld &
                     , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500 &
                     , ctot,chig,cmid,clow,hpbl,histim,flash,do_sit)
 #endif
-! out green energy plan
-      if(out_green)then
-        if (mod(float(itau)+0.00001, 6.) .lt. 0.01) then
-#ifndef NO_OUT
-        call  outflds_green(itau,nx,my,my_max,lev,ncld                         &
-                          , idtg,ifilout,cp,rgas,grav,t2,u10,v10               &
-                          , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6  &
-                          , ggdef,histim)
-#endif
-        endif
-      endif
 !
 !        if(typhoon .and. ltrack)then
          if(typhoon .and. ltrack .and. itau .le. 384 )then
@@ -1597,19 +1617,14 @@
 !  every 24-hour output without 12-hour output points
 !  (in order to be consistent to the rule followed by nfs, 11/30/2000)
 !
-!        if( mod(float(itau)+0.00001, 12.) .lt. 0.01 ) then
-        if( histim .and. (mod(float(itau)+0.00001, 12.) .lt. 0.01) ) then
+        if( mod(float(itau)+0.00001, 12.) .lt. 0.01 ) then
+!        if( histim .and. (mod(float(itau)+0.00001, 12.) .lt. 0.01) ) then
           raincu=0.
           rainlp=0.
           runoff=0.
 !          call zilch (raincu,nxmy)
 !          call zilch (rainlp,nxmy)
 !          call zilch (runoff,nxmy)
-        endif
-!
-        if( histim .and. (mod(float(itau)+0.00001, 6.) .lt. 0.01) )then
-          raincu6=0.
-          rainlp6=0.
         endif
 !
         ifromtau = taui
@@ -1636,14 +1651,69 @@
         if(myrank .eq. 0) print *,' history written at tau=',itau
 
       endif     ! end of (histim)
+
+! out green energy plan
+      if(out_green)then
+        if (mod(tau+0.00001, otgreen) .lt. 0.01) then
+#ifndef NO_OUT
+        call  outflds_green(nint(tau),nx,my,my_max,lev,ncld                    &
+                          , idtg,ifilout,cp,rgas,grav,t2,u10,v10               &
+                          , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6  &
+                          , ggdef)
+#endif
+          if (mod(tau+0.00001, 6. ) .lt. 0.01) then
+           raincu6=0.
+           rainlp6=0.
+          endif
+        endif
+      endif
+! output f006 data for FV3
+      if (abs(tau+0.00001-6.) .lt. 0.01) then
+#ifndef NO_OUT
+        if (myrank .eq. 0) print *,'output FV3 data !!!'
+        call outflds_fv3(nint(tau),nx,my,my_max,idtg,ggdef,ifilout             &
+                          ,q2,fm,fh,fm10,fh2,srflag,ustar)
+#endif
+      endif
+! output 3hr accumulated precipitation for CWB home page
+      if(out_hp)then
+        if (mod(tau+0.00001, 3.) .lt. 0.01) then
+#ifndef NO_OUT
+        call  outflds_hp(nint(tau),nx,my,my_max,idtg,ifilout                   &
+                        ,raincu3,rainlp3,ggdef)
+#endif
+          raincu3=0.
+          rainlp3=0.
+        endif
+      endif
+
+! calculate Tmax Tmin @ 2m from T2
+          do jj = 1, jlistnum
+            j=jlist1(jj)
+            nxj=nxdef_2d(j)
+            do i=1,nxj
+             if (tmax(i,jj).eq.0.0)tmax(i,jj) = t2(i,jj)
+             if (tmin(i,jj).eq.0.0)tmin(i,jj) = t2(i,jj)
+             if (t2(i,jj).gt. tmax(i,jj)) then
+              tmax(i,jj)= t2(i,jj)
+             elseif (t2(i,jj).lt. tmin(i,jj)) then
+              tmin(i,jj)= t2(i,jj)
+             endif
+            enddo
+          enddo
 !
 !kc
 !  output t2,raintot,u10,v10,ctot at 1 hour interval within 192hr. 
 !kc
-      if(domfc)then
+!      if(domfc)then
+!==xb118
+! change domfc type from logical to real
+!==xb118
+
         dtaup = mod(tau+0.001, 1.)
-!        if(myrank .eq. 0) print *,'domfc at tau,dtaup=',tau,dtaup
-        if(tau.le.192. .and. dtaup.lt.0.01)then
+!        if(myrank .eq. 0) print*,'domfc at tau,dtaup=',tau,dtaup
+!        if(tau.le.192. .and. dtaup.lt.0.01)then
+        if(tau.le.(domfc+0.001) .and. dtaup.lt.0.01)then
           ntau=tau+0.001
           if(myrank .eq. 0) print *,'out1 at tau=',tau
           do jj = 1, jlistnum
@@ -1651,14 +1721,25 @@
             nxj=nxdef_2d(j)
             do i=1,nxj
               slpty(i,jj)= pt(i,jj)+pdiff(i,jj)
+              rain1(i,jj)= raincu1(i,jj)+rainlp1(i,jj)
+              temp= tda*(t2(i,jj)-273.15)/(tdb+(t2(i,jj)-273.15))+     &
+                     log(rh2(i,jj))
+              td(i,jj)= (tdb*temp/(tda-temp))+273.15
             enddo
           enddo
 #ifndef NO_OUT
+       rh2100=rh2*100.
+       rh10100=rh10*100.
           call out2d_mfc(nx,lev,my,my_max,ifilout,itau,idtg,ntau  &
-                      ,raintot,glob,t2,u10,v10,ctot,slpty,ggdef)
+                      ,rain1,raintot,glob,t2,q2,rh2100,rh10100,u10,v10, &
+                      tmax,tmin,td,rld,sld,ctot,slpty,ggdef)
 #endif
+          raincu1=0.0
+          rainlp1=0.0
+          tmax=0.0
+          tmin=0.0
         endif
-      endif
+!      endif
 !
       if (dospptout .and.  (mod(tau+0.001, 1.) .lt. 0.01)) then
          call spptout(nx,my,my_max,lev,sppt2d500,sppt2d1000,sppt2d2000 &
