@@ -31,7 +31,7 @@
 ! sppt
                     , dosppt,sppt3d,itimestep,lrun_sitvdiff,ic_sit             &
 !xb110>
-                    , rmr, smr, flash)
+                    , rmr, smr, flash,tgori,tgdiff,tgmask)
 !xb110<
 !--------------------------------------------------------------------------------
 !#######################################################################
@@ -168,7 +168,8 @@
       use mpe
       use rank
       use index
-      use const,                 ONLY:do_sit,ldailyFCTsst,dailyClm_option
+      use const,                 ONLY:do_sit,ldailyFCTsst,dailyClm_option &
+                                     ,fsit
       use mod_sitgrid
       USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
       USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt &
@@ -433,7 +434,9 @@
                                        obswtbtm, tgtm
       character*12 cdtg
       integer yr, mo, dy, hr, mn
-      real tauhr
+      real tauhr,randdt
+      real tgori(nxp,my_max),tgdiff(nxp,my_max),tgmask(nxp,my_max)
+      real dtx_tau,dtaup 
       INTEGER, PARAMETER :: nerr = 6
 !ps
 !CWB2015 
@@ -2045,8 +2048,15 @@
         call storesit24(nxjp(j),jj,nxp,my_max,lkvl,sitwt,sitws,sitwu,sitwv,dtfsit)
         
         do ii = 1, nxj
-          if(ocean(ii,jj) .AND. sitmask(ii,jj).EQ.1) then
-            tg(ii,jj)=tgold(ii,jj)+dtswdt(ii,jj)*dtfsit
+          if(ocean(ii,jj) .AND. sitmask(ii,jj).EQ.1.) then
+!ps            dtswdt(ii,jj)=dtswdt(ii,jj)*dtfsit
+!            tg(ii,jj)=tgold(ii,jj)+dtswdt(ii,jj)
+!            rsecond=rtc()
+!            call random_seed()
+!            call random_number(randdt)
+!            dtswdt(ii,jj)=(randdt)*0.001
+            dtswdt(ii,jj)=0.001
+            tg(ii,jj)=tgini(ii,jj)+dtswdt(ii,jj)
           endif
           if(myrank .EQ. myrank_check .AND.         &
             jj .EQ. jj_check .AND. ii .EQ. ii_check) then
@@ -2095,6 +2105,20 @@
         print*,'after do_sit: myrank=',myrank,',jj=',jj       &
               ,'ii=',ii_check,',tg=',tg(ii_check,jj)
       endif
+
+      dtx_tau=dt/3600.
+      dtaup = mod(tau+0.001, fsit)
+      call random_seed()
+      if((.not. do_sit) .AND. (dtaup .lt. dtx_tau) ) then
+       do ii = 1, nxj
+         if(ocean(ii,jj).AND. (tgmask(ii,jj).EQ.1.)) then
+!           call random_number(randdt)
+           tgdiff(ii,jj)=(randdt)*0.001
+           tg(ii,jj)=tgori(ii,jj)+tgdiff(ii,jj)
+         endif
+       enddo
+      endif
+
 !--------------------------------------------------------------------------------
 !     weight back u and v by cosl/radus and
 !     change real temp back to virtual potential temperature

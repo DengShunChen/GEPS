@@ -87,7 +87,7 @@
             oldsitws, oldsitwtke
      
       real,dimension(:,:), allocatable, save::           &
-              tgold, dtswdt
+              tgini, tgold, dtswdt
 
  
       contains 
@@ -233,7 +233,8 @@
                stop
            end if
 
-           allocate ( tgold(nxp,my_max), dtswdt(nxp,my_max), stat=ierr)
+           allocate ( tgini(nxp,my_max), tgold(nxp,my_max),            &
+                     dtswdt(nxp,my_max), stat=ierr)
 
           if (ierr/= 0) then
                write(6,*) 'mod_sitgrid_dtswdt : allocate fail 1 '
@@ -373,6 +374,7 @@
            oldsitww=xmissing
            oldsitws=xmissing
            oldsitwtke=xmissing
+           tgini=0.
            tgold=0.
            dtswdt=0.
 
@@ -449,7 +451,7 @@
             oldsitwt, oldsitwu, oldsitwv,oldsitww,       &
             oldsitws,oldsitwtke)
 
-           deallocate ( tgold, dtswdt)
+           deallocate ( tgini, tgold, dtswdt)
 
            return
 

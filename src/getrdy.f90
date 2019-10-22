@@ -100,6 +100,8 @@
       real  sitlon(nxp,my_max)
       real, parameter:: specified_ice_thickness  = 2.0
       integer myrank_check,ii_check,jj_check
+      real lontest(nxp,my_max)
+      
 
       lmax=26
 !
@@ -986,6 +988,30 @@
 !0.0 initial_sit
 !---------------------------------
 
+
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        do ii=1,nxj
+          i=nxjstart(j)+ii-1
+          tgori(ii,jj)=0.
+          tgmask(ii,jj)=0.
+          IF(xlon(i,jj) .LT. 0.) then
+            lontest(ii,jj)=xlon(i,jj)+360.
+          ELSE
+            lontest(ii,jj)=xlon(i,jj)
+          ENDIF
+
+          if((xlat(ii).GE.-30.).AND.(xlat(ii).LE.30.)) then
+            if ((lontest(ii,jj).GE.0.).AND.(lontest(ii,jj).LE.360.))then
+              tgori(ii,jj)=tg(ii,jj)
+              tgmask(ii,jj)=1.
+            endif
+          end if
+        end do
+      end do
+
+
       if(do_sit) then
         CALL set_ocndepth()
         if(myrank .eq. 0) print *,'end set_ocndepth'
@@ -1014,6 +1040,7 @@
           nxj=nxdef_2d(j)
           do ii=1,nxj
             i=nxjstart(j)+ii-1
+            tgini(ii,jj)=tg(ii,jj)
             sitmask(ii,jj)=0.
 !    !  1.0 set geological data
             sitcor(ii,jj)   = 2*(7.292e-5)*sin(xlat(j)*api/180.)

@@ -168,7 +168,7 @@
       integer ic_sit,nc_sit
       logical turn_sit,lrun_sitvdiff
       real wweight
-
+      character*26 ihdg
 !
 !xb110>
       real rmr(nxp,lev,my_max),smr(nxp,lev,my_max)
@@ -961,8 +961,20 @@
                       , idtg,doo3l,nfxr                                         &
                       , dosppt,sppt3d,itimestep,lrun_sitvdiff,ic_sit            &
 !xb110>
-                      , rmr,smr,flash)
+                      , rmr,smr,flash,tgori,tgdiff,tgmask)
 !xb110<
+          if(lrun_sitvdiff) then
+            call mpe2d_unify(glob,dtswdt)
+            call syslbl ('s00101',idtg,itau,ggdef,ihdg)
+            if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+            call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+          else
+            call mpe2d_unify(glob,tgdiff)
+            call syslbl ('s00101',idtg,itau,ggdef,ihdg)
+            if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+            call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+          end if
+
           itimestep=itimestep+1   ! for sppt time evolution)
 !--------------------------------------------------------------------------------
 !
@@ -1122,8 +1134,20 @@
                      , idtg,doo3l,nfxr                                          &
                      , dosppt,sppt3d,itimestep,lrun_sitvdiff,ic_sit             &
 !xb110>
-                     , rmr,smr,flash)
+                     , rmr,smr,flash,tgori,tgdiff,tgmask)
 !xb110<
+          if(lrun_sitvdiff) then
+            call mpe2d_unify(glob,dtswdt)
+            call syslbl ('s00101',idtg,itau,ggdef,ihdg)
+            if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+            call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+          else
+            call mpe2d_unify(glob,tgdiff)
+            call syslbl ('s00101',idtg,itau,ggdef,ihdg)
+            if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+            call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+          end if
+
           itimestep=itimestep+1   ! for sppt time evolution)
 !--------------------------------------------------------------------------------
 !
@@ -1710,7 +1734,7 @@
                      +dailyClmANAsst(ii,jj,1) ) +wweight*(dailyFCTsst(ii,jj,1) &
                      -(dailyClmFCTsst(ii,jj,1)-dailyClmANAsst(ii,jj,1)))
             else
-              ssttemp=obswtbwgt1*dailyFCTsst(ii,jj,obswtbnmw1) &
+              ssttemp=obswtbwgt1*dailyFCTsst(ii,jj,obswtbnmw1) &    !use daily sst 
                       +obswtbwgt2*dailyFCTsst(ii,jj,obswtbnmw2)
               if((myrank.eq.myrank_check).AND.        &
                 (ii.eq.ii_check) .AND. (jj.eq.jj_check) ) then
