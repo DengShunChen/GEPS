@@ -487,10 +487,11 @@ contains
 !
 !  sea surface level pressure
 !
+      call unify_reduceintp(nx,my,my_max,slp,glob)
       if(label(kk).eq.'SSL010' .or. label(kk).eq.'ssl010') then
         call syslbl('ssl010',idtg,itau,ggdef,lrec)
-        if(lwrite) call dmswrit(nx,my,lrec,lenc,'H',ifilout,slp,istat)
-        call qmaxn3(slp,lrec(1:14),lrec(15:26),1,1,1,nx,my,1)
+        if(lwrite) call dmswrit(nx,my,lrec,lenc,'H',ifilout,glob,istat)
+        call qmaxn3(glob,lrec(1:14),lrec(15:26),1,1,1,nx,my,1)
 !
 !  terrain pressure
 !
