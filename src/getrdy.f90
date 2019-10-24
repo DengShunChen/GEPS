@@ -37,7 +37,7 @@
 !
       real      sst(nxp,my_max),ww1(nx,my),ww2(nxp,my_max),     &
                 rh2100(nxp,my_max),rh10100(nxp,my_max),         &
-                wk1(nxp,lev,my_max),wk2(nxp,lev,my_max),        &
+                wk1(nxp,lev,my_max),                            &
                 cc(nx+2,levp,1,my_max),ww3(nx,my_max)
 !byl                wss3(levp,2,3,jtrun,jtmax),cc3(nx+2,levp,3,my_max)
 
@@ -57,9 +57,9 @@
       real, dimension(:,:,:), allocatable :: tmc3,tmc4
       real, dimension(:,:,:), allocatable :: tmc5,tmc6
 ! add for sfcuvt
-      real    tx(nx), qx(nx),ux(nx),vx(nx),  &
-              qs(nx),tsx(nx),hs(nx),ps(nx),  &
-              qsfc(nx),tgp(nx)
+      real    tx(nxp), qx(nxp),ux(nxp),vx(nxp),  &
+              qs(nxp),tsx(nxp),hs(nxp),ps(nxp),  &
+              qsfc(nxp),tgp(nxp)
       logical flg, snow
 !
 ! add for soil
