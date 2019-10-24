@@ -33,7 +33,8 @@
 ! sppt
                     , dosppt,sppt3d,itimestep,lrun_sitvdiff,ic_sit             &
 !xb110>
-                    , rmr, smr, flash)
+!byl                    , rmr, smr, flash)
+                    , flash)
 !xb110<
 !--------------------------------------------------------------------------------
 !#######################################################################
@@ -266,8 +267,8 @@
 !for gravity wave drag ====== #
       integer nmgwor,nmgwcv,mtnvar
       real hprime_b(nxp,mtnvar,my_max)
-      real pltn(nxp,lev,my_max),pkn(nxp,lev,my_max),pk2n(nxp,lev,my_max),  &
-           ttpn(nxp,lev,my_max)
+!byl      real pltn(nxp,lev,my_max),pkn(nxp,lev,my_max),pk2n(nxp,lev,my_max),  &
+      real tt_bfcnv(nxp,lev)
       real p2c(nxp,lev+1),phie2c(nxp,lev+1),p2ac(nxp,lev+1)
       real utgwc(nxp,lev),vtgwc(nxp,lev),delttcv(nxp,lev),                 &
            dudtc(nxp,lev),dvdtc(nxp,lev),dtdtc(nxp,lev),                   &
@@ -326,7 +327,8 @@
       logical uni_cloud,lmfshal,lmfdeep2
       real    sr(nxp,my_max)
 !---------------------------------------------------------------------------
-      real      avgdrag_u(my,lev),avgdrag_v(my,lev),drag_u(lev),drag_v(lev)
+!byl      real      avgdrag_u(my,lev),avgdrag_v(my,lev),drag_u(lev),drag_v(lev)
+      real      drag_u(lev),drag_v(lev)
       real      fnor
       data      fnor/0.5/
 !
@@ -420,10 +422,11 @@
 
 !xb110>
 !for new precpd & nTDK
-      real      rmr(nxp,lev,my_max),smr(nxp,lev,my_max),rainr(nxp,lev,my_max),&
-                u0(nxp,lev,my_max),v0(nxp,lev,my_max),t0(nxp,lev,my_max),     &
-                q0(nxp,lev*ncld,my_max)
-      real      slsp(nxp,my_max),rm(nxp,lev),sm(nxp,lev),rainp(nxp,lev)
+!byl      real      rmr(nxp,lev,my_max),smr(nxp,lev,my_max),rainr(nxp,lev,my_max),&
+!byl                u0(nxp,lev,my_max),v0(nxp,lev,my_max),t0(nxp,lev,my_max),     &
+!byl                q0(nxp,lev*ncld,my_max)
+      real      u0(nxp,lev),v0(nxp,lev),t0(nxp,lev),q0(nxp,lev*ncld)
+!byl      real      slsp(nxp,my_max),rm(nxp,lev),sm(nxp,lev),rainp(nxp,lev)
 !rainr : rainfall rate (unit in kg/kg/dt)
 !for lightning
       real      flash(nxp,my_max)        !flash density (unit in flashes km^-2 day^-1)
@@ -456,7 +459,7 @@
       icsdlw=0
 ! for WSM6
       uni_cloud=( nmpbl .gt. 2 ) !if using SHOC scheme, it should be .true.
-      lmfshal=( nmshl .eq. 2 .and. nmshl .eq. 3 ) ! .true. if using mass-flux shallow convection
+      lmfshal=( nmshl .eq. 2 .or. nmshl .eq. 3 ) ! .true. if using mass-flux shallow convection
       lmfdeep2=( nmcup .eq. 6 ) ! .true. if using scale-aware deep con
 
 !     define local constants
@@ -553,7 +556,7 @@
       do i = 1, nxj
        rcup(i,jj)  = 0.0
        rlsp(i,jj)  = 0.0
-       rainp(i,jj) = 0.0
+!byl       rainp(i,jj) = 0.0
 !      cosz(i,jj)  = 0.0
        xmu(i,jj)  = 0.0
 ! for wsm6
@@ -815,8 +818,8 @@
 !
       call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pst(1,jj), &
                           pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
-      call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,ps(1,jj),  &
-                          pkn(1,1,jj),pk2n(1,1,jj),pltn(1,1,jj) )
+!byl      call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,ps(1,jj),  &
+!byl                          pkn(1,1,jj),pk2n(1,1,jj),pltn(1,1,jj) )
 !
 !     hydrostatic equation
 !
@@ -846,8 +849,6 @@
       vp(i,k,jj) = vp(i,k,jj)*xx
       tt(i,k,jj) = tt(i,k,jj)*pk(i,k,jj) / (1.0+0.608*qt(i,k,jj))
 !byl      ttpn(i,k,jj) = ttp(i,k,jj)*pkn(i,k,jj)/(1.0+0.608*qp(i,k,jj))
-!quick fix for convective GWD
-      ttpn(i,k,jj) = tt(i,k,jj)
       ttp(i,k,jj) = ttp(i,k,jj) / (1.0+0.608*qp(i,k,jj))
   230 continue
 !
@@ -867,15 +868,15 @@
 !xb110> save the variables for TDK before doing PBL parameterization
       do k = 1,lev
        do i = 1,nxj
-        u0(i,k,jj) = ut(i,k,jj)
-        v0(i,k,jj) = vt(i,k,jj)
-        t0(i,k,jj) = tt(i,k,jj)
+        u0(i,k) = ut(i,k,jj)
+        v0(i,k) = vt(i,k,jj)
+        t0(i,k) = tt(i,k,jj)
        end do
       end do
 
       do k = 1,lev*ncld
        do i = 1,nxj
-        q0(i,k,jj) = qt(i,k,jj)
+        q0(i,k) = qt(i,k,jj)
        end do
       end do
 !xb110<
@@ -1091,6 +1092,12 @@
 !
       endif  !(end of topo dograv and nmgwor=2)
 !
+!quick fix for convective GWD
+      do k=1,lev
+        do i=1,nxj
+          tt_bfcnv(i,k) = tt(i,k,jj)
+        enddo
+      enddo
 !
       if ( docup .and. nmcup.eq. 1 )                               &
        call cupcwb (j,nxjp(j),nxp,my,lev,ktcup,dta,grav,rgas,cp,hltm,etop,prevap  &
@@ -1154,8 +1161,8 @@
         call cumastr_driv_n                                               &
                (nxjp(j)    ,nxp       ,lev        ,dt         ,grav      ,&
                 rgas       ,cp        ,hltm       ,ptop      ,land(1,jj) ,&
-                sgeo(1,jj) ,phi       ,u0(1,1,jj) ,v0(1,1,jj),t0(1,1,jj) ,&
-                q0(1,1,jj) ,ut(1,1,jj),vt(1,1,jj) ,tt(1,1,jj),qt(1,1,jj) ,&
+                sgeo(1,jj) ,phi       ,u0         ,v0        ,t0         ,&
+                q0         ,ut(1,1,jj),vt(1,1,jj) ,tt(1,1,jj),qt(1,1,jj) ,&
                 rcup(1,jj) ,pk(1,1,jj),pk2(1,1,jj),sd(1,1,jj),qflux(1,jj),&
                 kbot(1,jj) ,ktop(1,jj),fwd        ,ncld      ,sigma      ,&
                 plt(1,1,jj),pst(1,jj) ,j          ,islimsk   ,hflux(1,jj),&
@@ -1323,10 +1330,10 @@
                   ut(1,1,jj),vt(1,1,jj),tt(1,1,jj),qt(1,1,jj),    &
                   plt(1,1,jj),pk(1,1,jj),pk2(1,1,jj),phi,dta,&
                   grav,rgas,sinl(j),cosl(j),drag_u,drag_v,cp)
-        do k=1,lev
-          avgdrag_u(j,k)=drag_u(k)
-          avgdrag_v(j,k)=drag_v(k)
-        enddo
+!byl        do k=1,lev
+!byl          avgdrag_u(j,k)=drag_u(k)
+!byl          avgdrag_v(j,k)=drag_v(k)
+!byl        enddo
 !
       endif ! (end of docgrav .and. nmgwcv.eq.1)
 !
@@ -1351,7 +1358,7 @@
 !            ttc(i,kc) = tt(i,k,jj)
 !            utc(i,kc) = ut(i,k,jj)
 !            vtc(i,kc) = vt(i,k,jj)
-            delttcv(i,k) = tt(i,k,jj) - ttpn(i,k,jj)
+            delttcv(i,k) = tt(i,k,jj) - tt_bfcnv(i,k)
           enddo
         enddo
 !
@@ -1367,7 +1374,7 @@
 !
         do k = 1, lev
           do i = 1, nxj
-            if (k >= lev-kbot(i,jj) .and. k <= lev-ktop(i,jj)) then
+            if (k <= lev-kbot(i,jj)+1 .and. k >= lev-ktop(i,jj)+1) then
               cumabs(i) = cumabs(i) + delttcv(i,k) * del(i,k)
               work3(i)  = work3(i)  + del(i,k)
             endif
@@ -1558,8 +1565,8 @@
             qtc(i,kc) = qt(i,k,jj)
             qtr(i,kc) = qt(i,lev+k,jj)
             ttc(i,kc) = tt(i,k,jj)
-            rm(i,kc)  = rmr(i,k,jj)
-            sm(i,kc)  = smr(i,k,jj)
+!byl            rm(i,kc)  = rmr(i,k,jj)
+!byl            sm(i,kc)  = smr(i,k,jj)
           enddo
         enddo
         if ( pdfcloud ) then
@@ -1600,9 +1607,9 @@
             qt(i,k    ,jj) = qtc(i,kc)
             qt(i,k+lev,jj) = qtr(i,kc)
             tt(i,k    ,jj) = ttc(i,kc)
-            rmr(i,k   ,jj) = rm(i,kc)
-            smr(i,k   ,jj) = sm(i,kc)
-            rainr(i,k ,jj) = rainp(i,kc)
+!byl            rmr(i,k   ,jj) = rm(i,kc)
+!byl            smr(i,k   ,jj) = sm(i,kc)
+!byl            rainr(i,k ,jj) = rainp(i,kc)
           enddo
         enddo
 !byl      endif

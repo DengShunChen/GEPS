@@ -183,7 +183,7 @@
       integer kkk
 !
 !xb110>
-      real rmr(nxp,lev,my_max),smr(nxp,lev,my_max)
+!byl      real rmr(nxp,lev,my_max),smr(nxp,lev,my_max)
 !for lightning scheme from ECMWF
       real flash(nxp,my_max)
 !xb110<
@@ -511,8 +511,8 @@
         enddo 
       endif
 !xb110>
-      rmr = 0.
-      smr = 0.
+!byl      rmr = 0.
+!byl      smr = 0.
 !xb110<
 !
 !***********************************************************************
@@ -990,7 +990,8 @@
                       , idtg,doo3l,nfxr,sfalb,sfemis,isot,ivegsrc               &
                       , dosppt,sppt3d,itimestep,lrun_sitvdiff,ic_sit            &
 !xb110>
-                      , rmr,smr,flash)
+!byl                      , rmr,smr,flash)
+                      , flash)
 !xb110<
           itimestep=itimestep+1   ! for sppt time evolution)
 !--------------------------------------------------------------------------------
@@ -1153,7 +1154,8 @@
                      , idtg,doo3l,nfxr,sfalb,sfemis,isot,ivegsrc                &
                      , dosppt,sppt3d,itimestep,lrun_sitvdiff,ic_sit             &
 !xb110>
-                     , rmr,smr,flash)
+!byl                     , rmr,smr,flash)
+                     , flash)
 !xb110<
           itimestep=itimestep+1   ! for sppt time evolution)
 !--------------------------------------------------------------------------------
