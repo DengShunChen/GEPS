@@ -52,16 +52,16 @@
       integer im, ix, km
       real                  q(ix,km),    t(ix,km),    cwm(ix,km)     &
 !      ,                     prsl(ix,km), ps(im), dt,  dtf &
-      ,                     prsl(ix,km), ps(im), dt                  &
-      ,                     tp(ix,km),   qp(ix,km),   psp(im)        &
-      ,                     tp1(ix,km),  qp1(ix,km),  psp1(im)       &
+      ,                     prsl(ix,km), ps(ix), dt                  &
+      ,                     tp(ix,km),   qp(ix,km),   psp(ix)        &
+      ,                     tp1(ix,km),  qp1(ix,km),  psp1(ix)       &
       ,                     deltaq(ix,km),deltaqik
        real                 qtmp,qwtmp,qtpd,qsc,usc
        real, intent(in) ::  sup
        logical iice
 
 !
-      real                   qi(im), qint(im), u(im,km), ccrik, e0   &
+      real                   qi(im), qint(im), u(ix,km), ccrik, e0   &
       ,                      cond,   rdt, us, cclimit, climit        &
       ,                      u00b,   u00t, tmt0, tmt15, qik, cwmik   &
       ,                 ai, bi, qw(im,km), u00ik, tik, pres, pp0, fi &
