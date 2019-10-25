@@ -262,7 +262,7 @@ mod_phygrid.o : mod_phygrid.f90 mod_param.o mod_index.o
 mod_rank.o : mod_rank.f90 
 mod_spec.o : mod_spec.f90 mod_param.o mod_index.o
 mod_stochastic.o : mod_stochastic.f90 
-mod_typhoon.o : mod_typhoon.f90 mod_param.o 
+mod_typhoon.o : mod_typhoon.f90 mod_param.o mod_index.o
 mod_outflds.o : mod_outflds.f90 mod_index.o mod_mpe.o mod_rank.o
 mpe_barrier.o : mpe_barrier.f90 
 mpe_finalize.o : mpe_finalize.f90 mod_typhoon.o mod_noah.o mod_phygrid.o mod_spec.o mod_grid.o mod_const.o mod_param.o 
@@ -399,7 +399,7 @@ stupij.o : stupij.f90
 stupiy.o : stupiy.f90 
 syslbl.o : syslbl.f90 
 tendget.o : tendget.f90 mod_grid.o mod_spec.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o 
-tracking.o : tracking.f90 mod_index.o mod_rank.o mod_mpe.o mod_typhoon.o
+tracking.o : tracking.f90 mod_index.o mod_rank.o mod_mpe.o mod_typhoon.o mod_param.o
 trandv.o : trandv.f90 mod_fftcom.o mod_paramt.o mod_index.o 
 tranrs1.o : tranrs1.f90 mod_fftcom.o mod_paramt.o mod_index.o 
 tranrs.o : tranrs.f90 mod_fj_pad.o mod_fftcom.o mod_paramt.o mod_index.o 

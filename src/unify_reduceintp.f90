@@ -6,25 +6,19 @@
 
       integer   nx,my,my_max
       integer   i,j,jj,nxj
-      real      fp(nxp,my_max),ff(nx,my)
+      real      fp(nxp,my_max),ff(nx,my),ffx(nx,my_max)
 
-      do jj =1, jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-        do i=1,nxj
-         ff(i,j)=fp(i,jj)
-        enddo
-      enddo
 
-      call mpe_unify(ff,nx,my,2,mpe_double)
 
+
+      call mpe2d_unify_nx(ffx,fp)
       if( lreduce.eq.1 ) then
         do jj =1, jlistnum
           j=jlist1(jj)
-          call reduceintp(ff(1,j),nxdef(j),nx,1)
+          call reduceintp(ffx(1,jj),nxdef(j),nx,1)
         enddo
-        call mpe_unify(ff,nx,my,5,mpe_double)
       endif
+      call mpe2d_unify_my(ff,ffx)
 !
       return
       end subroutine unify_reduceintp

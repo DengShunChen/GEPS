@@ -67,6 +67,8 @@
  out_hp=f,
  ndsladvh2=f,
  pdfcloud=f,
+ isot=1,
+ ivegsrc=1,
  &end
 
  &typ
