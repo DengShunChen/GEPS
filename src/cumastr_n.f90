@@ -146,7 +146,8 @@ USE mo_cumulus_flux,  only: lmfdudv, &! true if cum. friction is switched on
      &         ictop0(klon),           ilwmin(klon)
       integer  kdpl(klon)
       integer  kcbot(klon),            kctop(klon),&
-     &         ktype(klon),            lndj(klon)
+     &         ktype(klon)
+      real     lndj(klon)
       logical  ldcum(klon)
       logical  loddraf(klon),          llo1,   llo2(klon)
       integer  p950,p650

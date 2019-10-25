@@ -130,7 +130,7 @@
       integer  klwmin(klon),           ktype(klon),&
      &         klab(klon,klev),        kcbot(klon),&
      &         kctop(klon),            kctop0(klon)
-      integer  lndj(klon)
+      real     lndj(klon)
       logical  ldcum(klon),            loflag(klon)
       logical  llo2,llo3,              llo1(klon)
 

@@ -30,7 +30,8 @@
                                 g         !gravity acceleration
       implicit none
       integer jl,jk,klev,klon,nxj
-      integer lndj(klon),kcbot(klon),kctop(klon)
+      integer kcbot(klon),kctop(klon)
+      real    lndj(klon)
       real    ptu(klon,klev)  ,pqu(klon,klev)                           &
              ,ztenh(klon,klev),zqenh(klon,klev),pluu(klon,klev)         &
              ,pgeo(klon,klev) ,pap(klon,klev)  ,pf(klon,klev)           &
@@ -65,7 +66,7 @@
         do jk = 1,klev-1      
 
           if (ztenh(jl,jk) .ge. 248.15 .and. ztenh(jl,jk) .le. 273.15) then
-            zdz = (pgeo(jl,jk)-pgeo(jl,jk+1))/g              !xb110
+            zdz = (pgeo(jl,jk)-pgeo(jl,jk+1))/g             
             charg(jl) = charg(jl) + (qgraup(jl,jk)*                     &
                         (pluu(jl,jk) + qsnow(jl,jk)))*rho(jl,jk)*zdz
           end if
