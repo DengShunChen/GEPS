@@ -156,8 +156,8 @@ contains
                 phi(nxp,lev,my_max),phib(nxp,my_max),phips(nxp,my_max,lpout),&
                 glob(nx,my),plev(lpout),whtlev(num)
 
-      real      tens(lev+1),phistd(lpout),slp(nx,my),h850(nx,my), &
-                h500(nx,my)
+      real      tens(lev+1),phistd(lpout),slp(nx,my),h850(nxp,my_max), &
+                h500(nxp,my_max)
 !
 
       integer*8    idtg
@@ -189,27 +189,41 @@ contains
 !
       do k=1,lpout
         if(plev(k).eq.850.)then
-          call unify_reduceintp(nx,my,my_max,phips(1,1,k),h850)
+        do jj=1, jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          do i=1,nxj
+            h850(i,jj)= phips(i,jj,k)
+          enddo
+        enddo
+!byl          call unify_reduceintp(nx,my,my_max,phips(1,1,k),h850)
 !!          do i=1,lenc
 !!            h850(i,1)=phips(i,k)
 !!          enddo
 !
 !          if(itau.le.72 .and. lreduce.eq.1)then
-            call smth9(nx,my,h850,glob,1)
-            h850=glob
-            call smth9(nx,my,h850,glob,2)
-            h850=glob
+!byl            call smth9(nx,my,h850,glob,1)
+!byl            h850=glob
+!byl            call smth9(nx,my,h850,glob,2)
+!byl            h850=glob
 !          endif
         else if(plev(k).eq.500.)then
-          call unify_reduceintp(nx,my,my_max,phips(1,1,k),h500)
+        do jj=1, jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          do i=1,nxj
+            h500(i,jj)= phips(i,jj,k)
+          enddo
+        enddo
+!byl          call unify_reduceintp(nx,my,my_max,phips(1,1,k),h500)
 !!          do i=1,lenc
 !!            h500(i,1)=phips(i,k)
 !!          enddo
 !          if(itau.le.72 .and. lreduce.eq.1)then
-            call smth9(nx,my,h500,glob,1)
-            h500=glob
-            call smth9(nx,my,h500,glob,2)
-            h500=glob
+!byl            call smth9(nx,my,h500,glob,1)
+!byl            h500=glob
+!byl            call smth9(nx,my,h500,glob,2)
+!byl            h500=glob
 !          endif
         endif
       enddo
@@ -424,7 +438,8 @@ contains
       implicit  none
       integer   nx,my,my_max,i,j,jj,kk,n,lev,nxj,itau,ntau,num,lenc,istat
 
-      real      pdiff(nxp,my_max),pt(nxp,my_max),ptend(nxp,my_max),slp(nx,my),glob(nx,my)
+      real      pdiff(nxp,my_max),pt(nxp,my_max),ptend(nxp,my_max),slp(nxp,my_max),glob(nx,my)
+      real      tmp(nxp,my_max)
       character*16 taudir(ntau)
       character*4 ggdef
 !
@@ -441,17 +456,19 @@ contains
         j=jlist1(jj)
         nxj=nxdef_2d(j)
         do i=1,nxj
-          slp(i,j)= pt(i,jj)+pdiff(i,jj)
+!byl          slp(i,j)= pt(i,jj)+pdiff(i,jj)
+          slp(i,jj)= pt(i,jj)+pdiff(i,jj)
           ptend(i,jj)= ptend(i,jj)*3600.0
         enddo
       enddo
 !
-      call mpe_unify(slp,nx,my,2,mpe_double)
-      if( lreduce.eq.1 ) call reduceintp (slp,nxdef,nx,my)
-      call smth9(nx,my,slp,glob,1)
-      slp=glob
-      call smth9(nx,my,slp,glob,2)
-      slp=glob
+!byl      call unify_reduceintp(nx,my,my_max,tmp,slp)
+!byl      call mpe_unify(slp,nx,my,2,mpe_double)
+!byl      if( lreduce.eq.1 ) call reduceintp (slp,nxdef,nx,my)
+!byl      call smth9(nx,my,slp,glob,1)
+!byl      slp=glob
+!byl      call smth9(nx,my,slp,glob,2)
+!byl      slp=glob
 !
       num= 0
       do 20 n=1,ntau
@@ -470,10 +487,12 @@ contains
 !
 !  sea surface level pressure
 !
+
       if(label(kk).eq.'SSL010' .or. label(kk).eq.'ssl010') then
+        call unify_reduceintp(nx,my,my_max,slp,glob)
         call syslbl('ssl010',idtg,itau,ggdef,lrec)
-        if(lwrite) call dmswrit(nx,my,lrec,lenc,'H',ifilout,slp,istat)
-        call qmaxn3(slp,lrec(1:14),lrec(15:26),1,1,1,nx,my,1)
+        if(lwrite) call dmswrit(nx,my,lrec,lenc,'H',ifilout,glob,istat)
+        call qmaxn3(glob,lrec(1:14),lrec(15:26),1,1,1,nx,my,1)
 !
 !  terrain pressure
 !
@@ -482,12 +501,14 @@ contains
           j=jlist1(jj)
           nxj=nxdef_2d(j)
           do i=1,nxj
-            glob(i,j) = pt(i,jj) + ptop
+!byl            glob(i,j) = pt(i,jj) + ptop
+            tmp(i,jj) = pt(i,jj) + ptop
           enddo
         enddo
-        call mpe_unify(glob,nx,my,2,mpe_double)
+        call unify_reduceintp(nx,my,my_max,tmp,glob)
+!byl        call mpe_unify(glob,nx,my,2,mpe_double)
         call syslbl('b00010',idtg,itau,ggdef,lrec)
-        if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+!byl        if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
         if(lwrite) call dmswrit(nx,my,lrec,lenc,'H',ifilout,glob,istat)
         call qmaxn3(glob,lrec(1:14),lrec(15:26),1,1,1,nx,my,1)
 !
@@ -592,7 +613,7 @@ contains
       , pk(nxp,lev,my_max),rvor(nxp,lev,my_max),rvorb(nxp,my_max) &
       , vor(nxp,my_max,lpout),plev(lpout),whtlev(num)
       real      tens(lev+1)
-      real      v850(nx,my),v700(nx,my)
+      real      v850(nxp,my_max),v700(nxp,my_max)
       real      wk1(nx,my)
 
 !
@@ -602,7 +623,7 @@ contains
       character*6 lrec(lpout)
       character*4 ggdef
 
-      integer   k,lpl,lenc,i,n,istat
+      integer   k,lpl,lenc,i,n,istat,jj,j,nxj
 !
       logical :: lwrite
 
@@ -624,7 +645,14 @@ contains
 !
       do k=1,lpout
         if(plev(k).eq.850.)then
-        call unify_reduceintp(nx,my,my_max,vor(1,1,k),v850)
+        do jj=1, jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          do i=1,nxj
+            v850(i,jj)= vor(i,jj,k)
+          enddo
+        enddo
+!byl        call unify_reduceintp(nx,my,my_max,vor(1,1,k),v850)
 !!          do i=1,lenc
 !!            v850(i,1)=vor(i,k)
 !!          enddo
@@ -632,7 +660,14 @@ contains
 !  reduceintp has been done in voterp (2011/5)
 !
         else if(plev(k).eq.700.)then
-        call unify_reduceintp(nx,my,my_max,vor(1,1,k),v700)
+        do jj=1, jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          do i=1,nxj
+            v700(i,jj)= vor(i,jj,k)
+          enddo
+        enddo
+!byl        call unify_reduceintp(nx,my,my_max,vor(1,1,k),v700)
 !!          do i=1,lenc
 !!            v700(i,1)=vor(i,k)
 !!          enddo

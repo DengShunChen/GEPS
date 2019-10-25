@@ -310,6 +310,31 @@
 
       return
       end
+!-------------------------------------------------------------------------
+      subroutine mpe2d_unify_my(work,a)
+
+! unify a(nx_full,my_partial) to work(nx_full,my_full)
+
+      use param
+      use index
+      use mpi
+
+      real work(nx,my)
+      real a(nx,my_max)
+      real b(nx,my_max*nsizey)
+
+      call MPI_ALLGATHER( a,nx*my_max, MPI_DOUBLE_PRECISION, &
+                          b,nx*my_max, MPI_DOUBLE_PRECISION, &
+                          col_comm, IERR )
+
+
+      do j=1,my
+        jj=jlist2(j)
+        work(1:nx,j)=b(1:nx,jj)
+      enddo
+
+      return
+      end
 !-------------------------------------------------------------------------------------------------
       subroutine mpe2d_unify_spec_lev(ain,aout,lev,levp,jtrun,jtmax,mlistnum,proc,comm)
 

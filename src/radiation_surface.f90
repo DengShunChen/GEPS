@@ -347,7 +347,7 @@
       real (kind=kind_phys) :: asnvb, asnnb, asnvd, asnnd, asevb        &
      &,     asenb, asevd, asend, fsno,  fsea,  rfcs,  rfcw,  flnd       &
      &,     asnow, argh,  hrgh,  fsno0, fsno1, flnd0, fsea0, csnow      &
-     &,     a1, a2, b1, b2, b3 ab1bm, ab2bm
+     &,     a1, a2, b1, b2, b3, ab1bm, ab2bm
 
       real (kind=kind_phys) ffw, dtgd
 
@@ -456,6 +456,10 @@
          sfcalb(i,2) = (a2 + b2) * 0.96 *flnd + asend*fsea + asnnd*fsno
          sfcalb(i,3) = min(0.99, ab1bm) *flnd + asevb*fsea + asnvb*fsno
          sfcalb(i,4) = (a1 + b1) * 0.96 *flnd + asevd*fsea + asnvd*fsno
+!byl         sfcalb(i,1) = (a2*rfcs+b2*rfcw)*flnd + asenb*fsea + asnnb*fsno
+!byl         sfcalb(i,2) = (a2 + b2) * 0.96 *flnd + asend*fsea + asnnd*fsno
+!byl         sfcalb(i,3) = (a1*rfcs+b1*rfcw)*flnd + asevb*fsea + asnvb*fsno
+!byl         sfcalb(i,4) = (a1 + b1) * 0.96 *flnd + asevd*fsea + asnvd*fsno
 
         enddo    ! end_do_i_loop
 

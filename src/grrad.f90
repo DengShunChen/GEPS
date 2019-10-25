@@ -647,6 +647,7 @@
              dtlw,dtsw,lsswr,lslwr,lssav,                               &
              ix,im,lm,me,lprnt,ipt,kdt,myrank,                          &
              ntiw,ntrw,ntsw,ntgl,uni_cloud,lmfshal,lmfdeep2,            &
+             deltaq,sup,cnvw,cnvc,                                      &
 !  ---  outputs:
              htrsw,sfalb,coszen,coszdg,                                 &
              htrlw,tsflw,semis,cldcov,                                  &
@@ -942,9 +943,9 @@
       real (kind=kind_phys), dimension(ix,lm),   intent(in) ::  prsl,   &
 !            prslk, tgrs, qgrs, vvl, fcice, frain, rrime, deltaq, cnvw, & 
 !            cnvc
-             prslk, tgrs, qgrs, vvl    
+             prslk, tgrs, qgrs, vvl, deltaq, cnvw, cnvc
 !     real (kind=kind_phys), dimension(im), intent(in) :: flgmin
-!     real(kind=kind_phys), intent(in) ::sup
+      real(kind=kind_phys), intent(in) ::sup
 
       real (kind=kind_phys), dimension(im),      intent(in) ::  slmsk,  &
              xlon, xlat, tsfc, snowd, zorl, hprim, alvsf, alnsf, alvwf, &
@@ -1572,7 +1573,8 @@
 
         if (icmphys == 1) then           ! zhao/moorthi's prognostic cloud scheme
  
-      if (me == 0 .and. myrank ==0)print *,'### call progcld1 -zhao/moorhi ###' 
+      if (me==0 .and. myrank ==0)                                       &
+          print *,'### call progcld1 -zhao/moorhi ###' 
           call progcld1                                                 &
 !  ---  inputs:
      &     ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,clw,                    &
@@ -1595,18 +1597,22 @@
 !    &       clouds,cldsa,mtopa,mbota                                   &
 !    &      )
 
-!       elseif(icmphys == 3) then      ! zhao/moorthi's prognostic cloud+pdfcld
-
-!         call progcld3                                                 &
+       elseif(icmphys == 3) then      ! zhao/moorthi's prognostic cloud+pdfcld
+!
+      if (me==0 .and. myrank ==0)                                       &
+          print *,'### call progcld3 -zhao/moorhi with PDF cloud###' 
+         call progcld3                                                  &
 !  ---  inputs:
-!    &     ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,clw,cnvw,cnvc,          &
-!    &       xlat,xlon,slmsk,                                           &
-!    &       im, lmk, lmp,                                              &
-!    &       deltaq, sup,kdt,me,                                        &
+     &     ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,clw,cnvw,cnvc,          &
+     &       xlat,xlon,slmsk,                                           &
+     &       im, lmk, lmp,                                              &
+     &       deltaq, sup,kdt,me,                                        &
 !  ---  outputs:
-!    &       clouds,cldsa,mtopa,mbota                                   &
-!    &      )
+     &       clouds,cldsa,mtopa,mbota                                   &
+     &      )
+!
         elseif (icmphys == 4) then    ! wsm6
+!
           call progcld4 (plyr,plvl,tlyr,qlyr,qstl,rhly,tracer1,   &    !--- inputs
                          xlat,xlon,slmsk,                         &
                          ntrac-1,ntcw,ntiw,ntrw,ntsw,ntgl,        &

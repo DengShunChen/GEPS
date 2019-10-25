@@ -122,6 +122,7 @@
      &             iovrsw , iovrlw , lsashal, lcrick , lcnorm , lnoprec,&
      &             ialbflg, iemsflg, isubcsw, isubclw, ivflip , ipsd0,  &
      &             kind_phys
+      use const,     only : pdfcloud
 
       use module_radiation_driver, only : radinit
 ! 
@@ -174,7 +175,11 @@
         icldflg = 0                     ! diagnostic cloud optical prop scheme
       endif
       if ( num_p3d == 4 ) then
-        icmphys = 1                     ! zhao/moorthi's prognostic cloud scheme
+        if ( pdfcloud ) then
+          icmphys = 3                   ! zhao/moorthi's prognostic with PDF cloud scheme 
+        else
+          icmphys = 1                   ! zhao/moorthi's prognostic cloud scheme
+        endif
       elseif ( num_p3d == 3 ) then
         icmphys = 2                     ! ferrier's microphysics
       elseif ( num_p3d == 5 ) then

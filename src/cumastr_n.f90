@@ -9,7 +9,7 @@ SUBROUTINE cumastr_n  &
      &       pvom  ,pvol ,prsfc,pssfc ,kcbot  ,&
      &       kctop ,ztmst,jin  ,ptu   ,pqu    ,&
      &       pmfu  ,pmfd ,prain,pcte  ,phhfl  ,&
-     &       lndj  ,ldcum,xlat ,mdlon ,kcnv   ,&
+     &       lndj  ,ldcum,dx   ,kcnv   ,&
      &       flash)
 !
 !***cumastrn*  master routine for cumulus massflux-scheme
@@ -137,7 +137,7 @@ USE mo_cumulus_flux,  only: lmfdudv, &! true if cum. friction is switched on
       real     wup(klon),              zdqcv(klon)            
       real     wbase(klon),            zmfuub(klon)
       real     upbl(klon)
-      real     dx,xmin,xmax
+      real     xmin,xmax
       real     pmfude_rate(klon,klev), pmfdde_rate(klon,klev)
       real     zmfuus(klon,klev),      zmfdus(klon,klev)
       real     zuv2(klon,klev),ztenu(klon,klev),ztenv(klon,klev)
@@ -170,7 +170,7 @@ USE mo_cumulus_flux,  only: lmfdudv, &! true if cum. friction is switched on
       integer  kcnv(klon)
 !for lightning parameterization
       real     pluu(klon,klev),pf(klon,klev),rho(klon,klev)
-      real     flash(klon)
+      real     flash(klon),dx(klon)
 !xb110<
 !-------------------------------------------
 !     1.    specify constants and parameters
@@ -440,20 +440,11 @@ USE mo_cumulus_flux,  only: lmfdudv, &! true if cum. friction is switched on
       end do
       end do
 
-!xb110>
-      dx = 0.
-      rad = 4.0*atan(1.0)/180.0
-      re  = 6371220.0
-      rr  = re*rad
-      dlon= mdlon*rr
-      dx = dlon*cos(xlat*rad)
-!xb110<
-
        do jl = 1, nxj            
        if(ldcum(jl).and.ktype(jl).eq.1) then
            ikb = kcbot(jl)
            ikt = kctop(jl)
-           ztau = ztauc(jl) * (1.+1.33e-5*dx)       
+           ztau = ztauc(jl) * (1.+1.33e-5*dx(jl))       
            ztau = max(ztmst,ztau)
            ztau = max(720.,ztau)
            ztau = min(10800.,ztau)

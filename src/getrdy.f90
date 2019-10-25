@@ -35,9 +35,9 @@
 
 !  local working array
 !
-      real      sst(nxp,my_max),ww1(nx,my),ww2(nx,my),          &
+      real      sst(nxp,my_max),ww1(nx,my),ww2(nxp,my_max),     &
                 rh2100(nxp,my_max),rh10100(nxp,my_max),         &
-                wk1(nxp,lev,my_max),wk2(nxp,lev,my_max),        &
+                wk1(nxp,lev,my_max),                            &
                 cc(nx+2,levp,1,my_max),ww3(nx,my_max)
 !byl                wss3(levp,2,3,jtrun,jtmax),cc3(nx+2,levp,3,my_max)
 
@@ -57,9 +57,9 @@
       real, dimension(:,:,:), allocatable :: tmc3,tmc4
       real, dimension(:,:,:), allocatable :: tmc5,tmc6
 ! add for sfcuvt
-      real    tx(nx), qx(nx),ux(nx),vx(nx),  &
-              qs(nx),tsx(nx),hs(nx),ps(nx),  &
-              qsfc(nx),tgp(nx)
+      real    tx(nxp), qx(nxp),ux(nxp),vx(nxp),  &
+              qs(nxp),tsx(nxp),hs(nxp),ps(nxp),  &
+              qsfc(nxp),tgp(nxp)
       logical flg, snow
 !
 ! add for soil
@@ -1035,8 +1035,9 @@
              , ptend,pt,plt,pk,pk2,phi,ut,vt,sd                         &
              , tt,qt,rdiv,rvor,tg,gwr,z0,hflux,qflux,snr                &
              , raintot,raincu,rainlp,plcl,cumtop,ss,rs,alb,gwclim       &
-             , acld,cosl,wk1,ww1,ww2,t2,rh2100,rh10100,u10,v10,gfx,rld,sld &
-             , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500 &
+             , acld,cosl,wk1,ww2,ww2,t2,rh2100,rh10100,u10,v10,gfx,rld,sld &
+!byl             , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500 &
+             , km_soil,smc,slc,stc,canopy,ggdef,typtrk                  &
              , ctot,chig,cmid,clow,hpbl,.true.,flash,do_sit)
 
 ! add 40m 100m output for green energy plan
@@ -1052,16 +1053,19 @@
           do n=1,ntyph
             i=ixtyp(1,n)
             j=jytyp(1,n)
-            tensity(0,1,n)=( slp(i,j+1)+slp(i+1,j+1)    &
-                           + slp(i,j  )+slp(i+1,j  ) )/4.
-            tensity(0,2,n)=( v850(i,j+1)+v850(i+1,j+1)  &
-                           + v850(i,j  )+v850(i+1,j  ) )/4.
-            tensity(0,3,n)=( v700(i,j+1)+v700(i+1,j+1)  &
-                           + v700(i,j  )+v700(i+1,j  ) )/4.
-            tensity(0,4,n)=( h850(i,j+1)+h850(i+1,j+1)  &
-                           + h850(i,j  )+h850(i+1,j  ) )/4.
-            tensity(0,5,n)=( h500(i,j+1)+h500(i+1,j+1)  &
-                           + h500(i,j  )+h500(i+1,j  ) )/4.
+          do m=1,5 !(1:slp 2:v850 3:v700 4:h850 5:h500)
+            call unify_reduceintp(nx,my,my_max,typtrk(1,1,m),ww1)
+            tensity(0,m,n)=( ww1(i,j+1)+ww1(i+1,j+1)    &
+                           + ww1(i,j  )+ww1(i+1,j  ) )/4.
+          enddo
+!byl            tensity(0,2,n)=( v850(i,j+1)+v850(i+1,j+1)  &
+!byl                           + v850(i,j  )+v850(i+1,j  ) )/4.
+!byl            tensity(0,3,n)=( v700(i,j+1)+v700(i+1,j+1)  &
+!byl                           + v700(i,j  )+v700(i+1,j  ) )/4.
+!byl            tensity(0,4,n)=( h850(i,j+1)+h850(i+1,j+1)  &
+!byl                           + h850(i,j  )+h850(i+1,j  ) )/4.
+!byl            tensity(0,5,n)=( h500(i,j+1)+h500(i+1,j+1)  &
+!byl                           + h500(i,j  )+h500(i+1,j  ) )/4.
           enddo
         endif
 

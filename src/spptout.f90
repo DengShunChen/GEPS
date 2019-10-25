@@ -21,37 +21,22 @@
       if ( myrank .eq. 0 )  &
         open(ihead,file='strucsppt3dv5.dat',access='direct'         &
             ,form='unformatted',recl=nxmy4,status='unknown')
-!    
-      call mpe2d_unify(glob,sppt2d500)
-      do jj=1,jlistnum
-        j=jlist1(jj)
-        if( lreduce.eq.1 ) call reduceintp (glob(1,j),nxdef(j),nx,1)
-      enddo
-      call mpe_unify(glob,nx,my,5,mpe_double)
+! 
+      call unify_reduceintp(nx,my,my_max,sppt2d500,glob)   
       if ( myrank .eq. 0 ) then
         glob4=glob
         write(ihead,rec=recn) glob4
         recn=recn+1
       endif
 !
-      call mpe2d_unify(glob,sppt2d1000)
-      do jj=1,jlistnum
-        j=jlist1(jj)
-        if( lreduce.eq.1 ) call reduceintp (glob(1,j),nxdef(j),nx,1)
-      enddo
-      call mpe_unify(glob,nx,my,5,mpe_double)
+      call unify_reduceintp(nx,my,my_max,sppt2d1000,glob)   
       if ( myrank .eq. 0 ) then
         glob4=glob
         write(ihead,rec=recn) glob4
         recn=recn+1
       endif
 !
-      call mpe2d_unify(glob,sppt2d2000)
-      do jj=1,jlistnum
-        j=jlist1(jj)
-        if( lreduce.eq.1 ) call reduceintp (glob(1,j),nxdef(j),nx,1)
-      enddo
-      call mpe_unify(glob,nx,my,5,mpe_double)
+      call unify_reduceintp(nx,my,my_max,sppt2d2000,glob)   
       if ( myrank .eq. 0 ) then
         glob4=glob
         write(ihead,rec=recn) glob4
@@ -66,12 +51,7 @@
           temp(i,jj)=sppt3d(i,k,jj)
           enddo
         enddo
-        call mpe2d_unify(glob,temp)
-        do jj=1,jlistnum
-          j=jlist1(jj)
-         if( lreduce.eq.1 ) call reduceintp (glob(1,j),nxdef(j),nx,1)
-        enddo
-        call mpe_unify(glob,nx,my,5,mpe_double)
+        call unify_reduceintp(nx,my,my_max,temp,glob)   
         if ( myrank.eq.0 ) then
           glob4=glob
           write(ihead,rec=recn) glob4

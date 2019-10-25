@@ -183,7 +183,7 @@
       integer kkk
 !
 !xb110>
-      real rmr(nxp,lev,my_max),smr(nxp,lev,my_max)
+!byl      real rmr(nxp,lev,my_max),smr(nxp,lev,my_max)
 !for lightning scheme from ECMWF
       real flash(nxp,my_max)
 !xb110<
@@ -511,8 +511,8 @@
         enddo 
       endif
 !xb110>
-      rmr = 0.
-      smr = 0.
+!byl      rmr = 0.
+!byl      smr = 0.
 !xb110<
 !
 !***********************************************************************
@@ -976,7 +976,7 @@
                       , fm,fh,fm10,fh2,srflag                                   &
                       , rld,km_soil,smc,stc,canopy,runoff                       &
                       , sigmaf,istyp,ivegtyp,wlt,ref,tsat,dfkt,xktk,dfk         &
-                      , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,sd                         &
+                      , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,deltaq,sd                  &
                       , shdmax,shdmin,snoalb                                    &
                       , slopetyp,sld,slc,zice,cice,xtice,sncover,sndepth        &
                       , ctot,chig,cmid,clow,hpbl,asl,atl,cosz                   &
@@ -990,7 +990,8 @@
                       , idtg,doo3l,nfxr,sfalb,sfemis,isot,ivegsrc               &
                       , dosppt,sppt3d,itimestep,lrun_sitvdiff,ic_sit            &
 !xb110>
-                      , rmr,smr,flash)
+!byl                      , rmr,smr,flash)
+                      , flash)
 !xb110<
           itimestep=itimestep+1   ! for sppt time evolution)
 !--------------------------------------------------------------------------------
@@ -1139,7 +1140,7 @@
                      , fm,fh,fm10,fh2,srflag                                    &
                      , rld,km_soil,smc,stc,canopy,runoff                        &
                      , sigmaf,istyp,ivegtyp,wlt,ref,tsat,dfkt,xktk,dfk          &
-                     , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,sd                          &
+                     , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,deltaq,sd                   &
                      , shdmax,shdmin,snoalb                                     &
                      , slopetyp,sld,slc,zice,cice,xtice,sncover,sndepth         &
                      , ctot,chig,cmid,clow,hpbl,asl,atl,cosz                    &
@@ -1153,7 +1154,8 @@
                      , idtg,doo3l,nfxr,sfalb,sfemis,isot,ivegsrc                &
                      , dosppt,sppt3d,itimestep,lrun_sitvdiff,ic_sit             &
 !xb110>
-                     , rmr,smr,flash)
+!byl                     , rmr,smr,flash)
+                     , flash)
 !xb110<
           itimestep=itimestep+1   ! for sppt time evolution)
 !--------------------------------------------------------------------------------
@@ -1575,7 +1577,8 @@
                     , tt,qt,rdiv,rvor,tg,gwr,z0,hflux,qflux,snr                &
                     , raintot,raincu,rainlp,asol,olr,ss,rs,alb,gwclim          &
                     , acld,cosl,drag,ugws,vgws,t2,rh2100,rh10100,u10,v10,gfx,rld,sld &
-                    , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500 &
+!byl                    , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500 &
+                    , km_soil,smc,slc,stc,canopy,ggdef,typtrk                  &
                     , ctot,chig,cmid,clow,hpbl,histim,flash,do_sit)
 #endif
 !
@@ -1583,7 +1586,7 @@
          if(typhoon .and. ltrack .and. itau .le. 384 )then
           if(myrank .eq. 0)print *,' calling tracking,  tau= ',tau
 !          if(myrank .eq. 0)print *,'dt_trk=',dt_trk
-          call tracking(tau,dt_trk,dt,nx,my,slp,v850,v700,h850,h500,    &
+          call tracking(tau,dt_trk,dt,nx,my,                            &
                   ntyph,typname,ixtyp,jytyp,tlon,tlat,tflon,tflat,idtg, &
                   nrec,typhoon,tensity)
         endif

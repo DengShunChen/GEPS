@@ -70,7 +70,7 @@
                       , de_corretime_2000                               &
                       , facsppt500,facsppt1000,facsppt2000,ndsladvh2    &
                       , ldailyFCTsst,ldailyFCTicesndpt,lFCTweight       &
-                      , dailyClm_option,lopgsst,do_sit,fsit
+                      , dailyClm_option,lopgsst,do_sit,fsit,pdfcloud
 !
       real    si(lev+1)
       logical flag
@@ -310,8 +310,13 @@
         hdk1   = 20
         hdk2   = 39
         hdk3   = 43
+      else if ( lev .eq. 60 ) then
+        hdktop =  1
+        hdk1   = 17
+        hdk2   = 34
+        hdk3   = 37
       endif
-      factop = 2.5
+      factop = 1.5
 !!      factop = 2.5
       
       coefu=factop/float(hdk3-hdk2)

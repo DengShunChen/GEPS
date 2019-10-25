@@ -1,4 +1,4 @@
-subroutine tracking(tau,dt_trk,dt,nx,my,slp,v850,v700,h850,h500, &
+subroutine tracking(tau,dt_trk,dt,nx,my,                                  &
                     ntyph,typname,ixtyp,jytyp,tlon,tlat,tflon,tflat,idtg, &
                     nrec,typhoon,tensity)
 !---------------------------------------------------------------------------!
@@ -10,11 +10,11 @@ subroutine tracking(tau,dt_trk,dt,nx,my,slp,v850,v700,h850,h500, &
 !       dt      : delta t in seconds  
 !       nx      : x-asixs of model points  
 !       ny      : y-asixs of model points 
-!       slp     : Sea level pressure filed 
-!       v850    : 850 hPa vorticity
-!       v700    : 700 hPa vorticity
-!       h850    : 850 hPa geopotential height
-!       h500    : 500 hPa geopotential height
+!       typtrk  : (:,:,1) Sea level pressure filed 
+!               : (:,:,2) 850 hPa vorticity
+!               : (:,:,3) 700 hPa vorticity
+!               : (:,:,4) 850 hPa geopotential height
+!               : (:,:,5) 500 hPa geopotential height
 !       ntyph   : numbers of typhoon 
 !       typname : typhoon name 
 !       idtg    : date time 
@@ -39,14 +39,16 @@ subroutine tracking(tau,dt_trk,dt,nx,my,slp,v850,v700,h850,h500, &
 !                                 in order to consider the high moving speed within mid-lattitude area.
 !   2015-02-06  Chen, Deng-Shun   Bug fixed. This bugs will cause run-time error
 !   2015-11-10  Chen, Deng-Shun   Changed from Fortran 77 code to 90
+!   2019-10-22  Liu, Pang-Yen     Reducing memory
 !
 !---------------------------------------------------------------------------!
 !
   use mpe
   use rank
   use index
-  use mod_typhoon,only:write_mem,write_tau
+  use mod_typhoon,only:write_mem,write_tau,typtrk
   use const,only:ifilout
+  use param,only:my_max
 !  use mod_outflds,only:ifilout
 !  use param
   implicit none
@@ -62,8 +64,9 @@ subroutine tracking(tau,dt_trk,dt,nx,my,slp,v850,v700,h850,h500, &
   real :: tau,dt_trk,dt
 
   integer :: ixtyp(nvar,ntyph),jytyp(nvar,ntyph),nrec(ntyph)
-  real :: slp(nx,my),v850(nx,my),v700(nx,my),h850(nx,my),h500(nx,my)
-  real :: field(nx,my,nvar)
+!byl  real :: slp(nx,my),v850(nx,my),v700(nx,my),h850(nx,my),h500(nx,my)
+!byl  real :: field(nx,my,nvar)
+  real :: field(nx,my)
   real :: tlon(nx,my),tlat(my)
 
   real :: tflon(0:ntau,nvar,ntyph),tflat(0:ntau,nvar,ntyph)
@@ -126,11 +129,11 @@ subroutine tracking(tau,dt_trk,dt,nx,my,slp,v850,v700,h850,h500, &
   range_gt30 = int(87.5*dt_trk*nx/36000)+2
 
 ! Using five fields to the TC center
-  field(:,:,1) =  slp(:,:)      ! sea level pressure
-  field(:,:,2) = v850(:,:)      ! 850hPa vorticity 
-  field(:,:,3) = v700(:,:)      ! 700hPa vorticity
-  field(:,:,4) = h850(:,:)      ! 850hPa height
-  field(:,:,5) = h500(:,:)      ! 500hPa height
+!byl  field(:,:,1) =  slp(:,:)      ! sea level pressure
+!byl  field(:,:,2) = v850(:,:)      ! 850hPa vorticity 
+!byl  field(:,:,3) = v700(:,:)      ! 700hPa vorticity
+!byl  field(:,:,4) = h850(:,:)      ! 850hPa height
+!byl  field(:,:,5) = h500(:,:)      ! 500hPa height
   
 ! initialize
   lfound=.false.
@@ -167,7 +170,9 @@ subroutine tracking(tau,dt_trk,dt,nx,my,slp,v850,v700,h850,h500, &
       endif
 
       do ip=1,nvar
-        call findtrk(field(:,:,ip),nx,my,ixtyp(ip,n),jytyp(ip,n),rixtyp(ip),rjytyp(ip),tlon,tlat,ip,lfound(ip,n),min_trk_pres,range_le30,range_gt30)
+        call unify_reduceintp(nx,my,my_max,typtrk(1,1,ip),field)
+!byl        call findtrk(field(:,:,ip),nx,my,ixtyp(ip,n),jytyp(ip,n),rixtyp(ip),rjytyp(ip),tlon,tlat,ip,lfound(ip,n),min_trk_pres,range_le30,range_gt30)
+        call findtrk(field,nx,my,ixtyp(ip,n),jytyp(ip,n),rixtyp(ip),rjytyp(ip),tlon,tlat,ip,lfound(ip,n),min_trk_pres,range_le30,range_gt30)
 !      enddo
 
 ! for pressure -999*3 check
@@ -222,11 +227,11 @@ subroutine tracking(tau,dt_trk,dt,nx,my,slp,v850,v700,h850,h500, &
           call xy2ll(rixtyp(ip),rjytyp(ip),tflon(nc,ip,n),tflat(nc,ip,n),tlon,tlat,nx,my)
           i=ixtyp(ip,n) ; j=jytyp(ip,n) 
           if(ip .eq. 4) then 
-            tensity(nc,ip,n)=field(i,j,ip)+1457.0 
+            tensity(nc,ip,n)=field(i,j)+1457.0 
           elseif(ip .eq. 5) then
-            tensity(nc,ip,n)=field(i,j,ip)+5574.0
+            tensity(nc,ip,n)=field(i,j)+5574.0
           else
-            tensity(nc,ip,n)=field(i,j,ip)
+            tensity(nc,ip,n)=field(i,j)
           endif
         else
           tflon(nc,ip,n)=undef ; tflat(nc,ip,n)=undef
