@@ -70,14 +70,10 @@
              alb(nxp,my_max),gwclim(nxp,my_max),  acld(lev,my), &
             ctot(nxp,my_max),  chig(nxp,my_max),   cmid(nxp,my_max), &
             clow(nxp,my_max),  hpbl(nxp,my_max),   cosz(nxp,my_max), &
-<<<<<<< HEAD
-         rainlp6(nxp,my_max),raincu6(nxp,my_max), tgori(nxp,my_max), &
-          tgdiff(nxp,my_max), tgmask(nxp,my_max),                    &
-=======
          rainlp6(nxp,my_max),raincu6(nxp,my_max),                    &
          rainlp3(nxp,my_max),raincu3(nxp,my_max),                    &
-         rainlp1(nxp,my_max),raincu1(nxp,my_max),                    &
->>>>>>> 05b64d3b078b99d9b2a2f5b7c42f396763ae4ddf
+         rainlp1(nxp,my_max),raincu1(nxp,my_max), tgori(nxp,my_max), &
+          tgdiff(nxp,my_max), tgmask(nxp,my_max),                    &
                                           stat=ierr)
 
            if (ierr/= 0) then

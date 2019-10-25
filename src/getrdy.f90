@@ -1012,7 +1012,7 @@
             lontest(ii,jj)=xlon(i,jj)
           ENDIF
 
-          if((xlat(ii).GE.-30.).AND.(xlat(ii).LE.30.)) then
+          if(ocean(ii,jj) .AND. (xlat(j).GE.-30.).AND.(xlat(j).LE.30.)) then
             if ((lontest(ii,jj).GE.0.).AND.(lontest(ii,jj).LE.360.))then
               tgori(ii,jj)=tg(ii,jj)
               tgmask(ii,jj)=1.

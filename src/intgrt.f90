@@ -179,7 +179,7 @@
       integer ic_sit,nc_sit
       logical turn_sit,lrun_sitvdiff
       real wweight
-      character*26 ihdg
+      integer lenc,itautest
 !
 !xb110>
       real rmr(nxp,lev,my_max),smr(nxp,lev,my_max)
@@ -990,16 +990,29 @@
 !xb110>
                       , rmr,smr,flash,tgori,tgdiff,tgmask)
 !xb110<
+          lenc=nx*my
+!          itautest=(tau*10)
+          itautest=(tau)
           if(lrun_sitvdiff) then
-            call mpe2d_unify(glob,dtswdt)
-            call syslbl ('s00101',idtg,itau,ggdef,ihdg)
-            if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+            call unify_reduceintp(nx,my,my_max,tg,glob)
+            call syslbl ('s00101',idtg,itautest,ggdef,ihdg)
+!            call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
             call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-          else
-            call mpe2d_unify(glob,tgdiff)
-            call syslbl ('s00101',idtg,itau,ggdef,ihdg)
-            if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+
+            call unify_reduceintp(nx,my,my_max,dtswdt,glob)
+            call syslbl ('s00102',idtg,itautest,ggdef,ihdg)
+!            call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
             call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+!          else
+!            call unify_reduceintp(nx,my,my_max,tg,glob)
+!            call syslbl ('s00101',idtg,itautest,ggdef,ihdg)
+!            call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!            call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+
+!            call unify_reduceintp(nx,my,my_max,tgdiff,glob)
+!            call syslbl ('s00102',idtg,itautest,ggdef,ihdg)
+!            call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!            call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
           end if
 
           itimestep=itimestep+1   ! for sppt time evolution)
@@ -1165,16 +1178,28 @@
 !xb110>
                      , rmr,smr,flash,tgori,tgdiff,tgmask)
 !xb110<
+!          itautest= (tau*10) 
+          itautest= (tau) 
           if(lrun_sitvdiff) then
-            call mpe2d_unify(glob,dtswdt)
-            call syslbl ('s00101',idtg,itau,ggdef,ihdg)
-            if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+            call unify_reduceintp(nx,my,my_max,tg,glob)
+            call syslbl ('s00101',idtg,itautest,ggdef,ihdg)
+!            call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
             call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-          else
-            call mpe2d_unify(glob,tgdiff)
-            call syslbl ('s00101',idtg,itau,ggdef,ihdg)
-            if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+
+            call unify_reduceintp(nx,my,my_max,dtswdt,glob)
+            call syslbl ('s00102',idtg,itautest,ggdef,ihdg)
+!            call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
             call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+!          else
+!            call unify_reduceintp(nx,my,my_max,tg,glob)
+!            call syslbl ('s00101',idtg,itautest,ggdef,ihdg)
+!            call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!            call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+
+!            call unify_reduceintp(nx,my,my_max,tgdiff,glob)
+!            call syslbl ('s00102',idtg,itautest,ggdef,ihdg)
+!            call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!            call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
           end if
 
           itimestep=itimestep+1   ! for sppt time evolution)

@@ -125,6 +125,7 @@
 !--for SIT
       do_sit=.false.
       fsit=-99.
+      ltgtest=.false.
 !
 ! specify the default option for orographic and convective gwd
 !

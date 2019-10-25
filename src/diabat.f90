@@ -171,7 +171,7 @@
       use rank
       use index
       use const,                 ONLY:do_sit,ldailyFCTsst,dailyClm_option    &
-                                     ,pdfcloud,fsit 
+                                     ,pdfcloud,fsit,ltgtest 
       use mod_sitgrid
       USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
       USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt &
@@ -2110,16 +2110,16 @@
         call storesittau(nxjp(j),jj,nxp,my_max,lkvl,sitwt,sitws,sitwu,sitwv,dtfsit)
         call storesit24(nxjp(j),jj,nxp,my_max,lkvl,sitwt,sitws,sitwu,sitwv,dtfsit)
         
+!        call random_seed()
         do ii = 1, nxj
           if(ocean(ii,jj) .AND. sitmask(ii,jj).EQ.1.) then
-!ps            dtswdt(ii,jj)=dtswdt(ii,jj)*dtfsit
-!            tg(ii,jj)=tgold(ii,jj)+dtswdt(ii,jj)
+            dtswdt(ii,jj)=min(max(dtswdt(ii,jj)*dtfsit,-0.5),0.5)
+            tg(ii,jj)=tgold(ii,jj)+dtswdt(ii,jj)
 !            rsecond=rtc()
-!            call random_seed()
 !            call random_number(randdt)
 !            dtswdt(ii,jj)=(randdt)*0.001
-            dtswdt(ii,jj)=0.001
-            tg(ii,jj)=tgini(ii,jj)+dtswdt(ii,jj)
+!            dtswdt(ii,jj)=0.001
+!            tg(ii,jj)=tgini(ii,jj)+dtswdt(ii,jj)
           endif
           if(myrank .EQ. myrank_check .AND.         &
             jj .EQ. jj_check .AND. ii .EQ. ii_check) then
@@ -2169,17 +2169,20 @@
               ,'ii=',ii_check,',tg=',tg(ii_check,jj)
       endif
 
-      dtx_tau=dt/3600.
-      dtaup = mod(tau+0.001, fsit)
-      call random_seed()
-      if((.not. do_sit) .AND. (dtaup .lt. dtx_tau) ) then
-       do ii = 1, nxj
-         if(ocean(ii,jj).AND. (tgmask(ii,jj).EQ.1.)) then
+      if(ltgtest)then
+        dtx_tau=dt/3600.
+        dtaup = mod(tau+0.001, fsit)
+        call random_seed()
+        if((.not. do_sit) .AND. (dtaup .lt. dtx_tau) ) then
+         do ii = 1, nxj
+           if(ocean(ii,jj).AND. (tgmask(ii,jj).EQ.1.)) then
 !           call random_number(randdt)
-           tgdiff(ii,jj)=(randdt)*0.001
-           tg(ii,jj)=tgori(ii,jj)+tgdiff(ii,jj)
-         endif
-       enddo
+!           tgdiff=(randdt)*0.001
+             tgdiff(ii,jj)=0.001
+             tg(ii,jj)=tgori(ii,jj)+tgdiff(ii,jj)
+           endif
+         enddo
+        endif
       endif
 
 !--------------------------------------------------------------------------------
