@@ -895,12 +895,12 @@
 !       print *,' before  b=',b(npr,:)
 !     endif
 
-!cjh      do k = 1,km
-!cjh        do i = 1,npt
-      do i = 1,npt
-          j          = ipt(i)
-        do  k = kref(i),km
-!cjh          j          = ipt(i)
+     do k = 1,km                !org
+        do i = 1,npt            !org 
+!cjh test      do i = 1,npt
+          j          = ipt(i)   !org
+!cjh test        do  k = kref(i),km
+!cjh test          j          = ipt(i)
           taud(i,k)  = taud(i,k) * dtfac(i)
           dtaux      = taud(i,k) * xn(i)
           dtauy      = taud(i,k) * yn(i)

@@ -1,119 +1,80 @@
-      SUBROUTINE SFC_DIAG(imj,IM,KM,PS,U1,V1,T1,Q1, &
-                        TSKIN,QSURF,                &
-                        U10M,V10M,T2M,Q2M,          &
-                        RCL,PRSLKI,SLIMSK,          &
-                        EVAP,FM,FH,FM10,FH2,rh2) 
-! 
-      USE MACHINE , ONLY : kind_phys 
-!     USE FUNCPHYS, ONLY : fpvs 
-      USE PHYSCONS, grav => con_g, SBC => con_sbc, HVAP => con_HVAP  , &
-                    CP => con_CP, HFUS => con_HFUS, JCAL => con_JCAL , &
-                    EPS => con_eps, EPSM1 => con_epsm1               , &
-                    RVRDM1 => con_FVirt, RD => con_RD 
-      implicit none 
-! 
-!     include 'constant.h' 
-! 
-      integer              IM, km ,imj,j
-! 
-      real(kind=kind_phys) PS(IM),       U1(IM),      V1(IM),          &
-                           T1(IM),       Q1(IM),                       &
-                           TSKIN(IM),    QSURF(IM),                    &
-                           F10M(IM),     U10M(IM),                     &
-                           V10M(IM),     T2M(IM),     Q2M(IM),         &
-                           RCL(IM),      PRSL1(IM),   PRSLKI(IM),      &
-                           SLIMSK(IM),   EVAP(IM),                     &
-                           FM(IM),       FH(IM),                       &
-                           FM10(IM),     FH2(IM),                      &
-                           rh2(IM),     p2(IM) ,rosfc(im)
-! 
-!     Locals 
-! 
-      real (kind=kind_phys), parameter :: qmin=1.0e-8 
-      integer              k,i 
-! 
-      real(kind=kind_phys)                        &
-                           PSURF(IM),   QSS(IM),  &
-                           THETA1(IM),  XRCL(IM)
-! 
-      real(kind=kind_phys) g,    sig2k 
-! 
-!c 
-      PARAMETER (G=grav) 
-! 
-      LOGICAL FLAG(IM), FLAGSNW(IM) 
-      real(kind=kind_phys) KT1(IM),       KT2(IM),      KTSOIL,    &
-                           ET(IM,KM),                              &
-                           STSOIL(IM,KM), AI(IM,KM),    BI(IM,KM), &
-                           CI(IM,KM),     RHSTC(IM,KM) 
-! 
-! 
-!     ESTIMATE SIGMA ** K AT 2 M 
-! 
-      SIG2K = 1. - 4. * G * 2. / (CP * 280.) 
-! 
-!  INITIALIZE VARIABLES. ALL UNITS ARE SUPPOSEDLY M.K.S. UNLESS SPECIFIE 
-!  PSURF IS IN PASCALS 
-!  THETA1 IS ADIABATIC SURFACE TEMP FROM LEVEL 1 
-! 
-!! 
-      DO I=1,IMj 
-        XRCL(I)  = SQRT(RCL(I)) 
-        PSURF(I) = 1000. * PS(I) 
-        THETA1(I) = T1(I) * PRSLKI(I) 
+      subroutine sfc_diag(imj,im,ps,u1,v1,t1,q1,                   &
+!    &                    tskin,qsurf,f10m,u10m,v10m,t2m,q2m,      &
+                          tskin,qsurf,u10m,v10m,t2m,q2m, &
+                          prslki,evap,fm,fh,fh10,fm10,fh2,rh2,rh10)
 !
-        rosfc(i)=psurf(i)/(rd*tskin(i))
-        p2(i)=psurf(i)-rosfc(i)*g*2.
+      use machine , only : kind_phys
+!     use funcphys, only : fpvs
+      use physcons, grav => con_g,  cp => con_cp, &
+                    eps => con_eps, epsm1 => con_epsm1
+      implicit none
 !
-      ENDDO 
-!! 
-! 
-      DO I = 1, IMj 
-        F10M(I) = FM10(I) / FM(I) 
-        F10M(I) = min(F10M(I),1.) 
-        U10M(I) = F10M(I) * XRCL(I) * U1(I) 
-        V10M(I) = F10M(I) * XRCL(I) * V1(I) 
-         T2M(I) = TSKIN(I) * (1. - FH2(I) / FH(I)) &
-                + THETA1(I) * FH2(I) / FH(I) 
-         T2M(I) = T2M(I) * SIG2K 
-!        Q2M(I) = QSURF(I) * (1. - FH2(I) / FH(I))
-!    &         + Q1(I) * FH2(I) / FH(I) 
-!       T2M(I) = T1 
-!       Q2M(I) = Q1 
-        IF(EVAP(I).GE.0.) THEN 
-! 
-!  IN CASE OF EVAPORATION, USE THE INFERRED QSURF TO DEDUCE Q2M 
-! 
-          Q2M(I) = QSURF(I) * (1. - FH2(I) / FH(I)) &
-               + max(qmin,Q1(I)) * FH2(I) / FH(I)      !  Moorthi 
-!!   &         + Q1(I) * FH2(I) / FH(I) 
-        ELSE 
-! 
-!  FOR DEW FORMATION SITUATION, USE SATURATED Q AT TSKIN 
-! 
-!jfe      QSS(I) = 1000. * FPVS(TSKIN(I)) 
-!         qss(I) = fpvs(tskin(I)) 
-!         QSS(I) = EPS * QSS(I) / (PSURF(I) + EPSM1 * QSS(I)) 
+      integer              im,imj
+      real, dimension(im) :: ps,   u1,   v1,   t1,  q1,  tskin,  qsurf, &
+                             f10m, u10m, v10m, t2m, t10m, q2m, q10m,    &
+                             prslki,evap,fm,fh,fh10,fm10,fh2,rh2,rh10
 !
-          call qsatq(1, tskin(i), psurf(i)*0.01, qss(i))
+!     locals
 !
-          Q2M(I) = QSS(I) * (1. - FH2(I) / FH(I))  &
-               + max(qmin,Q1(I)) * FH2(I) / FH(I)      ! Moorthi 
-!!   &         + Q1(I) * FH2(I) / FH(I) 
-        ENDIF 
-!       QSS(I) = fpvs(t2m(I)) 
-!       QSS(I) = EPS * QSS(I) / (PSURF(I) + EPSM1 * QSS(I)) 
+      real (kind=kind_phys), parameter :: qmin=1.0e-8
+      integer              k,i
 !
-          call qsatq(1, t2m(i), psurf(i)*0.01, qss(i))
+      real(kind=kind_phys)        fhi, qss, wrk,fpvs
+!     real(kind=kind_phys) sig2k, fhi, qss
 !
-        Q2M(I) = MIN(Q2M(I),QSS(I)) 
-      ENDDO 
-!    
-        call qsatq(imj,t2m,p2*0.01,qss)
+!     real, parameter :: g=grav
 !
-        do i=1,imj
-        rh2(i)=min(q2m(i)/qss(i),1.)
-        enddo
+!     estimate sigma ** k at 2 m
 !
-      RETURN 
-      END 
+!     sig2k = 1. - 4. * g * 2. / (cp * 280.)
+!
+!  initialize variables. all units are supposedly m.k.s. unless specified
+!  ps is in pascals
+!
+!!
+      do i = 1, imj
+        f10m(i) = fm10(i) / fm(i)
+!       f10m(i) = min(f10m(i),1.)
+        u10m(i) = f10m(i) * u1(i)
+        v10m(i) = f10m(i) * v1(i)
+        fhi     = fh2(i) / fh(i)
+!       t2m(i)  = tskin(i)*(1. - fhi) + t1(i) * prslki(i) * fhi
+!       sig2k   = 1. - (grav+grav) / (cp * t2m(i))
+!       t2m(i)  = t2m(i) * sig2k
+        wrk     = 1.0 - fhi
+
+        t2m(i)  = tskin(i)*wrk + t1(i)*prslki(i)*fhi - (grav+grav)/cp
+
+        if(evap(i) >= 0.) then !  for evaporation>0, use inferred qsurf to deduce q2m
+          q2m(i) = qsurf(i)*wrk + max(qmin,q1(i))*fhi
+        else                   !  for dew formation, use saturated q at tskin
+          qss    = fpvs(tskin(i))
+          qss    = eps * qss / (ps(i) + epsm1 * qss)
+          q2m(i) = qss*wrk + max(qmin,q1(i))*fhi
+        endif
+        qss    = fpvs(t2m(i))
+        qss    = eps * qss / (ps(i) + epsm1 * qss)
+        q2m(i) = min(q2m(i),qss)
+!
+        rh2(i) = min( q2m(i)/qss , 1.)
+
+        fhi     = fh10(i) / fh(i)
+        wrk     = 1.0 - fhi
+        t10m(i)  = tskin(i)*wrk + t1(i)*prslki(i)*fhi - (grav+grav)/cp
+        if(evap(i) >= 0.) then !  for evaporation>0, use inferred qsurf to deduce q2m
+          q10m(i) = qsurf(i)*wrk + max(qmin,q1(i))*fhi
+        else                   !  for dew formation, use saturated q at tskin
+          qss    = fpvs(tskin(i))
+          qss    = eps * qss / (ps(i) + epsm1 * qss)
+          q10m(i) = qss*wrk + max(qmin,q1(i))*fhi
+        endif
+        qss    = fpvs(t10m(i))
+        qss    = eps * qss / (ps(i) + epsm1 * qss)
+        q10m(i) = min(q10m(i),qss)
+!
+        rh10(i) = min( q10m(i)/qss , 1.)
+
+      enddo
+
+      return
+      end

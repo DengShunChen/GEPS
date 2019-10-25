@@ -22,7 +22,7 @@
                 rdiv(nxp,lev,my_max),work(nx,my),               &
                 smc(nxp,km,my_max),stc(nxp,km,my_max),          &
                 canopy(nxp,my_max),slc(nxp,km,my_max),          &
-                zice(nxp,my_max)
+                zice(nxp,my_max),wrk1(nxp,my_max)
       integer*8 idtg
       character*80 ifilout
       character typ*6,ihdg*26
@@ -44,19 +44,13 @@
        j=jlist1(jj)
        nxj=nxdef_2d(j)
       do 20 i = 1,nxj
-       work(i,j)=tt(i,k,jj)*pk(i,k,jj)/(1.0+0.608*qt(i,k,jj))
+       wrk1(i,jj)=tt(i,k,jj)*pk(i,k,jj)/(1.0+0.608*qt(i,k,jj))
  20   continue
-      call mpe_unify(work,nx,my,2,mpe_double)
+!byl      call mpe_unify(work,nx,my,2,mpe_double)
       write(typ,'("m",i2.2,"100")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
 !byl      if( lreduce.eq.1 ) call reduceintp (work,nxdef,nx,my)
-      if( lreduce.eq.1 ) then
-        do jj = 1, jlistnum
-         j=jlist1(jj)
-         call reduceintp (work(1,j),nxdef(j),nx,1)
-        enddo
-        call mpe_unify(work,nx,my,5,mpe_double)
-      endif
       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
 !
 !  convert gaussain u,v component to normal u,v component
@@ -66,19 +60,13 @@
        nxj=nxdef_2d(j)
        xx = rad/cosl(j)
       do 21 i = 1,nxj
-        work(i,j)=ut(i,k,jj)*xx
+        wrk1(i,jj)=ut(i,k,jj)*xx
  21   continue
-      call mpe_unify(work,nx,my,2,mpe_double)
+!byl      call mpe_unify(work,nx,my,2,mpe_double)
       write(typ,'("m",i2.2,"200")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
 !byl      if( lreduce.eq.1 ) call reduceintp (work,nxdef,nx,my)
-      if( lreduce.eq.1 ) then
-        do jj = 1, jlistnum
-         j=jlist1(jj)
-         call reduceintp (work(1,j),nxdef(j),nx,1)
-        enddo
-        call mpe_unify(work,nx,my,5,mpe_double)
-      endif
       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
 !
       do 22 jj = 1, jlistnum
@@ -86,38 +74,26 @@
        nxj=nxdef_2d(j)
        xx = rad/cosl(j)
       do 22 i = 1,nxj
-        work(i,j)=vt(i,k,jj)*xx
+        wrk1(i,jj)=vt(i,k,jj)*xx
  22   continue
-      call mpe_unify(work,nx,my,2,mpe_double)
+!byl      call mpe_unify(work,nx,my,2,mpe_double)
       write(typ,'("m",i2.2,"210")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
 !byl      if( lreduce.eq.1 ) call reduceintp (work,nxdef,nx,my)
-      if( lreduce.eq.1 ) then
-        do jj = 1, jlistnum
-         j=jlist1(jj)
-         call reduceintp (work(1,j),nxdef(j),nx,1)
-        enddo
-        call mpe_unify(work,nx,my,5,mpe_double)
-      endif
       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
 !
       do 23 jj = 1, jlistnum
        j=jlist1(jj)
        nxj=nxdef_2d(j)
       do 23 i = 1,nxj
-        work(i,j)=qt(i,k,jj)
+        wrk1(i,jj)=qt(i,k,jj)
  23   continue
-      call mpe_unify(work,nx,my,2,mpe_double)
+!byl      call mpe_unify(work,nx,my,2,mpe_double)
       write(typ,'("m",i2.2,"500")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
 !byl      if( lreduce.eq.1 ) call reduceintp (work,nxdef,nx,my)
-      if( lreduce.eq.1 ) then
-        do jj = 1, jlistnum
-         j=jlist1(jj)
-         call reduceintp (work(1,j),nxdef(j),nx,1)
-        enddo
-        call mpe_unify(work,nx,my,5,mpe_double)
-      endif
       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
 !
       if( ncld .ge. 2 ) then
@@ -127,9 +103,9 @@
        j=jlist1(jj)
        nxj=nxdef_2d(j)
       do 26 i = 1,nxj
-        work(i,j)=qt(i,kk,jj)
+        wrk1(i,jj)=qt(i,kk,jj)
  26   continue
-      call mpe_unify(work,nx,my,2,mpe_double)
+!byl      call mpe_unify(work,nx,my,2,mpe_double)
       if(ntrac.eq.2)then
         write(typ,'("m",i2.2,"550")')k     ! cloud liquid water content
       else if(ntrac.eq.ntoz)then
@@ -138,14 +114,8 @@
         goto 27
       endif
       call syslbl (typ,idtg,itau,gmdef,ihdg)
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
 !byl      if( lreduce.eq.1 ) call reduceintp (work,nxdef,nx,my)
-      if( lreduce.eq.1 ) then
-        do jj = 1, jlistnum
-         j=jlist1(jj)
-         call reduceintp (work(1,j),nxdef(j),nx,1)
-        enddo
-        call mpe_unify(work,nx,my,5,mpe_double)
-      endif
       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
  27   continue
       enddo
@@ -157,14 +127,15 @@
 !      j=jlist1(jj)
 !      nxj=nxdef(j)
 !     do 24 i = 1, nxj
-!       work(i,j)=rdiv(i,k,jj)
+!       wrk1(i,jj)=rdiv(i,k,jj)
 !24   continue
 !
-!     call mpe_unify(work,nx,my,2,mpe_double)
+!!byl     call mpe_unify(work,nx,my,2,mpe_double)
 !
 !     write(typ,'("m",i2.2,"230")')k
 !     call syslbl (typ,idtg,itau,gmdef,ihdg)
-!     if( lreduce.eq.1 ) call reduceintp (work,nxdef,nx,my)
+!      call unify_reduceintp(nx,my,my_max,wrk1,work)
+!!byl     if( lreduce.eq.1 ) call reduceintp (work,nxdef,nx,my)
 !     call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
 !ccc
 !
@@ -201,19 +172,13 @@
        j=jlist1(jj)
        nxj=nxdef_2d(j)
       do 28 i=1,nxj
-        work(i,j)=phi(i,k,jj)/grav
+        wrk1(i,jj)=phi(i,k,jj)/grav
  28   continue
-      call mpe_unify(work,nx,my,2,mpe_double)
+!byl      call mpe_unify(work,nx,my,2,mpe_double)
       write(typ,'("m",i2.2,"000")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
 !byl      if( lreduce.eq.1 ) call reduceintp (work,nxdef,nx,my)
-      if( lreduce.eq.1 ) then
-        do jj = 1, jlistnum
-         j=jlist1(jj)
-         call reduceintp (work(1,j),nxdef(j),nx,1)
-        enddo
-        call mpe_unify(work,nx,my,5,mpe_double)
-      endif
       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
  32   continue
 !
@@ -221,18 +186,12 @@
        j=jlist1(jj)
        nxj=nxdef_2d(j)
       do 31 i = 1,nxj
-       work(i,j)=pt(i,jj)+ptop
+       wrk1(i,jj)=pt(i,jj)+ptop
  31   continue
-      call mpe_unify(work,nx,my,2,mpe_double)
+!byl      call mpe_unify(work,nx,my,2,mpe_double)
       call syslbl ('b00010',idtg,itau,ggdef,ihdg)
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
 !byl      if( lreduce.eq.1 ) call reduceintp (work,nxdef,nx,my)
-      if( lreduce.eq.1 ) then
-        do jj = 1, jlistnum
-         j=jlist1(jj)
-         call reduceintp (work(1,j),nxdef(j),nx,1)
-        enddo
-        call mpe_unify(work,nx,my,5,mpe_double)
-      endif
       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
 !
 !  move the output of "b10, "b20" and "b21" to out2d.f (2002/4/29)
@@ -244,18 +203,12 @@
        j=jlist1(jj)
        nxj=nxdef_2d(j)
       do 40 i = 1,nxj
-       work(i,j) = tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt(i,lev,jj))
+       wrk1(i,jj) = tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt(i,lev,jj))
    40 continue
-      call mpe_unify(work,nx,my,2,mpe_double)
+!byl      call mpe_unify(work,nx,my,2,mpe_double)
       call syslbl ('b00100',idtg,itau,ggdef,ihdg)
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
 !byl      if( lreduce.eq.1 ) call reduceintp (work,nxdef,nx,my)
-      if( lreduce.eq.1 ) then
-        do jj = 1, jlistnum
-         j=jlist1(jj)
-         call reduceintp (work(1,j),nxdef(j),nx,1)
-        enddo
-        call mpe_unify(work,nx,my,5,mpe_double)
-      endif
       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
 !
       do 41 jj = 1, jlistnum
@@ -263,18 +216,12 @@
        nxj=nxdef_2d(j)
        xx = rad/cosl(j)
       do 41 i = 1,nxj
-       work(i,j)=ut(i,lev,jj)*xx
+       wrk1(i,jj)=ut(i,lev,jj)*xx
    41 continue
-      call mpe_unify(work,nx,my,2,mpe_double)
+!byl      call mpe_unify(work,nx,my,2,mpe_double)
       call syslbl ('b00200',idtg,itau,ggdef,ihdg)
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
 !byl      if( lreduce.eq.1 ) call reduceintp (work,nxdef,nx,my)
-      if( lreduce.eq.1 ) then
-        do jj = 1, jlistnum
-         j=jlist1(jj)
-         call reduceintp (work(1,j),nxdef(j),nx,1)
-        enddo
-        call mpe_unify(work,nx,my,5,mpe_double)
-      endif
       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
 !
       do 42 jj = 1, jlistnum
@@ -282,88 +229,53 @@
        nxj=nxdef_2d(j)
        xx = rad/cosl(j)
       do 42 i = 1,nxj
-       work(i,j)=vt(i,lev,jj)*xx
+       wrk1(i,jj)=vt(i,lev,jj)*xx
    42 continue
-      call mpe_unify(work,nx,my,2,mpe_double)
+!byl      call mpe_unify(work,nx,my,2,mpe_double)
       call syslbl ('b00210',idtg,itau,ggdef,ihdg)
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
 !byl      if( lreduce.eq.1 ) call reduceintp (work,nxdef,nx,my)
-      if( lreduce.eq.1 ) then
-        do jj = 1, jlistnum
-         j=jlist1(jj)
-         call reduceintp (work(1,j),nxdef(j),nx,1)
-        enddo
-        call mpe_unify(work,nx,my,5,mpe_double)
-      endif
       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
 !
    90 continue
 !--------------
 !
-      call syslbl ('b00650',idtg,itau,ggdef,ihdg)
 !      work = snr
-      call mpe2d_unify(work,snr)
+!byl      call mpe2d_unify(work,snr)
 !byl      if( lreduce.eq.1 ) call reduceintp (work,nxdef,nx,my)
-      if( lreduce.eq.1 ) then
-        do jj = 1, jlistnum
-         j=jlist1(jj)
-         call reduceintp (work(1,j),nxdef(j),nx,1)
-        enddo
-        call mpe_unify(work,nx,my,5,mpe_double)
-      endif
+      call syslbl ('b00650',idtg,itau,ggdef,ihdg)
+      call unify_reduceintp(nx,my,my_max,snr,work)
       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
 
-      call syslbl ('s005a1',idtg,itau,ggdef,ihdg)
 !      work = gwr
-      call mpe2d_unify(work,gwr)
+!byl      call mpe2d_unify(work,gwr)
 !byl      if( lreduce.eq.1 ) call reduceintp (work,nxdef,nx,my)
-      if( lreduce.eq.1 ) then
-        do jj = 1, jlistnum
-         j=jlist1(jj)
-         call reduceintp (work(1,j),nxdef(j),nx,1)
-        enddo
-        call mpe_unify(work,nx,my,5,mpe_double)
-      endif
+      call syslbl ('s005a1',idtg,itau,ggdef,ihdg)
+      call unify_reduceintp(nx,my,my_max,gwr,work)
       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
 
-      call syslbl ('s00100',idtg,itau,ggdef,ihdg)
+
 !      work = tg
-      call mpe2d_unify(work,tg)
+!byl      call mpe2d_unify(work,tg)
 !byl      if( lreduce.eq.1 ) call reduceintp (work,nxdef,nx,my)
-      if( lreduce.eq.1 ) then
-        do jj = 1, jlistnum
-         j=jlist1(jj)
-         call reduceintp (work(1,j),nxdef(j),nx,1)
-        enddo
-        call mpe_unify(work,nx,my,5,mpe_double)
-      endif
+      call syslbl ('s00100',idtg,itau,ggdef,ihdg)
+      call unify_reduceintp(nx,my,my_max,tg,work)
       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
 !
 ! output canopy
 !
-      call syslbl ('s005c0',idtg,itau,ggdef,ihdg)
 !      work = canopy
-      call mpe2d_unify(work,canopy)
+!byl      call mpe2d_unify(work,canopy)
 !byl      if( lreduce.eq.1 ) call reduceintp (work,nxdef,nx,my)
-      if( lreduce.eq.1 ) then
-        do jj = 1, jlistnum
-         j=jlist1(jj)
-         call reduceintp (work(1,j),nxdef(j),nx,1)
-        enddo
-        call mpe_unify(work,nx,my,5,mpe_double)
-      endif
+      call syslbl ('s005c0',idtg,itau,ggdef,ihdg)
+      call unify_reduceintp(nx,my,my_max,canopy,work)
       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
 !
-      call syslbl ('w00092',idtg,itau,ggdef,ihdg)
 !      work = zice
-      call mpe2d_unify(work,zice)
+!byl      call mpe2d_unify(work,zice)
 !byl      if( lreduce.eq.1 ) call reduceintp (work,nxdef,nx,my)
-      if( lreduce.eq.1 ) then
-        do jj = 1, jlistnum
-         j=jlist1(jj)
-         call reduceintp (work(1,j),nxdef(j),nx,1)
-        enddo
-        call mpe_unify(work,nx,my,5,mpe_double)
-      endif
+      call syslbl ('w00092',idtg,itau,ggdef,ihdg)
+      call unify_reduceintp(nx,my,my_max,zice,work)
       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
 !
 ! s01100 & s015b0
@@ -374,40 +286,28 @@
        j=jlist1(jj)
        nxj=nxdef_2d(j)
       do i = 1,nxj
-       work(i,j)=smc(i,k,jj)
+       wrk1(i,jj)=smc(i,k,jj)
       enddo
       enddo
-      call mpe_unify(work,nx,my,2,mpe_double)
+!byl      call mpe_unify(work,nx,my,2,mpe_double)
       write(typ,'("s0",i1.1,"5b0")')k
       call syslbl (typ,idtg,itau,ggdef,ihdg)
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
 !byl      if( lreduce.eq.1 ) call reduceintp (work,nxdef,nx,my)
-      if( lreduce.eq.1 ) then
-        do jj = 1, jlistnum
-         j=jlist1(jj)
-         call reduceintp (work(1,j),nxdef(j),nx,1)
-        enddo
-        call mpe_unify(work,nx,my,5,mpe_double)
-      endif
       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
 !
       do jj = 1, jlistnum
        j=jlist1(jj)
        nxj=nxdef_2d(j)
       do i = 1,nxj
-       work(i,j)=stc(i,k,jj)
+       wrk1(i,jj)=stc(i,k,jj)
       enddo
       enddo
-      call mpe_unify(work,nx,my,2,mpe_double)
+!byl      call mpe_unify(work,nx,my,2,mpe_double)
       write(typ,'("s0",i1.1,"100")')k
       call syslbl (typ,idtg,itau,ggdef,ihdg)
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
 !byl      if( lreduce.eq.1 ) call reduceintp (work,nxdef,nx,my)
-      if( lreduce.eq.1 ) then
-        do jj = 1, jlistnum
-         j=jlist1(jj)
-         call reduceintp (work(1,j),nxdef(j),nx,1)
-        enddo
-        call mpe_unify(work,nx,my,5,mpe_double)
-      endif
       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
 !
       enddo
@@ -425,21 +325,15 @@
        j=jlist1(jj)
        nxj=nxdef_2d(j)
       do i = 1,nxj
-       work(i,j)=smc(i,2,jj)*sfac2+smc(i,3,jj)*sfac3 &
+       wrk1(i,jj)=smc(i,2,jj)*sfac2+smc(i,3,jj)*sfac3 &
                  +smc(i,4,jj)*sfac4
       enddo
       enddo
-      call mpe_unify(work,nx,my,2,mpe_double)
+!byl      call mpe_unify(work,nx,my,2,mpe_double)
       write(typ,'("s0",i1.1,"5b0")')k
       call syslbl (typ,idtg,itau,ggdef,ihdg)
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
 !byl      if( lreduce.eq.1 ) call reduceintp (work,nxdef,nx,my)
-      if( lreduce.eq.1 ) then
-        do jj = 1, jlistnum
-         j=jlist1(jj)
-         call reduceintp (work(1,j),nxdef(j),nx,1)
-        enddo
-        call mpe_unify(work,nx,my,5,mpe_double)
-      endif
       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
 !
 ! output stc(2,10-200cm)
@@ -447,21 +341,15 @@
        j=jlist1(jj)
        nxj=nxdef_2d(j)
       do i = 1,nxj
-       work(i,j)=stc(i,2,jj)*sfac2+stc(i,3,jj)*sfac3 &
+       wrk1(i,jj)=stc(i,2,jj)*sfac2+stc(i,3,jj)*sfac3 &
                  +stc(i,4,jj)*sfac4
       enddo
       enddo
-      call mpe_unify(work,nx,my,2,mpe_double)
+!byl      call mpe_unify(work,nx,my,2,mpe_double)
       write(typ,'("s0",i1.1,"100")')k
       call syslbl (typ,idtg,itau,ggdef,ihdg)
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
 !byl      if( lreduce.eq.1 ) call reduceintp (work,nxdef,nx,my)
-      if( lreduce.eq.1 ) then
-        do jj = 1, jlistnum
-         j=jlist1(jj)
-         call reduceintp (work(1,j),nxdef(j),nx,1)
-        enddo
-        call mpe_unify(work,nx,my,5,mpe_double)
-      endif
       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
 !
       enddo
@@ -472,60 +360,42 @@
        j=jlist1(jj)
        nxj=nxdef_2d(j)
       do i = 1,nxj
-       work(i,j)=smc(i,k,jj)
+       wrk1(i,jj)=smc(i,k,jj)
       enddo
       enddo
-      call mpe_unify(work,nx,my,2,mpe_double)
+!byl      call mpe_unify(work,nx,my,2,mpe_double)
       write(typ,'("l0",i1.1,"5b0")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
 !byl      if( lreduce.eq.1 ) call reduceintp (work,nxdef,nx,my)
-      if( lreduce.eq.1 ) then
-        do jj = 1, jlistnum
-         j=jlist1(jj)
-         call reduceintp (work(1,j),nxdef(j),nx,1)
-        enddo
-        call mpe_unify(work,nx,my,5,mpe_double)
-      endif
       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
 !
       do jj = 1, jlistnum
        j=jlist1(jj)
        nxj=nxdef_2d(j)
       do i = 1,nxj
-       work(i,j)=slc(i,k,jj)
+       wrk1(i,jj)=slc(i,k,jj)
       enddo
       enddo
-      call mpe_unify(work,nx,my,2,mpe_double)
+!byl      call mpe_unify(work,nx,my,2,mpe_double)
       write(typ,'("l0",i1.1,"5b1")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
 !byl      if( lreduce.eq.1 ) call reduceintp (work,nxdef,nx,my)
-      if( lreduce.eq.1 ) then
-        do jj = 1, jlistnum
-         j=jlist1(jj)
-         call reduceintp (work(1,j),nxdef(j),nx,1)
-        enddo
-        call mpe_unify(work,nx,my,5,mpe_double)
-      endif
       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
 !
       do jj = 1, jlistnum
        j=jlist1(jj)
        nxj=nxdef_2d(j)
       do i = 1,nxj
-       work(i,j)=stc(i,k,jj)
+       wrk1(i,jj)=stc(i,k,jj)
       enddo
       enddo
-      call mpe_unify(work,nx,my,2,mpe_double)
+!byl      call mpe_unify(work,nx,my,2,mpe_double)
       write(typ,'("l0",i1.1,"100")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
 !byl      if( lreduce.eq.1 ) call reduceintp (work,nxdef,nx,my)
-      if( lreduce.eq.1 ) then
-        do jj = 1, jlistnum
-         j=jlist1(jj)
-         call reduceintp (work(1,j),nxdef(j),nx,1)
-        enddo
-        call mpe_unify(work,nx,my,5,mpe_double)
-      endif
       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
 !
  200  continue

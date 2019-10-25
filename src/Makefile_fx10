@@ -1,6 +1,7 @@
 SHELL=/bin/ksh
 
-MACHINE=fx100
+#MACHINE=fx100
+MACHINE=fx10
 
 SRCS  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
 	mod_const.f90 mod_index.f90 mod_fftcom.f90 mod_fj_pad.f90 mod_grid.f90 \
@@ -9,6 +10,9 @@ SRCS  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
 	mod_albn.f90 mod_ozne_def.f90 mod_radn.f90 mod_raddiag.f90 \
 	mod_outflds.f90 \
 	mo_constants.f90 mo_convect_tables.f90 mo_cumulus_flux.f90 shr_kind_mod.f90 \
+        mod_sitgrid.f90 mod_eos_ocean.f90 mod_sit_vdiff.f90 outsit.f90 \
+        mod_sst.f90 mod_netcdf.f90 mod_sit_control.f90 samfdeepcnv.f90 samfshalcnv.f90 \
+        moninedmf.f90 mfpbl.f90 \
 	namelist_soilveg.f90 set_soilveg.f90 sfc_diag.f90 \
 	sfc_diff.f90 sfc_drv.f90 sfc_ocean.f90 sfc_sice.f90 sflx.f90 init_block.f90 \
 	ancrt.f90 cem1.f90 coftrix.f90 \
@@ -80,26 +84,22 @@ SRCS  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
 	cuadjtq_n.f90 cuasc_n.f90 cubasmc_n.f90 cuddraf_n.f90\
 	cudlfs_n.f90 cudtdq_n.f90 cududv_n.f90 cuentr_n.f90 cuflx_n.f90 \
 	cuini_n.f90 cumastr_driv_n.f90 cumastr_n.f90 cutype_n.f90 ntke_func.f90 \
-        get_phi.f90 module_mp_radar.f90 module_mp_wsm6_fv3.f90 lightning_ec.f90 \
-        mod_sitgrid.f90 mod_eos_ocean.f90 mod_sit_vdiff.f90 outsit.f90 \
-        mod_sst.f90 mod_netcdf.f90 mod_sit_control.f90 samfdeepcnv.f90 samfshalcnv.f90 \
-        moninedmf.f90 mfpbl.f90 unify_reduceintp.f90 unify_reducepick.f90 \
-        gscondp.f90 precpdp.f90
+        get_phi.f90 module_mp_radar.f90 module_mp_wsm6_fv3.f90 lightning_ec.f90
 
 OBJS=	${SRCS:.f90=.o}
 
-CC   =	fccpx100
-FC90 =  mpifrtpx100
-#CC   =	fccpx
-#FC90 =  mpifrtpx
+#CC   =	fccpx100
+CC   =	fccpx
 #FC   =  /package/$(MACHINE)/dms/bin/dmsmpiompf90
 FC   =  /package/$(MACHINE)/dms/bin/dmsmpif90
-
+#FC90 =  mpifrtpx100
+FC90 =  mpifrtpx
 
 INCLUDE = -I. -I/users/xa09/$(MACHINE)/fftw-3.3.7/include -I/package/$(MACHINE)/netcdf-3.6.3/include
 #INCLUDE = -I. -I/nwpr/cfsres/b827/fx10/fftw-3.3.7/include
 
-CMD  =  MTCo639L72_$(MACHINE)
+#CMD  =  MTCo639L72_$(MACHINE)
+CMD  =  MTCo383L72_$(MACHINE)_ysu
 
 # MSG  =    -Ec -Qa,d,i,p,t,x -Koptmsg=2 -Nquickdbg
  MSG  =    -Ec -Qa,d,i,p,t,x -Koptmsg=2
@@ -135,6 +135,7 @@ INSTALL = /usr/bin/install
  FFLAGS  = -c -X9 -Free -CcdRR8 -Cpp -DTIMING -DMULTIPLE -DUSE_FFTW \
            -Kfast,parallel,openmp,ocl,autoobjstack \
 	   -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE)
+#          -Kfast,parallel,openmp,ocl,autoobjstack -Nquickdbg\
 
 #---------------------------------------------------------------------------------------------
 # For fx10 compiler, some subroutine, such as rcloud, can not use auto-parallel option.
@@ -144,6 +145,7 @@ INSTALL = /usr/bin/install
 LDFLAGS = -Kopenmp,parallel -L/package/$(MACHINE)/dms/dms.v4/lib -lrdms -lgdbm -L/package/$(MACHINE)/operlib/lib -lnwp \
           -L/users/xa09/$(MACHINE)/fftw-3.3.7/lib -lfftw3_threads -lfftw3 -SSL2BLAMP
 
+#LIBS	=
 LIBS	= -L/package/$(MACHINE)/netcdf-3.6.3/lib -lnetcdf
 
 all :	$(CMD)
@@ -160,18 +162,18 @@ $(OBJS):
 clean :
 	@echo
 	@echo '==== CLEAN ===================================================='
-	rm -f *.o *.lst *.mod MTCo639L72_$(MACHINE)
+	rm -f *.o *.lst *.mod MTCo383L72_$(MACHINE)_ysu
 
-install :
-	$(INSTALL) -d ../bin
-	$(INSTALL) -D $(CMD) ../bin
+#install :
+#	$(INSTALL) -d ../bin
+#	$(INSTALL) -D $(CMD) ../bin
 
 ancrt.o : ancrt.f90 
 cem1.o : cem1.f90 mod_paramt.o 
 check.o : check.f90 mod_fftcom.o mod_index.o mod_rank.o mod_mpe.o 
 chlen.o : chlen.f90 
 coftrix.o : coftrix.f90 
-cons.o : cons.f90 mod_typhoon.o mod_fftcom.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o mo_convect_tables.o mod_spec.o module_mp_wsm6_fv3.o mod_sit_control.o
+cons.o : cons.f90 mod_typhoon.o mod_fftcom.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o mo_convect_tables.o mod_spec.o module_mp_wsm6_fv3.o
 correct.o : correct.f90 mod_index.o 
 ccoszen.o : ccoszen.f90 mod_index.o
 coszenpm.o : coszenpm.f90 mod_index.o 
@@ -217,7 +219,6 @@ gpvs.o : gpvs.f90
 grdcon.o : grdcon.f90 
 grdtpw.o : grdtpw.f90 
 gscond.o : gscond.f90 
-gscondp.o : gscondp.f90 
 gwdp.o : gwdp.f90 mod_paramt.o
 gwdc.o : gwdc.f90 mod_paramt.o mod_rank.o mod_mpe.o mod_index.o
 read_mtnvar.o : read_mtnvar.f90 mod_index.o mod_param.o
@@ -262,7 +263,7 @@ mod_phygrid.o : mod_phygrid.f90 mod_param.o mod_index.o
 mod_rank.o : mod_rank.f90 
 mod_spec.o : mod_spec.f90 mod_param.o mod_index.o
 mod_stochastic.o : mod_stochastic.f90 
-mod_typhoon.o : mod_typhoon.f90 mod_param.o mod_index.o
+mod_typhoon.o : mod_typhoon.f90 mod_param.o 
 mod_outflds.o : mod_outflds.f90 mod_index.o mod_mpe.o mod_rank.o
 mpe_barrier.o : mpe_barrier.f90 
 mpe_finalize.o : mpe_finalize.f90 mod_typhoon.o mod_noah.o mod_phygrid.o mod_spec.o mod_grid.o mod_const.o mod_param.o 
@@ -321,12 +322,10 @@ nnmi.o : nnmi.f90 mod_rank.o
 nor_gwdp.o : nor_gwdp.f90 mod_index.o
 normalize.o : normalize.f90 
 out24.o : out24.f90 mod_index.o mod_mpe.o mod_rank.o mod_mpe.o
-out2d.o : out2d.f90 mod_index.o mod_mpe.o mod_rank.o mod_outflds.o
+out2d.o : out2d.f90 mod_index.o mod_mpe.o mod_rank.o 
 out2d_mfc.o : out2d_mfc.f90 mod_index.o mod_mpe.o mod_rank.o 
 outflds.o : outflds.f90 mod_index.o mod_rank.o mod_mpe.o mod_outflds.o
 outflds_green.o : outflds_green.f90 mod_index.o mod_rank.o mod_mpe.o
-outflds_fv3.o : outflds_fv3.f90 mod_index.o mod_rank.o mod_mpe.o
-outflds_hp.o : outflds_hp.f90 mod_index.o mod_rank.o mod_mpe.o
 outsigs.o : outsigs.f90 mod_mpe.o mod_index.o 
 pbl_noah.o : pbl_noah.f90 mod_paramt.o mod_index.o mod_rank.o mod_mpe.o 
 	$(FC90) $(FFLAGS) -Knosimd pbl_noah.f90
@@ -337,10 +336,7 @@ pmatrx_hybrid_cwb.o : pmatrx_hybrid_cwb.f90 mod_param.o
 pnmy.o : pnmy.f90 
 postq.o : postq.f90 
 precpd.o : precpd.f90
-#xb110> for updated Zhao-Carr MP scheme
 precpd_n.o : precpd_n.f90 
-#xb110<
-precpdp.o : precpdp.f90
 prexp_hybrid_cwb.o : prexp_hybrid_cwb.f90 
 qmaxn3.o : qmaxn3.f90 mod_index.o mod_rank.o 
 qmaxn3p.o : qmaxn3p.f90 mod_index.o mod_rank.o mod_mpe.o 
@@ -399,7 +395,7 @@ stupij.o : stupij.f90
 stupiy.o : stupiy.f90 
 syslbl.o : syslbl.f90 
 tendget.o : tendget.f90 mod_grid.o mod_spec.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o 
-tracking.o : tracking.f90 mod_index.o mod_rank.o mod_mpe.o mod_typhoon.o mod_param.o
+tracking.o : tracking.f90 mod_index.o mod_rank.o mod_mpe.o mod_typhoon.o
 trandv.o : trandv.f90 mod_fftcom.o mod_paramt.o mod_index.o 
 tranrs1.o : tranrs1.f90 mod_fftcom.o mod_paramt.o mod_index.o 
 tranrs.o : tranrs.f90 mod_fj_pad.o mod_fftcom.o mod_paramt.o mod_index.o 
@@ -460,7 +456,6 @@ shr_kind_mod.o : shr_kind_mod.f90
 trngra3.o : trngra3.f90 mod_fftcom.o mod_paramt.o mod_index.o
 gridnl_hybrid_ndsl.o : gridnl_hybrid_ndsl.f90
 ndslfv_pack.o : ndslfv_pack.f90 mod_rank.o mod_index.o mod_grid.o mod_param.o
-	 $(FC90) $(FFLAGS) -Knoparallel $*.f90
 ndslfv_para.o : ndslfv_para.f90 mod_rank.o mod_index.o mod_grid.o
 ndslfv_monoadvh.o : ndslfv_monoadvh.f90 mod_rank.o mod_index.o mod_grid.o mod_param.o
 ndslfv_monoadvv.o : ndslfv_monoadvv.f90 mod_rank.o mod_index.o mod_grid.o mod_param.o
@@ -484,9 +479,7 @@ ntke_func.o : ntke_func.f90 mo_constants.o
 get_phi.o : get_phi.f90
 module_mp_radar.o : module_mp_radar.f90
 module_mp_wsm6_fv3.o : module_mp_wsm6_fv3.f90 physcons.o module_mp_radar.o
-#xb110, for lightning scheme>
 lightning_ec.o: lightning_ec.f90 mo_constants.o
-#----------SIT---------------
 mod_sitgrid.o : mod_sitgrid.f90 mod_sit_control.o mod_netcdf.o
 mod_sit_vdiff.o : mod_sit_vdiff.f90 mod_eos_ocean.o mod_netcdf.o mod_sst.o mod_sit_control.o
 mod_sst.o: mod_sst.f90 mod_param.o mod_mpe.o mod_index.o mod_const.o mod_sit_control.o mod_netcdf.o mod_eos_ocean.o
@@ -494,6 +487,3 @@ mod_netcdf.o: mod_netcdf.f90 mod_mpe.o mod_const.o mod_sit_control.o
 mod_eos_ocean.o: mod_eos_ocean.f90 
 mod_sit_control.o: mod_sit_control.f90
 outsit.o : outsit.f90 mod_index.o mod_rank.o mod_mpe.o mod_sitgrid.o
-#-------I/O speed up-------
-unify_reducepick.o: unify_reducepick.f90 mod_mpe.o mod_index.o
-unify_reduceintp.o: unify_reduceintp.f90 mod_mpe.o mod_index.o

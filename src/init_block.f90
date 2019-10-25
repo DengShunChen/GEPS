@@ -85,8 +85,12 @@
 !
       doo3l=.true.
 !
-      domfc=.false.
+      domfc=384.
+      otgreen=6.
       out_green=.false.
+      out_hp=.false.
+! pdf cloud
+      pdfcloud=.false.
 ! sppt
       dosppt=.false.
       dospptout=.false.
