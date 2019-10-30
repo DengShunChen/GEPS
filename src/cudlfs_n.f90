@@ -103,7 +103,7 @@
      &         kdtop(klon),            ikhsmin(klon)                
       logical  ldcum(klon),                              &
      &         lddraf(klon)   
-      real     lndj(klon)                                            
+      integer  lndj(klon)                                            
                                                                       
       real     ztenwb(klon,klev),      zqenwb(klon,klev), &          
      &         zcond(klon),            zph(klon),         &           

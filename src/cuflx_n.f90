@@ -93,7 +93,7 @@
      &         kdtop(klon),            ktype(klon)        
       logical  lddraf(klon),                                &
      &         ldcum(klon)  
-      real     lndj(klon)
+      integer  lndj(klon)
 ! local variables
       integer  jl,jk
       integer  is,ik,icall,ike,ikb

@@ -146,8 +146,7 @@ USE mo_cumulus_flux,  only: lmfdudv, &! true if cum. friction is switched on
      &         ictop0(klon),           ilwmin(klon)
       integer  kdpl(klon)
       integer  kcbot(klon),            kctop(klon),&
-     &         ktype(klon)
-      real     lndj(klon)
+     &         ktype(klon),            lndj(klon)
       logical  ldcum(klon)
       logical  loddraf(klon),          llo1,   llo2(klon)
       integer  p950,p650
@@ -169,6 +168,7 @@ USE mo_cumulus_flux,  only: lmfdudv, &! true if cum. friction is switched on
 !xb110>
       real     mdlon,gdx,re,rr
       integer  kcnv(klon)
+      real     sumpap(klon)
 !for lightning parameterization
       real     pluu(klon,klev),pf(klon,klev),rho(klon,klev)
       real     flash(klon),dx(klon)
@@ -180,13 +180,20 @@ USE mo_cumulus_flux,  only: lmfdudv, &! true if cum. friction is switched on
      pmean = 0.
      zlon  = 0.
      zrfl  = 0.
+     sumpap = 0.
 !xb110<
       zcons=1./(g*ztmst)
       zcons2=3./(g*ztmst)
 
       zlon = real(klon)
       do jk = klev , 1 , -1
-        pmean(jk) = sum(pap(:,jk))/zlon
+!xb110> bug fixed, pap has an undefined value
+!        pmean(jk) = sum(pap(:,jk))/zlon
+      do jl = 1,nxj                      
+        sumpap(jk) = sumpap(jk)+pap(jl,jk)
+      end do
+!xb110<
+        pmean(jk) = sumpap(jk)/zlon
       end do
       p950 = klev-2
       p650 = klev-2  

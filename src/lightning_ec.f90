@@ -31,7 +31,7 @@
       implicit none
       integer jl,jk,klev,klon,nxj
       integer kcbot(klon),kctop(klon)
-      real    lndj(klon)
+      integer lndj(klon)
       real    ptu(klon,klev)  ,pqu(klon,klev)                           &
              ,ztenh(klon,klev),zqenh(klon,klev),pluu(klon,klev)         &
              ,pgeo(klon,klev) ,pap(klon,klev)  ,pf(klon,klev)           &

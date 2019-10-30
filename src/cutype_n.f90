@@ -76,7 +76,7 @@
 
       real     qfx(klon),hfx(klon)
       real     zph(klon)
-      real     lndj(klon)
+      integer  lndj(klon)
       logical  loflag(klon), deepflag(klon), resetflag(klon)
 
 ! output variables
