@@ -1754,7 +1754,7 @@
              alnwf(1,jj),facsf(1,jj),facwf(1,jj),                          &
              curate(1,jj),icsdsw(nxjstart(j)),icsdlw(nxjstart(j)),         &
              sinl(j),cosl(j),xlat(j),xlonr(nxjstart(j),jj),jdat,d2r,xkapa, &
-             ptrad,dtlw,dtsw,lsswr,lsswr,lssav,                            &
+             ptrad,dtlw,dtsw,lsswr,lslwr,lssav,                            &
              nfxr,j,                                                       &
              nxp,nxjp(j),lev,ncld,lprnt,ipt,kdt,solhr,solcon,              &
              uni_cloud,lmfshal,lmfdeep2,                                   &
