@@ -757,11 +757,12 @@
 !-----------------------------------------------------------------------
       if(ncld.ge.3)then
       ntrac=ntoz
-      do k = 1, lev
-        kk = (ntrac-1)*lev+k
-        do jj = 1, jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
+!
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        do k = 1, lev
+          kk = (ntrac-1)*lev+k
           do i = 1, nxj
             o3l(i,k,jj) = qt(i,kk,jj)
           enddo
@@ -2249,17 +2250,17 @@
 !     update o3l to qt
 !--------------------------------------------------------------------------------
       if(ncld.ge.3)then
-      ntrac=ntoz
-      do k = 1, lev
-         kk = (ntrac-1)*lev+k
-      do jj=1, jlistnum
-         j=jlist1(jj)
-         nxj=nxdef_2d(j)
-      do i = 1, nxj
-         qt(i,kk,jj) = o3l(i,k,jj)
-      enddo
-      enddo
-      enddo
+        ntrac=ntoz
+        do jj=1, jlistnum
+           j=jlist1(jj)
+           nxj=nxdef_2d(j)
+           do k = 1, lev
+             kk = (ntrac-1)*lev+k
+             do i = 1, nxj
+               qt(i,kk,jj) = o3l(i,k,jj)
+             enddo
+           enddo
+         enddo
       endif
 !
 !      call mpe_global_sum(xkmd  ,lev,mpe_double)
