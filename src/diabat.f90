@@ -269,10 +269,10 @@
       real hprime_b(nxp,mtnvar,my_max)
 !byl      real pltn(nxp,lev,my_max),pkn(nxp,lev,my_max),pk2n(nxp,lev,my_max),  &
       real tt_bfcnv(nxp,lev)
-      real p2c(nxp,lev+1),phie2c(nxp,lev+1),p2ac(nxp,lev+1)
+      real prsi(nxp,lev+1)
       real utgwc(nxp,lev),vtgwc(nxp,lev),delttcv(nxp,lev),                 &
            dudtc(nxp,lev),dvdtc(nxp,lev),dtdtc(nxp,lev),                   &
-           phio2c(nxp,lev),prslk(nxp,lev)
+           prslk(nxp,lev)
       real oc(nxp),theta(nxp),gamma(nxp),sigmaog(nxp),elvmax(nxp),hprime(nxp),    &
            dlength(nxp),cldf(nxp),cumabs(nxp),work3(nxp),tauctx(nxp),taucty(nxp), &
            dvsfcg(nxp),dusfcg(nxp),facg(lev)
@@ -1023,7 +1023,7 @@
             prsl(i,kc) = 100.0*plt(i,k,jj) ! pa
             prslk(i,kc)=(plt(i,k,jj)/1000.)**xkapa
             del(i,kc) = 100.0*( dsigma(k,1)*pst(i,jj)+dsigma(k,2))  !  pa
-            phio2c(i,kc) = phi(i,k)-sgeo(i,jj)
+            phil(i,kc) = phi(i,k)-sgeo(i,jj)
 !no split forcing
 !!            qtc(i,kc) = qt(i,k,jj)
 !!            ttc(i,kc) = tt(i,k,jj)
@@ -1047,15 +1047,14 @@
         do k = 1,lev+1
           kc= (lev+1)-k+1
           do i =1,nxj
-            phie2c(i,kc) = phii(i,kc)
-            p2ac(i,kc)   = 100.0*( sigma(k,1)*pst(i,jj)+sigma(k,2)+ptop ) !pa
+            prsi(i,kc)   = 100.0*( sigma(k,1)*pst(i,jj)+sigma(k,2)+ptop ) !pa
           enddo
         enddo
 !
         call gwdps(nxjp(j), nxp, nxp,  lev,                        &
                dvdtc, dudtc, dtdtc,utc, vtc, ttc,qtc,              &
-               kpbl(1,jj),   p2ac, del,   prsl, prslk,             &
-               phie2c,    phio2c, dta,                             &
+               kpbl(1,jj),   prsi, del,   prsl, prslk,             &
+               phii,  phil, dta,                             &
                kdt,    hprime, oc, oa4, clx,                       &
                theta,sigmaog,gamma,elvmax,dusfcg, dvsfcg,          &
                grav,cp,con_rd,con_rv, nx, mtnvar, cdmbgwd,   &
@@ -1326,7 +1325,7 @@
         do  k = 1,lev+1
 !          kc=(lev+1)-k+1
           do  i = 1, nxj
-            p2c(i,k) = 100.0*( sigma(k,1)*pst(i,jj)+sigma(k,2) ) !pa
+            prsi(i,k) = 100.0*( sigma(k,1)*pst(i,jj)+sigma(k,2) ) !pa
           enddo
         enddo
 !
@@ -1379,7 +1378,7 @@
         enddo
 !
         call gwdc (nxjp(j),nxp,nxp,lev,u0,v0,        &
-                     t0,q0,prsl,p2c,del,             &
+                     t0,q0,prsl,prsi,del,             &
                      ktop(1,jj),kbot(1,jj),kuo(1,jj),cldf,cumabs,    &
                      grav,cp,con_rd,con_fvirt,dta,dlength,           &
                      utgwc,vtgwc,tauctx,taucty,j)
