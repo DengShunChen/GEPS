@@ -85,13 +85,12 @@
    real,parameter    ::  xkzmin = 0.01,xkzmax = 1000.,rimin = -100.
    real,parameter    ::  rlam = 30.,prmin = 0.25,prmax = 4.
 !   real,parameter    ::  brcr_ub = 0.0,brcr_sb = 0.25,cori = 1.e-4
-   real,parameter    ::  brcr_ub = 0.25,brcr_sb = 0.25,cori = 1.e-4
+   real,parameter    ::  brcr_ub = 0.25,brcr_sb = 0.25,cori = 1.e-4    !xb118
 !   real,parameter    ::  afac = 6.8,bfac = 6.8,pfac = 2.0,pfac_q = 2.0
-   real,parameter    ::  afac = 6.8,bfac = 6.8,pfac = 3.5,pfac_q = 3.4
+   real,parameter    ::  afac = 6.8,bfac = 6.8,pfac = 3.5,pfac_q = 3.4  !xb118
    real,parameter    ::  phifac = 8.,sfcfrac = 0.1
-!   real,parameter    ::  phifac = 7.,sfcfrac = 0.1
+!   real,parameter    ::  phifac = 7.,sfcfrac = 0.1     !xb118
    real,parameter    ::  d1 = 0.02, d2 = 0.05, d3 = 0.001
-!   real,parameter    ::  d1 = 0.01, d2 = 0.05, d3 = 0.001
    real,parameter    ::  h1 = 0.33333335, h2 = 0.6666667
    real,parameter    ::  zfmin = 1.e-8,aphi5 = 5.,aphi16 = 16.
    real,parameter    ::  tmin=1.e-2
