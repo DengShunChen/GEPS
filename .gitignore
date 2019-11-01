@@ -3,7 +3,6 @@ src/*.lst
 src/*.mod
 src/MT*
 src/bl_ysu.org.f90
-run_TCo383L72.ksh
 *.ksh
 run*
 TCo383L72_fx10*

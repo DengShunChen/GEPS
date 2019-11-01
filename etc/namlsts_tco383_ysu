@@ -31,7 +31,7 @@
  doshl=t,
  dodry=f,
  dograv=t,
- docgrav=f,
+ docgrav=t,
  donnmi=t,
  dosppt=f,
  dospptout=f,
@@ -51,8 +51,8 @@
  nmpbl=5,
  nmland=2,
  nmshl=3,
- nmgwor=1,
- nmgwcv=2,
+ nmgwor=2,
+ nmgwcv=1,
  ktcup=20,
  cgw=2.6e-5,
  mtnvar=14,
@@ -73,4 +73,5 @@
  &typ
  write_mem=0,
  trk_intv=6,
+ min_trk_pres=1002.,
 &end
