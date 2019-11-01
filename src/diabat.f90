@@ -946,6 +946,27 @@
                      , hpbl(1,jj),asl(1,1,jj),atl(1,1,jj),xmu(1,jj),gfx(1,jj) &
                      , kpbl(1,jj),nmpbl,j,isot,ivegsrc,sfemis(1,jj) )
 !
+!
+!     recompute phi by tt after pbl to ensure consistence of phi & phi2
+!
+      do 250 k = 1, lev
+      do 250 i = 1, nxj
+      theda(i,k) = tt(i,k,jj)*(1.0+0.608*qt(i,k,jj)) / pk(i,k,jj)
+  250 continue
+!
+      do 251 i = 1 ,nxj
+      phi(i,lev) = sgeo(i,jj)+  &
+                   cp*theda(i,lev)*(pk2(i,lev,jj)-pk(i,lev,jj))
+  251 continue
+      do 252 k = lev-1, 1, -1
+      do 252 i = 1,nxj
+      phi(i,k) = phi(i,k+1) +cp*(theda(i,k)*(pk2(i,k,jj)-pk(i,k,jj))  &
+                            +theda(i,k+1)*(pk(i,k+1,jj)-pk2(i,k,jj)))
+  252 continue
+!
+       call get_phi(nxjp(j),nxp,lev,ptop,cp,rgas,grav,                &
+                   pk(1,1,jj),pk2(1,1,jj),tt(1,1,jj),qt(1,1,jj),phii)
+!
 ! SHUM process
 !  John Tseng
 !
@@ -1024,22 +1045,22 @@
             prslk(i,kc)=(plt(i,k,jj)/1000.)**xkapa
             del(i,kc) = 100.0*( dsigma(k,1)*pst(i,jj)+dsigma(k,2))  !  pa
             phil(i,kc) = phi(i,k)-sgeo(i,jj)
-!no split forcing
-!!            qtc(i,kc) = qt(i,k,jj)
-!!            ttc(i,kc) = tt(i,k,jj)
-!!            utc(i,kc) = ut(i,k,jj)
-!!            vtc(i,kc) = vt(i,k,jj)
-!!            dudtc(i,kc) = 0.
-!!            dvdtc(i,kc) = 0.
-!!            dtdtc(i,kc) = 0.
-!split forcing
-            qtc(i,kc) = q0(i,k)
-            ttc(i,kc) = t0(i,k)
-            utc(i,kc) = u0(i,k)
-            vtc(i,kc) = v0(i,k)
-            dudtc(i,kc) = ( ut(i,k,jj) - u0(i,k) )/dta
-            dvdtc(i,kc) = ( vt(i,k,jj) - v0(i,k) )/dta
-            dtdtc(i,kc) = ( tt(i,k,jj) - t0(i,k))/dta
+!time split forcing
+            qtc(i,kc) = qt(i,k,jj)
+            ttc(i,kc) = tt(i,k,jj)
+            utc(i,kc) = ut(i,k,jj)
+            vtc(i,kc) = vt(i,k,jj)
+            dudtc(i,kc) = 0.
+            dvdtc(i,kc) = 0.
+            dtdtc(i,kc) = 0.
+!no time split forcing
+!!            qtc(i,kc) = q0(i,k)
+!!            ttc(i,kc) = t0(i,k)
+!!            utc(i,kc) = u0(i,k)
+!!            vtc(i,kc) = v0(i,k)
+!!            dudtc(i,kc) = ( ut(i,k,jj) - u0(i,k) )/dta
+!!            dvdtc(i,kc) = ( vt(i,k,jj) - v0(i,k) )/dta
+!!            dtdtc(i,kc) = ( tt(i,k,jj) - t0(i,k))/dta
           enddo
         enddo
 !
@@ -1073,15 +1094,15 @@
 !
 !     recompute phi by tt after pbl to ensure consistence of phi & phi2
 !
-      do 250 k = 1, lev
-      do 250 i = 1, nxj
+      do 253 k = 1, lev
+      do 253 i = 1, nxj
       theda(i,k) = tt(i,k,jj)*(1.0+0.608*qt(i,k,jj)) / pk(i,k,jj)
-  250 continue
+  253 continue
 !
-      do 252 i = 1 ,nxj
+      do 254 i = 1 ,nxj
       phi(i,lev) = sgeo(i,jj)+  &
                    cp*theda(i,lev)*(pk2(i,lev,jj)-pk(i,lev,jj))
-  252 continue
+  254 continue
       do 255 k = lev-1, 1, -1
       do 255 i = 1,nxj
       phi(i,k) = phi(i,k+1) +cp*(theda(i,k)*(pk2(i,k,jj)-pk(i,k,jj))  &
@@ -1377,8 +1398,8 @@
           cldf(i)     = cgwf(1)*work1(i) + cgwf(2)*work2(i)
         enddo
 !
-        call gwdc (nxjp(j),nxp,nxp,lev,u0,v0,        &
-                     t0,q0,prsl,prsi,del,             &
+        call gwdc (nxjp(j),nxp,nxp,lev,ut(1,1,jj),vt(1,1,jj),        &
+                     tt(1,1,jj),qt(1,1,jj),prsl,prsi,del,            &
                      ktop(1,jj),kbot(1,jj),kuo(1,jj),cldf,cumabs,    &
                      grav,cp,con_rd,con_fvirt,dta,dlength,           &
                      utgwc,vtgwc,tauctx,taucty,j)
