@@ -757,11 +757,12 @@
 !-----------------------------------------------------------------------
       if(ncld.ge.3)then
       ntrac=ntoz
-      do k = 1, lev
-        kk = (ntrac-1)*lev+k
-        do jj = 1, jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
+!
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        do k = 1, lev
+          kk = (ntrac-1)*lev+k
           do i = 1, nxj
             o3l(i,k,jj) = qt(i,kk,jj)
           enddo
@@ -1754,7 +1755,7 @@
              alnwf(1,jj),facsf(1,jj),facwf(1,jj),                          &
              curate(1,jj),icsdsw(nxjstart(j)),icsdlw(nxjstart(j)),         &
              sinl(j),cosl(j),xlat(j),xlonr(nxjstart(j),jj),jdat,d2r,xkapa, &
-             ptrad,dtlw,dtsw,lsswr,lsswr,lssav,                            &
+             ptrad,dtlw,dtsw,lsswr,lslwr,lssav,                            &
              nfxr,j,                                                       &
              nxp,nxjp(j),lev,ncld,lprnt,ipt,kdt,solhr,solcon,              &
              uni_cloud,lmfshal,lmfdeep2,                                   &
@@ -2249,17 +2250,17 @@
 !     update o3l to qt
 !--------------------------------------------------------------------------------
       if(ncld.ge.3)then
-      ntrac=ntoz
-      do k = 1, lev
-         kk = (ntrac-1)*lev+k
-      do jj=1, jlistnum
-         j=jlist1(jj)
-         nxj=nxdef_2d(j)
-      do i = 1, nxj
-         qt(i,kk,jj) = o3l(i,k,jj)
-      enddo
-      enddo
-      enddo
+        ntrac=ntoz
+        do jj=1, jlistnum
+           j=jlist1(jj)
+           nxj=nxdef_2d(j)
+           do k = 1, lev
+             kk = (ntrac-1)*lev+k
+             do i = 1, nxj
+               qt(i,kk,jj) = o3l(i,k,jj)
+             enddo
+           enddo
+         enddo
       endif
 !
 !      call mpe_global_sum(xkmd  ,lev,mpe_double)
