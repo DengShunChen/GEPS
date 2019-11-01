@@ -927,9 +927,9 @@
           endif
           c(j,k) = c(j,k) + max((eng0-eng1),0.0)/cp/deltim
 !
-          u1(j,k) = u1(j,k) + b(j,k) * deltim
-          v1(j,k) = v1(j,k) + a(j,k) * deltim
-          t1(j,k) = t1(j,k) + c(j,k) * deltim
+!          u1(j,k) = u1(j,k) + b(j,k) * deltim
+!          v1(j,k) = v1(j,k) + a(j,k) * deltim
+!          t1(j,k) = t1(j,k) + c(j,k) * deltim
 !
         enddo
       enddo

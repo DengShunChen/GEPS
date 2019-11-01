@@ -1177,12 +1177,12 @@
 
 ! ---  update the wind components with  gwdc tendencies
 !
-      do k =1,km
-        do i = 1,im
-          u1(i,k) = u1(i,k)+utgwc(i,k)*dta
-          v1(i,k) = v1(i,k)+vtgwc(i,k)*dta
-        enddo
-      enddo
+!!      do k =1,km
+!!        do i = 1,im
+!!          u1(i,k) = u1(i,k)+utgwc(i,k)*dta
+!!          v1(i,k) = v1(i,k)+vtgwc(i,k)*dta
+!!        enddo
+!!      enddo
 !
       do i=1,npt
         ii = ipt(i)
