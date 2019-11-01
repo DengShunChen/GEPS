@@ -1178,7 +1178,7 @@
         enddo
 
         call cumastr_driv_n                                               &
-               (nxjp(j)    ,nxp       ,lev        ,dt         ,grav      ,&
+               (nxjp(j)    ,nxp       ,lev        ,dta         ,grav     ,&
                 rgas       ,cp        ,hltm       ,ptop      ,land(1,jj) ,&
                 sgeo(1,jj) ,phi       ,u0         ,v0        ,t0         ,&
                 q0         ,ut(1,1,jj),vt(1,1,jj) ,tt(1,1,jj),qt(1,1,jj) ,&

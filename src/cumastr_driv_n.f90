@@ -70,7 +70,8 @@
 !
       real rhoh2o,d2r,xlatj,xlat,tt1
 !c
-      integer klevp1,klevm1,k,i,kc,ncldq,lndj(nx)
+      integer klevp1,klevm1,k,i,kc,ncldq
+      integer lndj(nx)
       logical fwd,land(nx),ldland(nx)
 !xb110>
       real zew,zqs,zcor,foeewm,mdlon
