@@ -175,7 +175,8 @@
       use mod_sitgrid
       USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
       USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt &
-                                     ,timebl_option,timebl_start
+                                     ,timebl_option,timebl_start,sitchg_option    &
+                                     ,fsitchg
       USE mod_eos_ocean,         ONLY:AirVaporPressure,CalcSm
       USE mod_sst,               ONLY:time_weights,now1,now2,wgto1,wgto2 &
                                      ,obswtbnmw1,obswtbnmw2,obswtbwgt1   &
@@ -1966,6 +1967,7 @@
             t_surf = MAX( t_surf, ctfreez )
             tsi(ii,jj)= MIN( t_surf, ctfreez )
             tgold(ii,jj)=tg(ii,jj)
+            tsw(ii,jj)=tgold(ii,jj)
             dtswdt(ii,jj)=0.
 
 
@@ -2118,15 +2120,23 @@
         
 !        call random_seed()
         do ii = 1, nxj
-          if(ocean(ii,jj) .AND. sitmask(ii,jj).EQ.1.) then
-            dtswdt(ii,jj)=min(max(dtswdt(ii,jj)*dtfsit,-0.5),0.5)
-            tg(ii,jj)=tgold(ii,jj)+dtswdt(ii,jj)
-!            rsecond=rtc()
-!            call random_number(randdt)
-!            dtswdt(ii,jj)=(randdt)*0.001
-!            dtswdt(ii,jj)=0.001
-!            tg(ii,jj)=tgini(ii,jj)+dtswdt(ii,jj)
+         if(ocean(ii,jj) .AND. sitmask(ii,jj).EQ.1.) then
+          if(ltrigsit)then
+            if(sitchg_option .eq. 1)then
+              tgdiff(ii,jj)=min(max(tsw(ii,jj)-tgold(ii,jj),-abs(fsitchg)),abs(fsitchg))
+              tg(ii,jj)=tgold(ii,jj)+tgdiff(ii,jj)
+            else if(sitchg_option .eq. 2)then
+              tgdiff(ii,jj)=min(max(tsw(ii,jj)-tgini(ii,jj),-abs(fsitchg)),abs(fsitchg))
+              tg(ii,jj)=tgini(ii,jj)+tgdiff(ii,jj)
+            else
+              tgdiff(ii,jj)=tsw(ii,jj)-tgold(ii,jj)
+              tg(ii,jj)=tgold(ii,jj)+tgdiff(ii,jj)
+            endif
+          else
+            tgdiff(ii,jj)=obswtb(ii,jj)-tgold(ii,jj)
+            tg(ii,jj)=tgold(ii,jj)+tgdiff(ii,jj)
           endif
+
           if(myrank .EQ. myrank_check .AND.         &
             jj .EQ. jj_check .AND. ii .EQ. ii_check) then
             print*,'after sit_vdiff:myrank=',myrank                &
@@ -2136,11 +2146,11 @@
                  ,',sitlclass=',sitlclass(ii,jj)                   &
                  ,',sitmask=',sitmask(ii,jj),',tg=',tg(ii,jj)      &
                  ,',tsw=',tsw(ii,jj),',dtswdt=',dtswdt(ii,jj)      &
-                 ,',tgold=',tgold(ii,jj)                           &
+                 ,',tgold=',tgold(ii,jj),',tgdiff=',tgdiff(ii,jj)   &
                  ,',dta=',dta,',dt=',dt,',dtfsit=',dtfsit          &
                  ,',lsftobswt=',lsftobswt
           endif
-
+         endif
         enddo
 
       endif  !end lrun_sitvdiff

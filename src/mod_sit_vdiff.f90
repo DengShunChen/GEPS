@@ -3090,7 +3090,7 @@ CONTAINS
   ELSE
     ptsw(jl)=pobswtb(jl)
     pwt(jl,0)=ptsw(jl)
-    pdtswdt(jl)=0.
+    pdtswdt(jl)=(ptsw(jl)-poldtsw(jl))/(n_sit_step*zdtime)
   ENDIF   !ENDIF ltrigsit
     IF(GDCHK3) then
       print *,"sitvdiff:ltrigsit=",ltrigsit,",ptsw(jl)=",ptsw(jl) &

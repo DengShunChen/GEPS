@@ -122,6 +122,7 @@
       lFCTweight=.false.
       lopgsst=.false.
       dailyClm_option=-99
+      lday_chtg=.true.
 !--for SIT
       do_sit=.false.
       fsit=-99.

@@ -999,20 +999,15 @@
 !            call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
             call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
 
-            call unify_reduceintp(nx,my,my_max,dtswdt,glob)
+            call unify_reduceintp(nx,my,my_max,tgdiff,glob)
             call syslbl ('s00102',idtg,itautest,ggdef,ihdg)
 !            call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
             call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-!          else
-!            call unify_reduceintp(nx,my,my_max,tg,glob)
-!            call syslbl ('s00101',idtg,itautest,ggdef,ihdg)
-!            call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-!            call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
 
-!            call unify_reduceintp(nx,my,my_max,tgdiff,glob)
-!            call syslbl ('s00102',idtg,itautest,ggdef,ihdg)
+            call unify_reduceintp(nx,my,my_max,dtswdt,glob)
+            call syslbl ('s00103',idtg,itautest,ggdef,ihdg)
 !            call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-!            call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+            call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
           end if
 
           itimestep=itimestep+1   ! for sppt time evolution)
@@ -1186,20 +1181,15 @@
 !            call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
             call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
 
-            call unify_reduceintp(nx,my,my_max,dtswdt,glob)
+            call unify_reduceintp(nx,my,my_max,tgdiff,glob)
             call syslbl ('s00102',idtg,itautest,ggdef,ihdg)
 !            call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
             call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-!          else
-!            call unify_reduceintp(nx,my,my_max,tg,glob)
-!            call syslbl ('s00101',idtg,itautest,ggdef,ihdg)
-!            call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-!            call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
 
-!            call unify_reduceintp(nx,my,my_max,tgdiff,glob)
-!            call syslbl ('s00102',idtg,itautest,ggdef,ihdg)
+            call unify_reduceintp(nx,my,my_max,dtswdt,glob)
+            call syslbl ('s00103',idtg,itautest,ggdef,ihdg)
 !            call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-!            call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+            call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
           end if
 
           itimestep=itimestep+1   ! for sppt time evolution)
@@ -1840,6 +1830,9 @@
               ssttemp=(1.-wweight)*(ANAsstT0(ii,jj)-dailyClmANAsst(ii,jj,0) &
                      +dailyClmANAsst(ii,jj,1) ) +wweight*(dailyFCTsst(ii,jj,1) &
                      -(dailyClmFCTsst(ii,jj,1)-dailyClmANAsst(ii,jj,1)))
+            elseif(dailyClm_option .eq. 3 )then       !climatology sst
+              ssttemp=obswtbwgt1*dailyClmANAsst(ii,jj,obswtbnmw1) &
+                     +obswtbwgt2*dailyClmANAsst(ii,jj,obswtbnmw2)
             else
               ssttemp=obswtbwgt1*dailyFCTsst(ii,jj,obswtbnmw1) &    !use daily sst 
                       +obswtbwgt2*dailyFCTsst(ii,jj,obswtbnmw2)
@@ -1888,11 +1881,15 @@
             if(ocean(ii,jj)) then
               if(do_sit .and. (sitmask(ii,jj) .eq. 1.)) then
                 obswtb(ii,jj)=max(271.,sst(ii,jj))
-                tg(ii,jj)=max(271.,sst(ii,jj))
+                if(lday_chtg)then
+                  tg(ii,jj)=max(271.,sst(ii,jj))
+                endif
 !                  tgold(i,jj)=max(271.,sst(i,j))
 !                  tsw(i,jj)=max(271.,sst(i,j))
               else
-                tg(ii,jj)=max(271.,sst(ii,jj))
+                if(lday_chtg .and. (tgmask(ii,jj).eq. 1.))then
+                  tg(ii,jj)=max(271.,sst(ii,jj))
+                endif
               endif
             endif
             if(myrank .eq. myrank_check .AND. &
