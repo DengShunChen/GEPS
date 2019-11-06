@@ -135,7 +135,7 @@
               ntau,itau,lcwb,lphy,ifromtau,itotau,istat,    &
               istst,ii !,n_stable,n_unstable,nc_stable
 
-      real    www,dtx,dta,qbrwtot,thdai,tkei,tpei,dsigp,    &
+      real    www,dtx,dta,thdai,tkei,tpei,dsigp,            &
               cosw,tengi,dt24,tg2,dtx_tau,hfiltx,sqhaf,     &
               dummy,dt1,sptend,wmax,xx,facw,dtaup!!,          &
 !!              sptendmax2,sptendmax1,dt_chg
@@ -421,7 +421,6 @@
 !
 !  compute initial moisture and potential temperature
 !
-      qbrwtot = 0.0
       qgini   = 0.0
       thdai   = 0.0
       tkei    = 0.0
@@ -971,7 +970,7 @@
                       , hflux,qflux,ustar,tstar,qstar,e                         &
                       , eps,o3l,dtrad,ss,rs,plt,pk,pk2,ptp,up,vp,ttp,qp,pt,ut   &
                       , vt,tt,qt,gwclim,tice,hice,qgini,thdai,tengi             &
-                      , acld,std,qbrwtot,asol,olr,drag,ugws,vgws                &
+                      , acld,std,asol,olr,drag,ugws,vgws                        &
                       , sdpbl,t2,q2,rh2,rh10,u10,v10,gfx                        &
                       , fm,fh,fm10,fh2,srflag                                   &
                       , rld,km_soil,smc,stc,canopy,runoff                       &
@@ -1135,7 +1134,7 @@
                      , hflux,qflux,ustar,tstar,qstar,e                          &
                      , eps,o3l,dtrad,ss,rs,plt,pk,pk2,ptp,up,vp,ttp,qp,pt,ut    &
                      , vt,tt,qt,gwclim,tice,hice,qgini,thdai,tengi              &
-                     , acld,std,qbrwtot,asol,olr,drag,ugws,vgws                 &
+                     , acld,std,asol,olr,drag,ugws,vgws                         &
                      , sdpbl,t2,q2,rh2,rh10,u10,v10,gfx                         &
                      , fm,fh,fm10,fh2,srflag                                    &
                      , rld,km_soil,smc,stc,canopy,runoff                        &

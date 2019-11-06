@@ -13,7 +13,7 @@
                     , hflux,qflux,ustar,tstar,qstar,e                          &
                     , eps,o3l,dtrad,ss,rs,plt,pk,pk2,ps,up,vp,ttp,qp           &
                     , pst,ut,vt,tt,qt,gwclim,tice,hice,qgini                   &
-                    , thdai,tengi,acld,std,qbrwtot,asol,olr,drag               &
+                    , thdai,tengi,acld,std,asol,olr,drag                       &
                     , ugws,vgws,sdpbl,t2,q2,rh2,rh10,u10,v10,gfx               &
                     , fm,fh,fm10,fh2,srflag                                    &
                     , rld,km_soil,smc,stc,canopy,runoff                        &
@@ -203,7 +203,7 @@
                 land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max),  &
                 docgrav
 
-      real      tice,hice,qgini,thdai,tengi,qbrwtot,ptop,            &
+      real      tice,hice,qgini,thdai,tengi,ptop,                    &
                 hltm,evaprh,s0,stbo,cp,rgas,grav,frad,               &
                 hours,tau,dt,cgw
 
@@ -349,7 +349,7 @@
                 aflxd(lev+2,my),aflxu(lev+2,my),                         &
                 dtcupx(my),dtcupz(lev,my),dqcupz(lev,my),dtcupd(lev),    &
                 dqcupd(lev),dtcupl(lev),dqcupl(lev),xkmx(2,my),xkmd(lev),&
-                qbrrow(ncld,my),phi(nxp,lev),theda(nxp,lev),albx(nxp,my_max), &
+                phi(nxp,lev),theda(nxp,lev),albx(nxp,my_max), &
                 cofx(nx*3,my),dphi(nxp,lev)
 
       real      wkj(4,my),dsigpp(lev),qt_diff(ncld)
@@ -414,8 +414,8 @@
       real      prevap,etop,   radus,  radsq,  d2r,    ptrad,  xkapa, xkapa1,&
                 okapa, p0k,    op0k,   ptopk,  dta,    rainfc, abxlat,xx,    &
                 yy,    dtau,   aps,    arcup,  arlsp,  evapor, qglb,  thda,  &
-                tke,   tpe,    cosq,   dsigp,  cosw,   teng,   qbrw,  rainbl,&
-                qdiff, engdiff,thdadif,topsd,  toplu,  sfcsd,  sfclu, xoj,   &
+                tke,   tpe,    cosq,   dsigp,  cosw,   teng,   rainbl,       &
+                engdiff,thdadif,topsd,  toplu,  sfcsd,  sfclu, xoj,          &
                 xkmkk, xkmk1,  dtcupg, utx,    speed,  pstx,   pstn,  hflmx, &
                 qflmx, tgx,    dtradg, dragmax,dragmin,rcuprr, rlsprr,ud,    &
                 vd,    ttd,    qqd,    dqcu,   deg_ju, arg,    tem
@@ -549,6 +549,15 @@
         enddo
         enddo
       endif
+!for pdfcloud
+      do k = 1, lev
+        do i = 1, nxp
+          cnvw(i,k) = 0.
+          cnvc(i,k) = 0.
+          cnvwr(i,k) = 0.
+          cnvcr(i,k) = 0.
+        enddo
+      enddo
 !
       do jj = 1, jlistnum
        j=jlist1(jj)
@@ -562,7 +571,9 @@
 ! for wsm6
        sr(i,jj)  = 0.0
       enddo
+      enddo
 
+      do j = 1, my
       do k = 1, lev
        asr(k,j)   = 0.0
        alr(k,j)   = 0.0
@@ -578,28 +589,17 @@
        nflx(k,j)  = 0
        ilsp(k,j)  = 0
        nlsp(k,j)  = 0
-!for pdfcloud
-        do i = 1, nxp
-          cnvw(i,k) = 0.
-          cnvc(i,k) = 0.
-          cnvwr(i,k) = 0.
-          cnvcr(i,k) = 0.
-        enddo
       enddo
 
       do k = 1, lev+2
        aflxd(k,j) = 0.0
        aflxu(k,j) = 0.0
       enddo
-
-      enddo
 !
-      do jj = 1, jlistnum
-       j=jlist1(jj)
        ijdg(j) = 0
 !ch    qbrrow(1,j)= 0.0
 !ch    qbrrow(2,j)= 0.0
-       qbrrow(1:ncld,j)= 0.0
+!!       qbrrow(1:ncld,j)= 0.0
        ncup(j) = 0
        ndry(j) = 0
        nshl(j) = 0
@@ -807,10 +807,6 @@
       do 290 jj =1, jlistnum
       j=jlist1(jj)
       nxj=nxdef_2d(j)
-!
-!    fill up negative moisture fields from level below
-!
-!!    call postq (nxjp(j),nxp,lev,ncld,dsigma,pst(1,jj),qt(1,1,jj),qbrrow(1,j),cosl(j))
 !
 !    compute new time level p**kapa quantites
 !
@@ -2185,9 +2181,6 @@
   270 continue
 !
 !
-!    fill up negative moisture fields from level below
-!
-!!      call postq(nxjp(j),nxp,lev,ncld,dsigma,pst(1,jj),qt(1,1,jj),qbrrow(1,j),cosl(j))
 !
   290 continue
 !
@@ -2381,24 +2374,23 @@
       teng = teng/cosw
       thda = thda/cosw
 !
-      qbrw = 0.0
+!      qbrw = 0.0
 !
 !     call mpe_unify(qbrrow,ncld,my,2,mpe_double)
-      call mpe_unify(qbrrow,ncld,my,4,mpe_double)
+!      call mpe_unify(qbrrow,ncld,my,4,mpe_double)
 !
-      do 320 j = 1, my
-      qbrw = qbrw + qbrrow(1,j)
-  320 continue
+!      do 320 j = 1, my
+!      qbrw = qbrw + qbrrow(1,j)
+!  320 continue
 !
       cosq = cosw*nx
 !
       qglb  = qglb * 100.0/grav/cosq
-      qbrw  = qbrw * 100.0/grav/cosq
+!      qbrw  = qbrw * 100.0/grav/cosq
       rainbl= ( arcup + arlsp - evapor ) * dta / 86400.0
-      qdiff = qgini - (qglb - rainbl - qbrw)
+!      qdiff = qgini - (qglb - rainbl - qbrw)
       engdiff=tengi-teng
       thdadif=thdai-thda
-      qbrwtot=qbrwtot+qbrw
 !
       nncup = 0
       nnshl = 0
@@ -2574,8 +2566,8 @@
       print 8016, dtcupl
       print 8017, dqcupl
       if ( uprad ) print 8018, topsd,toplu,sfcsd,sfclu
-      print *,' global moisture budget: qgini, qglb, qbrw, qdiff ='
-      print *, qgini,qglb,qbrw,qdiff,qbrwtot
+      print *,' global moisture budget: qgini, qglb ='
+      print *, qgini,qglb
 !
  8888 format('global average thdai,thda,thdadif=',e15.9,2(2x,e15.9))
       print *,'global average thdai,thda,thdadif='
@@ -2725,8 +2717,8 @@
             , /,1x, 30f5.1 )
  8017 format( 1x, 30f5.1)
  8018 format( 1x,' topsd, toplu, sfcsd, sfclu= ', 4f9.2 )
- 8019 format( 1x,' global moisture budget: qgini, qglb, qbrw, qdiff =' &
-            , 4e14.6,' qbrwtot=',e14.6 )
+ 8019 format( 1x,' global moisture budget: qgini, qglb =' &
+            , 2e14.6 )
 !
  8020 format('  lev  nlcl nnegl nosat nwork ntcup  nflx')
  8022 format( i4, 6i6)
