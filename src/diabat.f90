@@ -549,13 +549,20 @@
         enddo
         enddo
       endif
-!for pdfcloud
+
       do k = 1, lev
         do i = 1, nxp
+!for pdfcloud
           cnvw(i,k) = 0.
           cnvc(i,k) = 0.
           cnvwr(i,k) = 0.
           cnvcr(i,k) = 0.
+!
+!for hydrometeor
+          qti(i,k)  = -999.9
+          qtsw(i,k) = 0.
+          qtrw(i,k) = 0.
+          qtgl(i,k) = 0.
         enddo
       enddo
 !
@@ -1257,6 +1264,7 @@
            phil(i,kc)= phi(i,k)-sgeo(i,jj)
            qtc(i,kc) = qt(i,k,jj)
            qtr(i,kc) = qt(i,lev+k,jj)
+           if ( nclds .gt. 1 ) qti(i,kc) = qt(i,2*lev+k,jj)
            ttc(i,kc) = tt(i,k,jj)
            utc(i,kc) = ut(i,k,jj)
            vtc(i,kc) = vt(i,k,jj)
@@ -1286,7 +1294,7 @@
 !!          ,ktop(1,jj),kuo(1,jj),slimsk,garea,ncld,grav,cp,hltm,rgas    &
 !!          ,tice)
          call samfdeepcnv(nxjp(j),nxp,lev,dta,del,prsl,psfc,phil       &
-          ,qtr,qtc,ttc,utc,vtc,cldwrk(1,jj),rcup(1,jj),kbot(1,jj)      &
+          ,qtr,qti,qtc,ttc,utc,vtc,cldwrk(1,jj),rcup(1,jj),kbot(1,jj)  &
           ,ktop(1,jj),kuo(1,jj),islimsk,garea,dotc,ncld,cnvw,cnvc)
 
 ! for rad input of convection cloud information
@@ -1310,6 +1318,7 @@
           do i=1,nxj
             qt(i,k    ,jj) = max(qtc(i,kc),0.)
             qt(i,k+lev,jj) = max(qtr(i,kc),0.)
+            if ( nclds .gt. 1 ) qt(i,2*lev+k,jj) = qti(i,kc)
             tt(i,k    ,jj) = ttc(i,kc)
             ut(i,k    ,jj) = utc(i,kc)
             vt(i,k    ,jj) = vtc(i,kc)
@@ -1447,6 +1456,7 @@
            phil(i,kc)= phi(i,k)-sgeo(i,jj)
            qtc(i,kc) = qt(i,k,jj)
            qtr(i,kc) = qt(i,lev+k,jj)
+           if ( nclds .gt. 1 ) qti(i,kc) = qt(i,2*lev+k,jj)
            ttc(i,kc) = tt(i,k,jj)
            utc(i,kc) = ut(i,k,jj)
            vtc(i,kc) = vt(i,k,jj)
@@ -1474,7 +1484,7 @@
 !!          ,kuo(1,jj),slimsk,garea,dotc,ncld,hpbl(1,jj),heat,evap      &
 !!          ,grav,cp,hltm,rgas,tice)
         call samfshalcnv(nxjp(j),nxp,lev,dta,del,prsl,psfc,phil,qtr   &
-          ,qtc,ttc,utc,vtc,rcup2,kbot(1,jj),ktop(1,jj),kuo(1,jj)      &
+          ,qti,qtc,ttc,utc,vtc,rcup2,kbot(1,jj),ktop(1,jj),kuo(1,jj)  &
           ,islimsk,garea,dotc,ncld,hpbl(1,jj),cnvw,cnvc)
 !
         do i=1,nxj
@@ -1486,6 +1496,7 @@
           do i=1,nxj
             qt(i,k    ,jj) = qtc(i,kc)
             qt(i,k+lev,jj) = qtr(i,kc)
+            if ( nclds .gt. 1 ) qt(i,2*lev+k,jj) = qti(i,kc)
             tt(i,k    ,jj) = ttc(i,kc)
             ut(i,k    ,jj) = utc(i,kc)
             vt(i,k    ,jj) = vtc(i,kc)
