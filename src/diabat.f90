@@ -273,10 +273,10 @@
       real hprime_b(nxp,mtnvar,my_max)
 !byl      real pltn(nxp,lev,my_max),pkn(nxp,lev,my_max),pk2n(nxp,lev,my_max),  &
       real tt_bfcnv(nxp,lev)
-      real p2c(nxp,lev+1),phie2c(nxp,lev+1),p2ac(nxp,lev+1)
+      real prsi(nxp,lev+1)
       real utgwc(nxp,lev),vtgwc(nxp,lev),delttcv(nxp,lev),                 &
            dudtc(nxp,lev),dvdtc(nxp,lev),dtdtc(nxp,lev),                   &
-           phio2c(nxp,lev),prslk(nxp,lev)
+           prslk(nxp,lev)
       real oc(nxp),theta(nxp),gamma(nxp),sigmaog(nxp),elvmax(nxp),hprime(nxp),    &
            dlength(nxp),cldf(nxp),cumabs(nxp),work3(nxp),tauctx(nxp),taucty(nxp), &
            dvsfcg(nxp),dusfcg(nxp),facg(lev)
@@ -763,11 +763,12 @@
 !-----------------------------------------------------------------------
       if(ncld.ge.3)then
       ntrac=ntoz
-      do k = 1, lev
-        kk = (ntrac-1)*lev+k
-        do jj = 1, jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
+!
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        do k = 1, lev
+          kk = (ntrac-1)*lev+k
           do i = 1, nxj
             o3l(i,k,jj) = qt(i,kk,jj)
           enddo
@@ -839,8 +840,8 @@
       phi(i,k) = phi(i,k+1) +cp*(tt(i,k,jj)*(pk2(i,k,jj)-pk(i,k,jj))   &
                             + tt(i,k+1,jj)*(pk(i,k+1,jj)-pk2(i,k,jj)))
   210 continue
-!!       call get_phi(nxjp(j),nxp,lev,ptop,cp,rgas,grav,                &
-!!                   pk(1,1,jj),pk2(1,1,jj),tt(1,1,jj),qt(1,1,jj),phii)
+       call get_phi(nxjp(j),nxp,lev,ptop,cp,rgas,grav,                &
+                   pk(1,1,jj),pk2(1,1,jj),tt(1,1,jj),qt(1,1,jj),phii)
 !
 !     deweight u,v by cosl/radus, and
 !     change t from virtual potential temperature to real temperature
@@ -952,6 +953,27 @@
                      , hpbl(1,jj),asl(1,1,jj),atl(1,1,jj),xmu(1,jj),gfx(1,jj) &
                      , kpbl(1,jj),nmpbl,j,isot,ivegsrc,sfemis(1,jj) )
 !
+!
+!     recompute phi by tt after pbl to ensure consistence of phi & phi2
+!
+      do 250 k = 1, lev
+      do 250 i = 1, nxj
+      theda(i,k) = tt(i,k,jj)*(1.0+0.608*qt(i,k,jj)) / pk(i,k,jj)
+  250 continue
+!
+      do 251 i = 1 ,nxj
+      phi(i,lev) = sgeo(i,jj)+  &
+                   cp*theda(i,lev)*(pk2(i,lev,jj)-pk(i,lev,jj))
+  251 continue
+      do 252 k = lev-1, 1, -1
+      do 252 i = 1,nxj
+      phi(i,k) = phi(i,k+1) +cp*(theda(i,k)*(pk2(i,k,jj)-pk(i,k,jj))  &
+                            +theda(i,k+1)*(pk(i,k+1,jj)-pk2(i,k,jj)))
+  252 continue
+!
+       call get_phi(nxjp(j),nxp,lev,ptop,cp,rgas,grav,                &
+                   pk(1,1,jj),pk2(1,1,jj),tt(1,1,jj),qt(1,1,jj),phii)
+!
 ! SHUM process
 !  John Tseng
 !
@@ -990,26 +1012,7 @@
 !!      enddo
 !
       endif ! end dosppt if stetement
-!
-!     recompute phi by tt after pbl to ensure consistence of phi & phi2
-!
-      do 250 k = 1, lev
-      do 250 i = 1, nxj
-      theda(i,k) = tt(i,k,jj)*(1.0+0.608*qt(i,k,jj)) / pk(i,k,jj)
-  250 continue
-!
-      do 252 i = 1 ,nxj
-      phi(i,lev) = sgeo(i,jj)+  &
-                   cp*theda(i,lev)*(pk2(i,lev,jj)-pk(i,lev,jj))
-  252 continue
-      do 255 k = lev-1, 1, -1
-      do 255 i = 1,nxj
-      phi(i,k) = phi(i,k+1) +cp*(theda(i,k)*(pk2(i,k,jj)-pk(i,k,jj))  &
-                            +theda(i,k+1)*(pk(i,k+1,jj)-pk2(i,k,jj)))
-  255 continue
-!
-       call get_phi(nxjp(j),nxp,lev,ptop,cp,rgas,grav,                &
-                   pk(1,1,jj),pk2(1,1,jj),tt(1,1,jj),qt(1,1,jj),phii)
+
 !
       if(dograv .and. nmgwor .eq. 1)                                   &
        call gwdp (j,nxjp(j),nxp,lev,                                   &
@@ -1041,31 +1044,30 @@
           enddo
         enddo
 !
-!byl        do i=1,nxj
-!byl          kpblc(i,jj) = kpbl(i,jj)
-!byl        enddo
 !
         do k=1,lev
           kc=lev-k+1
-!byl          facg(kc)=0.15*(1.0*exp(-0.1*kc))
-!byl          if(facg(kc).le.0.01) facg(kc) = 0.01
-!byl          if(facg(kc).ge.0.1) facg(kc) = 0.1
           do i=1,nxj
             prsl(i,kc) = 100.0*plt(i,k,jj) ! pa
             prslk(i,kc)=(plt(i,k,jj)/1000.)**xkapa
             del(i,kc) = 100.0*( dsigma(k,1)*pst(i,jj)+dsigma(k,2))  !  pa
+            phil(i,kc) = phi(i,k)-sgeo(i,jj)
+!time split forcing
             qtc(i,kc) = qt(i,k,jj)
             ttc(i,kc) = tt(i,k,jj)
             utc(i,kc) = ut(i,k,jj)
             vtc(i,kc) = vt(i,k,jj)
-!byl            dudtc(i,kc) = facg(kc)*( ut(i,k,jj) - up(i,k,jj) )/dt
-!byl            dvdtc(i,kc) = facg(kc)*( vt(i,k,jj) - vp(i,k,jj) )/dt
-!byl            dtdtc(i,kc) = facg(kc)*( tt(i,k,jj) - ttpn(i,k,jj))/dt
-!quick fix for orographic GWD
             dudtc(i,kc) = 0.
             dvdtc(i,kc) = 0.
             dtdtc(i,kc) = 0.
-            phio2c(i,kc) = phi(i,k)
+!no time split forcing
+!!            qtc(i,kc) = q0(i,k)
+!!            ttc(i,kc) = t0(i,k)
+!!            utc(i,kc) = u0(i,k)
+!!            vtc(i,kc) = v0(i,k)
+!!            dudtc(i,kc) = ( ut(i,k,jj) - u0(i,k) )/dta
+!!            dvdtc(i,kc) = ( vt(i,k,jj) - v0(i,k) )/dta
+!!            dtdtc(i,kc) = ( tt(i,k,jj) - t0(i,k))/dta
           enddo
         enddo
 !
@@ -1073,32 +1075,50 @@
         do k = 1,lev+1
           kc= (lev+1)-k+1
           do i =1,nxj
-            phie2c(i,kc) = phii(i,kc)+sgeo(i,jj)
-            p2ac(i,kc)   = 100.0*( sigma(k,1)*pst(i,jj)+sigma(k,2)+ptop ) !pa
+            prsi(i,kc)   = 100.0*( sigma(k,1)*pst(i,jj)+sigma(k,2)+ptop ) !pa
           enddo
         enddo
 !
         call gwdps(nxjp(j), nxp, nxp,  lev,                        &
                dvdtc, dudtc, dtdtc,utc, vtc, ttc,qtc,              &
-               kpbl(1,jj),   p2ac, del,   prsl, prslk,             &
-               phie2c,    phio2c, dta,                             &
+               kpbl(1,jj),   prsi, del,   prsl, prslk,             &
+               phii,  phil, dta,                             &
                kdt,    hprime, oc, oa4, clx,                       &
                theta,sigmaog,gamma,elvmax,dusfcg, dvsfcg,          &
-               grav,cp,con_rd,con_rv, nxdef(j), mtnvar, cdmbgwd,   &
+               grav,cp,con_rd,con_rv, nx, mtnvar, cdmbgwd,   &
                me)
 !
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
-            tt(i,k    ,jj) = ttc(i,kc)
-            ut(i,k    ,jj) = utc(i,kc)
-            vt(i,k    ,jj) = vtc(i,kc)
+            tt(i,k,jj) = ttc(i,kc) + dtdtc(i,kc)*dta
+            ut(i,k,jj) = utc(i,kc) + dudtc(i,kc)*dta
+            vt(i,k,jj) = vtc(i,kc) + dvdtc(i,kc)*dta
           enddo
         enddo
 !
       endif  !(end of topo dograv and nmgwor=2)
 !
-!quick fix for convective GWD
+!     recompute phi by tt after pbl to ensure consistence of phi & phi2
+!
+      do 253 k = 1, lev
+      do 253 i = 1, nxj
+      theda(i,k) = tt(i,k,jj)*(1.0+0.608*qt(i,k,jj)) / pk(i,k,jj)
+  253 continue
+!
+      do 254 i = 1 ,nxj
+      phi(i,lev) = sgeo(i,jj)+  &
+                   cp*theda(i,lev)*(pk2(i,lev,jj)-pk(i,lev,jj))
+  254 continue
+      do 255 k = lev-1, 1, -1
+      do 255 i = 1,nxj
+      phi(i,k) = phi(i,k+1) +cp*(theda(i,k)*(pk2(i,k,jj)-pk(i,k,jj))  &
+                            +theda(i,k+1)*(pk(i,k+1,jj)-pk2(i,k,jj)))
+  255 continue
+!
+       call get_phi(nxjp(j),nxp,lev,ptop,cp,rgas,grav,                &
+                   pk(1,1,jj),pk2(1,1,jj),tt(1,1,jj),qt(1,1,jj),phii)
+!
       do k=1,lev
         do i=1,nxj
           tt_bfcnv(i,k) = tt(i,k,jj)
@@ -1165,7 +1185,7 @@
         enddo
 
         call cumastr_driv_n                                               &
-               (nxjp(j)    ,nxp       ,lev        ,dt         ,grav      ,&
+               (nxjp(j)    ,nxp       ,lev        ,dta         ,grav     ,&
                 rgas       ,cp        ,hltm       ,ptop      ,land(1,jj) ,&
                 sgeo(1,jj) ,phi       ,u0         ,v0        ,t0         ,&
                 q0         ,ut(1,1,jj),vt(1,1,jj) ,tt(1,1,jj),qt(1,1,jj) ,&
@@ -1314,24 +1334,6 @@
 !
       if( docgrav .and. nmgwcv .eq. 1 )then
 !
-! recompute phi after tt was changed
-!
-        do k = 1, lev
-          do i = 1, nxj
-            theda(i,k) = tt(i,k,jj)*(1.0+0.608*qt(i,k,jj)) / pk(i,k,jj)
-          enddo
-         enddo
-        do i = 1 ,nxj
-          phi(i,lev) = sgeo(i,jj)+  &
-                   cp*theda(i,lev)*(pk2(i,lev,jj)-pk(i,lev,jj))
-        enddo
-        do k = lev-1, 1, -1
-          do i = 1,nxj
-            phi(i,k) = phi(i,k+1)+cp*(theda(i,k)*(pk2(i,k,jj)-pk(i,k,jj))  &
-                            +theda(i,k+1)*(pk(i,k+1,jj)-pk2(i,k,jj)))
-          enddo
-        enddo
-!
         call nor_gwdp (j,nxjp(j),nxp,lev,                         &
                   ut(1,1,jj),vt(1,1,jj),tt(1,1,jj),qt(1,1,jj),    &
                   plt(1,1,jj),pk(1,1,jj),pk2(1,1,jj),phi,dta,&
@@ -1351,7 +1353,7 @@
         do  k = 1,lev+1
 !          kc=(lev+1)-k+1
           do  i = 1, nxj
-            p2c(i,k) = 100.0*( sigma(k,1)*pst(i,jj)+sigma(k,2) ) !pa
+            prsi(i,k) = 100.0*( sigma(k,1)*pst(i,jj)+sigma(k,2) ) !pa
           enddo
         enddo
 !
@@ -1404,18 +1406,17 @@
         enddo
 !
         call gwdc (nxjp(j),nxp,nxp,lev,ut(1,1,jj),vt(1,1,jj),        &
-                     tt(1,1,jj),qt(1,1,jj),prsl,p2c,del,             &
+                     tt(1,1,jj),qt(1,1,jj),prsl,prsi,del,            &
                      ktop(1,jj),kbot(1,jj),kuo(1,jj),cldf,cumabs,    &
                      grav,cp,con_rd,con_fvirt,dta,dlength,           &
                      utgwc,vtgwc,tauctx,taucty,j)
 !
-!        do k=1,lev
-!          kc=lev-k+1
-!          do i=1,nxj
-!            ut(i,k    ,jj) = utc(i,kc)
-!            vt(i,k    ,jj) = vtc(i,kc)
-!          enddo
-!        enddo
+        do k=1,lev
+          do i=1,nxj
+            ut(i,k,jj) = ut(i,k,jj) + utgwc(i,k) * dta
+            vt(i,k,jj) = vt(i,k,jj) + vtgwc(i,k) * dta
+          enddo
+        enddo
 !
       endif  !(end of docgrav and nmgwcv=2)
 !
@@ -1760,7 +1761,7 @@
              alnwf(1,jj),facsf(1,jj),facwf(1,jj),                          &
              curate(1,jj),icsdsw(nxjstart(j)),icsdlw(nxjstart(j)),         &
              sinl(j),cosl(j),xlat(j),xlonr(nxjstart(j),jj),jdat,d2r,xkapa, &
-             ptrad,dtlw,dtsw,lsswr,lsswr,lssav,                            &
+             ptrad,dtlw,dtsw,lsswr,lslwr,lssav,                            &
              nfxr,j,                                                       &
              nxp,nxjp(j),lev,ncld,lprnt,ipt,kdt,solhr,solcon,              &
              uni_cloud,lmfshal,lmfdeep2,                                   &
@@ -2279,17 +2280,17 @@
 !     update o3l to qt
 !--------------------------------------------------------------------------------
       if(ncld.ge.3)then
-      ntrac=ntoz
-      do k = 1, lev
-         kk = (ntrac-1)*lev+k
-      do jj=1, jlistnum
-         j=jlist1(jj)
-         nxj=nxdef_2d(j)
-      do i = 1, nxj
-         qt(i,kk,jj) = o3l(i,k,jj)
-      enddo
-      enddo
-      enddo
+        ntrac=ntoz
+        do jj=1, jlistnum
+           j=jlist1(jj)
+           nxj=nxdef_2d(j)
+           do k = 1, lev
+             kk = (ntrac-1)*lev+k
+             do i = 1, nxj
+               qt(i,kk,jj) = o3l(i,k,jj)
+             enddo
+           enddo
+         enddo
       endif
 !
 !      call mpe_global_sum(xkmd  ,lev,mpe_double)

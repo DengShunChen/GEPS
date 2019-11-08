@@ -46,14 +46,14 @@ subroutine gensppt3dv5(nx,my,my_max,lev,sppt3d                &
 !c  Please make sure your definition in init_block.f90 
 !c
 !      ncx=128 ! for 500km perturbation
-      ncx=2.*3.14159*6371./500. ! for 500km perturbation(calculation only for linear grid of Semi-Lagrangian)
-      jtrun500= 2*((1+(ncx-1)/2)/2)
+      ncx=2.*3.14159*6371./500. 
+      jtrun500= 2*((1+(ncx-1)/3)/2) ! for 500km perturbation
       mlmax500= jtrun500*(jtrun500+1)/2
 !c      de_corretime_500=6. ! unit: hrs
-      jtrun1000= 2*((1+(ncx/2-1)/2)/2)
+      jtrun1000= 2*((1+(ncx/2-1)/3)/2) ! for 1000km perturbation
       mlmax1000= jtrun1000*(jtrun1000+1)/2
 !c      de_corretime_1000=3.*24. ! unit: hrs
-      jtrun2000= 2*((1+(ncx/4-1)/2)/2)
+      jtrun2000= 2*((1+(ncx/4-1)/3)/2) ! for 2000km perturbation
       mlmax2000= jtrun2000*(jtrun2000+1)/2
 !c      de_corretime_2000=30.*24. ! unit: hrs
 !c

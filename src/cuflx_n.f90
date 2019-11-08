@@ -127,13 +127,21 @@
         end if
       enddo
 
+!xb110>
+      pmflxr = 0.
+      pmflxs = 0.
+      pdpmel = 0.
+!xb110<
+
       ktopm2= 2
       do jk=ktopm2,klev
         ikb = min(jk+1,klev)
        do jl = 1, nxj        
-          pmflxr(jl,jk) = 0.
-          pmflxs(jl,jk) = 0.
-          pdpmel(jl,jk) = 0.
+!xb110>
+!          pmflxr(jl,jk) = 0.
+!          pmflxs(jl,jk) = 0.
+!          pdpmel(jl,jk) = 0.
+!xb110<
           if(ldcum(jl).and.jk.ge.kctop(jl)) then
             pmfus(jl,jk)=pmfus(jl,jk)-pmfu(jl,jk)*           &
      &       (cpd*ptenh(jl,jk)+pgeoh(jl,jk))

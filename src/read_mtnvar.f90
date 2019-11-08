@@ -42,10 +42,10 @@
         do jj = 1, jlistnum
           j=jlist1(jj)
           jt = my - j + 1
-          ii=nxjstart(j)
-          nxj=nxdef_2d(j)
+          ii=nxjstart(jt)
+          nxj=nxdef_2d(jt)
           if( lreduce.eq.1 ) &
-             call reducepick(hprime_a8(1,jt),nxdef(j),nx,1)        
+             call reducepick(hprime_a8(1,jt),nxdef(jt),nx,1)        
           do i = 1, nxj
             hprime_b(i,v,jj) = hprime_a8(ii,jt)
             ii=ii+1
