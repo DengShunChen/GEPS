@@ -2036,9 +2036,9 @@
         if(cnvflg(i)) then
           tem = zi(i,ktcon1(i)) - zi(i,kbcon1(i))
           dtconv(i) = tem / wc(i)
-!byl          tfac = 1. + gdx(i) / 75000.
+          tfac = 1. + gdx(i) / 75000.
 ! reference from eq.3 in Zheng et al. 2016
-          tfac = 1. + log(25000./gdx(i))
+!byl          tfac = 1. + log(25000./gdx(i))
           dtconv(i) = tfac * dtconv(i)
           dtconv(i) = max(dtconv(i),dtmin)
           dtconv(i) = min(dtconv(i),dtmax)
