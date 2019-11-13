@@ -340,8 +340,8 @@
       integer   ijdg(my),ipblmx(2,my),itlsp(lev),nnlsp(lev),ilsp(lev,my),&
                 nlsp(lev,my),ncup(my),ndry(my),nshl(my),icupmx(my),      &
                 nlcl(lev,my),nnegl(lev,my),nosat(lev,my),nwork(lev,my),  &
-                ntcup(lev,my),nflx(lev,my),lvlwx(my),ilx(nx,my),         &
-                ibx(nx,my)
+                ntcup(lev,my),nflx(lev,my),lvlwx(my_max),ilx(nxp,my_max),&
+                ibx(nxp,my_max)
 
       real      cosl(my),sinl(my),cosz(nxp,my_max),                  &
                 rcup(nxp,my_max),rlsp(nxp,my_max),               &
@@ -350,7 +350,7 @@
                 dtcupx(my),dtcupz(lev,my),dqcupz(lev,my),dtcupd(lev),    &
                 dqcupd(lev),dtcupl(lev),dqcupl(lev),xkmx(2,my),xkmd(lev),&
                 phi(nxp,lev),theda(nxp,lev),albx(nxp,my_max), &
-                cofx(nx*3,my),dphi(nxp,lev)
+                cofx(nxp*3,my_max),dphi(nxp,lev)
 
       real      wkj(4,my),dsigpp(lev),qt_diff(ncld)
 
@@ -658,11 +658,11 @@
 
          abxlat = abs(xlat(j))
          njump1 = njump + 1
-         if ( mod(nxj,njump1) .ne. 0 )  njump1 = njump
+         if ( mod(nxp,njump1) .ne. 0 )  njump1 = njump
          njump2 = njump + 2
-         if ( mod(nxj,njump2) .ne. 0 )  njump2 = njump1
+         if ( mod(nxp,njump2) .ne. 0 )  njump2 = njump1
          njump3 = njump + 3
-         if ( mod(nxj,njump3) .ne. 0 )  njump3 = njump2
+         if ( mod(nxp,njump3) .ne. 0 )  njump3 = njump2
 
          if( lreduce.eq.1 ) then
            njump1 = njump
@@ -672,32 +672,32 @@
 
          if ( abxlat .le. 20.0 )  then
 !ch         lvlwx(j) = nxjp(j)/njump
-            lvlwx(j) = nxp/njump
+            lvlwx(jj) = nxp/njump
             nny = 1
          else if ( abxlat .le. 60.0 )  then
 !ch         lvlwx(j) = nxjp(j)/njump1
-            lvlwx(j) = nxp/njump1
+            lvlwx(jj) = nxp/njump1
             nny = 2
          else if ( abxlat .le. 80.0 )  then
 !ch         lvlwx(j) = nxjp(j)/njump2
-            lvlwx(j) = nxp/njump2
+            lvlwx(jj) = nxp/njump2
             nny = 3
          else
 !ch         lvlwx(j) = nxjp(j)/njump3
-            lvlwx(j) = nxp/njump3
+            lvlwx(jj) = nxp/njump3
             nny = 4
          endif
 !
          if( lreduce.eq.1 ) then
-           call splinc (lvlwx(j),nxj,ilx(1,j),ibx(1,j),cofx(1,j))
+           call splinc (lvlwx(jj),nxp,ilx(1,jj),ibx(1,jj),cofx(1,jj))
          else
 !          do 150 i  = 1, nx
            do 150 i  = 1, nxp
-            ilx(i,j)  = il(i,nny)
-            ibx(i,j)  = ib(i,nny)
+            ilx(i,jj)  = il(i,nny)
+            ibx(i,jj)  = ib(i,nny)
   150      continue
-           do 155 i  = 1, nx*3
-            cofx(i,j) = cof(i,nny)
+           do 155 i  = 1, lvlwx(jj)*3
+            cofx(i,jj) = cof(i,nny)
   155      continue
          endif
   160    continue
@@ -1704,7 +1704,7 @@
          curate(i,jj) = rcup(i,jj) * 86400.0/dta
   260    continue
 
-         call radtn99 ( fluxcl,ozon,nxjp(j),nxp,lev,ncld,lvlwx(j),julian        &
+         call radtn99 ( fluxcl,ozon,nxjp(j),nxp,lev,ncld,lvlwx(jj),julian       &
                     , stbo,s0,grav                                              &
                     , cp,ptrad,dsigma,sinl(j),cosz(1,jj),albedo2(1,jj),tg(1,jj) &
                     , curate(1,jj),pst(1,jj),plt(1,1,jj),tt(1,1,jj)             &
@@ -1714,7 +1714,7 @@
                     , dtrad(1,1,jj),asr(1,j),alr(1,j)                           &
                     , asr_clr(1,j),alr_clr(1,j)                                 &
                     , xsr(1,j),xlr(1,j),acld(1,j),aflxd(1,j),aflxu(1,j)         &
-                    , ilx(1,j),ibx(1,j),cofx(1,j),sdpbl(1,jj),ctot(1,jj)        &
+                    , ilx(1,jj),ibx(1,jj),cofx(1,jj),sdpbl(1,jj),ctot(1,jj)     &
                     , rld(1,jj),sld(1,jj),chig(1,jj),cmid(1,jj),clow(1,jj)      &
                     , asl(1,1,jj),atl(1,1,jj)                                   &
 !--------------------------------------------------------------------------------

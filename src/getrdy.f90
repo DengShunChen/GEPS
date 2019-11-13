@@ -916,11 +916,11 @@
 !  passed to subroutine diabat by common block /radcon/
 !
       njump1 = njump + 1
-      if ( mod( nx,njump1) .ne. 0 )  njump1 = njump
+      if ( mod( nxp,njump1) .ne. 0 )  njump1 = njump
       njump2 = njump + 2
-      if ( mod( nx,njump2) .ne. 0 )  njump2 = njump1
+      if ( mod( nxp,njump2) .ne. 0 )  njump2 = njump1
       njump3 = njump + 3
-      if ( mod( nx,njump3) .ne. 0 )  njump3 = njump2
+      if ( mod( nxp,njump3) .ne. 0 )  njump3 = njump2
 !
       if ( lreduce .eq. 1 ) then
         njump1=njump
@@ -928,14 +928,14 @@
         njump3=njump
       endif
 !
-      lvlw = nx/njump
-      lvlw1= nx/njump1
-      lvlw2= nx/njump2
-      lvlw3= nx/njump3
-      call splinc (lvlw ,nx,il(1,1),ib(1,1),cof(1,1))
-      call splinc (lvlw1,nx,il(1,2),ib(1,2),cof(1,2))
-      call splinc (lvlw2,nx,il(1,3),ib(1,3),cof(1,3))
-      call splinc (lvlw3,nx,il(1,4),ib(1,4),cof(1,4))
+      lvlw = nxp/njump
+      lvlw1= nxp/njump1
+      lvlw2= nxp/njump2
+      lvlw3= nxp/njump3
+      call splinc (lvlw ,nxp,il(1,1),ib(1,1),cof(1,1))
+      call splinc (lvlw1,nxp,il(1,2),ib(1,2),cof(1,2))
+      call splinc (lvlw2,nxp,il(1,3),ib(1,3),cof(1,3))
+      call splinc (lvlw3,nxp,il(1,4),ib(1,4),cof(1,4))
 !
       if(myrank .eq. 0) then
       print *, "  from getrdy: njump= ",njump,njump1,njump2,njump3
