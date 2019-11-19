@@ -1560,7 +1560,8 @@
           do j = 1, ncld
             lv = ntcw + j - 1
             do i = 1, im
-               clw(i,k) = clw(i,k) + tracer1(i,k,lv)   ! cloud condensate amount
+!byl               clw(i,k) = clw(i,k) + tracer1(i,k,lv)   ! cloud condensate amount
+               clw(i,k) = clw(i,k) + tracer1(i,k,lv) + cnvw(i,k)  ! cloud condensate amount
             enddo
           enddo
         enddo
