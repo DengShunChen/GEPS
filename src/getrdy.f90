@@ -37,7 +37,7 @@
 !
       real      sst(nxp,my_max),ww1(nx,my),ww2(nxp,my_max),     &
                 rh2100(nxp,my_max),rh10100(nxp,my_max),         &
-                wk1(nxp,lev,my_max),                            &
+                wk1(nxp,lev,my_max),pklev(nxp,my_max),          &
                 cc(nx+2,levp,1,my_max),ww3(nx,my_max)
 !byl                wss3(levp,2,3,jtrun,jtmax),cc3(nx+2,levp,3,my_max)
 
@@ -1042,8 +1042,15 @@
 
 ! add 40m 100m output for green energy plan
       if(out_green)then
+          do jj = 1, jlistnum
+            j=jlist1(jj)
+            nxj=nxdef_2d(j)
+            do i = 1,nxj
+              pklev(i,jj) = pk(i,lev,jj)
+            enddo
+          enddo
         call  outflds_green(0,nx,my,my_max,lev,ncld                     &
-              , idtg,ifilout,cp,rgas,grav,t2,u10,v10                    &
+              , idtg,ifilout,cp,rgas,grav,t2,u10,v10,ss,pklev           &
               , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6       &
               , ggdef,.true.)
       endif

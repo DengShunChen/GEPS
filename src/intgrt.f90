@@ -79,7 +79,7 @@
                 asol24(nxp,my_max),olr24(nxp,my_max),rain24(nxp,my_max),             &
                 drag(nxp,lev,my_max),ugws(nxp,my_max),vgws(nxp,my_max),              &
                 sdpbl(nxp,my_max),slpty(nxp,my_max),rain1(nx,my_max),                &
-                rh2100(nxp,my_max),rh10100(nxp,my_max)
+                rh2100(nxp,my_max),rh10100(nxp,my_max),pklev(nxp,my_max)
 
        real*4   workn(nx,my)
        integer  kn
@@ -391,9 +391,16 @@
 !
 ! add 40m 100m output for green energy plan
 !      if(out_green)then
+          do jj = 1, jlistnum
+            j=jlist1(jj)
+            nxj=nxdef_2d(j)
+            do i = 1,nxj
+              pklev(i,jj) = pk(i,lev,jj)
+            enddo
+          enddo
 !#ifndef NO_OUT
 !        call  outflds_green(0,nx,my,my_max,lev,ncld                &
-!              , idtg,ifilout,cp,rgas,grav,t2,u10,v10               &
+!              , idtg,ifilout,cp,rgas,grav,t2,u10,v10,ss,pklev      &
 !              , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6  &
 !              , ggdef,.true.)
 !#endif
@@ -1635,9 +1642,16 @@
 ! out green energy plan
       if(out_green)then
         if (mod(tau+0.00001, otgreen) .lt. 0.01) then
+          do jj = 1, jlistnum
+            j=jlist1(jj)
+            nxj=nxdef_2d(j)
+            do i = 1,nxj
+              pklev(i,jj) = pk(i,lev,jj)
+            enddo
+          enddo
 #ifndef NO_OUT
         call  outflds_green(nint(tau),nx,my,my_max,lev,ncld                    &
-                          , idtg,ifilout,cp,rgas,grav,t2,u10,v10               &
+                          , idtg,ifilout,cp,rgas,grav,t2,u10,v10,ss,pklev      &
                           , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6  &
                           , ggdef)
 #endif
