@@ -105,7 +105,7 @@
         INTEGER   :: nts_godas(3)            ! # of timestamps for pentad data at day-1, day+0 and day+1, in its repective file, respectively
 
   !! memory pointer for daily FCTsst data (ldailyFCTsst)
-        REAL      :: timevals_dailyFCT(3)= 0.   ! absoulte time (e.g.,19971003.25) daily forecast sst Data
+        REAL      :: timevals_dailyFCT(2)= 0.   ! absoulte time (e.g.,19971003.25) daily forecast sst Data
         REAL, ALLOCATABLE :: dailyFCTsst(:,:,:)    ! (nlon,ngl,2) at ydate, ydate+1 day in global coordinates,
                                                    ! forecast daily water tempeature (K)
         REAL, ALLOCATABLE :: dailyFCTcice(:,:,:)    ! (nlon,ngl,2) at ydate, ydate+1 day in global coordinates,
@@ -333,7 +333,6 @@
 
           IF ( (tau .eq. 0.) .OR. lsitstart) THEN
      !!! warm/cold start
-            timevals_dailyFCT(0)=ydate
             timevals_dailyFCT(1)=ydate
             if(ldailyFCTsst) dailyFCTsst(:,:,1)=tg1(:,:)
             if(dailyClm_option .ge. 1) ANAsstT0(:,:)=tg1(:,:)
@@ -405,7 +404,7 @@
                       , dailyFCTsst(ii_check,jj_check,2)
               endif
               if(dailyClm_option .ge. 1)then
-                print*,"2.dailyClmANAssst(",ii_check,",",jj_check,",0)="  &
+                print*,"2.dailyClmANAsst(",ii_check,",",jj_check,",0)="  &
                       , dailyClmANAsst(ii_check,jj_check,0)     &
                       ,",dailyClmANAsst(",ii_check,",",jj_check,",1)="  &
                       , dailyClmANAsst(ii_check,jj_check,1)     &

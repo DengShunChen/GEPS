@@ -1820,8 +1820,11 @@
           j=jlist1(jj)
           nxj=nxdef_2d(j)
           do ii=1,nxj
-            if(dailyClm_option .eq. 1 )then       !persistent anomaly sst
-             ssttemp=ANAsstT0(ii,jj)-dailyClmANAsst(ii,jj,0) &
+            if(dailyClm_option .eq. 1 )then       
+             !persistent anomaly sst SSTf_t=[SSTa_t0-SSTc_t0]*exp(-(t-t0)/90)+SSTc_t (Yuejian Zhu, operational)
+             tautemp=tau+dtx/3600.
+             wweight=exp(-tautemp/(90.*24.))
+             ssttemp=wweight*(ANAsstT0(ii,jj)-dailyClmANAsst(ii,jj,0))  &
                      +obswtbwgt1*dailyClmANAsst(ii,jj,obswtbnmw1) &
                      +obswtbwgt2*dailyClmANAsst(ii,jj,obswtbnmw2)
             elseif(dailyClm_option .eq. 2 )then   !idea from Yuejian Zhu(2018 JGR)
@@ -1887,7 +1890,8 @@
 !                  tgold(i,jj)=max(271.,sst(i,j))
 !                  tsw(i,jj)=max(271.,sst(i,j))
               else
-                if(lday_chtg .and. (tgmask(ii,jj).eq. 1.))then
+!                if(lday_chtg .and. (tgmask(ii,jj).eq. 1.))then
+                if(lday_chtg)then
                   tg(ii,jj)=max(271.,sst(ii,jj))
                 endif
               endif
