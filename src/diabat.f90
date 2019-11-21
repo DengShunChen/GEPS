@@ -210,7 +210,7 @@
       integer   il(nx,4),ib(nx,4)
 
       real      sigma(lev+1,2),dsigma(lev,2),                             &
-                cof(nx*3,4),xlat(my),                                     &
+                cof(nxp*3,4),xlat(my),                                     &
                 xlon(nx,my_max),sgeo(nxp,my_max),z0(nxp,my_max),          &
                 alb(nxp,my_max),snr(nxp,my_max),tg(nxp,my_max),           &
                 tgclim(nxp,my_max),curate(nxp,my_max),plcl(nxp,my_max),   &
