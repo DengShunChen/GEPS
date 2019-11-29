@@ -1256,7 +1256,7 @@
       call ujoinsr(cc,rdiv,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temnow,cc,1,nsizey)
       call ujoinsr(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-      call transr1(jtrun,jtmax,nx,my,my_max,poly,plnow,pt,nsizey)
+!      call transr1(jtrun,jtmax,nx,my,my_max,poly,plnow,pt,nsizey)
 !
 !  zonal and meridional gradients of terrain pressure
 !

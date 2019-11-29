@@ -77,23 +77,23 @@
       real fpvs
 !
       integer            im, ix,  km, ncloud, &
-                         kbot(ix), ktop(ix), kcnv(ix)
+                         kbot(im), ktop(im), kcnv(im)
 !    &,                  me
       real(kind=kind_phys) delt
-      real(kind=kind_phys) psp(ix),    delp(ix,km), prslp(ix,km)
+      real(kind=kind_phys) psp(im),    delp(ix,km), prslp(ix,km)
       real(kind=kind_phys) ps(im),     del(ix,km),  prsl(ix,km), &
                            ql(ix,km),  q1(ix,km),   t1(ix,km),   &
                            u1(ix,km),  v1(ix,km),                &
 !    &                     u1(ix,km),  v1(ix,km),   rcs(im), &
-                           rn(ix),     garea(ix),                &
-                           dot(ix,km), phil(ix,km), hpbl(ix),    &
+                           rn(im),     garea(im),                &
+                           dot(ix,km), phil(ix,km), hpbl(im),    &
                            cnvw(ix,km),cnvc(ix,km)               &
 ! hchuang code change mass flux output &
       ,                    ud_mf(im,km),dt_mf(im,km),qi(ix,km)
 !
       integer              i,j,indx, k, kk, km1, n
       integer              kpbl(im)
-      integer, dimension(ix), intent(in) :: islimsk
+      integer, dimension(im), intent(in) :: islimsk
 !
       real(kind=kind_phys) dellat,  delta, &
                            c0l,     c0s,     d0, &
@@ -206,9 +206,15 @@
 !byl      ps   = psp   * 0.001
 !byl      prsl = prslp * 0.001
 !byl      del  = delp  * 0.001
-      ps   = psp 
-      prsl = prslp 
-      del  = delp 
+      do i=1,im
+        ps(i) = psp(i)
+      enddo
+      do k=1,km
+        do i=1,im
+          prsl(i,k) = prslp(i,k)
+          del(i,k)  = delp(i,k)
+        enddo
+      enddo
 !************************************************************************
 !
       km1 = km - 1

@@ -270,7 +270,7 @@
 !byl      real pltn(nxp,lev,my_max),pkn(nxp,lev,my_max),pk2n(nxp,lev,my_max),  &
       real tt_bfcnv(nxp,lev)
       real prsi(nxp,lev+1)
-      real utgwc(nxp,lev),vtgwc(nxp,lev),delttcv(nxp,lev),                 &
+      real utgwc(nxp,lev),vtgwc(nxp,lev),                                  &
            dudtc(nxp,lev),dvdtc(nxp,lev),dtdtc(nxp,lev),                   &
            prslk(nxp,lev)
       real oc(nxp),theta(nxp),gamma(nxp),sigmaog(nxp),elvmax(nxp),hprime(nxp),    &
@@ -453,6 +453,8 @@
 !ps
 !CWB2015 
       kuo=0
+      rcup2=0.
+      islimsk=0
 
 !CWB2016 
       icsdsw=0
@@ -552,6 +554,7 @@
 
       do k = 1, lev
         do i = 1, nxp
+          cldwrk(i,k) = 0.
 !for pdfcloud
           cnvw(i,k) = 0.
           cnvc(i,k) = 0.
@@ -559,6 +562,8 @@
           cnvcr(i,k) = 0.
 !
 !for hydrometeor
+          qtr(i,k)  = 0.
+          qtc(i,k)  = 0.
           qti(i,k)  = -999.9
           qtsw(i,k) = 0.
           qtrw(i,k) = 0.
@@ -569,7 +574,7 @@
       do jj = 1, jlistnum
        j=jlist1(jj)
        nxj=nxdef_2d(j)
-      do i = 1, nxj
+      do i = 1, nxp
        rcup(i,jj)  = 0.0
        rlsp(i,jj)  = 0.0
 !byl       rainp(i,jj) = 0.0
@@ -1157,6 +1162,8 @@
 !c
         do i=1,nxj
           rcup(i,jj) = rcup(i,jj) * 1000.         ! mm/call
+          kbot(i,jj) = lev - kbot(i,jj) + 1
+          ktop(i,jj) = lev - ktop(i,jj) + 1
         enddo
 !c
 !cyea    doshl=.false.
@@ -1205,6 +1212,8 @@
 !        do i=1,nx
         do i=1,nxj
           rcup(i,jj) = rcup(i,jj) * 1000.         ! mm/call
+          kbot(i,jj) = lev - kbot(i,jj) + 1
+          ktop(i,jj) = lev - ktop(i,jj) + 1
         enddo
       endif    !(end if nmcup=5)
 !xb110<
@@ -1365,7 +1374,6 @@
 !            ttc(i,kc) = tt(i,k,jj)
 !            utc(i,kc) = ut(i,k,jj)
 !            vtc(i,kc) = vt(i,k,jj)
-            delttcv(i,k) = tt(i,k,jj) - tt_bfcnv(i,k)
           enddo
         enddo
 !
@@ -1382,14 +1390,14 @@
         do k = 1, lev
           do i = 1, nxj
             if (k <= lev-kbot(i,jj)+1 .and. k >= lev-ktop(i,jj)+1) then
-              cumabs(i) = cumabs(i) + delttcv(i,k) * del(i,k)
+              cumabs(i) = cumabs(i) + (tt(i,k,jj) - tt_bfcnv(i,k)) * del(i,k)
               work3(i)  = work3(i)  + del(i,k)
             endif
           enddo
         enddo
 !
         do i=1,nxj
-          if (work3(i) > 0.0) cumabs(i) = cumabs(i) / (dt*work3(i))
+          if (work3(i) > 0.0) cumabs(i) = cumabs(i) / (dta*work3(i))
         enddo
 !
         latg =my

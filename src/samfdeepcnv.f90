@@ -91,18 +91,18 @@
       real fpvs
 !
       integer, intent(in)  :: im, ix,  km, ncloud
-      integer, intent(in)  :: islimsk(ix)
+      integer, intent(in)  :: islimsk(im)
       real(kind=kind_phys), intent(in) ::  delt
-      real(kind=kind_phys), intent(in) :: psp(ix), delp(ix,km), &
-         prslp(ix,km),  garea(ix), dot(ix,km), phil(ix,km)
+      real(kind=kind_phys), intent(in) :: psp(im), delp(ix,km), &
+         prslp(ix,km),  garea(im), dot(ix,km), phil(ix,km)
 
-      integer, intent(inout)  :: kcnv(ix)
+      integer, intent(inout)  :: kcnv(im)
       real(kind=kind_phys), intent(inout) ::   ql(ix,km), &
          q1(ix,km), t1(ix,km),   u1(ix,km), v1(ix,km),    &
          qi(ix,km)
 
-      integer, intent(out) :: kbot(ix), ktop(ix)
-      real(kind=kind_phys), intent(out) :: cldwrk(ix),rn(ix)
+      integer, intent(out) :: kbot(im), ktop(im)
+      real(kind=kind_phys), intent(out) :: cldwrk(im),rn(im)
       real(kind=kind_phys) cnvw(ix,km),  cnvc(ix,km),  &
          ud_mf(im,km),dd_mf(im,km), dt_mf(im,km)
 !
@@ -252,9 +252,15 @@
 !byl      ps   = psp   * 0.001
 !byl      prsl = prslp * 0.001
 !byl      del  = delp  * 0.001
-      ps   = psp 
-      prsl = prslp 
-      del  = delp 
+      do i=1,im
+        ps(i) = psp(i)
+      enddo
+      do k=1,km
+        do i=1,im
+          prsl(i,k) = prslp(i,k)
+          del(i,k)  = delp(i,k)
+        enddo
+      enddo
 !************************************************************************
 !
 !

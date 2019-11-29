@@ -52,9 +52,9 @@
       integer im, ix, km
       real                  q(ix,km),    t(ix,km),    cwm(ix,km)     &
 !      ,                     prsl(ix,km), ps(im), dt,  dtf &
-      ,                     prsl(ix,km), ps(ix), dt                  &
-      ,                     tp(ix,km),   qp(ix,km),   psp(ix)        &
-      ,                     tp1(ix,km),  qp1(ix,km),  psp1(ix)       &
+      ,                     prsl(ix,km), ps(im), dt                  &
+      ,                     tp(ix,km),   qp(ix,km),   psp(im)        &
+      ,                     tp1(ix,km),  qp1(ix,km),  psp1(im)       &
       ,                     deltaq(ix,km),deltaqik
        real                 qtmp,qwtmp,qtpd,qsc,usc
        real, intent(in) ::  sup
