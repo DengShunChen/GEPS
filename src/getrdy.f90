@@ -752,10 +752,12 @@
         do m=1,mlistnum
           mf=mlist(m)
           do n=mf,jtrun
-            do k=1,levp*2
-              divold(k,1,n,m)= divnow(k,1,n,m)
-              vorold(k,1,n,m)= vornow(k,1,n,m)
-              temold(k,1,n,m)= temnow(k,1,n,m)
+            do i=1,2
+            do k=1,levp
+              divold(k,i,n,m)= divnow(k,i,n,m)
+              vorold(k,i,n,m)= vornow(k,i,n,m)
+              temold(k,i,n,m)= temnow(k,i,n,m)
+            enddo
             enddo
           enddo
         enddo
@@ -991,8 +993,8 @@
             if(ocean(i,jj) .or. istyp(i,jj).eq.0)then
               qsfc(i) = qs(i)
             else
-              wet = ( smc(i,1,jj)-wlt(istyp(i,jj)) ) / &
-                    ( ref(istyp(i,jj))-wlt(istyp(i,jj)) )
+              wet = ( smc(i,1,jj)-wltsmc(istyp(i,jj)) ) / &
+                    ( refsmc(istyp(i,jj))-wltsmc(istyp(i,jj)) )
               qsfc(i) = wet*qs(i)+(1.0-wet)*qx(i)
               qsfc(i) = min(qs(i),qsfc(i) )
             endif

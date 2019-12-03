@@ -185,6 +185,8 @@
       use module_mp_wsm6
 !
       use physcons, only :con_pi,con_rd,con_fvirt,con_rerth,con_pi,con_rv
+! for land_noah_new
+      use namelist_soilveg, only :MAX_SLOPETYP,MAX_SOILTYP,MAX_VEGTYP
 !-----------------------------------------------------------------------
       implicit  none
 !-----------------------------------------------------------------------
@@ -240,11 +242,11 @@
       integer,  parameter :: ntype=9, ngrid=22
       integer   istyp(nxp,my_max),ivegtyp(nxp,my_max)
 
-      real      smc(nxp,km_soil,my_max),stc(nxp,km_soil,my_max),  &
-                canopy(nxp,my_max),runoff(nxp,my_max),            &
-                sigmaf(nxp,my_max),rld(nxp,my_max),               &
-                wlt(ntype),ref(ntype),tsat(ntype),dfkt(ngrid,ntype),      &
-                xktk(ngrid,ntype),dfk(ngrid,ntype)
+      real      smc(nxp,km_soil,my_max),stc(nxp,km_soil,my_max),          &
+                canopy(nxp,my_max),runoff(nxp,my_max),                    &
+                sigmaf(nxp,my_max),rld(nxp,my_max),                       &
+                wlt(MAX_SOILTYP),ref(MAX_SOILTYP),tsat(MAX_SOILTYP),      &
+                dfkt(ngrid,ntype),xktk(ngrid,ntype),dfk(ngrid,ntype)
 
 ! new soil
 ! for noah
@@ -554,7 +556,9 @@
 
       do k = 1, lev
         do i = 1, nxp
-          cldwrk(i,k) = 0.
+
+          utgwc(i,k)  = 0.
+          vtgwc(i,k)  = 0.
 !for pdfcloud
           cnvw(i,k) = 0.
           cnvc(i,k) = 0.
@@ -577,6 +581,7 @@
       do i = 1, nxp
        rcup(i,jj)  = 0.0
        rlsp(i,jj)  = 0.0
+       cldwrk(i,k) = 0.0
 !byl       rainp(i,jj) = 0.0
 !      cosz(i,jj)  = 0.0
        xmu(i,jj)  = 0.0

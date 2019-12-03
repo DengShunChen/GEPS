@@ -27,6 +27,7 @@
       use phygrid
       use mod_typhoon
       use noah
+      use namelist_soilveg
 !-----------------------------------------------------------------------
       USE mod_sitgrid
       USE mod_sit_vdiff,       ONLY:sit_vdiff_end
@@ -657,11 +658,13 @@
       do m=1,mlistnum
         mf=mlist(m)
         do n=mf,jtrun
-          do k = 1, levp*2
-            divten(k,1,n,m) = 0.0
-            vorten(k,1,n,m) = 0.0
-            temten(k,1,n,m) = 0.0
-            hldten(k,1,n,m) = 0.0
+          do i = 1, 2
+          do k = 1, levp
+            divten(k,i,n,m) = 0.0
+            vorten(k,i,n,m) = 0.0
+            temten(k,i,n,m) = 0.0
+            hldten(k,i,n,m) = 0.0
+          enddo
           enddo
         enddo
       enddo
@@ -849,9 +852,11 @@
       do m = 1, mlistnum
          mf=mlist(m)
          if ( mf.eq.1 ) then
-           do k = 1, levp*2
-             divten(k,1,1,m)= 0.0
-             vorten(k,1,1,m)= 0.0
+           do i = 1, 2
+           do k = 1, levp
+             divten(k,i,1,m)= 0.0
+             vorten(k,i,1,m)= 0.0
+           enddo
            enddo
          endif
       enddo
@@ -924,10 +929,12 @@
         do m = 1, mlistnum
           mf=mlist(m)
           do n = mf, jtrun
-            do k = 1, levp*2
-              vornow(k,1,n,m)= dtx*vorten(k,1,n,m) + vorold(k,1,n,m)
-              divnow(k,1,n,m)= dtx*divten(k,1,n,m) + divold(k,1,n,m)
-              temnow(k,1,n,m)= dtx*temten(k,1,n,m) + temold(k,1,n,m)
+            do i = 1, 2
+            do k = 1, levp
+              vornow(k,i,n,m)= dtx*vorten(k,i,n,m) + vorold(k,i,n,m)
+              divnow(k,i,n,m)= dtx*divten(k,i,n,m) + divold(k,i,n,m)
+              temnow(k,i,n,m)= dtx*temten(k,i,n,m) + temold(k,i,n,m)
+            enddo
             enddo
           enddo
         enddo
@@ -981,7 +988,7 @@
                       , sdpbl,t2,q2,rh2,rh10,u10,v10,gfx                        &
                       , fm,fh,fm10,fh2,srflag                                   &
                       , rld,km_soil,smc,stc,canopy,runoff                       &
-                      , sigmaf,istyp,ivegtyp,wlt,ref,tsat,dfkt,xktk,dfk         &
+                      , sigmaf,istyp,ivegtyp,wltsmc,refsmc,maxsmc,dfkt,xktk,dfk &
                       , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,deltaq,sd                  &
                       , shdmax,shdmin,snoalb                                    &
                       , slopetyp,sld,slc,zice,cice,xtice,sncover,sndepth        &
@@ -1090,10 +1097,12 @@
         do m =1,mlistnum
           mf=mlist(m)
           do n  = mf,jtrun
-            do k  = 1, levp*2
-              vorten(k,1,n,m)= dta*vorten(k,1,n,m) + vorold(k,1,n,m)
-              divten(k,1,n,m)= dta*divten(k,1,n,m) + divold(k,1,n,m)
-              temten(k,1,n,m)= dta*temten(k,1,n,m) + temold(k,1,n,m)
+            do i  = 1, 2
+            do k  = 1, levp
+              vorten(k,i,n,m)= dta*vorten(k,i,n,m) + vorold(k,i,n,m)
+              divten(k,i,n,m)= dta*divten(k,i,n,m) + divold(k,i,n,m)
+              temten(k,i,n,m)= dta*temten(k,i,n,m) + temold(k,i,n,m)
+            enddo
             enddo
           enddo
         enddo
@@ -1145,7 +1154,7 @@
                      , sdpbl,t2,q2,rh2,rh10,u10,v10,gfx                         &
                      , fm,fh,fm10,fh2,srflag                                    &
                      , rld,km_soil,smc,stc,canopy,runoff                        &
-                     , sigmaf,istyp,ivegtyp,wlt,ref,tsat,dfkt,xktk,dfk          &
+                     , sigmaf,istyp,ivegtyp,wltsmc,refsmc,maxsmc,dfkt,xktk,dfk  &
                      , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,deltaq,sd                   &
                      , shdmax,shdmin,snoalb                                     &
                      , slopetyp,sld,slc,zice,cice,xtice,sncover,sndepth         &
@@ -1205,16 +1214,18 @@
         do m = 1, mlistnum
           mf=mlist(m)
           do n = mf, jtrun
-            do k = 1, levp*2
-              vorold(k,1,n,m)= vornow(k,1,n,m) + tfilt*( vorold(k,1,n,m) &
-                             - 2.0*vornow(k,1,n,m)+vorten(k,1,n,m) )
-              vornow(k,1,n,m)= vorten(k,1,n,m)
-              divold(k,1,n,m)= divnow(k,1,n,m) + tfilt*( divold(k,1,n,m) &
-                             - 2.0*divnow(k,1,n,m)+divten(k,1,n,m) )
-              divnow(k,1,n,m)= divten(k,1,n,m)
-              temold(k,1,n,m)= temnow(k,1,n,m) + tfilt*( temold(k,1,n,m) &
-                             - 2.0*temnow(k,1,n,m)+temten(k,1,n,m) )
-              temnow(k,1,n,m)= temten(k,1,n,m)
+            do i = 1, 2
+            do k = 1, levp
+              vorold(k,i,n,m)= vornow(k,i,n,m) + tfilt*( vorold(k,i,n,m) &
+                             - 2.0*vornow(k,i,n,m)+vorten(k,i,n,m) )
+              vornow(k,i,n,m)= vorten(k,i,n,m)
+              divold(k,i,n,m)= divnow(k,i,n,m) + tfilt*( divold(k,i,n,m) &
+                             - 2.0*divnow(k,i,n,m)+divten(k,i,n,m) )
+              divnow(k,i,n,m)= divten(k,i,n,m)
+              temold(k,i,n,m)= temnow(k,i,n,m) + tfilt*( temold(k,i,n,m) &
+                             - 2.0*temnow(k,i,n,m)+temten(k,i,n,m) )
+              temnow(k,i,n,m)= temten(k,i,n,m)
+            enddo
             enddo
           enddo
         enddo
@@ -1398,8 +1409,8 @@
         do i = 1,nxj
           if(istyp(i,jj).ne.0)then
             www = smc(i,1,jj)*0.2+smc(i,2,jj)*0.8
-            gwet(i,jj) = ( www-wlt(istyp(i,jj)) ) / &
-                        ( ref(istyp(i,jj))-wlt(istyp(i,jj)) )
+            gwet(i,jj) = ( www-wltsmc(istyp(i,jj)) ) / &
+                        ( refsmc(istyp(i,jj))-wltsmc(istyp(i,jj)) )
           else
             gwet(i,jj) = 1.0
           endif

@@ -121,7 +121,7 @@
       do 350 j  = 1, pl_coeff
       do 360 kk = 1, lev
       do 370 k  = 1, levozp-1
-!ocl simd
+!!ocl simd
       do 380 i  = 1, nxj
          con1 = (pp(i,kk)-pl_pres(k)) / (pl_pres(k+1)-pl_pres(k)) 
          if ((con1.gt.0.0) .and. (con1.le.1.0)) then !pp(kk) in pl(k,k+1)
