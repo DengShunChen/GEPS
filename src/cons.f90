@@ -654,7 +654,7 @@
           jy=jytyp(1,n)
           tflat(0,1,n)=clattyp(n)
           tflon(0,1,n)=clontyp(n)
-!          xshift(n)=tlon(ix,jy)-clon
+!          xshift(n)=tlon(ix)-clon
 !          yshift(n)=tlat(jy)-clat
           do ip=2,5
             ixtyp(ip,n)=ixtyp(1,n)
@@ -666,7 +666,7 @@
           if(myrank.eq.0)print*,' tflon = ',tflon(0,1:5,n)
           if(myrank.eq.0)print*,' position at ix,jy= ',ix,jy
           if(myrank.eq.0)print*,' position at tlat,tlon= ',tlat(jy) &
-                               ,  tlon(ix,jy)
+                               ,  tlon(ix)
 !
         enddo  ! end of do n
         close(14)
@@ -724,7 +724,7 @@
           if(myrank.eq.0)print*,' tflon = ',tflon(0,1:5,nc)
           if(myrank.eq.0)print*,' position at ix,jy= ',ix,jy
           if(myrank.eq.0)print*,' position at tlat,tlon= ',tlat(jy) &
-                               ,  tlon(ix,jy)
+                               ,  tlon(ix)
 !
         enddo  ! end of do n
         ntyph=nc
