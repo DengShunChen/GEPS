@@ -603,13 +603,14 @@
         pi=4.0*atan(1.0)
         d2r=pi/180.
         r2d=1./d2r
-        do j=1,my
-          tlon(1,j)=0.
+
+        tlon(1)=0.
 !          nxj=nxdef(j)
-          nxj=nx        ! findtrack do in full grid
-          do i=2,nxj
-            tlon(i,j)=tlon(1,j)+float(i-1)*360./nxj
-          enddo
+!        nxj=nx        ! findtrack do in full grid
+        do i=2,nx
+          tlon(i)=tlon(1)+float(i-1)*360./nx
+        enddo
+        do j=1,my
           tlat(j)=asin(sinl(j))*r2d
         enddo
 !

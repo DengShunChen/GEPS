@@ -67,7 +67,7 @@ subroutine tracking(tau,dt_trk,dt,nx,my,                                  &
 !byl  real :: slp(nx,my),v850(nx,my),v700(nx,my),h850(nx,my),h500(nx,my)
 !byl  real :: field(nx,my,nvar)
   real :: field(nx,my)
-  real :: tlon(nx,my),tlat(my)
+  real :: tlon(nx),tlat(my)
 
   real :: tflon(0:ntau,nvar,ntyph),tflat(0:ntau,nvar,ntyph)
   real :: tclat(ntyph),tclon(ntyph)
@@ -483,7 +483,7 @@ subroutine findtrk(fld,nx,my,ix,iy,rx,ry,tlon,tlat,index,lfound,min_trk_pres,ran
   integer :: nx,my,ix,iy,index
   integer :: ib,ie,jb,je
   real    :: fld(nx,my),fldavg
-  real    :: tlon(nx,my),tlat(my)
+  real    :: tlon(nx),tlat(my)
   logical :: lfound
 
   integer :: ixyrange
@@ -653,7 +653,7 @@ subroutine xy2ll (rx,ry,lon,lat,tlon,tlat,nx,my)
   integer nx,my,ix,iy
   real rx,ry, dx, dy
   real lon,lat, dlon, dlat
-  real tlon(nx,my), tlat(my)
+  real tlon(nx), tlat(my)
 !
   ix=int(rx)
   iy=int(ry)        
@@ -663,9 +663,15 @@ subroutine xy2ll (rx,ry,lon,lat,tlon,tlat,nx,my)
 !
   if (ix+1 .gt. nx) then
     if(myrank.eq.0) print*,'Warning !! ix+1 greater than nx !!'
-    dlon=tlon(1,iy)-tlon(ix,iy)
+!    dlon=tlon(1)-tlon(ix)
+    if ( ix .eq. nx ) dlon=tlon(ix+1-nx)-tlon(ix)
+    if ( ix .gt. nx ) dlon=tlon(ix+1-nx)-tlon(ix-nx)
+  else if ( ix .lt. 1 ) then
+    if(myrank.eq.0) print*,'Warning !! ix smaller than 1 !!'
+    if ( ix+1 .eq. 1  ) dlon=tlon(ix+1)-tlon(ix+nx)
+    if ( ix+1 .lt. 1  ) dlon=tlon(ix+1+nx)-tlon(ix+nx)
   else
-    dlon=tlon(ix+1,iy)-tlon(ix,iy)
+    dlon=tlon(ix+1)-tlon(ix)
   endif
 
   if (iy+1 .gt. my) then
@@ -675,7 +681,7 @@ subroutine xy2ll (rx,ry,lon,lat,tlon,tlat,nx,my)
     dlat=tlat(iy+1)-tlat(iy)
   endif
 !
-  lon=tlon(ix,iy)+(dx*dlon)
+  lon=tlon(ix)+(dx*dlon)
   lat=tlat(iy)+(dy*dlat)
   if(myrank.eq.0) print*,'xy2ll : x/y/lon/lat =',rx,ry,lon,lat 
 

@@ -19,10 +19,10 @@
  
 !byl      real, dimension(:,:), allocatable, save :: tlon, tydom,  &
 !byl                                slp, v850, v700, h850, h500
-      real, dimension(:,:), allocatable, save :: tlon, tydom
+      real, dimension(:,:), allocatable, save :: tydom
       real, dimension(:,:,:), allocatable,save ::  typtrk
 
-      real, dimension(:),   allocatable, save :: tlat
+      real, dimension(:),   allocatable, save :: tlon, tlat
 
       character*15      typname(5)
       common/hurricanC/typname

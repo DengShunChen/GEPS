@@ -433,8 +433,10 @@
       thdai   = 0.0
       tkei    = 0.0
       tpei    = 0.0
-      do j = 1, my*4
-        wkj(j,1) = 0.
+      do i = 1, 4
+      do j = 1, my
+        wkj(j,i) = 0.
+      enddo
       enddo
 !
       do jj = 1, jlistnum
@@ -1600,7 +1602,7 @@
 #endif
 !
 !        if(typhoon .and. ltrack)then
-         if(typhoon .and. ltrack .and. itau .le. 384 )then
+         if(typhoon .and. ltrack .and. itau .le. 192 )then
           if(myrank .eq. 0)print *,' calling tracking,  tau= ',tau
 !          if(myrank .eq. 0)print *,'dt_trk=',dt_trk
           call tracking(tau,dt_trk,dt,nx,my,                            &
@@ -1633,7 +1635,8 @@
 !CWB2016 
           if(.not. io_quilting)then
 !CWB2017           call sendmsg ('gfs',ifromtau,itotau,istat)
-            if(itau.eq.itotau) call sendmsg ('gfs',ifromtau,itotau,istat)
+!byl            if(itau.eq.itotau) call sendmsg ('gfs',ifromtau,itotau,istat)
+             call sendmsg ('gfs',ifromtau,itotau,istat)
           else
             istat=0
           endif

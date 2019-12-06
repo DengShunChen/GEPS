@@ -83,10 +83,10 @@
 !
       nxmy   = nx*my
       mlmax2 = mlmax * 2
-! osu
-      call landpack(tsat,dfkt,xktk,dfk)
 ! noah
       call set_soilveg(isot,ivegsrc)
+! osu
+      call landpack(maxsmc,dfkt,xktk,dfk)
 
 ! ------------------------------------------------------------
 !   read ozone prognostic parameters
@@ -1029,6 +1029,7 @@
         rainlp6=0.
         gfx=0.
         sld=0.
+        rld=0.
        rh2100=rh2*100.
        rh10100=rh10*100.
         flash=0.   !xb110, flash density
@@ -1054,7 +1055,7 @@
         call  outflds_green(0,nx,my,my_max,lev,ncld                     &
               , idtg,ifilout,cp,rgas,grav,t2,u10,v10,ss,pklev           &
               , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6       &
-              , ggdef,.true.)
+              , ggdef)
       endif
 !
 !
