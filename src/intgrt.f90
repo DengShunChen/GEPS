@@ -1602,7 +1602,7 @@
 #endif
 !
 !        if(typhoon .and. ltrack)then
-         if(typhoon .and. ltrack .and. itau .le. 192 )then
+         if(typhoon .and. ltrack .and. itau .le. 384 )then
           if(myrank .eq. 0)print *,' calling tracking,  tau= ',tau
 !          if(myrank .eq. 0)print *,'dt_trk=',dt_trk
           call tracking(tau,dt_trk,dt,nx,my,                            &
