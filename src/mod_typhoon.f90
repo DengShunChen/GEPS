@@ -52,7 +52,7 @@
 !byl           allocate (tlon(nx,my),tlat(my),tydom(nx,my),             &
 !byl                     slp(nx,my),v850(nx,my),v700(nx,my),h850(nx,my),&
 !by                     h500(nx,my), stat=ierr)
-           allocate (tlon(nx,my),tlat(my),tydom(nx,my),             &
+           allocate (tlon(nx),tlat(my),tydom(nx,my),             &
                      typtrk(nxp,my_max,5), stat=ierr)
 
            if (ierr/= 0) then
