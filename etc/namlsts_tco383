@@ -48,11 +48,11 @@
  ptmeans=800.,
  ptop=0.1,
  nmcup=6,
- nmpbl=4,
+ nmpbl=3,
  nmland=2,
  nmshl=3,
  nmgwor=2,
- nmgwcv=1,
+ nmgwcv=2,
  ktcup=20,
  cgw=2.6e-5,
  mtnvar=14,
@@ -66,8 +66,8 @@
  otgreen=3.,
  out_hp=t,
  ndsladvh2=f,
- isot=1,
- ivegsrc=1,
+ isot=0,
+ ivegsrc=0,
  &end
 
  &typ

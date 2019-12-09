@@ -8,10 +8,10 @@ run*
 TCo383L72_fx10*
 .d*
 wrk/*
+wrk_nmon/*
 wrk_omix/*
 wrk_ysu/*
 wrk_ysu2/*
 etc/gfs.tauchk
 etc/namlsts_tco383
-etc/namlsts_tco383_ysu
-
+etc/namlsts_tco383_*
