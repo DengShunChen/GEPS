@@ -101,7 +101,7 @@
 !
       logical lprnt
       integer ipr
-      integer ix, im, km, ntrac, ntcw, kpbl(ix), kinver(im)
+      integer ix, im, km, ntrac, ntcw, kpbl(im), kinver(im)
 !
       real(kind=kind_phys) delt, xkzm_m, xkzm_h, xkzm_s
       real(kind=kind_phys) dv(im,km),     du(im,km),                    &
@@ -109,12 +109,12 @@
                            u1(ix,km),     v1(ix,km),                    &
                            t1(ix,km),     q1(ix,km,ntrac),              &
                            swh(ix,km),    hlw(ix,km),                   &
-                           xmu(ix),       psk(ix),                      &
-                           rbsoil(ix),    zorl(ix),                     &
-                           u10m(ix),      v10m(ix),                     &
-                           fm(ix),        fh(ix),                       &
-                           tsea(ix),                                    &
-                                          spd1(ix),                     &
+                           xmu(im),       psk(im),                      &
+                           rbsoil(im),    zorl(im),                     &
+                           u10m(im),      v10m(im),                     &
+                           fm(im),        fh(im),                       &
+                           tsea(im),                                    &
+                                          spd1(im),                     &
                            prsi(ix,km+1), del(ix,km),                   &
                            prsl(ix,km),   prslk(ix,km),                 &
                            phii(ix,km+1), phil(ix,km),                  &
@@ -1049,8 +1049,10 @@
          do i = 1,im
             ttend      = (a1(i,k)-t1(i,k)) * rdt
             qtend      = (a2(i,k)-q1(i,k,1))*rdt
-            tau(i,k)   = tau(i,k)+ttend
-            rtg(i,k,1) = rtg(i,k,1)+qtend
+!!            tau(i,k)   = tau(i,k)+ttend
+!!            rtg(i,k,1) = rtg(i,k,1)+qtend
+            tau(i,k)   = ttend
+            rtg(i,k,1) = qtend
             dtsfc(i)   = dtsfc(i)+cont*del(i,k)*ttend
             dqsfc(i)   = dqsfc(i)+conq*del(i,k)*qtend
             t1(i,k)    = a1(i,k)
@@ -1165,8 +1167,10 @@
          do i = 1,im
             utend = (a1(i,k)-u1(i,k))*rdt
             vtend = (a2(i,k)-v1(i,k))*rdt
-            du(i,k)  = du(i,k)  + utend
-            dv(i,k)  = dv(i,k)  + vtend
+!!            du(i,k)  = du(i,k)  + utend
+!!            dv(i,k)  = dv(i,k)  + vtend
+            du(i,k)  = utend
+            dv(i,k)  = vtend
             dusfc(i) = dusfc(i) + conw*del(i,k)*utend
             dvsfc(i) = dvsfc(i) + conw*del(i,k)*vtend
             u1(i,k) = a1(i,k)

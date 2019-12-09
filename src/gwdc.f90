@@ -59,7 +59,7 @@
 !
 !lzl add ---- ##
       real  grav,cp,rd,fv,fhour,fhourpr,dta
-      real, dimension(ix)      :: qmax,tauctx, taucty
+      real, dimension(im)      :: qmax,tauctx, taucty
       real, dimension(im)      :: cldf,dlength
       real, dimension(ix,km)   :: u1,v1,t1,q1,pmid1,dpmid1
 !    &,                                           cumchr1

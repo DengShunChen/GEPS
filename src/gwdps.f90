@@ -101,7 +101,7 @@
       integer im, iy, ix, km, imx, kdt, ipr, me
 
 !lzl      integer kpbl(im)                 ! index for the pbl top layer!
-      integer kpbl(ix)                 ! index for the pbl top layer!
+      integer kpbl(im)                 ! index for the pbl top layer!
 
 !lzl      real(kind=kind_phys) deltim, g, cp, rd, rv,      cdmbgwd(2)
 !!lzl     real(kind=kind_phys) a(iy,km),    b(iy,km),      pstar(im)
@@ -122,8 +122,8 @@
            phii(ix,km+1)
 !lzl      real oc(im),     oa4(iy,4), clx4(iy,4),                            &
 !lzl           hprime(im)
-      real oc(ix),     oa4(ix,4), clx4(ix,4),                            &
-           hprime(ix)
+      real oc(im),     oa4(ix,4), clx4(ix,4),                            &
+           hprime(im)
 
 
 ! for lm mtn blocking

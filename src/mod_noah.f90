@@ -51,7 +51,7 @@
               xtice(nxp,my_max),                          &
               sncover(nxp,my_max),sndepth(nxp,my_max),&
               shdmax(nxp,my_max),shdmin(nxp,my_max),  &
-              snoalb(nxp,my_max),sfalb(nx,my_max),sfemis(nx,my_max), stat=ierr)
+              snoalb(nxp,my_max),sfalb(nxp,my_max),sfemis(nxp,my_max), stat=ierr)
            if (ierr/= 0) then
                write(6,*) 'mod_noah : allocate fail 2 '
                stop
@@ -59,6 +59,7 @@
 
 !CWB2016
            xtice=0.
+           sfemis=0.
 
            allocate (slopetyp(nxp,my_max),istyp(nxp,my_max),&
                      ivegtyp(nxp,my_max), stat=ierr)

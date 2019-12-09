@@ -19,10 +19,10 @@
  
 !byl      real, dimension(:,:), allocatable, save :: tlon, tydom,  &
 !byl                                slp, v850, v700, h850, h500
-      real, dimension(:,:), allocatable, save :: tlon, tydom
+      real, dimension(:,:), allocatable, save :: tydom
       real, dimension(:,:,:), allocatable,save ::  typtrk
 
-      real, dimension(:),   allocatable, save :: tlat
+      real, dimension(:),   allocatable, save :: tlon, tlat
 
       character*15      typname(5)
       common/hurricanC/typname
@@ -52,7 +52,7 @@
 !byl           allocate (tlon(nx,my),tlat(my),tydom(nx,my),             &
 !byl                     slp(nx,my),v850(nx,my),v700(nx,my),h850(nx,my),&
 !by                     h500(nx,my), stat=ierr)
-           allocate (tlon(nx,my),tlat(my),tydom(nx,my),             &
+           allocate (tlon(nx),tlat(my),tydom(nx,my),             &
                      typtrk(nxp,my_max,5), stat=ierr)
 
            if (ierr/= 0) then

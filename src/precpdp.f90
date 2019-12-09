@@ -82,7 +82,7 @@
       real                  q(ix,km),   t(ix,km),    cwm(ix,km)        &
       ,                                 del(ix,km),  prsl(ix,km)       &
 !    &,                     cll(im,km), del(ix,km),  prsl(ix,km)      &
-      ,                     ps(ix),     rn(ix),      sr(im)            &
+      ,                     ps(im),     rn(im),      sr(im)            &
       ,                     tcw(im),    dt                             &
 !hchuang code change [+1l] : add record to record information in vertical in
 !                       addition to total column precrl &

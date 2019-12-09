@@ -37,7 +37,7 @@
 !
       real      sst(nxp,my_max),ww1(nx,my),ww2(nxp,my_max),     &
                 rh2100(nxp,my_max),rh10100(nxp,my_max),         &
-                wk1(nxp,lev,my_max),                            &
+                wk1(nxp,lev,my_max),pklev(nxp,my_max),          &
                 cc(nx+2,levp,1,my_max),ww3(nx,my_max)
 !byl                wss3(levp,2,3,jtrun,jtmax),cc3(nx+2,levp,3,my_max)
 
@@ -83,10 +83,10 @@
 !
       nxmy   = nx*my
       mlmax2 = mlmax * 2
-! osu
-      call landpack(tsat,dfkt,xktk,dfk)
 ! noah
       call set_soilveg(isot,ivegsrc)
+! osu
+      call landpack(maxsmc,dfkt,xktk,dfk)
 
 ! ------------------------------------------------------------
 !   read ozone prognostic parameters
@@ -752,10 +752,12 @@
         do m=1,mlistnum
           mf=mlist(m)
           do n=mf,jtrun
-            do k=1,levp*2
-              divold(k,1,n,m)= divnow(k,1,n,m)
-              vorold(k,1,n,m)= vornow(k,1,n,m)
-              temold(k,1,n,m)= temnow(k,1,n,m)
+            do i=1,2
+            do k=1,levp
+              divold(k,i,n,m)= divnow(k,i,n,m)
+              vorold(k,i,n,m)= vornow(k,i,n,m)
+              temold(k,i,n,m)= temnow(k,i,n,m)
+            enddo
             enddo
           enddo
         enddo
@@ -916,11 +918,11 @@
 !  passed to subroutine diabat by common block /radcon/
 !
       njump1 = njump + 1
-      if ( mod( nx,njump1) .ne. 0 )  njump1 = njump
+      if ( mod( nxp,njump1) .ne. 0 )  njump1 = njump
       njump2 = njump + 2
-      if ( mod( nx,njump2) .ne. 0 )  njump2 = njump1
+      if ( mod( nxp,njump2) .ne. 0 )  njump2 = njump1
       njump3 = njump + 3
-      if ( mod( nx,njump3) .ne. 0 )  njump3 = njump2
+      if ( mod( nxp,njump3) .ne. 0 )  njump3 = njump2
 !
       if ( lreduce .eq. 1 ) then
         njump1=njump
@@ -928,14 +930,14 @@
         njump3=njump
       endif
 !
-      lvlw = nx/njump
-      lvlw1= nx/njump1
-      lvlw2= nx/njump2
-      lvlw3= nx/njump3
-      call splinc (lvlw ,nx,il(1,1),ib(1,1),cof(1,1))
-      call splinc (lvlw1,nx,il(1,2),ib(1,2),cof(1,2))
-      call splinc (lvlw2,nx,il(1,3),ib(1,3),cof(1,3))
-      call splinc (lvlw3,nx,il(1,4),ib(1,4),cof(1,4))
+      lvlw = nxp/njump
+      lvlw1= nxp/njump1
+      lvlw2= nxp/njump2
+      lvlw3= nxp/njump3
+      call splinc (lvlw ,nxp,il(1,1),ib(1,1),cof(1,1))
+      call splinc (lvlw1,nxp,il(1,2),ib(1,2),cof(1,2))
+      call splinc (lvlw2,nxp,il(1,3),ib(1,3),cof(1,3))
+      call splinc (lvlw3,nxp,il(1,4),ib(1,4),cof(1,4))
 !
       if(myrank .eq. 0) then
       print *, "  from getrdy: njump= ",njump,njump1,njump2,njump3
@@ -991,8 +993,8 @@
             if(ocean(i,jj) .or. istyp(i,jj).eq.0)then
               qsfc(i) = qs(i)
             else
-              wet = ( smc(i,1,jj)-wlt(istyp(i,jj)) ) / &
-                    ( ref(istyp(i,jj))-wlt(istyp(i,jj)) )
+              wet = ( smc(i,1,jj)-wltsmc(istyp(i,jj)) ) / &
+                    ( refsmc(istyp(i,jj))-wltsmc(istyp(i,jj)) )
               qsfc(i) = wet*qs(i)+(1.0-wet)*qx(i)
               qsfc(i) = min(qs(i),qsfc(i) )
             endif
@@ -1027,6 +1029,7 @@
         rainlp6=0.
         gfx=0.
         sld=0.
+        rld=0.
        rh2100=rh2*100.
        rh10100=rh10*100.
         flash=0.   !xb110, flash density
@@ -1042,10 +1045,17 @@
 
 ! add 40m 100m output for green energy plan
       if(out_green)then
+          do jj = 1, jlistnum
+            j=jlist1(jj)
+            nxj=nxdef_2d(j)
+            do i = 1,nxj
+              pklev(i,jj) = pk(i,lev,jj)
+            enddo
+          enddo
         call  outflds_green(0,nx,my,my_max,lev,ncld                     &
-              , idtg,ifilout,cp,rgas,grav,t2,u10,v10                    &
+              , idtg,ifilout,cp,rgas,grav,t2,u10,v10,ss,pklev           &
               , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6       &
-              , ggdef,.true.)
+              , ggdef)
       endif
 !
 !

@@ -23,7 +23,10 @@
       real      bufB(nx ,levp,ncld,my_max)
       integer   nx,my_max,lev,jnum,ncld
       integer   jj,j,nxj,k,i,n,nk,kk
-
+!
+!CWB 2019
+      bufB=0.
+!
       do jj =1, jlistnum
       do n=1,ncld
       nk=(n-1)*lev
@@ -64,7 +67,9 @@
       real      bufB(nx ,levp,1+ncld,my_max)
       integer   nx,my_max,lev,jnum,ncld
       integer   jj,j,nxj,k,i,n,nk,kk
-
+!
+!CWB 2019
+      bufB=0.
 !
       do jj =1, jlistnum
       do k=1,lev

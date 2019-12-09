@@ -1,5 +1,5 @@
       subroutine outflds_green( itau,nx,my,my_max,lev,ncld       &
-             , idtg,ifilout,cp,rgas,grav,t2,u10,v10              &
+             , idtg,ifilout,cp,rgas,grav,t2,u10,v10,ss,pk        &
              , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6 &
              , ggdef)
 !
@@ -18,9 +18,10 @@
 
       real      sgeo(nxp,my_max),pt(nxp,my_max),plt(nxp,lev,my_max)      &
               , ut(nxp,lev,my_max),vt(nxp,lev,my_max),tt(nxp,lev,my_max) &
-              , qt(nxp,lev*ncld,my_max),cosl(my)                       &
+              , qt(nxp,lev*ncld,my_max),cosl(my)                         &
               , u10(nxp,my_max),v10(nxp,my_max),t2(nxp,my_max)           &
-              , raincu6(nxp,my_max),rainlp6(nxp,my_max)
+              , ss(nxp,my_max),pk(nxp,my_max),rh0(nxp,my_max)            &
+              , tht(nxp,my_max),raincu6(nxp,my_max),rainlp6(nxp,my_max)
 
       character ifilout*80, ggdef*4, ihdg*26
       integer*8 idtg
@@ -190,10 +191,47 @@
       write(wtemp,'(a3,a3)')layer(mm),var(5)
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (ot,nxdef,nx,my)
-      call unify_reduceintp(nx,my,my_max,ov,glob)
+      call unify_reduceintp(nx,my,my_max,ot,glob)
       call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
 !-----------------------------------------------------------------------
       enddo  ! end (mm)
+!=======================================================================
+!output S00310(net SW flux at the surface)
+      write(wtemp,'(a6)')'S00310'
+      call syslbl(wtemp,idtg,itau,ggdef,ihdg)
+      call unify_reduceintp(nx,my,my_max,ss,glob)
+      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+
+!output RH at bottom level
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+          do i = 1, nxj
+          tht(i,jj) =tt(i,lev,jj)*pk(i,jj)/(1.0+0.608*qt(i,lev,jj))
+          enddo
+       call qsatq(nxj,tht(1,jj),plt(1,lev,jj),rh0(1,jj))
+          do i = 1, nxj
+           rh0(i,jj)=100.*(qt(i,lev,jj)/rh0(i,jj))
+           rh0(i,jj)= min( 100., max( 1., rh0(i,jj) ) )
+          enddo
+      enddo
+      write(wtemp,'(a6)')'B00510'
+      call syslbl(wtemp,idtg,itau,ggdef,ihdg)
+      call unify_reduceintp(nx,my,my_max,rh0,glob)
+      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+
+!output b00010
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+          do i = 1, nxj
+           wrk(i,jj)=pt(i,jj)+ptop
+          enddo
+      enddo
+      write(wtemp,'(a6)')'B00010'
+      call syslbl(wtemp,idtg,itau,ggdef,ihdg)
+      call unify_reduceintp(nx,my,my_max,wrk,glob)
+      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
 !=======================================================================
 !output 6hr prec.
       if (mod(float(itau)+0.00001, 6. ) .lt. 0.01) then
