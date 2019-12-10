@@ -27,6 +27,7 @@
       use phygrid
       use mod_typhoon
       use noah
+      use namelist_soilveg
 !-----------------------------------------------------------------------
       USE mod_sitgrid
       USE mod_sit_vdiff,       ONLY:sit_vdiff_end
@@ -77,8 +78,8 @@
                 hf24(nxp,my_max),qf24(nxp,my_max),ss24(nxp,my_max),rs24(nxp,my_max), &
                 asol24(nxp,my_max),olr24(nxp,my_max),rain24(nxp,my_max),             &
                 drag(nxp,lev,my_max),ugws(nxp,my_max),vgws(nxp,my_max),              &
-                sdpbl(nxp,my_max),slpty(nxp,my_max),rain1(nx,my_max),                &
-                rh2100(nxp,my_max),rh10100(nxp,my_max)
+                sdpbl(nxp,my_max),slpty(nxp,my_max),rain1(nxp,my_max),               &
+                rh2100(nxp,my_max),rh10100(nxp,my_max),pklev(nxp,my_max)
 
        real*4   workn(nx,my)
        integer  kn
@@ -134,7 +135,7 @@
               ntau,itau,lcwb,lphy,ifromtau,itotau,istat,    &
               istst,ii !,n_stable,n_unstable,nc_stable
 
-      real    www,dtx,dta,qbrwtot,thdai,tkei,tpei,dsigp,    &
+      real    www,dtx,dta,thdai,tkei,tpei,dsigp,            &
               cosw,tengi,dt24,tg2,dtx_tau,hfiltx,sqhaf,     &
               dummy,dt1,sptend,wmax,xx,facw,dtaup!!,          &
 !!              sptendmax2,sptendmax1,dt_chg
@@ -389,9 +390,16 @@
 !
 ! add 40m 100m output for green energy plan
 !      if(out_green)then
+          do jj = 1, jlistnum
+            j=jlist1(jj)
+            nxj=nxdef_2d(j)
+            do i = 1,nxj
+              pklev(i,jj) = pk(i,lev,jj)
+            enddo
+          enddo
 !#ifndef NO_OUT
 !        call  outflds_green(0,nx,my,my_max,lev,ncld                &
-!              , idtg,ifilout,cp,rgas,grav,t2,u10,v10               &
+!              , idtg,ifilout,cp,rgas,grav,t2,u10,v10,ss,pklev      &
 !              , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6  &
 !              , ggdef,.true.)
 !#endif
@@ -419,13 +427,14 @@
 !
 !  compute initial moisture and potential temperature
 !
-      qbrwtot = 0.0
       qgini   = 0.0
       thdai   = 0.0
       tkei    = 0.0
       tpei    = 0.0
-      do j = 1, my*4
-        wkj(j,1) = 0.
+      do i = 1, 4
+      do j = 1, my
+        wkj(j,i) = 0.
+      enddo
       enddo
 !
       do jj = 1, jlistnum
@@ -649,11 +658,13 @@
       do m=1,mlistnum
         mf=mlist(m)
         do n=mf,jtrun
-          do k = 1, levp*2
-            divten(k,1,n,m) = 0.0
-            vorten(k,1,n,m) = 0.0
-            temten(k,1,n,m) = 0.0
-            hldten(k,1,n,m) = 0.0
+          do i = 1, 2
+          do k = 1, levp
+            divten(k,i,n,m) = 0.0
+            vorten(k,i,n,m) = 0.0
+            temten(k,i,n,m) = 0.0
+            hldten(k,i,n,m) = 0.0
+          enddo
           enddo
         enddo
       enddo
@@ -841,9 +852,11 @@
       do m = 1, mlistnum
          mf=mlist(m)
          if ( mf.eq.1 ) then
-           do k = 1, levp*2
-             divten(k,1,1,m)= 0.0
-             vorten(k,1,1,m)= 0.0
+           do i = 1, 2
+           do k = 1, levp
+             divten(k,i,1,m)= 0.0
+             vorten(k,i,1,m)= 0.0
+           enddo
            enddo
          endif
       enddo
@@ -916,10 +929,12 @@
         do m = 1, mlistnum
           mf=mlist(m)
           do n = mf, jtrun
-            do k = 1, levp*2
-              vornow(k,1,n,m)= dtx*vorten(k,1,n,m) + vorold(k,1,n,m)
-              divnow(k,1,n,m)= dtx*divten(k,1,n,m) + divold(k,1,n,m)
-              temnow(k,1,n,m)= dtx*temten(k,1,n,m) + temold(k,1,n,m)
+            do i = 1, 2
+            do k = 1, levp
+              vornow(k,i,n,m)= dtx*vorten(k,i,n,m) + vorold(k,i,n,m)
+              divnow(k,i,n,m)= dtx*divten(k,i,n,m) + divold(k,i,n,m)
+              temnow(k,i,n,m)= dtx*temten(k,i,n,m) + temold(k,i,n,m)
+            enddo
             enddo
           enddo
         enddo
@@ -969,11 +984,11 @@
                       , hflux,qflux,ustar,tstar,qstar,e                         &
                       , eps,o3l,dtrad,ss,rs,plt,pk,pk2,ptp,up,vp,ttp,qp,pt,ut   &
                       , vt,tt,qt,gwclim,tice,hice,qgini,thdai,tengi             &
-                      , acld,std,qbrwtot,asol,olr,drag,ugws,vgws                &
+                      , acld,std,asol,olr,drag,ugws,vgws                        &
                       , sdpbl,t2,q2,rh2,rh10,u10,v10,gfx                        &
                       , fm,fh,fm10,fh2,srflag                                   &
                       , rld,km_soil,smc,stc,canopy,runoff                       &
-                      , sigmaf,istyp,ivegtyp,wlt,ref,tsat,dfkt,xktk,dfk         &
+                      , sigmaf,istyp,ivegtyp,wltsmc,refsmc,maxsmc,dfkt,xktk,dfk &
                       , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,deltaq,sd                  &
                       , shdmax,shdmin,snoalb                                    &
                       , slopetyp,sld,slc,zice,cice,xtice,sncover,sndepth        &
@@ -1101,10 +1116,12 @@
         do m =1,mlistnum
           mf=mlist(m)
           do n  = mf,jtrun
-            do k  = 1, levp*2
-              vorten(k,1,n,m)= dta*vorten(k,1,n,m) + vorold(k,1,n,m)
-              divten(k,1,n,m)= dta*divten(k,1,n,m) + divold(k,1,n,m)
-              temten(k,1,n,m)= dta*temten(k,1,n,m) + temold(k,1,n,m)
+            do i  = 1, 2
+            do k  = 1, levp
+              vorten(k,i,n,m)= dta*vorten(k,i,n,m) + vorold(k,i,n,m)
+              divten(k,i,n,m)= dta*divten(k,i,n,m) + divold(k,i,n,m)
+              temten(k,i,n,m)= dta*temten(k,i,n,m) + temold(k,i,n,m)
+            enddo
             enddo
           enddo
         enddo
@@ -1152,11 +1169,11 @@
                      , hflux,qflux,ustar,tstar,qstar,e                          &
                      , eps,o3l,dtrad,ss,rs,plt,pk,pk2,ptp,up,vp,ttp,qp,pt,ut    &
                      , vt,tt,qt,gwclim,tice,hice,qgini,thdai,tengi              &
-                     , acld,std,qbrwtot,asol,olr,drag,ugws,vgws                 &
+                     , acld,std,asol,olr,drag,ugws,vgws                         &
                      , sdpbl,t2,q2,rh2,rh10,u10,v10,gfx                         &
                      , fm,fh,fm10,fh2,srflag                                    &
                      , rld,km_soil,smc,stc,canopy,runoff                        &
-                     , sigmaf,istyp,ivegtyp,wlt,ref,tsat,dfkt,xktk,dfk          &
+                     , sigmaf,istyp,ivegtyp,wltsmc,refsmc,maxsmc,dfkt,xktk,dfk  &
                      , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,deltaq,sd                   &
                      , shdmax,shdmin,snoalb                                     &
                      , slopetyp,sld,slc,zice,cice,xtice,sncover,sndepth         &
@@ -1234,16 +1251,18 @@
         do m = 1, mlistnum
           mf=mlist(m)
           do n = mf, jtrun
-            do k = 1, levp*2
-              vorold(k,1,n,m)= vornow(k,1,n,m) + tfilt*( vorold(k,1,n,m) &
-                             - 2.0*vornow(k,1,n,m)+vorten(k,1,n,m) )
-              vornow(k,1,n,m)= vorten(k,1,n,m)
-              divold(k,1,n,m)= divnow(k,1,n,m) + tfilt*( divold(k,1,n,m) &
-                             - 2.0*divnow(k,1,n,m)+divten(k,1,n,m) )
-              divnow(k,1,n,m)= divten(k,1,n,m)
-              temold(k,1,n,m)= temnow(k,1,n,m) + tfilt*( temold(k,1,n,m) &
-                             - 2.0*temnow(k,1,n,m)+temten(k,1,n,m) )
-              temnow(k,1,n,m)= temten(k,1,n,m)
+            do i = 1, 2
+            do k = 1, levp
+              vorold(k,i,n,m)= vornow(k,i,n,m) + tfilt*( vorold(k,i,n,m) &
+                             - 2.0*vornow(k,i,n,m)+vorten(k,i,n,m) )
+              vornow(k,i,n,m)= vorten(k,i,n,m)
+              divold(k,i,n,m)= divnow(k,i,n,m) + tfilt*( divold(k,i,n,m) &
+                             - 2.0*divnow(k,i,n,m)+divten(k,i,n,m) )
+              divnow(k,i,n,m)= divten(k,i,n,m)
+              temold(k,i,n,m)= temnow(k,i,n,m) + tfilt*( temold(k,i,n,m) &
+                             - 2.0*temnow(k,i,n,m)+temten(k,i,n,m) )
+              temnow(k,i,n,m)= temten(k,i,n,m)
+            enddo
             enddo
           enddo
         enddo
@@ -1285,7 +1304,7 @@
       call ujoinsr(cc,rdiv,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temnow,cc,1,nsizey)
       call ujoinsr(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-      call transr1(jtrun,jtmax,nx,my,my_max,poly,plnow,pt,nsizey)
+!      call transr1(jtrun,jtmax,nx,my,my_max,poly,plnow,pt,nsizey)
 !
 !  zonal and meridional gradients of terrain pressure
 !
@@ -1427,8 +1446,8 @@
         do i = 1,nxj
           if(istyp(i,jj).ne.0)then
             www = smc(i,1,jj)*0.2+smc(i,2,jj)*0.8
-            gwet(i,jj) = ( www-wlt(istyp(i,jj)) ) / &
-                        ( ref(istyp(i,jj))-wlt(istyp(i,jj)) )
+            gwet(i,jj) = ( www-wltsmc(istyp(i,jj)) ) / &
+                        ( refsmc(istyp(i,jj))-wltsmc(istyp(i,jj)) )
           else
             gwet(i,jj) = 1.0
           endif
@@ -1651,7 +1670,8 @@
 !CWB2016 
           if(.not. io_quilting)then
 !CWB2017           call sendmsg ('gfs',ifromtau,itotau,istat)
-            if(itau.eq.itotau) call sendmsg ('gfs',ifromtau,itotau,istat)
+!byl            if(itau.eq.itotau) call sendmsg ('gfs',ifromtau,itotau,istat)
+             call sendmsg ('gfs',ifromtau,itotau,istat)
           else
             istat=0
           endif
@@ -1671,9 +1691,16 @@
 ! out green energy plan
       if(out_green)then
         if (mod(tau+0.00001, otgreen) .lt. 0.01) then
+          do jj = 1, jlistnum
+            j=jlist1(jj)
+            nxj=nxdef_2d(j)
+            do i = 1,nxj
+              pklev(i,jj) = pk(i,lev,jj)
+            enddo
+          enddo
 #ifndef NO_OUT
         call  outflds_green(nint(tau),nx,my,my_max,lev,ncld                    &
-                          , idtg,ifilout,cp,rgas,grav,t2,u10,v10               &
+                          , idtg,ifilout,cp,rgas,grav,t2,u10,v10,ss,pklev      &
                           , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6  &
                           , ggdef)
 #endif

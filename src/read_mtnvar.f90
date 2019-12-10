@@ -2,7 +2,7 @@
 
 !
       use index
-      use param ,only : nco,my_max
+      use param ,only : jtrun,my_max
 !
 !      parameter (nx=3072, my=1536, mtnv=14)
 !      parameter ( mtnv=14)
@@ -16,12 +16,12 @@
 !--------------------------------------------
       nrec=nx*my*4
 
-      if ( nco .gt. 999 ) then
-        write(rfile,100) nco,nx,my
+      if ( jtrun .gt. 999 ) then
+        write(rfile,100) jtrun,nx,my
       else
-        if ( nx .gt. 999 .and. my .gt. 999 ) write(rfile,101) nco,nx,my
-        if ( nx .gt. 999 .and. my .le. 999 ) write(rfile,102) nco,nx,my
-        if ( nx .le. 999 .and. my .le. 999 ) write(rfile,103) nco,nx,my
+        if ( nx .gt. 999 .and. my .gt. 999 ) write(rfile,101) jtrun,nx,my
+        if ( nx .gt. 999 .and. my .le. 999 ) write(rfile,102) jtrun,nx,my
+        if ( nx .le. 999 .and. my .le. 999 ) write(rfile,103) jtrun,nx,my
       endif
  100  format('global_mtnvar.t',i4.4,'.',i4.4,'.',i4.4,'.f77')
  101  format('global_mtnvar.t',i3.3,'.',i4.4,'.',i4.4,'.f77')
@@ -33,7 +33,10 @@
 !
        do v =1,mtnv
          read(22,rec=v) hprime_a
-         hprime_a8=hprime_a
+         do j = 1, my
+           jt = my - j + 1
+           hprime_a8(:,j)=hprime_a(:,jt)
+         enddo   
 !      if( myrank .eq. 0 ) &
 !      print*,' in read_mtnvar hprime_a = ',(hprime_a(1500,155,i),i=1,mtnv)
 
@@ -41,13 +44,12 @@
 
         do jj = 1, jlistnum
           j=jlist1(jj)
-          jt = my - j + 1
-          ii=nxjstart(jt)
-          nxj=nxdef_2d(jt)
+          ii=nxjstart(j)
+          nxj=nxdef_2d(j)
           if( lreduce.eq.1 ) &
-             call reducepick(hprime_a8(1,jt),nxdef(jt),nx,1)        
+             call reducepick(hprime_a8(1,j),nxdef(j),nx,1)        
           do i = 1, nxj
-            hprime_b(i,v,jj) = hprime_a8(ii,jt)
+            hprime_b(i,v,jj) = hprime_a8(ii,j)
             ii=ii+1
           enddo
         enddo

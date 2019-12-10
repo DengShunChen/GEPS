@@ -59,6 +59,7 @@
 
 !CWB2016
            xtice=0.
+           sfemis=0.
 
            allocate (slopetyp(nxp,my_max),istyp(nxp,my_max),&
                      ivegtyp(nxp,my_max), stat=ierr)

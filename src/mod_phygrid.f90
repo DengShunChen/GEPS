@@ -102,7 +102,7 @@
                stop
            end if
 
-           allocate (il(nx,4),ib(nx,4), stat=ierr)
+           allocate (il(nxp,4),ib(nxp,4), stat=ierr)
 
            if (ierr/= 0) then
                write(6,*) 'mod_phygrid : allocate fail 4 '
@@ -110,7 +110,7 @@
            end if
 
 
-           allocate (cof(nx*3,4),xlon(nx,my_max),xlat(my), stat=ierr)
+           allocate (cof(nxp*3,4),xlon(nx,my_max),xlat(my), stat=ierr)
 
            if (ierr/= 0) then
                write(6,*) 'mod_phygrid : allocate fail 5 '

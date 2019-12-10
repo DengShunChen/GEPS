@@ -28,7 +28,8 @@
 !!  \param[in] prslp mean layer presure (Pa)
 !!  \param[in] psp surface pressure (Pa)
 !!  \param[in] phil layer geopotential (\f$m^2/s^2\f$)
-!!  \param[inout] ql cloud water or ice (kg/kg)
+!!  \param[inout] ql cloud water (kg/kg)
+!!  \param[inout] qi cloud ice (kg/kg)
 !!  \param[inout] q1 updated tracers (kg/kg)
 !!  \param[inout] t1 updated temperature (K)
 !!  \param[inout] u1 updated zonal wind (\f$m s^{-1}\f$)
@@ -74,7 +75,7 @@
 !!  \section detailed Detailed Algorithm
 !!  @{
       subroutine samfdeepcnv(im,ix,km,delt,delp,prslp,psp,phil,ql, &
-           q1,t1,u1,v1,cldwrk,rn,kbot,ktop,kcnv,islimsk,garea, &
+           qi,q1,t1,u1,v1,cldwrk,rn,kbot,ktop,kcnv,islimsk,garea, &
            dot,ncloud,cnvw,cnvc)
 !,ud_mf,dd_mf,dt_mf,cnvw,cnvc, &
 !           clam,c0s,c1,betal,betas,evfact,evfactl,pgcon,asolfac)
@@ -90,17 +91,18 @@
       real fpvs
 !
       integer, intent(in)  :: im, ix,  km, ncloud
-      integer, intent(in)  :: islimsk(ix)
+      integer, intent(in)  :: islimsk(im)
       real(kind=kind_phys), intent(in) ::  delt
-      real(kind=kind_phys), intent(in) :: psp(ix), delp(ix,km), &
-         prslp(ix,km),  garea(ix), dot(ix,km), phil(ix,km)
+      real(kind=kind_phys), intent(in) :: psp(im), delp(ix,km), &
+         prslp(ix,km),  garea(im), dot(ix,km), phil(ix,km)
 
-      integer, intent(inout)  :: kcnv(ix)
-      real(kind=kind_phys), intent(inout) ::   ql(ix,km,1), &
-         q1(ix,km), t1(ix,km),   u1(ix,km), v1(ix,km)
+      integer, intent(inout)  :: kcnv(im)
+      real(kind=kind_phys), intent(inout) ::   ql(ix,km), &
+         q1(ix,km), t1(ix,km),   u1(ix,km), v1(ix,km),    &
+         qi(ix,km)
 
-      integer, intent(out) :: kbot(ix), ktop(ix)
-      real(kind=kind_phys), intent(out) :: cldwrk(ix),rn(ix)
+      integer, intent(out) :: kbot(im), ktop(im)
+      real(kind=kind_phys), intent(out) :: cldwrk(im),rn(im)
       real(kind=kind_phys) cnvw(ix,km),  cnvc(ix,km),  &
          ud_mf(im,km),dd_mf(im,km), dt_mf(im,km)
 !
@@ -250,9 +252,15 @@
 !byl      ps   = psp   * 0.001
 !byl      prsl = prslp * 0.001
 !byl      del  = delp  * 0.001
-      ps   = psp 
-      prsl = prslp 
-      del  = delp 
+      do i=1,im
+        ps(i) = psp(i)
+      enddo
+      do k=1,km
+        do i=1,im
+          prsl(i,k) = prslp(i,k)
+          del(i,k)  = delp(i,k)
+        enddo
+      enddo
 !************************************************************************
 !
 !
@@ -2034,9 +2042,9 @@
         if(cnvflg(i)) then
           tem = zi(i,ktcon1(i)) - zi(i,kbcon1(i))
           dtconv(i) = tem / wc(i)
-!byl          tfac = 1. + gdx(i) / 75000.
+          tfac = 1. + gdx(i) / 75000.
 ! reference from eq.3 in Zheng et al. 2016
-          tfac = 1. + log(25000./gdx(i))
+!byl          tfac = 1. + log(25000./gdx(i))
           dtconv(i) = tfac * dtconv(i)
           dtconv(i) = max(dtconv(i),dtmin)
           dtconv(i) = min(dtconv(i),dtmax)
@@ -2374,12 +2382,12 @@
             if (k >= kbcon(i) .and. k <= ktcon(i)) then
               tem  = dellal(i,k) * xmb(i) * dt2
               tem1 = max(0.0, min(1.0, (tcr-t1(i,k))*tcrf))
-!byl              if (ql(i,k,2) > -999.0) then
-!byl                ql(i,k,1) = ql(i,k,1) + tem * tem1            ! ice
-!byl                ql(i,k,2) = ql(i,k,2) + tem *(1.0-tem1)       ! water
-!byl              else
-                ql(i,k,1) = ql(i,k,1) + tem
-!byl              endif
+              if (qi(i,k) > -999.0) then
+                qi(i,k) = qi(i,k) + tem * tem1            ! ice
+                ql(i,k) = ql(i,k) + tem *(1.0-tem1)       ! water
+              else
+                ql(i,k) = ql(i,k) + tem
+              endif
             endif
           endif
         enddo
