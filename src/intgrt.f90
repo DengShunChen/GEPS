@@ -1003,7 +1003,7 @@
                       , idtg,doo3l,nfxr,sfalb,sfemis,isot,ivegsrc               &
                       , dosppt,sppt3d,itimestep,lrun_sitvdiff,ic_sit            &
 !xb110>
-                      , flash,tgori,tgdiff,tgmask)
+                      , flash,tgdiff)
 !xb110<
           lenc=nx*my
 !          itautest=(tau*10)
@@ -1188,7 +1188,7 @@
                      , idtg,doo3l,nfxr,sfalb,sfemis,isot,ivegsrc                &
                      , dosppt,sppt3d,itimestep,lrun_sitvdiff,ic_sit             &
 !xb110>
-                     , flash,tgori,tgdiff,tgmask)
+                     , flash,tgdiff)
 !xb110<
 !          itautest= (tau*10) 
           itautest= (tau) 
@@ -1917,7 +1917,6 @@
 !                  tgold(i,jj)=max(271.,sst(i,j))
 !                  tsw(i,jj)=max(271.,sst(i,j))
               else
-!                if(lday_chtg .and. (tgmask(ii,jj).eq. 1.))then
                 if(lday_chtg)then
                   tg(ii,jj)=max(271.,sst(ii,jj))
                 endif

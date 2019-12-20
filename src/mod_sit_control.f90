@@ -324,11 +324,7 @@
       real:: bathydepth=-200.               !
       LOGICAL,SAVE:: lsftobswt=.FALSE.      ! logical of shift SWT below 10m (10m=obswtb, delete difference
                                             !             between godas and obswtb data)
-      INTEGER,SAVE:: sitchg_option=-99      ! .true. for limiting sit changing from initial tg
-                                            ! -99(default),tg=tgold+tgdiff,tgdiff=tsw-tgold
-                                            ! 1,tg=tgold+tgdiff,abs(tgdiff=tsw-tgold)<=fsitchg
-                                            ! 2,tg=tgini+tgdiff,abs(tgdiff=tsw-tgini)<=fsitchg
-      real:: fsitchg = 0.5                  ! ex. abs(tsw-tgold)<= 0.5
+      real:: fsitchg = 0.5                  ! if fsitchg>=0., tg=tgold+tgdiff, tgdiff=min(max(tsw-tgold,-abs(fsitchg)),abs(fsitchg))
 !ps
 
 
@@ -348,8 +344,7 @@
     timebl_allsit,             &! always sit restore_time for nudging
     lmixedlayer,               &! if lmixedlayer=t, read mixed layer depth data (read mixed_layer)
     ldailysst,                 &! .true. for using daily SST and SIC
-    sitchg_option,             &! .true. for limiting sit changing from initial tg
-    fsitchg,                   &! default -1.5 <=(tsw-tgini) <= 1.5 degree
+    fsitchg,                   &! default -0.5 <=(tsw-tgold) <= 0.5 degree
 !ps    lrere,                     &! true for IC (Initial Condition) run, false for BC (Boundary Condition) run.
     lobs_ocn_rerun,            &! .TRUE. read rerun file but modified with obs. ocean/atm/land data
     !!! lsit,                      &! switch sit (i.e., calc. of vertical ocean temp. profile) on/off

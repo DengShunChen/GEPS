@@ -81,14 +81,13 @@
       logical lopgsst
 ! sit
       logical do_sit
-      logical ltgtest
 
       common/constL/lsimpl,lzadv,yesdia,dopbl,docup,dorad,   &
               dolsp, dograv,doshl, dodry, donnmi,ozon,       &
               restrt,hdiff, cstar, update,doincr,hybrid,     &
               doo3l,ndsladvh2,docgrav,out_green,out_hp,      &
               ldailyFCTsst,ldailyFCTicesndpt,lFCTweight,     &
-              dailyClm_option,lopgsst,do_sit,ltgtest,lday_chtg
+              dailyClm_option,lopgsst,do_sit,lday_chtg
 
  
       character*80 ifilin,cwbout,bckfile,namlsts, &

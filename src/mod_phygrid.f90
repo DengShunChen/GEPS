@@ -22,8 +22,7 @@
             clow       ,  hpbl       ,   cosz       , & 
          rainlp6       ,raincu6      ,                &
          rainlp3       ,raincu3      ,                &
-         rainlp1       ,raincu1      ,  tgori       , &
-          tgdiff       ,tgmask
+         rainlp1       ,raincu1      , tgdiff 
 
       logical, allocatable,save :: land(:,:),ice(:,:),ocean(:,:)
 
@@ -72,9 +71,8 @@
             clow(nxp,my_max),  hpbl(nxp,my_max),   cosz(nxp,my_max), &
          rainlp6(nxp,my_max),raincu6(nxp,my_max),                    &
          rainlp3(nxp,my_max),raincu3(nxp,my_max),                    &
-         rainlp1(nxp,my_max),raincu1(nxp,my_max), tgori(nxp,my_max), &
-          tgdiff(nxp,my_max), tgmask(nxp,my_max),                    &
-                                          stat=ierr)
+         rainlp1(nxp,my_max),raincu1(nxp,my_max), tgdiff(nxp,my_max),&
+                  stat=ierr)
 
            if (ierr/= 0) then
                write(6,*) 'mod_phygrid : allocate fail 2 '
@@ -149,8 +147,7 @@
                        snr,gwr,tg,   ss,rs,                       &
              ustar,tstar,qstar,hflux,qflux,raintot,raincu,rainlp, &
              totalp,curate,plcl,cumtop,tgclim,gwet,z0,alb,        &
-             gwclim,acld,ctot,chig,cmid,clow,hpbl,cosz,tgori,     &
-             tgdiff,tgmask)
+             gwclim,acld,ctot,chig,cmid,clow,hpbl,cosz,tgdiff)
 
            deallocate (land,ice,ocean)
            deallocate (il,ib)

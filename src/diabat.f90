@@ -33,7 +33,7 @@
 ! sppt
                     , dosppt,sppt3d,itimestep,lrun_sitvdiff,ic_sit             &
 !xb110>
-                    , flash,tgori,tgdiff,tgmask)
+                    , flash,tgdiff)
 !xb110<
 !--------------------------------------------------------------------------------
 !#######################################################################
@@ -171,12 +171,11 @@
       use rank
       use index
       use const,                 ONLY:do_sit,ldailyFCTsst,dailyClm_option    &
-                                     ,pdfcloud,fsit,ltgtest 
+                                     ,pdfcloud,fsit 
       use mod_sitgrid
       USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
       USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt &
-                                     ,timebl_option,timebl_start,sitchg_option    &
-                                     ,fsitchg
+                                     ,timebl_option,timebl_start,fsitchg
       USE mod_eos_ocean,         ONLY:AirVaporPressure,CalcSm
       USE mod_sst,               ONLY:time_weights,now1,now2,wgto1,wgto2 &
                                      ,obswtbnmw1,obswtbnmw2,obswtbwgt1   &
@@ -455,7 +454,7 @@
       character*12 cdtg
       integer yr, mo, dy, hr, mn
       real tauhr,randdt
-      real tgori(nxp,my_max),tgdiff(nxp,my_max),tgmask(nxp,my_max)
+      real tgdiff(nxp,my_max)
       real dtx_tau,dtaup 
       INTEGER, PARAMETER :: nerr = 6
 !ps
@@ -2143,19 +2142,16 @@
         do ii = 1, nxj
          if(ocean(ii,jj) .AND. sitmask(ii,jj).EQ.1.) then
           if(ltrigsit)then
-            if(sitchg_option .eq. 1)then
+            if(fsitchg .gt. 0.)then
               tgdiff(ii,jj)=min(max(tsw(ii,jj)-tgold(ii,jj),-abs(fsitchg)),abs(fsitchg))
               tg(ii,jj)=tgold(ii,jj)+tgdiff(ii,jj)
-            else if(sitchg_option .eq. 2)then
-              tgdiff(ii,jj)=min(max(tsw(ii,jj)-tgini(ii,jj),-abs(fsitchg)),abs(fsitchg))
-              tg(ii,jj)=tgini(ii,jj)+tgdiff(ii,jj)
             else
               tgdiff(ii,jj)=tsw(ii,jj)-tgold(ii,jj)
               tg(ii,jj)=tgold(ii,jj)+tgdiff(ii,jj)
             endif
           else
             tgdiff(ii,jj)=obswtb(ii,jj)-tgold(ii,jj)
-            tg(ii,jj)=tgold(ii,jj)+tgdiff(ii,jj)
+            tg(ii,jj)=obswtb(ii,jj)
           endif
 
           if(myrank .EQ. myrank_check .AND.         &
@@ -2204,22 +2200,6 @@
       if(myrank .EQ. myrank_check .AND. jj .EQ. jj_check ) then
         print*,'after do_sit: myrank=',myrank,',jj=',jj       &
               ,'ii=',ii_check,',tg=',tg(ii_check,jj)
-      endif
-
-      if(ltgtest)then
-        dtx_tau=dt/3600.
-        dtaup = mod(tau+0.001, fsit)
-        call random_seed()
-        if((.not. do_sit) .AND. (dtaup .lt. dtx_tau) ) then
-         do ii = 1, nxj
-           if(ocean(ii,jj).AND. (tgmask(ii,jj).EQ.1.)) then
-!           call random_number(randdt)
-!           tgdiff=(randdt)*0.001
-             tgdiff(ii,jj)=0.001
-             tg(ii,jj)=tgori(ii,jj)+tgdiff(ii,jj)
-           endif
-         enddo
-        endif
       endif
 
 !--------------------------------------------------------------------------------
