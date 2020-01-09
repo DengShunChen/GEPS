@@ -565,7 +565,7 @@
         labx='sit   '
         call whtrec (labx,ntau,taudir,whtlev,num)
         if(num.gt.0) then
-          call sitout(nx,my,itau,ifilout,idtg,num,whtlev,ggdef)
+          call sitout(nx,my,my_max,itau,ifilout,idtg,num,whtlev,ggdef)
         endif
       endif
 !

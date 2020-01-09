@@ -1362,7 +1362,7 @@
         if( dtaup .lt. dtx_tau ) then
           ntau=tau+0.001
           if(myrank .eq. 0) print *,'outsitmean at tau=',tau
-          call writesitmean(nx,my,lkvl,ifilout,ntau,idtg,ggdef)
+          call writesitmean(nx,my,my_max,lkvl,ifilout,ntau,idtg,ggdef)
         endif
       endif
 !
@@ -1385,7 +1385,7 @@
 #endif
         if(do_sit)then
           if(loutsit24)then
-            call outsit24(nx,my,lkvl,ifilout,ntau,idtg,ggdef)
+            call outsit24(nx,my,my_max,lkvl,ifilout,ntau,idtg,ggdef)
           endif
           call dtgfix12(idtg,idtg_temp,ntau-1)
           ibeforeyymm=idtg_temp/1000000
@@ -1397,7 +1397,7 @@
                    ,'lnewyymm=',lnewyymm
           endif
           if( lnewyymm ) then
-            call outsitmon(nx,my,lkvl,ifilout,ntau,idtg,ggdef)
+            call outsitmon(nx,my,my_max,lkvl,ifilout,ntau,idtg,ggdef)
           endif
        endif
 !
