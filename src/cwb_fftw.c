@@ -19,11 +19,11 @@ void cwb_fftw_init_threads_( )
 /* ------------------------------------------------------- */
 void cwb_fftw_plan_with_nthreads_( )
 {
-/*
 #include <omp.h>
   fftw_plan_with_nthreads(omp_get_max_threads());
-*/
+/*
   fftw_plan_with_nthreads( );
+*/
   return ;
 }
 
