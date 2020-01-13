@@ -392,7 +392,7 @@ subroutine tracking(tau,dt_trk,dt,nx,my,                                  &
 !      endif
 
       call dmsput (dfile,dmskeytrack//char(0),work,istat)
-      if (istat. ne. 0) then
+      if (istat .ne. 0) then
         print *,'dmskey : ',dmskeytrack,' put error !!'
         print *,'abort the tytrack program !!'
       call dmsexit(1)

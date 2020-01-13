@@ -190,7 +190,7 @@
             sst(i,jj) =coef1*sstcl(i,jj,2) +coef2*sstcl(i,jj,1)
 !ch?        solt(i,jj)=coef1*soltcl(ii,j,2)+coef2*soltcl(ii,j,1)
             alb(i,jj) =coef1*albcl(i,jj,2) +coef2*albcl(i,jj,1)
-            z0(i,jj)=coef1*z0cl(i,jj,2)+coef2*z0cl(i,j,1)
+            z0(i,jj)=coef1*z0cl(i,jj,2)+coef2*z0cl(i,jj,1)
             wet(i,jj)=coef1*wetcl(i,jj,2)+coef2*wetcl(i,jj,1)
 !soil
           sigmaf(i,jj)=coef1*vfrcl(i,jj,2)+coef2*vfrcl(i,jj,1)

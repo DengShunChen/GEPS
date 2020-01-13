@@ -184,7 +184,7 @@
       djt = ( wvn_top(ktop) - wvn_top(1) ) / ktopm1
       do k = 2, ktopm1
 !        wvn_top(k) = (jtrun + wvn_top(k-1))*0.5
-        wvn_top(k) = min( wvn_top(k-1) + djt , jtrun )
+        wvn_top(k) = min( wvn_top(k-1) + djt , float(jtrun) )
       enddo
 !
       pi = 3.141596
