@@ -1020,6 +1020,9 @@
 
       include 'mpif.h'
 
+      integer  nxp,nx,lev,levp,ncld,my,my_max,jlen,proc,comm
+      integer  nlen,ii,j,jj,i,k,KL,ierr,jlistnum,num,n,i1,i2,i3,i4
+
       real*8   a1(nx,levp,my_max),a2(nx,levp,my_max),a3(nx,levp,my_max),     &
                a4(nx,levp,my_max),a5(nx,levp,ncld,my_max)
 
@@ -1028,9 +1031,6 @@
 
       real*8   c1(levp,4+ncld,jlen,nxp,proc)
       real*8   c2(levp,4+ncld,jlen,nxp,proc)
-
-      integer  nxp,nx,lev,levp,ncld,my,my_max,jlen,proc,comm
-      integer  nlen,ii,j,jj,i,k,KL,ierr,jlistnum,num,n,i1,i2,i3,i4
 
       do j=1,jlistnum
          jj=jlist1(j)
@@ -1145,11 +1145,11 @@
 
       include 'mpif.h'
 
-      real*8   ain(nx,levp,ncld,my_max),aout(nxp,lev,ncld,my_max)
-      real*8   c1(levp,ncld,jlen,nxp,proc),c2(levp,ncld,jlen,nxp,proc)
-
       integer  nxp,nx,lev,levp,ncld,my,my_max,jlen,proc,comm
       integer  nlen,ii,j,jj,i,k,KL,ierr,jlistnum,n,i1,i2,i3,i4
+
+      real*8   ain(nx,levp,ncld,my_max),aout(nxp,lev,ncld,my_max)
+      real*8   c1(levp,ncld,jlen,nxp,proc),c2(levp,ncld,jlen,nxp,proc)
 
       do j=1,jlistnum
          jj=jlist1(j)

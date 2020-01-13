@@ -78,7 +78,7 @@
                   vtmpc1*(pqu(jl,jk)-zqenh(jl,jk))-plu(jl,jk))*zdp
           end if
         end do
-        cape(jl) = max(cape(jl),0)
+        cape(jl) = max(cape(jl),0.)
         ft(jl) = alpha*charg(jl)*sqrt(cape(jl))*                        & 
                  (min(pgeo(jl,kcbot(jl))/g*1.0e-3,1.8))**2
          end if
