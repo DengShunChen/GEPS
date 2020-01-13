@@ -33,6 +33,7 @@
 !!          ,access='direct',recl=nrec )
 !
 !!       do v =1,mtnv
+!         read(22,rec=v) hprime_a
          read(22) hprime_a
        do v =1,mtnv
          do j = 1, my
