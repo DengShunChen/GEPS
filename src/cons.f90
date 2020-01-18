@@ -441,9 +441,13 @@
 !  dbms operation when available
 !
       call dmsopn(ifilin,"w",istat2)
-
+      endif
+!
+      if(myrank .lt. lev ) then
       call dmsopn(ifilout,"w",istat3)
-
+      endif
+!
+      if(myrank.eq.0) then
       istat = abs(istat1) + abs(istat2) + abs(istat3)
 !
 ! ldailyFCTsst=true, restore sst, snow depth, sea ice fraction from ncep
