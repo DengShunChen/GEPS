@@ -85,13 +85,12 @@
    real,parameter    ::  xkzmin = 0.01,xkzmax = 1000.,rimin = -100.
    real,parameter    ::  rlam = 30.,prmin = 0.25,prmax = 4.
 !   real,parameter    ::  brcr_ub = 0.0,brcr_sb = 0.25,cori = 1.e-4
-   real,parameter    ::  brcr_ub = 0.25,brcr_sb = 0.25,cori = 1.e-4
+   real,parameter    ::  brcr_ub = 0.25,brcr_sb = 0.25,cori = 1.e-4    !xb118
    real,parameter    ::  afac = 6.8,bfac = 6.8,pfac = 2.0,pfac_q = 2.0
-!   real,parameter    ::  afac = 6.8,bfac = 7.8,pfac = 2.0,pfac_q = 2.0
+!   real,parameter    ::  afac = 6.8,bfac = 6.8,pfac = 3.5,pfac_q = 3.4  !xb118
    real,parameter    ::  phifac = 8.,sfcfrac = 0.1
-!   real,parameter    ::  phifac = 7.,sfcfrac = 0.1
+!   real,parameter    ::  phifac = 7.,sfcfrac = 0.1     !xb118
    real,parameter    ::  d1 = 0.02, d2 = 0.05, d3 = 0.001
-!   real,parameter    ::  d1 = 0.01, d2 = 0.05, d3 = 0.001
    real,parameter    ::  h1 = 0.33333335, h2 = 0.6666667
    real,parameter    ::  zfmin = 1.e-8,aphi5 = 5.,aphi16 = 16.
    real,parameter    ::  tmin=1.e-2
@@ -224,7 +223,8 @@
 !=== xb118
    rovcp=rd/cp
    rovg=rd/g
-   karman=0.4
+!   karman=0.4
+   karman=0.38
    rv=4.615e+2
    ep1=(rv/rd)-1.
    ep2=rd/rv
@@ -504,7 +504,7 @@
        hgamt(i) = max(hgamt(i),0.0)
        hgamq(i) = max(hgamq(i),0.0)
        brint    = -15.9*ust(i)*ust(i)/wspd(i)*wstar3(i)/(wscale(i)**4.)
-!       brint    = -5.9*ust(i)*ust(i)/wspd(i)*wstar3(i)/(wscale(i)**4.)
+!       brint    = -8.*ust(i)*ust(i)/wspd(i)*wstar3(i)/(wscale(i)**4.)  !xb118
        hgamu(i) = brint*ux(i,1)
        hgamv(i) = brint*vx(i,1)
      else
@@ -717,6 +717,7 @@
                 hgamt2(i,k) = min(gamfac*radsum/cp,gamcrt)
                 hgamt(i) = max(hgamt(i),0.0) + max(hgamt2(i,k),0.0)
                 brint    = -15.9*ust(i)*ust(i)/wspd(i)*(wstar3(i)+wstar3_2(i))/(wscale(i)**4.)
+!                brint    = -8.*ust(i)*ust(i)/wspd(i)*(wstar3(i)+wstar3_2(i))/(wscale(i)**4.) !xb118
                 hgamu(i) = brint*ux(i,1)
                 hgamv(i) = brint*vx(i,1)
            endif
@@ -771,6 +772,7 @@
          if(sfcflg(i)) then
            prfac = conpr
            prfac2 = 15.9*(wstar3(i)+wstar3_2(i))/ust3(i)/(1.+4.*karman*(wstar3(i)+wstar3_2(i))/ust3(i))
+!           prfac2 = 8.*(wstar3(i)+wstar3_2(i))/ust3(i)/(1.+4.*karman*(wstar3(i)+wstar3_2(i))/ust3(i)) !xb118
            prnumfac = -3.*(max(zq(i,k+1)-sfcfrac*hpbl(i),0.))**2./hpbl(i)**2.
          else
            prfac = 0.
@@ -993,7 +995,7 @@
        al(i,k)   = -dtodsu*dsdz2
        ad(i,k)   = ad(i,k)-au(i,k)
        ad(i,k+1) = 1.-al(i,k)
-         if (f3(i,k,1).lt.-1e-3)print*,i,k,'f3(i,k,1)=',f3(i,k,1),'xkzm=',xkzm(i,k),'xkzh=',xkzh(i,k),'xkzq=',xkzq(i,k),'sfcflg=',sfcflg(i),'wscale=',wscale(i),'wscalek=',wscalek(i,k),'wscalek2=',wscalek2(i,k),'ust3=',ust3(i),'wstar3=',wstar3(i),'zfac=',zfac(i,k),'qfxpbl=',qfxpbl(i),'we=',we(i)
+!        if (f3(i,k,1).lt.-1e-3)print*,i,k,'f3(i,k,1)=',f3(i,k,1),'xkzm=',xkzm(i,k),'xkzh=',xkzh(i,k),'xkzq=',xkzq(i,k),'sfcflg=',sfcflg(i),'wscale=',wscale(i),'wscalek=',wscalek(i,k),'wscalek2=',wscalek2(i,k),'ust3=',ust3(i),'wstar3=',wstar3(i),'zfac=',zfac(i,k),'qfxpbl=',qfxpbl(i),'we=',we(i)
      enddo
    enddo
 !

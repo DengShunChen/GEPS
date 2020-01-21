@@ -586,7 +586,7 @@
       do i = 1, nxp
        rcup(i,jj)  = 0.0
        rlsp(i,jj)  = 0.0
-       cldwrk(i,k) = 0.0
+       cldwrk(i,jj) = 0.0
 !byl       rainp(i,jj) = 0.0
 !      cosz(i,jj)  = 0.0
        xmu(i,jj)  = 0.0
