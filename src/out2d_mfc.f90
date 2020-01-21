@@ -1,5 +1,5 @@
-      subroutine out2d_mfc (nx,lev,my,my_max,ifilout,itau,idtg,ntau     &
-                            ,rain1,raintot,glob,t2,q2,rh2,rh10,u10,v10  &
+      subroutine out2d_mfc (nx,lev,my,my_max,ifilout,itau,idtg,ntau    &
+                            ,rain1,raintot,glob,t2,q2,rh2,rh10,u10,v10 &
                             ,tmax,tmin,td,rld,sld,ctot,slpty,ggdef )
 !
       use rank
@@ -8,7 +8,8 @@
 !
       implicit  none
 
-      integer   nx,lev,my,my_max,itau,ntau
+      integer   nx,lev,my,my_max,itau,ntau,num
+      parameter (num=14)
 
       real      raintot(nxp,my_max),t2(nxp,my_max),u10(nxp,my_max),   &
                 v10(nxp,my_max),ctot(nxp,my_max),slpty(nxp,my_max)
@@ -16,87 +17,59 @@
       real rain1(nxp,my_max),q2(nxp,my_max),rh2(nxp,my_max),          &
            rh10(nxp,my_max),tmax(nxp,my_max),tmin(nxp,my_max),        &
            td(nxp,my_max),rld(nxp,my_max),sld(nxp,my_max)
-
+!
+      real mfcout(nxp,my_max,num)
+!
       character*4 ggdef
       integer*8 idtg
+      character*6 dmskey(num)
 !
-      real      glob(nx,my)
+      real      glob(nx,my),mout(nx,my)
 !
       character*80 ifilout
-      character*26 ihdg
+      character*26 ihdg,ihdg2
 !
-      integer   num,n,levz,lenc,lenc2,i,ia,kk,j,nxj,istat,jj
+      integer   n,levz,lenc,lenc2,i,ia,kk,j,nxj,istat,jj
       real      tnshun
+!
+      data dmskey/'b00621','b0062t','b02100','b02500','b02510', &
+                  'b10200','b10210','b02171','b02181','b02150', &
+                  's003x0','s003u0','x00770','ssl010'/
+
 
 !
       tnshun= 1.0
       lenc= nx*my
       lenc2= lev*my
+!      
+      mfcout(:,:,1)=rain1(:,:)
+      mfcout(:,:,2)=raintot(:,:)
+      mfcout(:,:,3)=t2(:,:)
+      mfcout(:,:,4)=q2(:,:)
+      mfcout(:,:,5)=rh2(:,:)
+      mfcout(:,:,6)=u10(:,:)
+      mfcout(:,:,7)=v10(:,:)
+      mfcout(:,:,8)=tmax(:,:)
+      mfcout(:,:,9)=tmin(:,:)
+      mfcout(:,:,10)=td(:,:)
+      mfcout(:,:,11)=rld(:,:)
+      mfcout(:,:,12)=sld(:,:)
+      mfcout(:,:,13)=ctot(:,:)
+      mfcout(:,:,14)=slpty(:,:)
 !
 ! Total Precp.
 !byl      call mpe2d_unify(glob,raintot)
-      call syslbl ('b0062t',idtg,ntau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,raintot,glob)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!     call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call dmswrit_mfc(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-
-! 1hr Precp.
-!byl      call mpe2d_unify(glob,rain1)
-      call syslbl ('b00621',idtg,ntau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,rain1,glob)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!     call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call dmswrit_mfc(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-
-! T2
-!byl      call mpe2d_unify(glob,t2)
-      call syslbl ('b02100',idtg,ntau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,t2,glob)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!     call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call dmswrit_mfc(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-
-! T2max
-!byl      call mpe2d_unify(glob,tmax)
-      call syslbl ('b02171',idtg,ntau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,tmax,glob)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!     call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call dmswrit_mfc(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-
-! T2min
-!byl      call mpe2d_unify(glob,tmin)
-      call syslbl ('b02181',idtg,ntau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,tmin,glob)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!     call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call dmswrit_mfc(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-
-! T2d
-!byl      call mpe2d_unify(glob,td)
-      call syslbl ('b02150',idtg,ntau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,td,glob)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!     call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call dmswrit_mfc(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-
-! q2
-!byl      call mpe2d_unify(glob,q2)
-      call syslbl ('b02500',idtg,ntau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,q2,glob)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!     call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call dmswrit_mfc(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-
-! rh2
-!byl      call mpe2d_unify(glob,rh2)
-      call syslbl ('b02510',idtg,ntau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,rh2,glob)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!     call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call dmswrit_mfc(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-
+      do n=1,num
+        call syslbl (dmskey(n),idtg,ntau,ggdef,ihdg)
+        call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),mout)
+        if ( myrank .eq. n-1 ) then
+          glob=mout
+          ihdg2=ihdg
+        endif
+      enddo
+!
+      if (myrank .lt. num ) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,glob,istat)
+!
 !! rh10
 !!byl      call mpe2d_unify(glob,rh10)
 !      call syslbl ('b10510',idtg,ntau,ggdef,ihdg)
@@ -105,53 +78,6 @@
 !!     call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
 !      call dmswrit_mfc(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
 
-! U wind
-!byl      call mpe2d_unify(glob,u10)
-      call syslbl ('b10200',idtg,ntau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,u10,glob)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!     call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call dmswrit_mfc(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-
-! V wind
-!byl      call mpe2d_unify(glob,v10)
-      call syslbl ('b10210',idtg,ntau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,v10,glob)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!     call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call dmswrit_mfc(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-
-! ctot_total cloud fraction
-!byl      call mpe2d_unify(glob,ctot)
-      call syslbl ('x00770',idtg,ntau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,ctot,glob)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!     call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call dmswrit_mfc(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-!
-! Sea level pressure(hPa)
-!byl      call mpe2d_unify(glob,slpty)
-      call syslbl ('ssl010',idtg,ntau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,slpty,glob)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!     call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call dmswrit_mfc(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-
-! downward SW
-!byl      call mpe2d_unify(glob,sld)
-      call syslbl ('s003u0',idtg,ntau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,sld,glob)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!     call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call dmswrit_mfc(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-
-! downwrd LW
-!byl      call mpe2d_unify(glob,rld)
-      call syslbl ('s003x0',idtg,ntau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,rld,glob)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!     call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call dmswrit_mfc(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
 
       return
       end
