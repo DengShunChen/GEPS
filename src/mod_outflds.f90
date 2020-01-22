@@ -55,7 +55,7 @@ contains
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,wk1,istat)
       call qmaxn3(wk1,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if ( myrank .le. ncnt ) then
+      if ( myrank .eq. ncnt ) then
         pout=wk1
         ihdg2=ihdg
       endif
@@ -144,7 +144,7 @@ contains
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,wk1,istat)
       call qmaxn3(wk1,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if ( myrank .le. ncnt ) then
+      if ( myrank .eq. ncnt ) then
         pout=wk1
         ihdg2=ihdg
       endif
