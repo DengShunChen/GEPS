@@ -436,16 +436,14 @@
       if(myrank.eq.0) then
       call dmsmsg("ALL",istat)
       call dmsopn(bckfile,"r",istat1)
+      endif
 !
 !  open the input file.  this too will be replaced by the appropriate
 !  dbms operation when available
 !
-      call dmsopn(ifilin,"w",istat2)
-      endif
+      if(col_rank .eq. 0) call dmsopn(ifilin,"w",istat2)
 !
-      if(myrank .lt. lev ) then
-      call dmsopn(ifilout,"w",istat3)
-      endif
+      if(myrank .lt. lev) call dmsopn(ifilout,"w",istat3)
 !
       if(myrank.eq.0) then
       istat = abs(istat1) + abs(istat2) + abs(istat3)
