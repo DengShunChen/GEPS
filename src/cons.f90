@@ -316,7 +316,7 @@
         hdk2   = 34
         hdk3   = 37
       endif
-      factop = 1.5
+      factop = 0.0
 !!      factop = 2.5
       
       coefu=factop/float(hdk3-hdk2)

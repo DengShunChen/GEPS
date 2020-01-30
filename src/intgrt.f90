@@ -70,7 +70,7 @@
                 pten_sl(nx,levp,my_max),                           &
                 qm_sl(nx,levp*ncld,my_max),                        &
                 vvm_sl(nx,levp,my_max),                            &
-                uum_sl(nx,levp,my_max)
+                uum_sl(nx,levp,my_max),ddtempr(nxp,lev,my_max)
 !
       real      ndsldta,ndsldtah
       integer   ierr,itter,itt
@@ -89,6 +89,7 @@
       real      tmin(nxp,my_max),tmax(nxp,my_max),td(nxp,my_max),temp
 !
       real      cc(nx+2,levp,1,my_max),ww1(nx,my_max)
+      real      pltemp(jtrun,jtmax,2)
 !byl      real      cc3(nx+2,levp,3,my_max),wss3(levp,2,3,jtrun,jtmax)
 !
       character rfile*55, ctau*6
@@ -654,13 +655,12 @@
 !!      call mpe_broadcast(tbar,lev,flag,mpe_double)
 !!      call mpe_broadcast(qbar,lev*ncld,flag,mpe_double)
 !
-      do n = 1, jtrun*jtmax*2
-        plten(n,1,1) = 0.0
-      enddo
       do m=1,mlistnum
         mf=mlist(m)
         do n=mf,jtrun
           do i = 1, 2
+          plten(n,m,i) = 0.0
+          pltemp(n,m,i) = 0.0
           do k = 1, levp
             divten(k,i,n,m) = 0.0
             vorten(k,i,n,m) = 0.0
@@ -695,6 +695,7 @@
        vdzonlr=0.
        qvadv=0.
        ddtemp=0.
+       ddtempr=0.
        pten=0.
 !
        itter=1
@@ -802,46 +803,11 @@
 !
         call ndslfv_monoadvv(ddtemp,qvadv,vdzonl,vdmerd,pdot          &
                             ,nxjp,ndsldta)
-!
-!  combine non-linear grid point terms via gaussian quadrature
-!
-      call joinrs(cc,ddtemp,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-      call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc  &
-                   ,temten,1,nsizey)
-!ch   call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,deldm         &
-      call mpe2d_unify_nx(ww1,deldm) 
-      call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1           &
+
+
+        call mpe2d_unify_nx(ww1,deldm) 
+        call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1         &
                  ,plten,nsizey)
-!
-      call rstrandz (jtrun,jtmax,nx,my,my_max,levp,vdmerd,vdzonl      &
-                    ,weight,cim,onocos,poly,dpoly,divten,vorten,nsizey)
-!
-      if (lsimpl)  then
-!
-!   apply semi-implicit adjustemts to above explicitly computed
-!   tendencies to stablize integration for long time steps
-!
-      call siimpl ( jtrun,jtmax,lev,dta,ptmeans,dsigma,spalm,eps4,eigval &
-                  , evecin,evectr,arrhyd,arsddt,temold,divold,plold      &
-                  , temnow,divnow,plnow,temten,divten,plten)
-!
-      endif
-!
-!!      if (lzadv)  then
-!
-!  implicit advection of vorticity and moisture
-!
-!!        dt1= dta*0.5
-!!        call zimadv ( my,my_max,levp,ncld                  &
-!!                     ,jtrun,jtmax,dt1,poly,onocos,weight   &
-!!                     ,uzm,vorten,vornow,vorold,qten,qnow,qold,nsizey)
-!
-!  for best results we want uzm to be computed for t-dt time level
-!  so we compute it here for use in zimadv at next time step
-!
-!!        call uzmean (nx,my,my_max,lev,ut,uzm)
-!
-!!      endif
 !
 !  zero out global mean tendencies for divergence, vorticity, and
 !  terrain pressure to ensure consistency with gauss's theorem.
@@ -851,17 +817,6 @@
         plten(1,mlst,1) = 0.0
         plten(1,mlst,2) = 0.0
       endif
-      do m = 1, mlistnum
-         mf=mlist(m)
-         if ( mf.eq.1 ) then
-           do i = 1, 2
-           do k = 1, levp
-             divten(k,i,1,m)= 0.0
-             vorten(k,i,1,m)= 0.0
-           enddo
-           enddo
-         endif
-      enddo
 !
       call transr1( jtrun,jtmax,nx,my,my_max,poly,plten,ptend,nsizey)
       do mf = 1, jtrun
@@ -893,9 +848,15 @@
         nxj=nxdef_2d(j)
         do k = 1, lev
           do i = 1,nxj
+            vdzonlr(i,k,jj) = up(i,k,jj)
+            vdmerdr(i,k,jj) = vp(i,k,jj)
+            ddtempr(i,k,jj) = ttp(i,k,jj)
             up(i,k,jj) = ut(i,k,jj)
             vp(i,k,jj) = vt(i,k,jj)
             ttp(i,k,jj)= tt(i,k,jj)
+            ut(i,k,jj) = vdzonl(i,k,jj)
+            vt(i,k,jj) = vdmerd(i,k,jj)
+            tt(i,k,jj) = ddtemp(i,k,jj)
 !!            uum(i,k,jj)= ut(i,k,jj)
 !!            vvm(i,k,jj)= vt(i,k,jj)
 !!            ttm(i,k,jj)= tt(i,k,jj)
@@ -904,10 +865,11 @@
         do k = 1, lev*ncld
           do i = 1,nxj
             qp(i,k,jj) = qt(i,k,jj)
+            qt(i,k,jj) = qvadv(i,k,jj)
 !            qmt(i,k,jj) = qt(i,k,jj)
           enddo
         enddo
-          do i = 1,nxj
+        do i = 1,nxj
           ptp(i,jj)= pt(i,jj)
         enddo
       enddo
@@ -924,54 +886,18 @@
         ,dta,itimestep )
       endif ! dosppt
 !
-      if (forward)  then
-!
-!  first step of a forecast
-!
-        do m = 1, mlistnum
-          mf=mlist(m)
-          do n = mf, jtrun
-            do i = 1, 2
-            do k = 1, levp
-              vornow(k,i,n,m)= dtx*vorten(k,i,n,m) + vorold(k,i,n,m)
-              divnow(k,i,n,m)= dtx*divten(k,i,n,m) + divold(k,i,n,m)
-              temnow(k,i,n,m)= dtx*temten(k,i,n,m) + temold(k,i,n,m)
-            enddo
-            enddo
-          enddo
+      do m = 1, mlistnum
+        mf=mlist(m)
+        do n = mf, jtrun
+          pltemp(n,m,1)= dta*plten(n,m,1)+plold(n,m,1)
+          pltemp(n,m,2)= dta*plten(n,m,2)+plold(n,m,2)
         enddo
-        do jj = 1, jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
-          do k = 1, lev*ncld
-            do i = 1, nxj
-!              qmt(i,k,jj) = qm(i,k,jj)
-!byl no need tendency for Tracers
-!!              qt(i,k,jj) = dtx*qvadv(i,k,jj) + qm(i,k,jj)
-              qt(i,k,jj) = qvadv(i,k,jj)
-            enddo
-          enddo
-        enddo
-        do m = 1, mlistnum
-          mf=mlist(m)
-          do n = mf, jtrun
-            plnow(n,m,1)= dtx*plten(n,m,1)+plold(n,m,1)
-            plnow(n,m,2)= dtx*plten(n,m,2)+plold(n,m,2)
-          enddo
-        enddo
+      enddo
 !
-        if (hdiff) call hdiffu ( dtx,my,my_max,nx,jtrun,jtmax,lev,ncld       &
-                               , hfiltx,rad,cosl,ut,vt,vornow,divnow,temnow  &
-!cjh                               , eps4,temold)
-                               , eps4,trefs)
 !
 !  for physical parameterization,output spectrum u,v,t,q to grid point
 !
-        call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temnow,cc,1,nsizey)
-        call ujoinsr(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-        call tranuv(jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac &
-                   ,poly,dpoly,vornow,divnow,ut,vt,nsizey)
-        call transr1(jtrun,jtmax,nx,my,my_max,poly,plnow,pt,nsizey)
+        call transr1(jtrun,jtmax,nx,my,my_max,poly,pltemp,pt,nsizey)
 !
         if (yesdia)  then
 !
@@ -1014,85 +940,91 @@
 ! add reynolds stress
 !
           call rayleifr(nx,my,my_max,lev,rad,cosl,dt,ut,vt)
+        endif    ! end of (yesdia)
 !
 !  after phyical parameterization,transform grid point u,v,t,q to
 !  spectrum
 !
-          call joinrs(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-          call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc   &
-                     ,temnow,1,nsizey)
-
-          call trandv(jtrun,jtmax,nx,my,my_max,lev,ut,vt,weight,cim &
-                     ,onocos,poly,dpoly,vornow,divnow,nsizey)
+          do jj = 1, jlistnum
+            j=jlist1(jj)
+            nxj=nxdef_2d(j)
+            do k = 1, lev
+              do i = 1,nxj
+                vdzonl(i,k,jj) = ( ut(i,k,jj) - vdzonlr(i,k,jj) ) / dta
+                vdmerd(i,k,jj) = ( vdmerdr(i,k,jj) - vt(i,k,jj) ) / dta
+                ddtemp(i,k,jj) = ( tt(i,k,jj) - ddtempr(i,k,jj) ) / dta
+              enddo
+            enddo
+          enddo
 !
-        endif    ! end of (yesdia)
+          call joinrs(cc,ddtemp,dummy,dummy,dummy,nx,my_max,lev        &
+                   ,jlistnum,1,1)
+          call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc     &
+                   ,temten,1,nsizey)
+          call rstrandz (jtrun,jtmax,nx,my,my_max,levp,vdmerd,vdzonl   &
+                   ,weight,cim,onocos,poly,dpoly,divten,vorten,nsizey)
+!
+      if (lsimpl)  then
+!
+!   apply semi-implicit adjustemts to above explicitly computed
+!   tendencies to stablize integration for long time steps
+!
+      call siimpl ( jtrun,jtmax,lev,dta,ptmeans,dsigma,spalm,eps4,eigval &
+                  , evecin,evectr,arrhyd,arsddt,temold,divold,plold      &
+                  , temnow,divnow,plnow,temten,divten,plten)
+!
+      endif
+!
+      mlst=ilist(1)
+      if(mlst .ne. 0) then
+        plten(1,mlst,1) = 0.0
+        plten(1,mlst,2) = 0.0
+      endif
+      do m = 1, mlistnum
+         mf=mlist(m)
+         if ( mf.eq.1 ) then
+         do i = 1, 2
+           do k = 1, levp
+             divten(k,i,1,m)= 0.0
+             vorten(k,i,1,m)= 0.0
+           enddo
+         enddo
+         endif
+      enddo
+!
+      if (forward)  then
+!
+        do m = 1, mlistnum
+          mf=mlist(m)
+          do n = mf, jtrun
+            do i = 1, 2
+            do k = 1, levp
+              vornow(k,i,n,m)= dta*vorten(k,i,n,m) + vorold(k,i,n,m)
+              divnow(k,i,n,m)= dta*divten(k,i,n,m) + divold(k,i,n,m)
+              temnow(k,i,n,m)= dta*temten(k,i,n,m) + temold(k,i,n,m)
+            enddo
+            enddo
+          enddo
+        enddo
+!
+        do m = 1, mlistnum
+          mf=mlist(m)
+          do n = mf, jtrun
+            plnow(n,m,1)= dta*plten(n,m,1)+plold(n,m,1)
+            plnow(n,m,2)= dta*plten(n,m,2)+plold(n,m,2)
+          enddo
+        enddo
+
+!
+      if (hdiff) call hdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld       &
+                             , hfiltx,rad,cosl,ut,vt,vornow,divnow,temnow  &
+                             , eps4,trefs)
 !
         forward=.false.
         dta= 2.0*dtx
         lsitstart=.false.
 !
-      else
-!
-!  truncate adiabatic tendencies for top model level whenever max wind
-!  exceeds 80 m/sec.  When wind .gt. 100 m/sec top 20% of total
-!  wavenumber tendencies are removed
-!
-!        wmax= 0.0
-!        do jj = 1, jlistnum
-!          j=jlist1(jj)
-!          nxj=nxdef(j)
-!          xx = rad/cosl(j)
-!          do i = 1, nxj
-!            wmax = max(wmax,xx*sqrt(ut(i,1,jj)**2+vt(i,1,jj)**2))
-!          enddo
-!        enddo
-!        call mpe_global_max(wmax,1,mpe_double)
-!!        fac = 0.2*max(0.0,min(1.0,0.05*(wmax-80.0)))
-!        if(wmax.gt.windmax3)then
-!          fac(1)=0.6
-!          fac(2)=0.4
-!          fac(3)=0.3
-!          fac(4)=0.2
-!        else
-!          fac(1)=0.4
-!          fac(2)=0.3
-!          fac(3)=0.2
-!          fac(4)=0.1
-!        endif
-!
-!        do m = 1, mlistnum
-!          mf=mlist(m)
-!          do n = mf, jtrun
-!            do k = 1,ktop
-!              jlim= jtrun*(1.0-fac(k))
-!              if ( n.gt.jlim ) then
-!                facw = max (0.0, (1.0 -0.1*float(n-jlim)))
-!                divten(k,1,n,m)= divten(k,1,n,m)*facw
-!                vorten(k,1,n,m)= vorten(k,1,n,m)*facw
-!                temten(k,1,n,m)= temten(k,1,n,m)*facw
-!                divten(k,2,n,m)= divten(k,2,n,m)*facw
-!                vorten(k,2,n,m)= vorten(k,2,n,m)*facw
-!                temten(k,2,n,m)= temten(k,2,n,m)*facw
-!              endif
-!            enddo
-!          enddo
-!        enddo
-!        do m = 1, mlistnum
-!          mf=mlist(m)
-!          do n = mf, jtrun
-!            do k = 1,ktop
-!              jlim= jtrun*(1.0-fac(k))
-!              if ( n.gt.jlim ) then
-!                facw = max (0.0, (1.0 -0.1*float(n-jlim)))
-!                do kw=1,ncld
-!                  kk=(kw-1)*lev+k
-!                   qten(kk,1,n,m)  = qten(kk,1,n,m)*facw
-!                   qten(kk,2,n,m)  = qten(kk,2,n,m)*facw
-!                enddo
-!              endif
-!            enddo
-!          enddo
-!        enddo
+      else ! if ( forward )
 !
 !  leap-frog/time filtered steps
 !
@@ -1108,17 +1040,7 @@
             enddo
           enddo
         enddo
-        do jj = 1, jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
-          do k = 1, lev*ncld
-            do i = 1, nxj
-!byl no need tendency for Tracers
-!!              qt(i,k,jj)= dta*qvadv(i,k,jj) + qm(i,k,jj)
-              qt(i,k,jj)= qvadv(i,k,jj) 
-            enddo
-          enddo
-        enddo
+!
         do m =1,mlistnum
           mf=mlist(m)
           do n  = mf,jtrun
@@ -1130,68 +1052,6 @@
         if (hdiff) call hdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld       &
                                , hfiltx,rad,cosl,ut,vt,vorten,divten,temten  &
                                , eps4,trefs)
-!
-!  for physical parameterization,output spectrum u,v,t,q to grid point
-!
-        call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temten,cc,1,nsizey)
-        call ujoinsr(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-        call tranuv(jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac &
-                   ,poly,dpoly,vorten,divten,ut,vt,nsizey)
-        call transr1(jtrun,jtmax,nx,my,my_max,poly,plten,pt,nsizey)
-!
-        if (yesdia)  then
-!
-          call diabat ( forward,docup,dodry,dolsp,dopbl,dorad,doshl,dograv      &
-                     , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw       &
-                     , idg,jdg,ldiag,dtx,tau,hours,julian                       &
-                     , frad,ozon,njump,itypbl,ktcup,ktpbl,ktshl,grav            &
-                     , rgas,cp,stbo,s0,evaprh,hltm,ptop,sigma,dsigma,il,ib      &
-                     , cof,xlat,xlon,sgeo,z0,alb,land,ocean,ice                 &
-                     , snr,tg,tgclim,curate,plcl,cumtop,totalp,raintot,raincu   &
-                     , rainlp,raincu6,rainlp6,raincu3,rainlp3,raincu1,rainlp1   &
-                     , hflux,qflux,ustar,tstar,qstar,e                          &
-                     , eps,o3l,dtrad,ss,rs,plt,pk,pk2,ptp,up,vp,ttp,qp,pt,ut    &
-                     , vt,tt,qt,gwclim,tice,hice,qgini,thdai,tengi              &
-                     , acld,std,asol,olr,drag,ugws,vgws                         &
-                     , sdpbl,t2,q2,rh2,rh10,u10,v10,gfx                         &
-                     , fm,fh,fm10,fh2,srflag                                    &
-                     , rld,km_soil,smc,stc,canopy,runoff                        &
-                     , sigmaf,istyp,ivegtyp,wltsmc,refsmc,maxsmc,dfkt,xktk,dfk  &
-                     , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,deltaq,sd                   &
-                     , shdmax,shdmin,snoalb                                     &
-                     , slopetyp,sld,slc,zice,cice,xtice,sncover,sndepth         &
-                     , ctot,chig,cmid,clow,hpbl,asl,atl,cosz                    &
-                     , nmgwor,nmgwcv,hprime_b,mtnvar,docgrav                    &
-!--------------------------------------------------------------------------------
-                     , fusl,fdsl,fuir,fdir                                      &
-                     , fuslr,fdslr,fuirr,fdirr                                  &
-                     , asl_clr,atl_clr,clds                                     &
-                     , ss_clr,rs_clr,asol_clr,olr_clr,sld_clr,rld_clr           &
-                     , alvsf,alvwf,alnsf,alnwf,facsf,facwf                      &
-                     , idtg,doo3l,nfxr,sfalb,sfemis,isot,ivegsrc                &
-                     , dosppt,sppt3d,itimestep,lrun_sitvdiff,ic_sit             &
-!xb110>
-!byl                     , rmr,smr,flash)
-                     , flash)
-!xb110<
-          itimestep=itimestep+1   ! for sppt time evolution)
-!--------------------------------------------------------------------------------
-!
-! add reynolds stress
-!
-          call rayleifr(nx,my,my_max,lev,rad,cosl,dt,ut,vt)
-!
-!  after phyical parameterization,transform grid point u,v,t,q to
-!   spectrum
-!
-          call joinrs(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-          call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc   &
-                     ,temten,1,nsizey)
-
-          call trandv(jtrun,jtmax,nx,my,my_max,lev,ut,vt,weight,cim &
-                     ,onocos,poly,dpoly,vorten,divten,nsizey)
-!
-        endif   ! end of (yesdia)
 !
 ! accumulate some flux every time step to output point (24 hour)
 ! 1994 11 11
@@ -1263,13 +1123,13 @@
 !!      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,wss3,cc3,3,nsizey)
 !!      call ujoinsr(cc3,rvor,rdiv,tt,dummy,nx,my_max,lev,jlistnum,3,1)
 
-      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,vornow,cc,1,nsizey)
-      call ujoinsr(cc,rvor,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+!!      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,vornow,cc,1,nsizey)
+!!      call ujoinsr(cc,rvor,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divnow,cc,1,nsizey)
       call ujoinsr(cc,rdiv,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temnow,cc,1,nsizey)
       call ujoinsr(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-!      call transr1(jtrun,jtmax,nx,my,my_max,poly,plnow,pt,nsizey)
+      call transr1(jtrun,jtmax,nx,my,my_max,poly,plnow,pt,nsizey)
 !
 !  zonal and meridional gradients of terrain pressure
 !
@@ -1281,6 +1141,14 @@
       call tranuv (jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac &
                   , poly,dpoly,vornow,divnow,ut,vt,nsizey)
 !
+!   computing new p**capa quantities
+!
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+!ch     nxj=nxdef(j)
+        call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pt(1,jj), &
+                          pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
+      enddo
 !c    make sure moisture field is positive
 !
 !      do jj =1, jlistnum
@@ -1587,6 +1455,9 @@
 !  write operational fields (p-levels and surface)
 !
 #ifndef NO_OUT
+!
+       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,vornow,cc,1,nsizey)
+       call ujoinsr(cc,rvor,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
        rh2100=rh2*100.
        rh10100=rh10*100.
         call  outflds( itau,nx,my,my_max,lev,ncld                              &
