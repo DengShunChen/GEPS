@@ -561,9 +561,11 @@
             asenb = asend
          endif
 
-         sfcalb(i,1) = alnsf(i)*rfcs*flnd + asenb*fsea + asnnb*fsno
+         ab1bm = min(0.99, alnsf(i)*rfcs)
+         ab2bm = min(0.99, alvsf(i)*rfcs)
+         sfcalb(i,1) = ab1bm   *flnd + asenb*fsea + asnnb*fsno
          sfcalb(i,2) = alnwf(i)     *flnd + asend*fsea + asnnd*fsno
-         sfcalb(i,3) = alvsf(i)*rfcs*flnd + asevb*fsea + asnvb*fsno
+         sfcalb(i,3) = ab2bm   *flnd + asevb*fsea + asnvb*fsno
          sfcalb(i,4) = alvwf(i)     *flnd + asevd*fsea + asnvd*fsno
 
         enddo    ! end_do_i_loop

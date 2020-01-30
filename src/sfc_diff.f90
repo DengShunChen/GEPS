@@ -153,11 +153,19 @@
             ztmax = z0max*exp( - tem1*tem1 &
                                * czilc*ca*sqrt(ustar(i)*(0.01/1.5e-05)))
 
-          endif
+          endif       ! end of if(islimsk(i) == 0) then
           ztmax = max(ztmax,1.0e-6)
             ztmin1 = -999.0
             beta   = 1.0
-            hmgn   = beta*log(z1(i)/z0max)/(2.*alpha*(1.-z0max/z1(i)))
+!xb118>>
+          tem1   = z0max/z1(i)
+          if (abs(1.0-tem1) > 1.0e-6) then
+            hmgn = - beta*log(tem1)/(2.*alpha*(1.-tem1))
+          else
+            hmgn = 99.0
+          endif
+!            hmgn   = beta*log(z1(i)/z0max)/(2.*alpha*(1.-z0max/z1(i)))
+!xb118<<
             if( z0max.lt.0.05 .and. snwdph(i).lt.10.0 ) hmgn = 99.0
 
 

@@ -1466,7 +1466,7 @@
                     , ptend,pt,plt,pk,pk2,phi,ut,vt,sd                         &
                     , tt,qt,rdiv,rvor,tg,gwr,z0,hflux,qflux,snr                &
                     , raintot,raincu,rainlp,asol,olr,ss,rs,alb,gwclim          &
-                    , acld,cosl,drag,ugws,vgws,t2,rh2100,rh10100,u10,v10,gfx,rld,sld &
+                    , acld,cosl,drag,ugws,vgws,t2,q2,rh2100,rh10100,u10,v10,gfx,rld,sld &
 !byl                    , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500 &
                     , km_soil,smc,slc,stc,canopy,ggdef,typtrk                  &
                     , ctot,chig,cmid,clow,hpbl,histim,flash,do_sit)

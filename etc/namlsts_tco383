@@ -66,8 +66,8 @@
  otgreen=3.,
  out_hp=t,
  ndsladvh2=f,
- isot=1,
- ivegsrc=1,
+ isot=0,
+ ivegsrc=0,
  &end
 
  &typ

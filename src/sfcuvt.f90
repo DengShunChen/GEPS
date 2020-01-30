@@ -1,6 +1,6 @@
       subroutine sfcuvt ( nxj,mn,dt,g,r,cp,hltm,tg,z0,ocean,ps,ts,hgt &
                         , ut,vt,tt,qt,ustar,tstar,qstar,hflux,qflux   &
-                        , qsfc,t2,rh2,rh10,u10,v10 )
+                        , qsfc,t2,q2,rh2,rh10,u10,v10 )
 !
 !##################################################################
 !                     subroutine description

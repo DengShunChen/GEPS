@@ -4,7 +4,7 @@
              , ptend,pt,plt,pk,pk2,phi,ut,vt,sd                      &
              , tt,qt,rdiv,rvor,tg,gwet,z0,hflux,qflux,snr            &
              , raintot,raincu,rainlp,plcl,cumtop,ss,rs,alb,gwclim    &
-             , acld,cosl,drag,ugws,vgws,t2,rh2,rh10,u10,v10,gfx,rld,sld &
+             , acld,cosl,drag,ugws,vgws,t2,q2,rh2,rh10,u10,v10,gfx,rld,sld &
 !byl             , km,smc,slc,stc,canopy,ggdef,slptyp,v850,v700,h850,h500   &
              , km,smc,slc,stc,canopy,ggdef,typtrk                    &
              , ctot,chig,cmid,clow,hpbl,lwrite,flash,lwritesit)
@@ -36,7 +36,7 @@
               , ss(nxp,my_max),rs(nxp,my_max),alb(nxp,my_max),gwclim(nxp,my_max)    &
               , acld(lev,my),cosl(my),drag(nxp,lev,my_max)                          &
               , ugws(nxp,my_max),vgws(nxp,my_max),t2(nxp,my_max)                    &
-              , rh2(nxp,my_max),rh10(nxp,my_max)                                    &
+              , q2(nxp,my_max),rh2(nxp,my_max),rh10(nxp,my_max)                     &
               , u10(nxp,my_max),v10(nxp,my_max),gfx(nxp,my_max),rld(nxp,my_max)     &
               , sld(nxp,my_max),raintot(nxp,my_max)                                 &
 !soil
@@ -657,8 +657,8 @@
       call out2d (nx,lev,my,my_max,ifilout,itau,idtg,taudir,ntau    &
                  ,hflux,qflux,tg,gwet,snr,z0,raintot,raincu,rainlp  &
                  ,plcl,cumtop,ss,rs,alb,gwclim,glob                 &
-                 ,acld,ugws,vgws,t2,rh2,rh10,u10,v10,gfx,rld,sld,wk_xy   &
-                 ,soil_xy,canopy,ggdef,lwrite,flash)
+                 ,acld,ugws,vgws,t2,q2,rh2,rh10,u10,v10,gfx,rld     &
+                 ,sld,wk_xy,soil_xy,canopy,ggdef,lwrite,flash)
 !
       return
       end
