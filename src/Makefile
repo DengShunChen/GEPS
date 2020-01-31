@@ -370,7 +370,7 @@ rstrantq.o : rstrantq.f90 mod_fftcom.o mod_paramt.o mod_index.o
 sascnv.o : sascnv.f90 
 sascnv_n.o : sascnv_n.f90 
 sascnv_sa.o : sascnv_sa.f90
-samfdeepcnv.o : samfdeepcnv.f90 machine.o physcons.o funcphys.o
+samfdeepcnv.o : samfdeepcnv.f90 machine.o physcons.o funcphys.o mod_index.o mod_mpe.o mod_rank.o
 samfshalcnv.o : samfshalcnv.f90 machine.o physcons.o funcphys.o
 scatter_spec.o : scatter_spec.f90 
 set_soilveg.o : set_soilveg.f90 namelist_soilveg.o 
@@ -478,14 +478,14 @@ cududv_n.o : cududv_n.f90 mo_constants.o shr_kind_mod.o
 cuentr_n.o : cuentr_n.f90 mo_constants.o shr_kind_mod.o
 cuflx_n.o : cuflx_n.f90 mo_constants.o shr_kind_mod.o ntke_func.o
 cuini_n.o : cuini_n.f90 mo_constants.o shr_kind_mod.o
-cumastr_n.o : cumastr_n.f90 mo_cumulus_flux.o mo_constants.o shr_kind_mod.o
+cumastr_n.o : cumastr_n.f90 mo_cumulus_flux.o mo_constants.o shr_kind_mod.o mod_index.o mod_mpe.o mod_rank.o
 ntke_func.o : ntke_func.f90 mo_constants.o
 #xb110<
 get_phi.o : get_phi.f90
 module_mp_radar.o : module_mp_radar.f90
 module_mp_wsm6_fv3.o : module_mp_wsm6_fv3.f90 physcons.o module_mp_radar.o
 #xb110, for lightning scheme>
-lightning_ec.o: lightning_ec.f90 mo_constants.o
+lightning_ec.o: lightning_ec.f90 mo_constants.o mod_rank.o mod_mpe.o
 #----------SIT---------------
 mod_sitgrid.o : mod_sitgrid.f90 mod_sit_control.o mod_netcdf.o
 mod_sit_vdiff.o : mod_sit_vdiff.f90 mod_eos_ocean.o mod_netcdf.o mod_sst.o mod_sit_control.o

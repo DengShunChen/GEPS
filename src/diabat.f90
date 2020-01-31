@@ -432,6 +432,11 @@
 !rainr : rainfall rate (unit in kg/kg/dt)
 !for lightning
       real      flash(nxp,my_max)        !flash density (unit in flashes km^-2 day^-1)
+      real      ztenh(nxp,lev),zqenh(nxp,lev),rho(nxp,lev)              &
+               ,snow_flxn(nxp,lev),ptun(nxp,lev),pqun(nxp,lev)
+      real      snow_flx(nxp,lev,my_max),ptu(nxp,lev,my_max)           &
+               ,pqu(nxp,lev,my_max)
+      integer   kbotc(nxp,my_max), ktopc(nxp,my_max)
 !xb110<
 !ps
       logical lrun_sitvdiff
@@ -1284,6 +1289,15 @@
            vtc(i,kc) = vt(i,k,jj)
           enddo
         enddo
+!xb110>>
+        do k = 1,lev
+          do i = 1,nxj
+            ztenh(i,k) = tt(i,k,jj)
+            zqenh(i,k) = qt(i,k,jj)
+            rho(i,k)   = plt(i,k,jj)*100./(con_rd*tt(i,k,jj))
+          end do
+        end do
+!xb110<<
 !
 ! old version SAS
          if( nmcup .eq. 2)                                 &
@@ -1309,7 +1323,10 @@
 !!          ,tice)
          call samfdeepcnv(nxjp(j),nxp,lev,dta,del,prsl,psfc,phil       &
           ,qtr,qti,qtc,ttc,utc,vtc,cldwrk(1,jj),rcup(1,jj),kbot(1,jj)  &
-          ,ktop(1,jj),kuo(1,jj),islimsk,garea,dotc,ncld,cnvw,cnvc)
+          ,ktop(1,jj),kuo(1,jj),islimsk,garea,dotc,ncld,cnvw,cnvc      &
+!xb110>> 
+          ,snow_flxn,ptun,pqun)
+!xb110<<
 
 ! for rad input of convection cloud information
 ! bottom(plcl) layer and top(cumtop) layer in pressure(mb)
@@ -1340,8 +1357,26 @@
             cnvcr(i,kc)    = cnvc(i,kc)
             cnvw(i,kc)     = 0.
             cnvc(i,kc)     = 0.
+!xb110>>
+            snow_flx(i,k,jj) = snow_flxn(i,kc)
+            ptu(i,k,jj)       = ptun(i,kc)
+            pqu(i,k,jj)       = pqun(i,kc)
+!xb110<<
           enddo
         enddo
+
+!xb110>>      
+        do i =1,nxj
+          kbotc(i,jj)   =lev-kbot(i,jj)
+          ktopc(i,jj)   =lev-ktop(i,jj)
+        enddo
+
+      call lightning_ec (nxjp(j),nxp,lev,ptu(1,1,jj),pqu(1,1,jj)        &
+                        ,ztenh,zqenh,cnvw,rho                           &
+                        ,kbotc(1,jj),ktopc(1,jj),phi,plt(1,1,jj)        &
+                        ,snow_flx(1,1,jj),flash(1,jj),islimsk          &
+                        ,kuo(1,jj))
+!xb110<<
 !
       endif  !(end of docup .or. (nmcup .eq. 2 .or. nmcup .eq. 3 .or. nmcup .eq. 6))
 !
