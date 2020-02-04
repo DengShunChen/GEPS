@@ -79,7 +79,7 @@
                 hf24(nxp,my_max),qf24(nxp,my_max),ss24(nxp,my_max),rs24(nxp,my_max), &
                 asol24(nxp,my_max),olr24(nxp,my_max),rain24(nxp,my_max),             &
                 drag(nxp,lev,my_max),ugws(nxp,my_max),vgws(nxp,my_max),              &
-                sdpbl(nxp,my_max),slpty(nxp,my_max),rain1(nxp,my_max),               &
+                sdpbl(nxp,my_max),rain1(nxp,my_max),                                 &
                 rh2100(nxp,my_max),rh10100(nxp,my_max),pklev(nxp,my_max)
 
        real*4   workn(nx,my)
@@ -1728,7 +1728,7 @@
             j=jlist1(jj)
             nxj=nxdef_2d(j)
             do i=1,nxj
-              slpty(i,jj)= pt(i,jj)+pdiff(i,jj)
+!!              slpty(i,jj)= pt(i,jj)+pdiff(i,jj)
               rain1(i,jj)= raincu1(i,jj)+rainlp1(i,jj)
               temp= tda*(t2(i,jj)-273.15)/(tdb+(t2(i,jj)-273.15))+     &
                      log(rh2(i,jj))
@@ -1740,7 +1740,7 @@
        rh10100=rh10*100.
           call out2d_mfc(nx,lev,my,my_max,ifilout,itau,idtg,ntau  &
                       ,rain1,raintot,glob,t2,q2,rh2100,rh10100,u10,v10, &
-                      tmax,tmin,td,rld,sld,ctot,slpty,ggdef)
+                      tmax,tmin,td,rld,sld,ctot,pt,ggdef)
 #endif
           raincu1=0.0
           rainlp1=0.0

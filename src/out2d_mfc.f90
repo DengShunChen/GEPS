@@ -1,10 +1,12 @@
       subroutine out2d_mfc (nx,lev,my,my_max,ifilout,itau,idtg,ntau    &
                             ,rain1,raintot,glob,t2,q2,rh2,rh10,u10,v10 &
-                            ,tmax,tmin,td,rld,sld,ctot,slpty,ggdef )
+                            ,tmax,tmin,td,rld,sld,ctot,pt,ggdef )
 !
       use rank
       use mpe
       use index
+      use const ,only : grav,ptop,rgas,cp
+      use grid  ,only : tt,qt,plt,pk,pk2,sgeo
 !
       implicit  none
 
@@ -12,7 +14,7 @@
       parameter (num=14)
 
       real      raintot(nxp,my_max),t2(nxp,my_max),u10(nxp,my_max),   &
-                v10(nxp,my_max),ctot(nxp,my_max),slpty(nxp,my_max)
+                v10(nxp,my_max),ctot(nxp,my_max),pt(nxp,my_max)
 
       real rain1(nxp,my_max),q2(nxp,my_max),rh2(nxp,my_max),          &
            rh10(nxp,my_max),tmax(nxp,my_max),tmin(nxp,my_max),        &
@@ -29,8 +31,10 @@
       character*80 ifilout
       character*26 ihdg,ihdg2
 !
-      integer   n,levz,lenc,lenc2,i,ia,kk,j,nxj,istat,jj
-      real      tnshun
+      integer   n,levz,lenc,lenc2,i,ia,kk,j,nxj,istat,jj,llts,k
+      real      tnshun,alaps,rdg,ttb,ttp,ttt,ttt1,ttt2,anlslp,apha
+      real      phi(nxp,lev,my_max),hld1(nxp,my_max),hld2(nxp,my_max)
+      
 !
       data dmskey/'b00621','b0062t','b02100','b02500','b02510', &
                   'b10200','b10210','b02171','b02181','b02150', &
@@ -41,6 +45,8 @@
       tnshun= 1.0
       lenc= nx*my
       lenc2= lev*my
+      alaps = 0.0065
+      rdg = rgas/grav
 !      
       mfcout(:,:,1)=rain1(:,:)
       mfcout(:,:,2)=raintot(:,:)
@@ -55,7 +61,67 @@
       mfcout(:,:,11)=rld(:,:)
       mfcout(:,:,12)=sld(:,:)
       mfcout(:,:,13)=ctot(:,:)
-      mfcout(:,:,14)=slpty(:,:)
+!
+!  hydrostatic equation
+!
+      do jj =1,jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        do i=1,nxj
+          phi(i,lev,jj)= cp*tt(i,lev,jj)*(pk2(i,lev,jj)-pk(i,lev,jj)) &
+                       + sgeo(i,jj)
+        enddo
+        do k=lev-1,1,-1
+          do i=1,nxj
+            phi(i,k,jj)=phi(i,k+1,jj)+cp*(tt(i,k,jj)*(pk2(i,k,jj)-pk(i,k,jj)) &
+                       + tt(i,k+1,jj)*(pk(i,k+1,jj)-pk2(i,k,jj)))
+          enddo
+        enddo
+      enddo
+!
+! Sea level pressure(hPa)
+!
+!  compute sea level pressure
+!  The method is based on one used by ecmwf, reseach manual 2 (1988)
+!
+!  llts layer's temperature is used to derive an alternative
+!  surface skin temperature
+!
+      llts = lev-5
+!
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        do i=1,nxj
+          ttb  = tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt(i,lev,jj))
+          ttp  = tt(i,llts,jj)*pk(i,llts,jj)/(1.0+0.608*qt(i,llts,jj))
+          ttt1 = ttb + alaps*rdg*ttb*   &
+              ((pt(i,jj)+ptop)/plt(i,lev,jj)-1.0)
+          ttt2 = ttp + alaps*(phi(i,llts,jj)-sgeo(i,jj))/grav
+          hld1(i,jj) = 0.25*ttt1 + 0.75*ttt2
+          hld2(i,jj) = hld1(i,jj) + alaps*sgeo(i,jj)/grav
+          if( sgeo(i,jj) .lt. 0.1 ) then
+            anlslp = pt(i,jj) + ptop
+          else if( hld1(i,jj) .le. 290.5 .and. hld2(i,jj) .gt. 290.5 ) then
+            apha = rgas*(290.5-hld1(i,jj))/sgeo(i,jj)
+            ttt = sgeo(i,jj)/(rgas*hld1(i,jj))
+            anlslp = (pt(i,jj)+ptop)*exp(ttt*(1.0-0.5*apha*ttt+0.333333*  &
+                     apha*ttt*apha*ttt) )
+          else if( hld1(i,jj) .gt. 290.5 .and. hld2(i,jj) .gt. 290.5 ) then
+            hld1(i,jj) = (hld1(i,jj)+290.5)*0.5
+            anlslp = (pt(i,jj)+ptop)*exp( sgeo(i,jj)/(rgas*hld1(i,jj)) )
+          else if( hld1(i,jj) .lt. 255.0 .and. hld2(i,jj) .lt. 255.0 ) then
+            hld1(i,jj) = (hld1(i,jj)+255.0)*0.5
+            anlslp = (pt(i,jj)+ptop)*exp( sgeo(i,jj)/(rgas*hld1(i,jj)) )
+          else
+            apha = alaps * rdg
+            ttt = sgeo(i,jj)/(rgas*hld1(i,jj))
+            anlslp = (pt(i,jj)+ptop)*exp(ttt*(1.0-0.5*apha*ttt+0.333333*  &
+                     apha*ttt*apha*ttt) )
+          endif
+          mfcout(i,jj,14) = anlslp
+        enddo
+      enddo
 !
 ! Total Precp.
 !byl      call mpe2d_unify(glob,raintot)
