@@ -433,9 +433,10 @@
 !for lightning
       real      flash(nxp,my_max)        !flash density (unit in flashes km^-2 day^-1)
       real      ztenh(nxp,lev),zqenh(nxp,lev),rho(nxp,lev)              &
-               ,snow_flxn(nxp,lev),ptun(nxp,lev),pqun(nxp,lev)
-      real      snow_flx(nxp,lev,my_max),ptu(nxp,lev,my_max)           &
-               ,pqu(nxp,lev,my_max)
+               ,snow_flxn(nxp,lev),ptun(nxp,lev),pqun(nxp,lev)          &
+               ,cnvwn(nxp,lev)
+      real      snow_flx(nxp,lev),ptu(nxp,lev)           &
+               ,pqu(nxp,lev)
       integer   kbotc(nxp,my_max), ktopc(nxp,my_max)
 !xb110<
 !ps
@@ -457,6 +458,15 @@
       integer yr, mo, dy, hr, mn
       real tauhr
       INTEGER, PARAMETER :: nerr = 6
+!xb110>
+      ztenh = 0.
+      zqenh = 0.
+      rho = 0.
+      snow_flx  = 0.
+      ptu = 0.
+      pqu = 0.
+      cnvwn = 0.
+!xb110<
 !ps
 !CWB2015 
       kuo=0
@@ -586,7 +596,8 @@
       do i = 1, nxp
        rcup(i,jj)  = 0.0
        rlsp(i,jj)  = 0.0
-       cldwrk(i,k) = 0.0
+!       cldwrk(i,k) = 0.0
+       cldwrk(i,jj) = 0.0 !xb110
 !byl       rainp(i,jj) = 0.0
 !      cosz(i,jj)  = 0.0
        xmu(i,jj)  = 0.0
@@ -1294,7 +1305,7 @@
           do i = 1,nxj
             ztenh(i,k) = tt(i,k,jj)
             zqenh(i,k) = qt(i,k,jj)
-            rho(i,k)   = plt(i,k,jj)*100./(con_rd*tt(i,k,jj))
+            rho(i,k) = 0.622*plt(i,k,jj)*100./(con_rd*tt(i,k,jj)*(qt(i,k,jj) + 0.622))
           end do
         end do
 !xb110<<
@@ -1358,9 +1369,10 @@
             cnvw(i,kc)     = 0.
             cnvc(i,kc)     = 0.
 !xb110>>
-            snow_flx(i,k,jj) = snow_flxn(i,kc)
-            ptu(i,k,jj)       = ptun(i,kc)
-            pqu(i,k,jj)       = pqun(i,kc)
+            snow_flx(i,k) = snow_flxn(i,kc)
+            ptu(i,k)      = ptun(i,kc)
+            pqu(i,k)      = pqun(i,kc)
+            cnvwn(i,k)    = cnvwr(i,kc)
 !xb110<<
           enddo
         enddo
@@ -1371,11 +1383,10 @@
           ktopc(i,jj)   =lev-ktop(i,jj)
         enddo
 
-      call lightning_ec (nxjp(j),nxp,lev,ptu(1,1,jj),pqu(1,1,jj)        &
-                        ,ztenh,zqenh,cnvw,rho                           &
-                        ,kbotc(1,jj),ktopc(1,jj),phi,plt(1,1,jj)        &
-                        ,snow_flx(1,1,jj),flash(1,jj),islimsk          &
-                        ,kuo(1,jj))
+      call lightning_ec (nxjp(j),nxp,lev,ptu,pqu,ztenh,zqenh     &
+                        ,cnvwn,rho,kbotc(1,jj),ktopc(1,jj)     &
+                        ,phi,plt(1,1,jj),snow_flx               &
+                        ,flash(1,jj),islimsk,kuo(1,jj))
 !xb110<<
 !
       endif  !(end of docup .or. (nmcup .eq. 2 .or. nmcup .eq. 3 .or. nmcup .eq. 6))

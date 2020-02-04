@@ -186,7 +186,7 @@
 !xb110>
 !byl      real rmr(nxp,lev,my_max),smr(nxp,lev,my_max)
 !for lightning scheme from ECMWF
-      real flash(nxp,my_max)
+      real flash(nxp,my_max),flash24(nxp,my_max)
 !xb110<
 
 #ifdef TIMING
@@ -503,6 +503,7 @@
           runoff(i,jj) = 0.  ! soil
           tmax(i,jj)   = 0.
           tmin(i,jj)   = 0.
+          flash24(i,jj)= 0.  !xb110, flash density
         enddo
       enddo
 !
@@ -1207,6 +1208,7 @@
             asol24(i,jj)= asol24(i,jj)+asol(i,jj)*dtx
             olr24(i,jj) = olr24(i,jj)+olr(i,jj)*dtx
             rain24(i,jj)= rain24(i,jj)+totalp(i,jj)
+            flash24(i,jj)=flash24(i,jj)+flash(i,jj)*dtx
           enddo
         enddo
         dt24 = dt24 + dtx
@@ -1346,7 +1348,7 @@
 !        call mpe_unify(rain24,nx,my,2,mpe_double)
 #ifndef NO_OUT
         call out24(nx,my,my_max,hf24,qf24,ss24,rs24,asol24,olr24,rain24,dt24 &
-                  ,ifilout,glob,ntau,idtg,ggdef)
+                  ,ifilout,glob,ntau,idtg,ggdef,flash24)
 #endif
         if(do_sit)then
           if(loutsit24)then
@@ -1379,6 +1381,7 @@
             asol24(i,jj) = 0.
             olr24(i,jj)  = 0.
             rain24(i,jj) = 0.
+            flash24(i,jj)= 0.
           enddo
         enddo
         dt24 = 0.
@@ -1598,7 +1601,8 @@
                     , acld,cosl,drag,ugws,vgws,t2,q2,rh2100,rh10100,u10,v10,gfx,rld,sld &
 !byl                    , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500 &
                     , km_soil,smc,slc,stc,canopy,ggdef,typtrk                  &
-                    , ctot,chig,cmid,clow,hpbl,histim,flash,do_sit)
+!xb110                    , ctot,chig,cmid,clow,hpbl,histim,flash,do_sit)
+                    , ctot,chig,cmid,clow,hpbl,histim,do_sit)
 #endif
 !
 !        if(typhoon .and. ltrack)then

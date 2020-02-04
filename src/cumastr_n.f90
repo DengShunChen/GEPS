@@ -634,9 +634,6 @@ USE mo_cumulus_flux,  only: lmfdudv, &! true if cum. friction is switched on
 !        print*, "max sflx:",maxval(pf),"min sflx:",minval(pf)
 !      end if
 
-      call lightning_ec (nxj,klon,klev,ptu,pqu,ztenh,zqenh     &
-                        ,plu,rho,kcbot,kctop,pgeo,papn,pf  &
-                        ,flash,lndj,kcnv)
 !xb110<
 
 !----------------------------------------------------------------
@@ -813,6 +810,10 @@ USE mo_cumulus_flux,  only: lmfdudv, &! true if cum. friction is switched on
        if (ktype(jl) .eq. 1 .or. ktype(jl) .eq. 3 ) kcnv(jl) = 1
        if (ktype(jl) .eq. 2 ) kcnv(jl) = 0
       end do
+      
+      call lightning_ec (nxj,klon,klev,ptu,pqu,ztenh,zqenh     &
+                        ,plu,rho,kcbot,kctop,pgeo,papn,pf  &
+                        ,flash,lndj,kcnv)
 !xb110<
 
       return

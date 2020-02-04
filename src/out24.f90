@@ -1,5 +1,5 @@
       subroutine out24 (nx,my,my_max,hf24,qf24,ss24,rs24,asol24,olr24  &
-                      ,rain24,dt24,ifilout,glob,itau,idtg,ggdef)
+                      ,rain24,dt24,ifilout,glob,itau,idtg,ggdef,flash24)
 !
       use index
       use mpe
@@ -10,7 +10,8 @@
       real      dt24
 
       real      hf24(nxp,my_max),qf24(nxp,my_max),ss24(nxp,my_max),rs24(nxp,my_max), &
-                asol24(nxp,my_max),olr24(nxp,my_max),rain24(nxp,my_max)
+                asol24(nxp,my_max),olr24(nxp,my_max),rain24(nxp,my_max)              &
+               ,flash24(nxp,my_max)
 
       real      wrk(nxp,my_max),glob(nx,my)
 !
@@ -123,5 +124,17 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
       call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
 !
+!xb110>>
+      do jj = 1,jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        do i=1,nxj
+         wrk(i,jj)=flash24(i,jj)/dt24 !xb110, 24hr average flash density (km-2day-1)
+        enddo
+      enddo
+      call unify_reduceintp(nx,my,my_max,wrk,glob)
+      call syslbl ('x00999',idtg,itau,ggdef,ihdg)
+      call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+!xb110<<
       return
       end

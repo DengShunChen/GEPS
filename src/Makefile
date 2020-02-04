@@ -134,8 +134,8 @@ INSTALL = /usr/bin/install
 # use FFTW fft
  FFLAGS  = -c -X9 -Free -CcdRR8 -Cpp -DTIMING -DMULTIPLE -DUSE_FFTW \
            -Kfast,parallel,openmp,ocl,autoobjstack \
-	   -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE)
-
+	   -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE) 
+#           -Kfast,parallel,openmp,ocl,autoobjstack -Nquickdbg
 #---------------------------------------------------------------------------------------------
 # For fx10 compiler, some subroutine, such as rcloud, can not use auto-parallel option.
 # This problem  may caused by compiler itself.
@@ -370,7 +370,7 @@ rstrantq.o : rstrantq.f90 mod_fftcom.o mod_paramt.o mod_index.o
 sascnv.o : sascnv.f90 
 sascnv_n.o : sascnv_n.f90 
 sascnv_sa.o : sascnv_sa.f90
-samfdeepcnv.o : samfdeepcnv.f90 machine.o physcons.o funcphys.o mod_index.o mod_mpe.o mod_rank.o
+samfdeepcnv.o : samfdeepcnv.f90 machine.o physcons.o funcphys.o
 samfshalcnv.o : samfshalcnv.f90 machine.o physcons.o funcphys.o
 scatter_spec.o : scatter_spec.f90 
 set_soilveg.o : set_soilveg.f90 namelist_soilveg.o 
@@ -485,7 +485,7 @@ get_phi.o : get_phi.f90
 module_mp_radar.o : module_mp_radar.f90
 module_mp_wsm6_fv3.o : module_mp_wsm6_fv3.f90 physcons.o module_mp_radar.o
 #xb110, for lightning scheme>
-lightning_ec.o: lightning_ec.f90 mo_constants.o mod_rank.o mod_mpe.o
+lightning_ec.o: lightning_ec.f90 physcons.o  mod_rank.o mod_mpe.o
 #----------SIT---------------
 mod_sitgrid.o : mod_sitgrid.f90 mod_sit_control.o mod_netcdf.o
 mod_sit_vdiff.o : mod_sit_vdiff.f90 mod_eos_ocean.o mod_netcdf.o mod_sst.o mod_sit_control.o

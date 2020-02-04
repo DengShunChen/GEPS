@@ -14,7 +14,7 @@
 !     pqu: cloud specific humidity (kg/kg)
 !     ztenh: environment temperature (K)
 !     zqenh: environment specific humidity (kg/kg)
-!     plu: cloud water (kg/kg)
+!     plu:convective cloud water (kg/kg)
 !     kcbot: cloud base level
 !     kctop: cloud top level
 !     pgeo: geopotential height (m)
@@ -24,9 +24,9 @@
 !output------------------------------------------
 !     ft: flash density (km^2day^-1)
 
-      use mpe
-      use rank
-      use physcons, vtmpc1 => con_fvirt, g => con_g
+!      use mpe
+!      use rank
+      use physcons, only:vtmpc1 => con_fvirt, g => con_g
 
       implicit none
       integer jl,jk,klev,klon,nxj
@@ -84,7 +84,9 @@
          end if
        end do
 
-       if (myrank .eq. 0) print*,"maxft=",maxval(ft),   &
-                                 "minft=",minval(ft)
+!       if (myrank .eq. 0) print*,"maxft=",maxval(ft),   &
+!                                 "minft=",minval(ft)
+!       if (myrank .eq. 0) print*,"maxcape=",maxval(cape),   &
+!                                 "mincape=",minval(cape)
       return
       end subroutine lightning_ec
