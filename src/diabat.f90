@@ -433,6 +433,12 @@
 !rainr : rainfall rate (unit in kg/kg/dt)
 !for lightning
       real      flash(nxp,my_max)        !flash density (unit in flashes km^-2 day^-1)
+      real      ztenh(nxp,lev),zqenh(nxp,lev),rho(nxp,lev)              &
+               ,snow_flxn(nxp,lev),ptun(nxp,lev),pqun(nxp,lev)          &
+               ,cnvwn(nxp,lev)
+      real      snow_flx(nxp,lev),ptu(nxp,lev)           &
+               ,pqu(nxp,lev)
+      integer   kbotc(nxp,my_max), ktopc(nxp,my_max)
 !xb110<
 !ps
       logical lrun_sitvdiff
@@ -453,6 +459,15 @@
       integer yr, mo, dy, hr, mn
       real tauhr
       INTEGER, PARAMETER :: nerr = 6
+!xb110>
+      ztenh = 0.
+      zqenh = 0.
+      rho = 0.
+      snow_flx  = 0.
+      ptu = 0.
+      pqu = 0.
+      cnvwn = 0.
+!xb110<
 !ps
 !CWB2015 
       kuo=0
@@ -582,6 +597,7 @@
       do i = 1, nxp
        rcup(i,jj)  = 0.0
        rlsp(i,jj)  = 0.0
+!       cldwrk(i,k) = 0.0
        cldwrk(i,jj) = 0.0
 !byl       rainp(i,jj) = 0.0
 !      cosz(i,jj)  = 0.0
@@ -1280,6 +1296,15 @@
            vtc(i,kc) = vt(i,k,jj)
           enddo
         enddo
+!xb110>>
+        do k = 1,lev
+          do i = 1,nxj
+            ztenh(i,k) = tt(i,k,jj)
+            zqenh(i,k) = qt(i,k,jj)
+            rho(i,k) = 0.622*plt(i,k,jj)*100./(con_rd*tt(i,k,jj)*(qt(i,k,jj) + 0.622))
+          end do
+        end do
+!xb110<<
 !
 ! old version SAS
          if( nmcup .eq. 2)                                 &
@@ -1305,7 +1330,10 @@
 !!          ,tice)
          call samfdeepcnv(nxjp(j),nxp,lev,dta,del,prsl,psfc,phil       &
           ,qtr,qti,qtc,ttc,utc,vtc,cldwrk(1,jj),rcup(1,jj),kbot(1,jj)  &
-          ,ktop(1,jj),kuo(1,jj),islimsk,garea,dotc,ncld,cnvw,cnvc)
+          ,ktop(1,jj),kuo(1,jj),islimsk,garea,dotc,ncld,cnvw,cnvc      &
+!xb110>> 
+          ,snow_flxn,ptun,pqun)
+!xb110<<
 
 ! for rad input of convection cloud information
 ! bottom(plcl) layer and top(cumtop) layer in pressure(mb)
@@ -1336,8 +1364,26 @@
             cnvcr(i,kc)    = cnvc(i,kc)
             cnvw(i,kc)     = 0.
             cnvc(i,kc)     = 0.
+!xb110>>
+            snow_flx(i,k) = snow_flxn(i,kc)
+            ptu(i,k)      = ptun(i,kc)
+            pqu(i,k)      = pqun(i,kc)
+            cnvwn(i,k)    = cnvwr(i,kc)
+!xb110<<
           enddo
         enddo
+
+!xb110>>      
+        do i =1,nxj
+          kbotc(i,jj)   =lev-kbot(i,jj)
+          ktopc(i,jj)   =lev-ktop(i,jj)
+        enddo
+
+      call lightning_ec (nxjp(j),nxp,lev,ptu,pqu,ztenh,zqenh     &
+                        ,cnvwn,rho,kbotc(1,jj),ktopc(1,jj)     &
+                        ,phi,plt(1,1,jj),snow_flx               &
+                        ,flash(1,jj),islimsk,kuo(1,jj))
+!xb110<<
 !
       endif  !(end of docup .or. (nmcup .eq. 2 .or. nmcup .eq. 3 .or. nmcup .eq. 6))
 !
