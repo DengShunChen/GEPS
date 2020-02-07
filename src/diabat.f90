@@ -362,7 +362,8 @@
       real      adtrad(nxp,lev),work_pr1(9),work_pr2(lev,9)
 !--------
 ! for ncld=2
-      real,     parameter :: dxmax=-8.8818363, dxmin=-5.2574954, &
+!      real,     parameter :: dxmax=-8.8818363, dxmin=-5.2574954, &
+      real,     parameter :: dxmax= 23.8367811, dxmin=17.0343863, &
                              dxinv=1.0/(dxmax-dxmin)
 !     parameter (rhzbot=0.85, rhztop=0.85)
 
@@ -825,6 +826,12 @@
       j=jlist1(jj)
       nxj=nxdef_2d(j)
 !
+! for scale-aware
+        tem1      = tpr*cosl(j)/float(nxdef(j))
+        jup       = min(j+1,my)
+        jdn       = max(j-1, 1)
+        tem2      = radus*0.5*abs(xlat(jup)-xlat(jdn))*d2r
+!
 !    compute new time level p**kapa quantites
 !
 !  plt= new odd level pressure
@@ -1178,11 +1185,6 @@
 !xb110>
       if ( docup .and. nmcup .eq. 5 .and. ncld .ge. 2 ) then
 
-        tem1      = tpr*cosl(j)/float(nxdef(j))
-        jup       = min(j+1,my)
-        jdn       = max(j-1, 1)
-        tem2      = radus*0.5*abs(xlat(jup)-xlat(jdn))*d2r
-
         do i=1,nxj
           garea(i)  = tem1*tem2
 !byl          if(land(i,jj))slimsk(i)=1
@@ -1236,12 +1238,6 @@
         call random_seed(put=isize(1:2))
         call random_number(XKT2)
 ! CWB <<<
-! for scale-aware
-        tem1      = tpr*cosl(j)/float(nxdef(j))
-        jup       = min(j+1,my)
-        jdn       = max(j-1, 1)
-        tem2      = radus*0.5*abs(xlat(jup)-xlat(jdn))*d2r
-!
         lprnt=.false.
         jcap = 240
         do i=1,nxj
@@ -1408,10 +1404,11 @@
         latg =my
 !
         do i = 1,nxj
-          tem1        = con_rerth * (con_pi+con_pi)*cosl(j)/nxdef(j)
-          tem2        = con_rerth * con_pi/latg
+!!          tem1        = con_rerth * (con_pi+con_pi)*cosl(j)/nxdef(j)
+!!          tem2        = con_rerth * con_pi/latg
           dlength(i)  = sqrt( tem1*tem1+tem2*tem2 )
-          work1(i)    = (log(cosl(j) / (nxdef(j)*latg)) - dxmin) * dxinv
+!!          work1(i)    = (log(cosl(j) / (nxdef(j)*latg)) - dxmin) * dxinv
+          work1(i)    = (log(tem1*tem2) - dxmin) * dxinv
           work1(i)    = max(0.0, min(1.0,work1(i)))
           work2(i)    = 1.0 - work1(i)
           cldf(i)     = cgwf(1)*work1(i) + cgwf(2)*work2(i)
@@ -1433,11 +1430,6 @@
       endif  !(end of docgrav and nmgwcv=2)
 !
       if( doshl .and. (nmshl.eq.2 .or. nmshl.eq.3) ) then
-!for scale-aware
-           tem1      = tpr*cosl(j)/float(nxdef(j))
-           jup       = min(j+1,my)
-           jdn       = max(j-1, 1)
-           tem2      = radus*0.5*abs(xlat(jup)-xlat(jdn))*d2r
 !
         do i=1,nxj
           psfc(i)  = pst(i,jj)*0.1        ! change to cb
