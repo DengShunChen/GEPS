@@ -32,7 +32,7 @@
 
       implicit  none
 
-      integer   nx,my,my_max,lev,ncld,lmax,jtrun,jtmax
+      integer   nx,my,my_max,lev,ncld,lmax,jtrun,jtmax,KL
       integer   ktrop,nxmy,nxlev,lncrec,lmaxp1,lmaxp2,k,itaux,itaup
       integer   istat,i,ii,jj,j,nxj,kk,lqwset,m,mf,n,llts,ntrac
 
@@ -54,7 +54,8 @@
 !
       real      preplt(nx,lmax+2),prett(nx,lmax+2),hld1(nx,my)         &
                ,plog(nx,lev),hld2(nx,my),anlslp(nx,my),hkd1(nx,lev),ut_tmp(nx,lev)
-      real      tens(lmax+2),tstd(lmax)
+      real     tens(lmax+2),tstd(lmax),hld3(nx,levp,my_max),           &
+               hld4(nx,levp,ncld,my_max)
       real      puvphi(26)
 !
       real      cc(nx+2,levp,1+ncld,my_max),wss(levp,2,1+ncld,jtrun,jtmax)
@@ -124,37 +125,35 @@
 !
 !  read in temp at sigma levels
 !
-      do 71 k = 1, lev
-      write (typ, '("m",i2.2,"100")' ) k
+      do 71 k = 1, levp
+        KL=lev-Llist(k)+1
+      write (typ, '("m",i2.2,"100")' ) KL
       call syslbl (typ,idtg,itaux,gmdef,lrec)
-      call dmsread (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
-!byl      if( lreduce.eq.1 ) call reducepick (hld1,nxdef,nx,my)
+      call dmsread_split(nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
       do 71 jj = 1, jlistnum
        j=jlist1(jj)
-       ii=nxjstart(j)
-       nxj=nxdef_2d(j)
+       nxj=nxdef(j)
        if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
-      do 71 i = 1, nxj
-      tt(i,k,jj) = hld1(ii,j)
-      ii=ii+1
+       do 71 i = 1, nxj
+         hld3(i,k,jj) = hld1(i,j)
   71  continue
+      call mpe2d_transpose_ndsl_f2p(hld3,tt, &
+            nxp,nx,levf,levp,1,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !
 !  read in q at sigma levels
 !
-      do 73 k = 1, lev
-      write (typ, '("m",i2.2,"500")' ) k
+      do 73 k = 1, levp
+        KL=lev-Llist(k)+1
+      write (typ, '("m",i2.2,"500")' ) KL
       call syslbl (typ,idtg,itaux,gmdef,lrec)
-      call dmsread (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
-!byl      if( lreduce.eq.1 ) call reducepick (hld1,nxdef,nx,my)
+      call dmsread_split (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
       do 73 jj = 1, jlistnum
        j=jlist1(jj)
-       ii=nxjstart(j)
-       nxj=nxdef_2d(j)
+       nxj=nxdef(j)
        if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
-      do 73 i = 1, nxj
-        if(hld1(ii,j).le.1.0e-10)hld1(ii,j)=1.0e-10
-        sht(i,k,jj) = hld1(ii,j)
-        ii=ii+1
+       do 73 i = 1, nxj
+         if(hld1(i,j).le.1.0e-10) hld1(i,j)=1.0e-10
+         hld4(i,k,1,jj) = hld1(i,j)
   73  continue
 !
       if( ncld .ge. 2 ) then
@@ -162,15 +161,15 @@
 !  get first guest as initial
 !
       ntrac=2
-      do k = 1, lev
-      kk = (ntrac-1)*lev+k
-      write (typ, '("m",i2.2,"550")' ) k     ! cloud liquid water content
+      do k = 1, levp
+      KL=lev-Llist(k)+1
+      write (typ, '("m",i2.2,"550")' ) KL    ! cloud liquid water content
       call syslbl (typ,idtg2,itaup,gmdef,lrec)
-      call dmsread (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
+      call dmsread_split (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
 !
 ! reset liquid water if too large in stratusphere
       lqwset=18
-      if(k.le.lqwset)then
+      if(KL.le.lqwset)then
         do j = 1,my
           do i = 1, nx
             if(hld1(i,j).lt.1.0e-12)hld1(i,j)=1.0e-12
@@ -179,16 +178,12 @@
         enddo
       endif
 !
-!byl      if( lreduce.eq.1 ) call reducepick (hld1,nxdef,nx,my)
       do jj = 1, jlistnum
        j=jlist1(jj)
-       ii=nxjstart(j)
-       nxj=nxdef_2d(j)
+       nxj=nxdef(j)
        if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
       do i = 1, nxj
-      sht(i,kk,jj) = hld1(ii,j)
-!      sht(i,kk,jj) = 0.
-      ii=ii+1
+        hld4(i,k,ntrac,jj) = hld1(i,j)
       end do
       end do
       end do
@@ -197,27 +192,29 @@
 !
       if(ncld.ge.3)then
       ntrac=ntoz
-      do k = 1, lev
-        kk = (ntrac-1)*lev+k
-        write (typ, '("m",i2.2,"560")' ) k
+      do k = 1, levp
+        KL=lev-Llist(k)+1
+        write (typ, '("m",i2.2,"560")' ) KL
         call syslbl (typ,idtg,itaux,gmdef,lrec)
-        call dmsread (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
-!byl        if( lreduce.eq.1 ) call reducepick (hld1,nxdef,nx,my)
+        call dmsread_split (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
         do jj = 1, jlistnum
           j=jlist1(jj)
-          ii=nxjstart(j)
-          nxj=nxdef_2d(j)
+          nxj=nxdef(j)
           if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
           do i = 1, nxj
-            sht(i,kk,jj) = hld1(ii,j)
-            o3l(i,k,jj) = hld1(ii,j)
-            ii=ii+1
+             hld4(i,k,ntrac,jj) = hld1(i,j)
+             hld3(i,k,jj) = hld1(i,j)
           enddo
         enddo
       enddo
       endif
 !
       endif    ! end of if(ncld.ge.2)
+      call mpe2d_transpose_ndsl_f2p(hld4,sht, &
+            nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
+      call mpe2d_transpose_ndsl_f2p(hld3,o3l, &
+            nxp,nx,levf,levp,1,myf,my_max,jlistnum,jlen,nsizex,row_comm)
+      
 !----
       if( lreduce.eq.1 )then
       call joinrs(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
@@ -508,27 +505,38 @@
 !
 !  read in wind fields at sigma levels
 !
-      do 320 k = 1, lev
-      write (typ, '("m",i2.2,"200")' ) k
+      do 320 k = 1, levp
+        KL=lev-Llist(k)+1
+      write (typ, '("m",i2.2,"200")' ) KL
       call syslbl (typ,idtg,itaux,gmdef,lrec)
-      call dmsread (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
-!byl      if( lreduce.eq.1 ) call reducepick (hld1,nxdef,nx,my)
-      write (typ, '("m",i2.2,"210")' ) k
-      call syslbl (typ,idtg,itaux,gmdef,lrec)
-      call dmsread (nx,my,lrec,lncrec,'H',ifilin,hld2,istat)
-!byl      if( lreduce.eq.1 ) call reducepick (hld2,nxdef,nx,my)
+      call dmsread_split (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
       do 320 jj = 1, jlistnum
         j=jlist1(jj)
-        ii=nxjstart(j)
-        nxj=nxdef_2d(j)
+        nxj=nxdef(j)
         fac = cosl(j)/rad
        if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
-       if( lreduce.eq.1 )call reducepick (hld2(1,j),nxdef(j),nx,1)
-      do 320 i = 1,nxj
-      ut(i,k,jj) = hld1(ii,j)*fac
-      vt(i,k,jj) = hld2(ii,j)*fac
-      ii=ii+1
+       do 320 i = 1,nxj
+         hld3(i,k,jj) = hld1(i,j)*fac
   320 continue
+      call mpe2d_transpose_ndsl_f2p(hld3,ut, &
+            nxp,nx,levf,levp,1,myf,my_max,jlistnum,jlen,nsizex,row_comm)
+!
+      do 321 k = 1, levp
+        KL=lev-Llist(k)+1
+      write (typ, '("m",i2.2,"210")' ) KL
+      call syslbl (typ,idtg,itaux,gmdef,lrec)
+      call dmsread_split (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
+!byl      if( lreduce.eq.1 ) call reducepick (hld1,nxdef,nx,my)
+      do 321 jj = 1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef(j)
+        fac = cosl(j)/rad
+       if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
+       do 321 i = 1,nxj
+         hld3(i,k,jj) = hld1(i,j)*fac
+  321 continue
+      call mpe2d_transpose_ndsl_f2p(hld3,vt, &
+            nxp,nx,levf,levp,1,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !
 !  read in ozone at sigma levels
 !  add in june 2010

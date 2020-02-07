@@ -76,11 +76,17 @@
 !!  @{
       subroutine samfdeepcnv(im,ix,km,delt,delp,prslp,psp,phil,ql, &
            qi,q1,t1,u1,v1,cldwrk,rn,kbot,ktop,kcnv,islimsk,garea, &
-           dot,ncloud,cnvw,cnvc)
+           dot,ncloud,cnvw,cnvc, &
+!xb110>> for flash parameterization
+           snow_flx,ptu,pqu)
+!xb110<<
 !,ud_mf,dd_mf,dt_mf,cnvw,cnvc, &
 !           clam,c0s,c1,betal,betas,evfact,evfactl,pgcon,asolfac)
 !
       use machine , only : kind_phys
+!      use mpe
+!      use rank
+!      use index
 !byl      use funcphys , only : fpvs
       use physcons, grav => con_g, cp => con_cp, hvap => con_hvap &
       ,             rv => con_rv, fv => con_fvirt, t0c => con_t0c &
@@ -244,6 +250,10 @@
       real(kind=kind_phys) tf, tcr, tcrf
       parameter (tf=233.16, tcr=263.16, tcrf=1.0/(tcr-tf))
 !
+!xb110>> for lightning parameterization
+      real(kind=kind_phys) snow_flx(ix,km),rainf(ix,km),&
+                           ptu(ix,km),pqu(ix,km)
+!xb110<<
 !c-----------------------------------------------------------------------
 !>  ## Compute preliminary quantities needed for static, dynamic, and feedback control portions of the algorithm.
 !>  - Convert input pressure terms to centibar units.
@@ -261,6 +271,17 @@
           del(i,k)  = delp(i,k)
         enddo
       enddo
+
+!xb110>
+      do k = 1,km
+        do i = 1,ix
+          ptu(i,k) = 0.
+          pqu(i,k) = 0.
+          rainf(i,k) = 0.  !xb110, for flash parameterization, total rain flux (kgm-2s-1)
+          snow_flx(i,k) = 0. !xb110, snow flux (kgm-2s-1)
+        end do
+      end do
+!xb110<
 !************************************************************************
 !
 !
@@ -2245,6 +2266,8 @@
         delq2(i) = 0.
         flg(i) = cnvflg(i)
       enddo
+
+
       do k = km, 1, -1
         do i = 1, im
           if (cnvflg(i) .and. k <= kmax(i)) then
@@ -2254,11 +2277,27 @@
               adw = 1.
               if(k >= jmin(i)) adw = 0.
               rain =  aup * pwo(i,k) + adw * edto(i) * pwdo(i,k)
+              rainf(i,k) = rain * xmb(i)    !xb110
               rntot(i) = rntot(i) + rain * xmb(i) * .001 * dt2
             endif
           endif
         enddo
       enddo
+
+!xb110>  for lightning parameterization
+      do k = km, 1, -1
+        do i = 1, im
+          if (cnvflg(i) .and. k <= kmax(i)) then
+            if(k < ktcon(i)) then
+              tem1 = max(0.0, min(1.0, (tcr-t1(i,k))*tcrf))
+              snow_flx(i,k) = rainf(i,k)*tem1 !snow flux
+            end if
+          end if
+        end do
+      end do
+   
+!xb110<
+
 !> - Determine the evaporation of the convective precipitation and update the integrated convective precipitation.
 !> - Update state temperature and moisture to account for evaporation of convective precipitation.
 !> - Update column-integrated tendencies to account for evaporation of convective precipitation.
@@ -2441,5 +2480,19 @@
         enddo
       enddo
 !!
+!xb110>> storage the updarft T and q for flash parameterization
+      do k = 1, km
+        do i = 1, im
+          if (cnvflg(i))then
+           if(k >= kbcon(i) .and. k < ktcon(i)) then
+             ptu(i,k) = (hcko(i,k)-hvap*qcko(i,k)-phil(i,k))/cp
+             pqu(i,k) = qcko(i,k)
+           end if
+          end if
+        end do
+      end do
+!      if (myrank .eq.0) print*,"max ptu:",maxval(ptu)
+!      if (myrank .eq.0) print*,"max pqu:",maxval(pqu)
+!b110<<
       return
       end

@@ -7,21 +7,22 @@ contains
         plev,num,whtlev,pkout,pk,pklp,rdiv,rdivb,div,ggdef,lwrite)
 !
       use index
+      use rank, only : myrank
 
       implicit  none
 
-      integer   nx,my,my_max,lpout,lev,itau
+      integer   nx,my,my_max,lpout,lev,itau,ncnt
 
       real      pkout(lpout),pklp(nxp,my_max),pk(nxp,lev,my_max),       &
                 rdiv(nxp,lev,my_max),rdivb(nxp,my_max),div(nxp,my_max,lpout),&
                 plev(lpout),whtlev(num)
       real      tens(lev+1)
-      real      wk1(nx,my)
+      real      wk1(nx,my),pout(nx,my)
 
 !
       integer*8 idtg
       character*80 ifilout
-      character*26 ihdg
+      character*26 ihdg,ihdg2
       character*6 lrec(lpout)
       character*4 ggdef
 !
@@ -44,18 +45,25 @@ contains
       call voterp(nx,my,my_max,lev,lpout,pk,pklp,rdiv,rdivb,pkout,div,tens)
 !
       lenc= nx*my
+      ncnt= -1
 !
       do 20 n=1,num
       do 10 k=1,lpout
       if(plev(k).eq.whtlev(n)) then
+      ncnt=ncnt+1
       call unify_reduceintp(nx,my,my_max,div(1,1,k),wk1)
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,wk1,istat)
+!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,wk1,istat)
       call qmaxn3(wk1,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      if ( myrank .eq. ncnt ) then
+        pout=wk1
+        ihdg2=ihdg
+      endif
       go to 20
       endif
    10 continue
    20 continue
+      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
       return
   end subroutine divgout
@@ -64,21 +72,22 @@ contains
         plev,num,whtlev,pkout,pk,pklp,rdrag,rdragb,drag,ggdef,lwrite)
 !
       use index
+      use rank, only : myrank
       use mpe
 
       implicit  none
 
-      integer   nx,my,my_max,lpout,lev,itau,num
+      integer   nx,my,my_max,lpout,lev,itau,num,ncnt
 
       real      pkout(lpout),pklp(nxp,my_max),pk(nxp,lev,my_max),               &
                 rdrag(nxp,lev,my_max),rdragb(nxp,my_max),drag(nxp,my_max,lpout),&
                 plev(lpout),whtlev(num)
       real      tens(lev+1)
-      real      wk1(nx,my)
+      real      wk1(nx,my),pout(nx,my)
 !
       integer*8 idtg
       character*80 ifilout
-      character*26 ihdg
+      character*26 ihdg,ihdg2
       character*6 lrec(lpout)
       character*4 ggdef
 !
@@ -105,6 +114,7 @@ contains
       call voterp(nx,my,my_max,lev,lpout,pk,pklp,rdrag,rdragb,pkout,drag,tens)
 !
       lenc= nx*my
+      ncnt= -1
 !
 !!      do jj =1, jlistnum
 !!      j=jlist1(jj)
@@ -121,6 +131,7 @@ contains
 !
       if(plev(k).eq.whtlev(n)) then
 !
+      ncnt=ncnt+1
       do 45 jj=1, jlistnum
       j=jlist1(jj)
       nxj=nxdef_2d(j)
@@ -131,12 +142,17 @@ contains
 !
       call unify_reduceintp(nx,my,my_max,drag(1,1,k),wk1)
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,wk1,istat)
+!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,wk1,istat)
       call qmaxn3(wk1,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      if ( myrank .eq. ncnt ) then
+        pout=wk1
+        ihdg2=ihdg
+      endif
       go to 20
       endif
    10 continue
    20 continue
+      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
       return
   end subroutine dragout
@@ -150,20 +166,20 @@ contains
 
       implicit  none
 
-      integer   nx,my,my_max,lpout,lev,itau,num
+      integer   nx,my,my_max,lpout,lev,itau,num,ncnt
 !
       real      pkout(lpout),pklp(nxp,my_max),pk(nxp,lev,my_max),            &
                 phi(nxp,lev,my_max),phib(nxp,my_max),phips(nxp,my_max,lpout),&
                 glob(nx,my),plev(lpout),whtlev(num)
 
       real      tens(lev+1),phistd(lpout),slp(nx,my),h850(nxp,my_max), &
-                h500(nxp,my_max)
+                h500(nxp,my_max),pout(nx,my)
 !
 
       integer*8    idtg
 
       character*80 ifilout
-      character*26 ihdg
+      character*26 ihdg,ihdg2
       character*6  lrec(lpout)
       character*4  ggdef
 !
@@ -186,6 +202,7 @@ contains
       call voterp(nx,my,my_max,lev,lpout,pk,pklp,phi,phib,pkout,phips,tens)
 !
       lenc= nx*my
+      ncnt= -1
 !
       do k=1,lpout
         if(plev(k).eq.850.)then
@@ -233,6 +250,7 @@ contains
 !
       if(plev(k).eq.whtlev(n)) then
 !
+      ncnt=ncnt+1
       do 11 jj=1, jlistnum
       j=jlist1(jj)
       nxj=nxdef_2d(j)
@@ -247,16 +265,21 @@ contains
         call smth9(nx,my,glob,slp,1)
         glob=slp
         call smth9(nx,my,glob,slp,2)
-        glob=slp
+!        glob=slp
 !      endif
 !
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call qmaxn3(glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call qmaxn3(slp,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      if ( myrank .eq. ncnt ) then
+        pout=slp
+        ihdg2=ihdg
+      endif 
 !
       go to 20
       endif
    10 continue
    20 continue
+      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
       return
   end subroutine geopout
@@ -265,21 +288,22 @@ contains
       , plev,num,whtlev,pkout,pk,pklp,dpd,dpdb,dew,glob,ggdef,lwrite)
 !
       use index
+      use rank, only : myrank
 
       implicit  none
-      integer   nx,my,my_max,lpout,lev,itau,num
+      integer   nx,my,my_max,lpout,lev,itau,num,ncnt
 
       real      pkout(lpout),pklp(nxp,my_max)                            &
       , pk(nxp,lev,my_max),dpd(nxp,lev,my_max),dpdb(nxp,my_max)          &
       , dew(nxp,my_max,lpout),glob(nx,my),plev(lpout)                    &
-      , whtlev(num),tens(lev+1)
+      , whtlev(num),tens(lev+1),pout(nx,my)
 
 
       integer   i,k,lpl,n,lenc,istat,jj,j,nxj
 !
       integer*8 idtg
       character*80 ifilout
-      character*26 ihdg
+      character*26 ihdg,ihdg2
       character*6 lrec(lpout)
       character*4 ggdef
 !
@@ -300,6 +324,7 @@ contains
       call voterp(nx,my,my_max,lev,lpout,pk,pklp,dpd,dpdb,pkout,dew,tens)
 !
       lenc= nx*my
+      ncnt= -1
 !
       do 30 n=1,num
       do 10 k=1,lpout
@@ -308,6 +333,7 @@ contains
 !
 ! relative humidity must be smaller or equal 1.0
 !
+      ncnt=ncnt+1
       do 20 jj=1, jlistnum
       j=jlist1(jj)
       nxj=nxdef_2d(j)
@@ -323,12 +349,17 @@ contains
 !
 !  reduceintp has been done in voterp (2011/5)
 !
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3(glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      if ( myrank .eq. ncnt ) then
+        pout=glob
+        ihdg2=ihdg
+      endif
       go to 30
       endif
    10 continue
    30 continue
+      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
       return
   end subroutine shumout
@@ -337,23 +368,24 @@ contains
       , plev,num,whtlev,pkout,pk,pklp,dpd,dpdb,dew,glob,ggdef,ntrac,lwrite)
 !
       use index
+      use rank, only : myrank
       use radn, only : ntoz
 
       implicit  none
 
-      integer   nx,my,my_max,lpout,lev,itau,num,ntrac
+      integer   nx,my,my_max,lpout,lev,itau,num,ntrac,ncnt
 
       real      pkout(lpout),pklp(nxp,my_max)                        &
       , pk(nxp,lev,my_max),dpd(nxp,lev,my_max),dpdb(nxp,my_max)      &
       , dew(nxp,my_max,lpout),glob(nx,my),plev(lpout)                &
-      , whtlev(num),tens(lev+1)
+      , whtlev(num),tens(lev+1),pout(nx,my)
 !
 
       integer   i,k,lpl,n,lenc,istat,jj,j,nxj
 
       integer*8 idtg
       character*80 ifilout
-      character*26 ihdg
+      character*26 ihdg,ihdg2
       character*6 lrec(lpout)
       character*4 ggdef
 !
@@ -395,6 +427,7 @@ contains
       call voterp(nx,my,my_max,lev,lpout,pk,pklp,dpd,dpdb,pkout,dew,tens)
 !
       lenc= nx*my
+      ncnt= -1
 !
       do 30 n=1,num
       do 10 k=1,lpout
@@ -404,6 +437,7 @@ contains
 !
 ! relative humidity must be smaller or equal 1.0
 !
+      ncnt=ncnt+1
       do 20 jj=1, jlistnum
       j=jlist1(jj)
       nxj=nxdef_2d(j)
@@ -416,14 +450,20 @@ contains
 !!   20 continue
 !
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3(glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      if ( myrank .eq. ncnt ) then
+        pout=glob
+        ihdg2=ihdg
+      endif
       go to 30
       endif
    10 continue
    30 continue
+      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
    40 continue
+
       return
   end subroutine shumout2
 
@@ -533,22 +573,24 @@ contains
       , plev,num,whtlev,pkout,pk,pklp,tt,ttbot,temp,ggdef,lwrite)
 !
       use index
+      use rank,   only : myrank
 
       implicit  none
 
       integer   nx,my,my_max,lpout,lev,itau,k,i,n,istat
-      integer   num,lpl,lenc
+      integer   num,lpl,lenc,ncnt
       real      tnshun
 
       real      pkout(lpout),pklp(nxp,my_max),pk(nxp,lev,my_max)        &
       , tt(nxp,lev,my_max),ttbot(nxp,my_max),temp(nxp,my_max,lpout)     &
       , plev(lpout),whtlev(num)
-      real      tens(lev+1),glob(nx,my),slp(nx,my)
+      real      tens(lev+1),glob(nx,my),slp(nx,my),pout(nx,my)
 
 !
       integer*8 idtg
       character*80 ifilout
       character*26 ihdg
+      character*26 ihdg2
       character*6 lrec(lpout)
       character*4 ggdef
 !
@@ -571,10 +613,15 @@ contains
       lenc= nx*my
 !
       tnshun= 1.0
+!
+      ncnt=-1
+!
       do 30 n=1,num
       do 10 k=1,lpout
 !
       if(plev(k).eq.whtlev(n)) then  
+!
+      ncnt=ncnt+1
 !
       call unify_reduceintp(nx,my,my_max,temp(1,1,k),glob)
 !!      do 11 i=1,lenc
@@ -588,14 +635,19 @@ contains
         call smth9(nx,my,glob,slp,1)
         glob=slp
         call smth9(nx,my,glob,slp,2)
-        glob=slp
+!!        glob=slp
 !
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call qmaxn3(glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+!!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call qmaxn3(slp,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      if ( myrank .eq. ncnt ) then
+        pout=slp
+        ihdg2=ihdg
+      endif
       go to 30
       endif
    10 continue
    30 continue
+      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
       return
   end subroutine tempout
@@ -604,22 +656,23 @@ contains
       , plev,num,whtlev,pkout,pk,pklp,rvor,rvorb,vor,ggdef,v850,v700,lwrite)
 !
       use index
+      use rank, only : myrank
 
       implicit  none
 
-      integer   nx,my,my_max,lpout,lev,itau,num
+      integer   nx,my,my_max,lpout,lev,itau,num,ncnt
 
       real      pkout(lpout),pklp(nxp,my_max)                     &
       , pk(nxp,lev,my_max),rvor(nxp,lev,my_max),rvorb(nxp,my_max) &
       , vor(nxp,my_max,lpout),plev(lpout),whtlev(num)
       real      tens(lev+1)
       real      v850(nxp,my_max),v700(nxp,my_max)
-      real      wk1(nx,my)
+      real      wk1(nx,my),pout(nx,my)
 
 !
       integer*8 idtg
       character*80 ifilout
-      character*26 ihdg
+      character*26 ihdg,ihdg2
       character*6 lrec(lpout)
       character*4 ggdef
 
@@ -642,6 +695,7 @@ contains
       call voterp(nx,my,my_max,lev,lpout,pk,pklp,rvor,rvorb,pkout,vor,tens)
 !
       lenc= nx*my
+      ncnt= -1
 !
       do k=1,lpout
         if(plev(k).eq.850.)then
@@ -680,17 +734,23 @@ contains
       do 20 n=1,num
       do 10 k=1,lpout
       if(plev(k).eq.whtlev(n)) then
+      ncnt=ncnt+1
       call unify_reduceintp(nx,my,my_max,vor(1,1,k),wk1)
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
 !
 !  reduceintp has been done in voterp (2011/5)
 !
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,wk1,istat)
+!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,wk1,istat)
       call qmaxn3(wk1,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      if ( myrank .eq. ncnt ) then
+        pout=wk1
+        ihdg2=ihdg
+      endif
       go to 20
       endif
    10 continue
    20 continue
+      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
       return
   end subroutine vortout
@@ -700,6 +760,7 @@ contains
       , wind,glob,ggdef,lwrite)
 !
       use index
+      use rank, only : myrank
 
       implicit none
 
@@ -708,9 +769,9 @@ contains
       , utb(nxp,my_max),vtb(nxp,my_max),wind(nxp,my_max,lpout),cosl(my)   &
       , glob(nx,my),plev(lpout),whtlev(num),sdhat(nxp,lev,my_max)
 
-      real      tens(lev+1),wtb(nxp,my_max)
+      real      tens(lev+1),wtb(nxp,my_max),pout(nx,my)
 !
-      integer   nx,my,my_max,lpout,lev,itau,jj,nxj
+      integer   nx,my,my_max,lpout,lev,itau,jj,nxj,ncnt
       integer   num,k,lenc,lpl,n,i,j,istat
 
       real      rad,xxx
@@ -720,7 +781,7 @@ contains
 
       integer*8 idtg
       character*80 ifilout
-      character*26 ihdg
+      character*26 ihdg,ihdg2
       character*6 lrec(lpout),krec(lpout),mrec(lpout)
       character*4 ggdef
 !
@@ -734,6 +795,7 @@ contains
       tens(lev)= 0.0
       tens(lev+1)= 0.0
       lenc= nx*my
+      ncnt= -1
 !
       do k = 1, lpout-1
        lpl = int(plev(k)+0.001)
@@ -772,6 +834,7 @@ contains
 !  below ground level extrapolate surface wind downward
 !  deweight wind with cos latitude, earth radius
 !
+        ncnt=ncnt+1
         do jj = 1, jlistnum
           j=jlist1(jj)
           nxj=nxdef_2d(j)
@@ -800,12 +863,17 @@ contains
 !
 !  reduceintp has been done in voterp (2011/5)
 !
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3(glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      if ( myrank .eq. ncnt ) then
+        pout=glob
+        ihdg2=ihdg
+      endif
       go to 30
       endif
    10 continue
    30 continue
+      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
 !  now the v components
 !
@@ -826,6 +894,7 @@ contains
 
 !lzl -end================================================================
 !
+      ncnt= -1
       do 40 n=1,num
       do 20 k=1,lpout
 !
@@ -834,6 +903,7 @@ contains
 !  below ground level extrapolate surface wind downward
 !  deweight wind with cos latitude, earth radius
 !
+        ncnt=ncnt+1
         do jj = 1, jlistnum
           j=jlist1(jj)
           nxj=nxdef_2d(j)
@@ -862,23 +932,30 @@ contains
 !
 !  reduceintp has been done in voterp (2011/5)
 !
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3(glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      if ( myrank .eq. ncnt ) then
+        pout=glob
+        ihdg2=ihdg
+      endif
       go to 40
       endif
    20 continue
    40 continue
+      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
 !  now the w components
 !
       wtb=0.
       call voterp(nx,my,my_max,lev,lpout,pk,pklp,sdhat,wtb,pkout,wind,tens)
 !
+      ncnt= -1
       do 42 n=1,num
       do 22 k=1,lpout
 !
       if(plev(k).eq.whtlev(n)) then
 !
+      ncnt=ncnt+1
       call unify_reduceintp(nx,my,my_max,wind(1,1,k),glob)
 !!      do j=1,my
 !!      do i=1,nx
@@ -888,12 +965,17 @@ contains
 !
       call syslbl(mrec(k),idtg,itau,ggdef,ihdg)
 !
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3(glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      if ( myrank .eq. ncnt ) then
+        pout=glob
+        ihdg2=ihdg
+      endif
       go to 42
       endif
    22 continue
    42 continue
+      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
       return
   end subroutine windout

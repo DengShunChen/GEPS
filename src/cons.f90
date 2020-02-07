@@ -436,14 +436,16 @@
       if(myrank.eq.0) then
       call dmsmsg("ALL",istat)
       call dmsopn(bckfile,"r",istat1)
+      endif
 !
 !  open the input file.  this too will be replaced by the appropriate
 !  dbms operation when available
 !
-      call dmsopn(ifilin,"w",istat2)
-
-      call dmsopn(ifilout,"w",istat3)
-
+      if(col_rank .eq. 0) call dmsopn(ifilin,"w",istat2)
+!
+      if(myrank .lt. lev) call dmsopn(ifilout,"w",istat3)
+!
+      if(myrank.eq.0) then
       istat = abs(istat1) + abs(istat2) + abs(istat3)
 !
 ! ldailyFCTsst=true, restore sst, snow depth, sea ice fraction from ncep
