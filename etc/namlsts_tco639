@@ -15,13 +15,13 @@
  tauo=1.0,
  taup=6.0,
  taureg=6.,
- dt=225.0,
+ dt=200.0,
  cstar=f,
  update=t,
  lzadv=t,
  lsimpl=t,
  tfilt=0.04,
- hfilt=6.1068e12,
+ hfilt=4.1068e12,
  ksgeo=2,
  yesdia=t,
  dopbl=t,
@@ -72,5 +72,6 @@
 
  &typ
  write_mem=0,
- trk_intv=6,
+ trk_intv=3,
+ write_tau=6,
 &end

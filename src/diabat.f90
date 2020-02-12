@@ -429,6 +429,7 @@
 !byl                u0(nxp,lev,my_max),v0(nxp,lev,my_max),t0(nxp,lev,my_max),     &
 !byl                q0(nxp,lev*ncld,my_max)
       real      u0(nxp,lev),v0(nxp,lev),t0(nxp,lev),q0(nxp,lev*ncld)
+      real      upp(nxp,lev),vpp(nxp,lev)
 !byl      real      slsp(nxp,my_max),rm(nxp,lev),sm(nxp,lev),rainp(nxp,lev)
 !rainr : rainfall rate (unit in kg/kg/dt)
 !for lightning
@@ -841,17 +842,12 @@
       do 290 jj =1, jlistnum
       j=jlist1(jj)
       nxj=nxdef_2d(j)
+!
 ! for scale-aware
       tem1      = tpr*cosl(j)/float(nxdef(j))
       jup       = min(j+1,my)
       jdn       = max(j-1, 1)
       tem2      = radus*0.5*abs(xlat(jup)-xlat(jdn))*d2r
-!
-! for scale-aware
-        tem1      = tpr*cosl(j)/float(nxdef(j))
-        jup       = min(j+1,my)
-        jdn       = max(j-1, 1)
-        tem2      = radus*0.5*abs(xlat(jup)-xlat(jdn))*d2r
 !
 !    compute new time level p**kapa quantites
 !
@@ -887,8 +883,8 @@
       do 230 i = 1, nxj
       ut(i,k,jj) = ut(i,k,jj)*xx
       vt(i,k,jj) = vt(i,k,jj)*xx
-      up(i,k,jj) = up(i,k,jj)*xx
-      vp(i,k,jj) = vp(i,k,jj)*xx
+      upp(i,k) = up(i,k,jj)*xx
+      vpp(i,k) = vp(i,k,jj)*xx
       tt(i,k,jj) = tt(i,k,jj)*pk(i,k,jj) / (1.0+0.608*qt(i,k,jj))
 !byl      ttpn(i,k,jj) = ttp(i,k,jj)*pkn(i,k,jj)/(1.0+0.608*qp(i,k,jj))
       ttp(i,k,jj) = ttp(i,k,jj) / (1.0+0.608*qp(i,k,jj))
@@ -926,7 +922,7 @@
       if ( dopbl .and. nmpbl.eq.1 .and. nmland.eq.1)                          &
          call pbltke ( nxjp(j),nxp,lev,ktpbl,dta,grav,rgas,cp,xkapa,hltm,ptop &
                      , tice,hice,tg(1,jj),z0(1,jj),land(1,jj)                 &
-                     , sgeo(1,jj),phi,pst(1,jj),up(1,1,jj),vp(1,1,jj)         &
+                     , sgeo(1,jj),phi,pst(1,jj),upp,vpp                       &
                      , ttp(1,1,jj),qp(1,1,jj),ut(1,1,jj),vt(1,1,jj)           &
                      , tt(1,1,jj),qt(1,1,jj),pk(1,1,jj),pk2(1,1,jj)           &
                      , ustar(1,jj),tstar(1,jj),qstar(1,jj),e(1,1,jj)          &
@@ -951,7 +947,7 @@
       if ( dopbl .and. nmpbl.eq.2 .and. nmland.eq.1)                          &
          call pbltke_n ( nxjp(j),nxp,lev,ktpbl,dta,grav,rgas,cp,xkapa,hltm,ptop &
                      , tice,hice,tg(1,jj),z0(1,jj),land(1,jj)                 &
-                     , sgeo(1,jj),phi,pst(1,jj),up(1,1,jj),vp(1,1,jj)  &
+                     , sgeo(1,jj),phi,pst(1,jj),upp,vpp                       &
                      , ttp(1,1,jj),qp(1,1,jj),ut(1,1,jj),vt(1,1,jj)           &
                      , tt(1,1,jj),qt(1,1,jj),pk(1,1,jj),pk2(1,1,jj)           &
                      , ustar(1,jj),tstar(1,jj),qstar(1,jj),e(1,1,jj)          &
@@ -967,7 +963,7 @@
       if ( dopbl .and. nmland.eq.2)                                           &
        call pbl_noah ( nxjp(j),nxp,lev,ktpbl,dta,grav,rgas,cp,xkapa,hltm,ptop &
                      , tice,hice,tg(1,jj),z0(1,jj),land(1,jj)                 &
-                      , sgeo(1,jj),phi,pst(1,jj),up(1,1,jj),vp(1,1,jj)  &
+                      , sgeo(1,jj),phi,pst(1,jj),upp,vpp                      &
                      , ttp(1,1,jj),qp(1,1,jj),ut(1,1,jj),vt(1,1,jj)           &
                      , tt(1,1,jj),qt(1,1,jj),pk(1,1,jj),pk2(1,1,jj)           &
                      , ustar(1,jj),tstar(1,jj),qstar(1,jj),e(1,1,jj)          &
@@ -1173,8 +1169,8 @@
 !c 20120926 for Tiedtke cumulus
       if ( docup .and. nmcup .eq. 4 .and. ncld .ge. 2 ) then
         call cumastr_driv(nxjp(j),nxp,lev,dt,grav,rgas,cp,hltm,ptop &
-                       , land(1,jj),sgeo(1,jj),phi,up(1,1,jj)  &
-                       , vp(1,1,jj),ttp(1,1,jj),qp(1,1,jj)          &
+                       , land(1,jj),sgeo(1,jj),phi,upp              &
+                       , vpp,ttp(1,1,jj),qp(1,1,jj)                 &
                        , ut(1,1,jj),vt(1,1,jj),tt(1,1,jj)           &
                        , qt(1,1,jj),rcup(1,jj),pk(1,1,jj)           &
                        , pk2(1,1,jj),sd(1,1,jj),qflux(1,jj)         &
@@ -1608,7 +1604,12 @@
 !
 !!!            rhc(i,kc)=0.999-0.08*cos(d2r*arg)**2    !a3
 !byl            rhc(i,kc)=0.95-0.07*cos(d2r*xlat(j))    !v2
-            rhc(i,kc)=0.98-0.12*cos(d2r*arg)**2.0    !v3
+!byl            rhc(i,kc)=0.98-0.12*cos(d2r*arg)**2.0    !v3
+            if ( land(i,jj) ) then                     !v4
+              rhc(i,kc)=0.80+0.03*cos(d2r*arg)**2.0
+            else
+              rhc(i,kc)=0.88+0.03*cos(d2r*arg)**2.0
+            endif
 !!!!             rhc(i,kc)=(1.-coefrhc)*(0.7+0.15*cos(d2r*xlat(j))**2)  &
 !!!!                     +coefrhc*(0.6+0.1*max(cos(4.*d2r*xlat(j))**3,0.))   !PYL vertical profile
 !
@@ -2262,7 +2263,7 @@
       do k=1,lev
       do i=1,nxj
       ru=sppt3d(i,k,jj)
-      up(i,k,jj)=ru*(tt(i,k,jj)-tt_sppt_old(i,k,jj)) !write out for checking
+      ttp(i,k,jj)=ru*(tt(i,k,jj)-tt_sppt_old(i,k,jj)) !write out for checking
       ut(i,k,jj)=(1+ru)*ut(i,k,jj)-ru*ut_sppt_old(i,k,jj)
       vt(i,k,jj)=(1+ru)*vt(i,k,jj)-ru*vt_sppt_old(i,k,jj)
       tt(i,k,jj)=(1+ru)*tt(i,k,jj)-ru*tt_sppt_old(i,k,jj)

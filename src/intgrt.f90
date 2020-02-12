@@ -810,37 +810,6 @@
         call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1         &
                  ,plten,nsizey)
 !
-!  zero out global mean tendencies for divergence, vorticity, and
-!  terrain pressure to ensure consistency with gauss's theorem.
-!
-      mlst=ilist(1)
-      if(mlst .ne. 0) then
-        plten(1,mlst,1) = 0.0
-        plten(1,mlst,2) = 0.0
-      endif
-!
-      call transr1( jtrun,jtmax,nx,my,my_max,poly,plten,ptend,nsizey)
-      do mf = 1, jtrun
-        wkmf(mf) = 0.
-      enddo
-      sptend= 0.0
-      do m = 1,mlistnum
-        mf=mlist(m)
-        do n = mf, jtrun
-          if(n.ne.1)then
-            wkmf(mf)= wkmf(mf) + plten(n,m,1)**2 + plten(n,m,2)**2
-          endif
-        enddo
-      enddo
-      call mpe_unify(wkmf,1,jtrun,3,mpe_double) 
-      do mf = 1, jtrun
-        sptend= sptend + wkmf(mf)
-      enddo
-!
-      sptend= sqrt(0.5*sptend)*3600.0
-      if(myrank .eq. 0)  &
-         print *, '  surf pres tend rms =',sptend,' mb/hrs'
-!
 !  before a time step,save previous time u,v,t,q as
 !  previous time u,v,t,q which used by physical parameterization
 !
@@ -874,9 +843,7 @@
           ptp(i,jj)= pt(i,jj)
         enddo
       enddo
-!
-!  take a time step
-!
+
 !  prepare randome numbers for sppt3d
 !
       if (dosppt) then
@@ -976,6 +943,9 @@
 !
       endif
 !
+!  zero out global mean tendencies for divergence, vorticity, and
+!  terrain pressure to ensure consistency with gauss's theorem.
+!
       mlst=ilist(1)
       if(mlst .ne. 0) then
         plten(1,mlst,1) = 0.0
@@ -992,6 +962,30 @@
          enddo
          endif
       enddo
+!
+      call transr1( jtrun,jtmax,nx,my,my_max,poly,plten,ptend,nsizey)
+      do mf = 1, jtrun
+        wkmf(mf) = 0.
+      enddo
+      sptend= 0.0
+      do m = 1,mlistnum
+        mf=mlist(m)
+        do n = mf, jtrun
+          if(n.ne.1)then
+            wkmf(mf)= wkmf(mf) + plten(n,m,1)**2 + plten(n,m,2)**2
+          endif
+        enddo
+      enddo
+      call mpe_unify(wkmf,1,jtrun,3,mpe_double) 
+      do mf = 1, jtrun
+        sptend= sptend + wkmf(mf)
+      enddo
+!
+      sptend= sqrt(0.5*sptend)*3600.0
+      if(myrank .eq. 0)  &
+         print *, '  surf pres tend rms =',sptend,' mb/hrs'
+!
+!  take a time step
 !
       if (forward)  then
 !
@@ -1018,7 +1012,7 @@
 
 !
       if (hdiff) call hdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld       &
-                             , hfiltx,rad,cosl,ut,vt,vornow,divnow,temnow  &
+                             , hfiltx,rad,cosl,up,vp,vornow,divnow,temnow  &
                              , eps4,trefs)
 !
         forward=.false.
@@ -1051,7 +1045,7 @@
         enddo
 !
         if (hdiff) call hdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld       &
-                               , hfiltx,rad,cosl,ut,vt,vorten,divten,temten  &
+                               , hfiltx,rad,cosl,up,vp,vorten,divten,temten  &
                                , eps4,trefs)
 !
 ! accumulate some flux every time step to output point (24 hour)
@@ -1626,7 +1620,7 @@
 !
       if (dospptout .and.  (mod(tau+0.001, 1.) .lt. 0.01)) then
          call spptout(nx,my,my_max,lev,sppt2d500,sppt2d1000,sppt2d2000 &
-                     ,up,recn,tau)
+                     ,ttp,recn,tau)
       endif
 !
 !for update sst(W00100), seaice(W00091), snowdepth(B00650)

@@ -81,7 +81,8 @@
 
 !ch       amp = max(min(0.91*(22-k),15),1)
 !byl          amp = min(max(0.75*(hdk1-KL),1.),8.)
-          amp = max(1.+min(1.5*(hdk1-KL),15.),1.)
+!byl          amp = max(1.+min(1.5*(hdk1-KL),15.),1.)
+          amp = 1.
 
           facd = max(fact*amp,1.0)
           facv = max(fact*amp,1.0)
