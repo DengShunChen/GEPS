@@ -1,17 +1,15 @@
       subroutine sendmsg(str_model,i_fromtau,i_totau,i_status)
 
       character*3 str_model
-      character*80 path
-      character tauchk*11
+      character tauchk*10
 
       i_status=-1
 
-      tauchk='/zzz.tauchk'
+      tauchk='zzz.tauchk'
 
-      write(tauchk(2:4),'(a3)')str_model
+      write(tauchk(1:3),'(a3)')str_model
 
-      call getenv("NWPETC",path)
-      open(1,file=trim(path)//tauchk,form='formatted',status='unknown', &
+      open(1,file=tauchk,form='formatted',status='unknown', &
            position='append')
       write(1,'(i4.4,x,i4.4)')i_fromtau,i_totau
       close(1)

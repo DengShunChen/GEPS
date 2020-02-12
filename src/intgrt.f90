@@ -1504,8 +1504,7 @@
 !CWB2016 
           if(.not. io_quilting)then
 !CWB2017           call sendmsg ('gfs',ifromtau,itotau,istat)
-!byl            if(itau.eq.itotau) call sendmsg ('gfs',ifromtau,itotau,istat)
-             call sendmsg ('gfs',ifromtau,itotau,istat)
+            if(itau.eq.itotau) call sendmsg ('gfs',ifromtau,itotau,istat)
           else
             istat=0
           endif
