@@ -95,7 +95,10 @@ USE mo_cumulus_flux,  only: lmfdudv, &! true if cum. friction is switched on
                               cmfcmin, &
                               lmfpen,  &
                               lmfscv
-                              
+
+      use mpe
+      use rank
+      use index                              
 
       implicit none
       integer klev,klon,klevp1,klevm1,nxj,jin
@@ -170,7 +173,7 @@ USE mo_cumulus_flux,  only: lmfdudv, &! true if cum. friction is switched on
       integer  kcnv(klon)
       real     sumpap(klon)
 !for lightning parameterization
-      real     pluu(klon,klev),pf(klon,klev),rho(klon,klev)
+      real     pluu(klon,klev),pf(klon,klev),rho(klon,klev),papn(klon,klev)
       real     flash(klon),dx(klon)
 !xb110<
 !-------------------------------------------
@@ -289,12 +292,12 @@ USE mo_cumulus_flux,  only: lmfdudv, &! true if cum. friction is switched on
      &     pmfude_rate,zoentr1 )
 
 !xb110>
-      !storing the cloud water (kg/kg) value within the convective updraft
-       do jk = 1,klev
-        do jl = 1,nxj
-          pluu(jl,jk) = plu(jl,jk)          ! cloud liquid water within updraft
-        enddo
-       enddo
+!      !storing the cloud water (kg/kg) value within the convective updraft
+!       do jk = 1,klev
+!        do jl = 1,nxj
+!          pluu(jl,jk) = plu(jl,jk)          ! cloud liquid water within updraft
+!        enddo
+!       enddo
 !xb110<
 
 !*     (b) check cloud depth and change entrainment rate accordingly
@@ -623,11 +626,14 @@ USE mo_cumulus_flux,  only: lmfdudv, &! true if cum. friction is switched on
         pf(jl,jk) = pmflxs(jl,jk)
         rho(jl,jk) = 0.622*pap(jl,jk)/(rd*ztenh(jl,jk)*(zqenh(jl,jk) + 0.622))
 !environment air density
+        papn(jl,jk) = pap(jl,jk)* 0.01 !Pa to mb
        end do
       end do
-      call lightning_ec (nxj,klon,klev,ptu,pqu,ztenh,zqenh     &
-                        ,pluu,plu,rho,kcbot,kctop,pgeo,pap,pf  &
-                        ,flash,lndj,ldcum)
+    
+!      if (myrank .eq. 0)then
+!        print*, "max sflx:",maxval(pf),"min sflx:",minval(pf)
+!      end if
+
 !xb110<
 
 !----------------------------------------------------------------
@@ -804,6 +810,10 @@ USE mo_cumulus_flux,  only: lmfdudv, &! true if cum. friction is switched on
        if (ktype(jl) .eq. 1 .or. ktype(jl) .eq. 3 ) kcnv(jl) = 1
        if (ktype(jl) .eq. 2 ) kcnv(jl) = 0
       end do
+      
+      call lightning_ec (nxj,klon,klev,ptu,pqu,ztenh,zqenh     &
+                        ,plu,rho,kcbot,kctop,pgeo,papn,pf  &
+                        ,flash,lndj,kcnv)
 !xb110<
 
       return

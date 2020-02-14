@@ -365,7 +365,8 @@
       real      adtrad(nxp,lev),work_pr1(9),work_pr2(lev,9)
 !--------
 ! for ncld=2
-      real,     parameter :: dxmax=-8.8818363, dxmin=-5.2574954, &
+!      real,     parameter :: dxmax=-8.8818363, dxmin=-5.2574954, &
+      real,     parameter :: dxmax= 23.8367811, dxmin=17.0343863, &
                              dxinv=1.0/(dxmax-dxmin)
 !     parameter (rhzbot=0.85, rhztop=0.85)
 
@@ -435,6 +436,12 @@
 !rainr : rainfall rate (unit in kg/kg/dt)
 !for lightning
       real      flash(nxp,my_max)        !flash density (unit in flashes km^-2 day^-1)
+      real      ztenh(nxp,lev),zqenh(nxp,lev),rho(nxp,lev)              &
+               ,snow_flxn(nxp,lev),ptun(nxp,lev),pqun(nxp,lev)          &
+               ,cnvwn(nxp,lev)
+      real      snow_flx(nxp,lev),ptu(nxp,lev)           &
+               ,pqu(nxp,lev)
+      integer   kbotc(nxp,my_max), ktopc(nxp,my_max)
 !xb110<
 !ps
       logical lrun_sitvdiff
@@ -457,6 +464,15 @@
       real tgdiff(nxp,my_max)
       real dtx_tau,dtaup 
       INTEGER, PARAMETER :: nerr = 6
+!xb110>
+      ztenh = 0.
+      zqenh = 0.
+      rho = 0.
+      snow_flx  = 0.
+      ptu = 0.
+      pqu = 0.
+      cnvwn = 0.
+!xb110<
 !ps
 !CWB2015 
       kuo=0
@@ -586,6 +602,7 @@
       do i = 1, nxp
        rcup(i,jj)  = 0.0
        rlsp(i,jj)  = 0.0
+!       cldwrk(i,k) = 0.0
        cldwrk(i,jj) = 0.0
 !byl       rainp(i,jj) = 0.0
 !      cosz(i,jj)  = 0.0
@@ -829,6 +846,12 @@
       do 290 jj =1, jlistnum
       j=jlist1(jj)
       nxj=nxdef_2d(j)
+!
+! for scale-aware
+        tem1      = tpr*cosl(j)/float(nxdef(j))
+        jup       = min(j+1,my)
+        jdn       = max(j-1, 1)
+        tem2      = radus*0.5*abs(xlat(jup)-xlat(jdn))*d2r
 !
 !    compute new time level p**kapa quantites
 !
@@ -1183,11 +1206,6 @@
 !xb110>
       if ( docup .and. nmcup .eq. 5 .and. ncld .ge. 2 ) then
 
-        tem1      = tpr*cosl(j)/float(nxdef(j))
-        jup       = min(j+1,my)
-        jdn       = max(j-1, 1)
-        tem2      = radus*0.5*abs(xlat(jup)-xlat(jdn))*d2r
-
         do i=1,nxj
           garea(i)  = tem1*tem2
 !byl          if(land(i,jj))slimsk(i)=1
@@ -1241,12 +1259,6 @@
         call random_seed(put=isize(1:2))
         call random_number(XKT2)
 ! CWB <<<
-! for scale-aware
-        tem1      = tpr*cosl(j)/float(nxdef(j))
-        jup       = min(j+1,my)
-        jdn       = max(j-1, 1)
-        tem2      = radus*0.5*abs(xlat(jup)-xlat(jdn))*d2r
-!
         lprnt=.false.
         jcap = 240
         do i=1,nxj
@@ -1289,6 +1301,15 @@
            vtc(i,kc) = vt(i,k,jj)
           enddo
         enddo
+!xb110>>
+        do k = 1,lev
+          do i = 1,nxj
+            ztenh(i,k) = tt(i,k,jj)
+            zqenh(i,k) = qt(i,k,jj)
+            rho(i,k) = 0.622*plt(i,k,jj)*100./(con_rd*tt(i,k,jj)*(qt(i,k,jj) + 0.622))
+          end do
+        end do
+!xb110<<
 !
 ! old version SAS
          if( nmcup .eq. 2)                                 &
@@ -1314,7 +1335,10 @@
 !!          ,tice)
          call samfdeepcnv(nxjp(j),nxp,lev,dta,del,prsl,psfc,phil       &
           ,qtr,qti,qtc,ttc,utc,vtc,cldwrk(1,jj),rcup(1,jj),kbot(1,jj)  &
-          ,ktop(1,jj),kuo(1,jj),islimsk,garea,dotc,ncld,cnvw,cnvc)
+          ,ktop(1,jj),kuo(1,jj),islimsk,garea,dotc,ncld,cnvw,cnvc      &
+!xb110>> 
+          ,snow_flxn,ptun,pqun)
+!xb110<<
 
 ! for rad input of convection cloud information
 ! bottom(plcl) layer and top(cumtop) layer in pressure(mb)
@@ -1345,8 +1369,26 @@
             cnvcr(i,kc)    = cnvc(i,kc)
             cnvw(i,kc)     = 0.
             cnvc(i,kc)     = 0.
+!xb110>>
+            snow_flx(i,k) = snow_flxn(i,kc)
+            ptu(i,k)      = ptun(i,kc)
+            pqu(i,k)      = pqun(i,kc)
+            cnvwn(i,k)    = cnvwr(i,kc)
+!xb110<<
           enddo
         enddo
+
+!xb110>>      
+        do i =1,nxj
+          kbotc(i,jj)   =lev-kbot(i,jj)
+          ktopc(i,jj)   =lev-ktop(i,jj)
+        enddo
+
+      call lightning_ec (nxjp(j),nxp,lev,ptu,pqu,ztenh,zqenh     &
+                        ,cnvwn,rho,kbotc(1,jj),ktopc(1,jj)     &
+                        ,phi,plt(1,1,jj),snow_flx               &
+                        ,flash(1,jj),islimsk,kuo(1,jj))
+!xb110<<
 !
       endif  !(end of docup .or. (nmcup .eq. 2 .or. nmcup .eq. 3 .or. nmcup .eq. 6))
 !
@@ -1413,10 +1455,11 @@
         latg =my
 !
         do i = 1,nxj
-          tem1        = con_rerth * (con_pi+con_pi)*cosl(j)/nxdef(j)
-          tem2        = con_rerth * con_pi/latg
+!!          tem1        = con_rerth * (con_pi+con_pi)*cosl(j)/nxdef(j)
+!!          tem2        = con_rerth * con_pi/latg
           dlength(i)  = sqrt( tem1*tem1+tem2*tem2 )
-          work1(i)    = (log(cosl(j) / (nxdef(j)*latg)) - dxmin) * dxinv
+!!          work1(i)    = (log(cosl(j) / (nxdef(j)*latg)) - dxmin) * dxinv
+          work1(i)    = (log(tem1*tem2) - dxmin) * dxinv
           work1(i)    = max(0.0, min(1.0,work1(i)))
           work2(i)    = 1.0 - work1(i)
           cldf(i)     = cgwf(1)*work1(i) + cgwf(2)*work2(i)
@@ -1438,11 +1481,6 @@
       endif  !(end of docgrav and nmgwcv=2)
 !
       if( doshl .and. (nmshl.eq.2 .or. nmshl.eq.3) ) then
-!for scale-aware
-           tem1      = tpr*cosl(j)/float(nxdef(j))
-           jup       = min(j+1,my)
-           jdn       = max(j-1, 1)
-           tem2      = radus*0.5*abs(xlat(jup)-xlat(jdn))*d2r
 !
         do i=1,nxj
           psfc(i)  = pst(i,jj)*0.1        ! change to cb

@@ -7,7 +7,8 @@
              , acld,cosl,drag,ugws,vgws,t2,q2,rh2,rh10,u10,v10,gfx,rld,sld &
 !byl             , km,smc,slc,stc,canopy,ggdef,slptyp,v850,v700,h850,h500   &
              , km,smc,slc,stc,canopy,ggdef,typtrk                    &
-             , ctot,chig,cmid,clow,hpbl,lwrite,flash,lwritesit)
+!xb110             , ctot,chig,cmid,clow,hpbl,lwrite,flash,lwritesit)
+             , ctot,chig,cmid,clow,hpbl,lwrite,lwritesit)
 !
 !  modify to f90 by C-H Lee and sort by River Chen in 2015
 !
@@ -90,7 +91,7 @@
 !
       logical :: lwrite,lwritesit
 !xb110>
-      real      flash(nxp,my_max)         !flash density 
+!      real      flash(nxp,my_max)         !flash density 
 !xb110<
 !
 !p16  data pout/10.0,20.0,30.0,50.0,70.0,100.0,150.0,200.0,250.0
@@ -658,7 +659,8 @@
                  ,hflux,qflux,tg,gwet,snr,z0,raintot,raincu,rainlp  &
                  ,plcl,cumtop,ss,rs,alb,gwclim,glob                 &
                  ,acld,ugws,vgws,t2,q2,rh2,rh10,u10,v10,gfx,rld     &
-                 ,sld,wk_xy,soil_xy,canopy,ggdef,lwrite,flash)
+!xb110                 ,sld,wk_xy,soil_xy,canopy,ggdef,lwrite,flash)
+                 ,sld,wk_xy,soil_xy,canopy,ggdef,lwrite)
 !
       return
       end

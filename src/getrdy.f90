@@ -93,7 +93,7 @@
               lvlw2,lvlw3,ii
       real    fact,xxaa,taux,dummy,q1,dsigp,pi,xx,wet
 !xb110>
-      real    flash(nxp,my_max)
+!      real    flash(nxp,my_max)
 !xb110<
 
       real  t_surf
@@ -536,6 +536,7 @@
           nxj=nxdef_2d(j)
           do i = 1,nxj
             totalp(i,jj)=0.
+!            flash(i,jj)=0.   !xb110, flash density
             ustar(i,jj)=0.1
             tstar(i,jj)=0.025
             qstar(i,jj)=0.0
@@ -572,6 +573,7 @@
           do i=1,nxj
             snr(i,jj)=0.
             totalp(i,jj)=0.
+!            flash(i,jj)=0.   !xb110, flash density
             ustar(i,jj)=0.1
             tstar(i,jj)=0.025
             qstar(i,jj)=0.0
@@ -1261,7 +1263,7 @@
         rld=0.
        rh2100=rh2*100.
        rh10100=rh10*100.
-        flash=0.   !xb110, flash density
+!        flash=0.   !xb110, flash density
         call outflds ( 0,nx,my,my_max,lev,ncld,lmax,numout,idtg,ifilout &
              , outdir,ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo           &
              , ptend,pt,plt,pk,pk2,phi,ut,vt,sd                         &
@@ -1270,7 +1272,8 @@
              , acld,cosl,wk1,ww2,ww2,t2,q2,rh2100,rh10100,u10,v10,gfx,rld,sld &
 !byl             , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500 &
              , km_soil,smc,slc,stc,canopy,ggdef,typtrk                  &
-             , ctot,chig,cmid,clow,hpbl,.true.,flash,do_sit)
+!             , ctot,chig,cmid,clow,hpbl,.true.,flash,do_sit)
+             , ctot,chig,cmid,clow,hpbl,.true.,do_sit)
 
 ! add 40m 100m output for green energy plan
       if(out_green)then

@@ -39,6 +39,19 @@
          module procedure mpe_bcast_r4_2d
       end interface
 
+      interface mpe_bcast_col
+         module procedure mpe_bcast_col_i_scalar
+         module procedure mpe_bcast_col_i
+         module procedure mpe_bcast_col_i_2d
+         module procedure mpe_bcast_col_r_scalar
+         module procedure mpe_bcast_col_r
+         module procedure mpe_bcast_col_r_2d
+!CWB 2019-06-25
+         module procedure mpe_bcast_col_r4_scalar
+         module procedure mpe_bcast_col_r4
+         module procedure mpe_bcast_col_r4_2d
+      end interface
+
       interface mpe_global_sum
          module procedure mpe_global_sum_i_scalar
          module procedure mpe_global_sum_i
@@ -439,6 +452,153 @@
       return
 
       end subroutine mpe_bcast_r4_2d
+!--------------------------------------------------------------
+      subroutine mpe_bcast_col_i_scalar(buf,n,iroot,type)
+ 
+      use index, only : col_comm
+      use mpi
+
+      integer  buf,n,iroot,IERR
+      integer, optional :: type
+ 
+      call MPI_BCAST( BUF, N, MPI_INTEGER, IROOT,             &
+                      col_comm, IERR )
+ 
+      return
+
+      end subroutine mpe_bcast_col_i_scalar
+!--------------------------------------------------------------
+      subroutine mpe_bcast_col_i(buf,n,iroot,type)
+ 
+      use index, only : col_comm
+      use mpi
+
+      integer  buf(n),n,iroot,IERR
+      integer, optional :: type
+ 
+      call MPI_BCAST( BUF, N, MPI_INTEGER, IROOT,             &
+                      col_comm, IERR )
+ 
+      return
+
+      end subroutine mpe_bcast_col_i
+!--------------------------------------------------------------
+      subroutine mpe_bcast_col_i_2d(buf,n,iroot,type)
+ 
+      use index, only : col_comm
+      use mpi
+
+      integer  buf(n,1),n,iroot,IERR
+      integer, optional :: type
+ 
+      call MPI_BCAST( BUF, N, MPI_INTEGER, IROOT,             &
+                      col_comm, IERR )
+ 
+      return
+
+      end subroutine mpe_bcast_col_i_2d
+!--------------------------------------------------------------
+      subroutine mpe_bcast_col_r_scalar(buf,n,iroot,type)
+ 
+      use index, only : col_comm
+      use mpi
+
+      real     buf
+      integer  n,iroot,IERR
+      integer, optional :: type
+ 
+      call MPI_BCAST( BUF, N, MPI_DOUBLE_PRECISION, IROOT,    &
+                      col_comm, IERR )
+ 
+      return
+
+      end subroutine mpe_bcast_col_r_scalar
+!--------------------------------------------------------------
+      subroutine mpe_bcast_col_r(buf,n,iroot,type)
+ 
+      use index, only : col_comm
+      use mpi
+
+      real     buf(n)
+      integer  n,iroot,IERR
+      integer, optional :: type
+ 
+      call MPI_BCAST( BUF, N, MPI_DOUBLE_PRECISION, IROOT,    &
+                      col_comm, IERR )
+ 
+      return
+
+      end subroutine mpe_bcast_col_r
+!--------------------------------------------------------------
+      subroutine mpe_bcast_col_r_2d(buf,n,iroot,type)
+ 
+      use index, only : col_comm
+      use mpi
+
+      real     buf(n,1)
+      integer  n,iroot,IERR
+      integer, optional :: type
+ 
+      call MPI_BCAST( BUF, N, MPI_DOUBLE_PRECISION, IROOT,    &
+                      col_comm, IERR )
+ 
+      return
+
+      end subroutine mpe_bcast_col_r_2d
+!--------------------------------------------------------------
+!CWB 2019-06-25
+!--------------------------------------------------------------
+      subroutine mpe_bcast_col_r4_scalar(buf,n,iroot,type)
+ 
+      use index, only : col_comm
+      use mpi
+
+      real*4   buf
+      integer  n,iroot,IERR
+      integer, optional :: type
+ 
+      call MPI_BCAST( BUF, N, MPI_REAL4,            IROOT,    &
+                      col_comm, IERR )
+ 
+      return
+
+      end subroutine mpe_bcast_col_r4_scalar
+!--------------------------------------------------------------
+!CWB 2019-06-25
+!--------------------------------------------------------------
+      subroutine mpe_bcast_col_r4(buf,n,iroot,type)
+ 
+      use index, only : col_comm
+      use mpi
+
+      real*4   buf(n)
+      integer  n,iroot,IERR
+      integer, optional :: type
+ 
+      call MPI_BCAST( BUF, N, MPI_REAL4,            IROOT,    &
+                      col_comm, IERR )
+ 
+      return
+
+      end subroutine mpe_bcast_col_r4
+!--------------------------------------------------------------
+!CWB 2019-06-25
+!--------------------------------------------------------------
+      subroutine mpe_bcast_col_r4_2d(buf,n,iroot,type)
+ 
+      use index, only : col_comm
+      use mpi
+
+      real*4   buf(n,1)
+      integer  n,iroot,IERR
+      integer, optional :: type
+ 
+      call MPI_BCAST( BUF, N, MPI_REAL4,            IROOT,    &
+                      col_comm, IERR )
+ 
+      return
+
+      end subroutine mpe_bcast_col_r4_2d
 !--------------------------------------------------------------
       subroutine mpe_global_sum_i_scalar(swork,n,type)
  

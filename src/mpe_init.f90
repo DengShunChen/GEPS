@@ -142,6 +142,12 @@
       nsizey=npey
 
       endif
+!
+      if ( npe .lt. lev ) then
+         if(myrank == 0)print *,'fatal error : npe  .lt. lev !'
+!        call MPI_FINALIZE(IERR)
+         stop ! force abort
+      endif
 
       if ( (nsizex*nsizey) /= npe ) then
          if(myrank == 0)print *,'fatal error : npex*npey  .ne. npe !'
@@ -279,12 +285,12 @@
 !         print *,'nsizex nsizey =',nsizex,nsizey
 !        endif
 
-         do i=0,nsize-1
+!         do i=0,nsize-1
 !        if(myrank.eq.i)then
 !          print 10,myrank,mrow,ncol,row_rank,col_rank
 !        endif
 !        call MPI_Barrier(MPI_COMM_WORLD, ierr)
-         enddo
+!         enddo
 
 !2d
       my_max=my/nsizey+1
