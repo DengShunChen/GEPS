@@ -453,7 +453,7 @@
 !
       if(label(kk).eq.'b10510') then
       call mpe2d_unify(glob,rh10)
-      call syslbl ('b02510',idtg,itau,ggdef,ihdg)
+      call syslbl ('b10510',idtg,itau,ggdef,ihdg)
       if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
       if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
