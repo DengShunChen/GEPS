@@ -98,7 +98,9 @@
 !#define GDCHK1 (mpp_pe().EQ.741)
 !#define GDCHK2 (mpp_pe().EQ.741)
 
-#define DBLE REAL   ! EVERYTHING IN REAL
+!#define DBLE REAL   ! EVERYTHING IN REAL
+! EVERYTHING IN REAL
+#define DBLE(x) REAL(x)
 
 MODULE mod_sit_vdiff
 
