@@ -1301,7 +1301,7 @@
           do i = 1,nxj
             ztenh(i,k) = tt(i,k,jj)
             zqenh(i,k) = qt(i,k,jj)
-            rho(i,k) = 0.622*plt(i,k,jj)*100./(con_rd*tt(i,k,jj)*(qt(i,k,jj) + 0.622))
+            rho(i,k) = plt(i,k,jj)*100./ (con_rd*tt(i,k,jj))
           end do
         end do
 !xb110<<
@@ -1375,8 +1375,8 @@
 
 !xb110>>      
         do i =1,nxj
-          kbotc(i,jj)   =lev-kbot(i,jj)
-          ktopc(i,jj)   =lev-ktop(i,jj)
+          kbotc(i,jj)   =lev-kbot(i,jj)+1
+          ktopc(i,jj)   =lev-ktop(i,jj)+1
         enddo
 
       call lightning_ec (nxjp(j),nxp,lev,ptu,pqu,ztenh,zqenh     &
