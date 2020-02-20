@@ -624,7 +624,7 @@ USE mo_cumulus_flux,  only: lmfdudv, &! true if cum. friction is switched on
       do jk = 1,klev
        do jl = 1,nxj
         pf(jl,jk) = pmflxs(jl,jk)
-        rho(jl,jk) = 0.622*pap(jl,jk)/(rd*ztenh(jl,jk)*(zqenh(jl,jk) + 0.622))
+        rho(jl,jk) = pap(jl,jk)/(rd*ztenh(jl,jk))
 !environment air density
         papn(jl,jk) = pap(jl,jk)* 0.01 !Pa to mb
        end do
