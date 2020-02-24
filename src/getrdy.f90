@@ -1004,7 +1004,7 @@
           call sfcuvt( nxjp(j),nxp,dt,grav,rgas,cp,hltm                 &
                     ,tgp,z0(1,jj),ocean(1,jj),ps,tsx                    &
                     ,hs,ux,vx,tx,qx,ustar(1,jj),tstar(1,jj),qstar(1,jj) &
-                    ,hflux(1,jj),qflux(1,jj),qsfc,t2(1,jj),q2(i,jj)     &
+                    ,hflux(1,jj),qflux(1,jj),qsfc,t2(1,jj),q2(1,jj)     &
                     ,rh2(1,jj),rh10(1,jj),u10(1,jj),v10(1,jj) )
         enddo
 !        call mpe_unify(ustar,nx,my,2,mpe_double)
