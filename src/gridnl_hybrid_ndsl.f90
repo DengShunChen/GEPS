@@ -59,8 +59,7 @@
       real      sdpbl(nx)
       logical   flag(nx)
 !
-      real      sd(nx,lev),pdot(nx,lev+1),that(nx,lev),           &
-                qhat(nx,lev*ncld),spal(nx,lev),odpsig(nx,lev)
+      real      sd(nx,lev),pdot(nx,lev+1),spal(nx,lev),odpsig(nx,lev)
 
       integer   k,i,kbgn,kk
       real      px,px_pbl
@@ -134,7 +133,7 @@
 !
 !
       call vstruc_hybrid_cwb(nxj,nx,lev,cp,radsq,sigma,dsigma,pt,tt,qt &
-                   ,ptop,pk,pk2,spal,odpsig,that,qhat,phi,ncld)
+                   ,ptop,pk,pk2,spal,odpsig,phi,ncld)
 !
       do 13 k=1,lev
       do 13 i=1,nxj
