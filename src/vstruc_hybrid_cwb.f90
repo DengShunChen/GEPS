@@ -1,5 +1,5 @@
       subroutine vstruc_hybrid_cwb (nxj,nx,lev,cp,radsq,sigma,dsigma   &
-                  ,pt,tt,qt,pk,pk2,spal,odpsig,that,qhat,phi,ncld)
+                  ,pt,tt,qt,pk,pk2,spal,odpsig,phi,ncld)
 !
 !  subroutine to compute several intermediate pressure dependent
 !  variables and parameters
@@ -23,8 +23,6 @@
 !  phi: geopotential
 !  spal: energy conversion term (sigma*ps*alpha)
 !  odpsig: reciprical of layer mass
-!  that: even level potential temp (thickness temp)
-!  qhat: even level specific humidity
 !
 ! **************************************************
 !
@@ -32,8 +30,8 @@
 
       integer   nxj,nx,lev,ncld
 
-      real      pk(nx,lev),pk2(nx,lev),spal(nx,lev),odpsig(nx,lev)      &
-      , tt(nx,lev),qt(nx,lev*ncld),that(nx,lev),qhat(nx,lev*ncld)       &
+      real      pk(nx,lev),pk2(nx,lev),spal(nx,lev),odpsig(nx,lev)     &
+      , tt(nx,lev),qt(nx,lev*ncld),that(nx,lev)                        &
       , phi(nx,lev),pt(nx),dsigma(lev,2),sigma(lev+1,2)
 
       real      cpr2,cp,radsq
@@ -52,16 +50,16 @@
 !
 !  half-level specific humidity, interpolate in p**capa
 !
-      do n=1,ncld
-      nk=(n-1)*lev
-      do k=1,lev-1
-      kk=nk+k
-      do i=1,nxj
-      qhat(i,kk+1)= qt(i,kk+1)+(qt(i,kk)-qt(i,kk+1))     &
-       *(pk(i,k+1)-pk2(i,k))/(pk(i,k+1)-pk(i,k))
-      enddo
-      enddo
-      enddo
+!      do n=1,ncld
+!      nk=(n-1)*lev
+!      do k=1,lev-1
+!      kk=nk+k
+!      do i=1,nxj
+!      qhat(i,kk+1)= qt(i,kk+1)+(qt(i,kk)-qt(i,kk+1))     &
+!       *(pk(i,k+1)-pk2(i,k))/(pk(i,k+1)-pk(i,k))
+!      enddo
+!      enddo
+!      enddo
 !
       do 160 k=1,lev-1
       do 160 i=1,nxj
