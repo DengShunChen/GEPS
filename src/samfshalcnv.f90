@@ -1043,8 +1043,10 @@
 !     bb1 = 2.0
 !     bb2 = 4.0
 !
+!      bb1 = 4.0
+!      bb2 = 0.8
       bb1 = 4.0
-      bb2 = 0.8
+      bb2 = 0.5
 !
 !     do i = 1, im
 !       if (cnvflg(i)) then

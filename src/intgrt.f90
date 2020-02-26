@@ -1417,7 +1417,7 @@
 !        dtaup = mod( tauo+0.001, taup )
 !ds        dtaup = mod( tau+0.001, taup )
 !ds       if(tau.le.(taureg+0.001) .and. dtaup.lt.0.01)then
-       if(tau.le.(taureg+0.001))then
+       if(tau.le.(taureg+0.001) .and. histim )then
 !jh        if( histim ) then 
 #ifndef NO_OUT
         call outsigs ( itau,nx,my,my_max,lev,ncld        &
@@ -1430,7 +1430,7 @@
 !-------------------------------------------------------------------------------
 
 !      if (myrank .eq. 0) print *,'ioutsigr =',ioutsigr
-      if (ioutsigr .eq. 0) then
+      if (ioutsigr .eq. 0 .and. histim ) then
       if (myrank .eq. 0) print *,'outsigr start !!!'
 #ifndef NO_OUT
       call outsigr ( itau,nx,my,my_max,lev                                     &

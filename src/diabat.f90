@@ -1056,8 +1056,10 @@
         lprnt = .false.
 !        ipr = 1
 !
-        cdmbgwd(1)       = 2.00      ! mtn blking and gwd tuning factors
-        cdmbgwd(2)       = 0.25      ! mtn blking and gwd tuning factors
+!        cdmbgwd(1)       = 2.00      ! mtn blking and gwd tuning factors
+!        cdmbgwd(2)       = 0.25      ! mtn blking and gwd tuning factors
+        cdmbgwd(1)       = 1.00      ! mtn blking and gwd tuning factors
+        cdmbgwd(2)       = 1.05      ! mtn blking and gwd tuning factors
 !
         do i = 1, nxj
           hprime(i)=hprime_b(i,1,jj)
@@ -1604,12 +1606,7 @@
 !
 !!!            rhc(i,kc)=0.999-0.08*cos(d2r*arg)**2    !a3
 !byl            rhc(i,kc)=0.95-0.07*cos(d2r*xlat(j))    !v2
-!byl            rhc(i,kc)=0.98-0.12*cos(d2r*arg)**2.0    !v3
-            if ( land(i,jj) ) then                     !v4
-              rhc(i,kc)=0.80+0.03*cos(d2r*arg)**2.0
-            else
-              rhc(i,kc)=0.88+0.03*cos(d2r*arg)**2.0
-            endif
+            rhc(i,kc)=0.98-0.12*cos(d2r*arg)**2.0    !v3
 !!!!             rhc(i,kc)=(1.-coefrhc)*(0.7+0.15*cos(d2r*xlat(j))**2)  &
 !!!!                     +coefrhc*(0.6+0.1*max(cos(4.*d2r*xlat(j))**3,0.))   !PYL vertical profile
 !

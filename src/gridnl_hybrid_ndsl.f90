@@ -45,7 +45,7 @@
       implicit  none
 
       integer   nxj,nx,lev,ncld
-      real      cp,radsq,onocos,cor,ptop,sinl
+      real      cp,radsq,onocos,cor,sinl
 
       real      ut(nx,lev),vt(nx,lev),rdiv(nx,lev),tt(nx,lev)     &
       , qt(nx,lev*ncld),pt(nx),dlpl(nx),dtpl(nx),pk(nx,lev)       &
@@ -134,7 +134,7 @@
 !
 !
       call vstruc_hybrid_cwb(nxj,nx,lev,cp,radsq,sigma,dsigma,pt,tt,qt &
-                   ,ptop,pk,pk2,spal,odpsig,that,qhat,phi,ncld)
+                   ,pk,pk2,spal,odpsig,that,qhat,phi,ncld)
 !
       do 13 k=1,lev
       do 13 i=1,nxj

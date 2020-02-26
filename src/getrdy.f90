@@ -511,7 +511,8 @@
           do i = 1,nxj
             totalp(i,jj)=0.
 !            flash(i,jj)=0.   !xb110, flash density
-            ustar(i,jj)=0.1
+!byl            ustar(i,jj)=0.1
+            ustar(i,jj)=sqrt(0.14) !make sure z0 will be 0.0002 over ocean
             tstar(i,jj)=0.025
             qstar(i,jj)=0.0
             hflux(i,jj)=-ustar(i,jj)*tstar(i,jj)
@@ -548,7 +549,8 @@
             snr(i,jj)=0.
             totalp(i,jj)=0.
 !            flash(i,jj)=0.   !xb110, flash density
-            ustar(i,jj)=0.1
+!byl            ustar(i,jj)=0.1
+            ustar(i,jj)=sqrt(0.14) !make sure z0 will be 0.0002 over ocean
             tstar(i,jj)=0.025
             qstar(i,jj)=0.0
             hflux(i,jj)=-ustar(i,jj)*tstar(i,jj)

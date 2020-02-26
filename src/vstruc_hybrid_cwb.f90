@@ -1,5 +1,5 @@
       subroutine vstruc_hybrid_cwb (nxj,nx,lev,cp,radsq,sigma,dsigma   &
-                  ,pt,tt,qt,ptop,pk,pk2,spal,odpsig,that,qhat,phi,ncld)
+                  ,pt,tt,qt,pk,pk2,spal,odpsig,that,qhat,phi,ncld)
 !
 !  subroutine to compute several intermediate pressure dependent
 !  variables and parameters
@@ -36,7 +36,7 @@
       , tt(nx,lev),qt(nx,lev*ncld),that(nx,lev),qhat(nx,lev*ncld)       &
       , phi(nx,lev),pt(nx),dsigma(lev,2),sigma(lev+1,2)
 
-      real      cpr2,cp,radsq,ptop
+      real      cpr2,cp,radsq
       integer   i,n,nk,k,kk
 !
 !  compute time dependent pressure variables
