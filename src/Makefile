@@ -222,7 +222,7 @@ gwdp.o : gwdp.f90 mod_paramt.o
 gwdc.o : gwdc.f90 mod_paramt.o mod_rank.o mod_mpe.o mod_index.o
 read_mtnvar.o : read_mtnvar.f90 mod_index.o mod_param.o
 gwdps.o : gwdps.f90 mod_rank.o mod_mpe.o mod_index.o
-hdiffu.o : hdiffu.f90 mod_rank.o mod_mpe.o mod_index.o mod_const.o
+hdiffu.o : hdiffu.f90 mod_rank.o mod_mpe.o mod_index.o mod_const.o mod_param.o
 incrini.o : incrini.f90 mod_fftcom.o mod_spec.o mod_grid.o mod_const.o mod_index.o mod_rank.o mod_param.o 
 indexx.o : indexx.f90 
 inicons.o : inicons.f90 mod_index.o 

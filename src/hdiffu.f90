@@ -1,15 +1,16 @@
-      subroutine hdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld,hfilt  &
+      subroutine hdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld,amp   &
                         , rad,cosl,ut,vt,vornow,divnow,temnow,eps4     &
                         , trefs)
       use index
       use mpe
       use rank
-      use const, only : hdktop,hdk1,hdk2,hdk3,factop,coefu
+      use const, only : hdk1,hdk2,radsq
+      use param, only : octahedral
 
       implicit  none
 
       integer   my,my_max,nx,jtrun,jtmax,lev,ncld
-      real      dta,rad,hfilt
+      real      dta,rad
 
       real      cosl(my),ut(nxp,lev,my_max),vt(nxp,lev,my_max),  &
                 vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),   &
@@ -22,15 +23,17 @@
       real      windmax1,windmax2,windmax3
 
       integer   jj,j,nxj,k,i,m,n,mf,nc,kk,KL
-      real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu,dec,dect
+      real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu
+      real      hfilt,hfilt2,nf,kfac
       real      c1,c2,c3
       logical   windchk
 
       data      windmax1/80./, windmax2/100./, windmax3/130./
 !!      data      windmax1/70./, windmax2/100./, windmax3/130./
 !
-!cc    diffu=1.0/(24.*3600.*(jtrun*(jtrun+1)/radsq)**2)
+
 !
+      nf=jtrun-1
       wmax(1:lev)= 0.0
 !
       do jj =1,jlistnum
@@ -52,6 +55,17 @@
                                  ' windmax=',wmax(k)
         endif
       enddo
+!
+!
+        hfilt = (radsq/(nf*(nf+1)))**2.
+        hfilt2 = radsq/(nf*(nf+1))
+      if ( octahedral ) then
+        hfilt = hfilt/(6.*dta)
+        hfilt2 = hfilt2/(6.*dta)
+      else
+        hfilt = 4.*hfilt/dta
+        hfilt2 =4.*hfilt2/dta
+      endif
 
       do 100 k=1,levp  ! levp -> lev
 !
@@ -61,38 +75,35 @@
 !
 !  compute diffusion coefficients
 !
-!ch      dec=1.4*min(max(k-k1,0),k2-k1)                     &
-!ch         +0.8*min(max(k-k3,0),ktop-k3)+0.3*min(19-k,0)
 
          KL=Llist(k)
-         dec=max(min(coefu*(hdk3-KL),factop),0.)               &
-!!            -max(min(0.4*(hdk3-KL),1.2),0.) 
-            -max(min(coefu*(hdktop-KL),factop),0.) 
-
-!!!         dect=max(min(coefu*(hdktop-5-KL),factop),0.)            &
-!!!             -max(min(1.5*coefu*(hdk3-5-KL),factop),0.)
-
-
 !
-!          facd= factop - dec
-!!!          facv= 1.0 + dec
-          fact= 1.0 + dec
+            facd= 1.
+            facv= 1.
+            fact= 1.
+
+          if ( KL .le. hdk2 ) then
+            kfac= 1.0 + float(hdk2-KL)
+            facd= kfac
+            facv= kfac
+            fact= kfac 
+            if ( KL .le. hdk1 ) facd=facd*(1.+float(hdk1-KL))
+          endif
 
 
-!ch       amp = max(min(0.91*(22-k),15),1)
-!byl          amp = min(max(0.75*(hdk1-KL),1.),8.)
-!byl          amp = max(1.+min(1.5*(hdk1-KL),15.),1.)
-          amp = 1.
-
-          facd = max(fact*amp,1.0)
-          facv = max(fact*amp,1.0)
-          fact = max(fact*amp*0.5,1.0)
-!byl          fact = min(1.,(0.5+0.1*max(KL-hdk1,0.)))*max(fact*amp,1.0)
-!!!          fact = 0.2*amp
+          facd = facd*amp
+          facv = facv*amp
+          fact = fact*amp
 !
-        ddiffu =hfilt*facd
-        tdiffu =hfilt*fact
-        vdiffu =hfilt*facv
+
+        if ( KL .le. hdk1 ) then
+          ddiffu =facd*hfilt2
+        else
+          ddiffu =facd*hfilt
+        endif
+          
+        tdiffu =fact*hfilt
+        vdiffu =facv*hfilt
 !
 !  difuse vorticity and divergence fields
 !  diffuse moisture and temperature fields
@@ -101,27 +112,22 @@
           mf=mlist(m)
           do n=mf,jtrun
             c1=1.+dta*vdiffu*eps4(n,m)**2
-            c2=1.+dta*ddiffu*eps4(n,m)**2
+            if ( KL .le. hdk1 ) then
+              c2=1.+dta*ddiffu*eps4(n,m)
+            else
+              c2=1.+dta*ddiffu*eps4(n,m)**2
+            endif
             c3=1.+dta*tdiffu*eps4(n,m)**2
             vornow(k,1,n,m)=vornow(k,1,n,m)/c1
             vornow(k,2,n,m)=vornow(k,2,n,m)/c1
             divnow(k,1,n,m)=divnow(k,1,n,m)/c2
             divnow(k,2,n,m)=divnow(k,2,n,m)/c2
-            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
-            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
+!            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
+!            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
+            temnow(k,1,n,m)=temnow(k,1,n,m)/c3
+            temnow(k,2,n,m)=temnow(k,2,n,m)/c3
           enddo
         enddo
-!!        do m=1,mlistnum
-!!          mf=mlist(m)
-!!          do n=mf,jtrun
-!!            c3=1.+dta*qdiffu*eps4(n,m)**2
-!!            do nc=1,ncld
-!!              kk=(nc-1)*lev+k
-!!              qnow(kk,1,n,m)=(qnow(kk,1,n,m)+(c3-1.)*qrefs(kk,1,n,m))/c3
-!!              qnow(kk,2,n,m)=(qnow(kk,2,n,m)+(c3-1.)*qrefs(kk,2,n,m))/c3
-!!            enddo
-!!          enddo
-!!        enddo
  100  continue
 !
 !-------------------------------------------------------------------
@@ -144,7 +150,164 @@
 !--------------------------------------------------------------------
       return
       end
+!
+!--------------------------------------------------------------------
+      subroutine ohdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld,amp   &
+                        , rad,cosl,ut,vt,vornow,divnow,temnow,eps4     &
+                        , trefs)
+!     horizontal diffusion for Cubic Truncation Octahedral Reduced
+!     Gaussain grid (under testing for now) -- 03/03/2020 Pang-Yang Liu 
+      use index
+      use mpe
+      use rank
+      use const, only : hdk1,hdk2,radsq
 
+      implicit  none
+
+      integer   my,my_max,nx,jtrun,jtmax,lev,ncld
+      real      dta,rad
+
+      real      cosl(my),ut(nxp,lev,my_max),vt(nxp,lev,my_max),  &
+                vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),   &
+                temnow(levp,2,jtrun,jtmax),eps4(jtrun,jtmax),            &
+                trefs(levp,2,jtrun,jtmax)
+!
+!     parameter ( ktop=4, ktop2=ktop/2 ) ! top "ktop" levels are inhenced
+!
+      real      wmax(lev)
+      real      windmax1,windmax2,windmax3
+
+      integer   jj,j,nxj,k,i,m,n,mf,nc,kk,KL
+      real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu
+      real      hfilt,hfilt2,nf,ncut,ncor
+      real      c1,c2,c3
+      logical   windchk
+
+      data      windmax1/80./, windmax2/100./, windmax3/130./
+!!      data      windmax1/70./, windmax2/100./, windmax3/130./
+!
+
+!
+      nf=jtrun-1
+      ncut=0.5*jtrun
+      wmax(1:lev)= 0.0
+!
+      do jj =1,jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        xx=rad/cosl(j)
+        do k=1,lev
+          do i=1,nxj
+            wmax(k)= max(wmax(k),xx*sqrt(ut(i,k,jj)**2+vt(i,k,jj)**2))
+          enddo
+        enddo
+      enddo
+!
+      call mpe_global_max(wmax,lev,mpe_double)
+!
+      do k=1,lev
+        if( wmax(k) .gt. windmax3 ) then
+          if(myrank.eq.0)print *,'wmax gt windmax at','k= ',k,         &
+                                 ' windmax=',wmax(k)
+        endif
+      enddo
+!
+!
+      hfilt = (radsq/(nf*(nf+1)))**2.
+      hfilt = hfilt/(nf*dta)
+      hfilt2 = radsq/(nf*(nf+1))
+      hfilt2 = hfilt2/(nf*dta)
+
+      do 100 k=1,levp  ! levp -> lev
+!
+!       if( wmax(k) .gt. windmax2 ) then
+!         if(myrank.eq.0)print *,'wmax gt windmax at','k= ',k,         &
+!                                ' windmax=',wmax(k)
+!
+!  compute diffusion coefficients
+!
+
+         KL=Llist(k)
+!
+            facd= 1.
+            facv= 1.
+            fact= 1.
+
+          if ( KL .le. hdk2 ) then
+            facd= 1.0 + float(hdk2-KL)
+            facv= 1.0 + float(hdk2-KL)
+            fact= 1.0 + float(hdk2-KL)
+            if ( KL .le. hdk1 ) facd=facd*(1.+float(hdk1-KL))
+          endif
+
+
+          facd = facd*amp
+          facv = facv*amp
+          fact = fact*amp
+!
+
+        if ( KL .le. hdk1 ) then
+          ddiffu =facd*hfilt2
+        else
+          ddiffu =facd*hfilt
+        endif
+          
+        tdiffu =fact*hfilt
+        vdiffu =facv*hfilt
+!
+!  difuse vorticity and divergence fields
+!  diffuse moisture and temperature fields
+!
+        do m=1,mlistnum
+          mf=mlist(m)
+          do n=mf,jtrun
+            ncor=1.
+            if ( n .gt. ncut .and. n .lt. jtrun ) then
+              ncor=exp(-0.5*( (n-jtrun)**2. / (n-ncut)**2. ))
+            else
+              ncor=0.
+            endif
+            c1=1.+dta*vdiffu*ncor*eps4(n,m)**2
+            if ( KL .le. hdk1 ) then
+              c2=1.+dta*ddiffu*ncor*eps4(n,m)
+            else
+              c2=1.+dta*ddiffu*ncor*eps4(n,m)**2
+            endif
+            c3=1.+dta*tdiffu*ncor*eps4(n,m)**2
+            vornow(k,1,n,m)=vornow(k,1,n,m)/c1
+            vornow(k,2,n,m)=vornow(k,2,n,m)/c1
+            divnow(k,1,n,m)=divnow(k,1,n,m)/c2
+            divnow(k,2,n,m)=divnow(k,2,n,m)/c2
+!            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
+!            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
+            temnow(k,1,n,m)=temnow(k,1,n,m)/c3
+            temnow(k,2,n,m)=temnow(k,2,n,m)/c3
+          enddo
+        enddo
+ 100  continue
+!
+!-------------------------------------------------------------------
+!
+!  filter layers near the upper bound if too strong wind speed 
+!  happens at the top layer
+!
+!  2003/10/7 :
+!  sometimes wind speed greater than 100m/s happens at k=2
+!
+      windchk=.false.
+      do k=1,8
+        if ( wmax(k) .gt. windmax3 ) windchk=.true.
+      enddo
+!      if (wmax(1).gt.windmax3 .or. wmax(2).gt.windmax3 .or. &
+!          wmax(3).gt.windmax3)then
+      if ( windchk ) then
+       call filter_top(jtrun,jtmax,levp,ncld,temnow,vornow,divnow)
+      end if
+!--------------------------------------------------------------------
+      return
+      end
+!
+!--------------------------------------------------------------------
       subroutine filter_top(jtrun,jtmax,lev,ncld,temnow     &
                        ,vornow,divnow)
 !
@@ -179,8 +342,8 @@
 !     endif
 !2dMPI <
 
-!      wvn_top(1) = jtrun*0.5
-      wvn_top(1) = 155
+      wvn_top(1) = jtrun*2./3.
+!      wvn_top(1) = 155
       wvn_top(ktop) = jtrun
       djt = ( wvn_top(ktop) - wvn_top(1) ) / ktopm1
       do k = 2, ktopm1
