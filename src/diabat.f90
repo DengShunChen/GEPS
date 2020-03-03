@@ -1269,7 +1269,7 @@
           if(ocean(i,jj))islimsk(i)=0
           if(ice(i,jj))islimsk(i)=2
         enddo
-        do k=2,lev-1
+        do k=1,lev-1
           kc=lev-k+1
           do i = 1, nxj
             dotc(i,kc)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
@@ -1278,7 +1278,6 @@
         enddo
         do i = 1,nxj
           dotc(i,1)=0.5*sd(i,lev,jj)*0.1
-          dotc(i,lev)=0.5*sd(i,2,jj)*0.1
         enddo
         do k=1,lev
           kc=lev-k+1
@@ -1490,7 +1489,7 @@
           if(ocean(i,jj))islimsk(i)=0
           if(ice(i,jj))islimsk(i)=2
         enddo
-        do k=2,lev-1
+        do k=1,lev-1
           kc=lev-k+1
           do i = 1, nxj
             dotc(i,kc)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
@@ -1499,7 +1498,6 @@
         enddo
         do i = 1,nxj
           dotc(i,1)=0.5*sd(i,lev,jj)*0.1
-          dotc(i,lev)=0.5*sd(i,2,jj)*0.1
         enddo
         do k=1,lev
           kc=lev-k+1
