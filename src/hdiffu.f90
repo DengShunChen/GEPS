@@ -61,10 +61,10 @@
         hfilt2 = radsq/(nf*(nf+1))
       if ( octahedral ) then
         hfilt = hfilt/(6.*dta)
-        hfilt2 = hfilt2/(6.*dta)
+        hfilt2 = hfilt2/(3.*dta)
       else
         hfilt = 4.*hfilt/dta
-        hfilt2 =4.*hfilt2/dta
+        hfilt2 =8.*hfilt2/dta
       endif
 
       do 100 k=1,levp  ! levp -> lev

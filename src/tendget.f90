@@ -319,7 +319,6 @@
          mf=mlist(m)
         do 100 n  = mf,jtrun
         do 99 k = 1, lev
-          KK=Llist(k)
           phiten1(k,1,n,m) = spalm(k)*plten(n,m,1)
           phiten1(k,2,n,m) = spalm(k)*plten(n,m,2)
         do 98 L = 1, lev

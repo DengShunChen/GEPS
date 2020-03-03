@@ -736,7 +736,7 @@
         call ndslfv_monoadvh(ttm_sl,qm_sl,pten_sl,uum_sl,vvm_sl  &
                              ,nxdef,ndsldta,xy,levp)
         enddo
-        xy = -1 * xy
+
 
 !ch>
 ! transpose full to partial: ttm_sl -> ddtemp,  pten_sl -> pten, uum_sl -> vdzonl
@@ -902,13 +902,13 @@
 !byl                      , rmr,smr,flash)
                       , flash)
 !xb110<
-          itimestep=itimestep+1   ! for sppt time evolution)
 !--------------------------------------------------------------------------------
 !
 ! add reynolds stress
 !
           call rayleifr(nx,my,my_max,lev,rad,cosl,dt,ut,vt)
         endif    ! end of (yesdia)
+        itimestep=itimestep+1   ! for sppt time evolution)
 !
 !  after phyical parameterization,transform grid point u,v,t,q to
 !  spectrum
@@ -1109,6 +1109,7 @@
           enddo
         enddo
 !
+        if ( mod(itimestep,2) .eq. 0 ) xy = -1 * xy
       endif     ! end of (forward)
 !
 !  from updated spectral variables compute corresponding grid
