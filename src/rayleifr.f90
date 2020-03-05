@@ -9,7 +9,7 @@
       real      rad
 
       real      ut(nxp,lev,my_max),vt(nxp,lev,my_max),cosl(my)
-      real      wmax(lev)
+      real      wmax(lev),wmaxtmp
 !
       integer, parameter :: levtop=6,lev2=3
 
@@ -26,6 +26,7 @@
       real    xx,dt,ckdy,frictime,fac,fricd,cdx,cdy
 !
       wmax(1:lev)=0.
+      wmaxtmp=windmax
       do 10 jj =1,jlistnum
         j=jlist1(jj)
 !ch     nxj=nxdef(j)
@@ -38,12 +39,14 @@
       call mpe_global_max(wmax,lev,mpe_double)
       dofric=.false.
       do k=1,levtop
-        if( wmax(k) .gt. windmax )then
-          dofric=.true.
-          if(myrank.eq.0)print *,' rayleifr k=',k,' wmax=',wmax(k), &
-           ' dofric=',dofric
-        endif
+        wmaxtmp=max(wmax(k),wmaxtmp)
+!        if( wmax(k) .gt. windmax )then
+!          dofric=.true.
+!          if(myrank.eq.0)print *,' rayleifr k=',k,' wmax=',wmax(k), &
+!           ' dofric=',dofric
+!        endif
       enddo
+      if(wmaxtmp.gt.windmax)  dofric=.true.
       if(myrank.eq.0)print *,' rayleifr  dofric=',dofric
 !
       ckdy=ckdx

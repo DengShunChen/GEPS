@@ -303,7 +303,7 @@
       do k = 1, lev
         prslp=sigma(k,2)+sigma(k,1)*1000.+ptop
         if ( prslp .le. 2. )  hdk1=k
-        if ( prslp .le. 15. ) hdk2=k
+        if ( prslp .le. 50. ) hdk2=k
       enddo
 !
 !
