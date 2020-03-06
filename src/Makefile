@@ -382,7 +382,7 @@ sfc_ocean.o : sfc_ocean.f90 physcons.o machine.o
 sfcpbl.o : sfcpbl.f90 mod_paramt.o 
 sfc_sice.o : sfc_sice.f90 physcons.o machine.o 
 sfcuvt.o : sfcuvt.f90 
-sflx.o : sflx.f90 namelist_soilveg.o 
+sflx.o : sflx.f90 namelist_soilveg.o physcons.o
 shalcnv_new.o : shalcnv_new.f90 
 shalcnv_sa.o : shalcnv_sa.f90 
 shlcon.o : shlcon.f90 mod_paramt.o 
