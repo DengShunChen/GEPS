@@ -3,7 +3,7 @@
        ,plcl,cumtop,ss,rs,alb,gwclim,glob,acld                         &
        ,ugws,vgws,t2,q2,rh2,rh10,u10,v10,gfx,rld,sld,wk_xy             &
 !       ,soil_xy,canopy,ggdef,lwrite,flash)
-       ,soil_xy,canopy,ggdef,lwrite)
+       ,soil_xy,canopy,ggdef)
 !
       use rank
       use mpe
@@ -30,7 +30,7 @@
       character*4 ggdef
       integer*8 idtg
 !
-      real      glob(nx,my)
+      real      glob(nx,my),mout(nx,my)
 !
 !  local array
 !
@@ -42,20 +42,21 @@
       real      soil_xy(nxp,my_max,12),canopy(nxp,my_max)
 !
       character*80 ifilout
-      character*26 ihdg
+      character*26 ihdg,ihdg2
       character*6 label(ntau),labx
 !
-      integer   num,n,levz,lenc,lenc2,i,ia,kk,j,jj,nxj,istat
+      integer   num,n,levz,lenc,lenc2,i,ia,kk,j,jj,nxj,istat,nc
       real      tnshun
 !kc >
       real      sfac2,sfac3,sfac4
 !kc <
-      logical lwrite
+!      logical lwrite
 !xb110>
 !      real flash(nxp,my_max)  !flash density (in flashes km^-2 day^-1)
 !xb110<
 
       num= 0
+      nc = 0
       if(myrank .eq. 0) print *,' out2d ntau=',ntau
       do 20 n=1,ntau
       read(taudir(n),'(a6,1x,i4)') labx,levz
@@ -92,8 +93,9 @@
 !byl      call mpe2d_unify(glob,qflux)
       call syslbl ('s00430',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -102,8 +104,9 @@
 !byl      call mpe2d_unify(glob,hflux)
       call syslbl ('s00420',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -112,8 +115,9 @@
 !byl      call mpe2d_unify(glob,tg)
       call syslbl ('s00100',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -122,8 +126,9 @@
 !byl      call mpe2d_unify(glob,alb)
       call syslbl ('s00030',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -141,8 +146,9 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s005a0',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -151,8 +157,9 @@
 !byl      call mpe2d_unify(glob,gwet)
       call syslbl ('s005a1',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -161,8 +168,9 @@
 !byl      call mpe2d_unify(glob,snr)
       call syslbl ('b00650',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -171,8 +179,9 @@
 !byl      call mpe2d_unify(glob,z0)
       call syslbl ('s00040',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -186,16 +195,18 @@
       call unify_reduceintp(nx,my,my_max,raincu,glob)
       call syslbl ('b00630',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
  
 !byl      glob=glob2
 
       call unify_reduceintp(nx,my,my_max,rainlp,glob)
       call syslbl ('b00640',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 !
       call syslbl ('b00620',idtg,itau,ggdef,ihdg)
 !byl      do 98 j=1,my
@@ -209,15 +220,17 @@
  98   continue
       call unify_reduceintp(nx,my,my_max,globp,glob)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 !
       call unify_reduceintp(nx,my,my_max,raintot,glob)
 !byl      call mpe2d_unify(glob,raintot)
       call syslbl ('b0062t',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -226,8 +239,9 @@
 !byl      call mpe2d_unify(glob,ss)
       call syslbl ('s00310',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -236,8 +250,9 @@
 !byl      call mpe2d_unify(glob,rs)
       call syslbl ('s00320',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -257,8 +272,9 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s00300',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -267,8 +283,9 @@
 !byl      call mpe2d_unify(glob,rld)
       call syslbl ('s003x0',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -277,8 +294,9 @@
 !byl      call mpe2d_unify(glob,sld)
       call syslbl ('s003u0',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -287,8 +305,9 @@
 !byl      call mpe2d_unify(glob,plcl)
       call syslbl ('x00330',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -297,8 +316,9 @@
 !byl      call mpe2d_unify(glob,cumtop)
       call syslbl ('x00340',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -307,8 +327,9 @@
 !byl      call mpe2d_unify(glob,gfx)
       call syslbl ('s00440',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -317,8 +338,9 @@
 !byl      call mpe2d_unify(glob,ugws)
       call syslbl ('s00450',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -327,8 +349,9 @@
 !byl      call mpe2d_unify(glob,vgws)
       call syslbl ('s00460',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -338,7 +361,7 @@
        acld(i,1)=acld(i,1)*100.
       end do
       call syslbl ('x00730',idtg,itau,ggdef,ihdg)
-      if(lwrite) call dmswrit(lev,my,ihdg,lenc2,'H',ifilout,acld,istat)
+      call dmswrit(lev,my,ihdg,lenc2,'H',ifilout,acld,istat)
       go to 30
       endif
 !
@@ -347,8 +370,9 @@
 !byl      call mpe2d_unify(glob,wk_xy(1,1,1))
       call syslbl ('b00100',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -357,8 +381,9 @@
 !byl      call mpe2d_unify(glob,wk_xy(1,1,2))
       call syslbl ('b00200',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -367,8 +392,9 @@
 !byl      call mpe2d_unify(glob,wk_xy(1,1,3))
       call syslbl ('b00210',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -377,8 +403,9 @@
 !byl      call mpe2d_unify(glob,wk_xy(1,1,4))
       call syslbl ('x00590',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -387,8 +414,9 @@
 !byl      call mpe2d_unify(glob,wk_xy(1,1,5))
       call syslbl ('b00510',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -396,8 +424,9 @@
 !      call mpe2d_unify(glob,wk_xy(1,1,5))
 !      call syslbl ('b10510',idtg,itau,ggdef,ihdg)
 !      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
 !      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+!      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 !      go to 30
 !      endif
 !
@@ -406,8 +435,9 @@
 !byl      call mpe2d_unify(glob,t2)
       call syslbl ('b02100',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -416,8 +446,9 @@
 !byl      call mpe2d_unify(glob,q2)
       call syslbl ('b02500',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -426,8 +457,9 @@
 !byl      call mpe2d_unify(glob,rh2)
       call syslbl ('b02510',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -436,8 +468,9 @@
 !byl      call mpe2d_unify(glob,u10)
       call syslbl ('b10200',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -446,8 +479,9 @@
 !byl      call mpe2d_unify(glob,v10)
       call syslbl ('b10210',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -455,8 +489,9 @@
       call mpe2d_unify(glob,rh10)
       call syslbl ('b10510',idtg,itau,ggdef,ihdg)
       if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -465,8 +500,9 @@
 !byl      call mpe2d_unify(glob,canopy)
       call syslbl ('s005c0',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -485,8 +521,9 @@
 !byl      call mpe2d_unify(glob,soil_xy(1,1,1))
       call syslbl ('sa15b0',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 
@@ -496,8 +533,9 @@
 !byl      call mpe2d_unify(glob,soil_xy(1,1,2))
       call syslbl ('sa25b0',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 ! 40-100cm
@@ -506,8 +544,9 @@
 !byl      call mpe2d_unify(glob,soil_xy(1,1,3))
       call syslbl ('sa35b0',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 ! 100-200cm
@@ -516,8 +555,9 @@
 !byl      call mpe2d_unify(glob,soil_xy(1,1,4))
       call syslbl ('sa45b0',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !kc >
@@ -527,8 +567,9 @@
 !byl      call mpe2d_unify(glob,soil_xy(1,1,1))
       call syslbl ('s015b0',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 
@@ -555,8 +596,9 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s025b0',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !xb13 <
@@ -566,8 +608,9 @@
 !byl      call mpe2d_unify(glob,soil_xy(1,1,2))
       call syslbl ('s035b0',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 
@@ -577,8 +620,9 @@
 !byl      call mpe2d_unify(glob,soil_xy(1,1,3))
       call syslbl ('s045b0',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 ! 100-200cm
@@ -587,8 +631,9 @@
 !byl      call mpe2d_unify(glob,soil_xy(1,1,4))
       call syslbl ('s055b0',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !xb13 >
@@ -600,8 +645,9 @@
 !byl      call mpe2d_unify(glob,soil_xy(1,1,5))
       call syslbl ('sa15b1',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 ! 10-40cm
@@ -610,8 +656,9 @@
 !byl      call mpe2d_unify(glob,soil_xy(1,1,6))
       call syslbl ('sa25b1',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 ! 40-100cm
@@ -620,8 +667,9 @@
 !byl      call mpe2d_unify(glob,soil_xy(1,1,7))
       call syslbl ('sa35b1',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 ! 100-200cm
@@ -630,8 +678,9 @@
 !byl      call mpe2d_unify(glob,soil_xy(1,1,8))
       call syslbl ('sa45b1',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !xb13
@@ -641,8 +690,9 @@
 !byl      call mpe2d_unify(glob,soil_xy(1,1,5))
       call syslbl ('s015b1',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 
@@ -666,8 +716,9 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s025b1',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 ! 10-40cm
@@ -676,8 +727,9 @@
 !byl      call mpe2d_unify(glob,soil_xy(1,1,6))
       call syslbl ('s035b1',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 ! 40-100cm
@@ -686,8 +738,9 @@
 !byl      call mpe2d_unify(glob,soil_xy(1,1,7))
       call syslbl ('s045b1',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 ! 100-200cm
@@ -696,8 +749,9 @@
 !byl      call mpe2d_unify(glob,soil_xy(1,1,8))
       call syslbl ('s055b1',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !<xb13
@@ -709,8 +763,9 @@
 !byl      call mpe2d_unify(glob,soil_xy(1,1,9))
       call syslbl ('sa1100',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !10-40cm
@@ -719,8 +774,9 @@
 !byl      call mpe2d_unify(glob,soil_xy(1,1,10))
       call syslbl ('sa2100',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 ! 40-100cm
@@ -729,8 +785,9 @@
 !byl      call mpe2d_unify(glob,soil_xy(1,1,11))
       call syslbl ('sa3100',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 ! 100-200cm
@@ -739,8 +796,9 @@
 !byl      call mpe2d_unify(glob,soil_xy(1,1,12))
       call syslbl ('sa4100',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !xb13>
@@ -750,8 +808,9 @@
 !byl      call mpe2d_unify(glob,soil_xy(1,1,9))
       call syslbl ('s01100',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 ! 10-200cm
@@ -775,8 +834,9 @@
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s02100',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 ! 10-40cm
@@ -786,8 +846,9 @@
 !byl      call mpe2d_unify(glob,soil_xy(1,1,10))
       call syslbl ('s03100',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 ! 40-100cm
@@ -796,8 +857,9 @@
 !byl      call mpe2d_unify(glob,soil_xy(1,1,11))
       call syslbl ('s04100',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 ! 100-200cm
@@ -806,8 +868,9 @@
 !byl      call mpe2d_unify(glob,soil_xy(1,1,12))
       call syslbl ('s05100',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !< xb13
@@ -818,8 +881,9 @@
 !byl      call mpe2d_unify(glob,wk_xy(1,1,6))
       call syslbl ('x00770',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 ! chig_high cloud fraction
@@ -828,8 +892,9 @@
 !byl      call mpe2d_unify(glob,wk_xy(1,1,7))
       call syslbl ('x00760',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 ! cmid_middle cloud fraction
@@ -838,8 +903,9 @@
 !byl      call mpe2d_unify(glob,wk_xy(1,1,8))
       call syslbl ('x00750',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 ! clow_low cloud fraction
@@ -848,8 +914,9 @@
 !byl      call mpe2d_unify(glob,wk_xy(1,1,9))
       call syslbl ('x00740',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -859,8 +926,9 @@
 !byl      call mpe2d_unify(glob,wk_xy(1,1,10))
       call syslbl ('pbl000',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -870,8 +938,9 @@
 !byl      call mpe2d_unify(glob,wk_xy(1,1,11))
       call syslbl ('m01500',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !
@@ -880,8 +949,9 @@
 !byl      call mpe2d_unify(glob,wk_xy(1,1,12))
       call syslbl ('m60500',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       go to 30
       endif
 !xb110> flash density
@@ -890,13 +960,42 @@
 !!byl      call mpe2d_unify(glob,flash)
 !      call syslbl ('x00999',idtg,itau,ggdef,ihdg)
 !!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
 !      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+!      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 !      go to 30
 !      endif
 !xb110<
 
    30 continue
+!
+      if ( myrank .lt. nc )             &
+         call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,mout,istat)
+!
+      return
+      end
+!---------------------------------------------------------------
+      subroutine split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+!
+      use rank
+!
+      implicit none
+!
+      integer   nx,my,nc,istat,lenc,lev
+      real      glob(nx,my),mout(nx,my)
+      character*26 ihdg,ihdg2
+      character*80 ifilout
+
+      if (myrank .eq. nc) then
+        mout  = glob
+        ihdg2 = ihdg
+      endif
+        nc    = nc + 1
+!
+      if ( nc .eq. lev .and. myrank .lt. nc ) then
+        call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,mout,istat)
+        nc    = 0
+      endif
 !
       return
       end

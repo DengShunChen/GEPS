@@ -432,6 +432,7 @@
 !byl                u0(nxp,lev,my_max),v0(nxp,lev,my_max),t0(nxp,lev,my_max),     &
 !byl                q0(nxp,lev*ncld,my_max)
       real      u0(nxp,lev),v0(nxp,lev),t0(nxp,lev),q0(nxp,lev*ncld)
+      real      upp(nxp,lev),vpp(nxp,lev)
 !byl      real      slsp(nxp,my_max),rm(nxp,lev),sm(nxp,lev),rainp(nxp,lev)
 !rainr : rainfall rate (unit in kg/kg/dt)
 !for lightning
@@ -848,10 +849,10 @@
       nxj=nxdef_2d(j)
 !
 ! for scale-aware
-        tem1      = tpr*cosl(j)/float(nxdef(j))
-        jup       = min(j+1,my)
-        jdn       = max(j-1, 1)
-        tem2      = radus*0.5*abs(xlat(jup)-xlat(jdn))*d2r
+      tem1      = tpr*cosl(j)/float(nxdef(j))
+      jup       = min(j+1,my)
+      jdn       = max(j-1, 1)
+      tem2      = radus*0.5*abs(xlat(jup)-xlat(jdn))*d2r
 !
 !    compute new time level p**kapa quantites
 !
@@ -887,8 +888,8 @@
       do 230 i = 1, nxj
       ut(i,k,jj) = ut(i,k,jj)*xx
       vt(i,k,jj) = vt(i,k,jj)*xx
-      up(i,k,jj) = up(i,k,jj)*xx
-      vp(i,k,jj) = vp(i,k,jj)*xx
+      upp(i,k) = up(i,k,jj)*xx
+      vpp(i,k) = vp(i,k,jj)*xx
       tt(i,k,jj) = tt(i,k,jj)*pk(i,k,jj) / (1.0+0.608*qt(i,k,jj))
 !byl      ttpn(i,k,jj) = ttp(i,k,jj)*pkn(i,k,jj)/(1.0+0.608*qp(i,k,jj))
       ttp(i,k,jj) = ttp(i,k,jj) / (1.0+0.608*qp(i,k,jj))
@@ -926,7 +927,7 @@
       if ( dopbl .and. nmpbl.eq.1 .and. nmland.eq.1)                          &
          call pbltke ( nxjp(j),nxp,lev,ktpbl,dta,grav,rgas,cp,xkapa,hltm,ptop &
                      , tice,hice,tg(1,jj),z0(1,jj),land(1,jj)                 &
-                     , sgeo(1,jj),phi,pst(1,jj),up(1,1,jj),vp(1,1,jj)         &
+                     , sgeo(1,jj),phi,pst(1,jj),upp,vpp                       &
                      , ttp(1,1,jj),qp(1,1,jj),ut(1,1,jj),vt(1,1,jj)           &
                      , tt(1,1,jj),qt(1,1,jj),pk(1,1,jj),pk2(1,1,jj)           &
                      , ustar(1,jj),tstar(1,jj),qstar(1,jj),e(1,1,jj)          &
@@ -951,7 +952,7 @@
       if ( dopbl .and. nmpbl.eq.2 .and. nmland.eq.1)                          &
          call pbltke_n ( nxjp(j),nxp,lev,ktpbl,dta,grav,rgas,cp,xkapa,hltm,ptop &
                      , tice,hice,tg(1,jj),z0(1,jj),land(1,jj)                 &
-                     , sgeo(1,jj),phi,pst(1,jj),up(1,1,jj),vp(1,1,jj)  &
+                     , sgeo(1,jj),phi,pst(1,jj),upp,vpp                       &
                      , ttp(1,1,jj),qp(1,1,jj),ut(1,1,jj),vt(1,1,jj)           &
                      , tt(1,1,jj),qt(1,1,jj),pk(1,1,jj),pk2(1,1,jj)           &
                      , ustar(1,jj),tstar(1,jj),qstar(1,jj),e(1,1,jj)          &
@@ -967,7 +968,7 @@
       if ( dopbl .and. nmland.eq.2)                                           &
        call pbl_noah ( nxjp(j),nxp,lev,ktpbl,dta,grav,rgas,cp,xkapa,hltm,ptop &
                      , tice,hice,tg(1,jj),z0(1,jj),land(1,jj)                 &
-                      , sgeo(1,jj),phi,pst(1,jj),up(1,1,jj),vp(1,1,jj)  &
+                      , sgeo(1,jj),phi,pst(1,jj),upp,vpp                      &
                      , ttp(1,1,jj),qp(1,1,jj),ut(1,1,jj),vt(1,1,jj)           &
                      , tt(1,1,jj),qt(1,1,jj),pk(1,1,jj),pk2(1,1,jj)           &
                      , ustar(1,jj),tstar(1,jj),qstar(1,jj),e(1,1,jj)          &
@@ -1060,8 +1061,10 @@
         lprnt = .false.
 !        ipr = 1
 !
-        cdmbgwd(1)       = 2.00      ! mtn blking and gwd tuning factors
-        cdmbgwd(2)       = 0.25      ! mtn blking and gwd tuning factors
+!        cdmbgwd(1)       = 2.00      ! mtn blking and gwd tuning factors
+!        cdmbgwd(2)       = 0.25      ! mtn blking and gwd tuning factors
+        cdmbgwd(1)       = 1.00      ! mtn blking and gwd tuning factors
+        cdmbgwd(2)       = 1.05      ! mtn blking and gwd tuning factors
 !
         do i = 1, nxj
           hprime(i)=hprime_b(i,1,jj)
@@ -1173,8 +1176,8 @@
 !c 20120926 for Tiedtke cumulus
       if ( docup .and. nmcup .eq. 4 .and. ncld .ge. 2 ) then
         call cumastr_driv(nxjp(j),nxp,lev,dt,grav,rgas,cp,hltm,ptop &
-                       , land(1,jj),sgeo(1,jj),phi,up(1,1,jj)  &
-                       , vp(1,1,jj),ttp(1,1,jj),qp(1,1,jj)          &
+                       , land(1,jj),sgeo(1,jj),phi,upp              &
+                       , vpp,ttp(1,1,jj),qp(1,1,jj)                 &
                        , ut(1,1,jj),vt(1,1,jj),tt(1,1,jj)           &
                        , qt(1,1,jj),rcup(1,jj),pk(1,1,jj)           &
                        , pk2(1,1,jj),sd(1,1,jj),qflux(1,jj)         &
@@ -1271,7 +1274,7 @@
           if(ocean(i,jj))islimsk(i)=0
           if(ice(i,jj))islimsk(i)=2
         enddo
-        do k=2,lev-1
+        do k=1,lev-1
           kc=lev-k+1
           do i = 1, nxj
             dotc(i,kc)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
@@ -1280,7 +1283,6 @@
         enddo
         do i = 1,nxj
           dotc(i,1)=0.5*sd(i,lev,jj)*0.1
-          dotc(i,lev)=0.5*sd(i,2,jj)*0.1
         enddo
         do k=1,lev
           kc=lev-k+1
@@ -1306,7 +1308,7 @@
           do i = 1,nxj
             ztenh(i,k) = tt(i,k,jj)
             zqenh(i,k) = qt(i,k,jj)
-            rho(i,k) = 0.622*plt(i,k,jj)*100./(con_rd*tt(i,k,jj)*(qt(i,k,jj) + 0.622))
+            rho(i,k) = plt(i,k,jj)*100./ (con_rd*tt(i,k,jj))
           end do
         end do
 !xb110<<
@@ -1380,8 +1382,8 @@
 
 !xb110>>      
         do i =1,nxj
-          kbotc(i,jj)   =lev-kbot(i,jj)
-          ktopc(i,jj)   =lev-ktop(i,jj)
+          kbotc(i,jj)   =lev-kbot(i,jj)+1
+          ktopc(i,jj)   =lev-ktop(i,jj)+1
         enddo
 
       call lightning_ec (nxjp(j),nxp,lev,ptu,pqu,ztenh,zqenh     &
@@ -1492,7 +1494,7 @@
           if(ocean(i,jj))islimsk(i)=0
           if(ice(i,jj))islimsk(i)=2
         enddo
-        do k=2,lev-1
+        do k=1,lev-1
           kc=lev-k+1
           do i = 1, nxj
             dotc(i,kc)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
@@ -1501,7 +1503,6 @@
         enddo
         do i = 1,nxj
           dotc(i,1)=0.5*sd(i,lev,jj)*0.1
-          dotc(i,lev)=0.5*sd(i,2,jj)*0.1
         enddo
         do k=1,lev
           kc=lev-k+1
@@ -2267,7 +2268,7 @@
       do k=1,lev
       do i=1,nxj
       ru=sppt3d(i,k,jj)
-      up(i,k,jj)=ru*(tt(i,k,jj)-tt_sppt_old(i,k,jj)) !write out for checking
+      ttp(i,k,jj)=ru*(tt(i,k,jj)-tt_sppt_old(i,k,jj)) !write out for checking
       ut(i,k,jj)=(1+ru)*ut(i,k,jj)-ru*ut_sppt_old(i,k,jj)
       vt(i,k,jj)=(1+ru)*vt(i,k,jj)-ru*vt_sppt_old(i,k,jj)
       tt(i,k,jj)=(1+ru)*tt(i,k,jj)-ru*tt_sppt_old(i,k,jj)

@@ -242,9 +242,12 @@
           kv=kvv+k-1
           kt=ktt+k-1
           do i=1,lons_lat
-            vdzonl(i,kk,lan) = (qqlon(i,ku,lan)-up(i,kk,lan))*rdt2
-            vdmerd(i,kk,lan) = (vp(i,kk,lan)-qqlon(i,kv,lan))*rdt2
-            ddtemp(i,kk,lan) = (qqlon(i,kt,lan)-ttp(i,kk,lan))*rdt2
+!!            vdzonl(i,kk,lan) = (qqlon(i,ku,lan)-up(i,kk,lan))*rdt2
+!!            vdmerd(i,kk,lan) = (vp(i,kk,lan)-qqlon(i,kv,lan))*rdt2
+!!            ddtemp(i,kk,lan) = (qqlon(i,kt,lan)-ttp(i,kk,lan))*rdt2
+            vdzonl(i,kk,lan) = qqlon(i,ku,lan)
+            vdmerd(i,kk,lan) = qqlon(i,kv,lan)
+            ddtemp(i,kk,lan) = qqlon(i,kt,lan)
           enddo
         enddo
 ! rq tendency at n

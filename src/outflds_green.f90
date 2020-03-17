@@ -12,7 +12,7 @@
 
       implicit  none
 
-      integer   itau,nx,my,my_max,lev,ncld,istat,lenc
+      integer   itau,nx,my,my_max,lev,ncld,istat,lenc,nc
       real      ptop,cp,rgas,grav
       real      rcp
 
@@ -23,12 +23,12 @@
               , ss(nxp,my_max),pk(nxp,my_max),rh0(nxp,my_max)            &
               , tht(nxp,my_max),raincu6(nxp,my_max),rainlp6(nxp,my_max)
 
-      character ifilout*80, ggdef*4, ihdg*26
+      character ifilout*80, ggdef*4, ihdg*26, ihdg2*26
       integer*8 idtg
 !
 ! local work arrays
 !
-      real      glob(nx,my),wrk(nxp,my_max)
+      real      glob(nx,my),wrk(nxp,my_max),mout(nx,my)
 !
       real      whtlev(100),whtlevq(100),whtlevz(100)
       character*6 labx
@@ -50,6 +50,7 @@
 !
       rcp=rgas/cp
       lenc = nx*my
+      nc=0
       do k=1,l
         kk=lev-k+1
         akir(k)=aki(kk)
@@ -159,40 +160,46 @@
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (pla,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,pla,glob)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 
 !output Q
       write(wtemp,'(a3,a3)')layer(mm),var(2)
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (oqt,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,oqt,glob)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 
       write(wtemp,'(a3,a3)')layer(mm),var(6)
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (oqc,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,oqc,glob)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 
 !output U,V
       write(wtemp,'(a3,a3)')layer(mm),var(3)
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (globu,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,ou,glob)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 
       write(wtemp,'(a3,a3)')layer(mm),var(4)
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (globv,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,ov,glob)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 
 !output T
       write(wtemp,'(a3,a3)')layer(mm),var(5)
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (ot,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,ot,glob)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 !-----------------------------------------------------------------------
       enddo  ! end (mm)
 !=======================================================================
@@ -200,7 +207,8 @@
       write(wtemp,'(a6)')'S00310'
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
       call unify_reduceintp(nx,my,my_max,ss,glob)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 
 !output RH at bottom level
       do jj = 1, jlistnum
@@ -218,7 +226,8 @@
       write(wtemp,'(a6)')'B00510'
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
       call unify_reduceintp(nx,my,my_max,rh0,glob)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 
 !output b00010
       do jj = 1, jlistnum
@@ -231,7 +240,8 @@
       write(wtemp,'(a6)')'B00010'
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 !=======================================================================
 !output 6hr prec.
       if (mod(float(itau)+0.00001, 6. ) .lt. 0.01) then
@@ -240,14 +250,18 @@
       call syslbl ('b00633',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,raincu6,glob)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+
 !
       call syslbl ('b00643',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob1,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,rainlp6,glob)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+
 !
       call syslbl ('b00623',idtg,itau,ggdef,ihdg)
       do 98 jj = 1, jlistnum
@@ -257,9 +271,15 @@
        wrk(i,jj)=raincu6(i,jj)+rainlp6(i,jj)
  98   continue
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+
       endif
+!
+      if ( myrank .lt. nc )             &
+         call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,mout,istat)
+!
 !=======================================================================
       return
       end

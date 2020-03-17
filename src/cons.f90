@@ -46,7 +46,7 @@
       integer tflag,Wflag
 
       real    pi,rm,rl,rlm,one,onem,r2d, pnm_max,pnmcut,sumreduce
-      real    reducefactor,d2r,cew,clon,cns,clat
+      real    reducefactor,d2r,cew,clon,cns,clat,prslp
 
       integer*8 idtg8
 
@@ -300,27 +300,12 @@
 !
       call ndslfv_init(nx,my,ncld,cosl,weight(1))
 !
-!  horizontal diffusion settings
-      if ( lev .eq. 80 ) then
-        hdktop = 46
-        hdk1   = 20
-        hdk2   = 36
-        hdk3   = 41
-      else if ( lev .eq. 72 ) then
-        hdktop =  1
-        hdk1   = 20
-        hdk2   = 39
-        hdk3   = 43
-      else if ( lev .eq. 60 ) then
-        hdktop =  1
-        hdk1   = 17
-        hdk2   = 34
-        hdk3   = 37
-      endif
-      factop = 1.5
-!!      factop = 2.5
-      
-      coefu=factop/float(hdk3-hdk2)
+!  horizontal diffusion settings for sponge layer
+      do k = 1, lev
+        prslp=sigma(k,2)+sigma(k,1)*1000.+ptop
+        if ( prslp .le. 2. )  hdk1=k
+        if ( prslp .le. 50. ) hdk2=k
+      enddo
 !
 !
 !  define coriolis parameter for each latitude

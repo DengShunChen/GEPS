@@ -537,7 +537,8 @@
           do i = 1,nxj
             totalp(i,jj)=0.
 !            flash(i,jj)=0.   !xb110, flash density
-            ustar(i,jj)=0.1
+!byl            ustar(i,jj)=0.1
+            ustar(i,jj)=sqrt(0.14) !make sure z0 will be 0.0002 over ocean
             tstar(i,jj)=0.025
             qstar(i,jj)=0.0
             hflux(i,jj)=-ustar(i,jj)*tstar(i,jj)
@@ -574,7 +575,8 @@
             snr(i,jj)=0.
             totalp(i,jj)=0.
 !            flash(i,jj)=0.   !xb110, flash density
-            ustar(i,jj)=0.1
+!byl            ustar(i,jj)=0.1
+            ustar(i,jj)=sqrt(0.14) !make sure z0 will be 0.0002 over ocean
             tstar(i,jj)=0.025
             qstar(i,jj)=0.0
             hflux(i,jj)=-ustar(i,jj)*tstar(i,jj)
@@ -1233,7 +1235,7 @@
           call sfcuvt( nxjp(j),nxp,dt,grav,rgas,cp,hltm                 &
                     ,tgp,z0(1,jj),ocean(1,jj),ps,tsx                    &
                     ,hs,ux,vx,tx,qx,ustar(1,jj),tstar(1,jj),qstar(1,jj) &
-                    ,hflux(1,jj),qflux(1,jj),qsfc,t2(1,jj),q2(i,jj)     &
+                    ,hflux(1,jj),qflux(1,jj),qsfc,t2(1,jj),q2(1,jj)     &
                     ,rh2(1,jj),rh10(1,jj),u10(1,jj),v10(1,jj) )
         enddo
 !        call mpe_unify(ustar,nx,my,2,mpe_double)

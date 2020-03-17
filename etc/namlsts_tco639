@@ -21,7 +21,7 @@
  lzadv=t,
  lsimpl=t,
  tfilt=0.04,
- hfilt=6.1068e12,
+ hfilt=1.,
  ksgeo=2,
  yesdia=t,
  dopbl=t,
@@ -51,7 +51,7 @@
  nmpbl=4,
  nmland=2,
  nmshl=3,
- nmgwor=2,
+ nmgwor=1,
  nmgwcv=2,
  ktcup=20,
  cgw=4.2e-5,
@@ -72,5 +72,6 @@
 
  &typ
  write_mem=0,
- trk_intv=6,
+ trk_intv=3,
+ write_tau=6,
 &end

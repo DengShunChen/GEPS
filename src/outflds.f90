@@ -655,12 +655,13 @@
 ! output some 2-dimension veriable to dmsfile
 !
       if(myrank .eq. 0) print *,'call out2d'
+      if ( lwrite )                                                 &
       call out2d (nx,lev,my,my_max,ifilout,itau,idtg,taudir,ntau    &
                  ,hflux,qflux,tg,gwet,snr,z0,raintot,raincu,rainlp  &
                  ,plcl,cumtop,ss,rs,alb,gwclim,glob                 &
                  ,acld,ugws,vgws,t2,q2,rh2,rh10,u10,v10,gfx,rld     &
 !xb110                 ,sld,wk_xy,soil_xy,canopy,ggdef,lwrite,flash)
-                 ,sld,wk_xy,soil_xy,canopy,ggdef,lwrite)
+                 ,sld,wk_xy,soil_xy,canopy,ggdef)
 !
       return
       end

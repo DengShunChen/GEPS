@@ -1466,11 +1466,14 @@
       if(check_max.ge.check_point) then
         nstep = int(check_max/safe_step) + 1
         if ( job .eq. 'advv' ) then
-        print *,' max def_cfl ',check_max,' needs ',nstep,    &
-        'steps at level',im+1-nchk,'of',im,'in ',job,' processing'
-        else 
-        print *,' max def_cfl ',check_max,' needs ',nstep,    &
-        'steps in',nchk,'of',im,'at level',k,'in ',job,' processing'
+          print *,' max def_cfl ',check_max,' needs ',nstep,    &
+          'steps at level',im+1-nchk,'of',im,'in ',job,' processing'
+        else if ( job .eq. 'advx' .and. im .gt. 25 ) then
+          print *,' max def_cfl ',check_max,' needs ',nstep,    &
+          'steps in',nchk,'of',im,'at level',k,'in ',job,' processing'
+        else if ( job .eq. 'advy' ) then
+          print *,' max def_cfl ',check_max,' needs ',nstep,    &
+          'steps in',nchk,'of',im,'at level',k,'in ',job,' processing'
         endif
         rstep =  safe_step / check_max
         do n=1,nstep-1

@@ -67,8 +67,7 @@
       logical ndsladvh2
 
 !for horizontal diffusion
-      integer hdktop,hdk1,hdk2,hdk3
-      real    factop,coefu
+      integer hdk1,hdk2
 !for pdf cloud
       logical pdfcloud
 

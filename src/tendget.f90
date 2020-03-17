@@ -243,6 +243,18 @@
         call ndslfv_monoadvv(ddtemp,qvadv,vdzonl,vdmerd,pdot          &
                             ,nxjp,dta)
 !
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        do k = 1, lev
+          do i = 1, nxj
+            vdzonl(i,k,jj) = (vdzonl(i,k,jj)- up(i,k,jj))/dt
+            vdmerd(i,k,jj) = (vp(i,k,jj)- vdmerd(i,k,jj))/dt
+            ddtemp(i,k,jj)=  (ddtemp(i,k,jj)-ttp(i,k,jj))/dt
+          enddo
+        enddo
+      enddo
+!
 !  combine non-linear grid point terms via gaussian quadrature
 !
       call joinrs(cc,ddtemp,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
@@ -307,7 +319,6 @@
          mf=mlist(m)
         do 100 n  = mf,jtrun
         do 99 k = 1, lev
-          KK=Llist(k)
           phiten1(k,1,n,m) = spalm(k)*plten(n,m,1)
           phiten1(k,2,n,m) = spalm(k)*plten(n,m,2)
         do 98 L = 1, lev
