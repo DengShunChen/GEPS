@@ -1,5 +1,5 @@
 #define myrank_check 46
-#define jj_check 11
+#define jj_check 100
 #define ii_check 206
 !
       subroutine diabat ( fwd,docup,dodry,dolsp,dopbl,dorad,doshl,dograv       &
@@ -673,21 +673,19 @@
       cosl(j) = cos(xlat(j)*d2r)
       sinl(j) = sin(xlat(j)*d2r)
   140 continue
-!
+!-------------------------------------------------------------------------
+!     if radiation is to be called, compute cos of solar zenith angular
+!                njump, il, ib, and cof for different meridional zones
+!-------------------------------------------------------------------------
       call prerrtmg(nx,my,my_max,idtg,tau,dt,hours,frad,uprad,        &
                     isubc_sw,isubc_lw,d2r,xlon,myrank,me,             &
                     idat,jdat,solhr,dtsw,dtlw,lsswr,lslwr,            &
                     slag,sdec,cdec,solcon,                            &
                     xlonr,ixseed)
-!
-!     if radiation is to be called, compute cos of solar zenith angular
-!                njump, il, ib, and cof for different meridional zones
-!
-      if ( uprad )  then
-!
-!        call ccoszen ( nx,my,my_max,julian,hours,xlat,xlon,cosz )
+!-------------------------------------------------------------------------
 ! cosz was modified to be an average of the  calling period(1 hour fo
-        call coszenpm ( nx,my,my_max,julian,hours,xlat,xlon,frad,    &
+      if ( uprad )  then
+        call coszenpm ( nx,my,my_max,julian,hours,xlat,xlon,frad,     &
                         slag,sdec,cdec,cosz )
 !
 !!ocl scalar,nounroll
@@ -771,31 +769,6 @@
        albedo2(i,jj)  = alb(i,jj)
   180 continue
 !
-!-----------------------------------------------------------------------
-!      if (uprad .and. irad .eq. 2) then
-!     if (myrank .eq. 0) then
-!         print *,'### prerrtmg start !'
-!         print *,'### for prerrtmg : iter  =',iter
-!         print *,'### for prerrtmg : tau = ',tau
-!         print *,'### for prerrtmg : nx, my, idtg, dt=',nx,my,idtg,dt
-!         print *,'### for prerrtmg : frad, uprad =',frad, uprad
-!     endif
-
-
-!     if (myrank .eq. 0) then
-!         print *,'### for prerrtmg : idat=',idat
-!         print *,'### for prerrtmg : jdat=',jdat
-!         print *,'### for prerrtmg : solhr=',solhr
-!         print *,'### for prerrtmg : dtsw =',dtsw,' dtlw=',dtlw
-!         print *,'### for prerrtmg : lsswr, lslwr=',lsswr,lslwr
-!         print *,'### for prerrtmg : slag=',slag
-!         print *,'### for prerrtmg : sdec=',sdec
-!         print *,'### for prerrtmg : cdec=',cdec
-!         print *,'### for prerrtmg : solcon=',solcon
-!     endif
-!      if (myrank .eq. 0) print *,'after prerrtmg ok'
-!      endif ! for uprad .and. irad. eq. 2
-
 !-----------------------------------------------------------------------
       if(ncld.ge.3)then
       ntrac=ntoz
@@ -900,31 +873,40 @@
 !     start physical process calculation (from long to short time scale)
 !
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-!
-!xb110> save the variables for TDK before doing PBL parameterization
-      do k = 1,lev
-       do i = 1,nxj
-        u0(i,k) = ut(i,k,jj)
-        v0(i,k) = vt(i,k,jj)
-        t0(i,k) = tt(i,k,jj)
-       end do
-      end do
 
-      do k = 1,lev*ncld
-       do i = 1,nxj
-        q0(i,k) = qt(i,k,jj)
-       end do
-      end do
-!xb110<
+!-------------------------------------------------------------------------
+!     update radiation heating/cooling rate for next time step
+!-------------------------------------------------------------------------
+!     calculate ozone concentrtion
+!-------------------------------------------------------------------------
+      if (doo3l) then
+!      if (myrank .eq. 0) print *,'### calculate ozone start !'
+!      if (myrank .eq. 0) print *,'### doo3l=',doo3l
+
+      if (ntoz .eq. 0) then
+         if (doozon) then
+         call rozone(nxjp(j),nxp,lev,plt(1,1,jj),o3l(1,1,jj),sinl(j),julian)
+!         if (myrank .eq. 0) print *,'### rozone : set climate o3 values !'
+         endif
+      else
+         call rozphys(nxjp(j),nxp,lev,dta,iter,xlat(j),julian,o3l(1,1,jj),&
+                      tt(1,1,jj),plt(1,1,jj),ps(1,jj),myrank)
+!         if (myrank .eq. 0) print *,'### rozphys ok!'
+      endif ! for ntoz
+      endif ! for doo3l
+
+
+!     if (myrank .eq. 0) print *,'*** for o3l(1,1,jj):',' jj=',jj
+!     call qmax2d(o3l(1,1,jj),1,1,nxj,lev)
+!     if (myrank .eq. 0) print *,'o3l(1,60,jj)=',o3l(1,60,jj),' jj=',jj
+
 !-----------------------------------------------------------------------
 !   Radiation scheme
 !-----------------------------------------------------------------------
       if (uprad .and. (irad .eq. 1))  then
 !      if (myrank .eq. 0) print *,'### use radtn99 scheme'
 
-         do 260 i = 1, nxj
-         curate(i,jj) = rcup(i,jj) * 86400.0/dta
-  260    continue
+
 
          call radtn99 ( fluxcl,ozon,nxjp(j),nxp,lev,ncld,lvlwx(jj),julian       &
                     , stbo,s0,grav                                              &
@@ -1016,7 +998,7 @@
             dtrad(1,1,jj),sld_adj,ss_adj,rld_adj,xmu(1,jj) )
 
       do i = 1, nxj
-         rld_adj(i) = rld_adj(i) * sfemis(i,jj)
+         rld_adj(i) = rld_adj(i) !* sfemis(i,jj)
       enddo
 !
 !     update tt by radiation heating/cooling rate: dtrad (k/day)
@@ -1025,6 +1007,23 @@
       do 240 i = 1, nxj
       tt(i,k,jj) = tt(i,k,jj) + dta*dtrad(i,k,jj)/86400.0
   240 continue
+!
+!xb110> save the variables for TDK before doing PBL parameterization
+      do k = 1,lev
+       do i = 1,nxj
+        u0(i,k) = ut(i,k,jj)
+        v0(i,k) = vt(i,k,jj)
+        t0(i,k) = tt(i,k,jj)
+       end do
+      end do
+
+      do k = 1,lev*ncld
+       do i = 1,nxj
+        q0(i,k) = qt(i,k,jj)
+       end do
+      end do
+!xb110<
+!
 !
       if ( dopbl .and. nmpbl.eq.1 .and. nmland.eq.1)                          &
          call pbltke ( nxjp(j),nxp,lev,ktpbl,dta,grav,rgas,cp,xkapa,hltm,ptop &
@@ -1829,33 +1828,10 @@
          call drychk ( j,tt(1,1,jj),pk(1,1,jj),dsigpp,nxjp(j),nxp,lev,ndry(j) )
       endif
 !
+      do  i = 1, nxj
+        curate(i,jj) = rcup(i,jj) * 86400.0/dta
+      enddo
 
-!
-!-------------------------------------------------------------------------
-!     update radiation heating/cooling rate for next time step
-!-------------------------------------------------------------------------
-!     calculate ozone concentrtion
-!-------------------------------------------------------------------------
-      if (doo3l) then
-!      if (myrank .eq. 0) print *,'### calculate ozone start !'
-!      if (myrank .eq. 0) print *,'### doo3l=',doo3l
-
-      if (ntoz .eq. 0) then
-         if (doozon) then
-         call rozone(nxjp(j),nxp,lev,plt(1,1,jj),o3l(1,1,jj),sinl(j),julian)
-!         if (myrank .eq. 0) print *,'### rozone : set climate o3 values !'
-         endif
-      else
-         call rozphys(nxjp(j),nxp,lev,dta,iter,xlat(j),julian,o3l(1,1,jj),&
-                      tt(1,1,jj),plt(1,1,jj),ps(1,jj),myrank)
-!         if (myrank .eq. 0) print *,'### rozphys ok!'
-      endif ! for ntoz
-      endif ! for doo3l
-
-
-!     if (myrank .eq. 0) print *,'*** for o3l(1,1,jj):',' jj=',jj
-!     call qmax2d(o3l(1,1,jj),1,1,nxj,lev)
-!     if (myrank .eq. 0) print *,'o3l(1,60,jj)=',o3l(1,60,jj),' jj=',jj
 
 
 !

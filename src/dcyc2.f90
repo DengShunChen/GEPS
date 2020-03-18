@@ -111,17 +111,17 @@
            sinlat, coslat
 
 
-      real(kind=kind_phys), dimension(im), intent(in) ::               &
+      real(kind=kind_phys), dimension(ix), intent(in) ::               &
            xlon, coszen, tsea, tf, tsflw, sfcdlw,                      &
            sfcdsw, sfcnsw
 
       real(kind=kind_phys), dimension(ix,levs), intent(in) :: swh, hlw
 
 !  ---  input/output:
-      real(kind=kind_phys), dimension(ix,levs), intent(out) :: dtrad
+      real(kind=kind_phys), dimension(ix,levs), intent(inout) :: dtrad
 
 !  ---  outputs:
-      real(kind=kind_phys), dimension(im), intent(out) ::              &
+      real(kind=kind_phys), dimension(ix), intent(out) ::              &
            adjsfcdsw, adjsfcnsw, adjsfcdlw,xmu
 
 !  ---  locals:

@@ -13,7 +13,7 @@
       use index
 
       implicit  none
-      integer   nx,my,julian,jj,i,j,nxj,it,ii,my_max
+      integer   nx,my,julian,jj,i,j,nxj,it,my_max,ii
       real      alat(my),alon(nx,my_max),cosz(nxp,my_max)
       real      time,pi,d2r,beta,xlat,sinxl,cosxl,hdif
       real      timex,prad,dlon,sinz0,cosz0
@@ -63,7 +63,7 @@
           if(dtzu .lt. 0.) dtzu=dtzu+24.
 
         do 100 i = 1, nxj
-           plon =  alon(ii,j)
+           plon =  alon(ii,jj)
            if (plon .lt. 0.)plon=plon+360.
            timeg = (dtzu*15.0 + plon) * d2r
            hourg = timeg + hdif
@@ -75,7 +75,7 @@
 
         do 150 i = 1, nxj
 !           coszdg(i)=coszen(i)/float(nst)
-           cosz(i,j)=coszen(i)
+           cosz(i,jj)=coszen(i)
            if (istsun(i) > 0 ) cosz(i,jj)=coszen(i)/float(istsun(i))
   150   continue
   200 continue

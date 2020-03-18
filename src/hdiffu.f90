@@ -60,8 +60,8 @@
         hfilt = (radsq/(nf*(nf+1)))**2.
         hfilt2 = radsq/(nf*(nf+1))
       if ( octahedral ) then
-        hfilt = hfilt/(6.*dta)
-        hfilt2 = hfilt2/(3.*dta)
+        hfilt = hfilt/(12.*dta)
+        hfilt2 = hfilt2/(6.*dta)
       else
         hfilt = 8.*hfilt/dta
         hfilt2 =16.*hfilt2/dta

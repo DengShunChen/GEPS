@@ -83,7 +83,6 @@
 !
 ! --- run radupdate
 !
-      if ( uprad ) then 
       call radupdate                                                 &
 ! --- inputs:                                                        &
         ( idat, jdat, dtsw, dt, lsswr, me, myrank,                   &
@@ -154,7 +153,6 @@
         enddo
 
       endif ! for isub_lw=2 .or isub_sw=2
-      endif ! if ( uprad )
 
 !      if (myrank .eq. 0) print *,'random_index ok!'
      
