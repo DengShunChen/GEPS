@@ -30,7 +30,7 @@
       logical uprad,lsswr,lslwr
       real tau,slag,sdec,cdec,solcon,frad,dt,d2r
       real solhr,dtsw,dtlw,hours
-      real xlon(nx,my_max),xlonr(nx,my_max)
+      real xlon(nx,my_max),xlonr(nxp,my_max)
       parameter(ipsdlim=100000000)!upper limit for random seed
 
 ! CWB2016 
@@ -83,6 +83,7 @@
 !
 ! --- run radupdate
 !
+      if ( uprad ) then 
       call radupdate                                                 &
 ! --- inputs:                                                        &
         ( idat, jdat, dtsw, dt, lsswr, me, myrank,                   &
@@ -153,6 +154,7 @@
         enddo
 
       endif ! for isub_lw=2 .or isub_sw=2
+      endif ! if ( uprad )
 
 !      if (myrank .eq. 0) print *,'random_index ok!'
      
@@ -161,10 +163,12 @@
 !--------------------------------------------------------------------
       do jj = 1, jlistnum
        j=jlist1(jj)
-       nxj=nxdef(j)
+       nxj=nxdef_2d(j)
+       ii=nxjstart(j)
       do i = 1, nxj
-         xlonr(i,jj)=xlon(i,jj)*d2r
-         if (xlon(i,jj).lt. 0) xlonr(i,jj)=(xlon(i,jj)+360.)*d2r
+         xlonr(i,jj)=xlon(ii,jj)*d2r
+         if (xlon(ii,jj).lt. 0) xlonr(i,jj)=(xlon(ii,jj)+360.)*d2r
+         ii=ii+1
       enddo
       enddo
 !      if (myrank .eq. 0) print *,'for xlonr setting ok!'

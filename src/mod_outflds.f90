@@ -968,7 +968,7 @@ contains
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3(glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if ( myrank .eq. ncnt ) then
-        pout=glob
+        pout=glob*100.
         ihdg2=ihdg
       endif
       go to 42

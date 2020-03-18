@@ -34,7 +34,7 @@
                     , dosppt,sppt3d,itimestep,lrun_sitvdiff,ic_sit             &
 !xb110>
 !byl                    , rmr, smr, flash)
-                    , flash)
+                    , flash,tsflw)
 !xb110<
 !--------------------------------------------------------------------------------
 !#######################################################################
@@ -286,12 +286,13 @@
 
 ! --- for random number generator (thread safe mode)
       integer ixseed(nx,my,2)
-      integer icsdlw(nx),icsdsw(nx)
+      integer icsdlw(nxp),icsdsw(nxp)
 
 ! --- for rrtmg : input
 !     logical lsswr,lslwr,lssav,lprnt
       logical lsswr,lslwr,lssav
-      real xlonr(nx,my_max)
+      real    xlonr(nxp,my_max),sld_adj(nxp),rld_adj(nxp),ss_adj(nxp), &
+              tsflw(nxp,my_max)
 
 ! --- new variables setting :
       integer*8 idtg
@@ -478,6 +479,9 @@
 !CWB2016 
       icsdsw=0
       icsdlw=0
+      rld_adj=0.
+      sld_adj=0.
+      ss_adj =0.
 ! for WSM6
       uni_cloud=( nmpbl .gt. 2 ) !if using SHOC scheme, it should be .true.
       lmfshal=( nmshl .eq. 2 .or. nmshl .eq. 3 ) ! .true. if using mass-flux shallow convection
@@ -670,6 +674,12 @@
       sinl(j) = sin(xlat(j)*d2r)
   140 continue
 !
+      call prerrtmg(nx,my,my_max,idtg,tau,dt,hours,frad,uprad,        &
+                    isubc_sw,isubc_lw,d2r,xlon,myrank,me,             &
+                    idat,jdat,solhr,dtsw,dtlw,lsswr,lslwr,            &
+                    slag,sdec,cdec,solcon,                            &
+                    xlonr,ixseed)
+!
 !     if radiation is to be called, compute cos of solar zenith angular
 !                njump, il, ib, and cof for different meridional zones
 !
@@ -677,7 +687,8 @@
 !
 !        call ccoszen ( nx,my,my_max,julian,hours,xlat,xlon,cosz )
 ! cosz was modified to be an average of the  calling period(1 hour fo
-        call coszenpm ( nx,my,my_max,julian,hours,xlat,xlon,frad,cosz )
+        call coszenpm ( nx,my,my_max,julian,hours,xlat,xlon,frad,    &
+                        slag,sdec,cdec,cosz )
 !
 !!ocl scalar,nounroll
          do 160 jj = 1, jlistnum
@@ -734,20 +745,20 @@
 ! calculate xmu,
 ! the instantaneous zenith angular at the 'hours'
 !------------------------------------------------------------------------------
-        call ccoszen ( nx,my,my_max,julian,hours,xlat,xlon,xmu )
+!        call ccoszen ( nx,my,my_max,julian,hours,xlat,xlon,xmu )
 !------------------------------------------------------------------------------
 
 ! transfer xmu to a fraction of average value(cosz) during frad
-      do 170 jj = 1, jlistnum
-       j=jlist1(jj)
-       nxj=nxdef_2d(j)
-      do 170 i = 1, nxj
-        if(xmu(i,jj).gt.0.0001.and.cosz(i,jj).gt.0.0001) then
-          xmu(i,jj) = xmu(i,jj) / cosz(i,jj)
-        else
-          xmu(i,jj)   = 0.
-        endif
- 170  continue
+!      do 170 jj = 1, jlistnum
+!       j=jlist1(jj)
+!       nxj=nxdef_2d(j)
+!      do 170 i = 1, nxj
+!        if(xmu(i,jj).gt.0.0001.and.cosz(i,jj).gt.0.0001) then
+!          xmu(i,jj) = xmu(i,jj) / cosz(i,jj)
+!        else
+!          xmu(i,jj)   = 0.
+!        endif
+! 170  continue
 
 !     initial albx by climate values of gwet and alb, while it may
 !     be updated in grdcon according ground conditions
@@ -761,7 +772,7 @@
   180 continue
 !
 !-----------------------------------------------------------------------
-      if (uprad .and. irad .eq. 2) then
+!      if (uprad .and. irad .eq. 2) then
 !     if (myrank .eq. 0) then
 !         print *,'### prerrtmg start !'
 !         print *,'### for prerrtmg : iter  =',iter
@@ -769,11 +780,7 @@
 !         print *,'### for prerrtmg : nx, my, idtg, dt=',nx,my,idtg,dt
 !         print *,'### for prerrtmg : frad, uprad =',frad, uprad
 !     endif
-      call prerrtmg(nx,my,my_max,idtg,tau,dt,hours,frad,uprad,        &
-                    isubc_sw,isubc_lw,d2r,xlon,myrank,me,             &
-                    idat,jdat,solhr,dtsw,dtlw,lsswr,lslwr,            &
-                    slag,sdec,cdec,solcon,                            &
-                    xlonr,ixseed)
+
 
 !     if (myrank .eq. 0) then
 !         print *,'### for prerrtmg : idat=',idat
@@ -787,7 +794,7 @@
 !         print *,'### for prerrtmg : solcon=',solcon
 !     endif
 !      if (myrank .eq. 0) print *,'after prerrtmg ok'
-      endif ! for uprad .and. irad. eq. 2
+!      endif ! for uprad .and. irad. eq. 2
 
 !-----------------------------------------------------------------------
       if(ncld.ge.3)then
@@ -871,8 +878,6 @@
       phi(i,k) = phi(i,k+1) +cp*(tt(i,k,jj)*(pk2(i,k,jj)-pk(i,k,jj))   &
                             + tt(i,k+1,jj)*(pk(i,k+1,jj)-pk2(i,k,jj)))
   210 continue
-       call get_phi(nxjp(j),nxp,lev,ptop,cp,rgas,grav,                &
-                   pk(1,1,jj),pk2(1,1,jj),tt(1,1,jj),qt(1,1,jj),phii)
 !
 !     deweight u,v by cosl/radus, and
 !     change t from virtual potential temperature to real temperature
@@ -896,13 +901,6 @@
 !
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !
-!     update tt by radiation heating/cooling rate: dtrad (k/day)
-!
-      do 240 k = 1, lev
-      do 240 i = 1, nxj
-      tt(i,k,jj) = tt(i,k,jj) + dta*dtrad(i,k,jj)/86400.0
-  240 continue
-!
 !xb110> save the variables for TDK before doing PBL parameterization
       do k = 1,lev
        do i = 1,nxj
@@ -918,6 +916,115 @@
        end do
       end do
 !xb110<
+!-----------------------------------------------------------------------
+!   Radiation scheme
+!-----------------------------------------------------------------------
+      if (uprad .and. (irad .eq. 1))  then
+!      if (myrank .eq. 0) print *,'### use radtn99 scheme'
+
+         do 260 i = 1, nxj
+         curate(i,jj) = rcup(i,jj) * 86400.0/dta
+  260    continue
+
+         call radtn99 ( fluxcl,ozon,nxjp(j),nxp,lev,ncld,lvlwx(jj),julian       &
+                    , stbo,s0,grav                                              &
+                    , cp,ptrad,dsigma,sinl(j),cosz(1,jj),albedo2(1,jj),tg(1,jj) &
+                    , curate(1,jj),pst(1,jj),plt(1,1,jj),tt(1,1,jj)             &
+                    , qt(1,1,jj),o3l(1,1,jj)                                    &
+                    , plcl(1,jj),cumtop(1,jj),ss(1,jj),rs(1,jj)                 &
+                    , asol_clr(1,jj),olr_clr(1,jj),ss_clr(1,jj),rs_clr(1,jj)    &
+                    , dtrad(1,1,jj),asr(1,j),alr(1,j)                           &
+                    , asr_clr(1,j),alr_clr(1,j)                                 &
+                    , xsr(1,j),xlr(1,j),acld(1,j),aflxd(1,j),aflxu(1,j)         &
+                    , ilx(1,jj),ibx(1,jj),cofx(1,jj),sdpbl(1,jj),ctot(1,jj)     &
+                    , rld(1,jj),sld(1,jj),chig(1,jj),cmid(1,jj),clow(1,jj)      &
+                    , asl(1,1,jj),atl(1,1,jj)                                   &
+!--------------------------------------------------------------------------------
+                    , fusl(1,1,jj),fdsl(1,1,jj)                                 &
+                    , fuir(1,1,jj),fdir(1,1,jj)                                 &
+                    , fuslr(1,1,jj),fdslr(1,1,jj)                               &
+                    , fuirr(1,1,jj),fdirr(1,1,jj)                               &
+                    , asl_clr(1,1,jj),atl_clr(1,1,jj)                           &
+                    , clds(1,1,jj),rld_clr(1,jj),sld_clr(1,jj))
+!--------------------------------------------------------------------------------
+         do 265 i = 1, nxj
+         asol(i,jj) = plcl(i,jj)
+         olr(i,jj)  = cumtop(i,jj)
+!cc      tg2 = tg(i,jj)*tg(i,jj)
+!cc      rld(i,jj)  = stbo*(tg2*tg2) - rs(i,jj)
+  265    continue
+         endif  ! for uprad .and. irad=1
+!--------------------------------------------------------------------------------
+!   RRTMG scheme
+!--------------------------------------------------------------------------------
+      if (uprad .and. (irad .eq. 2))  then
+      if ((isubc_lw .eq. 2) .or. (isubc_sw .eq. 2)) then
+!ch       do i = 1 , nxj
+          ii=nxjstart(j)
+          do i = 1 , nxj
+             icsdsw(i) = ixseed(ii,j,1)
+             icsdlw(i) = ixseed(ii,j,2)
+             ii=ii+1
+          enddo
+      endif  !isubc_lw
+
+!      if (myrank .eq. 0) then
+!          print *,'### use RRTMG scheme'
+!          print *,'### before rrtmg : iter =',iter
+!          print *,'### before rrtmg : tau   =',tau
+!          print *,'### before rrtmg : solhr =',solhr
+!          print *,'### before rrtmg : solcon=',solcon
+!      endif
+!--------------------------------------------------------------------------------
+      call rrtmg                                                           &
+!  ---  inputs:
+           ( sigma,pst(1,jj),plt(1,1,jj),std(1,jj),                        &
+             tt(1,1,jj),qt(1,1,jj),o3l(1,1,jj),sd(1,1,jj),tg(1,jj),        &
+             slimsk   ,cice(1,jj),xtice(1,jj),                             &
+             snr(1,jj),sncover(1,jj),snoalb(1,jj),z0(1,jj),                &
+             alvsf(1,jj),alnsf(1,jj),alvwf(1,jj),                          &
+             alnwf(1,jj),facsf(1,jj),facwf(1,jj),                          &
+             curate(1,jj),icsdsw,icsdlw,                                   &
+             sinl(j),cosl(j),xlat(j),xlonr(1,jj),jdat,d2r,xkapa,           &
+             ptrad,dtlw,dtsw,lsswr,lslwr,lssav,                            &
+             nfxr,j,                                                       &
+             nxp,nxjp(j),lev,ncld,lprnt,ipt,kdt,solhr,solcon,              &
+             uni_cloud,lmfshal,lmfdeep2,                                   &
+             deltaq(1,1,jj),sup,cnvwr,cnvcr,                               &
+!  ---  outputs:
+             asol(1,jj),olr(1,jj),ss(1,jj),rs(1,jj),                       &
+             sld(1,jj),rld(1,jj),tsflw(1,jj),                              &
+             ctot(1,jj),chig(1,jj),cmid(1,jj),clow(1,jj),                  &
+             clds(1,1,jj),asl(1,1,jj),atl(1,1,jj),                         &
+             fusl(1,1,jj),fdsl(1,1,jj),fuir(1,1,jj),fdir(1,1,jj),          &
+             fuslr(1,1,jj),fdslr(1,1,jj),fuirr(1,1,jj),fdirr(1,1,jj),      &
+             asl_clr(1,1,jj),atl_clr(1,1,jj),                              &
+             asol_clr(1,jj),olr_clr(1,jj),ss_clr(1,jj),rs_clr(1,jj),       &
+             sld_clr(1,jj),rld_clr(1,jj),sfalb(1,jj),sfemis(1,jj))
+!      if (myrank .eq. 0) then
+!          print *,'### rrtmg ok !!'
+!      endif
+      endif  ! for uprad .and. irad=2
+!
+        call dcyc2t3                                                  &
+!  ---  inputs:
+          ( solhr,slag,sdec,cdec,sinl(j),cosl(j),                     &
+            xlonr(1,jj),cosz(1,jj),tg(1,jj),tt(1,lev,jj),tsflw(1,jj), &
+            sld(1,jj),ss(1,jj),rld(1,jj),asl(1,1,jj),atl(1,1,jj),     &
+            nxp, nxjp(j), lev,                                        &
+!  ---  outputs:
+            dtrad(1,1,jj),sld_adj,ss_adj,rld_adj,xmu(1,jj) )
+
+      do i = 1, nxj
+         rld_adj(i) = rld_adj(i) * sfemis(i,jj)
+      enddo
+!
+!     update tt by radiation heating/cooling rate: dtrad (k/day)
+!
+      do 240 k = 1, lev
+      do 240 i = 1, nxj
+      tt(i,k,jj) = tt(i,k,jj) + dta*dtrad(i,k,jj)/86400.0
+  240 continue
 !
       if ( dopbl .and. nmpbl.eq.1 .and. nmland.eq.1)                          &
          call pbltke ( nxjp(j),nxp,lev,ktpbl,dta,grav,rgas,cp,xkapa,hltm,ptop &
@@ -928,10 +1035,10 @@
                      , ustar(1,jj),tstar(1,jj),qstar(1,jj),e(1,1,jj)          &
                      , eps(1,1,jj),hflux(1,jj),qflux(1,jj),fwd                &
                      , gwclim(1,jj),tgclim(1,jj),ocean(1,jj),ice(1,jj)        &
-                     , snr(1,jj),totalp(1,jj),ss(1,jj),rs(1,jj),albx(1,jj)    &
+                     , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),albx(1,jj)      &
                      , ipblmx(1,j),xkmx(1,j),ijdg(j),xkmd,itypbl              &
                      , t2(1,jj),rh2(1,jj),u10(1,jj),v10(1,jj)                 &
-                     , rld(1,jj),stbo                                         &
+                     , rld_adj,stbo                                           &
                      , km_soil,smc(1,1,jj),stc(1,1,jj),canopy(1,jj)           &
                      , runoff(1,jj),sigmaf(1,jj),istyp(1,jj),ivegtyp(1,jj)    &
                      , wlt,ref,tsat,dfkt,xktk,dfk )
@@ -953,10 +1060,10 @@
                      , ustar(1,jj),tstar(1,jj),qstar(1,jj),e(1,1,jj)          &
                      , eps(1,1,jj),hflux(1,jj),qflux(1,jj),fwd                &
                      , gwclim(1,jj),tgclim(1,jj),ocean(1,jj),ice(1,jj)        &
-                     , snr(1,jj),totalp(1,jj),ss(1,jj),rs(1,jj),albx(1,jj)    &
+                     , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),albx(1,jj)      &
                      , ipblmx(1,j),xkmx(1,j),ijdg(j),xkmd,itypbl              &
                      , t2(1,jj),rh2(1,jj),u10(1,jj),v10(1,jj)                 &
-                     , rld(1,jj),stbo                                         &
+                     , rld_adj,stbo                                         &
                      , km_soil,smc(1,1,jj),stc(1,1,jj),canopy(1,jj)           &
                      , runoff(1,jj),sigmaf(1,jj),istyp(1,jj),ivegtyp(1,jj)    &
                      , wlt,ref,tsat,dfkt,xktk,dfk,ncld,dsigma,j )
@@ -969,18 +1076,18 @@
                      , ustar(1,jj),tstar(1,jj),qstar(1,jj),e(1,1,jj)          &
                      , eps(1,1,jj),hflux(1,jj),qflux(1,jj),fwd                &
                      , gwclim(1,jj),tgclim(1,jj),ocean(1,jj),ice(1,jj)        &
-                     , snr(1,jj),totalp(1,jj),ss(1,jj),rs(1,jj),albx(1,jj)    &
+                     , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),albx(1,jj)      &
                      , ipblmx(1,j),xkmx(1,j),ijdg(j),xkmd,itypbl              &
                      , t2(1,jj),q2(1,jj),rh2(1,jj),rh10(1,jj),u10(1,jj)       &
                      , v10(1,jj),fm(1,jj),fh(1,jj),fm10(1,jj),fh2(1,jj)       &
-                     , srflag(1,jj),rld(1,jj),stbo                            &
+                     , srflag(1,jj),rld_adj,stbo                            &
                      , km_soil,smc(1,1,jj),stc(1,1,jj),canopy(1,jj)           &
                      , runoff(1,jj),sigmaf(1,jj),istyp(1,jj),ivegtyp(1,jj)    &
                      , ncld,dsigma                                            &
                      , slopetyp(1,jj)                                         &
                      , slc(1,1,jj),sncover(1,jj),sndepth(1,jj)                &
                      , shdmax(1,jj),shdmin(1,jj),snoalb(1,jj),albedo2(1,jj)   &
-                     , sld(1,jj),zice(1,jj),cice(1,jj),xtice(1,jj)            &
+                     , sld_adj,zice(1,jj),cice(1,jj),xtice(1,jj)            &
                      , hpbl(1,jj),asl(1,1,jj),atl(1,1,jj),xmu(1,jj),gfx(1,jj) &
                      , kpbl(1,jj),nmpbl,j,isot,ivegsrc,sfemis(1,jj) )
 !
@@ -1149,8 +1256,8 @@
                             +theda(i,k+1)*(pk(i,k+1,jj)-pk2(i,k,jj)))
   255 continue
 !
-       call get_phi(nxjp(j),nxp,lev,ptop,cp,rgas,grav,                &
-                   pk(1,1,jj),pk2(1,1,jj),tt(1,1,jj),qt(1,1,jj),phii)
+      call get_phi(nxjp(j),nxp,lev,ptop,cp,rgas,grav,                &
+                  pk(1,1,jj),pk2(1,1,jj),tt(1,1,jj),qt(1,1,jj),phii)
 !
       do k=1,lev
         do i=1,nxj
@@ -1605,6 +1712,8 @@
 !!!            rhc(i,kc)=0.999-0.08*cos(d2r*arg)**2    !a3
 !byl            rhc(i,kc)=0.95-0.07*cos(d2r*xlat(j))    !v2
             rhc(i,kc)=0.98-0.12*cos(d2r*arg)**2.0    !v3
+!            tem   = (max(min(plt(i,k,jj),900.)-700.,0.01) / 200.)
+!            rhc(i,kc)=tem*rhc(i,kc)+(1.-tem)*0.7
 !!!!             rhc(i,kc)=(1.-coefrhc)*(0.7+0.15*cos(d2r*xlat(j))**2)  &
 !!!!                     +coefrhc*(0.6+0.1*max(cos(4.*d2r*xlat(j))**3,0.))   !PYL vertical profile
 !
@@ -1620,7 +1729,7 @@
 !
 !!            if(rhc(i,kc).ge.0.98)rhc(i,kc)=0.98
             prsl(i,kc) = plt(i,k,jj)*0.1 ! change to cb
-            phil(i,kc) = phi(i,k)-sgeo(i,jj)
+!            phil(i,kc) = phi(i,k)-sgeo(i,jj)
             del(i,kc) = (dsigma(k,1)*pst(i,jj)+dsigma(k,2))*0.1  ! change to cb
             qtc(i,kc) = qt(i,k,jj)
             qtr(i,kc) = qt(i,lev+k,jj)
@@ -1635,7 +1744,7 @@
                       ftp (1,1,jj),fqp (1,1,jj),fpsp (1,jj),&
                       ftp1(1,1,jj),fqp1(1,1,jj),fpsp1(1,jj),&
                       rhc,deltaq(1,1,jj),sup,lprnt,kdt)
-!xb110>
+!
           call precpdp(nxjp(j),nxp,lev,dta,del,prsl,psfc, &
                       qtc, qtr, ttc,           &
                       rlsp(1,jj),rhc,deltaq(1,1,jj),lprnt)
@@ -1645,11 +1754,11 @@
                       ftp (1,1,jj),fqp (1,1,jj),fpsp (1,jj),&
                       ftp1(1,1,jj),fqp1(1,1,jj),fpsp1(1,jj),&
                       rhc,lprnt)
-!xb110>
+!
           call precpd(nxjp(j),nxp,lev,dta,del,prsl,psfc, &
                       qtc, qtr, ttc,           &
                       rlsp(1,jj), rhc, lprnt)
-        endif
+!xb110>
 ! precipitation over mid-latitude perform not very well, especially
 ! in climatology.
 !!        call precpd_n(nxjp(j),nxp,lev,dta,del,prsl,psfc,              &
@@ -1657,6 +1766,7 @@
 !!                    rlsp(1,jj), slsp(1,jj), rainp, rhc, lprnt)
 !
 !xb110<
+        endif
         do i=1,nxj
           rlsp(i,jj) = rlsp(i,jj) * 1000.         ! mm/call
         enddo
@@ -1674,6 +1784,7 @@
         enddo
 !byl      endif
       elseif ( dolsp .and. ncld .eq. 7 ) then
+
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
@@ -1746,93 +1857,7 @@
 !     call qmax2d(o3l(1,1,jj),1,1,nxj,lev)
 !     if (myrank .eq. 0) print *,'o3l(1,60,jj)=',o3l(1,60,jj),' jj=',jj
 
-!-----------------------------------------------------------------------
-!   Radiation scheme
-!-----------------------------------------------------------------------
-      if (uprad .and. (irad .eq. 1))  then
-!      if (myrank .eq. 0) print *,'### use radtn99 scheme'
 
-         do 260 i = 1, nxj
-         curate(i,jj) = rcup(i,jj) * 86400.0/dta
-  260    continue
-
-         call radtn99 ( fluxcl,ozon,nxjp(j),nxp,lev,ncld,lvlwx(jj),julian       &
-                    , stbo,s0,grav                                              &
-                    , cp,ptrad,dsigma,sinl(j),cosz(1,jj),albedo2(1,jj),tg(1,jj) &
-                    , curate(1,jj),pst(1,jj),plt(1,1,jj),tt(1,1,jj)             &
-                    , qt(1,1,jj),o3l(1,1,jj)                                    &
-                    , plcl(1,jj),cumtop(1,jj),ss(1,jj),rs(1,jj)                 &
-                    , asol_clr(1,jj),olr_clr(1,jj),ss_clr(1,jj),rs_clr(1,jj)    &
-                    , dtrad(1,1,jj),asr(1,j),alr(1,j)                           &
-                    , asr_clr(1,j),alr_clr(1,j)                                 &
-                    , xsr(1,j),xlr(1,j),acld(1,j),aflxd(1,j),aflxu(1,j)         &
-                    , ilx(1,jj),ibx(1,jj),cofx(1,jj),sdpbl(1,jj),ctot(1,jj)     &
-                    , rld(1,jj),sld(1,jj),chig(1,jj),cmid(1,jj),clow(1,jj)      &
-                    , asl(1,1,jj),atl(1,1,jj)                                   &
-!--------------------------------------------------------------------------------
-                    , fusl(1,1,jj),fdsl(1,1,jj)                                 &
-                    , fuir(1,1,jj),fdir(1,1,jj)                                 &
-                    , fuslr(1,1,jj),fdslr(1,1,jj)                               &
-                    , fuirr(1,1,jj),fdirr(1,1,jj)                               &
-                    , asl_clr(1,1,jj),atl_clr(1,1,jj)                           &
-                    , clds(1,1,jj),rld_clr(1,jj),sld_clr(1,jj))
-!--------------------------------------------------------------------------------
-         do 265 i = 1, nxj
-         asol(i,jj) = plcl(i,jj)
-         olr(i,jj)  = cumtop(i,jj)
-!cc      tg2 = tg(i,jj)*tg(i,jj)
-!cc      rld(i,jj)  = stbo*(tg2*tg2) - rs(i,jj)
-  265    continue
-         endif  ! for uprad .and. irad=1
-!--------------------------------------------------------------------------------
-!   RRTMG scheme
-!--------------------------------------------------------------------------------
-      if (uprad .and. (irad .eq. 2))  then
-      if ((isubc_lw .eq. 2) .or. (isubc_sw .eq. 2)) then
-!ch       do i = 1 , nxj
-          do i = 1 , nxdef(j)
-             icsdsw(i) = ixseed(i,j,1)
-             icsdlw(i) = ixseed(i,j,2)
-          enddo
-      endif  !isubc_lw
-
-!      if (myrank .eq. 0) then
-!          print *,'### use RRTMG scheme'
-!          print *,'### before rrtmg : iter =',iter
-!          print *,'### before rrtmg : tau   =',tau
-!          print *,'### before rrtmg : solhr =',solhr
-!          print *,'### before rrtmg : solcon=',solcon
-!      endif
-!--------------------------------------------------------------------------------
-      call rrtmg                                                           &
-!  ---  inputs:
-           ( sigma,pst(1,jj),plt(1,1,jj),std(1,jj),                        &
-             tt(1,1,jj),qt(1,1,jj),o3l(1,1,jj),sd(1,1,jj),tg(1,jj),        &
-             slimsk   ,cice(1,jj),xtice(1,jj),                             &
-             snr(1,jj),sncover(1,jj),snoalb(1,jj),z0(1,jj),                &
-             alvsf(1,jj),alnsf(1,jj),alvwf(1,jj),                          &
-             alnwf(1,jj),facsf(1,jj),facwf(1,jj),                          &
-             curate(1,jj),icsdsw(nxjstart(j)),icsdlw(nxjstart(j)),         &
-             sinl(j),cosl(j),xlat(j),xlonr(nxjstart(j),jj),jdat,d2r,xkapa, &
-             ptrad,dtlw,dtsw,lsswr,lslwr,lssav,                            &
-             nfxr,j,                                                       &
-             nxp,nxjp(j),lev,ncld,lprnt,ipt,kdt,solhr,solcon,              &
-             uni_cloud,lmfshal,lmfdeep2,                                   &
-             deltaq(1,1,jj),sup,cnvwr,cnvcr,                               &
-!  ---  outputs:
-             asol(1,jj),olr(1,jj),ss(1,jj),rs(1,jj),                       &
-             sld(1,jj),rld(1,jj),dtrad(1,1,jj),                            &
-             ctot(1,jj),chig(1,jj),cmid(1,jj),clow(1,jj),                  &
-             clds(1,1,jj),asl(1,1,jj),atl(1,1,jj),                         &
-             fusl(1,1,jj),fdsl(1,1,jj),fuir(1,1,jj),fdir(1,1,jj),          &
-             fuslr(1,1,jj),fdslr(1,1,jj),fuirr(1,1,jj),fdirr(1,1,jj),      &
-             asl_clr(1,1,jj),atl_clr(1,1,jj),                              &
-             asol_clr(1,jj),olr_clr(1,jj),ss_clr(1,jj),rs_clr(1,jj),       &
-             sld_clr(1,jj),rld_clr(1,jj),sfalb(1,jj),sfemis(1,jj))
-!      if (myrank .eq. 0) then
-!          print *,'### rrtmg ok !!'
-!      endif
-      endif  ! for uprad .and. irad=2
 !
 !-------------------------------------------------------
 ! SIT scheme, update tg

@@ -12,7 +12,7 @@
              uni_cloud,lmfshal,lmfdeep2,                            &
              deltaq,sup,cnvw,cnvc,                                  &
 !    -  outputs:
-             asol,olr,ss,rs,sld,rld,dtrad,                          &
+             asol,olr,ss,rs,sld,rld,tsflwr,                         &
              ctot,chig,cmid,clow,                                   &
              cldcov,htrsw,htrlw,                                    &
              fusl,fdsl,fuir,fdir,                                   &
@@ -46,7 +46,7 @@
       real    slimsk(nx),cice(nx),xtice(nx),snr(nx),sncover(nx),  &
               snoalb(nx),z0(nx)
       real    alvsg(nx),alvwg(nx),alnsg(nx),alnwg(nx),facsg(nx),  &
-              facwg(nx),curate(nx),xlonr(nx)
+              facwg(nx),curate(nx),xlonr(nx),tsflwr(nx)
       integer icsdlwg(nx),icsdswg(nx),jdat(8),j
       real    sinlj,coslj,xlatj,ptop,dtlw,dtsw,d2r,xkapa,solhr,solcon
       logical lsswr,lslwr,lssav,lprnt
@@ -98,7 +98,7 @@
 !
 ! --- 2d
 !
-      real    dtrad(nx,lev)
+!      real    dtrad(nx,lev)
       real    ctot(nx),chig(nx),cmid(nx),clow(nx),csbl(nx)
 
       real    cldcov(nx,lev)
@@ -466,11 +466,12 @@
        enddo
        enddo
 
-       do k = 1, lev
+!       do k = 1, lev
        do i = 1, nxj
-          dtrad(i,k)=htrsw(i,k)+htrlw(i,k)
+!          dtrad(i,k)=htrsw(i,k)+htrlw(i,k)
+          tsflwr(i)=tsflw(i)
        enddo
-       enddo
+!       enddo
 
        do k = 1, lev+1
           kc=lev-k+2

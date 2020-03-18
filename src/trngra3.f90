@@ -77,9 +77,11 @@
       do L=mf,jtrun
        do j=1,myhalf
        if ( mf.le.mtrundef(j) ) then
-      do k=1,lev*2
+      do k=1,lev
       wcu_t(k,1,j) = wcu_t(k,1,j) + ws3(k,1,1,L)*poly(L,j,m)*cim(m)
+      wcu_t(k,2,j) = wcu_t(k,2,j) + ws3(k,2,1,L)*poly(L,j,m)*cim(m)
       wcv_t(k,1,j) = wcv_t(k,1,j) + ws4(k,1,2,L)*dpoly(L,j,m)
+      wcv_t(k,2,j) = wcv_t(k,2,j) + ws4(k,2,2,L)*dpoly(L,j,m)
       enddo
        endif
       enddo
@@ -108,9 +110,11 @@
       do jj=myhalf+1,my
       j=my-jj+1
       if ( mf.le.mtrundef(j) ) then
-      do k=1,lev*2
+      do k=1,lev
       wcu_t(k,1,jj) = wcu_t(k,1,jj) + ws3(k,1,1,L)*poly(L,j,m)*cim(m)
+      wcu_t(k,2,jj) = wcu_t(k,2,jj) + ws3(k,2,1,L)*poly(L,j,m)*cim(m)
       wcv_t(k,1,jj) = wcv_t(k,1,jj) + ws4(k,1,2,L)*dpoly(L,j,m)
+      wcv_t(k,2,jj) = wcv_t(k,2,jj) + ws4(k,2,2,L)*dpoly(L,j,m)
       enddo
       endif
       enddo

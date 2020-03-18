@@ -22,7 +22,7 @@
             clow       ,  hpbl       ,   cosz       , & 
          rainlp6       ,raincu6      ,                &
          rainlp3       ,raincu3      ,                &
-         rainlp1       ,raincu1
+         rainlp1       ,raincu1      ,tsflw
 
       logical, allocatable,save :: land(:,:),ice(:,:),ocean(:,:)
 
@@ -71,7 +71,7 @@
             clow(nxp,my_max),  hpbl(nxp,my_max),   cosz(nxp,my_max), &
          rainlp6(nxp,my_max),raincu6(nxp,my_max),                    &
          rainlp3(nxp,my_max),raincu3(nxp,my_max),                    &
-         rainlp1(nxp,my_max),raincu1(nxp,my_max),                    &
+         rainlp1(nxp,my_max),raincu1(nxp,my_max), tsflw(nxp,my_max), &
                                           stat=ierr)
 
            if (ierr/= 0) then
@@ -92,6 +92,7 @@
 
 !CWB2016
            curate=0.
+           tsflw=0.
 
            allocate (land(nxp,my_max),ice(nxp,my_max), &
                      ocean(nxp,my_max), stat=ierr)
@@ -155,6 +156,7 @@
            deallocate (u10,v10,t2,rh2,rh10,srflag,q2,fm,fm10,fh,fh2)
            deallocate (fpsp,fpsp1)
            deallocate (rainlp6,raincu6,rainlp3,raincu3,rainlp1,raincu1)
+           deallocate (tsflw)
 
            return
 

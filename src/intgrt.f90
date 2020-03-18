@@ -900,7 +900,7 @@
                       , dosppt,sppt3d,itimestep,lrun_sitvdiff,ic_sit            &
 !xb110>
 !byl                      , rmr,smr,flash)
-                      , flash)
+                      , flash,tsflw)
 !xb110<
 !--------------------------------------------------------------------------------
 !
