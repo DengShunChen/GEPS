@@ -998,7 +998,7 @@
             dtrad(1,1,jj),sld_adj,ss_adj,rld_adj,xmu(1,jj) )
 
       do i = 1, nxj
-         rld_adj(i) = rld_adj(i) !* sfemis(i,jj)
+         rld_adj(i) = rld_adj(i) * sfemis(i,jj)
       enddo
 !
 !     update tt by radiation heating/cooling rate: dtrad (k/day)
