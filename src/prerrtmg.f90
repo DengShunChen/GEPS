@@ -61,11 +61,11 @@
 !
 ! --- set solhr = forecast hours if not at initial time
 !
-        if (hours .gt. 0.0) then
+!        if (hours .gt. 0.0) then
            solhr = hours
-        else
-           solhr = idat(5)  !initial time
-        endif
+!        else
+!           solhr = idat(5)  !initial time
+!        endif
 
 !        if (myrank .eq. 0) print *,'solhr=',solhr
 !
@@ -83,6 +83,7 @@
 !
 ! --- run radupdate
 !
+      if ( uprad ) then
       call radupdate                                                 &
 ! --- inputs:                                                        &
         ( idat, jdat, dtsw, dt, lsswr, me, myrank,                   &
@@ -153,6 +154,7 @@
         enddo
 
       endif ! for isub_lw=2 .or isub_sw=2
+      endif ! if ( uprad )
 
 !      if (myrank .eq. 0) print *,'random_index ok!'
      

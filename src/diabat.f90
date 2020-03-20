@@ -191,7 +191,7 @@
       implicit  none
 !-----------------------------------------------------------------------
       integer nfxr, ntrac, kk, nk, n
-      real slag,sdec,cdec,solcon,dtlw,dtsw,solhr
+      real    dtlw,dtsw,solhr
 !
 ! for land_noah_new
        real      sfalb(nxp,my_max),sfemis(nxp,my_max)
@@ -682,11 +682,12 @@
                     idat,jdat,solhr,dtsw,dtlw,lsswr,lslwr,            &
                     slag,sdec,cdec,solcon,                            &
                     xlonr,ixseed)
+
 !-------------------------------------------------------------------------
 ! cosz was modified to be an average of the  calling period(1 hour fo
       if ( uprad )  then
-        call coszenpm ( nx,my,my_max,julian,hours,xlat,xlon,frad,     &
-                        slag,sdec,cdec,cosz )
+        call coszenpm ( nx,my,my_max,julian,solhr,sinl,cosl,xlonr,    &
+                        frad,slag,sdec,cdec,cosz )
 !
 !!ocl scalar,nounroll
          do 160 jj = 1, jlistnum
@@ -739,6 +740,7 @@
          endif
   160    continue
       endif
+
 !
 ! calculate xmu,
 ! the instantaneous zenith angular at the 'hours'
@@ -970,7 +972,7 @@
              sinl(j),cosl(j),xlat(j),xlonr(1,jj),jdat,d2r,xkapa,           &
              ptrad,dtlw,dtsw,lsswr,lslwr,lssav,                            &
              nfxr,j,                                                       &
-             nxp,nxjp(j),lev,ncld,lprnt,ipt,kdt,solhr,solcon,              &
+             nxp,nxjp(j),lev,ncld,lprnt,ipt,kdt,solhr,                     &
              uni_cloud,lmfshal,lmfdeep2,                                   &
              deltaq(1,1,jj),sup,cnvwr,cnvcr,                               &
 !  ---  outputs:
@@ -990,7 +992,7 @@
 !
         call dcyc2t3                                                  &
 !  ---  inputs:
-          ( solhr,slag,sdec,cdec,sinl(j),cosl(j),                     &
+          ( hours,slag,sdec,cdec,sinl(j),cosl(j),                     &
             xlonr(1,jj),cosz(1,jj),tg(1,jj),tt(1,lev,jj),tsflw(1,jj), &
             sld(1,jj),ss(1,jj),rld(1,jj),asl(1,1,jj),atl(1,1,jj),     &
             nxp, nxjp(j), lev,                                        &
@@ -1007,6 +1009,7 @@
       do 240 i = 1, nxj
       tt(i,k,jj) = tt(i,k,jj) + dta*dtrad(i,k,jj)/86400.0
   240 continue
+
 !
 !xb110> save the variables for TDK before doing PBL parameterization
       do k = 1,lev
@@ -1237,6 +1240,7 @@
         enddo
 !
       endif  !(end of topo dograv and nmgwor=2)
+
 !
 !     recompute phi by tt after pbl to ensure consistence of phi & phi2
 !
