@@ -8,7 +8,7 @@
       use rank
       use mpe
       use index
-      use mod_sitgrid 
+      use mod_sitgrid
 
       implicit none
       integer nx,my,my_max,itau,num
@@ -19,51 +19,56 @@
       integer*8 idtg
       character*4 ggdef
       integer lenc,n,k,jj,j,nxj,ii,istat
-      character*26 lrec
-      character*6 typ
-      real, dimension(:,:), allocatable:: glob2d,glob
+      character*26 ihdg,ihdg2
+      character*6 lrec
+      real wk1(nx,my),pout(nx,my)
+      integer ncnt
  
- 
-      allocate(glob2d(nxp,my_max))
-      allocate(glob(nx,my))
 
       lenc= nx*my
   
       if (myrank.eq.0) print *,'in sitout, lkvl=',lkvl
 
-      do 40 n=1, num
-        do 30 k = 0, lkvl+1
+!ps            write( typ, '(i3.3,a3)' ) k,'SWS'         !!sit ws
+!ps            call syslbl (typ,idtg,itau,ggdef,lrec)
+!ps            glob2d(:,:)=sitws(:,:,k)
+!ps            call unify_reduceintp(nx,my,my_max,glob2d,glob)
+!ps            call dmswrit(nx,my,lrec,lenc,'H',ifilout,glob,istat)
 
-            write( typ, '(i3.3,a3)' ) k,'SWT'         !!sit wt
-            call syslbl (typ,idtg,itau,ggdef,lrec)
-            glob2d(:,:)=sitwt(:,:,k)
-            call unify_reduceintp(nx,my,my_max,glob2d,glob) 
-            call dmswrit(nx,my,lrec,lenc,'H',ifilout,glob,istat)
+!ps            write( typ, '(i3.3,a3)' ) k,'TKE'         !!sit wtke
+!ps            call syslbl (typ,idtg,itau,ggdef,lrec)
+!ps            glob2d(:,:)=sitwtke(:,:,k)
+!ps            call unify_reduceintp(nx,my,my_max,glob2d,glob)
+!ps            call dmswrit(nx,my,lrec,lenc,'H',ifilout,glob,istat)
+!
+      ncnt=-1
+      do 10 k = 0, lkvl+1
+        ncnt=ncnt+1
+        write( lrec, '(i3.3,a3)' ) k,'SWT'         !!sit wt
+        call syslbl (lrec,idtg,itau,ggdef,ihdg)
+        call unify_reduceintp(nx,my,my_max,sitwt(1,1,k),wk1)
+        if (myrank .eq. k) then
+          pout=wk1
+          ihdg2=ihdg
+        endif
+!          call dmswrit(nx,my,lrec,lenc,'H',ifilout,glob,istat)
+   10 continue
+      if(myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 
-            write( typ, '(i3.3,a3)' ) k,'SWS'         !!sit ws
-            call syslbl (typ,idtg,itau,ggdef,lrec)
-            glob2d(:,:)=sitws(:,:,k)
-            call unify_reduceintp(nx,my,my_max,glob2d,glob) 
-            call dmswrit(nx,my,lrec,lenc,'H',ifilout,glob,istat)
+      ncnt=-1 
+      do 20 k = 0, lkvl+1
+        ncnt=ncnt+1
+        write( lrec, '(i3.3,a3)' ) k,'OWT'        !!sit obswt
+        call syslbl (lrec,idtg,itau,ggdef,ihdg)
+        call unify_reduceintp(nx,my,my_max,obswt(1,1,k),wk1) 
+        if (myrank .eq. k) then
+          pout=wk1
+          ihdg2=ihdg
+        endif
+!        call dmswrit(nx,my,lrec,lenc,'H',ifilout,glob,istat)
+   20 continue
+      if(myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 
-            write( typ, '(i3.3,a3)' ) k,'TKE'         !!sit wtke
-            call syslbl (typ,idtg,itau,ggdef,lrec)
-            glob2d(:,:)=sitwtke(:,:,k)
-            call unify_reduceintp(nx,my,my_max,glob2d,glob) 
-            call dmswrit(nx,my,lrec,lenc,'H',ifilout,glob,istat)
-
-            write( typ, '(i3.3,a3)' ) k,'OWT'        !!sit obswt
-            call syslbl (typ,idtg,itau,ggdef,lrec)
-            glob2d(:,:)=obswt(:,:,k)
-            call unify_reduceintp(nx,my,my_max,glob2d,glob) 
-            call dmswrit(nx,my,lrec,lenc,'H',ifilout,glob,istat)
-
-
-   30   continue
-   40 continue
-      
-      deallocate(glob2d)
-      deallocate(glob)
   
       end subroutine sitout
 
@@ -186,7 +191,7 @@
       use index
       use mod_sitgrid,     only:sitwttau,sitwstau,sitwutau,sitwvtau &
                                ,dtsittau
-      use mod_sit_control,only: xmissing
+      use mod_sit_control, only: xmissing
 
       implicit none
 
@@ -197,17 +202,19 @@
       integer*8 idtg
       character*4 ggdef
       integer lenc,k,jj,j,nxj,ii,istat
-      character*26 ihdg
+      character*26 ihdg,ihdg2
       character*6 lrec
-      real glob2d(nxp,my_max),glob(nx,my)
-
+      real glob2d(nxp,my_max) 
+      real wk1(nx,my),pout(nx,my)
+      integer ncnt
 
       lenc= nx*my
 
 
       if (myrank.eq.0) print *,'in writesitmean lkvl=',lkvl
-      do k = 0, lkvl+1
-
+      ncnt=-1
+      do 10 k = 0, lkvl+1
+        ncnt=ncnt+1
         write( lrec, '(i3.3,a3)' ) k,'WTT'
         call syslbl (lrec,idtg,itau,ggdef,ihdg)
         if(dtsittau .ne. 0.) then
@@ -215,10 +222,15 @@
         else
           glob2d=xmissing
         endif
-        call unify_reduceintp(nx,my,my_max,glob2d,glob) 
-        call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+        call unify_reduceintp(nx,my,my_max,glob2d,wk1)
+        if ( myrank .eq. ncnt ) then
+          pout=wk1
+          ihdg2=ihdg
+        endif
+!        call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+   10 continue
 
-      enddo
+      if(myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 
       sitwttau=0.
       dtsittau=0.
@@ -245,10 +257,11 @@
       integer*8 idtg
       character*4 ggdef
       integer lenc,k,jj,j,nxj,ii,istat
-      character*26 ihdg
+      character*26 ihdg,ihdg2
       character*6 lrec
       real tm1(nxp,my_max),tm2(nxp,my_max),tm3(nxp,my_max)
-      real glob(nx,my)
+      real wk1(nx,my),pout(nx,my)
+      integer ncnt
 
       tm1=xmissing
       tm2=xmissing
@@ -258,7 +271,9 @@
   
       if (myrank.eq.0) print *,'in outsit24 lkvl=',lkvl
 
-      do k = 0, lkvl+1
+      ncnt=-1
+      do 10 k = 0, lkvl+1
+        ncnt=ncnt+1
         do jj =1, jlistnum
           j=jlist1(jj)
           nxj=nxdef_2d(j)
@@ -278,8 +293,13 @@
 
         write( lrec, '(i3.3,a3)' ) k,'WTF'
         call syslbl (lrec,idtg,itau,ggdef,ihdg)
-        call unify_reduceintp(nx,my,my_max,tm1,glob) 
-        call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+        call unify_reduceintp(nx,my,my_max,tm1,wk1)
+
+        if ( myrank .eq. ncnt ) then
+          pout=wk1
+          ihdg2=ihdg
+        endif
+!        call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
 
 !        write( lrec, '(i3.3,a3)' ) k,'TFN'
 !        call syslbl (lrec,idtg,itau,ggdef,ihdg)
@@ -290,8 +310,8 @@
 !        call syslbl (lrec,idtg,itau,ggdef,ihdg)
 !        call unify_reduceintp(nx,my,my_max,tmp3,glob) 
 !        call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-
-      enddo
+   10 continue
+      if(myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat) 
      
       sitwt24=0.
       wtfn0=0.

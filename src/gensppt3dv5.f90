@@ -146,6 +146,9 @@ subroutine gensppt3dv5(nx,my,my_max,lev,sppt3d                &
         sppt3d(i,1,jj)=sppt3d(i,1,jj)*0.2
         sppt3d(i,2,jj)=sppt3d(i,2,jj)*0.4
         sppt3d(i,3,jj)=sppt3d(i,3,jj)*0.6
+        sppt3d(i,lev-2,jj)=sppt3d(i,lev-2,jj)*0.6
+        sppt3d(i,lev-1,jj)=sppt3d(i,lev-1,jj)*0.4
+        sppt3d(i,lev,jj)=sppt3d(i,lev,jj)*0.2
         enddo
       enddo
 !c
