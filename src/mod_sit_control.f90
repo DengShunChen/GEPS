@@ -325,6 +325,7 @@
       LOGICAL,SAVE:: lsftobswt=.FALSE.      ! logical of shift SWT below 10m (10m=obswtb, delete difference
                                             !             between godas and obswtb data)
       real:: fsitchg = 0.5                  ! if fsitchg>=0., tg=tgold+tgdiff, tgdiff=min(max(tsw-tgold,-abs(fsitchg)),abs(fsitchg))
+      integer:: outsitlev= 20               ! output sit level from 0 to outsitlev+1
 !ps
 
 
@@ -332,6 +333,7 @@
     loutsit24,                 &! write wt,wu,wv,ws daily mean
     lpre6hr_sit,               &! use lead 6 hours data of pre 6 hr
     outsitmean,                &! write wt,wu,wv,ws every tau hours mean
+    outsitlev,                 &! output sit level from 0 to outsitlev+1
     sit_domain_w,              &! west coords (lon) of sit domain [-180., 360.](deg).
     sit_domain_e,              &! east coords (lon) of sit domain [-180., 360.](deg).
     sit_domain_s,              &! south coords (lat) of sit domain [-90., 90.](deg).
