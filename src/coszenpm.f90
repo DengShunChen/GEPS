@@ -24,7 +24,7 @@
       integer   istsun(nxp),nst
 
 !
-      pi = 3.141592654
+      pi = 4.*atan(1.0)
 !      d2r = pi/180.0
 !      beta = 2.*pi*julian/365.
       nst = 6

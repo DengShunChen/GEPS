@@ -1,4 +1,5 @@
-       subroutine precpd (im,ix,km,dt,del,prsl,ps,q,cwm,t,rn,u00k,lprnt)
+       subroutine precpd (im,ix,km,dt,del,prsl,ps,q,cwm,t,rn,u00k,  &
+                          psautco,lprnt)
 !
 !
 !     ******************************************************************
@@ -78,7 +79,7 @@
 !     ,                     cll(im,km), del(ix,km),  prsl(ix,km)
       ,                     ps(im),     rn(im),      sr(im)             &
       ,                     tcw(im),    dt                              &
-      ,                     u00k(ix,km)
+      ,                     u00k(ix,km),psautco(im)
 !
 !
       real                  err(im),      ers(im),     precrl(im)       &
@@ -204,7 +205,7 @@
       ke      = ke * sqrt(rdt)             !test(for Err)
       aa2     = 1.25e-3     * zaodt        !test(for Psaci)
 !      aa1     = 4.0e-4                     !test(for Psaut) original
-      aa1     = 4.0e-4                     !test(for Psaut) original
+!      aa1     = 4.0e-4                     !test(for Psaut) original
 !byl      aa1     = 8.0e-4                     !TCo639L72
 !      aa1     = 8.0e-4                     !test(for Psaut) test (rrt10)
 !      aa1     = 6.0e-4                     !test(for Psaut) test (rrt11)
@@ -238,11 +239,11 @@
           tem   = (prsl(i,k)*0.01)
 !         tem   = sqrt(tem)
           iw(i,k)    = 0.0
-!          wmin(i,k)  = 1.0e-5 * tem
-!          wmini(i,k) = 1.0e-5 * tem       ! testing for ras
+          wmin(i,k)  = 1.0e-5 * tem
+          wmini(i,k) = 1.0e-5 * tem       ! testing for ras
 !         wmini(i,k) = 1.0e-6 * tem       ! for sas
-          wmin(i,k)  = 0.5e-5 * tem
-          wmini(i,k) = 0.5e-5 * tem       ! testing for ras
+!          wmin(i,k)  = 0.5e-5 * tem
+!          wmini(i,k) = 0.5e-5 * tem       ! testing for ras
 !          wmin(i,k)  = 1.5e-5 * tem      ! for tem   = sqrt(tem)
 !          wmini(i,k) = 1.5e-5 * tem      ! for tem   = sqrt(tem)
         enddo
@@ -412,7 +413,8 @@
 !              psaut     = min(cwmk, 1.0e-3*expf*amaxcm)
 !              psaut     = min(cwmk, 5.0e-4*expf*amaxcm)
 !cjh               psaut     = min(cwmk, 4.0e-4*expf*amaxcm)
-               psaut     = min(cwmk, aa1*expf*amaxcm)            !eq(25) aa1=4.0e-4
+!byl               psaut     = min(cwmk, aa1*expf*amaxcm)            !eq(25) aa1=4.0e-4
+               psaut     = min(cwmk, psautco(ipr(n))*expf*amaxcm)            !eq(25) aa1=4.0e-4
 
                ww(n)     = ww(n) - psaut
                cwmk      = max(0.0, ww(n))

@@ -18,7 +18,7 @@ subroutine gensppt3dv5(nx,my,my_max,lev,sppt3d                &
 !c
       integer nx,my,dimtotal,ndim,idum,ii,i,jj,j,k,ncx,nxj,lev,my_max
 !c
-      real dt
+      real dt,pi
       real sppt2d(nx,my)  
       real sppt3d(nxp,lev,my_max)   ! for plot figure
       integer itimestep
@@ -46,7 +46,8 @@ subroutine gensppt3dv5(nx,my,my_max,lev,sppt3d                &
 !c  Please make sure your definition in init_block.f90 
 !c
 !      ncx=128 ! for 500km perturbation
-      ncx=2.*3.14159*6371./500. 
+      pi=4.*atan(1.)
+      ncx=2.*pi*6371./500. 
       jtrun500= 2*((1+(ncx-1)/3)/2) ! for 500km perturbation
       mlmax500= jtrun500*(jtrun500+1)/2
 !c      de_corretime_500=6. ! unit: hrs

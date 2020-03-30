@@ -121,7 +121,7 @@
      &             iaermdl, laswflg, lalwflg, lavoflg, icldflg, icmphys,&
      &             iovrsw , iovrlw , lsashal, lcrick , lcnorm , lnoprec,&
      &             ialbflg, iemsflg, isubcsw, isubclw, ivflip , ipsd0,  &
-     &             kind_phys
+     &             kind_phys, iswcliq, iswcice, ilwcliq, ilwcice
       use const,     only : pdfcloud
 
       use module_radiation_driver, only : radinit
@@ -194,10 +194,10 @@
       lnoprec = norad_precip            ! precip effect on radiation flag (ferrier microphysics)
       isubcsw = isubc_sw                ! sub-column cloud approx flag in sw radiation
       isubclw = isubc_lw                ! sub-column cloud approx flag in lw radiation
-!     iswcliq = icliq_sw                ! sw liq-cld opt prop scheme flag in sw radiation
-!     iswcice = icice_sw                ! sw ice-cld opt prop scheme flag in sw radiation
-!     ilwcliq = icliq_lw                ! lw liq-cld opt prop scheme flag in lw radiation
-!     ilwcice = icice_lw                ! lw ice-cld opt prop scheme flag in lw radiation
+      iswcliq = icliq_sw                ! sw liq-cld opt prop scheme flag in sw radiation
+      iswcice = icice_sw                ! sw ice-cld opt prop scheme flag in sw radiation
+      ilwcliq = icliq_lw                ! lw liq-cld opt prop scheme flag in lw radiation
+      ilwcice = icice_lw                ! lw ice-cld opt prop scheme flag in lw radiation
 
       ialbflg= ialb                     ! surface albedo control flag
       iemsflg= iems                     ! surface emissivity control flag

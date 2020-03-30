@@ -268,8 +268,7 @@
 ! --- compute surface pres and surface air temp at current time level
 !
       do 50 i = 1, nxj
-!      ps(i) = pss(i) + ptop
-      ps(i) = pss(i) 
+      ps(i) = pss(i) + ptop
       ttt = tt(i,lev)*(1.+0.608*qt(i,lev))
       ts(i) = ttt/pk(i,lev)*pk2(i,lev)
   50  continue

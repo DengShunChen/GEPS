@@ -233,6 +233,12 @@
       crdate ='crdate'
       ocards ='ocards'
       cntrl  ='gfsctl'
+!-- for sit
+      ifilin_ncep   = 'ifilin_ncep'
+      ifilin_sst    = 'ifilin_sst'
+      ifilin_nc     = 'ifilin_nc'
+      ifilin_ClmANA = 'ifilin_ClmANA'
+      ifilin_ClmFCT = 'ifilin_ClmFCT'
 !
 !dms
 !t512l60
@@ -322,6 +328,14 @@
 !---------------------------------------------------------------------------
       irad=2
       iflip=1
+      iovr_sw  = 1  ! sw: maximum-random overlapping vertical cloud layer
+      iovr_lw  = 1  ! lw: maximum-random overlapping vertical cloud layer
+      isubc_sw = 0  ! sw with mcica sub-col approximation provided random seed
+      isubc_lw = 0  ! lw with mcica sub-col approximation provided random seed
+      icice_sw = 3  ! sw cloud optical property for cloud ice
+      icice_lw = 3  ! lw cloud optical property for cloud ice
+      icliq_sw = 1  ! sw cloud optical property for cloud water
+      icliq_lw = 1  ! lw cloud optical property for cloud water
       ntiw=3
       ntrw=4
       ntsw=5
