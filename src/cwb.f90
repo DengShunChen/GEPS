@@ -103,6 +103,8 @@
             if(((mod(yyyy,4) .eq.0) .and. (mod(yyyy,100) .ne.0)) .or.  &
               ((mod(yyyy,100) .eq. 0) .and. (mod(yyyy,400) .eq. 0))) then
               month(2)=29
+            else
+              month(2)=28
             endif
 !          endif
           enddo
@@ -178,6 +180,8 @@
             if(((mod(yyyy,4) .eq.0) .and. (mod(yyyy,100) .ne.0)) .or.  &
               ((mod(yyyy,100) .eq. 0) .and. (mod(yyyy,400) .eq. 0))) then
               month(2)=29
+            else
+              month(2)=28
             endif
 !          endif
           enddo
