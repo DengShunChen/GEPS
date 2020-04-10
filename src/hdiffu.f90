@@ -60,10 +60,10 @@
         hfilt = (radsq/(nf*(nf+1)))**2.
         hfilt2 = radsq/(nf*(nf+1))
       if ( octahedral ) then
-        hfilt = hfilt/(12.*dta)
+        hfilt = hfilt/(6.*dta)
         hfilt2 = hfilt2/(6.*dta)
       else
-        hfilt = 8.*hfilt/dta
+        hfilt = 16.*hfilt/dta
         hfilt2 =16.*hfilt2/dta
       endif
 
@@ -76,24 +76,24 @@
 !  compute diffusion coefficients
 !
 
-         KL=Llist(k)
+        KL=Llist(k)
 !
-            facd= 1.
-            facv= 1.
-            fact= 1.
+!            facd= 1.
+!            facv= 1.
+!            fact= 1.
 
-          if ( KL .le. hdk2 ) then
-            kfac= 1.0 + float(hdk2-KL)
-            facd= kfac
-            facv= kfac
-            fact= kfac 
-            if ( KL .le. hdk1 ) facd=facd*(1.+float(hdk1-KL))
-          endif
+!          if ( KL .le. hdk2 ) then
+        kfac= 1.0 + max(float(hdk2-KL),0.) 
+        facd= kfac
+        facv= kfac
+        fact= kfac 
+!            if ( KL .le. hdk1 ) facd=facd*(1.+float(hdk1-KL))
+!          endif
 
 
-          facd = facd*amp
-          facv = facv*amp
-          fact = fact*amp
+        facd = facd*amp
+        facv = facv*amp
+        fact = fact*amp
 !
 
         if ( KL .le. hdk1 ) then
@@ -101,9 +101,11 @@
         else
           ddiffu =facd*hfilt
         endif
-          
+
         tdiffu =fact*hfilt
         vdiffu =facv*hfilt
+          
+
 !
 !  difuse vorticity and divergence fields
 !  diffuse moisture and temperature fields
@@ -111,21 +113,24 @@
         do m=1,mlistnum
           mf=mlist(m)
           do n=mf,jtrun
+
             c1=1.+dta*vdiffu*eps4(n,m)**2
+            c3=1.+dta*tdiffu*eps4(n,m)**2
+
             if ( KL .le. hdk1 ) then
               c2=1.+dta*ddiffu*eps4(n,m)
             else
               c2=1.+dta*ddiffu*eps4(n,m)**2
             endif
-            c3=1.+dta*tdiffu*eps4(n,m)**2
+
             vornow(k,1,n,m)=vornow(k,1,n,m)/c1
             vornow(k,2,n,m)=vornow(k,2,n,m)/c1
             divnow(k,1,n,m)=divnow(k,1,n,m)/c2
             divnow(k,2,n,m)=divnow(k,2,n,m)/c2
-!            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
-!            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
-            temnow(k,1,n,m)=temnow(k,1,n,m)/c3
-            temnow(k,2,n,m)=temnow(k,2,n,m)/c3
+            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
+            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
+!            temnow(k,1,n,m)=temnow(k,1,n,m)/c3
+!            temnow(k,2,n,m)=temnow(k,2,n,m)/c3
           enddo
         enddo
  100  continue
