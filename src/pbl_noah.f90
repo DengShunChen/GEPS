@@ -230,7 +230,8 @@
                 tsurf(nx),psi(nx),prsl1(nx),                            &
                 fm10(nx),fh2(nx),fh10(nx),                              &
                 qsurf(nx),evapc(nx),cmm(nx),chh(nx),ep1d(nx),           &
-                radsl(nx) ,tprcp(nx),                                   &
+!                radsl(nx) ,tprcp(nx),                                   &
+                tprcp(nx),                                              &
 !                phy_f2d(nx),q2(nx) 
                 ddvel(nx),q2(nx) 
 !
@@ -353,11 +354,11 @@
         prslki(i)            =pk2(i,lev)/pk(i,lev)   !(ps/p1)**r/cp
 !     sfemis   - real, sfc lw emissivity (fractional)
         sfemis(i)          =sfemis_g(i)
-        radsl(i)           =-ss(i)-rld(i)  ! snet + rld  upward
+!        radsl(i)           =-ss(i)-rld(i)  ! snet + rld  upward
 !
         tprcp(i)            =totalp(i)/1000.  ! dth precip (m)
 !
-        radsl(i)            =-ss(i)-rld(i)  ! snet + rld  upward
+!        radsl(i)            =-ss(i)-rld(i)  ! snet + rld  upward
 !
 !       shdmin(i)           =0.01
 !       shdmax(i)           =0.99

@@ -269,10 +269,6 @@
       rdt   = 1. / dt2
       km1   = km - 1
       kmpbl = km / 2
-!add by byl
-      do i=1,im
-        kinver(i) = 0
-      enddo
 !>  - Compute physical height of the layer centers and interfaces from the geopotential height (zi and zl)
       do k=1,km
         do i=1,im
@@ -300,7 +296,7 @@
         do i=1,im
           xkzo(i,k)  = 0.0
           xkzmo(i,k) = 0.0
-          if (k < kinver(i)) then
+!byl          if (k < kinver(i)) then
 !                                  vertical background diffusivity
             ptem      = prsi(i,k+1) * tx1(i)
             tem1      = 1.0 - ptem
@@ -317,7 +313,7 @@
               tem1 = tem1 * tem1 * 5.0
               xkzmo(i,k) = xkzm_m * min(1.0, exp(-tem1))
             endif
-          endif
+!byl          endif
         enddo
       enddo
 !     if (lprnt) then
