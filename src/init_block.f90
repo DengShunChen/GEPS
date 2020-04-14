@@ -49,7 +49,7 @@
 
 !!      hice=3.336e5
       evaprh=0.98
-      hfilt=1.5e15
+      hfilt=1.
 
       nnmiit=3
       nnmivm=3
