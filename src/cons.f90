@@ -331,8 +331,10 @@
           call pnmy (jtrun,sinl(j),pnm)
           call reducegrid(pnm,jtrun,pnmcut,j,mtrundef(j),nxdef(j),  &
                           octahedral)
+#ifdef VERBOSE
           if(myrank.eq.0)print *,'j=',j,' mtrundef,nxdef=',mtrundef(j), &
                              nxdef(j),asin(sinl(j))*r2d
+#endif
         enddo
       else
         lreduce=0
