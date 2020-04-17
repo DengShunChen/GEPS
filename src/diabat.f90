@@ -33,7 +33,6 @@
 ! sppt
                     , dosppt,sppt3d,itimestep,lrun_sitvdiff,ic_sit             &
 !xb110>
-!byl                    , rmr, smr, flash)
                     , flash,tsflw)
 !xb110<
 !--------------------------------------------------------------------------------
@@ -277,7 +276,8 @@
            prslk(nxp,lev)
       real oc(nxp),theta(nxp),gamma(nxp),sigmaog(nxp),elvmax(nxp),hprime(nxp),    &
            dlength(nxp),cldf(nxp),cumabs(nxp),work3(nxp),tauctx(nxp),taucty(nxp), &
-           dvsfcg(nxp),dusfcg(nxp),facg(lev)
+           facg(lev)
+!byl           dvsfcg(nxp),dusfcg(nxp),facg(lev)
       real oa4(nxp,4),clx(nxp,4),cgwf(2),cdmbgwd(2)
       real ograv
 !byl      integer kpbl(nxp,my_max), kpblc(nxp,my_max)
@@ -363,8 +363,9 @@
       real      adtrad(nxp,lev),work_pr1(9),work_pr2(lev,9)
 !--------
 ! for ncld=2
-!      real,     parameter :: dxmax=-8.8818363, dxmin=-5.2574954, &
+!byl      real,     parameter :: dxmax=-8.8818363, dxmin=-5.2574954, &
       real,     parameter :: dxmax=-16.118095651,dxmin=-9.800790154, &
+!      real,     parameter :: dxmax=-17.261145789,dxmin=-12.465355243,&
                              dxinv=1.0/(dxmax-dxmin)
 !     parameter (rhzbot=0.85, rhztop=0.85)
 
@@ -426,13 +427,8 @@
 
 !xb110>
 !for new precpd & nTDK
-!byl      real      rmr(nxp,lev,my_max),smr(nxp,lev,my_max),rainr(nxp,lev,my_max),&
-!byl                u0(nxp,lev,my_max),v0(nxp,lev,my_max),t0(nxp,lev,my_max),     &
-!byl                q0(nxp,lev*ncld,my_max)
       real      u0(nxp,lev),v0(nxp,lev),t0(nxp,lev),q0(nxp,lev*ncld)
       real      upp(nxp,lev),vpp(nxp,lev)
-!byl      real      slsp(nxp,my_max),rm(nxp,lev),sm(nxp,lev),rainp(nxp,lev)
-!rainr : rainfall rate (unit in kg/kg/dt)
 !for lightning
       real      flash(nxp,my_max)        !flash density (unit in flashes km^-2 day^-1)
       real      ztenh(nxp,lev),zqenh(nxp,lev),rho(nxp,lev)              &
@@ -1007,7 +1003,7 @@
 !
         call dcyc2t3                                                  &
 !  ---  inputs:
-          ( hours,slag,sdec,cdec,sinl(j),cosl(j),                     &
+          ( solhr,slag,sdec,cdec,sinl(j),cosl(j),                     &
             xlonr(1,jj),cosz(1,jj),tg(1,jj),tt(1,lev,jj),tsflw(1,jj), &
             sld(1,jj),ss(1,jj),rld(1,jj),asl(1,1,jj),atl(1,1,jj),     &
             nxp, nxjp(j), lev,                                        &
@@ -1017,13 +1013,6 @@
       do i = 1, nxj
          rld_adj(i) = rld_adj(i) * sfemis(i,jj)
       enddo
-!
-!     update tt by radiation heating/cooling rate: dtrad (k/day)
-!
-      do 240 k = 1, lev
-      do 240 i = 1, nxj
-      tt(i,k,jj) = tt(i,k,jj) + dta*dtrad(i,k,jj)/86400.0
-  240 continue
 
 !
 !xb110> save the variables for TDK before doing PBL parameterization
@@ -1052,7 +1041,8 @@
                      , ustar(1,jj),tstar(1,jj),qstar(1,jj),e(1,1,jj)          &
                      , eps(1,1,jj),hflux(1,jj),qflux(1,jj),fwd                &
                      , gwclim(1,jj),tgclim(1,jj),ocean(1,jj),ice(1,jj)        &
-                     , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),albx(1,jj)      &
+!                     , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),albx(1,jj)      &
+                     , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),sfalb(1,jj)      &
                      , ipblmx(1,j),xkmx(1,j),ijdg(j),xkmd,itypbl              &
                      , t2(1,jj),rh2(1,jj),u10(1,jj),v10(1,jj)                 &
                      , rld_adj,stbo                                           &
@@ -1077,7 +1067,8 @@
                      , ustar(1,jj),tstar(1,jj),qstar(1,jj),e(1,1,jj)          &
                      , eps(1,1,jj),hflux(1,jj),qflux(1,jj),fwd                &
                      , gwclim(1,jj),tgclim(1,jj),ocean(1,jj),ice(1,jj)        &
-                     , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),albx(1,jj)      &
+!                     , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),albx(1,jj)      &
+                     , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),sfalb(1,jj)      &
                      , ipblmx(1,j),xkmx(1,j),ijdg(j),xkmd,itypbl              &
                      , t2(1,jj),rh2(1,jj),u10(1,jj),v10(1,jj)                 &
                      , rld_adj,stbo                                         &
@@ -1093,7 +1084,8 @@
                      , ustar(1,jj),tstar(1,jj),qstar(1,jj),e(1,1,jj)          &
                      , eps(1,1,jj),hflux(1,jj),qflux(1,jj),fwd                &
                      , gwclim(1,jj),tgclim(1,jj),ocean(1,jj),ice(1,jj)        &
-                     , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),albx(1,jj)      &
+!                     , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),albx(1,jj)      &
+                     , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),sfalb(1,jj)      &
                      , ipblmx(1,j),xkmx(1,j),ijdg(j),xkmd,itypbl              &
                      , t2(1,jj),q2(1,jj),rh2(1,jj),rh10(1,jj),u10(1,jj)       &
                      , v10(1,jj),fm(1,jj),fh(1,jj),fm10(1,jj),fh2(1,jj)       &
@@ -1107,6 +1099,13 @@
                      , sld_adj,zice(1,jj),cice(1,jj),xtice(1,jj)            &
                      , hpbl(1,jj),asl(1,1,jj),atl(1,1,jj),xmu(1,jj),gfx(1,jj) &
                      , kpbl(1,jj),nmpbl,j,isot,ivegsrc,sfemis(1,jj) )
+!
+!     update tt by radiation heating/cooling rate: dtrad (k/day)
+!
+      do 240 k = 1, lev
+      do 240 i = 1, nxj
+      tt(i,k,jj) = tt(i,k,jj) + dta*dtrad(i,k,jj)/86400.0
+  240 continue
 !
 !
 !     recompute phi by tt after pbl to ensure consistence of phi & phi2
@@ -1183,7 +1182,7 @@
 !        cdmbgwd(1)       = 2.00      ! mtn blking and gwd tuning factors
 !        cdmbgwd(2)       = 0.25      ! mtn blking and gwd tuning factors
         cdmbgwd(1)       = 1.00      ! mtn blking and gwd tuning factors
-        cdmbgwd(2)       = 1.05      ! mtn blking and gwd tuning factors
+        cdmbgwd(2)       = 1.20      ! mtn blking and gwd tuning factors
 !
         do i = 1, nxj
           hprime(i)=hprime_b(i,1,jj)
@@ -1241,7 +1240,8 @@
                kpbl(1,jj),   prsi, del,   prsl, prslk,             &
                phii,  phil, dta,                                   &
                kdt,    hprime, oc, oa4, clx,                       &
-               theta,sigmaog,gamma,elvmax,dusfcg, dvsfcg,          &
+!               theta,sigmaog,gamma,elvmax,dusfcg, dvsfcg,          &
+               theta,sigmaog,gamma,elvmax,ugws(1,jj),vgws(1,jj),   &
                grav,cp,con_rd,con_rv, nx, mtnvar, cdmbgwd,         &
                me)
 !
@@ -1295,12 +1295,20 @@
 !cyea---->
 !c 20120926 for Tiedtke cumulus
       if ( docup .and. (nmcup .eq. 4) .and. (ncld .ge. 2) ) then
+        do k=1,lev-1
+          do i = 1, nxj
+            dotc(i,k)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
+          enddo
+        enddo
+        do i = 1,nxj
+          dotc(i,lev)=0.5*sd(i,lev,jj)
+        enddo
         call cumastr_driv(nxjp(j),nxp,lev,dt,grav,rgas,cp,hltm,ptop &
                        , land(1,jj),sgeo(1,jj),phi,upp              &
                        , vpp,ttp(1,1,jj),qp(1,1,jj)                 &
                        , ut(1,1,jj),vt(1,1,jj),tt(1,1,jj)           &
                        , qt(1,1,jj),rcup(1,jj),pk(1,1,jj)           &
-                       , pk2(1,1,jj),sd(1,1,jj),qflux(1,jj)         &
+                       , pk2(1,1,jj),dotc,qflux(1,jj)               &
                        , kbot(1,jj),ktop(1,jj),fwd,ncld,sigma       &
                        , plt(1,1,jj),pst(1,jj),j,kuo(1,jj) )
 
@@ -1338,13 +1346,21 @@
           if(ocean(i,jj))islimsk(i)=0
           if(ice(i,jj))islimsk(i)=2
         enddo
+        do k=1,lev-1
+          do i = 1, nxj
+            dotc(i,k)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
+          enddo
+        enddo
+        do i = 1,nxj
+          dotc(i,lev)=0.5*sd(i,lev,jj)
+        enddo
 
         call cumastr_driv_n                                               &
                (nxjp(j)    ,nxp       ,lev        ,dta         ,grav     ,&
                 rgas       ,cp        ,hltm       ,ptop      ,land(1,jj) ,&
                 sgeo(1,jj) ,phi       ,u0         ,v0        ,t0         ,&
                 q0         ,ut(1,1,jj),vt(1,1,jj) ,tt(1,1,jj),qt(1,1,jj) ,&
-                rcup(1,jj) ,pk(1,1,jj),pk2(1,1,jj),sd(1,1,jj),qflux(1,jj),&
+                rcup(1,jj) ,pk(1,1,jj),pk2(1,1,jj),dotc      ,qflux(1,jj),&
                 kbot(1,jj) ,ktop(1,jj),fwd        ,ncld      ,sigma      ,&
                 plt(1,1,jj),pst(1,jj) ,j          ,islimsk   ,hflux(1,jj),&
                 garea      ,kuo(1,jj) ,flash(1,jj))
@@ -1702,15 +1718,10 @@
 !
         lprnt=.false.
         do i=1,nxj
-!!cjh          work1(i) = (log(cosl(j)/real(nxj)) - dxmin) * dxinv
-!          work1(i) = (log(cosl(j)/real(nx)) - dxmin) * dxinv
-!          work2(i) = 1.0 - work1(i)
           psfc(i)  = pst(i,jj)*0.1        ! change to cb
         enddo
         do k=1,lev
           kc=lev-k+1
-!!!!          rhckt=35.+10.*max(cos(4.*d2r*xlat(j))**3,0.)
-!!!!          coefrhc=min(float(kc)/rhckt,1.)**2
           do i=1,nxj
 !!           tem   = (rhztop-rhzbot) / (pk(i,k,jj)-pk(i,lev,jj))
 !!           tmprhc = rhzbot + tem * (pk(i,k,jj)-pk(i,lev,jj))
@@ -1720,8 +1731,7 @@
 !!!            rhc(i,kc)=0.999-0.08*cos(d2r*arg)**2    !a3
 !byl            rhc(i,kc)=0.95-0.07*cos(d2r*xlat(j))    !v2
             rhc(i,kc)=0.98-0.12*cos(d2r*arg)**2.0    !v3
-!byl            rhc(i,kc)   = 0.999 * work1(i) + 0.85 * work2(i)
-!byl            psautco(i)  = 6.0e-4 * work1(i) + 3.0e-4 * work2(i)
+!byl            psautco(i)  = 8.0e-4 * work1(i) + 5.0e-4 * work2(i)
             psautco(i)  = 4.0e-4
 !            tem   = (max(min(plt(i,k,jj),900.)-700.,0.01) / 200.)
 !            rhc(i,kc)=tem*rhc(i,kc)+(1.-tem)*0.7
@@ -1745,8 +1755,6 @@
             qtc(i,kc) = qt(i,k,jj)
             qtr(i,kc) = qt(i,lev+k,jj)
             ttc(i,kc) = tt(i,k,jj)
-!byl            rm(i,kc)  = rmr(i,k,jj)
-!byl            sm(i,kc)  = smr(i,k,jj)
           enddo
         enddo
         if ( pdfcloud ) then
@@ -1788,14 +1796,11 @@
             qt(i,k    ,jj) = qtc(i,kc)
             qt(i,k+lev,jj) = qtr(i,kc)
             tt(i,k    ,jj) = ttc(i,kc)
-!byl            rmr(i,k   ,jj) = rm(i,kc)
-!byl            smr(i,k   ,jj) = sm(i,kc)
-!byl            rainr(i,k ,jj) = rainp(i,kc)
           enddo
         enddo
-!byl      endif
+!
       elseif ( dolsp .and. (ncld .eq. 7) ) then
-
+!
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj

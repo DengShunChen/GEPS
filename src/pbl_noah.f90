@@ -189,7 +189,7 @@
 !ch            dhgt(im,lm),ro2(im,lm),dhgtz(im,lm)
       real     hgt(nx,lev),xkm(nx,lev),xkh(nx,lev),ts(nx),                    &
                qsfc(nx),zl(nx),czh(nx),ps(nx),sfcw(nx),                    &
-               dhgt,ro2(nx,lev),dhgtz(nx,lev)
+               dhgt,ro2(nx),dhgtz(nx,lev)
 !soil
       real     rhscnpy(nx),rhsmc(nx,km),aim(nx,km),bim(nx,km),             &
                cim(nx,km),drain(nx),snomt(nx),zsoil(nx,km),                &
@@ -247,7 +247,7 @@
       real      asl(nx,lev),atl(nx,lev),swh(nx,lev),hlw(nx,lev),xmu(nx)
 
       integer  lsm,i,k,iter,kc,ntrac,ntcw
-      real     ppd,ppp,ttt,ppu,dth,p850,ddd,cc
+      real     ppd,ppp,ttt,ppu,dth,p850,ddd,cc,qqq
 !
 ! noah mode
       lsm   =  1
@@ -312,15 +312,18 @@
   110 continue
 
       do 120 i = 1, nxj
-      ro2(i,lev) = 100.0*ps(i)/( r*ts(i))
+      qqq = max(qt(i,lev), 1.0e-8)
+      ttt = tt(i,lev)*(1.+0.608*qqq)
+      ppp = pkx(i,lev)*1000.
+      ro2(i) = 100.0*ppp/( r*ttt)
   120 continue
 !
-      do 130 k = 1, lev-1
-      do 130 i = 1, nxj
-      ppu = pkx(i,k)*1000.
-      ppd = pkx(i,k+1)*1000.
-      ro2(i,k) = ( ppd - ppu ) * 100. / ( phi(i,k) - phi(i,k+1) )
-  130 continue
+!      do 130 k = 1, lev-1
+!      do 130 i = 1, nxj
+!      ppu = pkx(i,k)*1000.
+!      ppd = pkx(i,k+1)*1000.
+!      ro2(i,k) = ( ppd - ppu ) * 100. / ( phi(i,k) - phi(i,k+1) )
+!  130 continue
 !
 
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -721,8 +724,8 @@
 !     endif
 !
        do i=1,nxj
-       hflux(i)=hflux(i)*ro2(i,lev)*cp          ! transfer to W/m2
-       qflux(i)=qflux(i)*ro2(i,lev)*hltm        ! transfer to W/m2
+       hflux(i)=hflux(i)*ro2(i)*cp          ! transfer to W/m2
+       qflux(i)=qflux(i)*ro2(i)*hltm        ! transfer to W/m2
        tstar(i)=-heat(i)/ustar(i)
        qstar(i)=-evap(i)/ustar(i)
        enddo
