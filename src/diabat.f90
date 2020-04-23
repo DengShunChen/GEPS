@@ -1181,8 +1181,8 @@
 !
 !        cdmbgwd(1)       = 2.00      ! mtn blking and gwd tuning factors
 !        cdmbgwd(2)       = 0.25      ! mtn blking and gwd tuning factors
-        cdmbgwd(1)       = 1.00      ! mtn blking and gwd tuning factors
-        cdmbgwd(2)       = 1.20      ! mtn blking and gwd tuning factors
+        cdmbgwd(1)       = 1.00      ! mtn blocking tuning factors
+        cdmbgwd(2)       = 1.20      ! gwd tuning factors
 !
         do i = 1, nxj
           hprime(i)=hprime_b(i,1,jj)
@@ -1551,7 +1551,7 @@
         do  k = 1,lev+1
 !          kc=(lev+1)-k+1
           do  i = 1, nxj
-            prsi(i,k) = 100.0*( sigma(k,1)*pst(i,jj)+sigma(k,2) ) !pa
+            prsi(i,k) = 100.0*( sigma(k,1)*pst(i,jj)+sigma(k,2) + ptop) !pa
           enddo
         enddo
 !

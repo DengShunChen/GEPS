@@ -129,7 +129,11 @@
                write(6,*) 'mod_phygrid : allocate fail 6 '
                stop
            end if
-
+!
+           rh2=0.
+           rh10=0.
+           gwr=0.
+!
            allocate (fpsp(nxp,my_max),fpsp1(nxp,my_max),stat=ierr)
 
            if (ierr/= 0) then

@@ -193,6 +193,8 @@
 #ifdef TIMING
 ! for timing
       real*8 tm_1,tm_2,tm_use,mpi_wtime
+!CWB2020
+      tm_1=mpi_wtime()
       tm_2=mpi_wtime()
 #endif
 !      fsit=-99.             !fsit>0., turn on sit_vdiff when
@@ -587,9 +589,10 @@
 
       endif
 
-#ifdef TIMING
-      tm_1=mpi_wtime()
-#endif
+!CWB2020 fix the bug for negative timing info
+!#ifdef TIMING
+!      tm_1=mpi_wtime()
+!#endif
  100  continue
 !
       tau=tau+dtx/3600.
