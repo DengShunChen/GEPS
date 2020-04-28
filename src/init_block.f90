@@ -320,7 +320,7 @@
       isol=1
       ico2=2
       iaer=111
-      ialb=1
+      ialb=0
       iems=1
       ntcw=2
       num_p3d=4
