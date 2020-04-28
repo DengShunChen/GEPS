@@ -18,7 +18,7 @@
              fusl,fdsl,fuir,fdir,                                   &
 ! -------------------------------------------------------------------
              fuslr,fdslr,fuirr,fdirr,                               &
-             htrsw0,htrlw0,                                         &
+             htrsw0,htrlw0,cosz,                                    &
              asol_clr,olr_clr,ss_clr,rs_clr,                        &
              sld_clr,rld_clr,sfalb_g,semis_g)
 ! -------------------------------------------------------------------
@@ -46,7 +46,7 @@
       real    slimsk(nx),cice(nx),xtice(nx),snr(nx),sncover(nx),  &
               snoalb(nx),z0(nx)
       real    alvsg(nx),alvwg(nx),alnsg(nx),alnwg(nx),facsg(nx),  &
-              facwg(nx),curate(nx),xlonr(nx),tsflwr(nx)
+              facwg(nx),curate(nx),xlonr(nx),tsflwr(nx),cosz(nx)
       integer icsdlwg(nx),icsdswg(nx),jdat(8),j
       real    sinlj,coslj,xlatj,ptop,dtlw,dtsw,d2r,xkapa,solhr
       logical lsswr,lslwr,lssav,lprnt
@@ -470,6 +470,7 @@
        do i = 1, nxj
 !          dtrad(i,k)=htrsw(i,k)+htrlw(i,k)
           tsflwr(i)=tsflw(i)
+          cosz(i)  =coszen(i)
        enddo
 !       enddo
 

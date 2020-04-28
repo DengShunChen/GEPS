@@ -1,5 +1,5 @@
        subroutine precpdp (im,ix,km,dt,del,prsl,ps,q,cwm,t,rn  &
-      ,                   u00k,deltaq,lprnt)
+      ,                   u00k,deltaq,psautco,lprnt)
 !
 !
 !     ******************************************************************
@@ -99,7 +99,7 @@
       ,                     wmini(im,km), ccr(im),     cclim(km)       &
       ,                     tt(im),       qq(im),      ww(im)          &
       ,                     wfix(km),     u00k(ix,km), es(im)          &
-      ,                     zaodt
+      ,                     zaodt,        psautco(im)
 !
       integer iw(im,km), ipr(im), iwl(im),     iwl1(im)
 !
@@ -149,7 +149,7 @@
       crs2    = 6.66600e-10 * zaodt
       cr      = 5.0e-4      * zaodt
       aa2     = 1.25e-3     * zaodt
-      aa1     = 4.0e-4
+!      aa1     = 4.0e-4
 !
       ke      = ke * sqrt(rdt)
 !     ke      = ke * sqrt(zaodt)
@@ -180,8 +180,10 @@
 !         wmini(i,k) = 1.0e-5 * tem       ! testing for ras
 !
 
-          wmin(i,k)  = 0.5e-5 * tem
-          wmini(i,k) = 0.5e-5 * tem
+!          wmin(i,k)  = 0.5e-5 * tem
+!          wmini(i,k) = 0.5e-5 * tem
+          wmin(i,k)  = 1.0e-5 * tem
+          wmini(i,k) = 1.0e-5 * tem
 
 
           rainp(i,k) = 0.0
@@ -360,7 +362,8 @@
             if (iwl(n) == 1) then                 !  ice phase
                amaxcm = max(cons_0, cwmk - wmini(ipr(n),k))
                expf      = dt * exp(0.025*tmt0(n))
-               psaut     = min(cwmk, aa1*expf*amaxcm)
+!               psaut     = min(cwmk, aa1*expf*amaxcm)
+               psaut     = min(cwmk, psautco(ipr(n))*expf*amaxcm)
 
 !              psaut     = min(cwmk, 2.0e-3*expf*amaxcm)
 !              psaut     = min(cwmk, 1.0e-3*expf*amaxcm)
