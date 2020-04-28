@@ -132,7 +132,7 @@ INSTALL = /usr/bin/install
 #           -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE)
 
 # use FFTW fft
- FFLAGS  = -c -X9 -Free -CcdRR8 -Cpp -DTIMING -DMULTIPLE -DUSE_FFTW \
+ FFLAGS  = -c -X9 -Free -CcdRR8 -Cpp -DTIMING -DMULTIPLE -DUSE_FFTW -DW3TAG \
            -Kfast,parallel,openmp,ocl,autoobjstack \
 	   -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE) 
 #           -Kfast,parallel,openmp,ocl,autoobjstack -Nquickdbg
@@ -144,7 +144,7 @@ INSTALL = /usr/bin/install
 LDFLAGS = -Kopenmp,parallel -L/package/$(MACHINE)/dms/dms.v4/lib -lrdms -lgdbm -L/package/$(MACHINE)/operlib/lib -lnwp \
           -L/users/xa09/$(MACHINE)/fftw-3.3.7/lib -lfftw3_threads -lfftw3 -SSL2BLAMP
 
-LIBS	= -L/package/$(MACHINE)/netcdf-3.6.3/lib -lnetcdf
+LIBS	= -L/package/$(MACHINE)/netcdf-3.6.3/lib -lnetcdf ${W3NCO_LIBd}
 
 all :	$(CMD)
 

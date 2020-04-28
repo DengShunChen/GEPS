@@ -19,7 +19,9 @@
 
       implicit none
       integer  ierr
- 
+#ifdef W3TAG
+      if (myrank_all==0) call w3tage('CWBGFS')
+#endif
       if(io_quilting)then
 ! method 1
       if(myrank_all .le. Ngfs-1)then
