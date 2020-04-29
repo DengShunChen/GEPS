@@ -199,7 +199,8 @@
 ! the next levels, we use the variables at the first level as initial values
        do jl = 1, nxj           
       if(loflag(jl)) then
-         eta(jl) = 0.55/((pgeoh(jl,jk)-pgeoh(jl,klev+1))*zrg)+1.0e-4
+!         eta(jl) = 0.55/((pgeoh(jl,jk)-pgeoh(jl,klev+1))*zrg)+1.0e-4
+        eta(jl) = 0.8/(pgeo(jl,jk)*zrg)+2.e-4             !xb110, for more stable
         dz(jl)  = (pgeoh(jl,jk)-pgeoh(jl,jk+1))*zrg
         coef(jl)= 0.5*eta(jl)*dz(jl)
         dhen(jl,jk) = pgeoh(jl,jk) + cpd*ptenh(jl,jk)
