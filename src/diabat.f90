@@ -18,7 +18,7 @@
                     , fm,fh,fm10,fh2,srflag                                    &
                     , rld,km_soil,smc,stc,canopy,runoff                        &
                     , sigmaf,istyp,ivegtyp,wlt,ref,tsat,dfkt,xktk,dfk          &
-                    , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,deltaq,sd                   &
+                    , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,deltaq,cnvwr,cnvcr,sd       &
                     , shdmax,shdmin,snoalb                                     &
                     , slopetyp,sld,slc,zice,cice,xtice,sncover,sndepth         &
                     , ctot,chig,cmid,clow,hpbl,asl,atl,cosz                    &
@@ -379,7 +379,7 @@
       integer   kdt
       real      sup
       real      cnvw(nxp,lev),cnvc(nxp,lev),deltaq(nxp,lev,my_max)
-      real      cnvwr(nxp,lev),cnvcr(nxp,lev)
+      real      cnvwr(nxp,lev,my_max),cnvcr(nxp,lev,my_max)
 
 ! vertcal rhc
 !      real      ct,cs,px
@@ -580,8 +580,7 @@
 !for pdfcloud
           cnvw(i,k) = 0.
           cnvc(i,k) = 0.
-          cnvwr(i,k) = 0.
-          cnvcr(i,k) = 0.
+
 !
 !for hydrometeor
           qtr(i,k)  = 0.
@@ -831,6 +830,12 @@
         work1(i)    = (log(cosl(j) / (nxdef(j)*my)) - dxmin) * dxinv
         work1(i)    = max(0.0, min(1.0,work1(i)))
         work2(i)    = 1.0 - work1(i)
+        if(land(i,jj))slimsk(i)=1
+        if(ocean(i,jj))slimsk(i)=0
+        if(ice(i,jj))slimsk(i)=2
+        if(land(i,jj))islimsk(i)=1
+        if(ocean(i,jj))islimsk(i)=0
+        if(ice(i,jj))islimsk(i)=2
       enddo
 !
 !    compute new time level p**kapa quantites
@@ -962,6 +967,17 @@
           rstd(i) = hprime_b(i,1,jj)
         enddo
       endif
+!
+      do k=1,lev-1
+        kc=lev-k+1
+        do i = 1, nxj
+          dotc(i,kc)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
+          dotc(i,kc)=dotc(i,kc)
+        enddo
+      enddo
+      do i = 1,nxj
+        dotc(i,1)=0.5*sd(i,lev,jj)
+      enddo
 
 !      if (myrank .eq. 0) then
 !          print *,'### use RRTMG scheme'
@@ -974,7 +990,7 @@
       call rrtmg                                                           &
 !  ---  inputs:
            ( sigma,pst(1,jj),plt(1,1,jj),rstd,                             &
-             tt(1,1,jj),qt(1,1,jj),o3l(1,1,jj),sd(1,1,jj),tg(1,jj),        &
+             tt(1,1,jj),qt(1,1,jj),o3l(1,1,jj),dotc,tg(1,jj),              &
              slimsk   ,cice(1,jj),xtice(1,jj),                             &
              snr(1,jj),sncover(1,jj),snoalb(1,jj),z0(1,jj),                &
              alvsf(1,jj),alnsf(1,jj),alvwf(1,jj),                          &
@@ -985,7 +1001,7 @@
              nfxr,j,                                                       &
              nxp,nxjp(j),lev,ncld,lprnt,ipt,kdt,solhr,                     &
              uni_cloud,lmfshal,lmfdeep2,                                   &
-             deltaq(1,1,jj),sup,cnvwr,cnvcr,                               &
+             deltaq(1,1,jj),sup,cnvwr(1,1,jj),cnvcr(1,1,jj),               &
 !  ---  outputs:
              asol(1,jj),olr(1,jj),ss(1,jj),rs(1,jj),                       &
              sld(1,jj),rld(1,jj),tsflw(1,jj),                              &
@@ -1339,12 +1355,6 @@
 
         do i=1,nxj
           garea(i)  = tem1*tem2
-!byl          if(land(i,jj))slimsk(i)=1
-!byl          if(ocean(i,jj))slimsk(i)=0
-!byl          if(ice(i,jj))slimsk(i)=2
-          if(land(i,jj))islimsk(i)=1
-          if(ocean(i,jj))islimsk(i)=0
-          if(ice(i,jj))islimsk(i)=2
         enddo
         do k=1,lev-1
           do i = 1, nxj
@@ -1403,12 +1413,6 @@
         do i=1,nxj
           psfc(i)  = pst(i,jj)*0.1        ! change to cb
           garea(i)  = tem1*tem2
-          if(land(i,jj))slimsk(i)=1
-          if(ocean(i,jj))slimsk(i)=0
-          if(ice(i,jj))slimsk(i)=2
-          if(land(i,jj))islimsk(i)=1
-          if(ocean(i,jj))islimsk(i)=0
-          if(ice(i,jj))islimsk(i)=2
         enddo
         do k=1,lev-1
           kc=lev-k+1
@@ -1503,15 +1507,15 @@
             tt(i,k    ,jj) = ttc(i,kc)
             ut(i,k    ,jj) = utc(i,kc)
             vt(i,k    ,jj) = vtc(i,kc)
-            cnvwr(i,kc)    = cnvw(i,kc)
-            cnvcr(i,kc)    = cnvc(i,kc)
+            cnvwr(i,kc,jj) = cnvw(i,kc)
+            cnvcr(i,kc,jj) = cnvc(i,kc)
             cnvw(i,kc)     = 0.
             cnvc(i,kc)     = 0.
 !xb110>>
             snow_flx(i,k) = snow_flxn(i,kc)
             ptu(i,k)      = ptun(i,kc)
             pqu(i,k)      = pqun(i,kc)
-            cnvwn(i,k)    = cnvwr(i,kc)
+            cnvwn(i,k)    = cnvwr(i,kc,jj)
 !xb110<<
           enddo
         enddo
@@ -1613,12 +1617,7 @@
         do i=1,nxj
           psfc(i)  = pst(i,jj)*0.1        ! change to cb
           garea(i) = tem1*tem2
-          if(land(i,jj))slimsk(i)=1
-          if(ocean(i,jj))slimsk(i)=0
-          if(ice(i,jj))slimsk(i)=2
-          if(land(i,jj))islimsk(i)=1
-          if(ocean(i,jj))islimsk(i)=0
-          if(ice(i,jj))islimsk(i)=2
+
         enddo
         do k=1,lev-1
           kc=lev-k+1
@@ -1683,8 +1682,8 @@
             tt(i,k    ,jj) = ttc(i,kc)
             ut(i,k    ,jj) = utc(i,kc)
             vt(i,k    ,jj) = vtc(i,kc)
-            cnvwr(i,kc)    = cnvwr(i,kc) + cnvw(i,kc)
-            cnvcr(i,kc)    = cnvcr(i,kc) + cnvc(i,kc)
+            cnvwr(i,kc,jj) = cnvwr(i,kc,jj) + cnvw(i,kc)
+            cnvcr(i,kc,jj) = cnvcr(i,kc,jj) + cnvc(i,kc)
           enddo
         enddo
 !

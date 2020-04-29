@@ -38,7 +38,8 @@
       real, dimension(:,:),allocatable,save :: fpsp,fpsp1
 
       real, dimension(:,:,:),allocatable,save :: e,eps,o3l,dtrad,asl,atl
-      real, dimension(:,:,:),allocatable,save :: ftp,fqp,ftp1,fqp1,deltaq
+      real, dimension(:,:,:),allocatable,save :: ftp,fqp,ftp1,fqp1
+      real, dimension(:,:,:),allocatable,save :: deltaq,cnvwr,cnvcr
 
       contains 
 
@@ -51,12 +52,16 @@
                      asl(nxp,lev,my_max),  atl(nxp,lev,my_max),  &
                      ftp(nxp,lev,my_max),  fqp(nxp,lev,my_max),  &
                     ftp1(nxp,lev,my_max), fqp1(nxp,lev,my_max),  &
-                    deltaq(nxp,lev,my_max), stat=ierr)
+                    deltaq(nxp,lev,my_max),cnvwr(nxp,lev,my_max),&
+                    cnvcr(nxp,lev,my_max),  stat=ierr)
 
            if (ierr/= 0) then
                write(6,*) 'mod_phygrid : allocate fail 1 '
                stop
            end if
+           deltaq = 0.
+           cnvcr  = 0.
+           cnvwr  = 0.
 
            allocate (                                 &
              snr(nxp,my_max),   gwr(nxp,my_max),     tg(nxp,my_max), &
@@ -147,7 +152,8 @@
 
          subroutine deallocate_phygrid_array
 
-           deallocate (e,eps,o3l,dtrad,asl,atl,ftp,fqp,ftp1,fqp1,deltaq)
+           deallocate (e,eps,o3l,dtrad,asl,atl,ftp,fqp,ftp1,fqp1)
+           deallocate (deltaq,cnvwr,cnvcr)
            deallocate (                                           &
                        snr,gwr,tg,   ss,rs,                       &
              ustar,tstar,qstar,hflux,qflux,raintot,raincu,rainlp, &
