@@ -166,8 +166,7 @@ USE mo_cumulus_flux,  only: lmfdudv, &! true if cum. friction is switched on
       real     apha,capa,klvl
       real     zduten,zdvten,ztdis,pgf_u,pgf_v
       real     zoentr1(klon,klev),tmp2(klon,klev),tmp3(klon,klev) &
-     &        ,tmp4(klon,klev),tmp5(klon,klev),cdeep(klon,klev)
-      real     cdeep1(klon),cdeep2(klon),tmp(klon)
+     &        ,tmp4(klon,klev),tmp5(klon,klev)
 !xb110>
       real     mdlon,gdx,re,rr
       integer  kcnv(klon)
@@ -399,33 +398,6 @@ USE mo_cumulus_flux,  only: lmfdudv, &! true if cum. friction is switched on
       end if    
       end do
 !
-      do jk = 1,klev
-        do jl = 1,nxj
-          cdeep(jl,jk) = 0.
-          cdeep1(jl) = 0.
-          cdeep2(jl) = 0.
-          tmp(jl) = 0.
-        enddo
-      enddo
-
-!parameterization of deep convection cloud fraction scheme
-
-      do jl = 1,nxj
-      klvl=0.
-        do jk = 1,klev
-        llo1 = ldcum(jl) .and. ktype(jl) .eq. 1
-        if ( llo1 .and. jk <= kcbot(jl) .and. jk > kctop(jl) ) then
-        klvl=klvl+1.
-        cdeep(jl,jk) = 0.14*log(1.0+500.*pmfu(jl,jk))
-        cdeep1(jl) = cdeep1(jl) + (0.14*log(1.0+500.*pmfu(jl,jk)))
-        endif
-        enddo
-        if ( cdeep1(jl) .gt. 0 )then
-        cdeep2(jl) = cdeep1(jl)/klvl
-        cdeep2(jl) = max(0.,cdeep2(jl))
-        cdeep2(jl) = min(1.,cdeep2(jl))
-        endif
-      enddo
 
       do jk = 1 , klev
        do jl = 1, nxj            
@@ -885,8 +857,8 @@ end if       !end for adjustment
       end do
        do jl = 1, nxj         
         if ( llo2(jl) ) then
-          kctop(jl) = klev - 1
-          kcbot(jl) = klev - 1
+          kctop(jl) = -1
+          kcbot(jl) = -1
         end if
       end do
       end if
