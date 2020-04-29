@@ -131,6 +131,9 @@
       nmgwor=2
       nmgwcv=2
       mtnvar=14
+      cgwd = 1.0
+      cmbk = 1.2
+
 !
 ! specify the default option for reduced grids
 ! numreduce : -99 for full grids, 1 to 4 proper for reduced grids

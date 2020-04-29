@@ -168,7 +168,7 @@
       use rank
       use index
       use const,                 ONLY:do_sit,ldailyFCTsst,dailyClm_option    &
-                                     ,pdfcloud   
+                                     ,pdfcloud,cmbk,cgwd
       use mod_sitgrid
       USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
       USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt
@@ -1181,8 +1181,8 @@
 !
 !        cdmbgwd(1)       = 2.00      ! mtn blking and gwd tuning factors
 !        cdmbgwd(2)       = 0.25      ! mtn blking and gwd tuning factors
-        cdmbgwd(1)       = 1.00      ! mtn blocking tuning factors
-        cdmbgwd(2)       = 1.20      ! gwd tuning factors
+        cdmbgwd(1)       = cmbk      ! mtn blocking tuning factors
+        cdmbgwd(2)       = cgwd      ! gwd tuning factors
 !
         do i = 1, nxj
           hprime(i)=hprime_b(i,1,jj)

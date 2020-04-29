@@ -39,7 +39,7 @@
            ptop,ptmean,tfilt,dt,tau,taui,taue,tauo,          &
            hours,frad,evaprh,qgini,                          &
            tice,hice,cutfreq,taup,hfilt,ptmeans,             &
-           taureg,cgw,domfc,otgreen
+           taureg,cgw,domfc,otgreen,cgwd,cmbk
 !sit
       real fsit           !fsit>0., turn on sit_vdiff when mod(tau/fsit)<0.001
                           !default fsit<=0., turn on sit_vdiff every tau

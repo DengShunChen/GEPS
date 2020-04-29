@@ -68,6 +68,8 @@
  ndsladvh2=f,
  isot=1,
  ivegsrc=1,
+ cgwd=1.20,
+ cmbk=1.00,
  &end
 
  &typ
