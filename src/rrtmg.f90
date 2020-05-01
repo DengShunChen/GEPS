@@ -8,17 +8,17 @@
              sinlj,coslj,xlatj,xlonr,jdat,d2r,xkapa,                &
              ptop,dtlw,dtsw,lsswr,lslwr,lssav,                      &
              nfxr,j,                                                &
-             nx,nxj,lev,ncld,lprnt,ipt,kdt,solhr,solcon,            &
+             nx,nxj,lev,ncld,lprnt,ipt,kdt,solhr,                   &
              uni_cloud,lmfshal,lmfdeep2,                            &
              deltaq,sup,cnvw,cnvc,                                  &
 !    -  outputs:
-             asol,olr,ss,rs,sld,rld,dtrad,                          &
+             asol,olr,ss,rs,sld,rld,tsflwr,                         &
              ctot,chig,cmid,clow,                                   &
              cldcov,htrsw,htrlw,                                    &
              fusl,fdsl,fuir,fdir,                                   &
 ! -------------------------------------------------------------------
              fuslr,fdslr,fuirr,fdirr,                               &
-             htrsw0,htrlw0,                                         &
+             htrsw0,htrlw0,cosz,                                    &
              asol_clr,olr_clr,ss_clr,rs_clr,                        &
              sld_clr,rld_clr,sfalb_g,semis_g)
 ! -------------------------------------------------------------------
@@ -46,9 +46,9 @@
       real    slimsk(nx),cice(nx),xtice(nx),snr(nx),sncover(nx),  &
               snoalb(nx),z0(nx)
       real    alvsg(nx),alvwg(nx),alnsg(nx),alnwg(nx),facsg(nx),  &
-              facwg(nx),curate(nx),xlonr(nx)
+              facwg(nx),curate(nx),xlonr(nx),tsflwr(nx),cosz(nx)
       integer icsdlwg(nx),icsdswg(nx),jdat(8),j
-      real    sinlj,coslj,xlatj,ptop,dtlw,dtsw,d2r,xkapa,solhr,solcon
+      real    sinlj,coslj,xlatj,ptop,dtlw,dtsw,d2r,xkapa,solhr
       logical lsswr,lslwr,lssav,lprnt
       logical uni_cloud,lmfshal,lmfdeep2
       real    www,fac_o3,cmax,cmin,imax,imin,tem1,tem2
@@ -98,7 +98,7 @@
 !
 ! --- 2d
 !
-      real    dtrad(nx,lev)
+!      real    dtrad(nx,lev)
       real    ctot(nx),chig(nx),cmid(nx),clow(nx),csbl(nx)
 
       real    cldcov(nx,lev)
@@ -466,11 +466,13 @@
        enddo
        enddo
 
-       do k = 1, lev
+!       do k = 1, lev
        do i = 1, nxj
-          dtrad(i,k)=htrsw(i,k)+htrlw(i,k)
+!          dtrad(i,k)=htrsw(i,k)+htrlw(i,k)
+          tsflwr(i)=tsflw(i)
+          cosz(i)  =coszen(i)
        enddo
-       enddo
+!       enddo
 
        do k = 1, lev+1
           kc=lev-k+2

@@ -13,5 +13,6 @@
                iflip,me,irad,ntcw,nclds,ioutsigr,ntiw,ntrw,ntsw,ntgl
       integer, save :: idate(8) 
       logical, save :: sashal,crick_proof,ccnorm,norad_precip
+      real,    save :: sdec,cdec,slag,solcon
 
       end module radn

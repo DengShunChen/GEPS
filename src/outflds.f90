@@ -600,7 +600,7 @@
             enddo
           enddo
         enddo
-        call qsatq(nxp,wk_xy(1,jj,1),plt(1,lev,jj),wk_xy(1,jj,5))
+        call qsatq(nxj,wk_xy(1,jj,1),plt(1,lev,jj),wk_xy(1,jj,5))
         do i = 1,nxj
           wk_xy(i,jj,5) = 100.*(qt(i,lev,jj)/wk_xy(i,jj,5))
           wk_xy(i,jj,5) = min( 100., max( 1., wk_xy(i,jj,5) ) )

@@ -51,7 +51,7 @@
  nmpbl=4,
  nmland=2,
  nmshl=3,
- nmgwor=1,
+ nmgwor=2,
  nmgwcv=2,
  ktcup=20,
  cgw=4.2e-5,
@@ -68,6 +68,8 @@
  ndsladvh2=f,
  isot=1,
  ivegsrc=1,
+ cgwd=1.20,
+ cmbk=1.00,
  &end
 
  &typ

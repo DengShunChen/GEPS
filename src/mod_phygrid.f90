@@ -22,7 +22,7 @@
             clow       ,  hpbl       ,   cosz       , & 
          rainlp6       ,raincu6      ,                &
          rainlp3       ,raincu3      ,                &
-         rainlp1       ,raincu1
+         rainlp1       ,raincu1      ,tsflw
 
       logical, allocatable,save :: land(:,:),ice(:,:),ocean(:,:)
 
@@ -38,7 +38,8 @@
       real, dimension(:,:),allocatable,save :: fpsp,fpsp1
 
       real, dimension(:,:,:),allocatable,save :: e,eps,o3l,dtrad,asl,atl
-      real, dimension(:,:,:),allocatable,save :: ftp,fqp,ftp1,fqp1,deltaq
+      real, dimension(:,:,:),allocatable,save :: ftp,fqp,ftp1,fqp1
+      real, dimension(:,:,:),allocatable,save :: deltaq,cnvwr,cnvcr
 
       contains 
 
@@ -51,12 +52,16 @@
                      asl(nxp,lev,my_max),  atl(nxp,lev,my_max),  &
                      ftp(nxp,lev,my_max),  fqp(nxp,lev,my_max),  &
                     ftp1(nxp,lev,my_max), fqp1(nxp,lev,my_max),  &
-                    deltaq(nxp,lev,my_max), stat=ierr)
+                    deltaq(nxp,lev,my_max),cnvwr(nxp,lev,my_max),&
+                    cnvcr(nxp,lev,my_max),  stat=ierr)
 
            if (ierr/= 0) then
                write(6,*) 'mod_phygrid : allocate fail 1 '
                stop
            end if
+           deltaq = 0.
+           cnvcr  = 0.
+           cnvwr  = 0.
 
            allocate (                                 &
              snr(nxp,my_max),   gwr(nxp,my_max),     tg(nxp,my_max), &
@@ -71,7 +76,7 @@
             clow(nxp,my_max),  hpbl(nxp,my_max),   cosz(nxp,my_max), &
          rainlp6(nxp,my_max),raincu6(nxp,my_max),                    &
          rainlp3(nxp,my_max),raincu3(nxp,my_max),                    &
-         rainlp1(nxp,my_max),raincu1(nxp,my_max),                    &
+         rainlp1(nxp,my_max),raincu1(nxp,my_max), tsflw(nxp,my_max), &
                                           stat=ierr)
 
            if (ierr/= 0) then
@@ -92,6 +97,7 @@
 
 !CWB2016
            curate=0.
+           tsflw=0.
 
            allocate (land(nxp,my_max),ice(nxp,my_max), &
                      ocean(nxp,my_max), stat=ierr)
@@ -128,7 +134,11 @@
                write(6,*) 'mod_phygrid : allocate fail 6 '
                stop
            end if
-
+!
+           rh2=0.
+           rh10=0.
+           gwr=0.
+!
            allocate (fpsp(nxp,my_max),fpsp1(nxp,my_max),stat=ierr)
 
            if (ierr/= 0) then
@@ -142,7 +152,8 @@
 
          subroutine deallocate_phygrid_array
 
-           deallocate (e,eps,o3l,dtrad,asl,atl,ftp,fqp,ftp1,fqp1,deltaq)
+           deallocate (e,eps,o3l,dtrad,asl,atl,ftp,fqp,ftp1,fqp1)
+           deallocate (deltaq,cnvwr,cnvcr)
            deallocate (                                           &
                        snr,gwr,tg,   ss,rs,                       &
              ustar,tstar,qstar,hflux,qflux,raintot,raincu,rainlp, &
@@ -155,6 +166,7 @@
            deallocate (u10,v10,t2,rh2,rh10,srflag,q2,fm,fm10,fh,fh2)
            deallocate (fpsp,fpsp1)
            deallocate (rainlp6,raincu6,rainlp3,raincu3,rainlp1,raincu1)
+           deallocate (tsflw)
 
            return
 

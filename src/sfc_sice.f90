@@ -172,7 +172,7 @@
 !  --- ...  update sea ice temperature
 
       do k = 1, kmi
-        do i = 1, im
+        do i = 1, imj
           if (flag(i)) then
             stsice(i,k) = stc(i,k)
           endif
@@ -305,7 +305,7 @@
 !     if (lprnt) write(0,*)' tice2=',tice(ipr)
       call ice3lay
 !  ---  inputs:                                                         !
-!    &     ( im, kmi, fice, flag, hfi, hfd, sneti, focn, delt,          !
+!    &     ( imj, im, kmi, fice, flag, hfi, hfd, sneti, focn, delt,     !
 !  ---  outputs:                                                        !
 !    &       snowd, hice, stsice, tice, snof, snowmt, gflux )           !
 
@@ -346,7 +346,7 @@
       enddo
 
       do k = 1, kmi
-        do i = 1, im
+        do i = 1, imj
           if (flag(i)) then
             stc(i,k) = min(stsice(i,k), t0c)
           endif

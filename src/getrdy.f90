@@ -456,7 +456,8 @@
                 alb(i,jj)    = 0.55
                 tgclim(i,jj) = 271.2
 ! for noah
-                z0(i,jj)=0.0002
+                z0(i,jj)=0.00001
+
 ! initial sea ice temperature is set as tg(grid average temperature from first guess)
 !
                 cice(i,jj)    = max(0.5,cice(i,jj))
@@ -549,8 +550,7 @@
             snr(i,jj)=0.
             totalp(i,jj)=0.
 !            flash(i,jj)=0.   !xb110, flash density
-!byl            ustar(i,jj)=0.1
-            ustar(i,jj)=sqrt(0.14) !make sure z0 will be 0.0002 over ocean
+            ustar(i,jj)=0.1
             tstar(i,jj)=0.025
             qstar(i,jj)=0.0
             hflux(i,jj)=-ustar(i,jj)*tstar(i,jj)

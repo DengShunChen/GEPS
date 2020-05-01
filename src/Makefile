@@ -69,7 +69,7 @@ SRCS  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
 	radiation_astronomy.f90 radiation_gases.f90\
 	radiation_aerosols.f90\
 	radiation_surface.f90 radiation_clouds.f90\
-	grrad.f90 rad_initialize.f90 \
+	grrad.f90 rad_initialize.f90 dcyc2.f90\
 	mpe_send_key.f90 mpe_send_data.f90 \
 	ioserver.f90 mpe_recv_data.f90 mpe_recv_key.f90 \
 	cuadjtq.f90 cuasc.f90 cubase.f90 cubasmc.f90 cuddraf.f90 cudlfs.f90  \
@@ -132,7 +132,7 @@ INSTALL = /usr/bin/install
 #           -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE)
 
 # use FFTW fft
- FFLAGS  = -c -X9 -Free -CcdRR8 -Cpp -DTIMING -DMULTIPLE -DUSE_FFTW \
+ FFLAGS  = -c -X9 -Free -CcdRR8 -Cpp -DTIMING -DMULTIPLE -DUSE_FFTW -DW3TAG \
            -Kfast,parallel,openmp,ocl,autoobjstack \
 	   -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE) 
 #           -Kfast,parallel,openmp,ocl,autoobjstack -Nquickdbg
@@ -144,7 +144,7 @@ INSTALL = /usr/bin/install
 LDFLAGS = -Kopenmp,parallel -L/package/$(MACHINE)/dms/dms.v4/lib -lrdms -lgdbm -L/package/$(MACHINE)/operlib/lib -lnwp \
           -L/users/xa09/$(MACHINE)/fftw-3.3.7/lib -lfftw3_threads -lfftw3 -SSL2BLAMP
 
-LIBS	= -L/package/$(MACHINE)/netcdf-3.6.3/lib -lnetcdf
+LIBS	= -L/package/$(MACHINE)/netcdf-3.6.3/lib -lnetcdf ${W3NCO_LIBd}
 
 all :	$(CMD)
 
@@ -309,6 +309,7 @@ prerrtmg.o : prerrtmg.f90 mod_index.o random_number.o grrad.o
 rrtmg.o : rrtmg.f90 mod_mpe.o mod_rank.o mod_index.o mod_radn.o physpara.o grrad.o
 outsigr.o : outsigr.f90 mod_mpe.o mod_index.o
 readalb.o : readalb.f90 mod_index.o mod_rank.o mod_mpe.o
+dcyc2.o : dcyc2.f90 physcons.o machine.o
 #----------------------------------------------------------------------------
 ccoszen.o : ccoszen.f90 mod_index.o
 
