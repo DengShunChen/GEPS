@@ -432,10 +432,7 @@
 !  --- ...  snow cover, albedo over sea-ice, glacial-ice
 
         sncovr = 1.0
-!        albedo = 0.65
-!restored to default by Pang-Yen Liu 13/Apr/2020
-!cwb test
-        albedo = 0.75
+        albedo = 0.65
 
       else
 
