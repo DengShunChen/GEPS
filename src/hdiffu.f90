@@ -83,27 +83,21 @@
 !            fact= 1.
 
 !          if ( KL .le. hdk2 ) then
-        kfac= 1.0 + max(float(hdk2-KL),0.) 
-        facd= kfac
-        facv= kfac
-        fact= kfac 
-!            if ( KL .le. hdk1 ) facd=facd*(1.+float(hdk1-KL))
+        kfac = 1.0 + max(float(hdk2-KL),0.) 
+        facd = amp * (kfac + 4.*max(float(hdk1-KL),0))
+        facv = amp * (kfac + 2.*max(float(hdk1-KL),0))
+        fact = amp * (kfac + 2.*max(float(hdk1-KL),0))
 !          endif
 
 
-        facd = facd*amp
-        facv = facv*amp
-        fact = fact*amp
-!
+!        if ( KL .le. hdk1 ) then
+!          ddiffu =facd*hfilt2
+!        else
+!          ddiffu =facd*hfilt
+!        endif
 
-        if ( KL .le. hdk1 ) then
-          ddiffu =facd*hfilt2
-        else
-          ddiffu =facd*hfilt
-        endif
-
-        tdiffu =fact*hfilt
-        vdiffu =facv*hfilt
+!        tdiffu =fact*hfilt
+!        vdiffu =facv*hfilt
           
 
 !
@@ -114,13 +108,13 @@
           mf=mlist(m)
           do n=mf,jtrun
 
-            c1=1.+dta*vdiffu*eps4(n,m)**2
-            c3=1.+dta*tdiffu*eps4(n,m)**2
+            c1=1.+dta*facv*hfilt*eps4(n,m)**2
+            c3=1.+dta*fact*hfilt*eps4(n,m)**2
 
             if ( KL .le. hdk1 ) then
-              c2=1.+dta*ddiffu*eps4(n,m)
+              c2=1.+dta*facd*hfilt2*eps4(n,m)
             else
-              c2=1.+dta*ddiffu*eps4(n,m)**2
+              c2=1.+dta*facd*hfilt*eps4(n,m)**2
             endif
 
             vornow(k,1,n,m)=vornow(k,1,n,m)/c1

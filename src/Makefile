@@ -132,7 +132,10 @@ INSTALL = /usr/bin/install
 #           -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE)
 
 # use FFTW fft
- FFLAGS  = -c -X9 -Free -CcdRR8 -Cpp -DTIMING -DMULTIPLE -DUSE_FFTW -DW3TAG \
+# FFLAGS  = -c -X9 -Free -CcdRR8 -Cpp -DTIMING -DMULTIPLE -DUSE_FFTW -DW3TAG \
+           -Kfast,parallel,openmp,ocl,autoobjstack \
+	   -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE) 
+ FFLAGS  = -c -X9 -Free -CcdRR8 -Cpp -DTIMING -DUSE_FFTW -DW3TAG \
            -Kfast,parallel,openmp,ocl,autoobjstack \
 	   -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE) 
 #           -Kfast,parallel,openmp,ocl,autoobjstack -Nquickdbg
