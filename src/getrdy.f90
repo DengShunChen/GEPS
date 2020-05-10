@@ -73,7 +73,7 @@
 !
       integer lmax,nxmy,mlmax2,i,j,jj,k,m,mf,n,nxj,ios,lcwb,lphy,itaui, &
               lncrec,istat,itaup,isnow,njump1,njump2,njump3,lvlw,lvlw1, &
-              lvlw2,lvlw3,ii
+              lvlw2,lvlw3,ii,icwarn
       real    fact,xxaa,taux,dummy,q1,dsigp,pi,xx,wet
 !xb110>
 !      real    flash(nxp,my_max)
@@ -441,6 +441,7 @@
 !
 ! reset albedo and tgclim at seaice grids                 
 !
+          icwarn=0
           do jj=1,jlistnum
             j=jlist1(jj)
             nxj=nxdef_2d(j)
@@ -464,12 +465,22 @@
                 xtice(i,jj)   = tg(i,jj)
 ! zice read from first guess or set to be 1 m over south hemesphere.
 !                                     and 3 m over north hemesphere
-!                 zice(i,jj) = 1.
-!                 if(j.gt.my/2)zice(i,jj)   = 3.    !fo north hemsphere
+                if( zice(i,jj) .lt. 1.*cice(i,jj) ) then 
+                  zice(i,jj) = max(zice(i,jj),1.*cice(i,jj))
+                  icwarn = icwarn + 1 
+                endif
               endif            
             enddo             
           enddo
-!                       
+!
+          call mpe_global_sum(icwarn,1,mpe_integer)
+          if ( myrank .eq. 0 .and. icwarn .gt. 0 ) then
+          print*,"==================   Warnig!!!   ==================="
+          print*,"=  ice thickness not consistent with sea ice mask  ="
+          print*,"=  set the thickness to 1 meter for first guess    ="
+          print*,"================================= =================="
+          endif 
+! 
         endif     !end of (ncepice)
 !soil             
         call rdsoil(nx,my,my_max,km_soil,smc,stc,slc,canopy &
