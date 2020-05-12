@@ -18,13 +18,19 @@ else
   echo "usage: $0 [MACHINE]"
   exit
 fi
+machines='fx100 fx10 pcc'
+[[ $machines =~ (^|[[:space:]])$MACHINE($|[[:space:]]) ]] && known='True' || known='False'
+if [ "${known}" == 'True' ] ; then
+  echo "${HOSTNAME} : Build ${MACHINE} executable"
+else
+  echo "Fatal Error : $0: Unknown machine --> ${MACHINE}" ; exit
+fi
 
-echo ${MACHINE} ${HOSTNAME}
 if [ "${MACHINE}" == 'fx10' ] &&  [ "${HOSTNAME}" != 'login07' ] && [ "${HOSTNAME}" != 'login08' ] && [ "${HOSTNAME}" != 'login05' ] && [ "${HOSTNAME}" != 'login06' ] ; then
-  echo "Build ${MACHINE} executable, please move to login07/08 for inside HPC, login05/06 for outside HPC !" ; exit
+  echo "Fatal Error : Build ${MACHINE} executable, please move to login07/08 for inside HPC, login05/06 for outside HPC !" ; exit
 fi
 if [ "${MACHINE}" == 'fx100' ] &&  [ "${HOSTNAME}" != 'login11' ] && [ "${HOSTNAME}" != 'login12' ] && [ "${HOSTNAME}" != 'login15' ] && [ "${HOSTNAME}" != 'login16' ]; then
-  echo "Build ${MACHINE} executable, please move to login11/12 for inside HPC, login15/16 for outside HPC !" ; exit
+  echo "Fatal Error : Build ${MACHINE} executable, please move to login11/12 for inside HPC, login15/16 for outside HPC !" ; exit
 fi
 
 # load libs
