@@ -1,0 +1,38 @@
+#%Module####################################################
+##                                   dschen@cwb.gov.tw
+##                                   Fujitsu
+## TCoGFS
+##___________________-----__________________________________
+proc ModulesHelp { } {
+puts stderr "Set environment veriables for TCoGFS"
+puts stderr "This module initializes the environment "
+}
+module-whatis " TCoGFS whatis description"
+
+set ver v1.0.0
+set machine fx100
+
+set LANG_HOME /opt/FJSVmxlang
+setenv COMP $LANG_HOME/bin/frtpx
+setenv COMP_MP $LANG_HOME/bin/mpifrtpx
+setenv COMP_MPI $LANG_HOME/bin/mpifrtpx
+
+setenv C_COMP $LANG_HOME/bin/fccpx
+setenv C_COMP_MP $LANG_HOME/bin/mpifccpx
+
+#setenv FFLAGS_COM "-fp-model source"
+#setenv LDFLAGS_COM "-mkl"
+
+# Known conflicts
+
+# Loading nceplibs modules
+module use /nwpr/gfs/xb80/modulefiles/nceplibs/$machine
+module load w3nco/v2.0.6
+
+# Loading gfs modules 
+module use /nwpr/gfs/xb80/modulefiles/$machine
+module load netcdf/3.6.3
+module load fftw/3.3.7
+module load dms/v4
+module load operlib
+

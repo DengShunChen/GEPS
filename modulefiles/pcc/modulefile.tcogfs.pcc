@@ -1,0 +1,35 @@
+#%Module######################################################################
+##                                                           dschen@cwb.gov.tw
+##                                                           Fujitsu
+## TCoGFS
+##_____________________________________________________
+proc ModulesHelp { } {
+puts stderr "Set environment veriables for TCoGFS"
+puts stderr "This module initializes the environment "
+}
+module-whatis " TCoGFS whatis description"
+
+set ver v1.0.0
+set machine pcc
+
+setenv COMP ifort
+setenv COMP_MP mpiifort
+setenv COMP_MPI mpiifort
+
+setenv C_COMP icc
+setenv C_COMP_MP mpiicc
+
+#setenv FFLAGS_COM "-fp-model source"
+#setenv LDFLAGS_COM "-mkl"
+
+# Known conflicts
+
+# Loading nceplibs modules
+setenv NETCDF_LIB "-L/home/xa09/pkg/netcdf-3.6.3/lib -lnetcdf"
+setenv NETCDF_INC "/home/xa09/pkg/fftw-3.3.7/include"
+setenv FFTW_LIB "-L/home/xa09/pkg/fftw-3.3.7/lib -lfftw3_threads -lfftw3"
+setenv FFTW_INC "/home/xa09/pkg/fftw-3.3.7/include"
+setenv DMS_LIB "-L/home/xa09/pkg/dms/lib -lrdms -lgdbm -lnwp"
+setenv DMS_INC ""
+setenv OPERLIB_LIB ""
+setenv OPERLIB_INC ""

@@ -1,7 +1,5 @@
 SHELL=/bin/ksh
 
-MACHINE=fx100
-
 SRCS  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
 	mod_const.f90 mod_index.f90 mod_fftcom.f90 mod_fj_pad.f90 mod_grid.f90 \
 	mod_mpe.f90 mod_noah.f90 mod_phygrid.f90 \
@@ -88,21 +86,16 @@ SRCS  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
 
 OBJS=	${SRCS:.f90=.o}
 
-CC   =	fccpx100
-FC90 =  mpifrtpx100
-#CC   =	fccpx
-#FC90 =  mpifrtpx
-#FC   =  /package/$(MACHINE)/dms/bin/dmsmpiompf90
-FC   =  /package/$(MACHINE)/dms/bin/dmsmpif90
+CC   =	${C_COMP}
+FC90 =  ${COMP_MPI}
 
-
-INCLUDE = -I. -I/users/xa09/$(MACHINE)/fftw-3.3.7/include -I/package/$(MACHINE)/netcdf-3.6.3/include
+INCLUDE = -I. -I${FFTW_INC} -I${NETCDF_INC}
 #INCLUDE = -I. -I/nwpr/cfsres/b827/fx10/fftw-3.3.7/include
 
-CMD  =  MTCo639L72_$(MACHINE)
+CMD  =  MTCo639L72_${MACHINE}
 
 # MSG  =    -Ec -Qa,d,i,p,t,x -Koptmsg=2 -Nquickdbg
- MSG  =    -Ec -Qa,d,i,p,t,x -Koptmsg=2
+# MSG  =    -Ec -Qa,d,i,p,t,x -Koptmsg=2
 
 INSTALL = /usr/bin/install
 # select one of the followings :
@@ -135,19 +128,15 @@ INSTALL = /usr/bin/install
 # FFLAGS  = -c -X9 -Free -CcdRR8 -Cpp -DTIMING -DMULTIPLE -DUSE_FFTW -DW3TAG \
            -Kfast,parallel,openmp,ocl,autoobjstack \
 	   -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE) 
- FFLAGS  = -c -X9 -Free -CcdRR8 -Cpp -DTIMING -DUSE_FFTW -DW3TAG \
-           -Kfast,parallel,openmp,ocl,autoobjstack \
-	   -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE) 
+ FFLAGS  = ${FFLAGS_COM} ${LIBS_COM} ${OMP} ${DEFINE_FLAGS} ${MSG} $(INCLUDE) 
 #           -Kfast,parallel,openmp,ocl,autoobjstack -Nquickdbg
 #---------------------------------------------------------------------------------------------
 # For fx10 compiler, some subroutine, such as rcloud, can not use auto-parallel option.
 # This problem  may caused by compiler itself.
 # If it's using fx-100 compiler(new version), you probably can get -Kparallel flag back.
 #--------------------------------------------------------------------------------------------
-LDFLAGS = -Kopenmp,parallel -L/package/$(MACHINE)/dms/dms.v4/lib -lrdms -lgdbm -L/package/$(MACHINE)/operlib/lib -lnwp \
-          -L/users/xa09/$(MACHINE)/fftw-3.3.7/lib -lfftw3_threads -lfftw3 -SSL2BLAMP
-
-LIBS	= -L/package/$(MACHINE)/netcdf-3.6.3/lib -lnetcdf ${W3NCO_LIBd}
+LDFLAGS = ${OMP} ${LDFLAGS_COM}
+LIBS	= ${NETCDF_LIB} ${W3NCO_LIBd} ${DMS_LIB} ${OPERLIB_LIB} ${FFTW_LIB} ${LIBS_COM}
 
 all :	$(CMD)
 
@@ -155,7 +144,7 @@ $(CMD):	$(OBJS)
 	@echo
 	@echo '==== LINK ===================================================='
 	$(CC) -c -Xg cwb_fftw.c
-	$(FC) -o $(@)  $(OBJS) cwb_fftw.o $(LDFLAGS) $(LIBS)
+	$(FC90) -o $(@)  $(OBJS) cwb_fftw.o $(LDFLAGS) $(LIBS)
 
 $(OBJS):
 	$(FC90) $(FFLAGS) $*.f90
@@ -163,7 +152,7 @@ $(OBJS):
 clean :
 	@echo
 	@echo '==== CLEAN ===================================================='
-	rm -f *.o *.lst *.mod MTCo639L72_$(MACHINE)
+	rm -f *.o *.lst *.mod MTCo639L72_${MACHINE}
 
 install :
 	$(INSTALL) -d ../bin
@@ -326,7 +315,7 @@ nor_gwdp.o : nor_gwdp.f90 mod_index.o
 normalize.o : normalize.f90 
 out24.o : out24.f90 mod_index.o mod_mpe.o mod_rank.o mod_mpe.o
 out2d.o : out2d.f90 mod_index.o mod_mpe.o mod_rank.o mod_outflds.o
-out2d_mfc.o : out2d_mfc.f90 mod_index.o mod_mpe.o mod_rank.o 
+out2d_mfc.o : out2d_mfc.f90 mod_index.o mod_mpe.o mod_rank.o mod_grid.o
 outflds.o : outflds.f90 mod_index.o mod_rank.o mod_mpe.o mod_outflds.o
 outflds_green.o : outflds_green.f90 mod_index.o mod_rank.o mod_mpe.o
 outflds_fv3.o : outflds_fv3.f90 mod_index.o mod_rank.o mod_mpe.o
