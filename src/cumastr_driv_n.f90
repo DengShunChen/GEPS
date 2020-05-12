@@ -152,10 +152,10 @@
       kc=k
       do i=1,nxj
         tt(i,k)=t(i,k)+ptte(i,kc)*dt
-        qt(i,k)=max(q(i,k)+pqte(i,kc)*dt,0)
+        qt(i,k)=max(q(i,k)+pqte(i,kc)*dt,0.)
         ut(i,k)=u(i,k)+pvom(i,kc)*dt
         vt(i,k)=v(i,k)+pvol(i,kc)*dt
-        qt(i,k+(ncldq-1)*lev)=max(q(i,k+(ncldq-1)*lev)+pxtec(i,kc)*dt,0)
+        qt(i,k+(ncldq-1)*lev)=max(q(i,k+(ncldq-1)*lev)+pxtec(i,kc)*dt,0.)
       enddo
       enddo
 

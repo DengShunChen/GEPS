@@ -84,7 +84,7 @@ SRCS  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
         moninedmf.f90 mfpbl.f90 unify_reduceintp.f90 unify_reducepick.f90 \
         gscondp.f90 precpdp.f90
 
-OBJS=	${SRCS:.f90=.o}
+OBJS=	${SRCS:.f90=.o} cwb_fftw.o
 
 CC   =	${C_COMP}
 FC90 =  ${COMP_MPI}
@@ -129,6 +129,7 @@ INSTALL = /usr/bin/install
            -Kfast,parallel,openmp,ocl,autoobjstack \
 	   -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE) 
  FFLAGS  = ${FFLAGS_COM} ${LIBS_COM} ${OMP_COM} ${DEFINE_FLAGS} ${MSG_COM} $(INCLUDE) 
+ CFLAGS  = ${CFLAGS_COM} 
 #           -Kfast,parallel,openmp,ocl,autoobjstack -Nquickdbg
 #---------------------------------------------------------------------------------------------
 # For fx10 compiler, some subroutine, such as rcloud, can not use auto-parallel option.
@@ -138,16 +139,19 @@ INSTALL = /usr/bin/install
 LDFLAGS = ${OMP_COM} ${LDFLAGS_COM}
 LIBS	= ${NETCDF_LIB} ${W3NCO_LIBd} ${DMS_LIB} ${OPERLIB_LIB} ${FFTW_LIB} ${LIBS_COM}
 
+.SUFFIXES: .o .mod .f90 .c
 all :	$(CMD)
 
 $(CMD):	$(OBJS)
 	@echo
 	@echo '==== LINK ===================================================='
-	$(CC) -c -Xg cwb_fftw.c
-	$(FC90) -o $(@)  $(OBJS) cwb_fftw.o $(LDFLAGS) $(LIBS)
+	$(FC90) -o $(@)  $(OBJS)  $(LDFLAGS) $(LIBS)
 
-$(OBJS):
-	$(FC90) $(FFLAGS) $*.f90
+.f90.o:
+	$(FC90) $(FFLAGS) $<
+
+.c.o:
+	$(CC) $(CFLAGS) $<
 
 clean :
 	@echo
@@ -175,6 +179,7 @@ ctemp2.o : ctemp2.f90 mod_rank.o
 cup92.o : cup92.f90 mod_paramt.o funcphys.o physcons.o
 cupcwb.o : cupcwb.f90 mod_paramt.o 
 cwb.o : cwb.f90 
+cwb_fftw.o: cwb_fftw.c
 dayfil.o : dayfil.f90 mod_rank.o 
 days.o : days.f90 
 dcbase.o : dcbase.f90 

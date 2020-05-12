@@ -41,4 +41,5 @@ setenv DEFINE_FLAGS "-DTIMING -DUSE_FFTW -DW3TAG"
 setenv MSG_COM "-Ec -Qa,d,i,p,t,x -Koptmsg=2"
 setenv LIBS_COM "-SSL2BLAMP"
 setenv OMP_COM "-Kopenmp,parallel"
+setenv CFLAGS_COM "-c -Xg"
 

@@ -12,6 +12,9 @@ module-whatis " TCoGFS whatis description"
 set ver v1.0.0
 set machine pcc
 
+module add intel/18.0.3
+
+
 setenv COMP ifort
 setenv COMP_MP mpiifort
 setenv COMP_MPI mpiifort
@@ -26,7 +29,7 @@ setenv C_COMP_MP mpiicc
 
 # Loading nceplibs modules
 setenv NETCDF_LIB "-L/home/xa09/pkg/netcdf-3.6.3/lib -lnetcdf"
-setenv NETCDF_INC "/home/xa09/pkg/fftw-3.3.7/include"
+setenv NETCDF_INC "/home/xa09/pkg/netcdf-3.6.3/include"
 setenv FFTW_LIB "-L/home/xa09/pkg/fftw-3.3.7/lib -lfftw3_threads -lfftw3"
 setenv FFTW_INC "/home/xa09/pkg/fftw-3.3.7/include"
 setenv DMS_LIB "-L/home/xa09/pkg/dms/lib -lrdms -lgdbm -lnwp"
@@ -37,7 +40,7 @@ setenv OPERLIB_INC ""
 setenv FFLAGS_COM "-c -O3 -Free -r8 -fpp -convert big_endian -w -ftz -ip -fp-model precise -align all -fno-alias -FR -xHost -fp-model fast=2 -no-heap-arrays -no-prec-div -no-prec-sqrt -fno-common -xCORE-AVX2 -auto"
 setenv DEFINE_FLAGS "-DTIMING -DUSE_FFTW "
 setenv MSG_COM ""
-setenv LIBS_COM "-mkl=cluster -qopt-matmul"
-setenv LDFLAGS_COM '-static-intel -qopt-report'
+setenv LIBS_COM "-mkl=cluster -static-intel -qopt-matmul"
+setenv LDFLAGS_COM "-qopt-report"
 setenv OMP_COM "-parallel"
-
+setenv CFLAGS_COM "-c"

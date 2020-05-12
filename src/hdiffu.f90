@@ -84,9 +84,9 @@
 
 !          if ( KL .le. hdk2 ) then
         kfac = 1.0 + max(float(hdk2-KL),0.) 
-        facd = amp * (kfac + 4.*max(float(hdk1-KL),0))
-        facv = amp * (kfac + 2.*max(float(hdk1-KL),0))
-        fact = amp * (kfac + 2.*max(float(hdk1-KL),0))
+        facd = amp * (kfac + 4.*max(float(hdk1-KL),0.))
+        facv = amp * (kfac + 2.*max(float(hdk1-KL),0.))
+        fact = amp * (kfac + 2.*max(float(hdk1-KL),0.))
 !          endif
 
 
