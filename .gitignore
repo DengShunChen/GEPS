@@ -15,3 +15,5 @@ wrk_ysu2/*
 etc/gfs.tauchk
 etc/namlsts_tco383
 etc/namlsts_tco383_*
+*.o*
+wrk_sample

@@ -27,20 +27,23 @@ else
 fi
 
 if [ "${MACHINE}" == 'fx10' ] &&  [ "${HOSTNAME}" != 'login07' ] && [ "${HOSTNAME}" != 'login08' ] && [ "${HOSTNAME}" != 'login05' ] && [ "${HOSTNAME}" != 'login06' ] ; then
-  echo "Fatal Error : Build ${MACHINE} executable, please move to login07/08 for inside HPC, login05/06 for outside HPC !" ; exit
+   echo "Fatal Error : Build ${MACHINE} executable, please move to login07/08 for inside HPC, login05/06 for outside HPC !" 
+   exit
 fi
 if [ "${MACHINE}" == 'fx100' ] &&  [ "${HOSTNAME}" != 'login11' ] && [ "${HOSTNAME}" != 'login12' ] && [ "${HOSTNAME}" != 'login15' ] && [ "${HOSTNAME}" != 'login16' ]; then
-  echo "Fatal Error : Build ${MACHINE} executable, please move to login11/12 for inside HPC, login15/16 for outside HPC !" ; exit
+   echo "Fatal Error : Build ${MACHINE} executable, please move to login11/12 for inside HPC, login15/16 for outside HPC !" 
+   exit
 fi
+
+set -x
 
 # load libs
 export MDIR=$(cd ..;pwd)
 . /usr/share/Modules/init/bash
-module purge
 module use ${MDIR}/modulefiles
-module add modulefile.tcogfs.${MACHINE}
-module list
+module load modulefile.tcogfs.${MACHINE}
 
+# compile
 make clean
 make -j12
 

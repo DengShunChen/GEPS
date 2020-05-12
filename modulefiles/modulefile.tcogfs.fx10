@@ -1,6 +1,6 @@
-#%Module######################################################################
-##                                                           dschen@cwb.gov.tw
-##                                                           Fujitsu
+#%Module####################################################
+##                                   dschen@cwb.gov.tw
+##                                   Fujitsu
 ## TCoGFS
 ##_____________________________________________________
 proc ModulesHelp { } {
@@ -12,13 +12,13 @@ module-whatis " TCoGFS whatis description"
 set ver v1.0.0
 set machine fx10
 
-set lang_home /opt/FJSVfxlang/1.2.1
-setenv COMP $lang_home/bin/frtpx
-setenv COMP_MP $lang_home/bin/mpifrtpx
-setenv COMP_MPI $lang_home/bin/mpifrtpx
+set LANG_HOME /opt/FJSVfxlang/1.2.1
+setenv COMP $LANG_HOME/bin/frtpx
+setenv COMP_MP $LANG_HOME/bin/mpifrtpx
+setenv COMP_MPI $LANG_HOME/bin/mpifrtpx
 
-setenv C_COMP $lang_home/bin/fccpx
-setenv C_COMP_MP $lang_home/bin/mpifccpx
+setenv C_COMP $LANG_HOME/bin/fccpx
+setenv C_COMP_MP $LANG_HOME/bin/mpifccpx
 
 #setenv FFLAGS_COM "-fp-model source"
 #setenv LDFLAGS_COM "-mkl"
@@ -26,10 +26,10 @@ setenv C_COMP_MP $lang_home/bin/mpifccpx
 # Known conflicts
 
 # Loading nceplibs modules
-module use /nwpr/gfs/xb80/modulefiles/nceplibs/$machine
+module use -a /nwpr/gfs/xb80/modulefiles/nceplibs/$machine
 module load w3nco/v2.0.6
 
-module use /nwpr/gfs/xb80/modulefiles/$machine
+module use -a /nwpr/gfs/xb80/modulefiles/$machine
 module load netcdf/3.6.3
 module load fftw/3.3.7
 module load dms/v4
