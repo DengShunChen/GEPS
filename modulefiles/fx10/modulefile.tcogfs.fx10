@@ -35,3 +35,9 @@ module load fftw/3.3.7
 module load dms/v4
 module load operlib
 
+setenv FFLAGS_COM "-c -X9 -Free -CcdRR8 -Cpp -Kfast,ocl,autoobjstack -x- -fw"
+setenv DEFINE_FLAGS "-DTIMING -DUSE_FFTW -DW3TAG"
+setenv MSG "-Ec -Qa,d,i,p,t,x -Koptmsg=2"
+setenv LIBS_COM "-SSL2BLAMP"
+setenv OMP "-Kopenmp,parallel"
+
