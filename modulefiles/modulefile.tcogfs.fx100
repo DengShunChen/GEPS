@@ -26,11 +26,11 @@ setenv C_COMP_MP $LANG_HOME/bin/mpifccpx
 # Known conflicts
 
 # Loading nceplibs modules
-module use -a /nwpr/gfs/xb80/modulefiles/nceplibs/$machine
+module use  /nwpr/gfs/xb80/modulefiles/nceplibs/$machine
 module load w3nco/v2.0.6
 
 # Loading gfs modules 
-module use -a /nwpr/gfs/xb80/modulefiles/$machine
+module use  /nwpr/gfs/xb80/modulefiles/$machine
 module load netcdf/3.6.3
 module load fftw/3.3.7
 module load dms/v4

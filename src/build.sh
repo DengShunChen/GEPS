@@ -40,8 +40,12 @@ set -x
 # load libs
 export MDIR=$(cd ..;pwd)
 . /usr/share/Modules/init/bash
-module use ${MDIR}/modulefiles
+module use  ${MDIR}/modulefiles
 module load modulefile.tcogfs.${MACHINE}
+module av
+module list
+
+
 
 # compile
 make clean
