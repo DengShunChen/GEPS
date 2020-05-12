@@ -37,9 +37,9 @@ fi
 export MDIR=$(cd ..;pwd)
 . /usr/share/Modules/init/bash
 module purge
-module use ${MDIR}/modulefiles/${MACHINE}
-module av
+module use ${MDIR}/modulefiles
 module add modulefile.tcogfs.${MACHINE}
+module list
 
 make clean
 make -j12
