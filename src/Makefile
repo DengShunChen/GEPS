@@ -128,14 +128,14 @@ INSTALL = /usr/bin/install
 # FFLAGS  = -c -X9 -Free -CcdRR8 -Cpp -DTIMING -DMULTIPLE -DUSE_FFTW -DW3TAG \
            -Kfast,parallel,openmp,ocl,autoobjstack \
 	   -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE) 
- FFLAGS  = ${FFLAGS_COM} ${LIBS_COM} ${OMP} ${DEFINE_FLAGS} ${MSG} $(INCLUDE) 
+ FFLAGS  = ${FFLAGS_COM} ${LIBS_COM} ${OMP_COM} ${DEFINE_FLAGS} ${MSG_COM} $(INCLUDE) 
 #           -Kfast,parallel,openmp,ocl,autoobjstack -Nquickdbg
 #---------------------------------------------------------------------------------------------
 # For fx10 compiler, some subroutine, such as rcloud, can not use auto-parallel option.
 # This problem  may caused by compiler itself.
 # If it's using fx-100 compiler(new version), you probably can get -Kparallel flag back.
 #--------------------------------------------------------------------------------------------
-LDFLAGS = ${OMP} ${LDFLAGS_COM}
+LDFLAGS = ${OMP_COM} ${LDFLAGS_COM}
 LIBS	= ${NETCDF_LIB} ${W3NCO_LIBd} ${DMS_LIB} ${OPERLIB_LIB} ${FFTW_LIB} ${LIBS_COM}
 
 all :	$(CMD)

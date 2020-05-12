@@ -12,7 +12,7 @@
  mkdir -p $GFSWRK
 
 #-- dms data
- dtg='19070100'
+ dtg='18090800'
  fgdtg=$(/nwpr/gfs/xb80/bin/Caldtg.ksh ${dtg} -6)
 
  idmshead='MASOPS'
@@ -38,16 +38,16 @@
   export LNCP='ln -fs'
 
   # maybe no need to change
-  export source="/data/common/gfs/tco_ic"           # TCo IC data path
+  export source="/data/common/gfs/dms_data/TCo639L72_S2TY.ufs/T_exp2018090800"           # TCo IC data path
 
   # link/copy DMS files
   export target="${dmsdb_home}/${idmsdb}.ufs"
 
   # analysis
-  echo ${LNCP} ${source}/MASOPS/*${dtg}* ${target}/${idmshead}${idmsbody}${idmstail}
-       ${LNCP} ${source}/MASOPS/*${dtg}* ${target}/${idmshead}${idmsbody}${idmstail}
-  echo ${LNCP} ${source}/MASOPS/*${fgdtg}* ${target}/${idmshead}${idmsbody}${idmstail}
-       ${LNCP} ${source}/MASOPS/*${fgdtg}* ${target}/${idmshead}${idmsbody}${idmstail}
+  echo ${LNCP} ${source}/*${dtg}* ${target}/${idmshead}${idmsbody}${idmstail}
+       ${LNCP} ${source}/*${dtg}* ${target}/${idmshead}${idmsbody}${idmstail}
+  echo ${LNCP} ${source}/*${fgdtg}* ${target}/${idmshead}${idmsbody}${idmstail}
+       ${LNCP} ${source}/*${fgdtg}* ${target}/${idmshead}${idmsbody}${idmstail}
 
  ${DMSPATH}/rdmsdbcrt -p ufs bckdms
  ${DMSPATH}/rdmscrt BCK_TCo639_GJ30S@bckdms

@@ -36,9 +36,11 @@ fi
 # load libs
 export MDIR=$(cd ..;pwd)
 . /usr/share/Modules/init/bash
+module purge
 module use ${MDIR}/modulefiles/${MACHINE}
+module av
 module add modulefile.tcogfs.${MACHINE}
 
 make clean
-make -j24
+make -j12
 

@@ -36,8 +36,8 @@ setenv OPERLIB_INC ""
 
 setenv FFLAGS_COM "-c -O3 -Free -r8 -fpp -convert big_endian -w -ftz -ip -fp-model precise -align all -fno-alias -FR -xHost -fp-model fast=2 -no-heap-arrays -no-prec-div -no-prec-sqrt -fno-common -xCORE-AVX2 -auto"
 setenv DEFINE_FLAGS "-DTIMING -DUSE_FFTW "
-setenv MSG ""
+setenv MSG_COM ""
 setenv LIBS_COM "-mkl=cluster -qopt-matmul"
 setenv LDFLAGS_COM '-static-intel -qopt-report'
-setenv OMP "-parallel"
+setenv OMP_COM "-parallel"
 
