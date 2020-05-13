@@ -26,13 +26,21 @@ else
   echo "Fatal Error : $0: Unknown machine --> ${MACHINE}" ; exit
 fi
 
-if [ "${MACHINE}" == 'fx10' ] &&  [ "${HOSTNAME}" != 'login07' ] && [ "${HOSTNAME}" != 'login08' ] && [ "${HOSTNAME}" != 'login05' ] && [ "${HOSTNAME}" != 'login06' ] ; then
-   echo "Fatal Error : Build ${MACHINE} executable, please move to login07/08 for inside HPC, login05/06 for outside HPC !" 
-   exit
+if [ "${MACHINE}" == 'fx10' ] ; then 
+  hostnames='login07 login08 login05 login06'
+  [[ $hostnames =~ (^|[[:space:]])$HOSTNAME($|[[:space:]]) ]] && known='True' || known='False' 
+  if [ "${known}" == 'False' ] ; then
+    echo "Fatal Error : Build ${MACHINE} executable, please move to login07/08 for inside HPC, login05/06 for outside HPC !" 
+    exit
+  fi
 fi
-if [ "${MACHINE}" == 'fx100' ] &&  [ "${HOSTNAME}" != 'login11' ] && [ "${HOSTNAME}" != 'login12' ] && [ "${HOSTNAME}" != 'login15' ] && [ "${HOSTNAME}" != 'login16' ]; then
+if [ "${MACHINE}" == 'fx100' ] ; then
+  hostnames='login11 login12 login15 login16'
+  [[ $hostnames =~ (^|[[:space:]])$HOSTNAME($|[[:space:]]) ]] && known='True' || known='False' 
+  if [ "${known}" == 'False' ] ; then
    echo "Fatal Error : Build ${MACHINE} executable, please move to login11/12 for inside HPC, login15/16 for outside HPC !" 
    exit
+  fi
 fi
 
 set -x
@@ -41,12 +49,11 @@ set -x
 export MDIR=$(cd ..;pwd)
 . /usr/share/Modules/init/bash
 module use  ${MDIR}/modulefiles
-module load modulefile.tcogfs.${MACHINE}
 module av
+module show modulefile.tcogfs.${MACHINE}
+module load modulefile.tcogfs.${MACHINE}
 module list
-
-
-
+module unuse ${MDIR}/modulefiles
 # compile
 make clean
 make -j12

@@ -12,9 +12,6 @@ module-whatis " TCoGFS whatis description"
 set ver v1.0.0
 set machine pcc
 
-module add intel/18.0.3
-
-
 setenv COMP ifort
 setenv COMP_MP mpiifort
 setenv COMP_MPI mpiifort
@@ -22,12 +19,8 @@ setenv COMP_MPI mpiifort
 setenv C_COMP icc
 setenv C_COMP_MP mpiicc
 
-#setenv FFLAGS_COM "-fp-model source"
-#setenv LDFLAGS_COM "-mkl"
-
 # Known conflicts
 
-# Loading nceplibs modules
 setenv NETCDF_LIB "-L/home/xa09/pkg/netcdf-3.6.3/lib -lnetcdf"
 setenv NETCDF_INC "/home/xa09/pkg/netcdf-3.6.3/include"
 setenv FFTW_LIB "-L/home/xa09/pkg/fftw-3.3.7/lib -lfftw3_threads -lfftw3"
@@ -44,3 +37,6 @@ setenv LIBS_COM "-mkl=cluster -static-intel -qopt-matmul"
 setenv LDFLAGS_COM "-qopt-report"
 setenv OMP_COM "-parallel"
 setenv CFLAGS_COM "-c"
+
+# Loading nceplibs modules
+module add intel/18.0.3
