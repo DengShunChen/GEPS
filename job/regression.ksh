@@ -7,7 +7,7 @@
  DMSPATH=/package/${machine}/dms/dms.v4/bin
  GFSDIR=$MDIR
  GFSFIX=$MDIR/fix
- GFSWRK=${GFSDIR}/wrk_sample
+ GFSWRK=${GFSDIR}/work_${machine}
  rm -rf $GFSWRK
  mkdir -p $GFSWRK
 
