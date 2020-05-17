@@ -43,33 +43,60 @@
 ! local working array
       integer i,j,jj,nxj,lncrec,mm,nn,k,jul,istat
       real    coef1,coef2
-      real  alvsfcl(nx,my_max,4),alvwfcl(nx,my_max,4),   &
-            alnsfcl(nx,my_max,4),alnwfcl(nx,my_max,4)
+      real  alvsfcl(nxp,my_max,2),alvwfcl(nxp,my_max,2),   &
+            alnsfcl(nxp,my_max,2),alnwfcl(nxp,my_max,2)
       real work(nx,my)
 !
       character bckfile*80,lrec*26,blnk*1,ggdef*4
-      integer   mon(4)
-      data mon/74,166,258,349/
+      integer   mon(12),mmse(2)
+!      data mon/74,166,258,349/
+      data mon/15,46,74,105,135,166,196,227,258,288,319,349/
 !
       data blnk/' '/
 !
       lncrec=nx*my
 !
+      jul=julian
+      if(jul .ge. 366)jul=365
+!----------------------------------------------------------------
+!  to interpolat linearly based on julian day
+!
+!-- climate dataset has 12 months
+
+      if(jul .le. mon(1))jul=jul+365
+!
+      if(jul .gt. mon(12))then
+        mmse(1)=12
+        mmse(2)=1
+        coef1=float(jul-mon(12))/float(365+mon(1)-mon(12))
+        coef2=1.-coef1
+      else
+        do k=2,12
+          if(jul .gt. mon(k-1) .and. jul .le. mon(k))then
+            mmse(1)=k-1
+            mmse(2)=k
+            coef1=float(jul-mon(k-1))/float(mon(k)-mon(k-1))
+            coef2=1.-coef1
+          endif
+        enddo
+      endif
 !----------------------------------------------------------------
 ! read albedo data
 !----------------------------------------------------------------
-      do nn=1,4
-      mm=3*nn
+      do nn=1,2
+      mm=mmse(nn)
       write(lrec,31)ggdef,mm
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,work,istat)
 !     call qmax2d(work,1,1,nx,my)
 !byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
       do jj=1,jlistnum
         j=jlist1(jj)
-        nxj=nxdef(j)
+        ii=nxjstart(j)
+        nxj=nxdef_2d(j)
         if( lreduce.eq.1 ) call reducepick (work(1,j),nxdef(j),nx,1)
         do i=1,nxj
-          alvsfcl(i,jj,nn)=work(i,j)
+          alvsfcl(i,jj,nn)=work(ii,j)
+          ii=ii+1
         enddo
       enddo
 
@@ -79,10 +106,12 @@
 !byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
       do jj=1,jlistnum
         j=jlist1(jj)
-        nxj=nxdef(j)
+        ii=nxjstart(j)
+        nxj=nxdef_2d(j)
         if( lreduce.eq.1 ) call reducepick (work(1,j),nxdef(j),nx,1)
         do i=1,nxj
-          alvwfcl(i,jj,nn)=work(i,j)
+          alvwfcl(i,jj,nn)=work(ii,j)
+          ii=ii+1
         enddo
       enddo
 
@@ -92,10 +121,12 @@
 !byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
       do jj=1,jlistnum
         j=jlist1(jj)
-        nxj=nxdef(j)
+        ii=nxjstart(j)
+        nxj=nxdef_2d(j)
         if( lreduce.eq.1 ) call reducepick (work(1,j),nxdef(j),nx,1)
         do i=1,nxj
-          alnsfcl(i,jj,nn)=work(i,j)
+          alnsfcl(i,jj,nn)=work(ii,j)
+          ii=ii+1
         enddo
       enddo
 
@@ -105,10 +136,12 @@
 !byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
       do jj=1,jlistnum
         j=jlist1(jj)
-        nxj=nxdef(j)
+        ii=nxjstart(j)
+        nxj=nxdef_2d(j)
         if( lreduce.eq.1 ) call reducepick (work(1,j),nxdef(j),nx,1)
         do i=1,nxj
-          alnwfcl(i,jj,nn)=work(i,j)
+          alnwfcl(i,jj,nn)=work(ii,j)
+          ii=ii+1
         enddo
       enddo
 
@@ -157,56 +190,21 @@
   35  format('S0003E','GBCK',a4,12x)         ! facsf
   36  format('S0003F','GBCK',a4,12x)         ! facwf
 !----------------------------------------------------------------
-      jul=julian
-      if(jul .ge. 366)jul=365
-!----------------------------------------------------------------
-!  to interpolat linearly based on julian day
-!
-!-- climate dataset has 4 months
 
-      if(jul .le. mon(1))jul=jul+365
 ! 
 !---  time interpolation
 !
-      if(jul .gt. mon(4))then
-
-      coef1=float(jul-mon(4))/float(365+mon(1)-mon(4))
-      coef2=1.-coef1
-
       do jj=1,jlistnum
          j=jlist1(jj)
-         ii=nxjstart(j)
          nxj=nxdef_2d(j)
       do i=1,nxj
-         alvsf(i,jj)=coef1*alvsfcl(ii,jj,1)+coef2*alvsfcl(ii,jj,4)
-         alvwf(i,jj)=coef1*alvwfcl(ii,jj,1)+coef2*alvwfcl(ii,jj,4)
-         alnsf(i,jj)=coef1*alnsfcl(ii,jj,1)+coef2*alnsfcl(ii,jj,4)
-         alnwf(i,jj)=coef1*alnwfcl(ii,jj,1)+coef2*alnwfcl(ii,jj,4)
-         ii=ii+1
+         alvsf(i,jj)=coef1*alvsfcl(i,jj,1)+coef2*alvsfcl(i,jj,2)
+         alvwf(i,jj)=coef1*alvwfcl(i,jj,1)+coef2*alvwfcl(i,jj,2)
+         alnsf(i,jj)=coef1*alnsfcl(i,jj,1)+coef2*alnsfcl(i,jj,2)
+         alnwf(i,jj)=coef1*alnwfcl(i,jj,1)+coef2*alnwfcl(i,jj,2)
       enddo
       enddo
 
-      end if
-!
-      do 130 k=2,4
-      if(jul .gt. mon(k-1) .and. jul .le. mon(k))then
-         coef1=float(jul-mon(k-1))/float(mon(k)-mon(k-1))
-         coef2=1.-coef1
-         do jj=1,jlistnum
-            j=jlist1(jj)
-            ii=nxjstart(j)
-            nxj=nxdef_2d(j)
-         do i=1,nxj
-            alvsf(i,jj)=coef1*alvsfcl(ii,jj,k)+coef2*alvsfcl(ii,jj,k-1)
-            alvwf(i,jj)=coef1*alvwfcl(ii,jj,k)+coef2*alvwfcl(ii,jj,k-1)
-            alnsf(i,jj)=coef1*alnsfcl(ii,jj,k)+coef2*alnsfcl(ii,jj,k-1)
-            alnwf(i,jj)=coef1*alnwfcl(ii,jj,k)+coef2*alnwfcl(ii,jj,k-1)
-            ii=ii+1
-         enddo
-         enddo
-      end if
-
- 130  continue
 
 !     if (myrank .eq. 0) then
 !         print *,'*** for readalb.f ***'
