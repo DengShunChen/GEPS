@@ -77,7 +77,7 @@
       logical idg_jdg_owner
       integer idg_listnum,jdg_listnum
 ! daily forecast sst, sea ice fraction, water equivlent snow depth, time weighting
-      logical ldailyFCTsst,ldailyFCTicesndpt,lFCTweight,lday_chtg
+      logical ldailyFCTsst,ldailyFCTicesndpt,lFCTweight
       integer dailyClm_option
       logical lopgsst
 ! sit
@@ -88,7 +88,7 @@
               restrt,hdiff, cstar, update,doincr,hybrid,     &
               doo3l,ndsladvh2,docgrav,out_green,out_hp,      &
               ldailyFCTsst,ldailyFCTicesndpt,lFCTweight,     &
-              dailyClm_option,lopgsst,do_sit,lday_chtg
+              dailyClm_option,lopgsst,do_sit
 
  
       character*80 ifilin,cwbout,bckfile,namlsts, &
