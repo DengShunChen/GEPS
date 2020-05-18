@@ -432,9 +432,7 @@
 !  --- ...  snow cover, albedo over sea-ice, glacial-ice
 
         sncovr = 1.0
-!       albedo = 0.65
-!cwb test
-        albedo = 0.75
+        albedo = 0.65
 
       else
 

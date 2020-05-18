@@ -109,8 +109,10 @@
    20   asd(j,i)= (sigma(j,1)-1.0)*dp(i)
 !   20 asd(j,i)= (sig(j)-1.0)*dp(i)
       call mtxmlp (a,asd,arsddt,lev)
+#ifdef VERBOSE
       call mtxprt (dcdp,lev,1,'dcdp    ','f10.4   ')
       call mtxprt (dp,lev,1,'dp      ','f10.4   ')
+#endif
 !
       call mtxmlp (arrhyd,arsddt,a,lev)
       call zilch (csrtn,lev*lev)
@@ -164,19 +166,25 @@
    55 evectr(j,i)= evectr(j,i)*enorm(i)
 !
       call invmtx (evectr,lev,evecin,lev,lev,det,ipp,ier)
+#ifdef VERBOSE
       call mtxprt (arrhyd,lev,lev,'arrhyd  ','20f6.2  ')
       call mtxprt (eigval,lev,1,'eigval  ','f12.4   ')
       call mtxprt (evectr,lev,lev,'evectr  ','20f7.3  ')
       call mtxprt (evecin,lev,lev,'evecin  ','20f7.3  ')
+#endif
       call invmtx (csrtn,lev,b,lev,lev,det,ipp,ier)
 !
       do 21 k=1,lev
       pmcor(k)= 0.0
       do 21 l=1,lev
    21 pmcor(k)= pmcor(k)+dp(l)*b(l,k)
+#ifdef VERBOSE
       call mtxprt (pmcor,lev,1,'pmcor   ','f10.4   ')
+#endif
       call mtxmlp (arsddt,b,tmcor,lev)
+#ifdef VERBOSE
       call mtxprt (tmcor,lev,lev,'tmcor   ','20f6.3  ')
+#endif
 !
       return
       end

@@ -17,7 +17,7 @@
       real      pi,d2r,beta,xlat,sinxl,cosxl,hdif,dtzu
       real      timeg,hourg,plon,sinz0,cosz0,dlon
 !
-      pi = 3.141592654
+      pi = 4.0*atan(1.0)
       d2r = pi/180.0
       beta = 2.*pi*julian/365.
       xlat = 0.006918 - 0.399912*cos(beta) + 0.070257*sin(beta) &

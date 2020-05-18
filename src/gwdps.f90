@@ -150,7 +150,8 @@
       real pi, dw2min, rimin, ric, bnv2min, efmin,                       &
            efmax,hpmax,hpmin, rad_to_deg, deg_to_rad
 !lzl-end
-      parameter (pi=3.1415926535897931)
+!byl      parameter (pi=3.1415926535897931)
+      parameter (pi=4.*atan(1.))
       parameter (rad_to_deg=180.0/pi, deg_to_rad=pi/180.0)
       parameter (dw2min=1., rimin=-100., ric=0.25, bnv2min=1.0e-5)
 !     parameter (efmin=0.0, efmax=10.0, hpmax=200.0)

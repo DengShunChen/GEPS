@@ -71,7 +71,7 @@
                       , facsppt500,facsppt1000,facsppt2000,ndsladvh2    &
                       , ldailyFCTsst,ldailyFCTicesndpt,lFCTweight       &
                       , dailyClm_option,lopgsst,do_sit,fsit,weightSIT   &
-                      ,pdfcloud, lday_chtg
+                      ,pdfcloud, cmbk,cgwd
 !
       real    si(lev+1)
       logical flag
@@ -303,7 +303,7 @@
 !  horizontal diffusion settings for sponge layer
       do k = 1, lev
         prslp=sigma(k,2)+sigma(k,1)*1000.+ptop
-        if ( prslp .le.   2. ) hdk1=k
+        if ( prslp .le.   5. ) hdk1=k
         if ( prslp .le. 100. ) hdk2=k
       enddo
 !
@@ -332,8 +332,10 @@
           call pnmy (jtrun,sinl(j),pnm)
           call reducegrid(pnm,jtrun,pnmcut,j,mtrundef(j),nxdef(j),  &
                           octahedral)
+#ifdef VERBOSE
           if(myrank.eq.0)print *,'j=',j,' mtrundef,nxdef=',mtrundef(j), &
                              nxdef(j),asin(sinl(j))*r2d
+#endif
         enddo
       else
         lreduce=0

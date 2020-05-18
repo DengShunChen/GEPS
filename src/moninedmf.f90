@@ -251,7 +251,9 @@
                ' sr2  ',2f8.2,2e10.2)
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 !>  ## Compute preliminary variables from input arguments
-
+!
+      rtg   = 0.
+!
 ! compute preliminary variables
 !
       if (ix .lt. im) stop

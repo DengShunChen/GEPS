@@ -27,7 +27,8 @@
 !  c4  -  -6277237/(3*5*7*8**5)   handbook of mathematical functions).
 !  u   -  (1-(2/pi)**2)/4
 !
-      data tol/1.d-14/,pi/3.14159265358979/,u/.148678816357662/
+!      data tol/1.d-14/,pi/3.14159265358979/,u/.148678816357662/
+      data tol/1.d-14/
       data c1,c2,c3,c4/.125,-.080729166666667,.246028645833333, &
                       -1.82443876720609 /
 !
@@ -39,6 +40,8 @@
 !
       dbli(i) = dble(float(i))
 !
+      pi = 4.*atan(1.)
+      u  = (1-(2/pi)**2)/4.
       ddif = .5d0*(dble(xb)-dble(xa))
       dsum = .5d0*(dble(xb)+dble(xa))
       if (n .gt. 1) go to 101

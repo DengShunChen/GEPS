@@ -117,8 +117,8 @@
       zph  = 0.
       zcbase = 0.
 
-      cubot = klev
-      cutop = klev
+      cubot = -1
+      cutop = -1
 !xb110<
 !
       do jl = 1, nxj            
@@ -199,7 +199,8 @@
 ! the next levels, we use the variables at the first level as initial values
        do jl = 1, nxj           
       if(loflag(jl)) then
-         eta(jl) = 0.55/((pgeoh(jl,jk)-pgeoh(jl,klev+1))*zrg)+1.0e-4
+!         eta(jl) = 0.55/((pgeoh(jl,jk)-pgeoh(jl,klev+1))*zrg)+1.0e-4
+        eta(jl) = 0.8/(pgeo(jl,jk)*zrg)+2.e-4             !xb110, for more stable
         dz(jl)  = (pgeoh(jl,jk)-pgeoh(jl,jk+1))*zrg
         coef(jl)= 0.5*eta(jl)*dz(jl)
         dhen(jl,jk) = pgeoh(jl,jk) + cpd*ptenh(jl,jk)
@@ -218,6 +219,7 @@
       call cuadjtq_n(nxj,klon,klev,ik,zph,ptu,pqu,loflag,icall)
         do jl = 1, nxj          
         if( loflag(jl) ) then
+          pqu(jl,jk) =max(pqu(jl,jk),0) !xb110, to make sure that pqu is positive
           zdq = max((zqold(jl) - pqu(jl,jk)),0.)
           plu(jl,jk) = plu(jl,jk+1) + zdq
           zlglac=zdq*((1.-foealfa(ptu(jl,jk))) - &
@@ -432,6 +434,7 @@
  
         do jl = 1, nxj              
         if( loflag(jl) ) then
+          pqu(jl,jk) =max(pqu(jl,jk),0) !xb110, to make sure that pqu is positive
           zdq = max((zqold(jl) - pqu(jl,jk)),0.)
           plu(jl,jk) = plu(jl,jk+1) + zdq
           zlglac=zdq*((1.-foealfa(ptu(jl,jk))) - &

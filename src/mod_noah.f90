@@ -44,7 +44,11 @@
                write(6,*) 'mod_noah : allocate fail 1 '
                stop
            end if
-
+!
+           stc=0.
+           smc=0.
+           slc=0.
+!
            allocate (canopy(nxp,my_max), runoff(nxp,my_max),rld(nxp,my_max), &
               sigmaf(nxp,my_max), sld(nxp,my_max),gfx(nxp,my_max),           &
               zice(nxp,my_max),cice(nxp,my_max),      &

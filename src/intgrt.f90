@@ -198,6 +198,8 @@
 #ifdef TIMING
 ! for timing
       real*8 tm_1,tm_2,tm_use,mpi_wtime
+!CWB2020
+      tm_1=mpi_wtime()
       tm_2=mpi_wtime()
 #endif
 !      fsit=-99.             !fsit>0., turn on sit_vdiff when mod(tau/fsit)<0.001
@@ -591,9 +593,10 @@
 
       endif
 
-#ifdef TIMING
-      tm_1=mpi_wtime()
-#endif
+!CWB2020 fix the bug for negative timing info
+!#ifdef TIMING
+!      tm_1=mpi_wtime()
+!#endif
  100  continue
 !
       tau=tau+dtx/3600.
@@ -889,7 +892,7 @@
                       , fm,fh,fm10,fh2,srflag                                   &
                       , rld,km_soil,smc,stc,canopy,runoff                       &
                       , sigmaf,istyp,ivegtyp,wltsmc,refsmc,maxsmc,dfkt,xktk,dfk &
-                      , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,deltaq,sd                  &
+                      , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,deltaq,cnvwr,cnvcr,sd      &
                       , shdmax,shdmin,snoalb                                    &
                       , slopetyp,sld,slc,zice,cice,xtice,sncover,sndepth        &
                       , ctot,chig,cmid,clow,hpbl,asl,atl,cosz                   &
@@ -903,7 +906,8 @@
                       , idtg,doo3l,nfxr,sfalb,sfemis,isot,ivegsrc               &
                       , dosppt,sppt3d,itimestep,lrun_sitvdiff,ic_sit            &
 !xb110>
-                      , flash)
+!byl                      , rmr,smr,flash)
+                      , flash,tsflw)
 !xb110<
 !--------------------------------------------------------------------------------
 !

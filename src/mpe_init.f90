@@ -41,7 +41,9 @@
       call MPI_INIT( ierr )
       call MPI_COMM_RANK( MPI_COMM_WORLD, myrank_all, ierr )
       call MPI_COMM_SIZE( MPI_COMM_WORLD, nsize_all,  ierr )
-
+#ifdef W3TAG
+      if (myrank_all==0) call w3tagb('CWBGFS',2020,0106,0055,'MIC')
+#endif
       call get_model_param
 
       if(io_quilting)then

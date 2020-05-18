@@ -166,12 +166,12 @@ USE mo_cumulus_flux,  only: lmfdudv, &! true if cum. friction is switched on
       real     apha,capa,klvl
       real     zduten,zdvten,ztdis,pgf_u,pgf_v
       real     zoentr1(klon,klev),tmp2(klon,klev),tmp3(klon,klev) &
-     &        ,tmp4(klon,klev),tmp5(klon,klev),cdeep(klon,klev)
-      real     cdeep1(klon),cdeep2(klon),tmp(klon)
+     &        ,tmp4(klon,klev),tmp5(klon,klev)
 !xb110>
       real     mdlon,gdx,re,rr
       integer  kcnv(klon)
       real     sumpap(klon)
+      logical  adj
 !for lightning parameterization
       real     pluu(klon,klev),pf(klon,klev),rho(klon,klev),papn(klon,klev)
       real     flash(klon),dx(klon)
@@ -398,33 +398,6 @@ USE mo_cumulus_flux,  only: lmfdudv, &! true if cum. friction is switched on
       end if    
       end do
 !
-      do jk = 1,klev
-        do jl = 1,nxj
-          cdeep(jl,jk) = 0.
-          cdeep1(jl) = 0.
-          cdeep2(jl) = 0.
-          tmp(jl) = 0.
-        enddo
-      enddo
-
-!parameterization of deep convection cloud fraction scheme
-
-      do jl = 1,nxj
-      klvl=0.
-        do jk = 1,klev
-        llo1 = ldcum(jl) .and. ktype(jl) .eq. 1
-        if ( llo1 .and. jk <= kcbot(jl) .and. jk > kctop(jl) ) then
-        klvl=klvl+1.
-        cdeep(jl,jk) = 0.14*log(1.0+500.*pmfu(jl,jk))
-        cdeep1(jl) = cdeep1(jl) + (0.14*log(1.0+500.*pmfu(jl,jk)))
-        endif
-        enddo
-        if ( cdeep1(jl) .gt. 0 )then
-        cdeep2(jl) = cdeep1(jl)/klvl
-        cdeep2(jl) = max(0.,cdeep2(jl))
-        cdeep2(jl) = min(1.,cdeep2(jl))
-        endif
-      enddo
 
       do jk = 1 , klev
        do jl = 1, nxj            
@@ -610,6 +583,92 @@ USE mo_cumulus_flux,  only: lmfdudv, &! true if cum. friction is switched on
      &  ,  zmfuq,    zmfdq,    zmful,    plude             &     
      &  ,  zdmfup,   zdmfdp,   zdpmel,   zlglac            &   
      &  ,  prain,    pmfdde_rate, pmflxr, pmflxs )    
+
+!xb110, WRF 4.0 version>
+! some adjustments needed
+adj=.true.
+if (adj)then
+    do jl=1,nxj
+      zmfs(jl) = 1.
+      zmfuub(jl)=0.
+    end do
+    do jk = 2 , klev
+      do jl = 1,nxj
+        if ( loddraf(jl) .and. jk >= idtop(jl)-1 ) then   ! below cloud top level
+          zmfmax = pmfu(jl,jk)*0.98
+          if ( pmfd(jl,jk)+zmfmax+1.e-15 < 0. ) then
+            zmfs(jl) = min(zmfs(jl),-zmfmax/pmfd(jl,jk))   ! factor for downdraft adjustment
+          end if
+        end if
+      end do
+    end do
+
+    do jk = 2 , klev
+      do jl = 1 , nxj
+        if ( zmfs(jl) < 1. .and. jk >= idtop(jl)-1 ) then
+          pmfd(jl,jk) = pmfd(jl,jk)*zmfs(jl)
+          zmfds(jl,jk) = zmfds(jl,jk)*zmfs(jl)
+          zmfdq(jl,jk) = zmfdq(jl,jk)*zmfs(jl)
+          pmfdde_rate(jl,jk) = pmfdde_rate(jl,jk)*zmfs(jl)
+          zmfuub(jl) = zmfuub(jl) - (1.-zmfs(jl))*zdmfdp(jl,jk)
+          pmflxr(jl,jk+1) = pmflxr(jl,jk+1) + zmfuub(jl)
+          zdmfdp(jl,jk) = zdmfdp(jl,jk)*zmfs(jl)
+        end if
+      end do
+    end do
+
+    do jk = 2 , klev - 1
+      do jl = 1, nxj
+        if ( loddraf(jl) .and. jk >= idtop(jl)-1 ) then
+          zerate = -pmfd(jl,jk) + pmfd(jl,jk-1) + pmfdde_rate(jl,jk)
+          if ( zerate < 0. ) then
+            pmfdde_rate(jl,jk) = pmfdde_rate(jl,jk) - zerate
+          end if
+        end if
+        if ( ldcum(jl) .and. jk >= kctop(jl)-1 ) then
+          zerate = pmfu(jl,jk) - pmfu(jl,jk+1) + pmfude_rate(jl,jk)
+          if ( zerate < 0. ) then
+            pmfude_rate(jl,jk) = pmfude_rate(jl,jk) - zerate
+          end if
+          zdmfup(jl,jk) = pmflxr(jl,jk+1) + pmflxs(jl,jk+1) - &
+                          pmflxr(jl,jk) - pmflxs(jl,jk)
+          zdmfdp(jl,jk) = 0.
+        end if
+      end do
+    end do
+end if       !end for adjustment
+
+! avoid negative humidities at ddraught top
+    do jl = 1,nxj
+      if ( loddraf(jl) ) then
+        jk = idtop(jl)
+        ik = min(jk+1,klev)
+        if ( zmfdq(jl,jk) < 0.3*zmfdq(jl,ik) ) then
+            zmfdq(jl,jk) = 0.3*zmfdq(jl,ik)
+        end if
+      end if
+    end do
+
+! avoid negative humidities near cloud top because gradient of precip flux
+! and detrainment / liquid water flux are too large
+    do jk = 2 , klev
+      do jl = 1, nxj
+        if ( ldcum(jl) .and. jk >= kctop(jl)-1 .and. jk < kcbot(jl) ) then
+          zdz = ztmst*g/(paph(jl,jk+1)-paph(jl,jk))
+          zmfa = zmfuq(jl,jk+1) + zmfdq(jl,jk+1) - &
+                 zmfuq(jl,jk) - zmfdq(jl,jk) + &
+                 zmful(jl,jk+1) - zmful(jl,jk) + zdmfup(jl,jk)
+          zmfa = (zmfa-plude(jl,jk))*zdz
+          if ( pqen(jl,jk)+zmfa < 0. ) then
+            plude(jl,jk) = plude(jl,jk) + 2.*(pqen(jl,jk)+zmfa)/zdz
+          end if
+          if ( plude(jl,jk) < 0. ) plude(jl,jk) = 0.
+        end if
+        if ( .not. ldcum(jl) ) pmfude_rate(jl,jk) = 0.
+        if ( abs(pmfd(jl,jk-1)) < 1.0e-20 ) pmfdde_rate(jl,jk) = 0.
+      end do
+    end do
+!xb110, WRF<
 
       do jl = 1, nxj           
         prsfc(jl) = pmflxr(jl,klev+1)
@@ -798,8 +857,8 @@ USE mo_cumulus_flux,  only: lmfdudv, &! true if cum. friction is switched on
       end do
        do jl = 1, nxj         
         if ( llo2(jl) ) then
-          kctop(jl) = klev - 1
-          kcbot(jl) = klev - 1
+          kctop(jl) = -1
+          kcbot(jl) = -1
         end if
       end do
       end if
