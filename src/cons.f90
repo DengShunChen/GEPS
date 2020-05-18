@@ -70,8 +70,8 @@
                       , de_corretime_2000                               &
                       , facsppt500,facsppt1000,facsppt2000,ndsladvh2    &
                       , ldailyFCTsst,ldailyFCTicesndpt,lFCTweight       &
-                      , dailyClm_option,lopgsst,do_sit,fsit,pdfcloud    &
-                      , lday_chtg
+                      , dailyClm_option,lopgsst,do_sit,fsit,weightSIT   &
+                      ,pdfcloud, lday_chtg
 !
       real    si(lev+1)
       logical flag

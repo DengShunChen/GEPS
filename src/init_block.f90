@@ -126,6 +126,8 @@
 !--for SIT
       do_sit=.false.
       fsit=-99.
+      weightSIT=0.5
+      updatetg=24.
 !
 ! specify the default option for orographic and convective gwd
 !

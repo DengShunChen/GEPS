@@ -43,6 +43,8 @@
 !sit
       real fsit           !fsit>0., turn on sit_vdiff when mod(tau/fsit)<0.001
                           !default fsit<=0., turn on sit_vdiff every tau
+      real weightSIT      !the weighting of SIT tendency
+      real updatetg       !the time interval to update tg 
            
  
       common/constR/                                         &
@@ -50,7 +52,7 @@
            ptop,ptmean,tfilt,dt,tau,taui,taue,tauo,          &
            hours,frad,evaprh,qgini,                          &
            tice,hice,cutfreq,taup,hfilt,ptmeans,             &
-           taureg,cgw,fsit,domfc,otgreen
+           taureg,cgw,domfc,otgreen,fsit,weightSIT,updatetg
 ! sppt parameters
       real                                                       &
            de_corretime_500,de_corretime_1000,de_corretime_2000, &

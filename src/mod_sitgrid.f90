@@ -3,7 +3,7 @@
 ! modify to f90 by C-H Lee and sort by River Chen in 2015
 !
 !      USE param
-      USE index
+!      USE index
       USE mod_sit_control,     ONLY: xmissing
       USE mo_netcdf,         ONLY: lkvl
        
@@ -87,15 +87,15 @@
             oldsitws, oldsitwtke
      
       real,dimension(:,:), allocatable, save::           &
-              tgini, tgold, dtswdt
+              dtswdt, tseadiffSIT, tseadiffSIT24
 
  
       contains 
 
-        subroutine allocate_sitgrid_array(nx,my_max)
+        subroutine allocate_sitgrid_array(nxp,my_max)
 
            integer  ierr
-           integer  nx,my_max
+           integer  nxp,my_max
 
 !    ! 2-d from ATM vars
            allocate (                                                  &
@@ -233,8 +233,8 @@
                stop
            end if
 
-           allocate ( tgini(nxp,my_max), tgold(nxp,my_max),            &
-                     dtswdt(nxp,my_max), stat=ierr)
+           allocate ( dtswdt(nxp,my_max), tseadiffSIT(nxp,my_max),            &
+                     tseadiffSIT24(nxp,my_max), stat=ierr)
 
           if (ierr/= 0) then
                write(6,*) 'mod_sitgrid_dtswdt : allocate fail 1 '
@@ -374,9 +374,9 @@
            oldsitww=xmissing
            oldsitws=xmissing
            oldsitwtke=xmissing
-           tgini=0.
-           tgold=0.
            dtswdt=0.
+           tseadiffSIT=0.
+           tseadiffSIT24=0.
 
            return
 
@@ -451,7 +451,7 @@
             oldsitwt, oldsitwu, oldsitwv,oldsitww,       &
             oldsitws,oldsitwtke)
 
-           deallocate ( tgini, tgold, dtswdt)
+           deallocate ( dtswdt, tseadiffSIT, tseadiffSIT24)
 
            return
 

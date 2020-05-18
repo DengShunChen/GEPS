@@ -1,7 +1,3 @@
-#define myrank_check 45
-#define ii_check 104
-#define jj_check 5
-!
       subroutine diabat ( fwd,docup,dodry,dolsp,dopbl,dorad,doshl,dograv       &
                     , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw       &
                     , idg,jdg,ldiag,dt,tau,hours,julian                        &
@@ -33,7 +29,7 @@
 ! sppt
                     , dosppt,sppt3d,itimestep,lrun_sitvdiff,ic_sit             &
 !xb110>
-                    , flash,tgdiff)
+                    , flash)
 !xb110<
 !--------------------------------------------------------------------------------
 !#######################################################################
@@ -179,7 +175,8 @@
       USE mod_eos_ocean,         ONLY:AirVaporPressure,CalcSm
       USE mod_sst,               ONLY:time_weights,now1,now2,wgto1,wgto2 &
                                      ,obswtbnmw1,obswtbnmw2,obswtbwgt1   &
-                                     ,obswtbwgt2,dailyFCTsst
+                                     ,obswtbwgt2,dailyFCTsst,obswtbt     &
+                                     ,myrank_check,ii_check,jj_check
       USE mo_netcdf,             ONLY:lkvl
 !-----------------------------------------------------------------------
       use radn
@@ -462,7 +459,6 @@
       character*12 cdtg
       integer yr, mo, dy, hr, mn
       real tauhr,randdt
-      real tgdiff(nxp,my_max)
       real dtx_tau,dtaup 
       INTEGER, PARAMETER :: nerr = 6
 !xb110>
@@ -1840,7 +1836,7 @@
       endif  ! for uprad .and. irad=2
 !
 !-------------------------------------------------------
-! SIT scheme, update tg
+! SIT scheme, cal. dTsit/dt 
 !-------------------------------------------------------
       if(myrank .EQ. myrank_check .AND. jj .EQ. jj_check ) then
         print*,'before do_sit: myrank=',myrank,',jj=',jj       &
@@ -1848,11 +1844,7 @@
       endif
 
       if(do_sit) then
-        if(fwd) then
-         dtsit=dta
-        else
-         dtsit=dta*0.5
-        endif
+        dtsit=dt
 
         istep= int(tau/(dt/3600.)+0.01)
         tauleft=float(int((tau-int(tau)+0.001)*3600./dt))*dt
@@ -1916,7 +1908,7 @@
             snrfsit(ii,jj)=snrfsit(ii,jj)+snr(ii,jj)*dtsit
             zicefsit(ii,jj)=zicefsit(ii,jj)+zice(ii,jj)*dtsit
             xticefsit(ii,jj)=xticefsit(ii,jj)+xtice(ii,jj)*dtsit
-            obswtbfsit(ii,jj)=obswtbfsit(ii,jj)+obswtb(ii,jj)*dtsit
+            obswtbfsit(ii,jj)=obswtbfsit(ii,jj)+obswtbt(ii,jj)*dtsit
             tgfsit(ii,jj)=tgfsit(ii,jj)+tg(ii,jj)*dtsit
             if(myrank .EQ. myrank_check .AND.    &
               jj .EQ. jj_check .AND. ii.EQ. ii_check) then
@@ -1988,7 +1980,7 @@
               snrtm(ii,jj)=snr(ii,jj)
               zicetm(ii,jj)=zice(ii,jj)
               xticetm(ii,jj)=xtice(ii,jj)
-              obswtbtm(ii,jj)=obswtb(ii,jj)
+              obswtbtm(ii,jj)=obswtbt(ii,jj)
               tgtm(ii,jj)=tg(ii,jj)
               dtfsit=dtsit
             endif
@@ -2025,20 +2017,10 @@
             t_surf   =obswtbtm(ii,jj)
             t_surf = MAX( t_surf, ctfreez )
             tsi(ii,jj)= MIN( t_surf, ctfreez )
-            tgold(ii,jj)=tg(ii,jj)
-            tsw(ii,jj)=tgold(ii,jj)
+            obswtb(ii,jj)=obswtbtm(ii,jj)
+            tsw(ii,jj)=tg(ii,jj)
             dtswdt(ii,jj)=0.
 
-
-
-            if(myrank .eq. myrank_check .AND.      &
-              jj .eq. jj_check .AND. ii .eq. ii_check)then
-              print*,"now1=",now1,",now2=",now2,",wgto1=",wgto1   &
-                    ,",wgto2=",wgto2,",obswtbnmw1=",obswtbnmw1    &
-                    ,",obswtbnmw2=",obswtbnmw2                    &
-                    ,"obswtbwgt1=",obswtbwgt1,",obswtbwgt2=",obswtbwgt2 &
-                    ,",obswtbtm=",obswtbtm(ii,jj)
-              endif
           endif    !end (lrun_sitvdiff)
 
           if(myrank .EQ. myrank_check .AND.         &
@@ -2048,7 +2030,6 @@
                  ,',sitlon(',ii_check,',jj)=',sitlon(ii,jj)        &
                  ,',sitlclass=',sitlclass(ii,jj)                   &
                  ,',sitmask=',sitmask(ii,jj),',tg=',tg(ii,jj)      &
-                 ,',tgold=',tgold(ii,jj)                           &
                  ,',tsw=',tsw(ii,jj),',dtswdt=',dtswdt(ii,jj)      &
                  ,',dta=',dta,',dt=',dt,',dtfsit=',dtfsit
           endif
@@ -2063,61 +2044,22 @@
           print *,"sitclass=",sitlclass(ii,jj),"sitmask=",sitmask(ii,jj)
           print *,"tg=",tg(ii,jj)
 
-      2300 FORMAT(1X,24(A11,E13.5))
-      2301 FORMAT(1X,22(A11,E13.5))
-      2302 FORMAT(1X,24(A11,E13.5))
-      2303 FORMAT(1X,11(A11,E13.5))
-
+      2300 FORMAT(1X,23(A11,E13.5))
 
           WRITE(nerr,2300)           &
-           "1tau,",tau,",tg,",tg(ii,jj),",tgold,",tgold(ii,jj),",tsw," &
-          ,tsw(ii,jj),",fluxw,",fluxw(ii,jj),",dfluxs,",dfluxs(ii,jj)  &
+           "1tau,",tau,",tg,",tg(ii,jj),",tsw,",tsw(ii,jj)             &
+          ,",fluxw,",fluxw(ii,jj),",dfluxs,",dfluxs(ii,jj)             &
           ,",soflw,",soflw(ii,jj),",fluxi,",fluxi(ii,jj),",sofli,"     &
           ,sofli(ii,jj),",ustrw,",ustrw(ii,jj),",vstrw,",vstrw(ii,jj)  &
-          ,",hflux,",hflux(ii,jj),",qflux,",qflux(ii,jj),",cice,"      &
-          ,cice(ii,jj),",zice,",zice(ii,jj),",rsf,",rsf(ii,jj),",ssf," &
-          ,ssf(ii,jj),",evapw,",evapw(ii,jj),",disch,",disch(ii,jj)    &
+          ,",hflux,",hflux(ii,jj),",qflux,",qflux(ii,jj)               &
+          ,",cice,",cice(ii,jj),",zice,",zice(ii,jj),",rsf,",rsf(ii,jj)&
+          ,",ssf,",ssf(ii,jj),",evapw,",evapw(ii,jj),",disch,",disch(ii,jj)    &
           ,",t2tm,",t2tm(ii,jj),",wind10w,",wind10w(ii,jj),",obsseaice," &
-          ,obsseaice(ii,jj),",sitws0,",sitws(ii,jj,0),",obswtbtm,",obswtbtm(ii,jj)
+          ,obsseaice(ii,jj),",sitws0,",sitws(ii,jj,0)                  &
+          ,",obswtbtm,",obswtbtm(ii,jj)
 
+         endif
 
-          WRITE(nerr,2301)           &
-           "2tau,",tau,",obswtbtm,",obswtbtm(ii,jj),",sitwtb,",sitwtb(ii,jj) &
-          ,",sitwub,",sitwub(ii,jj),",sitwvb,",sitwvb(ii,jj),",obswsb,"   &
-          ,obswsb(ii,jj),",sitwsb,",sitwsb(ii,jj),",fluxiw,",fluxiw(ii,jj)&
-          ,",pme2,",pme2(ii,jj),",subfluxw,",subfluxw(ii,jj),",wsubsal,"  &
-          ,wsubsal(ii,jj),",sitcc,",sitcc(ii,jj),",sithc,",sithc(ii,jj)   &
-          ,",engwac,",engwac(ii,jj),",sc,",sc(ii,jj),",saltwac,"          &
-          ,saltwac(ii,jj),",wtfns,",wtfns(ii,jj),",wsfns,",wsfns(ii,jj)   &
-          ,",zsi0,",zsi(ii,jj,0),",zsi1,",zsi(ii,jj,1),",silw0,"          &
-          ,silw(ii,jj,0),",silw1,",silw(ii,jj,1)
-
-
-          WRITE(nerr,2302)           &
-          "3tau,",tau,",tsnic0,",tsnic(ii,jj,0),",tsnic1,",tsnic(ii,jj,1) &
-         ,",tsnic2,",tsnic(ii,jj,2),",tsnic3,",tsnic(ii,jj,3),",seaice,"  &
-          ,seaice(ii,jj),",sni,",sni(ii,jj),",thickness,",thickness(ii,jj)&
-          ,",xticetm,",xticetm(ii,jj),",tsl,",tsl(ii,jj),",tslm,"         &
-          ,tslm(ii,jj),",tslm1,",tslm1(ii,jj),",ocu,",ocu(ii,jj),",ocv,"  &
-          ,ocv(ii,jj),",ctfreez2,",ctfreez2(ii,jj),",grndcapc,"           &
-          ,grndcapc(ii,jj),",grndhflx,",grndhflx(ii,jj),",grndflux,"      &
-          ,grndflux(ii,jj),",hltm,",hltm,",hflux,",hflux(ii,jj)           &
-          ,",hfluxtm,",hfluxtm(ii,jj),",qflux,",qflux(ii,jj),",qfluxtm,"  &
-          ,qfluxtm(ii,jj),",evapw,",evapw(ii,jj)
-
-
-          WRITE(nerr,2303)          &
-           "4tau,",tau,",u10tm,",u10tm(ii,jj),",v10tm,",v10tm(ii,jj)      &
-          ,",sstm,",sstm(ii,jj),",rstm,",rstm(ii,jj),",rlsptm,"           &
-          ,rlsptm(ii,jj),",rcuptm,",rcuptm(ii,jj),",cicetm,",cicetm(ii,jj)&
-          ,",zice,",zice(ii,jj),",pst,",pst(ii,jj),",rh2tm,",rh2tm(ii,jj)
-
-
-         WRITE(nerr,*) "sitwt=",sitwt(ii,jj,:)
-         WRITE(nerr,*) "sitwu=",sitwu(ii,jj,:)
-         WRITE(nerr,*) "sitwv=",sitwv(ii,jj,:)
-         WRITE(nerr,*) "sitwtke=",sitwtke(ii,jj,:)
-        endif
          call sit_vdiff ( nxjp(j), nxp, jj, istep, dtfsit,             &
               sitlat, sitlon(:,jj), tau, tauhr,                        &
               sitcor(:,jj), slm(:,jj), sitlclass(:,jj),                &
@@ -2135,7 +2077,7 @@
               t2tm(:,jj), wind10w(:,jj),                               &
 !            ! - 1D from mo_memory_g3b (sit variables)
 !              obsseaice(:,jj), obswtbtm(:,jj), obswsb(:,jj),           &
-              obsseaice(:,jj), obswtb(:,jj), obswsb(:,jj),             &
+              obsseaice(:,jj), obswtb(:,jj), obswsb(:,jj),           &
               sitwtb(:,jj), sitwub(:,jj), sitwvb(:,jj),                &
               sitwsb(:,jj), fluxiw(:,jj), pme2(:,jj),                  &
               subfluxw(:,jj), wsubsal(:,jj),                           &
@@ -2177,42 +2119,24 @@
         call storesittau(nxjp(j),jj,nxp,my_max,lkvl,sitwt,sitws,sitwu,sitwv,dtfsit)
         call storesit24(nxjp(j),jj,nxp,my_max,lkvl,sitwt,sitws,sitwu,sitwv,dtfsit)
         
-!        call random_seed()
-        do ii = 1, nxj
-         if(ocean(ii,jj) .AND. sitmask(ii,jj).EQ.1.) then
-          if(ltrigsit)then
-            if(fsitchg .gt. 0.)then
-              tgdiff(ii,jj)=min(max(tsw(ii,jj)-tgold(ii,jj),-abs(fsitchg)),abs(fsitchg))
-              tg(ii,jj)=tgold(ii,jj)+tgdiff(ii,jj)
-            else
-              tgdiff(ii,jj)=tsw(ii,jj)-tgold(ii,jj)
-              tg(ii,jj)=tgold(ii,jj)+tgdiff(ii,jj)
-            endif
-          else
-            tgdiff(ii,jj)=obswtb(ii,jj)-tgold(ii,jj)
-            tg(ii,jj)=obswtb(ii,jj)
-          endif
 
-          if(myrank .EQ. myrank_check .AND.         &
-            jj .EQ. jj_check .AND. ii .EQ. ii_check) then
-            print*,'after sit_vdiff:myrank=',myrank                &
-                 ,',ii=',ii,',jj=',jj,',i=',i,',j=',j              &
-                 ,',sitlat(',ii_check,')=',sitlat(ii)              &
-                 ,',sitlon(',ii_check,',jj)=',sitlon(ii,jj)        &
-                 ,',sitlclass=',sitlclass(ii,jj)                   &
-                 ,',sitmask=',sitmask(ii,jj),',tg=',tg(ii,jj)      &
-                 ,',tsw=',tsw(ii,jj),',dtswdt=',dtswdt(ii,jj)      &
-                 ,',tgold=',tgold(ii,jj),',tgdiff=',tgdiff(ii,jj)   &
-                 ,',dta=',dta,',dt=',dt,',dtfsit=',dtfsit          &
-                 ,',lsftobswt=',lsftobswt
-          endif
-         endif
-        enddo
+        if(myrank .EQ. myrank_check .AND.         &
+          jj .EQ. jj_check .AND. ii .EQ. ii_check) then
+          print*,'after sit_vdiff:myrank=',myrank                &
+                ,',ii=',ii,',jj=',jj,',i=',i,',j=',j              &
+                ,',sitlat(',ii_check,')=',sitlat(ii)              &
+                ,',sitlon(',ii_check,',jj)=',sitlon(ii,jj)        &
+                ,',sitlclass=',sitlclass(ii,jj)                   &
+                ,',sitmask=',sitmask(ii,jj),',tg=',tg(ii,jj)      &
+                ,',tsw=',tsw(ii,jj),',dtswdt=',dtswdt(ii,jj)      &
+                ,',dta=',dta,',dt=',dt,',dtfsit=',dtfsit          &
+                ,',lsftobswt=',lsftobswt
+        endif
 
-      endif  !end lrun_sitvdiff
+       endif  !end lrun_sitvdiff
 
 
-        if(jj .eq. jlistnum) then
+       if(jj .eq. jlistnum) then
           deallocate(sstm)
           deallocate(rstm)
           deallocate(hfluxtm)
@@ -2240,6 +2164,11 @@
         print*,'after do_sit: myrank=',myrank,',jj=',jj       &
               ,'ii=',ii_check,',tg=',tg(ii_check,jj)
       endif
+
+!----------------------------------------
+
+!---------------------------------------
+
 
 !--------------------------------------------------------------------------------
 !     weight back u and v by cosl/radus and

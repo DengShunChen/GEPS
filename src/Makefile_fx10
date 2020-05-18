@@ -10,9 +10,6 @@ SRCS  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
 	mod_albn.f90 mod_ozne_def.f90 mod_radn.f90 mod_raddiag.f90 \
 	mod_outflds.f90 \
 	mo_constants.f90 mo_convect_tables.f90 mo_cumulus_flux.f90 shr_kind_mod.f90 \
-        mod_sitgrid.f90 mod_eos_ocean.f90 mod_sit_vdiff.f90 outsit.f90 \
-        mod_sst.f90 mod_netcdf.f90 mod_sit_control.f90 samfdeepcnv.f90 samfshalcnv.f90 \
-        moninedmf.f90 mfpbl.f90 unify_reduceintp.f90 unify_reducepick.f90 \
 	namelist_soilveg.f90 set_soilveg.f90 sfc_diag.f90 \
 	sfc_diff.f90 sfc_drv.f90 sfc_ocean.f90 sfc_sice.f90 sflx.f90 init_block.f90 \
 	ancrt.f90 cem1.f90 coftrix.f90 \
@@ -85,6 +82,9 @@ SRCS  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
 	cudlfs_n.f90 cudtdq_n.f90 cududv_n.f90 cuentr_n.f90 cuflx_n.f90 \
 	cuini_n.f90 cumastr_driv_n.f90 cumastr_n.f90 cutype_n.f90 ntke_func.f90 \
         get_phi.f90 module_mp_radar.f90 module_mp_wsm6_fv3.f90 lightning_ec.f90 \
+        mod_sitgrid.f90 mod_eos_ocean.f90 mod_sit_vdiff.f90 outsit.f90 \
+        mod_sst.f90 mod_netcdf.f90 mod_sit_control.f90 samfdeepcnv.f90 samfshalcnv.f90 \
+        moninedmf.f90 mfpbl.f90 unify_reduceintp.f90 unify_reducepick.f90 \
         gscondp.f90 precpdp.f90
 
 OBJS=	${SRCS:.f90=.o}
@@ -99,8 +99,8 @@ FC90 =  mpifrtpx
 INCLUDE = -I. -I/users/xa09/$(MACHINE)/fftw-3.3.7/include -I/package/$(MACHINE)/netcdf-3.6.3/include
 #INCLUDE = -I. -I/nwpr/cfsres/b827/fx10/fftw-3.3.7/include
 
-#CMD  =  MTCo639L72_$(MACHINE)
-CMD  =  MTCo383L72_$(MACHINE)_ysu
+CMD  =  MTCo639L72_$(MACHINE)
+#CMD  =  MTCo383L72_$(MACHINE)
 
 # MSG  =    -Ec -Qa,d,i,p,t,x -Koptmsg=2 -Nquickdbg
  MSG  =    -Ec -Qa,d,i,p,t,x -Koptmsg=2
@@ -161,11 +161,11 @@ $(OBJS):
 clean :
 	@echo
 	@echo '==== CLEAN ===================================================='
-	rm -f *.o *.lst *.mod MTCo383L72_$(MACHINE)_ysu
+	rm -f *.o *.lst *.mod MTCo639L72_$(MACHINE)
 
-#install :
-#	$(INSTALL) -d ../bin
-#	$(INSTALL) -D $(CMD) ../bin
+install :
+	$(INSTALL) -d ../bin
+	$(INSTALL) -D $(CMD) ../bin
 
 ancrt.o : ancrt.f90 
 cem1.o : cem1.f90 mod_paramt.o 
@@ -211,7 +211,7 @@ spptout.o : spptout.f90 mod_mpe.o mod_rank.o mod_index.o
 geostd.o : geostd.f90 
 get_model_param.o : get_model_param.f90 mod_rank.o mod_paramt.o mod_const.o mod_param.o 
 getphi.o : getphi.f90 
-getrdy.o : getrdy.f90 mod_ozne_def.o mod_albn.o mod_radn.o mod_noah.o mod_typhoon.o mod_phygrid.o mod_fftcom.o mod_spec.o mod_grid.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o namelist_soilveg.o
+getrdy.o : getrdy.f90 mod_ozne_def.o mod_albn.o mod_radn.o mod_noah.o mod_typhoon.o mod_phygrid.o mod_fftcom.o mod_spec.o mod_grid.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o namelist_soilveg.o mod_sitgrid.o mod_sit_vdiff.o mod_eos_ocean.o mod_sst.o mod_netcdf.o mod_sit_control.o
 gfcst.o : gfcst.f90 mod_const.o mod_param.o 
 glbmean.o : glbmean.f90 mod_index.o mod_mpe.o 
 gpvs.o : gpvs.f90 
@@ -223,13 +223,13 @@ gwdp.o : gwdp.f90 mod_paramt.o
 gwdc.o : gwdc.f90 mod_paramt.o mod_rank.o mod_mpe.o mod_index.o
 read_mtnvar.o : read_mtnvar.f90 mod_index.o mod_param.o
 gwdps.o : gwdps.f90 mod_rank.o mod_mpe.o mod_index.o
-hdiffu.o : hdiffu.f90 mod_rank.o mod_mpe.o mod_index.o mod_const.o
+hdiffu.o : hdiffu.f90 mod_rank.o mod_mpe.o mod_index.o mod_const.o mod_param.o
 incrini.o : incrini.f90 mod_fftcom.o mod_spec.o mod_grid.o mod_const.o mod_index.o mod_rank.o mod_param.o 
 indexx.o : indexx.f90 
 inicons.o : inicons.f90 mod_index.o 
 init_block.o : init_block.f90 mod_noah.o mod_const.o mod_param.o physcons.o
 initial.o : initial.f90 mod_fftcom.o mod_grid.o mod_spec.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o 
-intgrt.o : intgrt.f90 mod_raddiag.o mod_radn.o mod_albn.o mod_noah.o mod_typhoon.o mod_phygrid.o mod_fftcom.o mod_grid.o mod_spec.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o  mod_sitgrid.o mod_sit_vdiff.o mod_netcdf.o mod_sit_control.o mod_sst.o namelist_soilveg.o
+intgrt.o : intgrt.f90 mod_raddiag.o mod_radn.o mod_albn.o mod_noah.o mod_typhoon.o mod_phygrid.o mod_fftcom.o mod_grid.o mod_spec.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o mod_sitgrid.o mod_sit_vdiff.o mod_netcdf.o mod_sit_control.o mod_sst.o namelist_soilveg.o
 invmtx.o : invmtx.f90 mod_rank.o 
 joinrs.o : joinrs.f90 mod_index.o 
 joinsr.o : joinsr.f90 
@@ -383,7 +383,7 @@ sfc_ocean.o : sfc_ocean.f90 physcons.o machine.o
 sfcpbl.o : sfcpbl.f90 mod_paramt.o 
 sfc_sice.o : sfc_sice.f90 physcons.o machine.o 
 sfcuvt.o : sfcuvt.f90 
-sflx.o : sflx.f90 namelist_soilveg.o 
+sflx.o : sflx.f90 namelist_soilveg.o physcons.o
 shalcnv_new.o : shalcnv_new.f90 
 shalcnv_sa.o : shalcnv_sa.f90 
 shlcon.o : shlcon.f90 mod_paramt.o 
@@ -479,20 +479,20 @@ cududv_n.o : cududv_n.f90 mo_constants.o shr_kind_mod.o
 cuentr_n.o : cuentr_n.f90 mo_constants.o shr_kind_mod.o
 cuflx_n.o : cuflx_n.f90 mo_constants.o shr_kind_mod.o ntke_func.o
 cuini_n.o : cuini_n.f90 mo_constants.o shr_kind_mod.o
-cumastr_n.o : cumastr_n.f90 mo_cumulus_flux.o mo_constants.o shr_kind_mod.o
+cumastr_n.o : cumastr_n.f90 mo_cumulus_flux.o mo_constants.o shr_kind_mod.o mod_index.o mod_mpe.o mod_rank.o
 ntke_func.o : ntke_func.f90 mo_constants.o
 #xb110<
 get_phi.o : get_phi.f90
 module_mp_radar.o : module_mp_radar.f90
 module_mp_wsm6_fv3.o : module_mp_wsm6_fv3.f90 physcons.o module_mp_radar.o
 #xb110, for lightning scheme>
-lightning_ec.o: lightning_ec.f90 mo_constants.o
+lightning_ec.o: lightning_ec.f90 physcons.o  mod_rank.o mod_mpe.o
 #----------SIT---------------
 mod_sitgrid.o : mod_sitgrid.f90 mod_sit_control.o mod_netcdf.o
 mod_sit_vdiff.o : mod_sit_vdiff.f90 mod_eos_ocean.o mod_netcdf.o mod_sst.o mod_sit_control.o
 mod_sst.o: mod_sst.f90 mod_param.o mod_mpe.o mod_index.o mod_const.o mod_sit_control.o mod_netcdf.o mod_eos_ocean.o
 mod_netcdf.o: mod_netcdf.f90 mod_mpe.o mod_const.o mod_sit_control.o
-mod_eos_ocean.o: mod_eos_ocean.f90 
+mod_eos_ocean.o: mod_eos_ocean.f90
 mod_sit_control.o: mod_sit_control.f90
 outsit.o : outsit.f90 mod_index.o mod_rank.o mod_mpe.o mod_sitgrid.o
 #-------I/O speed up-------

@@ -1180,3 +1180,38 @@
 
       end subroutine readpre6hr_sit
 
+
+      SUBROUTINE outtseadiffSIT24(nx,my,my_max,dt24,ifilout,itau,idtg,ggdef)
+
+      use mpe
+      use index
+      use mod_sitgrid,       only: tseadiffSIT24
+
+      implicit none
+
+      integer   nx,my,my_max,itau
+      real      dt24
+      real wrk(nxp,my_max),glob(nx,my)
+      integer*8 idtg
+      character*80 ifilout
+      character*26 ihdg
+      character*4  ggdef
+      integer   imax,jmax,lenc,j,nxj,i,istat,jj
+
+      imax=nx
+      jmax=my
+      lenc= imax*jmax
+!
+      do jj = 1,jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        do i=1,nxj
+         wrk(i,jj)=tseadiffSIT24(i,jj)/dt24
+        enddo
+      enddo
+      call unify_reduceintp(nx,my,my_max,wrk,glob)
+      call syslbl ('w0002f',idtg,itau,ggdef,ihdg)
+      call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      tseadiffSIT24=0.
+
+      END SUBROUTINE outtseadiffSIT24

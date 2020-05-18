@@ -436,7 +436,7 @@ MODULE mod_sit_vdiff
 !          ,lwoa0,nodepth0,odepth0,ot0,os0,ou0,ov0,lwarning_msg    &
 !          ,sit_domain_w,sit_domain_e,sit_domain_s,sit_domain_n,sit_domain_extgrd,lamip
             
-  
+  PUBLIC :: cal_ratioBlending
  
 
   !!! real, PARAMETER::tol=1.E-14_dp  ! tol: very small numerical value to prevent numerical error
@@ -3032,7 +3032,9 @@ CONTAINS
 !!! location blending
     IF(ptsw(jl) .lt. pctfreez2(jl) .or. ptsw(jl) .gt. 350.) then
       ptsw(jl)=pobswtb(jl)
-      pdtswdt(jl)=(ptsw(jl)-poldtsw(jl))/(n_sit_step*zdtime)
+!      pdtswdt(jl)=(ptsw(jl)-poldtsw(jl))/(n_sit_step*zdtime)
+!      pdtswdt(jl)=(pwt(jl,0)-poldsitwt(jl,0,0))/(2.*n_sit_step*zdtime)
+      pdtswdt(jl)=(pwt(jl,0)-poldsitwt(jl,0,1))/(n_sit_step*zdtime)
       psitmask(jl)=0.
     ELSE 
       IF( plon(jl).GT.sit_domain_e) THEN
@@ -3042,8 +3044,8 @@ CONTAINS
         rre=max(sit_domain_w-sit_domain_extgrd,0.)
         rrw=sit_domain_w
       ELSE
-        rre=0.
-        rrw=0.
+        rre=1.
+        rrw=1.
       ENDIF
 
       IF( plat(jl).GT.sit_domain_n) THEN
@@ -3053,37 +3055,37 @@ CONTAINS
         rrn=max(sit_domain_s-sit_domain_extgrd,-90.)
         rrs=sit_domain_s
       ELSE
-        rrn=0.
-        rrs=0.
+        rrn=1.
+        rrs=1.
       ENDIF
     
-      IF(rrw .EQ. 0.) THEN
+      IF(rrw .EQ. 1.) THEN
         rr_we=1.
       ELSE
-        rr_we=ABS((plon(jl)-rrw)/(rre-rrw))
+        rr_we=1.-ABS((plon(jl)-rrw)/(rre-rrw))
       ENDIF
-      IF(rrs .EQ. 0.) THEN
+      IF(rrs .EQ. 1.) THEN
         rr_sn=1.
       ELSE
-        rr_sn=ABS((plat(jl)-rrs)/(rrn-rrs))
+        rr_sn=1.-ABS((plat(jl)-rrs)/(rrn-rrs))
       ENDIF
 
 !      rrtmp=sqrt(rr_sn**2.0+rr_we**2.0)
       rrtmp=0.5*(rr_sn+rr_we)
 
       IF(rrtmp .EQ. 1.) THEN
-        IF((rrw .EQ. 0.).AND.(rrs.EQ.0.))THEN
-          wtr=0.
-        ELSE
-          wtr=1.
-        ENDIF
+        wtr=1.
+      ELSE if(rrtmp .eq. 0.) then
+        wtr=0.
       ELSE
         wtr=exp(-rf/rrtmp*exp(1./(rrtmp-1.))) 
       ENDIF
 
-      ptsw(jl)= (1.-wtr)*ptsw(jl)+(wtr)*pobswtb(jl)
-      pwt(jl,0)=ptsw(jl)
-      pdtswdt(jl)=(ptsw(jl)-poldtsw(jl))/(n_sit_step*zdtime)
+      ptsw(jl)= wtr*ptsw(jl)+(1.-wtr)*pobswtb(jl)
+!      pwt(jl,0)=ptsw(jl)
+!      pdtswdt(jl)=(ptsw(jl)-poldtsw(jl))/(n_sit_step*zdtime)
+!      pdtswdt(jl)=(pwt(jl,0)-poldsitwt(jl,0,0))/(2.*n_sit_step*zdtime)
+      pdtswdt(jl)=(pwt(jl,0)-poldsitwt(jl,0,1))/(n_sit_step*zdtime)
     ENDIF
 !!!end location blending
 
@@ -3091,11 +3093,13 @@ CONTAINS
 !ps  
   ELSE
     ptsw(jl)=pobswtb(jl)
-    pwt(jl,0)=ptsw(jl)
-    pdtswdt(jl)=(ptsw(jl)-poldtsw(jl))/(n_sit_step*zdtime)
+!    pwt(jl,0)=ptsw(jl)
+!    pdtswdt(jl)=(ptsw(jl)-poldtsw(jl))/(n_sit_step*zdtime)
+    pdtswdt(jl)=(pwt(jl,0)-poldsitwt(jl,0,1))/(n_sit_step*zdtime)
   ENDIF   !ENDIF ltrigsit
     IF(GDCHK3) then
-      print *,"sitvdiff:ltrigsit=",ltrigsit,",ptsw(jl)=",ptsw(jl) &
+      print *,"sitvdiff:ltrigsit=",ltrigsit,",poldtsw(jl)="       &
+             ,poldtsw(jl),",ptsw(jl)=",ptsw(jl) &
              ,",pdtswdt=",pdtswdt(jl),",ltrigsit=",ltrigsit       &
              ,",rrs=",rrs,",rrn=",rrn,",rrw=",rrw,",rre=",rre     &
              ,",rr_sn=",rr_sn,",rr_we=",rr_we,",wtr=",wtr
@@ -8415,8 +8419,70 @@ END FUNCTION SICEDFN
   END SUBROUTINE pzcord
 ! **********************************************************************
 
+  SUBROUTINE cal_ratioBlending(plat,plon,outratio)
+
+      use mod_sit_control,  only: sit_domain_w,sit_domain_e &
+                               ,sit_domain_s,sit_domain_n &
+                               ,sit_domain_extgrd
+! location blending
+      real:: plat,plon
+      real:: outratio
+      real:: rrn,rrs,rre,rrw,rr_sn,rr_we,rrtmp
+!    real, PARAMETER:: rf=10._dp
+      real, PARAMETER:: rf=5.
 
 
+      IF(plon .LT. 0.) THEN
+        plon=plon + 360.
+      ENDIF
+      IF( plon.GT.sit_domain_e) THEN
+        rre=min(sit_domain_e+sit_domain_extgrd,360.)
+        rrw=sit_domain_e
+      ELSEIF ( plon.LT.sit_domain_w) THEN
+        rre=max(sit_domain_w-sit_domain_extgrd,0.)
+        rrw=sit_domain_w
+      ELSE
+        rre=1.
+        rrw=1.
+      ENDIF
+
+      IF( plat.GT.sit_domain_n) THEN
+        rrn=min(sit_domain_n+sit_domain_extgrd,90.)
+        rrs=sit_domain_n
+      ELSEIF( plat.LT.sit_domain_s) THEN
+        rrn=max(sit_domain_s-sit_domain_extgrd,-90.)
+        rrs=sit_domain_s
+      ELSE
+        rrn=1.
+        rrs=1.
+      ENDIF
+
+      IF(rrw .EQ. 1.) THEN
+        rr_we=1.
+      ELSE
+        rr_we=1.-ABS((plon-rrw)/(rre-rrw))
+      ENDIF
+      IF(rrs .EQ. 1.) THEN
+        rr_sn=1.
+      ELSE
+        rr_sn=1.-ABS((plat-rrs)/(rrn-rrs))
+      ENDIF
+
+      rrtmp=0.5*(rr_sn+rr_we)
+
+      IF(rrtmp .EQ. 1.) THEN
+        outratio=1.
+      ELSE if(rrtmp .eq. 0.) then
+        outratio=0.
+      ELSE
+        outratio=exp(-rf/rrtmp*exp(1./(rrtmp-1.)))
+      ENDIF
+
+!      ptsw(jl)= wtr*ptsw(jl)+(1.-wtr)*pobswtb(jl)
+
+
+
+  END SUBROUTINE cal_ratioBlending 
 
 END MODULE mod_sit_vdiff
 

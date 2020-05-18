@@ -41,9 +41,10 @@
                                ,lsftobswt
       use mod_eos_ocean,     only: tmelts,api
       use mod_sst,           only:read_woa0,read_godas,read_dailygodas &
-                                ,read_dailyFCT         &
+                                ,read_dailyFCT,obswtbp,obswtbt         &
                                 ,ifilin_ocaf,read_ocaf,read_ocaf0      &
-                                ,wtfn12,wsfn12,time_weights,mask1st
+                                ,wtfn12,wsfn12,time_weights,mask1st    &
+                                ,myrank_check,ii_check,jj_check
       USE mo_netcdf,         ONLY:lkvl,set_ocndepth
 !-----------------------------------------------------------------------
 
@@ -100,9 +101,8 @@
       real  sitlat(nxp)
       real  sitlon(nxp,my_max)
       real, parameter:: specified_ice_thickness  = 2.0
-      integer myrank_check,ii_check,jj_check
       real lontest(nxp,my_max)
-      
+      integer nxjpart      
 
       lmax=26
 !
@@ -973,30 +973,52 @@
       print *, "  from getrdy: njump= ",njump,njump1,njump2,njump3
       endif
 !
+      pi = 4.0*atan(1.0)
+      do 520 j = 1, my
+        xlat(j) = asin(sinl(j))*180./pi
+ 520  continue
+
       do jj = 1, jlistnum
         j=jlist1(jj)
         nxj=nxdef(j)
         xlon(1,jj)=0.
         do i=2,nxj
           xlon(i,jj)=xlon(1,jj)+float(i-1)*360./nxj
+          
+          if( (abs(xlon(i,jj)-180.) .le. 0.25) .AND. &
+              (abs(xlat(j)-34.) .le. 0.15) ) then
+            nxjpart=nxdef_2d(j)
+            do ii=1,nxjpart
+              if(nxjstart(j)+ii-1 .eq. i)then
+                myrank_check=myrank
+                ii_check=ii
+                jj_check=jj
+                print *,'in getrdy, myrank=',myrank,',ii=',ii,',jj=' &
+                       ,jj,',i=',i,',j=',j,',xlat=',xlat(j)     &
+                       ,',xlon=',xlon(i,jj)
+                endif
+             enddo
+          endif
+
           if(xlon(i,jj).gt.180. .and. xlon(i,jj).lt.360.)then
+
             xlon(i,jj)=-180.0+abs(xlon(i,jj)-180.)
           else if(xlon(i,jj).ge.360.)then
             xlon(i,jj)=xlon(i,jj)-360.
           endif
         enddo
       enddo
-!
-      pi = 4.0*atan(1.0)
-      do 520 j = 1, my
-        xlat(j) = asin(sinl(j))*180./pi
- 520  continue
 
 
 !---------------------------------
 ! read forecast sst
 !---------------------------------
       IF(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. dailyClm_option .ge.1 ) THEN
+        if(ldailyFCTsst .AND. dailyClm_option .eq. 1) then
+          print *,'ldailyFCTsst & dailyClm_option=1'   &
+                 ,', use ldailyFCTsst, set dailyClm_option=-99.'
+          dailyClm_option=-99
+        endif  
         CALL read_dailyFCT(idtg,taui,dt,tg,cice,sndepth)
       ENDIF
 
@@ -1031,7 +1053,6 @@
           nxj=nxdef_2d(j)
           do ii=1,nxj
             i=nxjstart(j)+ii-1
-            tgini(ii,jj)=tg(ii,jj)
             sitmask(ii,jj)=0.
 !    !  1.0 set geological data
             sitcor(ii,jj)   = 2*(7.292e-5)*sin(xlat(j)*api/180.)
@@ -1042,8 +1063,8 @@
               sitlon(ii,jj)=xlon(i,jj)
             ENDIF
 
-            if( (abs(sitlon(ii,jj)-113.9) .le. 0.25) .AND. &
-               (abs(sitlat(ii)-2.7) .le. 0.25) ) then
+            if( (abs(sitlon(ii,jj)-180.) .le. 0.25) .AND. &
+               (abs(sitlat(ii)-20.) .le. 0.15) ) then
                 myrank_check=myrank
                 ii_check=ii
                 jj_check=jj
@@ -1122,7 +1143,6 @@
 
             ctfreez2(ii,jj) = tmelts(obswsb(ii,jj))
             tsw(ii,jj)      = tg(ii,jj)
-            tgold(ii,jj)   = tg(ii,jj)
 
           enddo
 

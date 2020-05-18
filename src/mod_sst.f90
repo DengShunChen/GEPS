@@ -6,9 +6,6 @@
 #define mpp_root_pe() 0
 #define p_parallel_io (myrank .eq. 0)
 #define p_pe myrank
-#define myrank_check 209 
-#define ii_check 12
-#define jj_check 5
 #endif
 
 !    read wtfn12, wsfn12 data
@@ -19,7 +16,8 @@
         use index
         use const,             ONLY:ggdef,ifilin_nc,ifilin_sst,ifilin_ncep  &
                                    ,ldailyFCTsst,ldailyFCTicesndpt,ifilin   &
-                                   ,dailyClm_option,ifilin_ClmANA,ifilin_ClmFCT
+                                   ,dailyClm_option,ifilin_ClmANA,ifilin_ClmFCT &
+                                   ,do_sit
         use mod_sit_control,   ONLY: lwarning_msg,xmissing,lwoa0,lsitstart &
                                     ,lamip,lmixedlayer,ngodas,nwoa0     &
                                     ,lgodas,ldailysst,locaf0 
@@ -47,8 +45,13 @@
         PUBLIC :: now1,now2,wgto1,wgto2             !! GODAS MONTHLY/PENTAD Data
         PUBLIC :: obswtbnmw1,obswtbnmw2,obswtbwgt1,obswtbwgt2     !obswtb Data
         PUBLIC :: dailyFCTsst,dailyFCTcice,dailyFCTsndepth
+        PUBLIC :: dFCTsstdt,dFCTcicedt,dFCTsndepthdt
         PUBLIC :: ANAsstT0,dailyClmANAsst,dailyClmFCTsst
         PUBLIC :: deallocate_dailyFCT_array
+        PUBLIC :: outtseadiffFCT24
+        PUBLIC :: myrank_check,ii_check,jj_check
+        PUBLIC :: tseap,tseat,tsean
+
 
         INCLUDE 'netcdf.inc'
 
@@ -105,19 +108,37 @@
         INTEGER   :: nts_godas(3)            ! # of timestamps for pentad data at day-1, day+0 and day+1, in its repective file, respectively
 
   !! memory pointer for daily FCTsst data (ldailyFCTsst)
-        REAL      :: timevals_dailyFCT(2)= 0.   ! absoulte time (e.g.,19971003.25) daily forecast sst Data
-        REAL, ALLOCATABLE :: dailyFCTsst(:,:,:)    ! (nlon,ngl,2) at ydate, ydate+1 day in global coordinates,
-                                                   ! forecast daily water tempeature (K)
+        REAL      :: timevals_dailyFCT(2)= 0.       ! absoulte time (e.g.,19971003.25) daily forecast sst Data
+        REAL, ALLOCATABLE :: dailyFCTsst(:,:,:)     ! (nlon,ngl,2) at ydate, ydate+1 day in global coordinates,
+                                                    ! forecast daily water tempeature (K)
         REAL, ALLOCATABLE :: dailyFCTcice(:,:,:)    ! (nlon,ngl,2) at ydate, ydate+1 day in global coordinates,
-                                                   ! forecast sea ice fration
-        REAL, ALLOCATABLE :: dailyFCTsndepth(:,:,:)    ! (nlon,ngl,2) at ydate, ydate+1 day in global coordinates,
-                                                   ! forecast daily snow depth (mm)
-        REAL, ALLOCATABLE :: ANAsstT0(:,:)       ! (nlon,ngl), analysis SST at tau=0 
-        REAL, ALLOCATABLE :: dailyClmANAsst(:,:,:)    ! (nlon,ngl,2) at tau=0, ydate, ydate+1 day in global coordinates,
-                                                   ! reanalysis daily climatology water tempeature (K)
-        REAL, ALLOCATABLE :: dailyClmFCTsst(:,:,:)    ! (nlon,ngl,2) at ydate, ydate+1 day in global coordinates,
-                                                   ! forecast daily climatology water tempeature (K)
-       
+                                                    ! forecast sea ice fration
+        REAL, ALLOCATABLE :: dailyFCTsndepth(:,:,:) ! (nlon,ngl,2) at ydate, ydate+1 day in global coordinates,
+                                                    ! forecast daily snow depth (mm)
+        REAL, ALLOCATABLE :: ANAsstT0(:,:)          ! (nlon,ngl), analysis SST at tau=0 
+        REAL, ALLOCATABLE :: dailyClmANAsst(:,:,:)  ! (nlon,ngl,2) at tau=0, ydate, ydate+1 day in global coordinates,
+        REAL, ALLOCATABLE :: dailyClmFCTsst(:,:,:)  ! (nlon,ngl,2) at ydate, ydate+1 day in global coordinates,
+                                                    ! forecast climatology daily water tempeature (K)
+        REAL, ALLOCATABLE :: dFCTsstdt(:,:)         ! d(dailyFCTsst)/dt (K/s)
+        REAL, ALLOCATABLE :: dFCTcicedt(:,:)        ! d(dailyFCTcice)/dt (K/s)
+        REAL, ALLOCATABLE :: dFCTsndepthdt(:,:)     ! d(dailyFCTsndepth)/dt (K/s)
+        REAL, ALLOCATABLE :: obswtbp(:,:)           ! calculated obs. sst per (n-1) timestep
+        REAL, ALLOCATABLE :: obswtbt(:,:)           ! calculated obs. sst now (n) timestep 
+        REAL, ALLOCATABLE :: obswtbn(:,:)           ! calculated obs. sst next (n+1) timestep 
+        REAL, ALLOCATABLE :: tseadiffFCT(:,:)       ! the change of tg from dta*dFCTsstdt 
+        REAL, ALLOCATABLE :: tseadiffFCT24(:,:)     ! the average change of tg from dta*dFCTsstdt 
+        REAL, ALLOCATABLE :: tseap(:,:)             ! sst at pre. timestep (n-1)
+        REAL, ALLOCATABLE :: tseat(:,:)             ! sst at now timestep (n) 
+        REAL, ALLOCATABLE :: tsean(:,:)             ! sst at next timestep (n+1)
+
+
+!for opgsst
+      REAL, dimension(:,:,:),allocatable,save :: opgsst
+!for time_interpolation
+      REAL wgt1,wgt2,obswtbwgt1,obswtbwgt2,wgto1,wgto2
+      INTEGER nmw1,nmw2,obswtbnmw1,obswtbnmw2,now1,now2
+      INTEGER myrank_check,ii_check,jj_check
+
 
   !*    1.0 COEFFICIENTS IN sit_ocean MODEL
 
@@ -148,15 +169,10 @@
       INTEGER, PARAMETER :: nerr = 6     ! error output stream
 
 
-!for opgsst
-      REAL, dimension(:,:,:),allocatable,save :: opgsst
-!for time_interpolation
-      REAL wgt1,wgt2,obswtbwgt1,obswtbwgt2,wgto1,wgto2
-      INTEGER nmw1,nmw2,obswtbnmw1,obswtbnmw2,now1,now2
-
 
         
       CONTAINS
+
 
 !---------------------------------------------------------
         subroutine allocate_opgsst_array
@@ -254,10 +270,13 @@
 
         subroutine deallocate_dailyFCT_array
 
-           if(ldailyFCTsst) deallocate (dailyFCTsst)
+           deallocate (obswtbp,obswtbt,obswtbn)
+           deallocate (tseap,tseat,tsean)
+           deallocate (tseadiffFCT,tseadiffFCT24)
+           deallocate (dailyFCTsst,dFCTsstdt)
            if(ldailyFCTicesndpt) then
-             deallocate (dailyFCTcice) 
-             deallocate (dailyFCTsndepth)
+             deallocate (dailyFCTcice,dailyFCTsndepth) 
+             deallocate (dFCTcicedt,dFCTsndepthdt)
            endif
            if(dailyClm_option .ge. 1) then
              deallocate (ANAsstT0)
@@ -315,12 +334,32 @@
           read(cdtg,'(i12)')idtg_FCT
           if(myrank .eq. 0) print *,"read_dailyFCT,ydate2=",ydate2
 
-          IF(ldailyFCTsst) THEN
-            IF (.NOT. ALLOCATED(dailyFCTsst)) ALLOCATE (dailyFCTsst(nxp,my_max,2))
-          ENDIF
+
+          IF (.NOT. ALLOCATED(dailyFCTsst)) ALLOCATE (dailyFCTsst(nxp,my_max,2))
+          IF (.NOT. ALLOCATED(dFCTsstdt)) ALLOCATE (dFCTsstdt(nxp,my_max))
+          IF (.NOT. ALLOCATED(obswtbp)) ALLOCATE (obswtbp(nxp,my_max))
+          IF (.NOT. ALLOCATED(obswtbt)) ALLOCATE (obswtbt(nxp,my_max))
+          IF (.NOT. ALLOCATED(obswtbn)) ALLOCATE (obswtbn(nxp,my_max))
+          IF (.NOT. ALLOCATED(tseap)) ALLOCATE (tseap(nxp,my_max))
+          IF (.NOT. ALLOCATED(tseat)) ALLOCATE (tseat(nxp,my_max))
+          IF (.NOT. ALLOCATED(tsean)) ALLOCATE (tsean(nxp,my_max))
+          IF (.NOT. ALLOCATED(tseadiffFCT)) then
+            ALLOCATE (tseadiffFCT(nxp,my_max))
+            tseadiffFCT=0.
+          endif
+          IF (.NOT. ALLOCATED(tseadiffFCT24)) then
+            ALLOCATE (tseadiffFCT24(nxp,my_max))
+            tseadiffFCT24=0.
+          endif
+
+          IF (.NOT. ALLOCATED(dailyFCTsst)) ALLOCATE (dailyFCTsst(nxp,my_max,2))
+          IF (.NOT. ALLOCATED(dFCTsstdt)) ALLOCATE (dFCTsstdt(nxp,my_max))
+
           IF(ldailyFCTicesndpt) THEN
             IF (.NOT. ALLOCATED(dailyFCTcice)) ALLOCATE (dailyFCTcice(nxp,my_max,2))
             IF (.NOT. ALLOCATED(dailyFCTsndepth)) ALLOCATE (dailyFCTsndepth(nxp,my_max,2))
+            IF (.NOT. ALLOCATED(dFCTcicedt)) ALLOCATE (dFCTcicedt(nxp,my_max))
+            IF (.NOT. ALLOCATED(dFCTsndepthdt)) ALLOCATE (dFCTsndepthdt(nxp,my_max))
           ENDIF
           IF(dailyClm_option .ge. 1) THEN
             IF (.NOT. ALLOCATED(ANAsstT0)) ALLOCATE (ANAsstT0(nxp,my_max))
@@ -334,13 +373,19 @@
           IF ( (tau .eq. 0.) .OR. lsitstart) THEN
      !!! warm/cold start
             timevals_dailyFCT(1)=ydate
-            if(ldailyFCTsst) dailyFCTsst(:,:,1)=tg1(:,:)
+            dailyFCTsst(:,:,1)=tg1(:,:)
+            obswtbp(:,:)=tg1(:,:)
+            obswtbt(:,:)=tg1(:,:)
+            tseap(:,:)=tg1(:,:)
+            tseat(:,:)=tg1(:,:)
             if(dailyClm_option .ge. 1) ANAsstT0(:,:)=tg1(:,:)
             if(ldailyFCTicesndpt) then
               dailyFCTcice(:,:,1)=cice1(:,:)
               dailyFCTsndepth(:,:,1)=sndepth1(:,:)
             endif
-            if(ldailyFCTsst .or. ldailyFCTicesndpt) CALL read_dailyFCT_dayp1(idtg_FCT)
+            if(ldailyFCTsst .or. ldailyFCTicesndpt)then
+              CALL read_dailyFCT_dayp1(idtg_FCT)
+            endif
             if(dailyClm_option .ge. 1)then
               CALL read_dailyClm_2days(idtg1,idtg_FCT,icurrenttau,dailyClm_option)
             endif
@@ -349,23 +394,25 @@
             if(myrank .eq. myrank_check) then
               print*,"read_dailyFCT: tg1=",tg1(ii_check,jj_check)
               if(ldailyFCTsst) then
-                print*,"1. dailyFCTsst(ii_check,jj_check,1)=" &
+                print*,"1.dailyFCTsst(",ii_check,",",jj_check,",1)=" &
                       , dailyFCTsst(ii_check,jj_check,1)      &
-                      ,",dailyFCTsst(ii_check,jj_check,2)="   &
-                      , dailyFCTsst(ii_check,jj_check,2)
+                      ,",dailyFCTsst(",ii_check,",",jj_check,",2)="   &
+                      , dailyFCTsst(ii_check,jj_check,2)      &
+                      ,",dFCTsstdt(",ii_check,",",jj_check,")="       &
+                      , dFCTsstdt(ii_check,jj_check) 
               endif
               if(dailyClm_option .ge. 1)then
-                print*,"dailyClmANAssst(",ii_check,",",jj_check,",0)="  &
-                      , dailyClmANAsst(ii_check,jj_check,0)     &
-                      ,",dailyClmANAsst(",ii_check,",",jj_check,",1)="  &
-                      , dailyClmANAsst(ii_check,jj_check,1)     &
-                      ,",dailyClmANAsst(",ii_check,",",jj_check,",2)="  &
-                      , dailyClmANAsst(ii_check,jj_check,2)
+                print*,"dailyClmANAssst(",ii_check,",",jj_check,",0)=" &
+                      , dailyClmANAsst(ii_check,jj_check,0)            &
+                      ,",dailyClmANAsst(",ii_check,",",jj_check,",1)=" &
+                      , dailyClmANAsst(ii_check,jj_check,1)            &
+                      ,",dailyClmANAsst(",ii_check,",",jj_check,",2)=" &
+                      , dailyClmANAsst(ii_check,jj_check,2) 
                 if(dailyClm_option .eq. 2)then
                   print*,",dailyClmFCTsst(",ii_check,",",jj_check,",0)="&
                        , dailyClmFCTsst(ii_check,jj_check,0)            &
                        ,",dailyClmFCTsst(",ii_check,",",jj_check,",1)=" &
-                       , dailyClmFCTsst(ii_check,jj_check,1)             &
+                       , dailyClmFCTsst(ii_check,jj_check,1)            &
                        ,",dailyClmFCTsst(",ii_check,",",jj_check,",2)=" &
                        , dailyClmFCTsst(ii_check,jj_check,2)
                 endif
@@ -377,7 +424,7 @@
           ELSE
      ! note that initial value of  timevals_godas=0.
      ! Shift left
-            if(ldailyFCTsst) dailyFCTsst(:,:,1)=dailyFCTsst(:,:,2)
+            dailyFCTsst(:,:,1)=dailyFCTsst(:,:,2)
             if(ldailyFCTicesndpt) then
               dailyFCTcice(:,:,1)=dailyFCTcice(:,:,2)
               dailyFCTsndepth(:,:,1)=dailyFCTsndepth(:,:,2)
@@ -396,11 +443,12 @@
 
             timevals_dailyFCT(2)=ydate2
             if(myrank .eq. myrank_check) then
-              print*,"read_dailyFCT: tg1=",tg1(ii_check,jj_check)
+              print*,"read_dailyFCT: myrank=",myrank,",ii=",ii_check   &
+                    ,",jj=",jj_check,",tg1=",tg1(ii_check,jj_check)
               if(ldailyFCTsst) then
-                print*,"2. dailyFCTsst(ii_check,jj_check,1)=" &
-                      , dailyFCTsst(ii_check,jj_check,1)      &
-                      ,",dailyFCTsst(ii_check,jj_check,2)="   &
+                print*,"2.myrank=",myrank,",dailyFCTsst(",ii_check,","  &
+                      ,jj_check,",1)=",dailyFCTsst(ii_check,jj_check,1) &
+                      ,",dailyFCTsst(",ii_check,",",jj_check,",2)="   &
                       , dailyFCTsst(ii_check,jj_check,2)
               endif
               if(dailyClm_option .ge. 1)then
@@ -422,6 +470,9 @@
             endif
 
           ENDIF
+          
+
+
 
       CONTAINS
      !-----------------------------------
@@ -542,7 +593,7 @@
                   if (ssttemp(i,j).GE.271. .AND. ssttemp(i,j) .LE. 400.)then
                     dailyFCTsst(ii,jj,2)=ssttemp(i,j)
                   else
-                    dailyFCTsst(ii,jj,2)=xmissing
+                    dailyFCTsst(ii,jj,2)=dailyFCTsst(ii,jj,1)
                   endif
                 endif
                 if(ldailyFCTicesndpt)then
@@ -560,23 +611,24 @@
                   endif
                 endif
               endif
+              dFCTsstdt(ii,jj)=(dailyFCTsst(ii,jj,2)-dailyFCTsst(ii,jj,1))/(24.*3600.)
+              if(ldailyFCTicesndpt)then
+                dFCTcicedt(ii,jj)=(dailyFCTcice(ii,jj,2)-dailyFCTcice(ii,jj,1))/(24.*3600.)
+                dFCTsndepthdt(ii,jj)=(dailyFCTsndepth(ii,jj,2)-dailyFCTsndepth(ii,jj,1))/(24.*3600.)
+              endif
 
               if(myrank .eq. myrank_check .AND. &
                 ii .eq. ii_check .AND. jj.eq. jj_check) then
-                print*,"myrank=",myrank,",i=",i,",j=",j   &
-                      ,",ii=",ii, ",jj=",jj               &
-                      ,",ssttemp(i,j)=",ssttemp(i,j)      &
-                      ,",dailyFCTsst(ii,jj,2)=",dailyFCTsst(ii,jj,2)
+                print*,"read_dailyFCT_dayp1: myrank=",myrank          &
+                      ,",i=",i,",j=",j,",ii=",ii, ",jj=",jj           &
+                      ,",ssttemp(i,j)=",ssttemp(i,j)                  &
+                      ,",dailyFCTsst(ii,jj,2)=",dailyFCTsst(ii,jj,2)  &
+                      ,",dFCTsstdt(ii,jj)=",dFCTsstdt(ii,jj)
               endif
 
             ENDDO  !end do ii
           ENDDO    !end do jj
 
-
-          if(myrank .eq. myrank_check) then
-            print*,"read_dailyFCT_dayp1: dailyFCTsst(",ii_check,",",jj_check,",2)=" &
-                   ,dailyFCTsst(ii_check,jj_check,2)
-          endif
         
         END SUBROUTINE read_dailyFCT_dayp1
 
@@ -588,11 +640,12 @@
           INTEGER iyyyy,imm,idd,ihh,imn
           INTEGER iyyyy2,imm2,idd2,ihh2,imn2
           INTEGER lncrec
-          character lrec*26
+          CHARACTER lrec*26
           REAL sstANA0(nx,my),sstANA1(nx,my)
           REAL sstFCT0(nx,my),sstFCT1(nx,my)
           INTEGER i,j,ii,jj,nxj,istat
           INTEGER ioption
+          REAL wweight
 
           write(cdtg,'(i12)') idtg1
           read(cdtg,'(i4.4,i2.2,i2.2,i2.2,i2.2)') iyyyy,imm,idd,ihh,imn
@@ -605,6 +658,7 @@
           sstFCT0=0.
           sstFCT1=0.
 
+          !dailyClm_option>=1, read climatology ana. sst
    11     format('W00100',4x,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
           write(lrec,11) ggdef,imm,idd
           call dmsread(nx,my,lrec,lncrec,'H',ifilin_ClmANA,sstANA0(:,:),istat)
@@ -626,7 +680,7 @@
           CALL fill_missing2(sstANA1(:,:),nx,my,1,.FALSE.)
 
 
-          if(ioption .eq. 2) then
+          if(ioption .eq. 2) then     !dailyClm_option=2, read forcast climatology sst
    13       format('W00100',i4.4,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
             write(lrec,13) itau,ggdef,imm,idd
             call dmsread(nx,my,lrec,lncrec,'H',ifilin_ClmFCT,sstFCT0(:,:),istat)
@@ -664,11 +718,25 @@
               dailyClmANAsst(ii,jj,0)=sstANA0(i,j)
               dailyClmANAsst(ii,jj,1)=sstANA0(i,j)
               dailyClmANAsst(ii,jj,2)=sstANA1(i,j)
-              if(ioption .eq. 2) then
+              if(ioption .eq. 1) then   !dailyClm_option=1
+                !persistent anomaly sst
+                !SSTf_t=[SSTa_t0-SSTc_t0]*exp(-(t-t0)/90)+SSTc_t
+                !(Yuejian Zhu, operational)
+                wweight=exp(-float(itau)/(90.*24.))
+                dailyFCTsst(ii,jj,2)=wweight*(ANAsstT0(ii,jj)-dailyClmANAsst(ii,jj,0))  &
+                                     +dailyClmANAsst(ii,jj,2)
+              endif 
+              if(ioption .eq. 2) then   !dailyClm_option=2
                 dailyClmFCTsst(ii,jj,0)=sstFCT0(i,j)
                 dailyClmFCTsst(ii,jj,1)=sstFCT0(i,j)
                 dailyClmFCTsst(ii,jj,2)=sstFCT1(i,j)
+                !idea from Yuejian Zhu(2018 JGR)
+                 wweight=min(float(itau)/24./35.,1.)
+                 dailyFCTsst(ii,jj,2)=(1.-wweight)*(ANAsstT0(ii,jj)-dailyClmANAsst(ii,jj,0)    &
+                     +dailyClmANAsst(ii,jj,2) )+wweight*(dailyFCTsst(ii,jj,2)    &
+                     -(dailyClmFCTsst(ii,jj,2)-dailyClmANAsst(ii,jj,2)))
               endif
+              dFCTsstdt(ii,jj)=(dailyFCTsst(ii,jj,2)-dailyFCTsst(ii,jj,1))/(24.*3600.)
 
               if(myrank.eq.myrank_check .AND.    &
                 i.eq.ii_check .AND. jj.eq.jj_check) then
@@ -676,12 +744,14 @@
                   ,",ii=",ii,",jj=",jj                                 &
                   ,",dailyClmANAsst(ii,jj,0)=",dailyClmANAsst(ii,jj,0)   &
                   ,",dailyClmANAsst(ii,jj,1)=",dailyClmANAsst(ii,jj,1)   &
-                  ,",dailyClmANAsst(ii,jj,2)=",dailyClmANAsst(ii,jj,2)
+                  ,",dailyClmANAsst(ii,jj,2)=",dailyClmANAsst(ii,jj,2)   &
+                  ,",dFCTsstdt(ii,jj)=",dFCTsstdt(ii,jj)
                 if(ioption .eq. 2) then
                   print*,",dailyClmFCTsst(ii,jj,0)=",dailyClmFCTsst(ii,jj,0)   &
                     ,",dailyClmFCTsst(ii,jj,1)=",dailyClmFCTsst(ii,jj,1)   &
                     ,",dailyClmFCTsst(ii,jj,2)=",dailyClmFCTsst(ii,jj,2)
                 endif
+                 
               endif
             ENDDO  !end do ii
           ENDDO    !end do jj
@@ -696,10 +766,11 @@
           INTEGER iyyyy,imm,idd,ihh,imn
           INTEGER iyyyy2,imm2,idd2,ihh2,imn2
           INTEGER lncrec
-          character lrec*26
+          CHARACTER lrec*26
           REAL sstANA(nx,my),sstFCT(nx,my)
           INTEGER i,j,ii,jj,nxj,istat
           INTEGER ioption
+          REAL wweight
 
           write(cdtg,'(i12)') idtg1
           read(cdtg,'(i4.4,i2.2,i2.2,i2.2,i2.2)') iyyyy,imm,idd,ihh,imn
@@ -749,15 +820,31 @@
             DO ii=1,nxj
               i=nxjstart(j)+ii-1
               dailyClmANAsst(ii,jj,2)=sstANA(i,j)
-              if(ioption .eq. 2) then
-                dailyClmFCTsst(ii,jj,2)=sstFCT(i,j)
+              if(ioption .eq. 1) then   !dailyClm_option=1
+                !persistent anomaly sst
+                !SSTf_t=[SSTa_t0-SSTc_t0]*exp(-(t-t0)/90)+SSTc_t
+                !(Yuejian Zhu, operational)
+                wweight=exp(-float(itau)/(90.*24.))
+                dailyFCTsst(ii,jj,2)=wweight*(ANAsstT0(ii,jj)-dailyClmANAsst(ii,jj,0))  &
+                                     +dailyClmANAsst(ii,jj,2)
               endif
+              if(ioption .eq. 2) then   !dailyClm_option=2
+                dailyClmFCTsst(ii,jj,2)=sstFCT(i,j)
+                !idea from Yuejian Zhu(2018 JGR)
+                 wweight=min(float(itau)/24./35.,1.)
+                 dailyFCTsst(ii,jj,2)=(1.-wweight)*(ANAsstT0(ii,jj)-dailyClmANAsst(ii,jj,0)   &
+                     +dailyClmANAsst(ii,jj,2))+wweight*(dailyFCTsst(ii,jj,2)    &
+                     -(dailyClmFCTsst(ii,jj,2)-dailyClmANAsst(ii,jj,2)))
+              endif
+              dFCTsstdt(ii,jj)=(dailyFCTsst(ii,jj,2)-dailyFCTsst(ii,jj,1))/(24.*3600.)
+
 
               if(myrank.eq.myrank_check .AND.    &
                 ii.eq.ii_check .AND. jj.eq.jj_check) then
                 print*,"myrank=",myrank,",i=",i,",j=",j              &
                   ,",ii=",ii,",jj=",jj                                   &
-                  ,",dailyClmANAsst(ii,jj,2)=",dailyClmANAsst(ii,jj,2)
+                  ,",dailyClmANAsst(ii,jj,2)=",dailyClmANAsst(ii,jj,2) &
+                  ,",dFCTsstdt(ii,jj)=",dFCTsstdt(ii,jj)
                 if(ioption .eq. 2)then
                   print*,",dailyClmFCTsst(ii,jj,2)=",dailyClmFCTsst(ii,jj,2)
                 endif
@@ -771,6 +858,40 @@
 
       END SUBROUTINE read_dailyFCT
 
+!---------------------------------------------------------------
+      SUBROUTINE outtseadiffFCT24(nx,my,my_max,dt24,ifilout,itau,idtg,ggdef)
+
+      use index 
+      use mpe
+
+      implicit none
+
+      integer   nx,my,my_max,itau
+      real      dt24
+      real wrk(nxp,my_max),glob(nx,my)
+      integer*8 idtg
+      character*80 ifilout
+      character*26 ihdg
+      character*4  ggdef
+      integer   imax,jmax,lenc,j,nxj,i,istat,jj
+
+      imax=nx
+      jmax=my
+      lenc= imax*jmax
+!
+      do jj = 1,jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        do i=1,nxj
+         wrk(i,jj)=tseadiffFCT24(i,jj)/dt24
+        enddo
+      enddo
+      call unify_reduceintp(nx,my,my_max,wrk,glob)
+      call syslbl ('w0001f',idtg,itau,ggdef,ihdg)
+      call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      tseadiffFCT24=0.
+
+      END SUBROUTINE 
 !---------------------------------------------------------------
         subroutine deallocate_ocaf_array  
 
