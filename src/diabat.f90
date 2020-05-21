@@ -293,7 +293,7 @@
 !     logical lsswr,lslwr,lssav,lprnt
       logical lsswr,lslwr,lssav
       real    xlonr(nxp,my_max),sld_adj(nxp),rld_adj(nxp),ss_adj(nxp), &
-              tsflw(nxp,my_max),rstd(nxp)
+              rs_adj(nxp),tsflw(nxp,my_max),rstd(nxp)
 
 ! --- new variables setting :
       integer*8 idtg
@@ -449,7 +449,7 @@
       real rnuw,z0w,d0w,Pairvapor,rhoa,ps1w,ustra,vstra
       integer*8 idtg_sitvdiff
       real tauleft, dtsit
-      real, dimension(:,:), allocatable :: sstm, rstm,hfluxtm,qfluxtm, &
+      real, dimension(:), allocatable :: sstm, rstm,hfluxtm,qfluxtm, &
                                           u10tm,v10tm, rlsptm, rcuptm, &
                                         ustartm, t2tm,  rh2tm,  psttm, &
                                          cicetm,snrtm, zicetm,xticetm, &
@@ -480,6 +480,7 @@
       rld_adj=0.
       sld_adj=0.
       ss_adj =0.
+      rs_adj =0.
 ! for WSM6
       uni_cloud=( nmpbl .gt. 2 ) !if using SHOC scheme, it should be .true.
       lmfshal=( nmshl .eq. 2 .or. nmshl .eq. 3 ) ! .true. if using mass-flux shallow convection
@@ -1026,10 +1027,11 @@
             sld(1,jj),ss(1,jj),rld(1,jj),asl(1,1,jj),atl(1,1,jj),     &
             nxp, nxjp(j), lev,                                        &
 !  ---  outputs:
-            dtrad(1,1,jj),sld_adj,ss_adj,rld_adj,xmu(1,jj) )
+            dtrad(1,1,jj),sld_adj,ss_adj,rld_adj,rs_adj,xmu(1,jj) )
 
       do i = 1, nxj
          rld_adj(i) = rld_adj(i) * sfemis(i,jj)
+         rs_adj(i) = rs_adj(i) * sfemis(i,jj)
       enddo
 
 !
@@ -1874,26 +1876,27 @@
 !        ssttau = mod(tau+0.001, 24.)
         tauhr=float(hr)+tauleft/3600.
 
-        if (jj .eq. 1) then
-          allocate(sstm(nxp,my_max))
-          allocate(rstm(nxp,my_max))
-          allocate(hfluxtm(nxp,my_max))
-          allocate(qfluxtm(nxp,my_max))
-          allocate(u10tm(nxp,my_max))
-          allocate(v10tm(nxp,my_max))
-          allocate(rlsptm(nxp,my_max))
-          allocate(rcuptm(nxp,my_max))
-          allocate(ustartm(nxp,my_max))
-          allocate(t2tm(nxp,my_max))
-          allocate(rh2tm(nxp,my_max))
-          allocate(psttm(nxp,my_max))
-          allocate(cicetm(nxp,my_max))
-          allocate(snrtm(nxp,my_max))
-          allocate(zicetm(nxp,my_max))
-          allocate(xticetm(nxp,my_max))
-          allocate(obswtbtm(nxp,my_max))
-          allocate(tgtm(nxp,my_max))
+        
+        allocate(sstm(nxp))
+        allocate(rstm(nxp))
+        allocate(hfluxtm(nxp))
+        allocate(qfluxtm(nxp))
+        allocate(u10tm(nxp))
+        allocate(v10tm(nxp))
+        allocate(rlsptm(nxp))
+        allocate(rcuptm(nxp))
+        allocate(ustartm(nxp))
+        allocate(t2tm(nxp))
+        allocate(rh2tm(nxp))
+        allocate(psttm(nxp))
+        allocate(cicetm(nxp))
+        allocate(snrtm(nxp))
+        allocate(zicetm(nxp))
+        allocate(xticetm(nxp))
+        allocate(obswtbtm(nxp))
+        allocate(tgtm(nxp))
 
+        if (jj .eq. 1) then
           dtfsit=dtfsit+dtsit
           if(myrank .EQ. myrank_check ) then
             print*,'myrank=',myrank,',jj=',jj   &
@@ -1910,8 +1913,8 @@
           ENDIF
 
           if (.NOT. lrun_sitvdiff .or. ic_sit .eq. 1) then
-            ssfsit(ii,jj)=ssfsit(ii,jj)+ss(ii,jj)*dtsit
-            rsfsit(ii,jj)=rsfsit(ii,jj)+rs(ii,jj)*dtsit
+            ssfsit(ii,jj)=ssfsit(ii,jj)+ss_adj(ii)*dtsit
+            rsfsit(ii,jj)=rsfsit(ii,jj)+rs_adj(ii)*dtsit
             hfluxfsit(ii,jj)=hfluxfsit(ii,jj)+hflux(ii,jj)*dtsit
             qfluxfsit(ii,jj)=qfluxfsit(ii,jj)+qflux(ii,jj)*dtsit
             u10fsit(ii,jj)=u10fsit(ii,jj)+u10(ii,jj)*dtsit
@@ -1943,24 +1946,24 @@
 
           if(lrun_sitvdiff)then
             if(ic_sit .eq. 1) then
-              sstm(ii,jj)=ssfsit(ii,jj)/dtfsit
-              rstm(ii,jj)=rsfsit(ii,jj)/dtfsit
-              hfluxtm(ii,jj)=hfluxfsit(ii,jj)/dtfsit
-              qfluxtm(ii,jj)=qfluxfsit(ii,jj)/dtfsit
-              u10tm(ii,jj)=u10fsit(ii,jj)/dtfsit
-              v10tm(ii,jj)=v10fsit(ii,jj)/dtfsit
-              rlsptm(ii,jj)=rlspfsit(ii,jj)/dtfsit
-              rcuptm(ii,jj)=rcupfsit(ii,jj)/dtfsit
-              ustartm(ii,jj)=ustarfsit(ii,jj)/dtfsit
-              t2tm(ii,jj)=t2fsit(ii,jj)/dtfsit
-              rh2tm(ii,jj)=rh2fsit(ii,jj)/dtfsit
-              psttm(ii,jj)=pstfsit(ii,jj)/dtfsit
-              cicetm(ii,jj)=cicefsit(ii,jj)/dtfsit
-              snrtm(ii,jj)=snrfsit(ii,jj)/dtfsit
-              zicetm(ii,jj)=zicefsit(ii,jj)/dtfsit
-              xticetm(ii,jj)=xticefsit(ii,jj)/dtfsit
-              obswtbtm(ii,jj)=obswtbfsit(ii,jj)/dtfsit
-              tgtm(ii,jj)=tgfsit(ii,jj)/dtfsit
+              sstm(ii)=ssfsit(ii,jj)/dtfsit
+              rstm(ii)=rsfsit(ii,jj)/dtfsit
+              hfluxtm(ii)=hfluxfsit(ii,jj)/dtfsit
+              qfluxtm(ii)=qfluxfsit(ii,jj)/dtfsit
+              u10tm(ii)=u10fsit(ii,jj)/dtfsit
+              v10tm(ii)=v10fsit(ii,jj)/dtfsit
+              rlsptm(ii)=rlspfsit(ii,jj)/dtfsit
+              rcuptm(ii)=rcupfsit(ii,jj)/dtfsit
+              ustartm(ii)=ustarfsit(ii,jj)/dtfsit
+              t2tm(ii)=t2fsit(ii,jj)/dtfsit
+              rh2tm(ii)=rh2fsit(ii,jj)/dtfsit
+              psttm(ii)=pstfsit(ii,jj)/dtfsit
+              cicetm(ii)=cicefsit(ii,jj)/dtfsit
+              snrtm(ii)=snrfsit(ii,jj)/dtfsit
+              zicetm(ii)=zicefsit(ii,jj)/dtfsit
+              xticetm(ii)=xticefsit(ii,jj)/dtfsit
+              obswtbtm(ii)=obswtbfsit(ii,jj)/dtfsit
+              tgtm(ii)=tgfsit(ii,jj)/dtfsit
 
 
               ssfsit(ii,jj)=0.
@@ -1982,60 +1985,60 @@
               obswtbfsit(ii,jj)=0.
               tgfsit(ii,jj)=0.
             else
-              sstm(ii,jj)=ss(ii,jj)
-              rstm(ii,jj)=rs(ii,jj)
-              hfluxtm(ii,jj)=hflux(ii,jj)
-              qfluxtm(ii,jj)=qflux(ii,jj)
-              u10tm(ii,jj)=u10(ii,jj)
-              v10tm(ii,jj)=v10(ii,jj)
-              rlsptm(ii,jj)=rlsp(ii,jj)
-              rcuptm(ii,jj)=rcup(ii,jj)
-              ustartm(ii,jj)=ustar(ii,jj)
-              t2tm(ii,jj)=t2(ii,jj)
-              rh2tm(ii,jj)=rh2(ii,jj)
-              psttm(ii,jj)=pst(ii,jj)
-              cicetm(ii,jj)=cice(ii,jj)
-              snrtm(ii,jj)=snr(ii,jj)
-              zicetm(ii,jj)=zice(ii,jj)
-              xticetm(ii,jj)=xtice(ii,jj)
-              obswtbtm(ii,jj)=obswtbt(ii,jj)
-              tgtm(ii,jj)=tg(ii,jj)
+              sstm(ii)=ss_adj(ii)
+              rstm(ii)=rs_adj(ii)
+              hfluxtm(ii)=hflux(ii,jj)
+              qfluxtm(ii)=qflux(ii,jj)
+              u10tm(ii)=u10(ii,jj)
+              v10tm(ii)=v10(ii,jj)
+              rlsptm(ii)=rlsp(ii,jj)
+              rcuptm(ii)=rcup(ii,jj)
+              ustartm(ii)=ustar(ii,jj)
+              t2tm(ii)=t2(ii,jj)
+              rh2tm(ii)=rh2(ii,jj)
+              psttm(ii)=pst(ii,jj)
+              cicetm(ii)=cice(ii,jj)
+              snrtm(ii)=snr(ii,jj)
+              zicetm(ii)=zice(ii,jj)
+              xticetm(ii)=xtice(ii,jj)
+              obswtbtm(ii)=obswtbt(ii,jj)
+              tgtm(ii)=tg(ii,jj)
               dtfsit=dtsit
             endif
 
-            fluxw(ii,jj)=-(1.-cicetm(ii,jj))*(sstm(ii,jj)-rstm(ii,jj)-hfluxtm(ii,jj)-qfluxtm(ii,jj))
-            fluxi(ii,jj)=-cicetm(ii,jj)*(sstm(ii,jj)-rstm(ii,jj)-hfluxtm(ii,jj)-qfluxtm(ii,jj))
-            soflw(ii,jj)=(1.-cicetm(ii,jj))*sstm(ii,jj)
-            sofli(ii,jj)=cicetm(ii,jj)*sstm(ii,jj)
-            wind10w(ii,jj)=sqrt(u10tm(ii,jj)**2+v10tm(ii,jj)**2)
-            obsseaice(ii,jj)=cicetm(ii,jj)
-            evapw(ii,jj)=-qfluxtm(ii,jj)/hltm
-            rsf(ii,jj)=(rlsptm(ii,jj)+rcuptm(ii,jj))/dta
+            fluxw(ii,jj)=-(1.-cicetm(ii))*(sstm(ii)-rstm(ii)-hfluxtm(ii)-qfluxtm(ii))
+            fluxi(ii,jj)=-cicetm(ii)*(sstm(ii)-rstm(ii)-hfluxtm(ii)-qfluxtm(ii))
+            soflw(ii,jj)=(1.-cicetm(ii))*sstm(ii)
+            sofli(ii,jj)=cicetm(ii)*sstm(ii)
+            wind10w(ii,jj)=sqrt(u10tm(ii)**2+v10tm(ii)**2)
+            obsseaice(ii,jj)=cicetm(ii)
+            evapw(ii,jj)=-qfluxtm(ii)/hltm
+            rsf(ii,jj)=(rlsptm(ii)+rcuptm(ii))/dta
 
 !ustrw, vstrw
             rnuw = 1.14E-6
-            z0w = 0.11*rnuw/ustartm(ii,jj)+0.1*SQRT(rnuw*ustartm(ii,jj)/grav) &
-                   +0.015*ustartm(ii,jj)**2/grav  ! Kraus & Businger(1994, page 146)
+            z0w = 0.11*rnuw/ustartm(ii)+0.1*SQRT(rnuw*ustartm(ii)/grav) &
+                   +0.015*ustartm(ii)**2/grav  ! Kraus & Businger(1994, page 146)
             d0w = 0.
 
-            Pairvapor= AirVaporPressure(t2tm(ii,jj),rh2tm(ii,jj))
-            rhoa = 100.*psttm(ii,jj)/(287.04*t2tm(ii,jj))*(1.0-0.378*Pairvapor/psttm(ii,jj))
+            Pairvapor= AirVaporPressure(t2tm(ii),rh2tm(ii))
+            rhoa = 100.*psttm(ii)/(287.04*t2tm(ii))*(1.0-0.378*Pairvapor/psttm(ii))
                  ! 287.04 [k.g-1.K-1]  Gas constant of dry air
-            liw = -(0.4*grav*((hfluxtm(ii,jj)/(t2tm(ii,jj)*cp)+0.61*(qfluxtm(ii,jj)/hltm)))/(ustartm(ii,jj)**3.)*rhoa)
+            liw = -(0.4*grav*((hfluxtm(ii)/(t2tm(ii)*cp)+0.61*(qfluxtm(ii)/hltm)))/(ustartm(ii)**3.)*rhoa)
             ps1w = log((10.0-d0w)/z0w)-CalcSm((10.0-d0w)*liw,z0w,liw)+CalcSm(z0w*liw,z0w,liw)
-            ustra = u10tm(ii,jj)*0.4/ps1w
-            vstra = v10tm(ii,jj)*0.4/ps1w
+            ustra = u10tm(ii)*0.4/ps1w
+            vstra = v10tm(ii)*0.4/ps1w
             ustrw(ii,jj) = rhoa*ustra**2
             vstrw(ii,jj) = rhoa*vstra**2
 
 !in&out
-            seaice(ii,jj)=cicetm(ii,jj)
-            thickness(ii,jj)=zicetm(ii,jj)
-            sni(ii,jj)=snrtm(ii,jj)/1000.   !mm->m
-            t_surf   =obswtbtm(ii,jj)
+            seaice(ii,jj)=cicetm(ii)
+            thickness(ii,jj)=zicetm(ii)
+            sni(ii,jj)=snrtm(ii)/1000.   !mm->m
+            t_surf   =obswtbtm(ii)
             t_surf = MAX( t_surf, ctfreez )
             tsi(ii,jj)= MIN( t_surf, ctfreez )
-            obswtb(ii,jj)=obswtbtm(ii,jj)
+            obswtb(ii,jj)=obswtbtm(ii)
             tsw(ii,jj)=tg(ii,jj)
             dtswdt(ii,jj)=0.
 
@@ -2072,9 +2075,9 @@
           ,",hflux,",hflux(ii,jj),",qflux,",qflux(ii,jj)               &
           ,",cice,",cice(ii,jj),",zice,",zice(ii,jj),",rsf,",rsf(ii,jj)&
           ,",ssf,",ssf(ii,jj),",evapw,",evapw(ii,jj),",disch,",disch(ii,jj)    &
-          ,",t2tm,",t2tm(ii,jj),",wind10w,",wind10w(ii,jj),",obsseaice," &
+          ,",t2tm,",t2tm(ii),",wind10w,",wind10w(ii,jj),",obsseaice," &
           ,obsseaice(ii,jj),",sitws0,",sitws(ii,jj,0)                  &
-          ,",obswtbtm,",obswtbtm(ii,jj)
+          ,",obswtbtm,",obswtbtm(ii)
 
          endif
 
@@ -2092,7 +2095,7 @@
               rsf(:,jj), ssf(:,jj), evapw(:,jj), disch(:,jj),          &
 !            ! - 1D from mo_memory_g3b
 !              t2(:,j), wind10w(:,jj),                                 &
-              t2tm(:,jj), wind10w(:,jj),                               &
+              t2tm(:), wind10w(:,jj),                               &
 !            ! - 1D from mo_memory_g3b (sit variables)
 !              obsseaice(:,jj), obswtbtm(:,jj), obswsb(:,jj),           &
               obsseaice(:,jj), obswtb(:,jj), obswsb(:,jj),           &
@@ -2119,7 +2122,7 @@
               awsfl0(:,jj,0:lkvl+1),awtkefl(:,jj,0:lkvl+1),            &
 !             ! final output only
 !              cice(:,j), snr(:,j), zice(:,j), xtice(:,j), tg(:,j),    &
-              seaice(:,jj),sni(:,jj),thickness(:,jj),xticetm(:,jj),    &
+              seaice(:,jj),sni(:,jj),thickness(:,jj),xticetm(:),    &
               tsw(:,jj), tsl(:,jj), tslm(:,jj), tslm1(:,jj),           &
               ocu(:,jj), ocv(:,jj),  ctfreez2(:,jj),                   &
 !            ! implicit with vdiff
@@ -2154,28 +2157,27 @@
        endif  !end lrun_sitvdiff
 
 
+       deallocate(sstm)
+       deallocate(rstm)
+       deallocate(hfluxtm)
+       deallocate(qfluxtm)
+       deallocate(u10tm)
+       deallocate(v10tm)
+       deallocate(rlsptm)
+       deallocate(rcuptm)
+       deallocate(ustartm)
+       deallocate(t2tm)
+       deallocate(rh2tm)
+       deallocate(psttm)
+       deallocate(cicetm)
+       deallocate(snrtm)
+       deallocate(zicetm)
+       deallocate(xticetm)
+       deallocate(obswtbtm)
+       deallocate(tgtm)
        if(jj .eq. jlistnum) then
-          deallocate(sstm)
-          deallocate(rstm)
-          deallocate(hfluxtm)
-          deallocate(qfluxtm)
-          deallocate(u10tm)
-          deallocate(v10tm)
-          deallocate(rlsptm)
-          deallocate(rcuptm)
-          deallocate(ustartm)
-          deallocate(t2tm)
-          deallocate(rh2tm)
-          deallocate(psttm)
-          deallocate(cicetm)
-          deallocate(snrtm)
-          deallocate(zicetm)
-          deallocate(xticetm)
-          deallocate(obswtbtm)
-          deallocate(tgtm)
-          if (lrun_sitvdiff) dtfsit=0.
-
-        endif
+         if (lrun_sitvdiff) dtfsit=0.
+       endif
       endif  !end do_sit
 
       if(myrank .EQ. myrank_check .AND. jj .EQ. jj_check ) then

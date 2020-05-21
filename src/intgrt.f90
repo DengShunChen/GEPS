@@ -1040,8 +1040,7 @@
                        ,',ii=',ii,',jj=',jj                            &
                        ,',tseap=',tseap(ii,jj),',tseat=',tseat(ii,jj)  &
                        ,',tsean=',tsean(ii,jj)                         &
-                       ,',tseadiffFCT=',tseadiffFCT(ii,jj)             &
-                       ,',tseadiffSIT=',tseadiffSIT(ii,jj)
+                       ,',tseadiffFCT=',tseadiffFCT(ii,jj)
                 endif
               endif
             end do
@@ -1116,10 +1115,12 @@
                        ,',ii=',ii,',jj=',jj                        &
                        ,',tseap=',tseap(ii,jj),',tg=',tg(ii,jj)    &
                        ,',tsean=',tsean(ii,jj)                     &
-                       ,',tseadiffFCT=',tseadiffFCT(ii,jj)         &
-                       ,',tseadiffSIT=',tseadiffSIT(ii,jj)         &
+                       ,',tseadiffFCT=',tseadiffFCT(ii,jj)
+                  if(lrun_sitvdiff .AND. ltrigsit .AND. sitmask(ii,jj).EQ.1. )then
+                  print *,',tseadiffSIT=',tseadiffSIT(ii,jj)         &
                        ,',tseadiffSIT24=',tseadiffSIT24(ii,jj)     &
                        ,',ratioSIT=',ratioSIT
+                  endif
                 endif
 
                 tseap(ii,jj)=tseat(ii,jj) + tfilt*(tseap(ii,jj)    &
@@ -1313,7 +1314,7 @@
             call outsit24(nx,my,my_max,lkvl,ifilout,ntau,idtg,ggdef)
           endif
           if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. (dailyClm_option.ge.1)) then
-            call outtseadiffSIT24(nx,my,my_max,dt24,ifilout,ntau,idtg,ggdef)
+            call outtseadiffSIT24(nx,my,my_max,dtsit24,ifilout,ntau,idtg,ggdef)
           endif
           call dtgfix12(idtg,idtg_temp,ntau-1)
           ibeforeyymm=idtg_temp/1000000
@@ -1349,6 +1350,7 @@
       endif 
 !
 !pscheckdata
+      if(0 .eq. 1)then
       dtaup=abs(tau+0.001-672.167)
       if(myrank .eq. 0 ) then
         print *,'pscheckdata,dtaup=',dtaup
@@ -1383,10 +1385,9 @@
         call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       endif
+      endif
+!pscheckdata
 
-
-
-!pschechdata
       dtaup= mod(tau+0.001, tauo)
       histim=(dtaup .lt. dtx_tau)
 !       if(myrank.eq.0)print *,'chkhis dtaup,tauo,dtx_tau=',dtaup,tauo,dtx_tau

@@ -1,6 +1,6 @@
 SHELL=/bin/ksh
 
-MACHINE=fx100
+MACHINE=fx10
 
 SRCS  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
 	mod_const.f90 mod_index.f90 mod_fftcom.f90 mod_fj_pad.f90 mod_grid.f90 \
@@ -90,8 +90,10 @@ OBJS=	${SRCS:.f90=.o}
 
 CC   =	fccpx100
 FC90 =  mpifrtpx100
-#CC   =	fccpx
-#FC90 =  mpifrtpx
+ifeq ($(MACHINE),fx10)
+CC   =	fccpx
+FC90 =  mpifrtpx
+endif
 #FC   =  /package/$(MACHINE)/dms/bin/dmsmpiompf90
 FC   =  /package/$(MACHINE)/dms/bin/dmsmpif90
 

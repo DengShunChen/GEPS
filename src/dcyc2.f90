@@ -75,7 +75,7 @@
 !     adjsfcdsw(im)- real, time step adjusted sfc dn sw flux (w/m**2)   !
 !     adjsfcnsw(im)- real, time step adj sfc net sw into ground (w/m**2)!
 !     adjsfcdlw(im)- real, time step adjusted sfc dn lw flux (w/m**2)   !
-!     adjsfculw(im)- real, sfc upward lw flux at current time (w/m**2)  !
+!     adjsfcnlw(im)- real, time step adj sfc net lw into atmospher (w/m**2)!
 !     xmu   (im)   - real, time step zenith angle adjust factor for sw  !
 !     xcosz (im)   - real, cosine of zenith angle at current time step  !
 !                                                                       !
@@ -92,7 +92,7 @@
 !  ---  output:
             dtrad,                                                     &
 !  ---  outputs:
-            adjsfcdsw,adjsfcnsw,adjsfcdlw,xmu                          &
+            adjsfcdsw,adjsfcnsw,adjsfcdlw,adjsfcnlw,xmu                &
           )
 !
       use machine,         only : kind_phys
@@ -122,12 +122,14 @@
 
 !  ---  outputs:
       real(kind=kind_phys), dimension(ix), intent(out) ::              &
-           adjsfcdsw, adjsfcnsw, adjsfcdlw,xmu
+           adjsfcdsw, adjsfcnsw, adjsfcdlw, adjsfcnlw, xmu
 
 !  ---  locals:
       integer :: i, k
       real(kind=kind_phys) :: cns, ss, cc, ch, tem1, tem2, xlw(im)
 !
+!     adjsfculw(im)- real, sfc upward lw flux at current time (w/m**2)  !
+      real(kind=kind_phys), dimension(ix) :: adjsfculw
 !===> ...  begin here
 !
 !  --- ...  compute cosine of solar zenith angle for both hemispheres.
@@ -165,8 +167,10 @@
 
 !  --- ...  compute sfc upward lw flux from current temp,
 !      note: sfc emiss effect is not appied at this time
-!        tem1         = tsea(i) * tsea(i)
-!        adjsfculw(i) =  con_sbc * tem1 * tem1
+        tem1         = tsea(i) * tsea(i)
+        adjsfculw(i) =  con_sbc * tem1 * tem1
+
+        adjsfcnlw(i) = adjsfculw(i)-adjsfcdlw(i)
 
 !  --- ...  adjust sfc net and downward sw fluxes for zenith angle changes
         adjsfcnsw(i) = sfcnsw(i) * xmu(i)
