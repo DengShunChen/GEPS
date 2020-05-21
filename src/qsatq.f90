@@ -94,12 +94,13 @@
       tem = 1.0/1.622
       epsm1=0.622-1.
       do 100 i=1,imjm
-      t1 = max(1.00001, min(190.999, tqs(i)-182.16))
-      ic = int(t1)
-      qqq = min(tem*pqs(i), vpsat(ic)+(vpsat(1+ic)-vpsat(ic))           &
-                                     *(t1-float(ic)))
+! cwb qsatq
+!      t1 = max(1.00001, min(190.999, tqs(i)-182.16))
+!      ic = int(t1)
+!      qqq = min(tem*pqs(i), vpsat(ic)+(vpsat(1+ic)-vpsat(ic))           &
+!                                     *(t1-float(ic)))
 ! fpvs qpv_sat(in unit pa)
-      qqq=0.01*fpvs(tqs(i))
+      qqq = min ( pqs(i) , 0.01*fpvs(tqs(i)) )
 !
 !      qss(i) = 0.622*qqq/(pqs(i)-qqq)
       qss(i) = 0.622*qqq/(pqs(i)+epsm1*qqq)
@@ -205,12 +206,13 @@
       epsm1=0.622-1.
       do 100 k=1,km
       do 100 i=1,nxj
-      t1 = max(1.00001, min(190.999, tqs(i,k)-182.16))
-      ic = int(t1)
-      qqq = min(tem*pqs(i,k), vpsat(ic)+(vpsat(1+ic)-vpsat(ic))         &
-                                     *(t1-float(ic)))
+! cwb qsatq
+!      t1 = max(1.00001, min(190.999, tqs(i,k)-182.16))
+!      ic = int(t1)
+!      qqq = min(tem*pqs(i,k), vpsat(ic)+(vpsat(1+ic)-vpsat(ic))         &
+!                                     *(t1-float(ic)))
 ! fpvs qpv_sat(in unit pa)
-      qqq=0.01*fpvs(tqs(i,k))
+      qqq = min ( pqs(i,k) , 0.01*fpvs(tqs(i,k)) )
 !
 !      qss(i,k) = 0.622*qqq/(pqs(i,k)-qqq)
       qss(i,k) = 0.622*qqq/(pqs(i,k)+epsm1*qqq)

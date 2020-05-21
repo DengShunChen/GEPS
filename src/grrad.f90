@@ -1249,8 +1249,8 @@
 !         qstl(i,k1) = qs
 !--------------------------------------------------------------------------
           qlyr(i,k1) = max( qme6, qgrs(i,k) )
-          call qsatq(1,tgrs(i,k),plyr(i,k),qss) !plyr in mb
-          rhly(i,k1)= max( 0.0, min( 1.0, max(qmin, qlyr(i,k))/qss ) )
+          call qsatq(1,tlyr(i,k1),plyr(i,k1),qss) !plyr in mb
+          rhly(i,k1)= max( 0.0, min( 1.0, max(qmin, qlyr(i,k1))/qss ) )
           qstl(i,k1) = qss
         enddo
 !---------------------------------------------------------------------------
