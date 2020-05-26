@@ -1310,11 +1310,11 @@
         endif
 
         if(do_sit)then
-          if(loutsit24)then
-            call outsit24(nx,my,my_max,lkvl,ifilout,ntau,idtg,ggdef)
-          endif
           if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. (dailyClm_option.ge.1)) then
             call outtseadiffSIT24(nx,my,my_max,dtsit24,ifilout,ntau,idtg,ggdef)
+          endif
+          if(loutsit24)then
+            call outsit24(nx,my,my_max,lkvl,ifilout,ntau,idtg,ggdef)
           endif
           call dtgfix12(idtg,idtg_temp,ntau-1)
           ibeforeyymm=idtg_temp/1000000
