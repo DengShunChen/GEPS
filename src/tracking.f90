@@ -517,10 +517,10 @@ subroutine findtrk(fld,nx,my,ix,iy,rx,ry,tlon,tlat,index,lfound,min_trk_pres,ran
  if(myrank.eq.0) print*,'tlat = ',tlat(iy),' ixyrange = ',ixyrange 
 
 !-- set search domain 
-  ib=ix-ixyrange
-  ie=ix+ixyrange
-  jb=iy-ixyrange
-  je=iy+ixyrange
+  ib=max(ix-ixyrange,1)
+  ie=min(ix+ixyrange,nx)
+  jb=max(iy-ixyrange,1)
+  je=min(iy+ixyrange,my)
 !
   if(index.eq.1 .or. index.eq.4 .or. index.eq.5)then
     min_value=99999.
@@ -555,10 +555,10 @@ subroutine findtrk(fld,nx,my,ix,iy,rx,ry,tlon,tlat,index,lfound,min_trk_pres,ran
 
 !--- check center position 
     f0=fld(ix,iy)
-    f1=fld(ix+1,iy)
-    f2=fld(ix,iy+1)
-    f3=fld(ix-1,iy)
-    f4=fld(ix,iy-1)
+    f1=fld( min(ix+1,nx) , iy )
+    f2=fld( ix , min(iy+1,my) )
+    f3=fld( max(ix-1, 1) , iy )
+    f4=fld( ix , max(iy-1, 1) )
 
     if ( f0.gt.f1 .or. f0.gt.f2 .or. f0.gt.f3 .or. f0.gt.f4 ) then
       if(myrank.eq.0) then
@@ -607,10 +607,11 @@ subroutine findtrk(fld,nx,my,ix,iy,rx,ry,tlon,tlat,index,lfound,min_trk_pres,ran
     endif
     !--- check center position
     f0=fld(ix,iy)
-    f1=fld(ix+1,iy)
-    f2=fld(ix,iy+1)
-    f3=fld(ix-1,iy)
-    f4=fld(ix,iy-1)
+    f1=fld( min(ix+1,nx) , iy )
+    f2=fld( ix , min(iy+1,my) )
+    f3=fld( max(ix-1, 1) , iy )
+    f4=fld( ix , max(iy-1, 1) )
+
     if ( f0 .lt. f1 .or. f0 .lt. f2 .or. f0 .lt. f3 .or. f0 .lt. f4 ) then
       if(myrank.eq.0) then
         write(6,*)'findtrk : f0 lower than surrounding ,index=',index
