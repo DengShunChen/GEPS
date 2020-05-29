@@ -32,6 +32,7 @@
       use rank
       use mpe
       use index
+      use physpara  ,only : ialbflg
 
       implicit none
 
@@ -48,9 +49,21 @@
       real work(nx,my)
 !
       character bckfile*80,lrec*26,blnk*1,ggdef*4
-      integer   mon(12),mmse(2)
-!      data mon/74,166,258,349/
-      data mon/15,46,74,105,135,166,196,227,258,288,319,349/
+      integer   mon(12),mmse(2),mmax,mmt,mon1(12),mon2(12)
+      data mon1/ 74,166,258,349,  0,  0,  0,  0,  0,  0,  0,  0/
+      data mon2/ 15, 46, 74,105,135,166,196,227,258,288,319,349/
+
+      if ( ialbflg .eq. 0 ) then
+        mon  = mon1
+        mmax = 4
+        mmt  = 3
+      endif
+      
+      if ( ialbflg .eq. 1 ) then
+        mon  = mon2
+        mmax = 12
+        mmt  =  1
+      endif
 !
       data blnk/' '/
 !
@@ -66,15 +79,15 @@
       if(jul .le. mon(1))jul=jul+365
 !
       if(jul .gt. mon(12))then
-        mmse(1)=12
-        mmse(2)=1
-        coef1=float(jul-mon(12))/float(365+mon(1)-mon(12))
+        mmse(1)= mmax * mmt
+        mmse(2)=    1 * mmt
+        coef1=float(jul-mon(mmax))/float(365+mon(1)-mon(mmax))
         coef2=1.-coef1
       else
-        do k=2,12
+        do k=2,mmax
           if(jul .gt. mon(k-1) .and. jul .le. mon(k))then
-            mmse(1)=k-1
-            mmse(2)=k
+            mmse(1)= (k-1) * mmt
+            mmse(2)=    k  * mmt
             coef1=float(jul-mon(k-1))/float(mon(k)-mon(k-1))
             coef2=1.-coef1
           endif
@@ -85,7 +98,10 @@
 !----------------------------------------------------------------
       do nn=1,2
       mm=mmse(nn)
-      write(lrec,31)ggdef,mm
+
+
+      if (ialbflg.eq.0) write(lrec,31)ggdef,mm
+      if (ialbflg.eq.1) write(lrec,37)ggdef,mm
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,work,istat)
 !     call qmax2d(work,1,1,nx,my)
 !byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
@@ -100,7 +116,9 @@
         enddo
       enddo
 
-      write(lrec,32)ggdef,mm
+
+      if (ialbflg.eq.0) write(lrec,32)ggdef,mm
+      if (ialbflg.eq.1) write(lrec,38)ggdef,mm
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,work,istat)
 !     call qmax2d(work,1,1,nx,my)
 !byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
@@ -115,7 +133,8 @@
         enddo
       enddo
 
-      write(lrec,33)ggdef,mm
+      if (ialbflg.eq.0) write(lrec,33)ggdef,mm
+      if (ialbflg.eq.1) write(lrec,39)ggdef,mm
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,work,istat)
 !     call qmax2d(work,1,1,nx,my)
 !byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
@@ -130,7 +149,8 @@
         enddo
       enddo
 
-      write(lrec,34)ggdef,mm
+      if (ialbflg.eq.0) write(lrec,34)ggdef,mm
+      if (ialbflg.eq.1) write(lrec,40)ggdef,mm
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,work,istat)
 !     call qmax2d(work,1,1,nx,my)
 !byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
@@ -189,6 +209,10 @@
   34  format('S0003D','GBCK',a4,4x,i2.2,6x)  ! alnwfcl
   35  format('S0003E','GBCK',a4,12x)         ! facsf
   36  format('S0003F','GBCK',a4,12x)         ! facwf
+  37  format('S00X3A','GBCK',a4,4x,i2.2,6x)  ! alvsfcl
+  38  format('S00X3B','GBCK',a4,4x,i2.2,6x)  ! alvwfcl
+  39  format('S00X3C','GBCK',a4,4x,i2.2,6x)  ! alnsfcl
+  40  format('S00X3D','GBCK',a4,4x,i2.2,6x)  ! alnwfcl
 !----------------------------------------------------------------
 
 ! 
