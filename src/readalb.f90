@@ -78,7 +78,7 @@
 
       if(jul .le. mon(1))jul=jul+365
 !
-      if(jul .gt. mon(12))then
+      if(jul .gt. mon(mmax))then
         mmse(1)= mmax * mmt
         mmse(2)=    1 * mmt
         coef1=float(jul-mon(mmax))/float(365+mon(1)-mon(mmax))
