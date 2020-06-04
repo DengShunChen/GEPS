@@ -180,7 +180,6 @@
       logical lnewyymm
       integer ic_sit,nc_sit
       logical turn_sit,lrun_sitvdiff
-      real ratioSIT
       integer lenc,itautest
 !pscheckdata
       real mout(nx,my)
@@ -1095,35 +1094,44 @@
               obswtbp(ii,jj)=obswtbt(ii,jj)
               obswtbt(ii,jj)=obswtbn(ii,jj)
               if(ocean(ii,jj))then
+                tseadiffSIT(ii,jj)=0.
                 tseadiffFCT(ii,jj)=dta*dFCTsstdt(ii,jj)
-                tsean(ii,jj)=tseadiffFCT(ii,jj)+tseap(ii,jj)
-                if(lrun_sitvdiff .AND. ltrigsit .AND. sitmask(ii,jj).EQ.1. )then
-                  call cal_ratioBlending(xlat(j),xlon(i,jj),ratioSIT)
-                  tseadiffFCT(ii,jj)=dta*(1.-weightSIT*ratioSIT)*dFCTsstdt(ii,jj)
-                  tseadiffSIT(ii,jj)=dta*weightSIT*ratioSIT*dtswdt(ii,jj)
-                  if(fsitchg .gt. 0.)then
-                    tseadiffSIT(ii,jj)=min(max(tseadiffSIT(ii,jj),-abs(fsitchg)) &
-                                        ,abs(fsitchg))
+                if(do_sit .AND. sitmask(ii,jj) .EQ. 1. ) then
+                  if(lrun_sitvdiff .AND. ltrigsit )then
+                    sumdSITdt(ii,jj)=sumdSITdt(ii,jj)+dtswdt(ii,jj)
+                    countdSITdt(ii,jj)=countdSITdt(ii,jj)+1.
                   endif
-                  tsean(ii,jj)=tseadiffFCT(ii,jj)+tseadiffSIT(ii,jj)  &
-                               +tseap(ii,jj)
-                  tseadiffSIT24(ii,jj)=tseadiffSIT24(ii,jj)+tseadiffSIT(ii,jj)/dta*dtx
-                endif
-                if(myrank .eq. myrank_check .AND. ii .eq. ii_check &
-                  .AND. jj .eq. jj_check) then
-                  print *,'after update tg: myrank=',myrank        &
-                       ,',ii=',ii,',jj=',jj                        &
-                       ,',tseap=',tseap(ii,jj),',tg=',tg(ii,jj)    &
-                       ,',tsean=',tsean(ii,jj)                     &
-                       ,',tseadiffFCT=',tseadiffFCT(ii,jj)
-                  if(lrun_sitvdiff .AND. ltrigsit .AND. sitmask(ii,jj).EQ.1. )then
-                  print *,',tseadiffSIT=',tseadiffSIT(ii,jj)         &
-                       ,',tseadiffSIT24=',tseadiffSIT24(ii,jj)     &
-                       ,',ratioSIT=',ratioSIT
+                
+                  dtaup= mod(tau+0.001, dSITdt_intv)
+                  if( (dSITdt_intv .lt. 0.) .OR. (dtaup .lt. dtx_tau) )then
+                    if(countdSITdt(ii,jj) .ge. 1.) then
+                      tseadiffFCT(ii,jj)=dta*(1.-weightSIT*ratioSIT(ii,jj))&
+                                        *dFCTsstdt(ii,jj)
+                      tseadiffSIT(ii,jj)=dta*weightSIT*ratioSIT(ii,jj)          &
+                                       *(sumdSITdt(ii,jj)/countdSITdt(ii,jj))
+                      if(fsitchg .gt. 0.)then
+                        tseadiffSIT(ii,jj)=min(max(tseadiffSIT(ii,jj),-abs(fsitchg)) &
+                                          ,abs(fsitchg))
+                      endif
+                    endif
+                    if(myrank .eq. myrank_check .AND. ii .eq. ii_check  &
+                       .AND. jj .eq. jj_check) then
+                      print *,'in dSITdt_intv: myrank=',myrank        &
+                             ,',ii=',ii,',jj=',jj,',ratioSIT='        &
+                             ,ratioSIT(ii,jj),',sundSITdt='           &
+                             ,sumdSITdt(ii,jj),',countdSITdt='        &
+                             ,countdSITdt(ii,jj)
+                    endif
+                    sumdSITdt(ii,jj)=0.
+                    countdSITdt(ii,jj)=0.
+                    tseadiffSIT24(ii,jj)=tseadiffSIT24(ii,jj)+tseadiffSIT(ii,jj)/dta*dtx
                   endif
                 endif
+                tseadiffFCT24(ii,jj)=tseadiffFCT24(ii,jj)+tseadiffFCT(ii,jj)/dta*dtx
 
-                tseap(ii,jj)=tseat(ii,jj) + tfilt*(tseap(ii,jj)    &
+                tsean(ii,jj)=tseadiffFCT(ii,jj)+tseadiffSIT(ii,jj)  &
+                             +tseap(ii,jj)
+                tseap(ii,jj)=tseat(ii,jj) + tfilt*(tseap(ii,jj)     &
                               -2.0*tseat(ii,jj)+tsean(ii,jj) )
                 tseat(ii,jj)=tsean(ii,jj)
 
@@ -1132,13 +1140,38 @@
                   tg(ii,jj)=tseat(ii,jj)
                 endif
 
-                tseadiffFCT24(ii,jj)=tseadiffFCT24(ii,jj)+tseadiffFCT(ii,jj)/dta*dtx
+                if(myrank .eq. myrank_check .AND. ii .eq. ii_check  &
+                  .AND. jj .eq. jj_check) then
+                  print *,'after update tg: myrank=',myrank         &
+                       ,',ii=',ii,',jj=',jj                         &
+                       ,',tseap=',tseap(ii,jj),',tg=',tg(ii,jj)     &
+                       ,',tsean=',tsean(ii,jj)                      &
+                       ,',tseadiffFCT=',tseadiffFCT(ii,jj)
+                  if(sitmask(ii,jj).EQ.1. .AND. (lrun_sitvdiff      &
+                      .OR. (dtaup .lt. dtx_tau)) )then
+                    print *,',tseadiffSIT=',tseadiffSIT(ii,jj)      &
+                           ,',tseadiffSIT24=',tseadiffSIT24(ii,jj)  &
+                           ,',ratioSIT=',ratioSIT(ii,jj)
+
+                  endif
+                endif
+
               endif
             end do
           end do
           CALL read_dailyFCT(idtg,tau,dt,tg,cice,sndepth)
         endif
 
+        if(tau .lt. 0.2)then
+          call unify_reduceintp(nx,my,my_max,ratioSIT,glob)
+!byl      call mpe2d_unify(glob,qflux)
+          call syslbl ('w00002',idtg,itau,ggdef,ihdg)
+!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+!byl      if(lwrite) call
+!dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+          call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+          call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+        endif
 !
 ! accumulate some flux every time step to output point (24 hour)
 ! 1994 11 11
@@ -1311,7 +1344,7 @@
 
         if(do_sit)then
           if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. (dailyClm_option.ge.1)) then
-            call outtseadiffSIT24(nx,my,my_max,dtsit24,ifilout,ntau,idtg,ggdef)
+            call outtseadiffSIT24(nx,my,my_max,ratioSIT,dtsit24,ifilout,ntau,idtg,ggdef)
           endif
           if(loutsit24)then
             call outsit24(nx,my,my_max,lkvl,ifilout,ntau,idtg,ggdef)

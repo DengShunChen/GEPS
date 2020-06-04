@@ -125,6 +125,7 @@
 !--for SIT
       do_sit=.false.
       fsit=-99.
+      dSITdt_intv=6.
       weightSIT=0.5
       updatetg=24.
 !

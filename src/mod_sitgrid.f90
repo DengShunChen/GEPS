@@ -87,7 +87,8 @@
             oldsitws, oldsitwtke
      
       real,dimension(:,:), allocatable, save::           &
-              dtswdt, tseadiffSIT, tseadiffSIT24
+              dtswdt, tseadiffSIT, tseadiffSIT24,        &
+              sumdSITdt, countdSITdt, ratioSIT
 
  
       contains 
@@ -233,8 +234,9 @@
                stop
            end if
 
-           allocate ( dtswdt(nxp,my_max), tseadiffSIT(nxp,my_max),            &
-                     tseadiffSIT24(nxp,my_max), stat=ierr)
+           allocate ( dtswdt(nxp,my_max), tseadiffSIT(nxp,my_max),     &
+                     tseadiffSIT24(nxp,my_max), sumdSITdt(nxp,my_max), &
+                     countdSITdt(nxp,my_max), ratioSIT(nxp,my_max), stat=ierr)
 
           if (ierr/= 0) then
                write(6,*) 'mod_sitgrid_dtswdt : allocate fail 1 '
@@ -377,7 +379,9 @@
            dtswdt=0.
            tseadiffSIT=0.
            tseadiffSIT24=0.
-
+           sumdSITdt=0.
+           countdSITdt=0.
+           ratioSIT=0.
            return
 
         end subroutine allocate_sitgrid_array
@@ -451,7 +455,8 @@
             oldsitwt, oldsitwu, oldsitwv,oldsitww,       &
             oldsitws,oldsitwtke)
 
-           deallocate ( dtswdt, tseadiffSIT, tseadiffSIT24)
+           deallocate ( dtswdt, tseadiffSIT, tseadiffSIT24, &
+                        sumdSITdt, countdSITdt, ratioSIT)
 
            return
 

@@ -8419,56 +8419,84 @@ END FUNCTION SICEDFN
   END SUBROUTINE pzcord
 ! **********************************************************************
 
-  SUBROUTINE cal_ratioBlending(plat,plon,outratio)
+  SUBROUTINE cal_ratioBlending(pmyrank,pii,pjj,plat,inlon,outratio)
 
       use mod_sit_control,  only: sit_domain_w,sit_domain_e &
                                ,sit_domain_s,sit_domain_n &
                                ,sit_domain_extgrd
 ! location blending
-      real:: plat,plon
+      real:: plat,inlon
+      real:: plon
       real:: outratio
       real:: rrn,rrs,rre,rrw,rr_sn,rr_we,rrtmp
 !    real, PARAMETER:: rf=10._dp
       real, PARAMETER:: rf=5.
+      integer:: pmyrank,pii,pjj
 
 
-      IF(plon .LT. 0.) THEN
-        plon=plon + 360.
+      IF(inlon .LT. 0.) THEN
+        plon=inlon + 360.
+      else
+        plon=inlon
       ENDIF
-      IF( plon.GT.sit_domain_e) THEN
+
+      IF((plon .GE. sit_domain_w) .AND. &
+         (plon .LE. sit_domain_e) ) then      
+        rre=1.
+        rrw=1.
+      ELSEIF( (plon .GT. sit_domain_e) .AND. &
+              (plon .LE. sit_domain_e+sit_domain_extgrd) ) THEN
         rre=min(sit_domain_e+sit_domain_extgrd,360.)
         rrw=sit_domain_e
-      ELSEIF ( plon.LT.sit_domain_w) THEN
+      ELSEIF( (plon .GT. sit_domain_w-sit_domain_extgrd) .AND. &
+              (plon .LE. sit_domain_w) ) THEN
         rre=max(sit_domain_w-sit_domain_extgrd,0.)
         rrw=sit_domain_w
       ELSE
-        rre=1.
-        rrw=1.
+        rre=0.
+        rrw=0.
       ENDIF
 
-      IF( plat.GT.sit_domain_n) THEN
+      IF((plat .GE. sit_domain_s) .AND. &
+         (plat .LE. sit_domain_n) ) then      
+        rrn=1.
+        rrs=1.
+      ELSEIF( (plat .GT. sit_domain_n) .AND. &
+              (plat .LE. sit_domain_n+sit_domain_extgrd)  ) THEN
         rrn=min(sit_domain_n+sit_domain_extgrd,90.)
         rrs=sit_domain_n
-      ELSEIF( plat.LT.sit_domain_s) THEN
+      ELSEIF( (plat .GE. sit_domain_s-sit_domain_extgrd) .AND. &
+              (plat .LT. sit_domain_s) ) THEN
         rrn=max(sit_domain_s-sit_domain_extgrd,-90.)
         rrs=sit_domain_s
       ELSE
-        rrn=1.
-        rrs=1.
+        rrn=0.
+        rrs=0.
       ENDIF
 
       IF(rrw .EQ. 1.) THEN
         rr_we=1.
+      ELSEIF(rrw .EQ. 0.) THEN
+        rr_we=0.
       ELSE
         rr_we=1.-ABS((plon-rrw)/(rre-rrw))
       ENDIF
+
       IF(rrs .EQ. 1.) THEN
         rr_sn=1.
+      ELSEIF(rrs .EQ. 0.) THEN
+        rr_sn=0.
       ELSE
         rr_sn=1.-ABS((plat-rrs)/(rrn-rrs))
       ENDIF
 
-      rrtmp=0.5*(rr_sn+rr_we)
+      if(rr_sn .eq. 1.) then
+        rrtmp=rr_we
+      elseif(rr_we .eq. 1.)then
+        rrtmp=rr_sn
+      else
+        rrtmp=0.5*(rr_sn+rr_we)
+      endif
 
       IF(rrtmp .EQ. 1.) THEN
         outratio=1.
@@ -8478,8 +8506,13 @@ END FUNCTION SICEDFN
         outratio=exp(-rf/rrtmp*exp(1./(rrtmp-1.)))
       ENDIF
 
-!      ptsw(jl)= wtr*ptsw(jl)+(1.-wtr)*pobswtb(jl)
-
+      if(pmyrank.eq.6 .AND. pii.eq.1 .AND. pjj.eq.12) then
+        print *,'in ratio: myrank=',pmyrank,',ii=',pii &
+               ,',jj=',pjj,',rre=',rre,',rrw=',rrw    &
+               ,',rr_we=',rr_we,',rrn=',rrn,',rrs=',rrs &
+               ,',rr_sn=',rr_sn,',rrtmp=',rrtmp      &
+               ,',outratio=',outratio
+      endif
 
 
   END SUBROUTINE cal_ratioBlending 

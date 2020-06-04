@@ -33,7 +33,7 @@
 !-----------------------------------------------------------------------
       use mod_sitgrid
       use mod_sit_vdiff,     only:sit_vdiff_init,sit_vdiff,SICEDFN &
-                               ,maskid,ctfreez
+                               ,maskid,ctfreez,cal_ratioBlending
       use mod_sit_control,   only:xmissing,sit_nml,lgodas,ldailysst &
                                ,locaf,locaf0,lwoa0,lsitstart,sit_domain_w &
                                ,sit_domain_e,sit_domain_s,sit_domain_n &
@@ -1073,17 +1073,8 @@
             ELSE
               sitlon(ii,jj)=xlon(i,jj)
             ENDIF
+            call cal_ratioBlending(myrank,ii,jj,sitlat(ii),sitlon(ii,jj),ratioSIT(ii,jj))
 
-            if( (abs(sitlon(ii,jj)-180.) .le. 0.25) .AND. &
-               (abs(sitlat(ii)-20.) .le. 0.15) ) then
-                myrank_check=myrank
-                ii_check=ii
-                jj_check=jj
-              print *,'in getrdy, myrank=',myrank,',ii=',ii,',jj=' &
-                     ,jj,',i=',i,',j=',j,',sitlat=',sitlat(ii)     &
-                     ,',sitlon=',sitlon(ii,jj),',xlon(i,jj)='      &
-                     ,xlon(i,jj),',xlat(j)=',xlat(j)
-            endif
 
 !    !  2.0 set sst, sss and sic
             obswtb(ii,jj)   = tg(ii,jj)
