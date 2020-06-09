@@ -438,6 +438,23 @@
           enddo
           if( myrank .eq. 0 ) &
              print*,"get ncep's sea ice analysis, at dtg=",idtg
+          if ( ncepicthk ) then
+            call syslbl('w00092',idtg,0,ggdef,lrec)
+            call dmsread(nx,my,lrec,nxmy,'H',ifilin,ww1,istat)
+!byl          if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
+            do jj=1,jlistnum
+              j=jlist1(jj)
+              ii=nxjstart(j)
+              nxj=nxdef_2d(j)
+              if( lreduce.eq.1 ) call reducepick(ww1(1,j),nxdef(j),nx,1)
+              do i=1,nxj
+                zice(i,jj)=ww1(ii,j)
+                ii=ii+1
+              enddo
+            enddo
+            if( myrank .eq. 0 ) &
+               print*,"get ncep's sea ice thickness analysis, at dtg=",idtg
+          endif
 !
 ! reset albedo and tgclim at seaice grids                 
 !
