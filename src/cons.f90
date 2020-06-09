@@ -71,7 +71,7 @@
                       , facsppt500,facsppt1000,facsppt2000,ndsladvh2    &
                       , ldailyFCTsst,ldailyFCTicesndpt,lFCTweight       &
                       , dailyClm_option,lopgsst,do_sit,fsit,pdfcloud    &
-                      , cmbk,cgwd
+                      , cmbk,cgwd,ncepicthk
 !
       real    si(lev+1)
       logical flag
