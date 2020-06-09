@@ -149,7 +149,6 @@ $(CMD):	$(OBJS)
 
 .f90.o:
 	$(FC90) $(FFLAGS) $<
-%.o: $.mod
 
 .c.o:
 	$(CC) $(CFLAGS) $<
