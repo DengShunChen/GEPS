@@ -163,6 +163,7 @@ install :
 	$(INSTALL) -d ../bin
 	$(INSTALL) -D $(CMD) ../bin
 
+%.o: %.mod
 ancrt.o : ancrt.f90 
 cem1.o : cem1.f90 mod_paramt.o 
 check.o : check.f90 mod_fftcom.o mod_index.o mod_rank.o mod_mpe.o 
