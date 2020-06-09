@@ -30,7 +30,7 @@
       logical          nlexist,typhoon,nWlexist,olexist,oWlexist
       common/hurricanL/nlexist,typhoon,nWlexist,olexist,oWlexist
 
-      character typhnam*15,typhpath*64,Wtyphpath*64
+      character typhnam*15,typhpath*120,Wtyphpath*120
       character ntyphfile*24,nWtyphfile*24,otyphfile*24,oWtyphfile*24
       
       common/hurricanC1/typhnam,typhpath,Wtyphpath                  &

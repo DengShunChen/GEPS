@@ -91,6 +91,8 @@
       out_hp=.false.
 ! pdf cloud
       pdfcloud=.false.
+! ncep ice thickness
+      ncepicthk=.false.
 ! sppt
       dosppt=.false.
       dospptout=.false.

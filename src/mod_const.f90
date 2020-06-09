@@ -70,6 +70,8 @@
       integer hdk1,hdk2
 !for pdf cloud
       logical pdfcloud
+!for ncep ice thickness
+      logical ncepicthk
 
 !for 2dMPI
       logical idg_jdg_owner
