@@ -1812,13 +1812,12 @@
             qtsw(i,kc)= qt(i,4*lev+k,jj)
             qtgl(i,kc)= qt(i,5*lev+k,jj)
             ttc(i,kc) = tt(i,      k,jj)
-            rhc(i,kc)=0.98-0.06*cos(d2r*arg)**0.5    !v3
           enddo
         enddo
            call wsm6(ttc,phii,qtc,qtr,qtrw,qti,qtsw,qtgl,          &
                      prsl,del,dta,rlsp(1,jj),sr(1,jj),             &
                      slimsk,ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),  &
-                     1,nxp,1,lev,1,nxjp(j),1,lev,rhc)
+                     1,nxp,1,lev,1,nxjp(j),1,lev)
         do i=1,nxj
           rlsp(i,jj) = rlsp(i,jj) * 1000.         ! mm/call
         enddo
