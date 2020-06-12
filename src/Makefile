@@ -100,12 +100,8 @@ CC   =	${C_COMP}
 FC90 =  ${COMP_MPI}
 
 INCLUDE = -I. -I${FFTW_INC} -I${NETCDF_INC}
-#INCLUDE = -I. -I/nwpr/cfsres/b827/fx10/fftw-3.3.7/include
 
 CMD  =  MTCo639L72_${MACHINE}
-
-# MSG  =    -Ec -Qa,d,i,p,t,x -Koptmsg=2 -Nquickdbg
-# MSG  =    -Ec -Qa,d,i,p,t,x -Koptmsg=2
 
 INSTALL = /usr/bin/install
 # select one of the followings :
@@ -173,12 +169,13 @@ install :
 	$(INSTALL) -D $(CMD) ../bin
 
 depend: $(DEPEND_FILES) Makefile
-	@echo "Building dependencies ..."
+	@echo "==== Building dependencies for TCoGFS ====="
 	@ls -1 $(DEPEND_FILES) > Srcfiles
 	@echo "." > Filepath
 	@$(MKDEPENDS) -m Filepath Srcfiles > depend
 	@$(RM) -f Filepath Srcfiles
 
+# automaticaly generate make dependencies
 MKDEPENDS = ../mkDepends.pl
 include ./depend
 # do not include 'depend' file if the target contains string 'clean'
@@ -186,6 +183,7 @@ ifneq (clean,$(findstring clean,$(MAKECMDGOALS)))
     -include depend
 endif
 
+# old method for make dependecies
 # include ./make.dependency
 
 %.o: %.mod
