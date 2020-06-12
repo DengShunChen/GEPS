@@ -22,7 +22,7 @@
                     , shdmax,shdmin,snoalb                                     &
                     , slopetyp,sld,slc,zice,cice,xtice,sncover,sndepth         &
                     , ctot,chig,cmid,clow,hpbl,asl,atl,cosz                    &
-                    , nmgwor,nmgwcv,hprime_b,mtnvar,docgrav                    &
+                    , nmgwor,nmgwcv,hprime_b,mtnvar,docgrav,nmmiph             &
 !--------------------------------------------------------------------------------
                     , fusl,fdsl,fuir,fdir                                      &
                     , fuslr,fdslr,fuirr,fdirr                                  &
@@ -182,6 +182,8 @@
       use physpara
 ! for wsm6
       use module_mp_wsm6
+! for thompson
+      use module_mp_thompson
 !
       use physcons, only :con_rd,con_fvirt,con_rerth,con_rv
 ! for land_noah_new
@@ -326,9 +328,9 @@
       integer itimestep,ii
       logical dosppt
 
-! for wsm6
-      logical uni_cloud,lmfshal,lmfdeep2
-      real    sr(nxp,my_max)
+! for MP WSM6 & Thompson
+      logical uni_cloud,lmfshal,lmfdeep2,lradar
+      real    sr(nxp,my_max),refl10(nxp,lev,my_max)
 !---------------------------------------------------------------------------
 !byl      real      avgdrag_u(my,lev),avgdrag_v(my,lev),drag_u(lev),drag_v(lev)
       real      drag_u(lev),drag_v(lev)
@@ -397,9 +399,11 @@
       real      rcup2(nxp)
 ! for scale-aware convection
       real      garea(nxp),tpr,tem1,tem2,jup,jdn,tpi
-! for wsm6
+! for wsm6 & thompson
+      integer   nmmiph
       real      phii(nxp,lev+1)
       real      qti(nxp,lev),qtrw(nxp,lev),qtsw(nxp,lev),qtgl(nxp,lev)
+      real      ntinc(nxp,lev),ntrnc(nxp,lev)
 
 !CWB 2007-09-27 for random number seed >>>
       real*8    rtc,rsecond
@@ -478,10 +482,11 @@
       rld_adj=0.
       sld_adj=0.
       ss_adj =0.
-! for WSM6
+! for MP WSM6 & Thompson
       uni_cloud=( nmpbl .gt. 2 ) !if using SHOC scheme, it should be .true.
       lmfshal=( nmshl .eq. 2 .or. nmshl .eq. 3 ) ! .true. if using mass-flux shallow convection
       lmfdeep2=( nmcup .eq. 6 ) ! .true. if using scale-aware deep con
+      lradar=.false.
 
 !     define local constants
 ! for vertical rhc
@@ -589,6 +594,8 @@
           qtsw(i,k) = 0.
           qtrw(i,k) = 0.
           qtgl(i,k) = 0.
+          ntinc(i,k)= 0.
+          ntrnc(i,k)= 0.
         enddo
       enddo
 !
@@ -1002,6 +1009,7 @@
              nxp,nxjp(j),lev,ncld,lprnt,ipt,kdt,solhr,                     &
              uni_cloud,lmfshal,lmfdeep2,                                   &
              deltaq(1,1,jj),sup,cnvwr(1,1,jj),cnvcr(1,1,jj),               &
+             ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),                         &
 !  ---  outputs:
              asol(1,jj),olr(1,jj),ss(1,jj),rs(1,jj),                       &
              sld(1,jj),rld(1,jj),tsflw(1,jj),                              &
@@ -1814,10 +1822,17 @@
             ttc(i,kc) = tt(i,      k,jj)
           enddo
         enddo
+           if ( nmmiph .eq. 1 )                                    &
            call wsm6(ttc,phii,qtc,qtr,qtrw,qti,qtsw,qtgl,          &
                      prsl,del,dta,rlsp(1,jj),sr(1,jj),             &
                      slimsk,ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),  &
                      1,nxp,1,lev,1,nxjp(j),1,lev)
+           if ( nmmiph .eq. 2 )                                    &
+           call mp_gt_driver(1,nxp,1,lev,1,nxjp(j),1,lev,          &
+                     qtc,qtr,qtrw,qti,qtsw,qtgl,ntinc,ntrnc,       &
+                     ttc,prsl,del,dta,kdt,rlsp(1,jj),sr(1,jj),     &
+                     islimsk,refl10(1,1,jj),lradar,                &
+                     ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),me,phii)
         do i=1,nxj
           rlsp(i,jj) = rlsp(i,jj) * 1000.         ! mm/call
         enddo

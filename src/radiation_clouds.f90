@@ -304,6 +304,8 @@
             print *,'   --- zhao/carr/sundqvist + pdf cloud'
           elseif (icmphys == 4) then
             print *,'   --- WSM6 microphysics'
+          elseif (icmphys == 5) then
+            print *,'   --- Thompson microphysics'
           else
             print *,'  !!! error in cloud microphysc specification!!!', &
      &              '  icmphys (np3d) =',icmphys

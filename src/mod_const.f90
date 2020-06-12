@@ -17,14 +17,14 @@
       integer numout,ipadding,jm2,ksgeo,                     &
               ktpbl,ktshl,ktcup,julian,ldiag,idg,jdg,njump,  &
               nnmiit,nnmivm,itypbl,                          &
-              nmgwor,nmgwcv,mtnvar,                          &
+              nmgwor,nmgwcv,mtnvar,nmmiph,                   &
               ktrop,ncpu,nmcup,nmpbl,nmland,numreduce,nmshl
 
       common/constI/                                         &
               numout,ipadding,jm2,ksgeo,                     &
               ktpbl,ktshl,ktcup,julian,ldiag,idg,jdg,njump,  &
               nnmiit,nnmivm,itypbl,                          &
-              nmgwor,nmgwcv,mtnvar,                          &
+              nmgwor,nmgwcv,mtnvar,nmmiph,                   &
               ktrop,ncpu,nmcup,nmpbl,nmland,numreduce,nmshl
 
       real, dimension(:), allocatable, save  ::              &

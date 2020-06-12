@@ -37,6 +37,8 @@
       USE mo_convect_tables, only : set_lookup_tables
 ! for WSM6
       use module_mp_wsm6, only : wsm6init
+! for Thompson
+      use module_mp_thompson, only : thompson_init
 
       implicit  none
 
@@ -71,7 +73,7 @@
                       , facsppt500,facsppt1000,facsppt2000,ndsladvh2    &
                       , ldailyFCTsst,ldailyFCTicesndpt,lFCTweight       &
                       , dailyClm_option,lopgsst,do_sit,fsit,pdfcloud    &
-                      , cmbk,cgwd,ncepicthk
+                      , cmbk,cgwd,ncepicthk,nmmiph
 !
       real    si(lev+1)
       logical flag
@@ -497,7 +499,8 @@
 !  for WSM6
 !-----------------------------------------------------------------------
       if (dolsp .and. ncld .eq. 7) then
-        call wsm6init()
+        if ( nmmiph .eq. 1 ) call wsm6init()
+        if ( nmmiph .eq. 2 ) call thompson_init()
         ntoz=ncld
         ntcw=2
         num_p3d=5

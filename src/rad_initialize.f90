@@ -77,7 +77,7 @@
 !                     >0 array index location for cloud condensate      !
 !   num_p3d          :=3: ferrier's microphysics cloud scheme           !
 !                     =4: zhao/carr/sundqvist microphysics cloud        !
-!                     =5: WSM6 microphysics cloud                       !
+!                     =5: WSM6 & Thompson microphysics cloud            !
 !   ntoz             : ozone data control flag                          !
 !                     =0: use climatological ozone profile              !
 !                     >0: use interactive ozone profile                 !
@@ -122,7 +122,7 @@
      &             iovrsw , iovrlw , lsashal, lcrick , lcnorm , lnoprec,&
      &             ialbflg, iemsflg, isubcsw, isubclw, ivflip , ipsd0,  &
      &             kind_phys, iswcliq, iswcice, ilwcliq, ilwcice
-      use const,     only : pdfcloud
+      use const,     only : pdfcloud,nmmiph
 
       use module_radiation_driver, only : radinit
 ! 
@@ -182,8 +182,10 @@
         endif
       elseif ( num_p3d == 3 ) then
         icmphys = 2                     ! ferrier's microphysics
-      elseif ( num_p3d == 5 ) then
+      elseif ( num_p3d == 5 .and. nmmiph == 1 ) then
         icmphys = 4                     ! WSM6 microphysics
+      elseif ( num_p3d == 5 .and. nmmiph == 2 ) then
+        icmphys = 5                     ! Thompson microphysics
       endif
       iovrsw = iovr_sw                  ! cloud overlapping control flag for sw
       iovrlw = iovr_lw                  ! cloud overlapping control flag for lw

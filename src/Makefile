@@ -82,7 +82,7 @@ SRCS  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
         mod_sitgrid.f90 mod_eos_ocean.f90 mod_sit_vdiff.f90 outsit.f90 \
         mod_sst.f90 mod_netcdf.f90 mod_sit_control.f90 samfdeepcnv.f90 samfshalcnv.f90 \
         moninedmf.f90 mfpbl.f90 unify_reduceintp.f90 unify_reducepick.f90 \
-        gscondp.f90 precpdp.f90
+        gscondp.f90 precpdp.f90 module_mp_thompson_gfs.f90
 
 OBJS=	${SRCS:.f90=.o} cwb_fftw.o
 
@@ -168,7 +168,7 @@ cem1.o : cem1.f90 mod_paramt.o
 check.o : check.f90 mod_fftcom.o mod_index.o mod_rank.o mod_mpe.o 
 chlen.o : chlen.f90 
 coftrix.o : coftrix.f90 
-cons.o : cons.f90 mod_typhoon.o mod_fftcom.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o mo_convect_tables.o mod_spec.o module_mp_wsm6_fv3.o mod_sit_control.o
+cons.o : cons.f90 mod_typhoon.o mod_fftcom.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o mo_convect_tables.o mod_spec.o module_mp_wsm6_fv3.o mod_sit_control.o module_mp_thompson_gfs.o
 correct.o : correct.f90 mod_index.o 
 ccoszen.o : ccoszen.f90 mod_index.o
 coszenpm.o : coszenpm.f90 mod_index.o 
@@ -184,7 +184,7 @@ cwb_fftw.o: cwb_fftw.c
 dayfil.o : dayfil.f90 mod_rank.o 
 days.o : days.f90 
 dcbase.o : dcbase.f90 
-diabat.o : diabat.f90 mod_index.o mod_rank.o mod_mpe.o mod_radn.o physpara.o module_mp_wsm6_fv3.o mod_sitgrid.o mod_sit_vdiff.o mod_eos_ocean.o mod_netcdf.o mod_sit_control.o physcons.o mod_sst.o namelist_soilveg.o
+diabat.o : diabat.f90 mod_index.o mod_rank.o mod_mpe.o mod_radn.o physpara.o module_mp_wsm6_fv3.o mod_sitgrid.o mod_sit_vdiff.o mod_eos_ocean.o mod_netcdf.o mod_sit_control.o physcons.o mod_sst.o namelist_soilveg.o module_mp_thompson_gfs.o
 diagrd.o : diagrd.f90 mod_index.o mod_rank.o mod_mpe.o 
 dmsread.o : dmsread.f90 mod_index.o mod_rank.o mod_mpe.o 
 dmswrit.o : dmswrit.f90 mod_index.o mod_rank.o mod_mpe.o 
@@ -483,6 +483,7 @@ ntke_func.o : ntke_func.f90 mo_constants.o
 get_phi.o : get_phi.f90
 module_mp_radar.o : module_mp_radar.f90
 module_mp_wsm6_fv3.o : module_mp_wsm6_fv3.f90 physcons.o module_mp_radar.o
+module_mp_thompson_gfs.o : module_mp_thompson_gfs.f90 physcons.o module_mp_radar.o
 #xb110, for lightning scheme>
 lightning_ec.o: lightning_ec.f90 physcons.o  mod_rank.o mod_mpe.o
 #----------SIT---------------

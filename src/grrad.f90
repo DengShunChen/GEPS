@@ -647,7 +647,7 @@
              dtlw,dtsw,lsswr,lslwr,lssav,                               &
              ix,im,lm,me,lprnt,ipt,kdt,myrank,                          &
              ntiw,ntrw,ntsw,ntgl,uni_cloud,lmfshal,lmfdeep2,            &
-             deltaq,sup,cnvw,cnvc,                                      &
+             deltaq,sup,cnvw,cnvc,phy_f3d,                              &
 !  ---  outputs:
              htrsw,sfalb,coszen,coszdg,                                 &
              htrlw,tsflw,semis,cldcov,                                  &
@@ -1041,7 +1041,7 @@
              mbota(im,3), mtopa(im,3), lp1, nb, lmk, lmp, kd, lla, llb, &
              lya, lyb, kt, kb
 !
-      real (kind=kind_phys), dimension(im,lm+ltp,3)   :: phy_f3d
+      real (kind=kind_phys), dimension(ix,lm+ltp,3)   :: phy_f3d
       logical uni_cloud,lmfshal,lmfdeep2
 
 !  ---  for debug test use
@@ -1612,7 +1612,12 @@
      &       clouds,cldsa,mtopa,mbota                                   &
      &      )
 !
-        elseif (icmphys == 4) then    ! wsm6
+        elseif (icmphys == 4 .and. icmphys == 5) then    ! wsm6 & Thompson
+          if (kdt == 1) then
+            phy_f3d(:,:,1) = 10.
+            phy_f3d(:,:,2) = 50.
+            phy_f3d(:,:,3) = 250.
+          endif
 !
           call progcld4 (plyr,plvl,tlyr,qlyr,qstl,rhly,tracer1,   &    !--- inputs
                          xlat,xlon,slmsk,                         &
