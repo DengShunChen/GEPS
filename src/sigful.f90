@@ -28,7 +28,7 @@
       use mpe
       use rank
       use index
-      use radn, only : ntoz
+      use radn, only : ntoz,ntcw,ntiw
 
       implicit  none
 
@@ -183,6 +183,12 @@
        nxj=nxdef(j)
        if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
       do i = 1, nxj
+!  no cloud ice data, simple way to split cloud water and ice temporary
+        if ( hld3(i,k,jj)-273.15 .le. -15. .and. ncld .gt. 3 ) then
+          ntrac = ntiw
+        else
+          ntrac = ntcw
+        endif
         hld4(i,k,ntrac,jj) = hld1(i,j)
       end do
       end do

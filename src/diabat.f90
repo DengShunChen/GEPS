@@ -330,7 +330,7 @@
 
 ! for MP WSM6 & Thompson
       logical uni_cloud,lmfshal,lmfdeep2,lradar
-      real    sr(nxp,my_max),refl10(nxp,lev,my_max)
+      real    sr(nxp,my_max),refl10(nxp,lev)
 !---------------------------------------------------------------------------
 !byl      real      avgdrag_u(my,lev),avgdrag_v(my,lev),drag_u(lev),drag_v(lev)
       real      drag_u(lev),drag_v(lev)
@@ -483,7 +483,7 @@
       sld_adj=0.
       ss_adj =0.
 ! for MP WSM6 & Thompson
-      uni_cloud=( nmpbl .gt. 2 ) !if using SHOC scheme, it should be .true.
+      uni_cloud=.false. !if using SHOC scheme, it should be .true.
       lmfshal=( nmshl .eq. 2 .or. nmshl .eq. 3 ) ! .true. if using mass-flux shallow convection
       lmfdeep2=( nmcup .eq. 6 ) ! .true. if using scale-aware deep con
       lradar=.false.
@@ -594,8 +594,9 @@
           qtsw(i,k) = 0.
           qtrw(i,k) = 0.
           qtgl(i,k) = 0.
-          ntinc(i,k)= 0.
-          ntrnc(i,k)= 0.
+          ntinc(i,k)= 0.  ! no aerosol mode for Thompson
+          ntrnc(i,k)= 0.  ! no aerosol mode for Thompson
+          refl10(i,k)= 0. ! no radar for now
         enddo
       enddo
 !
@@ -1025,6 +1026,7 @@
 !      endif
       endif  ! for uprad .and. irad=2
 !
+      if ( dorad ) then
         call dcyc2t3                                                  &
 !  ---  inputs:
           ( solhr,slag,sdec,cdec,sinl(j),cosl(j),                     &
@@ -1037,6 +1039,8 @@
       do i = 1, nxj
          rld_adj(i) = rld_adj(i) * sfemis(i,jj)
       enddo
+!
+      endif
 
 !
 !xb110> save the variables for TDK before doing PBL parameterization
@@ -1831,7 +1835,7 @@
            call mp_gt_driver(1,nxp,1,lev,1,nxjp(j),1,lev,          &
                      qtc,qtr,qtrw,qti,qtsw,qtgl,ntinc,ntrnc,       &
                      ttc,prsl,del,dta,kdt,rlsp(1,jj),sr(1,jj),     &
-                     islimsk,refl10(1,1,jj),lradar,                &
+                     islimsk,refl10,lradar,                        &
                      ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),me,phii)
         do i=1,nxj
           rlsp(i,jj) = rlsp(i,jj) * 1000.         ! mm/call
