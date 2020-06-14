@@ -892,7 +892,7 @@
                       , shdmax,shdmin,snoalb                                    &
                       , slopetyp,sld,slc,zice,cice,xtice,sncover,sndepth        &
                       , ctot,chig,cmid,clow,hpbl,asl,atl,cosz                   &
-                      , nmgwor,nmgwcv,hprime_b,mtnvar,docgrav,nmmiph            &
+                      , nmgwor,nmgwcv,hprime_b,mtnvar,docgrav,nmmiph,ntnc       &
 !--------------------------------------------------------------------------------
                       , fusl,fdsl,fuir,fdir                                     &
                       , fuslr,fdslr,fuirr,fdirr                                 &

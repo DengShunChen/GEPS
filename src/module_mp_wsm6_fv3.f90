@@ -76,7 +76,7 @@ CONTAINS
                  ,delt                                             &
                  ,rainncv                                          &
                  ,sr                                               &
-                 ,slimsk                                           &
+                 ,islmsk                                           &
                  ,re_cloud, re_ice,   re_snow                      &  ! for radiation   
                  ,ims,ime,kms,kme                                  &
                  ,its,ite,kts,kte                                  &
@@ -87,8 +87,7 @@ CONTAINS
   INTEGER,      INTENT(IN   )    ::   ims,ime, kms,kme ,           &
                                       its,ite, kts,kte
   REAL, DIMENSION( ims:ime , kms:kme+1), INTENT(IN   ) ::     phii 
-  REAL, DIMENSION( ims:ime), INTENT(IN   ) ::               slimsk !rsun 
-  INTEGER, DIMENSION( ims:ime) ::                           islmsk !rsun 
+  INTEGER, DIMENSION( ims:ime), INTENT(IN   ) ::            islmsk !rsun 
   REAL, DIMENSION( ims:ime , kms:kme),                            &
         INTENT(INOUT) ::                                          &
                                                               t,  &
@@ -102,7 +101,7 @@ CONTAINS
   REAL, DIMENSION( ims:ime , kms:kme),                            &
         INTENT(IN   ) ::                                          &
                                                                p, &
-                                                             del
+                                                            del
   REAL, INTENT(IN   ) ::                                    delt
   REAL, DIMENSION( ims:ime ),                                     &
         INTENT(INOUT) ::                                          &
@@ -143,14 +142,6 @@ CONTAINS
   REAL, DIMENSION( kts:kte ) :: re_qc, re_qi, re_qs
   real :: tmp
   integer :: islmski
-
-         islmsk=0
-         DO i=its,ite
-           if (slimsk(i) .lt. 0.5) islmsk(i)=0
-           if ( (slimsk(i) .gt. 0.5) .and. (slimsk(i) .lt. 1.5) ) islmsk(i)=1
-           if (slimsk(i) .gt. 1.5) islmsk(i)=2
-         ENDDO
-         
 
          DO k=kts,kte
          DO i=its,ite

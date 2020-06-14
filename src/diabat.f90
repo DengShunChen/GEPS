@@ -22,7 +22,7 @@
                     , shdmax,shdmin,snoalb                                     &
                     , slopetyp,sld,slc,zice,cice,xtice,sncover,sndepth         &
                     , ctot,chig,cmid,clow,hpbl,asl,atl,cosz                    &
-                    , nmgwor,nmgwcv,hprime_b,mtnvar,docgrav,nmmiph             &
+                    , nmgwor,nmgwcv,hprime_b,mtnvar,docgrav,nmmiph,ntnc        &
 !--------------------------------------------------------------------------------
                     , fusl,fdsl,fuir,fdir                                      &
                     , fuslr,fdslr,fuirr,fdirr                                  &
@@ -403,7 +403,7 @@
       integer   nmmiph
       real      phii(nxp,lev+1)
       real      qti(nxp,lev),qtrw(nxp,lev),qtsw(nxp,lev),qtgl(nxp,lev)
-      real      ntinc(nxp,lev),ntrnc(nxp,lev)
+      real      icem,ntnc(nxp,lev,my_max,2) !1:ice, 2:liquid
 
 !CWB 2007-09-27 for random number seed >>>
       real*8    rtc,rsecond
@@ -488,6 +488,7 @@
       lmfdeep2=( nmcup .eq. 6 ) ! .true. if using scale-aware deep con
       lradar=.false.
 
+
 !     define local constants
 ! for vertical rhc
 !      ct=0.7
@@ -511,7 +512,7 @@
       levmy= lev* my
       radus = 6371000.
       radsq = radus**2
-      tpi    = 4.0*atan(1.0)
+      tpi   = 4.0*atan(1.0)
       d2r   = tpi / 180.0
       tpr   = 2.*tpi*radus
       ptrad = max(0.01,ptop)
@@ -521,6 +522,7 @@
       p0k   = 1000.0**xkapa
       op0k  = 1.0/p0k
       ptopk = ptop**xkapa
+      icem  =  4./3.*tpi*3.2768*1.e-14*890.
 !
 !     define local control variables
 !
@@ -594,8 +596,6 @@
           qtsw(i,k) = 0.
           qtrw(i,k) = 0.
           qtgl(i,k) = 0.
-          ntinc(i,k)= 0.  ! no aerosol mode for Thompson
-          ntrnc(i,k)= 0.  ! no aerosol mode for Thompson
           refl10(i,k)= 0. ! no radar for now
         enddo
       enddo
@@ -1824,16 +1824,19 @@
             qtsw(i,kc)= qt(i,4*lev+k,jj)
             qtgl(i,kc)= qt(i,5*lev+k,jj)
             ttc(i,kc) = tt(i,      k,jj)
+            ntnc(i,kc,jj,1) = ntnc(i,kc,jj,1)                      &
+                            +max(0.,qti(i,kc)-q0(i,2*lev+k))/icem
           enddo
         enddo
            if ( nmmiph .eq. 1 )                                    &
            call wsm6(ttc,phii,qtc,qtr,qtrw,qti,qtsw,qtgl,          &
                      prsl,del,dta,rlsp(1,jj),sr(1,jj),             &
-                     slimsk,ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),  &
+                     islimsk,ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj), &
                      1,nxp,1,lev,1,nxjp(j),1,lev)
            if ( nmmiph .eq. 2 )                                    &
            call mp_gt_driver(1,nxp,1,lev,1,nxjp(j),1,lev,          &
-                     qtc,qtr,qtrw,qti,qtsw,qtgl,ntinc,ntrnc,       &
+                     qtc,qtr,qtrw,qti,qtsw,qtgl,                   &
+                     ntnc(1,1,jj,1),ntnc(1,1,jj,2),                &
                      ttc,prsl,del,dta,kdt,rlsp(1,jj),sr(1,jj),     &
                      islimsk,refl10,lradar,                        &
                      ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),me,phii)

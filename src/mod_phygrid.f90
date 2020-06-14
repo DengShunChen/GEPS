@@ -40,6 +40,7 @@
       real, dimension(:,:,:),allocatable,save :: e,eps,o3l,dtrad,asl,atl
       real, dimension(:,:,:),allocatable,save :: ftp,fqp,ftp1,fqp1
       real, dimension(:,:,:),allocatable,save :: deltaq,cnvwr,cnvcr
+      real, dimension(:,:,:,:),allocatable,save :: ntnc 
 
       contains 
 
@@ -145,6 +146,14 @@
                write(6,*) 'mod_phygrid : allocate fail 7 '
                stop
            end if
+!
+           allocate (ntnc(nxp,lev,my_max,2) ,stat=ierr)
+
+           if (ierr/= 0) then
+               write(6,*) 'mod_phygrid : allocate fail 8 '
+               stop
+           end if
+           ntnc=0.
 
            return
 
@@ -167,6 +176,7 @@
            deallocate (fpsp,fpsp1)
            deallocate (rainlp6,raincu6,rainlp3,raincu3,rainlp1,raincu1)
            deallocate (tsflw)
+           deallocate (ntnc)
 
            return
 
