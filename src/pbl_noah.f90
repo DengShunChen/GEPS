@@ -154,6 +154,7 @@
       use mpe
       use rank
       use index
+      use radn,   only:ntoz,ntcw
 !ch   use paramt
 
 !
@@ -161,7 +162,7 @@
 !
 ! input & output variable
 !
-      integer  nxj,nx,lev,ktpbl,jj,itype,idg,ncld,km,nmpbl
+      integer  nxj,nx,lev,ktpbl,jj,itype,idg,ncld,km,nmpbl,nc
       real     dt,g,r,cp,xkapa,hltm,ptop,stbo,hice,tice
 
       integer  imx(2)
@@ -212,7 +213,8 @@
 !byl                prsi(nx,lev+1),phi2(nx,lev+1),phii(nx,lev+1),              &
                 prsi(nx,lev+1),phii(nx,lev+1),                          &
                 dsigma(lev,2),rcl(nx),                                  &
-                u1(nx,lev),v1(nx,lev),t1(nx,lev),q1(nx,lev,2)
+                u1(nx,lev),v1(nx,lev),t1(nx,lev)
+      real, dimension(:,:,:), allocatable :: q1
 !
       real      pk2x(nx,lev),pkx(nx,lev)
 !
@@ -246,7 +248,7 @@
 ! for new pbl: asl,atl,xmu
       real      asl(nx,lev),atl(nx,lev),swh(nx,lev),hlw(nx,lev),xmu(nx)
 
-      integer  lsm,i,k,iter,kc,ntrac,ntcw
+      integer  lsm,i,k,iter,kc,ntrac
       real     ppd,ppp,ttt,ppu,dth,p850,ddd,cc,qqq
 !
 ! noah mode
@@ -262,6 +264,14 @@
 !     jo=236
       io=480
       jo=240
+!
+      if ( ntoz .gt. 0 ) then
+         ntrac=ncld-1
+      else
+         ntrac=ncld
+      endif
+      allocate(q1(nx,lev,ntrac))
+!
 ! --- ensure ktpbl selection is greater than 2
 !
       if ( ktpbl .lt. 2 )  ktpbl = 2
@@ -585,12 +595,19 @@
       enddo
       enddo
 !
+       do nc=1,ntrac
+         do k=1,lev
+          kc=lev-k+1
+           do i=1,nxj
+              q1(i,kc,nc) = qt(i,lev*(nc-1)+k)
+           enddo
+         enddo
+       enddo
+!
        do k=1,lev
           kc=lev-k+1
           do i=1,nxj
             t1(i,kc) = tt(i,k)
-            q1(i,kc,1) = qt(i,k)
-            q1(i,kc,2) = qt(i,lev+k)
             u1(i,kc) = ut(i,k)
             v1(i,kc) = vt(i,k)
 !
@@ -640,7 +657,6 @@
          nmpbl=2
        endif
        if(nmpbl .eq. 2)then
-       ntrac=2
        call mixpbl_n( nx,nxj,lev,ntrac,u1,v1,t1,q1,pk2(1,lev),rb,fm,fh   &
                  , tg,heat,evap,stress,sfcw,kpbl                        &
                  , prsi,del,prsl,prslk,phii,phil,rcl,dt                 &
@@ -650,7 +666,6 @@
 !---
 ! new_sas pbl
        if(nmpbl .eq. 3)then
-       ntrac=2
        do k=1,lev
           kc=lev-k+1
        do i=1,nxj
@@ -669,7 +684,6 @@
 !---
 ! YSU pbl scheme
        if(nmpbl .eq. 5)then
-       ntrac=2
        do k=1,lev
           kc=lev-k+1
        do i=1,nxj
@@ -687,8 +701,6 @@
 !
 ! NCEP GFS moninedmf
        if(nmpbl .eq. 4)then
-       ntrac=2
-       ntcw=2
        do k=1,lev
           kc=lev-k+1
        do i=1,nxj
@@ -703,17 +715,26 @@
 !
        endif
 !
+       do nc=1,ntrac
+         do k=1,lev
+          kc=lev-k+1
+           do i=1,nxj
+              qt(i,lev*(nc-1)+k) = q1(i,kc,nc)
+           enddo
+         enddo
+       enddo
+!
        do k=1,lev
 !jh       do k=ktpbl,lev
           kc=lev-k+1
           do i=1,nxj
-            qt(i,k) = q1(i,kc,1)
-            qt(i,k+lev) = q1(i,kc,2)
             tt(i,k) = t1(i,kc)
             ut(i,k) = u1(i,kc)
             vt(i,k) = v1(i,kc)
           enddo
-        enddo
+       enddo
+!
+       deallocate(q1)
 
 !     call maxp ( nx,xkm(1,lev)  ,xkmx(1),imx(1) )
 !     call maxp ( nx,xkm(1,lev-1),xkmx(2),imx(2) )

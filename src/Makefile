@@ -327,7 +327,7 @@ outflds_green.o : outflds_green.f90 mod_index.o mod_rank.o mod_mpe.o
 outflds_fv3.o : outflds_fv3.f90 mod_index.o mod_rank.o mod_mpe.o
 outflds_hp.o : outflds_hp.f90 mod_index.o mod_rank.o mod_mpe.o
 outsigs.o : outsigs.f90 mod_mpe.o mod_index.o 
-pbl_noah.o : pbl_noah.f90 mod_paramt.o mod_index.o mod_rank.o mod_mpe.o 
+pbl_noah.o : pbl_noah.f90 mod_paramt.o mod_index.o mod_rank.o mod_mpe.o mod_radn.o
 	$(FC90) $(FFLAGS) -Knosimd pbl_noah.f90
 pbltke.o : pbltke.f90 mod_paramt.o 
 pbltke_n.o : pbltke_n.f90 mod_paramt.o 
