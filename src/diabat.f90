@@ -1061,7 +1061,7 @@
 !xb110<
 !
 !
-      if ( dopbl .and. (nmpbl.eq.1) .and. (nmland.eq.1))                      &
+      if ( dopbl .and. (nmpbl.eq.1 .and. nmland.eq.1))                        &
          call pbltke ( nxjp(j),nxp,lev,ktpbl,dta,grav,rgas,cp,xkapa,hltm,ptop &
                      , tice,hice,tg(1,jj),z0(1,jj),land(1,jj)                 &
                      , sgeo(1,jj),phi,pst(1,jj),upp,vpp                       &
@@ -1087,7 +1087,7 @@
           enddo
           endif ! end of dosppt if stetement
 !
-      if ( dopbl .and. (nmpbl.eq.2) .and. (nmland.eq.1))                      &
+      if ( dopbl .and. (nmpbl.eq.2 .and. nmland.eq.1))                        &
          call pbltke_n ( nxjp(j),nxp,lev,ktpbl,dta,grav,rgas,cp,xkapa,hltm,ptop &
                      , tice,hice,tg(1,jj),z0(1,jj),land(1,jj)                 &
                      , sgeo(1,jj),phi,pst(1,jj),upp,vpp                       &
@@ -1323,7 +1323,7 @@
 !
 !cyea---->
 !c 20120926 for Tiedtke cumulus
-      if ( docup .and. (nmcup .eq. 4) .and. (ncld .ge. 2) ) then
+      if ( docup .and. (nmcup .eq. 4 .and. ncld .ge. 2) ) then
         do k=1,lev-1
           do i = 1, nxj
             dotc(i,k)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
@@ -1364,7 +1364,7 @@
       endif    !(end if nmcup=4)
 !
 !xb110>
-      if ( docup .and. (nmcup .eq. 5) .and. (ncld .ge. 2) ) then
+      if ( docup .and. (nmcup .eq. 5 .and. ncld .ge. 2) ) then
 
         do i=1,nxj
           garea(i)  = tem1*tem2
@@ -1718,7 +1718,7 @@
                   , grav,nxjp(j),nxp,lev,evaprh,rlsp(1,jj),cp,hltm,nlsp(1,j)   &
                   , ilsp(1,j) )
 !
-      if ( dolsp .and. (ncld.eq.2) .or. (ncld.eq.3)) then
+      if ( dolsp .and. (ncld.eq.2 .or. ncld.eq.3)) then
 !
         deg_ju=23.45*sin(d2r*(360./365.)*(julian+284.))
         arg=xlat(j)-deg_ju
