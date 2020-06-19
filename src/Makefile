@@ -327,7 +327,7 @@ outflds_green.o : outflds_green.f90 mod_index.o mod_rank.o mod_mpe.o
 outflds_fv3.o : outflds_fv3.f90 mod_index.o mod_rank.o mod_mpe.o
 outflds_hp.o : outflds_hp.f90 mod_index.o mod_rank.o mod_mpe.o
 outsigs.o : outsigs.f90 mod_mpe.o mod_index.o 
-pbl_noah.o : pbl_noah.f90 mod_paramt.o mod_index.o mod_rank.o mod_mpe.o mod_radn.o
+pbl_noah.o : pbl_noah.f90 mod_paramt.o mod_index.o mod_rank.o mod_mpe.o mod_radn.o mod_const.o
 	$(FC90) $(FFLAGS) -Knosimd pbl_noah.f90
 pbltke.o : pbltke.f90 mod_paramt.o 
 pbltke_n.o : pbltke_n.f90 mod_paramt.o 
@@ -385,7 +385,7 @@ sflx.o : sflx.f90 namelist_soilveg.o physcons.o
 shalcnv_new.o : shalcnv_new.f90 
 shalcnv_sa.o : shalcnv_sa.f90 
 shlcon.o : shlcon.f90 mod_paramt.o 
-sigful.o : sigful.f90 mod_index.o mod_rank.o mod_mpe.o 
+sigful.o : sigful.f90 mod_index.o mod_rank.o mod_mpe.o mod_const.o
 siimpl.o : siimpl.f90 mod_paramt.o mod_index.o mod_spec.o
 smth9.o : smth9.f90 
 sortml.o : sortml.f90 

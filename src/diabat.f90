@@ -22,7 +22,7 @@
                     , shdmax,shdmin,snoalb                                     &
                     , slopetyp,sld,slc,zice,cice,xtice,sncover,sndepth         &
                     , ctot,chig,cmid,clow,hpbl,asl,atl,cosz                    &
-                    , nmgwor,nmgwcv,hprime_b,mtnvar,docgrav,nmmiph,ntnc        &
+                    , nmgwor,nmgwcv,hprime_b,mtnvar,docgrav,nmmiph             &
 !--------------------------------------------------------------------------------
                     , fusl,fdsl,fuir,fdir                                      &
                     , fuslr,fdslr,fuirr,fdirr                                  &
@@ -403,7 +403,7 @@
       integer   nmmiph
       real      phii(nxp,lev+1)
       real      qti(nxp,lev),qtrw(nxp,lev),qtsw(nxp,lev),qtgl(nxp,lev)
-      real      icem,ntnc(nxp,lev,my_max,2) !1:ice, 2:liquid
+      real      icem,ntnc(nxp,lev,2) !1:ice, 2:liquid
 
 !CWB 2007-09-27 for random number seed >>>
       real*8    rtc,rsecond
@@ -777,14 +777,13 @@
   180 continue
 !
 !-----------------------------------------------------------------------
-      if(ncld.ge.3)then
-      ntrac=ntoz
+      if(ntoz.gt.0)then
 !
       do jj = 1, jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
         do k = 1, lev
-          kk = (ntrac-1)*lev+k
+          kk = (ntoz-1)*lev+k
           do i = 1, nxj
             o3l(i,k,jj) = qt(i,kk,jj)
           enddo
@@ -1450,7 +1449,7 @@
            phil(i,kc)= phi(i,k)-sgeo(i,jj)
            qtc(i,kc) = qt(i,k,jj)
            qtr(i,kc) = qt(i,lev+k,jj)
-           if ( nclds .gt. 1 ) qti(i,kc) = qt(i,2*lev+k,jj)
+           if ( nmmiph .gt. 2 ) qti(i,kc) = qt(i,(ntiw-1)*lev+k,jj)
            ttc(i,kc) = tt(i,k,jj)
            utc(i,kc) = ut(i,k,jj)
            vtc(i,kc) = vt(i,k,jj)
@@ -1516,7 +1515,7 @@
           do i=1,nxj
             qt(i,k    ,jj) = max(qtc(i,kc),0.)
             qt(i,k+lev,jj) = max(qtr(i,kc),0.)
-            if ( nclds .gt. 1 ) qt(i,2*lev+k,jj) = qti(i,kc)
+            if ( nmmiph .gt. 2 ) qt(i,(ntiw-1)*lev+k,jj) = qti(i,kc)
             tt(i,k    ,jj) = ttc(i,kc)
             ut(i,k    ,jj) = utc(i,kc)
             vt(i,k    ,jj) = vtc(i,kc)
@@ -1651,7 +1650,7 @@
            phil(i,kc)= phi(i,k)-sgeo(i,jj)
            qtc(i,kc) = qt(i,k,jj)
            qtr(i,kc) = qt(i,lev+k,jj)
-           if ( nclds .gt. 1 ) qti(i,kc) = qt(i,2*lev+k,jj)
+           if ( nmmiph .gt. 2 ) qti(i,kc) = qt(i,(ntiw-1)*lev+k,jj)
            ttc(i,kc) = tt(i,k,jj)
            utc(i,kc) = ut(i,k,jj)
            vtc(i,kc) = vt(i,k,jj)
@@ -1691,7 +1690,7 @@
           do i=1,nxj
             qt(i,k    ,jj) = qtc(i,kc)
             qt(i,k+lev,jj) = qtr(i,kc)
-            if ( nclds .gt. 1 ) qt(i,2*lev+k,jj) = qti(i,kc)
+            if ( nmmiph .gt. 2 ) qt(i,(ntiw-1)*lev+k,jj) = qti(i,kc)
             tt(i,k    ,jj) = ttc(i,kc)
             ut(i,k    ,jj) = utc(i,kc)
             vt(i,k    ,jj) = vtc(i,kc)
@@ -1709,7 +1708,7 @@
                      , plt(1,1,jj),tt(1,1,jj), qt(1,1,jj),nshl(j)              &
                      , rcup(1,jj),ncld )
 !
-      if ( dolsp .and. (ncld.eq.1) )                                           &
+      if ( dolsp .and. (ntcw.eq.0))                                            &
 !        call lspmst ( tt(1,1,jj),qt(1,1,jj),plt(1,1,jj),ptop,pst(1,jj)
 !                 , dsigma,grav,nxj,nx,lev,evaprh,rlsp(1,jj),cp,hltm
 !                 , nlsp(1,j),ilsp(1,j) )
@@ -1718,7 +1717,7 @@
                   , grav,nxjp(j),nxp,lev,evaprh,rlsp(1,jj),cp,hltm,nlsp(1,j)   &
                   , ilsp(1,j) )
 !
-      if ( dolsp .and. (ncld.eq.2 .or. ncld.eq.3)) then
+      if ( dolsp .and. (nmmiph.eq.2)) then
 !
         deg_ju=23.45*sin(d2r*(360./365.)*(julian+284.))
         arg=xlat(j)-deg_ju
@@ -1811,36 +1810,52 @@
           enddo
         enddo
 !
-      elseif ( dolsp .and. (ncld .eq. 7) ) then
+      elseif ( dolsp .and. (nmmiph.eq.6 .or. nmmiph.eq.8) ) then
 !
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
             prsl(i,kc) = plt(i,k,jj)*100. ! change to Pa
             del(i,kc) = (dsigma(k,1)*pst(i,jj)+dsigma(k,2))*100.  !change to Pa
-            qtc(i,kc) = qt(i,      k,jj)
-            qtr(i,kc) = qt(i,  lev+k,jj)
-            qti(i,kc) = qt(i,2*lev+k,jj)
-            qtrw(i,kc)= qt(i,3*lev+k,jj)
-            qtsw(i,kc)= qt(i,4*lev+k,jj)
-            qtgl(i,kc)= qt(i,5*lev+k,jj)
-            ttc(i,kc) = tt(i,      k,jj)
-            ntnc(i,kc,jj,1) = ntnc(i,kc,jj,1)                      &
-                            +max(0.,qti(i,kc)-q0(i,2*lev+k))/icem
+            qtc(i,kc) = qt(i,             k,jj)
+            qtr(i,kc) = qt(i,(ntcw-1)*lev+k,jj)
+            qtrw(i,kc)= qt(i,(ntrw-1)*lev+k,jj)
+            qti(i,kc) = qt(i,(ntiw-1)*lev+k,jj)
+            qtsw(i,kc)= qt(i,(ntsw-1)*lev+k,jj)
+            qtgl(i,kc)= qt(i,(ntgl-1)*lev+k,jj)
+            ttc(i,kc) = tt(i,             k,jj)
           enddo
         enddo
-           if ( nmmiph .eq. 1 )                                    &
+!          WSM6
+           if ( nmmiph .eq. 6 )                                    &
            call wsm6(ttc,phii,qtc,qtr,qtrw,qti,qtsw,qtgl,          &
                      prsl,del,dta,rlsp(1,jj),sr(1,jj),             &
                      islimsk,ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj), &
                      1,nxp,1,lev,1,nxjp(j),1,lev)
-           if ( nmmiph .eq. 2 )                                    &
-           call mp_gt_driver(1,nxp,1,lev,1,nxjp(j),1,lev,          &
+!          Thompson
+           if ( nmmiph .eq. 8 )then
+             do k=1,lev
+               kc=lev-k+1
+               do i=1,nxj
+                 ntnc(i,kc,1) = qt(i,(ntinc-1)*lev+k,jj)           &
+                      +max(0.,qti(i,kc)-q0(i,(ntiw-1)*lev+k))/icem
+                 ntnc(i,kc,2) = qt(i,(ntrnc-1)*lev+k,jj)
+               enddo
+             enddo
+             call mp_gt_driver(1,nxp,1,lev,1,nxjp(j),1,lev,        &
                      qtc,qtr,qtrw,qti,qtsw,qtgl,                   &
-                     ntnc(1,1,jj,1),ntnc(1,1,jj,2),                &
+                     ntnc(1,1,1),ntnc(1,1,2),                      &
                      ttc,prsl,del,dta,kdt,rlsp(1,jj),sr(1,jj),     &
                      islimsk,refl10,lradar,                        &
                      ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),me,phii)
+             do k=1,lev
+               kc=lev-k+1
+               do i=1,nxj
+                 qt(i,(ntinc-1)*lev+k,jj)=ntnc(i,kc,1)
+                 qt(i,(ntrnc-1)*lev+k,jj)=ntnc(i,kc,2)
+               enddo
+             enddo
+           endif
         do i=1,nxj
           rlsp(i,jj) = rlsp(i,jj) * 1000.         ! mm/call
         enddo
@@ -2344,13 +2359,12 @@
 !--------------------------------------------------------------------------------
 !     update o3l to qt
 !--------------------------------------------------------------------------------
-      if(ncld.ge.3)then
-        ntrac=ntoz
+      if(ntoz.gt.0)then
         do jj=1, jlistnum
            j=jlist1(jj)
            nxj=nxdef_2d(j)
            do k = 1, lev
-             kk = (ntrac-1)*lev+k
+             kk = (ntoz-1)*lev+k
              do i = 1, nxj
                qt(i,kk,jj) = o3l(i,k,jj)
              enddo

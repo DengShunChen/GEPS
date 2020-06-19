@@ -154,7 +154,8 @@
       use mpe
       use rank
       use index
-      use radn,   only:ntoz,ntcw
+      use radn,   only:ntcw,ntiw,ntinc,ntoz
+      use const,  only:nmmiph
 !ch   use paramt
 
 !
@@ -265,11 +266,9 @@
       io=480
       jo=240
 !
-      if ( ntoz .gt. 0 ) then
-         ntrac=ncld-1
-      else
-         ntrac=ncld
-      endif
+      ntrac=ncld
+      if ( nmmiph .eq. 6 ) ntrac=ncld-3
+      if ( nmmiph .eq. 8 ) ntrac=ncld-4
       allocate(q1(nx,lev,ntrac))
 !
 ! --- ensure ktpbl selection is greater than 2
@@ -595,14 +594,37 @@
       enddo
       enddo
 !
-       do nc=1,ntrac
-         do k=1,lev
+      if ( nmmiph .eq. 6 ) then  !WSM6
+        do k=1,lev
           kc=lev-k+1
-           do i=1,nxj
+          do i=1,nxj
+            q1(i,kc,1) = qt(i,             k)
+            q1(i,kc,2) = qt(i,lev*(ntcw-1)+k)
+            q1(i,kc,3) = qt(i,lev*(ntiw-1)+k)
+            q1(i,kc,4) = qt(i,lev*(ntoz-1)+k)
+          enddo
+        enddo
+      else if ( nmmiph .eq. 8 ) then ! Thompson
+        do k=1,lev
+          kc=lev-k+1
+          do i=1,nxj
+            q1(i,kc,1) = qt(i,             k)
+            q1(i,kc,2) = qt(i,lev*(ntcw-1)+k)
+            q1(i,kc,3) = qt(i,lev*(ntiw-1)+k)
+            q1(i,kc,4) = qt(i,lev*(ntinc-1)+k)
+            q1(i,kc,5) = qt(i,lev*(ntoz-1)+k)
+          enddo
+        enddo
+      else
+        do nc=1,ntrac
+          do k=1,lev
+            kc=lev-k+1
+            do i=1,nxj
               q1(i,kc,nc) = qt(i,lev*(nc-1)+k)
-           enddo
-         enddo
-       enddo
+            enddo
+          enddo
+        enddo
+      endif
 !
        do k=1,lev
           kc=lev-k+1
@@ -715,14 +737,37 @@
 !
        endif
 !
-       do nc=1,ntrac
-         do k=1,lev
+      if ( nmmiph .eq. 6 ) then  !WSM6
+        do k=1,lev
           kc=lev-k+1
-           do i=1,nxj
+          do i=1,nxj
+            qt(i,             k) = q1(i,kc,1)
+            qt(i,lev*(ntcw-1)+k) = q1(i,kc,2)
+            qt(i,lev*(ntiw-1)+k) = q1(i,kc,3)
+            qt(i,lev*(ntoz-1)+k) = q1(i,kc,4)
+          enddo
+        enddo
+      else if ( nmmiph .eq. 8 ) then ! Thompson
+        do k=1,lev
+          kc=lev-k+1
+          do i=1,nxj
+            qt(i,             k) = q1(i,kc,1)
+            qt(i,lev*(ntcw-1)+k) = q1(i,kc,2)
+            qt(i,lev*(ntiw-1)+k) = q1(i,kc,3)
+            qt(i,lev*(ntinc-1)+k)= q1(i,kc,4)
+            qt(i,lev*(ntoz-1)+k) = q1(i,kc,5)
+          enddo
+        enddo
+      else
+        do nc=1,ntrac
+          do k=1,lev
+            kc=lev-k+1
+            do i=1,nxj
               qt(i,lev*(nc-1)+k) = q1(i,kc,nc)
-           enddo
-         enddo
-       enddo
+            enddo
+          enddo
+        enddo
+      endif
 !
        do k=1,lev
 !jh       do k=ktpbl,lev

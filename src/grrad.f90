@@ -1612,10 +1612,10 @@
      &       clouds,cldsa,mtopa,mbota                                   &
      &      )
 !
-        elseif (icmphys == 4 .or. icmphys == 5) then    ! wsm6 & Thompson
+        elseif (icmphys == 6 .or. icmphys == 8) then    ! wsm6 & Thompson
           if ( me == 0 .and. myrank == 0 ) then
-             if ( icmphys == 4 ) print *,'### call WSM6 cloud###' 
-             if ( icmphys == 5 ) print *,'### call Thompson cloud###' 
+             if ( icmphys == 6 ) print *,'### call WSM6 cloud###' 
+             if ( icmphys == 8 ) print *,'### call Thompson cloud###' 
           endif
           
           if (kdt == 1) then

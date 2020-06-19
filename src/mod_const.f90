@@ -58,7 +58,7 @@
            
 
  
-      logical lsimpl,lzadv, yesdia,dopbl, docup, dorad,      &
+      logical lsimpl,yesdia,dopbl, docup, dorad,             &
               dolsp, dograv,doshl, dodry, donnmi,ozon,       &
               restrt,hdiff, cstar, update,doincr,hybrid,     &
               doo3l, dosppt, dospptout,   docgrav
@@ -83,7 +83,7 @@
 ! sit
       logical do_sit
 
-      common/constL/lsimpl,lzadv,yesdia,dopbl,docup,dorad,   &
+      common/constL/lsimpl,yesdia,dopbl,docup,dorad,         &
               dolsp, dograv,doshl, dodry, donnmi,ozon,       &
               restrt,hdiff, cstar, update,doincr,hybrid,     &
               doo3l,ndsladvh2,docgrav,out_green,out_hp,      &

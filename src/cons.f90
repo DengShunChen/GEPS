@@ -45,7 +45,7 @@
       integer i,j,k,n,jj,nn,istat,istat1,istat2,istat3,irstat,ii,Wntyph,nc,Wltyph
       integer ix,jy,ip,istat_r,istat_w,ierror,ltyph,io
       integer ifromtau,itotau,itau,itaui,l,nxj,m,mf,my2
-      integer tflag,Wflag
+      integer tflag,Wflag,ntrac_req
 
       real    pi,rm,rl,rlm,one,onem,r2d, pnm_max,pnmcut,sumreduce
       real    reducefactor,d2r,cew,clon,cns,clat,prslp
@@ -57,14 +57,14 @@
 !
       namelist /modlst/ ksgeo,ptop,ptmean,tfilt,dt,taui,taue            &
                       , tauo,frad,ktpbl,ktshl,ktcup,njump,evaprh,lsimpl &
-                      , lzadv,yesdia,dopbl,docup,dorad,dolsp,dograv     &
+                      , yesdia,dopbl,docup,dorad,dolsp,dograv           &
                       , doshl,dodry,donnmi,idg,jdg,ldiag,nnmiit,nnmivm  &
                       , cutfreq,hdiff,itypbl,cstar,taup,hfilt           &
                       , ptmeans,update,taureg,doincr,numreduce          &
                       , nmcup,nmpbl,nmland,nmshl,cgw,ggdef,gmdef        &
                       , nmgwor,nmgwcv,mtnvar,docgrav                    &
                       , ictm,isol,ico2,iaer,ialb,irad,iems,ntcw         &
-                      , num_p3d,ntoz,iovr_sw,iovr_lw,isubc_sw,isubc_lw  &
+                      , ntoz,iovr_sw,iovr_lw,isubc_sw,isubc_lw          &
                       , sashal,crick_proof,ccnorm,norad_precip,me,doo3l &
                       , ioutsigr,domfc,out_green,isot,ivegsrc           &
                       , otgreen,out_hp,dosppt,dospptout                 &
@@ -496,23 +496,31 @@
    85 numout= numout-1
       close(4)
 !-----------------------------------------------------------------------
-!  for WSM6
+!  for cloud microphysics
 !-----------------------------------------------------------------------
-      if (dolsp .and. ncld .eq. 7) then
-        if ( nmmiph .eq. 1 ) call wsm6init()
-        if ( nmmiph .eq. 2 ) call thompson_init()
-        ntoz=ncld
-        ntcw=2
-        num_p3d=5
-        nclds=2
+      ntrac_req = nmmiph
+      if ( ntoz .gt. 0 ) then
+        ntrac_req = ntrac_req + 1
+        ntoz = ncld
+      endif
+      if ( dolsp ) then
+        if ( ncld .lt. ntrac_req ) then
+           if ( myrank .ge. 0 ) print *,'not enogh number of tracers'
+           call mpe_finalize
+           call dmsexit(-1)
+        endif
+! WSM6
+        if ( nmmiph .eq. 6 ) call wsm6init()
+! Thompson   
+        if ( nmmiph .eq. 8 ) call thompson_init()
       endif
 
 !-----------------------------------------------------------------------
 !  for rrtmg scheme : rad_initialize
 !-----------------------------------------------------------------------
       if (irad .eq. 2) then
-       call rad_initialize (si,lev,ictm, isol, ico2, iaer, ialb,       &
-       iems, ntcw, num_p3d, ntoz, iovr_sw, iovr_lw, isubc_sw, isubc_lw, &
+       call rad_initialize (si,lev,ictm, isol, ico2, iaer, ialb,        &
+       iems, ntcw, nmmiph, ntoz, iovr_sw, iovr_lw, isubc_sw, isubc_lw,  &
        icliq_sw, icice_sw, icliq_lw, icice_lw, sashal, crick_proof,     &
        ccnorm, norad_precip, idate, iflip, me, myrank)
 
@@ -520,7 +528,7 @@
       if(myrank .eq. 0) print *,'ntoz=',ntoz,' iflip=',iflip
       if(myrank .eq. 0) print *,'me=',me,' lev=',lev,' ictm=',ictm,   &
          ' isol=', isol,' ico2=',ico2, ' iaer=',iaer, ' ialb=',ialb,    &
-         ' iems=', iems,' ntcw=',ntcw,' num_p3d=', num_p3d,             &
+         ' iems=', iems,' ntcw=',ntcw,' nmmiph=', nmmiph,               &
          ' iovr_sw=',iovr_sw,' iovr_lw=', iovr_lw,                      &
          ' isubc_sw=',isubc_sw,' isubc_lw=', isubc_lw,                  &
          ' icliq_sw=',icliq_sw,' icice_sw=', icice_sw,                  &

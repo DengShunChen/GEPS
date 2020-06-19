@@ -61,7 +61,6 @@
       taureg=6.
 !
       lsimpl=.true.
-      lzadv=.true.
       yesdia=.true.
 
       dopbl=.true.
@@ -137,6 +136,8 @@
       cmbk = 1.2
 !-for Cloud Micro Physics
       nmmiph=2
+      ntinc=7
+      ntrnc=8
 !
 ! specify the default option for reduced grids
 ! numreduce : -99 for full grids, 1 to 4 proper for reduced grids
@@ -329,7 +330,6 @@
       ialb=0
       iems=1
       ntcw=2
-      num_p3d=4
       me=1
 !---------------------------------------------------------------------------
       irad=2
@@ -342,12 +342,11 @@
       icice_lw = 3  ! lw cloud optical property for cloud ice
       icliq_sw = 1  ! sw cloud optical property for cloud water
       icliq_lw = 1  ! lw cloud optical property for cloud water
-      ntiw=3
-      ntrw=4
+      ntrw=3
+      ntiw=4
       ntsw=5
       ntgl=6
       ntoz=3
-      nclds=1
       ioutsigr=0
 !---------------------------------------------------------------------------
       idate(1)=0

@@ -29,6 +29,7 @@
       use rank
       use index
       use radn, only : ntoz,ntcw,ntiw
+      use const, only: nmmiph
 
       implicit  none
 
@@ -184,7 +185,7 @@
        if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
       do i = 1, nxj
 !  no cloud ice data, simple way to split cloud water and ice temporary
-        if ( hld3(i,k,jj)-273.15 .le. -15. .and. ncld .gt. 3 ) then
+        if ( hld3(i,k,jj)-273.15 .le. -15. .and. nmmiph .gt. 2 ) then
           ntrac = ntiw
         else
           ntrac = ntcw
@@ -196,7 +197,7 @@
 !
 !  read "observed ozone" at sigma levels for doing ozone forecast
 !
-      if(ncld.ge.3)then
+      if(ncld.eq.ntoz)then
       ntrac=ntoz
       do k = 1, levp
         KL=lev-Llist(k)+1
