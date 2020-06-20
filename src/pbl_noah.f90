@@ -9,7 +9,7 @@
                         , ncld,dsigma,islopetyp,slc,sncover,snwdph       &
                         , shdmax,shdmin,snoalb,albedo2                  &
                         , sld,zice,cice,xtice,hpbl,asl,atl,xmu,gfx      &
-                        , kpbl,nmpbl,jj,isot,ivegsrc,sfemis_g )
+                        , kpbl,nmpbl,nmmiph,jj,isot,ivegsrc,sfemis_g )
 !
 !#######################################################################
 !                     subroutine description
@@ -155,7 +155,6 @@
       use rank
       use index
       use radn,   only:ntcw,ntiw,ntinc,ntoz
-      use const,  only:nmmiph
 !ch   use paramt
 
 !
@@ -163,7 +162,7 @@
 !
 ! input & output variable
 !
-      integer  nxj,nx,lev,ktpbl,jj,itype,idg,ncld,km,nmpbl,nc
+      integer  nxj,nx,lev,ktpbl,jj,itype,idg,ncld,km,nmpbl,nmmiph,nc
       real     dt,g,r,cp,xkapa,hltm,ptop,stbo,hice,tice
 
       integer  imx(2)

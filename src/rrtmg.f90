@@ -11,7 +11,7 @@
              nx,nxj,lev,ncld,lprnt,ipt,kdt,solhr,                   &
              uni_cloud,lmfshal,lmfdeep2,                            &
              deltaq,sup,cnvw,cnvc,                                  &
-             ftp,ftp1,fqp,                                          &
+             ftp,ftp1,fqp,nmmiph,                                   &
 !    -  outputs:
              asol,olr,ss,rs,sld,rld,tsflwr,                         &
              ctot,chig,cmid,clow,                                   &
@@ -36,7 +36,7 @@
 ! --- for rrtmg input :
 !
       integer i,k,kc,n
-      integer ntrac,nfxr,nx,nxj,lev,ipt,ncld,kdt
+      integer ntrac,nfxr,nx,nxj,lev,ipt,ncld,kdt,nmmiph,nclds
 ! --- 3d parameters
 !
       real    sigma(lev+1,2),pst(nx),plt(nx,lev),std(nx),tg(nx),  &
@@ -134,7 +134,7 @@
 !    to set variables  for grrad input
 ! -------------------------------------------------------------------
 
-      if(ncld.eq.2)then
+      if(ntoz.eq.0)then
         ntrac=ncld+1
       else
         ntrac=ncld
@@ -184,14 +184,21 @@
        tracer(i,kc,ntoz) = o3l(i,k)*fac_o3
       end do
       end do
+      if ( nmmiph.eq.6 .or. nmmiph.eq.8 ) then
+        nclds=3
 ! for MP WSM6 & Thompson effective radius
-      do k = 1, lev
-        do i = 1, nxj
-          phy3d(i,k,1) = ftp(i,k)
-          phy3d(i,k,2) = ftp1(i,k)
-          phy3d(i,k,3) = fqp(i,k)
+        do k = 1, lev
+          do i = 1, nxj
+            phy3d(i,k,1) = ftp(i,k)
+            phy3d(i,k,2) = ftp1(i,k)
+            phy3d(i,k,3) = fqp(i,k)
+          enddo
         enddo
-      enddo
+      endif
+      if ( nmmiph.eq.2 ) then
+        nclds=1
+        phy3d=0.
+      endif
 !
 !     if (myrank .eq. 0) print *,'### j=',j
 !     if (myrank .eq. 0) print *,'tracer(1,60,3)=',tracer(1,60,3) 

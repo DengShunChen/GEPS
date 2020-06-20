@@ -310,7 +310,6 @@ readalb.o : readalb.f90 mod_index.o mod_rank.o mod_mpe.o
 dcyc2.o : dcyc2.f90 physcons.o machine.o
 #----------------------------------------------------------------------------
 ccoszen.o : ccoszen.f90 mod_index.o
-
 mtxmlp.o : mtxmlp.f90 
 mtxprt.o : mtxprt.f90 mod_rank.o 
 mxslvc.o : mxslvc.f90 mod_fj_pad.o 

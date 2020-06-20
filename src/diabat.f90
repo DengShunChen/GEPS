@@ -181,9 +181,9 @@
       use radn
       use physpara
 ! for wsm6
-      use module_mp_wsm6
+      use module_mp_wsm6,      only: wsm6
 ! for thompson
-      use module_mp_thompson
+      use module_mp_thompson,  only: mp_gt_driver
 !
       use physcons, only :con_rd,con_fvirt,con_rerth,con_rv
 ! for land_noah_new
@@ -1010,7 +1010,7 @@
              nxp,nxjp(j),lev,ncld,lprnt,ipt,kdt,solhr,                     &
              uni_cloud,lmfshal,lmfdeep2,                                   &
              deltaq(1,1,jj),sup,cnvwr(1,1,jj),cnvcr(1,1,jj),               &
-             ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),                         &
+             ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),nmmiph,                  &
 !  ---  outputs:
              asol(1,jj),olr(1,jj),ss(1,jj),rs(1,jj),                       &
              sld(1,jj),rld(1,jj),tsflw(1,jj),                              &
@@ -1126,7 +1126,7 @@
                      , shdmax(1,jj),shdmin(1,jj),snoalb(1,jj),albedo2(1,jj)   &
                      , sld_adj,zice(1,jj),cice(1,jj),xtice(1,jj)            &
                      , hpbl(1,jj),asl(1,1,jj),atl(1,1,jj),xmu(1,jj),gfx(1,jj) &
-                     , kpbl(1,jj),nmpbl,j,isot,ivegsrc,sfemis(1,jj) )
+                     , kpbl(1,jj),nmpbl,nmmiph,j,isot,ivegsrc,sfemis(1,jj) )
 !
 !     update tt by radiation heating/cooling rate: dtrad (k/day)
 !
@@ -1810,7 +1810,9 @@
           enddo
         enddo
 !
-      elseif ( dolsp .and. (nmmiph.eq.6 .or. nmmiph.eq.8) ) then
+      endif !( dolsp .and. nmmiph.eq.2 )
+!
+      if ( dolsp .and. (nmmiph.eq.6 .or. nmmiph.eq.8) ) then
 !
         do k=1,lev
           kc=lev-k+1
