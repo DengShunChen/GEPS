@@ -48,6 +48,7 @@ SRCS  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
 	mpe_transpose_sr1.f90 mpe_transpose_rs1.f90  \
 	mpe_barrier.f90  mpe_init.f90 mpe_finalize.f90 \
 	mpe_gather_io.f90 mpe_scatter_io.f90 sfcuvt.f90 \
+        mp_scheme.f90 module_mp_radar.f90 module_mp_wsm6_fv3.f90 module_mp_thompson_gfs.f90 \
 	landpack.f90 landsfc.f90 landsmc.f90 \
 	rstrandz.f90 rstrantq.f90 fpvs.f90 gpvs.f90 gscond.f90 precpd.f90 precpd_n.f90\
 	sascnv.f90 sascnv_n.f90 sascnv_sa.f90 landsfc_n.f90 mixpbl_n.f90 pbltke_n.f90 \
@@ -78,11 +79,11 @@ SRCS  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
 	cuadjtq_n.f90 cuasc_n.f90 cubasmc_n.f90 cuddraf_n.f90\
 	cudlfs_n.f90 cudtdq_n.f90 cududv_n.f90 cuentr_n.f90 cuflx_n.f90 \
 	cuini_n.f90 cumastr_driv_n.f90 cumastr_n.f90 cutype_n.f90 ntke_func.f90 \
-        get_phi.f90 module_mp_radar.f90 module_mp_wsm6_fv3.f90 lightning_ec.f90 \
+        get_phi.f90 lightning_ec.f90 \
         mod_sitgrid.f90 mod_eos_ocean.f90 mod_sit_vdiff.f90 outsit.f90 \
         mod_sst.f90 mod_netcdf.f90 mod_sit_control.f90 samfdeepcnv.f90 samfshalcnv.f90 \
         moninedmf.f90 mfpbl.f90 unify_reduceintp.f90 unify_reducepick.f90 \
-        gscondp.f90 precpdp.f90 module_mp_thompson_gfs.f90
+        gscondp.f90 precpdp.f90 
 
 OBJS=	${SRCS:.f90=.o} cwb_fftw.o
 
@@ -168,7 +169,7 @@ cem1.o : cem1.f90 mod_paramt.o
 check.o : check.f90 mod_fftcom.o mod_index.o mod_rank.o mod_mpe.o 
 chlen.o : chlen.f90 
 coftrix.o : coftrix.f90 
-cons.o : cons.f90 mod_typhoon.o mod_fftcom.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o mo_convect_tables.o mod_spec.o module_mp_wsm6_fv3.o mod_sit_control.o module_mp_thompson_gfs.o
+cons.o : cons.f90 mod_typhoon.o mod_fftcom.o mod_const.o mod_index.o mod_rank.o mod_mpe.o mod_param.o mo_convect_tables.o mod_spec.o mod_sit_control.o
 correct.o : correct.f90 mod_index.o 
 ccoszen.o : ccoszen.f90 mod_index.o
 coszenpm.o : coszenpm.f90 mod_index.o 
@@ -184,7 +185,7 @@ cwb_fftw.o: cwb_fftw.c
 dayfil.o : dayfil.f90 mod_rank.o 
 days.o : days.f90 
 dcbase.o : dcbase.f90 
-diabat.o : diabat.f90 mod_index.o mod_rank.o mod_mpe.o mod_radn.o physpara.o module_mp_wsm6_fv3.o mod_sitgrid.o mod_sit_vdiff.o mod_eos_ocean.o mod_netcdf.o mod_sit_control.o physcons.o mod_sst.o namelist_soilveg.o module_mp_thompson_gfs.o
+diabat.o : diabat.f90 mod_index.o mod_rank.o mod_mpe.o mod_radn.o physpara.o mod_sitgrid.o mod_sit_vdiff.o mod_eos_ocean.o mod_netcdf.o mod_sit_control.o physcons.o mod_sst.o namelist_soilveg.o
 diagrd.o : diagrd.f90 mod_index.o mod_rank.o mod_mpe.o 
 dmsread.o : dmsread.f90 mod_index.o mod_rank.o mod_mpe.o 
 dmswrit.o : dmswrit.f90 mod_index.o mod_rank.o mod_mpe.o 
@@ -271,7 +272,7 @@ mpe_transpose_rs1.o : mpe_transpose_rs1.f90
 mpe_transpose_rs.o : mpe_transpose_rs.f90 
 mpe_transpose_sr1.o : mpe_transpose_sr1.f90 
 mpe_transpose_sr.o : mpe_transpose_sr.f90 
-mpe_unify.o : mpe_unify.f90 mod_index.o mod_rank.o mod_mpe.o 
+mpe_unify.o : mpe_unify.f90 mod_index.o mod_rank.o mod_mpe.o
 #---------------------------------------------------------------------------------------
 #  for rrtmg radiation - new programs
 #---------------------------------------------------------------------------------------
@@ -479,10 +480,15 @@ cuini_n.o : cuini_n.f90 mo_constants.o shr_kind_mod.o
 cumastr_n.o : cumastr_n.f90 mo_cumulus_flux.o mo_constants.o shr_kind_mod.o mod_index.o mod_mpe.o mod_rank.o
 ntke_func.o : ntke_func.f90 mo_constants.o
 #xb110<
+#--------------------------------------------------------------------------------------
+#  for cloud Microphysics
+#--------------------------------------------------------------------------------------
 get_phi.o : get_phi.f90
+mp_scheme.o : mp_scheme.f90 module_mp_wsm6_fv3.o module_mp_thompson_gfs.o
 module_mp_radar.o : module_mp_radar.f90
 module_mp_wsm6_fv3.o : module_mp_wsm6_fv3.f90 physcons.o module_mp_radar.o
 module_mp_thompson_gfs.o : module_mp_thompson_gfs.f90 physcons.o module_mp_radar.o
+#
 #xb110, for lightning scheme>
 lightning_ec.o: lightning_ec.f90 physcons.o  mod_rank.o mod_mpe.o
 #----------SIT---------------

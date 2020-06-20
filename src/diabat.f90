@@ -180,10 +180,6 @@
 !-----------------------------------------------------------------------
       use radn
       use physpara
-! for wsm6
-      use module_mp_wsm6,      only: wsm6
-! for thompson
-      use module_mp_thompson,  only: mp_gt_driver
 !
       use physcons, only :con_rd,con_fvirt,con_rerth,con_rv
 ! for land_noah_new
@@ -329,8 +325,8 @@
       logical dosppt
 
 ! for MP WSM6 & Thompson
-      logical uni_cloud,lmfshal,lmfdeep2,lradar
-      real    sr(nxp,my_max),refl10(nxp,lev)
+      logical uni_cloud,lmfshal,lmfdeep2
+      real    sr(nxp,my_max)
 !---------------------------------------------------------------------------
 !byl      real      avgdrag_u(my,lev),avgdrag_v(my,lev),drag_u(lev),drag_v(lev)
       real      drag_u(lev),drag_v(lev)
@@ -487,7 +483,6 @@
       uni_cloud=.false. !if using SHOC scheme, it should be .true.
       lmfshal=( nmshl .eq. 2 .or. nmshl .eq. 3 ) ! .true. if using mass-flux shallow convection
       lmfdeep2=( nmcup .eq. 6 ) ! .true. if using scale-aware deep con
-      lradar=.false.
 
 
 !     define local constants
@@ -523,7 +518,6 @@
       p0k   = 1000.0**xkapa
       op0k  = 1.0/p0k
       ptopk = ptop**xkapa
-      icem  =  4./3.*tpi*3.2768*1.e-14*890.
 !
 !     define local control variables
 !
@@ -582,22 +576,15 @@
 
       do k = 1, lev
         do i = 1, nxp
-
           utgwc(i,k)  = 0.
           vtgwc(i,k)  = 0.
 !for pdfcloud
           cnvw(i,k) = 0.
           cnvc(i,k) = 0.
-
-!
 !for hydrometeor
           qtr(i,k)  = 0.
           qtc(i,k)  = 0.
           qti(i,k)  = -999.9
-          qtsw(i,k) = 0.
-          qtrw(i,k) = 0.
-          qtgl(i,k) = 0.
-          refl10(i,k)= 0. ! no radar for now
         enddo
       enddo
 !
@@ -1814,65 +1801,16 @@
 !
       if ( dolsp .and. (nmmiph.eq.6 .or. nmmiph.eq.8) ) then
 !
-        do k=1,lev
-          kc=lev-k+1
-          do i=1,nxj
-            prsl(i,kc) = plt(i,k,jj)*100. ! change to Pa
-            del(i,kc) = (dsigma(k,1)*pst(i,jj)+dsigma(k,2))*100.  !change to Pa
-            qtc(i,kc) = qt(i,             k,jj)
-            qtr(i,kc) = qt(i,(ntcw-1)*lev+k,jj)
-            qtrw(i,kc)= qt(i,(ntrw-1)*lev+k,jj)
-            qti(i,kc) = qt(i,(ntiw-1)*lev+k,jj)
-            qtsw(i,kc)= qt(i,(ntsw-1)*lev+k,jj)
-            qtgl(i,kc)= qt(i,(ntgl-1)*lev+k,jj)
-            ttc(i,kc) = tt(i,             k,jj)
-          enddo
-        enddo
-!          WSM6
-           if ( nmmiph .eq. 6 )                                    &
-           call wsm6(ttc,phii,qtc,qtr,qtrw,qti,qtsw,qtgl,          &
-                     prsl,del,dta,rlsp(1,jj),sr(1,jj),             &
-                     islimsk,ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj), &
-                     1,nxp,1,lev,1,nxjp(j),1,lev)
-!          Thompson
-           if ( nmmiph .eq. 8 )then
-             do k=1,lev
-               kc=lev-k+1
-               do i=1,nxj
-                 ntnc(i,kc,1) = qt(i,(ntinc-1)*lev+k,jj)           &
-                      +max(0.,qti(i,kc)-q0(i,(ntiw-1)*lev+k))/icem
-                 ntnc(i,kc,2) = qt(i,(ntrnc-1)*lev+k,jj)
-               enddo
-             enddo
-             call mp_gt_driver(1,nxp,1,lev,1,nxjp(j),1,lev,        &
-                     qtc,qtr,qtrw,qti,qtsw,qtgl,                   &
-                     ntnc(1,1,1),ntnc(1,1,2),                      &
-                     ttc,prsl,del,dta,kdt,rlsp(1,jj),sr(1,jj),     &
-                     islimsk,refl10,lradar,                        &
-                     ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),me,phii)
-             do k=1,lev
-               kc=lev-k+1
-               do i=1,nxj
-                 qt(i,(ntinc-1)*lev+k,jj)=ntnc(i,kc,1)
-                 qt(i,(ntrnc-1)*lev+k,jj)=ntnc(i,kc,2)
-               enddo
-             enddo
-           endif
-        do i=1,nxj
-          rlsp(i,jj) = rlsp(i,jj) * 1000.         ! mm/call
-        enddo
-        do k=1,lev
-          kc=lev-k+1
-          do i=1,nxj
-            qt(i,      k,jj) = qtc(i,kc)
-            qt(i,  lev+k,jj) = qtr(i,kc)
-            qt(i,2*lev+k,jj) = qti(i,kc)
-            qt(i,3*lev+k,jj) = qtrw(i,kc)
-            qt(i,4*lev+k,jj) = qtsw(i,kc)
-            qt(i,5*lev+k,jj) = qtgl(i,kc)
-            tt(i,      k,jj) = ttc(i,kc)
-          enddo
-        enddo
+      call mp_scheme                                                   &
+!  ---  inputs:
+           ( nmmiph,nxp,nxjp(j),lev,ncld,plt(1,1,jj),pst(1,jj),dsigma, &
+             phii,islimsk,q0,kdt,ntcw,ntrw,ntiw,ntsw,ntgl,             &
+             ntinc,ntrnc,tpi,me,dta,                                   &
+!  ---  inputs/outputs:
+             tt(1,1,jj),qt(1,1,jj),                                    &
+!  ---  outputs:
+             ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),rlsp(1,jj),sr(1,jj) )
+!    
       endif
 !
 !

@@ -35,10 +35,6 @@
       USE mo_cumulus_flux, only : cuparam
       USE mo_constants,    only : inicon
       USE mo_convect_tables, only : set_lookup_tables
-! for WSM6
-      use module_mp_wsm6, only : wsm6init
-! for Thompson
-      use module_mp_thompson, only : thompson_init
 
       implicit  none
 
@@ -496,7 +492,7 @@
    85 numout= numout-1
       close(4)
 !-----------------------------------------------------------------------
-!  for cloud microphysics
+!  for cloud microphysics initialization
 !-----------------------------------------------------------------------
       ntrac_req = nmmiph
       if ( ntoz .gt. 0 ) then
@@ -509,10 +505,9 @@
            call mpe_finalize
            call dmsexit(-1)
         endif
-! WSM6
-        if ( nmmiph .eq. 6 ) call wsm6init()
-! Thompson   
-        if ( nmmiph .eq. 8 ) call thompson_init()
+!
+        if ( nmmiph.eq.6 .or. nmmiph.eq.8 ) call mp_init(nmmiph,myrank)
+!
       endif
 
 !-----------------------------------------------------------------------

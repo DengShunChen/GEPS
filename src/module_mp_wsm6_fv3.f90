@@ -204,9 +204,9 @@ CONTAINS
                                 islmski,                                & !rsun 
                                 kts, kte, i)
             do k=kts,kte
-              re_cloud(i,k) = MAX(2.51E-6,  MIN(re_qc(k),  50.E-6))
-              re_ice(i,k)   = MAX(10.01E-6, MIN(re_qi(k), 125.E-6))
-              re_snow(i,k)  = MAX(25.E-6,   MIN(re_qs(k), 999.E-6))
+              re_cloud(i,k) = MAX(2.51E-6,  MIN(re_qc(k),  50.E-6))*1.e6
+              re_ice(i,k)   = MAX(10.01E-6, MIN(re_qi(k), 125.E-6))*1.e6
+              re_snow(i,k)  = MAX(25.E-6,   MIN(re_qs(k), 999.E-6))*1.e6
             enddo 
           enddo   
         endif     ! has_reqc, etc...
