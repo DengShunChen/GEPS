@@ -64,14 +64,16 @@
 !  ---  inputs/outputs:
       real,     intent(inout) :: tt(nx,lev),qt(nx,lev*ncld)
 !  ---  outputs:
-      real,     intent(inout) :: re_cloud(nx,lev),re_ice(nx,lev),        &
-                                 re_snow(nx,lev),rlsp(nx),sr(nx)
+      real,     intent(inout)   :: re_cloud(nx,lev),re_ice(nx,lev),    &
+                                   re_snow(nx,lev)
+      real,     intent(inout)   :: rlsp(nx),sr(nx)
 !  ---  local arrays:
       integer   kc,k,i
       real      prsl(nx,lev),del(nx,lev)
       real      ttc(nx,lev),qtc(nx,lev),qtr(nx,lev),qtrw(nx,lev),      &
                 qti(nx,lev),qtsw(nx,lev),qtgl(nx,lev),ntnc(nx,lev,2),  &
                 refl10(nx,lev)
+      real      rainncv(nx),snowncv(nx),graupelncv(nx)
       real      icem
       logical   lradar
 !
@@ -94,7 +96,7 @@
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
-            prsl(i,kc) = plt(i,k)*100. ! change to Pa
+            prsl(i,kc)= plt(i,k)*100. ! change to Pa
             del(i,kc) = (dsigma(k,1)*pst(i)+dsigma(k,2))*100. !change to Pa
             qtc(i,kc) = qt(i,             k)
             qtr(i,kc) = qt(i,(ntcw-1)*lev+k)
@@ -105,11 +107,12 @@
             ttc(i,kc) = tt(i,             k)
           enddo
         enddo
+!
 !          WSM6
            if ( nmmiph .eq. 6 )                                        &
            call wsm6(ttc,phii,qtc,qtr,qtrw,qti,qtsw,qtgl,prsl,del,     &
-                     dta,rlsp,sr,islimsk,re_cloud,re_ice,re_snow,        &
-                     1,nx,1,lev,1,nxj,1,lev)
+                     dta,rainncv,sr,islimsk,re_cloud,re_ice,re_snow,   &
+                     1,nx,1,lev,1,nxj,1,lev,snowncv,graupelncv)
 !          Thompson
            if ( nmmiph .eq. 8 )then
              do k=1,lev
@@ -122,8 +125,8 @@
              enddo
              call mp_gt_driver(1,nx,1,lev,1,nxj,1,lev,qtc,qtr,qtrw,    &
                      qti,qtsw,qtgl,ntnc(1,1,1),ntnc(1,1,2),ttc,        &
-                     prsl,del,dta,kdt,rlsp,sr,islimsk,refl10,lradar,   &
-                     re_cloud,re_ice,re_snow,me,phii)
+                     prsl,del,dta,kdt,rainncv,sr,islimsk,refl10,       &
+                     lradar,re_cloud,re_ice,re_snow,me,phii)
              do k=1,lev
                kc=lev-k+1
                do i=1,nxj
@@ -132,22 +135,25 @@
                enddo
              enddo
            endif
+!
         do i=1,nxj
-          rlsp(i) = rlsp(i) * 1000.         ! mm/call
+          rlsp(i) = rainncv(i) + snowncv(i) + graupelncv(i)
         enddo
+!
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
             qt(i,      k) = qtc(i,kc)
-            qt(i,  lev+k) = qtr(i,kc)
-            qt(i,2*lev+k) = qti(i,kc)
-            qt(i,3*lev+k) = qtrw(i,kc)
-            qt(i,4*lev+k) = qtsw(i,kc)
-            qt(i,5*lev+k) = qtgl(i,kc)
+            qt(i,(ntcw-1)*lev+k) = qtr(i,kc)
+            qt(i,(ntrw-1)*lev+k) = qtrw(i,kc)
+            qt(i,(ntiw-1)*lev+k) = qti(i,kc)
+            qt(i,(ntsw-1)*lev+k) = qtsw(i,kc)
+            qt(i,(ntgl-1)*lev+k) = qtgl(i,kc)
             tt(i,      k) = ttc(i,kc)
           enddo
         enddo
 
+      return
 !--------------------------
       end subroutine mp_scheme
 !--------------------------

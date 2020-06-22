@@ -80,6 +80,7 @@ CONTAINS
                  ,re_cloud, re_ice,   re_snow                      &  ! for radiation   
                  ,ims,ime,kms,kme                                  &
                  ,its,ite,kts,kte                                  &
+                 ,snowncv,graupelncv                               &
                                                                    )
 !-------------------------------------------------------------------
   IMPLICIT NONE
@@ -122,10 +123,14 @@ CONTAINS
                                                        refl_10cm
 !+---+-----------------------------------------------------------------+
 
-  REAL, DIMENSION( ims:ime )::                              snow, &
-                                                         snowncv
-  REAL, DIMENSION( ims:ime ) ::                          graupel, &
-                                                      graupelncv
+  REAL, DIMENSION( ims:ime ), OPTIONAL,                           &
+        INTENT(INOUT) ::                                 snowncv
+
+  REAL, DIMENSION( ims:ime ), OPTIONAL,                           &
+        INTENT(INOUT) ::                              graupelncv
+
+  REAL, DIMENSION( ims:ime ) ::                             snow, &
+                                                         graupel
 ! LOCAL VAR
   REAL, DIMENSION( its:ite , kts:kte, 2 ) ::   qci
   REAL, DIMENSION( its:ite , kts:kte, 3 ) ::   qrs
@@ -750,7 +755,7 @@ CONTAINS
         fallsum_qsi = fall(i,kts,2)+fallc(i,kts)
         fallsum_qg = fall(i,kts,3)
         if(fallsum.gt.0.) then
-          rainncv(i) = fallsum*delz(i,kts)/denr*dtcld + rainncv(i)
+          rainncv(i) = fallsum*delz(i,kts)/denr*dtcld*1000. + rainncv(i)
         endif
         if(fallsum_qsi.gt.0.) then
           tstepsnow(i)   = fallsum_qsi*delz(i,kts)/denr*dtcld                  &

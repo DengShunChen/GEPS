@@ -284,7 +284,6 @@ module_bfmicrophysics.o : module_bfmicrophysics.f90 machine.o funcphys.o physcon
 qmax2d.o : qmax2d.f90 mod_index.o
 iw3jdn.o : iw3jdn.f90
 w3fs26.o : w3fs26.f90
-physcons.o : physcons.f90 machine.o
 funcphys.o : funcphys.f90 physcons.o machine.o
 physpara.o : physpara.f90 machine.o
 iounitdef.o : iounitdef.f90
