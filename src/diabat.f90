@@ -784,31 +784,26 @@
       endif
 !
 !
-! keep the old control values
+! keep the old control values for SPPT
 !
-      if (dosppt) then
-!
+    if (dosppt) then
       do jj=1,jlistnum
-       j=jlist1(jj)
-       nxj=nxdef_2d(j)
-!
-      do k=1,lev
-      do i=1,nxj
-      ut_sppt_old(i,k,jj)=ut(i,k,jj)
-      vt_sppt_old(i,k,jj)=vt(i,k,jj)
-      tt_sppt_old(i,k,jj)=tt(i,k,jj)
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        do k=1,lev
+          do i=1,nxj
+            ut_sppt_old(i,k,jj)=ut(i,k,jj)
+            vt_sppt_old(i,k,jj)=vt(i,k,jj)
+            tt_sppt_old(i,k,jj)=tt(i,k,jj)
+          enddo
+        enddo
+        do k = 1, lev*ncld
+          do i = 1, nxj
+            qt_sppt_old(i,k,jj)=qt(i,k,jj)
+          enddo
+        enddo
       enddo
-      enddo
-!
-      do k = 1, lev*ncld
-      do i = 1, nxj
-      qt_sppt_old(i,k,jj)=qt(i,k,jj)
-      enddo
-      enddo
-!
-      enddo
-!
-      endif ! end dosppt if stetement
+    endif ! end dosppt if stetement
 !
 !
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -1065,14 +1060,15 @@
                      , km_soil,smc(1,1,jj),stc(1,1,jj),canopy(1,jj)           &
                      , runoff(1,jj),sigmaf(1,jj),istyp(1,jj),ivegtyp(1,jj)    &
                      , wlt,ref,tsat,dfkt,xktk,dfk )
-!
-          if (dosppt) then
+
+! keep the old control values for SPPT
+        if (dosppt) then
           do k = 1, lev*ncld
-          do i = 1, nxj
-            qt_shum_old(i,k,jj)=qt(i,k,jj)
+            do i = 1, nxj
+              qt_shum_old(i,k,jj)=qt(i,k,jj)
+            enddo
           enddo
-          enddo
-          endif ! end of dosppt if stetement
+        endif ! end of dosppt if stetement
 !
       if ( dopbl .and. (nmpbl.eq.2) .and. (nmland.eq.1))                      &
          call pbltke_n ( nxjp(j),nxp,lev,ktpbl,dta,grav,rgas,cp,xkapa,hltm,ptop &
@@ -1147,7 +1143,7 @@
 ! SHUM process
 !  John Tseng
 !
-      if (dosppt) then
+    if (dosppt) then
 ! there's no need to add perturbation for ozone tracer. (
 ! modified by PangYen Liu
       if (ntoz .eq. 0 ) then
@@ -1181,7 +1177,7 @@
 !!      enddo
 !!      enddo
 !
-      endif ! end dosppt if stetement
+    endif ! end dosppt if stetement
 
 !
       if(dograv .and. (nmgwor .eq. 1) )                                &
@@ -2267,20 +2263,19 @@
 ! sppt tendencies
 !        John Tseng
 !
-      if (dosppt) then
-!
+    if (dosppt) then
       do jj=1,jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
-      do k=1,lev
-      do i=1,nxj
-      ru=sppt3d(i,k,jj)
-      ttp(i,k,jj)=ru*(tt(i,k,jj)-tt_sppt_old(i,k,jj)) !write out for checking
-      ut(i,k,jj)=(1+ru)*ut(i,k,jj)-ru*ut_sppt_old(i,k,jj)
-      vt(i,k,jj)=(1+ru)*vt(i,k,jj)-ru*vt_sppt_old(i,k,jj)
-      tt(i,k,jj)=(1+ru)*tt(i,k,jj)-ru*tt_sppt_old(i,k,jj)
-      enddo
-      enddo
+        do k=1,lev
+          do i=1,nxj
+            ru=sppt3d(i,k,jj)
+            ttp(i,k,jj)=ru*(tt(i,k,jj)-tt_sppt_old(i,k,jj)) !write out for checking
+            ut(i,k,jj) = (1+ru)*ut(i,k,jj) - ru*ut_sppt_old(i,k,jj)
+            vt(i,k,jj) = (1+ru)*vt(i,k,jj) - ru*vt_sppt_old(i,k,jj)
+            tt(i,k,jj) = (1+ru)*tt(i,k,jj) - ru*tt_sppt_old(i,k,jj)
+          enddo
+        enddo
 ! there's no need to add perturbation for ozone tracer. (
 ! modified by PangYen Liu
       if (ntoz .eq. 0 ) then
@@ -2288,18 +2283,17 @@
       else
         nk = ncld-1
       endif
-!
+
       do n=1,nk
         do k=1,lev
           kk = (n-1)*lev+k
           do i=1,nxj
             ru=sppt3d(i,k,jj)
-            qt(i,kk,jj)=(1+ru)*qt(i,kk,jj)-ru*qt_sppt_old(i,kk,jj)
-            if (qt(i,kk,jj).lt.0) qt(i,kk,jj)=0.
+            qt(i,kk,jj) = (1+ru)*qt(i,kk,jj) - ru*qt_sppt_old(i,kk,jj)
+            if (qt(i,kk,jj).lt.0) qt(i,kk,jj) = 0.
           enddo
         enddo
       enddo
-!
 !!      do k=1,lev
 !!      do i=1,nxj
 !!      ru=sppt3d(i,k,jj)
@@ -2314,10 +2308,8 @@
 !!      if (qt(i,k,jj).lt.0) qt(i,k,jj)=0.
 !!      enddo
 !!      enddo
-!
       enddo
-!
-      endif ! end dosppt if stetement
+    endif ! end dosppt if stetement
 !
 !--------------------------------------------------------------------------------
 !     update o3l to qt

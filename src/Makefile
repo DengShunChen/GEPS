@@ -184,7 +184,7 @@ ifneq (clean,$(findstring clean,$(MAKECMDGOALS)))
 endif
 
 # old method for make dependecies
-# include ./make.dependency
+#include ./make.dependency
 
 %.o: %.mod
 fftx.o : fftx.f90 

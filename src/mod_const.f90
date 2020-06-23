@@ -1,189 +1,177 @@
-      module const
-!
+  module const
 ! modify to f90 by C-H Lee and sort by River Chen in 2015
-!
-      use param
-
-      implicit none
-
-      public
-
-      real, dimension(:)  , allocatable, save  :: aki,bki
-      real, dimension(:,:), allocatable, save  :: sigma,dsigma
+    use param
+    implicit none
  
-      integer, allocatable, save ::  mlsort(:,:)
-      integer, allocatable, save ::  msort(:),lsort(:)
-
-      integer numout,ipadding,jm2,ksgeo,                     &
-              ktpbl,ktshl,ktcup,julian,ldiag,idg,jdg,njump,  &
-              nnmiit,nnmivm,itypbl,                          &
-              nmgwor,nmgwcv,mtnvar,                          &
-              ktrop,ncpu,nmcup,nmpbl,nmland,numreduce,nmshl
-
-      common/constI/                                         &
-              numout,ipadding,jm2,ksgeo,                     &
-              ktpbl,ktshl,ktcup,julian,ldiag,idg,jdg,njump,  &
-              nnmiit,nnmivm,itypbl,                          &
-              nmgwor,nmgwcv,mtnvar,                          &
-              ktrop,ncpu,nmcup,nmpbl,nmland,numreduce,nmshl
-
-      real, dimension(:), allocatable, save  ::              &
-           weight,sinl,cosl,cor,onocos,sig,dsig,             &
-           tmean,spalm,eigval,pmcor,tmeans
-
-      real, dimension(:,:), allocatable, save  :: evecin,    &
-           evectr,arrhyd,arsddt,tmcor
-
-      real                                                   &
-           capa,cp,rad,radsq,grav,omega,rgas,stbo,s0,hltm,   &
-           ptop,ptmean,tfilt,dt,tau,taui,taue,tauo,          &
-           hours,frad,evaprh,qgini,                          &
-           tice,hice,cutfreq,taup,hfilt,ptmeans,             &
-           taureg,cgw,domfc,otgreen,cgwd,cmbk
-!sit
-      real fsit           !fsit>0., turn on sit_vdiff when mod(tau/fsit)<0.001
-                          !default fsit<=0., turn on sit_vdiff every tau
-           
+    public
  
-      common/constR/                                         &
-           capa,cp,rad,radsq,grav,omega,rgas,stbo,s0,hltm,   &
-           ptop,ptmean,tfilt,dt,tau,taui,taue,tauo,          &
-           hours,frad,evaprh,qgini,                          &
-           tice,hice,cutfreq,taup,hfilt,ptmeans,             &
-           taureg,cgw,fsit,domfc,otgreen
-! sppt parameters
-      real                                                       &
-           de_corretime_500,de_corretime_1000,de_corretime_2000, &
-           facsppt500,facsppt1000,facsppt2000
-           
-
+    real, dimension(:)  , allocatable, save  :: aki,bki
+    real, dimension(:,:), allocatable, save  :: sigma,dsigma
  
-      logical lsimpl,lzadv, yesdia,dopbl, docup, dorad,      &
-              dolsp, dograv,doshl, dodry, donnmi,ozon,       &
-              restrt,hdiff, cstar, update,doincr,hybrid,     &
-              doo3l, dosppt, dospptout,   docgrav
-      logical out_green,out_hp
-!for Semi-Lagrangain
-      logical ndsladvh2
-
-!for horizontal diffusion
-      integer hdk1,hdk2
-!for pdf cloud
-      logical pdfcloud
-!for ncep ice thickness
-      logical ncepicthk
-
-!for 2dMPI
-      logical idg_jdg_owner
-      integer idg_listnum,jdg_listnum
-! daily forecast sst, sea ice fraction, water equivlent snow depth, time weighting
-      logical ldailyFCTsst,ldailyFCTicesndpt,lFCTweight
-      integer dailyClm_option
-      logical lopgsst
-! sit
-      logical do_sit
-
-      common/constL/lsimpl,lzadv,yesdia,dopbl,docup,dorad,   &
-              dolsp, dograv,doshl, dodry, donnmi,ozon,       &
-              restrt,hdiff, cstar, update,doincr,hybrid,     &
-              doo3l,ndsladvh2,docgrav,out_green,out_hp,      &
-              ldailyFCTsst,ldailyFCTicesndpt,lFCTweight,     &
-              dailyClm_option,lopgsst,do_sit
-
+    integer, allocatable, save ::  mlsort(:,:)
+    integer, allocatable, save ::  msort(:),lsort(:)
  
-      character*80 ifilin,cwbout,bckfile,namlsts, &
-              ifilout,crdate,ocards,phyout,cntrl, &
-              ifilin_ncep,ifilin_sst,ifilin_nc,   &
-              ifilin_ClmANA,ifilin_ClmFCT
-
-      common/files/ifilin,cwbout,bckfile,namlsts, &
-              ifilout,crdate,ocards,phyout,cntrl, &
-              ifilin_ncep,ifilin_sst,ifilin_nc,   &
-              ifilin_ClmANA,ifilin_ClmFCT
+    integer :: numout,ipadding,jm2,ksgeo,                     &
+            ktpbl,ktshl,ktcup,julian,ldiag,idg,jdg,njump,  &
+            nnmiit,nnmivm,itypbl,                          &
+            nmgwor,nmgwcv,mtnvar,                          &
+            ktrop,ncpu,nmcup,nmpbl,nmland,numreduce,nmshl
  
-      character(len=16), dimension(:), allocatable, save  :: outdir
+    common/constI/                                         &
+            numout,ipadding,jm2,ksgeo,                     &
+            ktpbl,ktshl,ktcup,julian,ldiag,idg,jdg,njump,  &
+            nnmiit,nnmivm,itypbl,                          &
+            nmgwor,nmgwcv,mtnvar,                          &
+            ktrop,ncpu,nmcup,nmpbl,nmland,numreduce,nmshl
+ 
+    real, dimension(:), allocatable, save  ::              &
+         weight,sinl,cosl,cor,onocos,sig,dsig,             &
+         tmean,spalm,eigval,pmcor,tmeans
+ 
+    real, dimension(:,:), allocatable, save  :: evecin,    &
+         evectr,arrhyd,arsddt,tmcor
+ 
+    real ::                                                &
+         capa,cp,rad,radsq,grav,omega,rgas,stbo,s0,hltm,   &
+         ptop,ptmean,tfilt,dt,tau,taui,taue,tauo,          &
+         hours,frad,evaprh,qgini,                          &
+         tice,hice,cutfreq,taup,hfilt,ptmeans,             &
+         taureg,cgw,domfc,otgreen,cgwd,cmbk
+    !sit
+    real :: fsit         !fsit>0., turn on sit_vdiff when mod(tau/fsit)<0.001
+                         !default fsit<=0., turn on sit_vdiff every tau
+          
+ 
+    common/constR/                                         &
+         capa,cp,rad,radsq,grav,omega,rgas,stbo,s0,hltm,   &
+         ptop,ptmean,tfilt,dt,tau,taui,taue,tauo,          &
+         hours,frad,evaprh,qgini,                          &
+         tice,hice,cutfreq,taup,hfilt,ptmeans,             &
+         taureg,cgw,fsit,domfc,otgreen
+    ! sppt parameters
+    real  :: de_corretime_500,de_corretime_1000,de_corretime_2000, &
+             facsppt500,facsppt1000,facsppt2000
+               
+    logical :: lsimpl,lzadv, yesdia,dopbl, docup, dorad,      &
+            dolsp, dograv,doshl, dodry, donnmi,ozon,       &
+            restrt,hdiff, cstar, update,doincr,hybrid,     &
+            doo3l, dosppt, dospptout,   docgrav
+    logical :: out_green,out_hp
 
-!dms34
-      integer*8      idtg,idtg2
-      common/constI8/idtg,idtg2
+    !for Semi-Lagrangain
+    logical :: ndsladvh2
 
-!dms34
-!ggdef, gmdef, gsdef : grid system definition for gg, gm, gs
-      character*4     ggdef,gmdef,gsdef
-      common/dmskey34/ggdef,gmdef,gsdef
+    !for horizontal diffusion
+    integer :: hdk1,hdk2
 
-      real, dimension(:,:,:), allocatable, save  :: poly,dpoly
-      real, dimension(:,:)  , allocatable, save  :: eps4,wdfac,wcfac
-      real, dimension(:)    , allocatable, save  :: cim
-      real, dimension(:)    , allocatable, save  :: eps4L   ! for 2dMPI
+    !for pdf cloud
+    logical :: pdfcloud
 
-      contains 
+    !for ncep ice thickness
+    logical :: ncepicthk
 
-         subroutine allocate_const_array
+    !for 2dMPI
+    logical :: idg_jdg_owner
+    integer :: idg_listnum,jdg_listnum
 
-           integer  ierr
+    ! daily forecast sst, sea ice fraction, water equivlent snow depth, time weighting
+    logical :: ldailyFCTsst,ldailyFCTicesndpt,lFCTweight
+    integer :: dailyClm_option
+    logical :: lopgsst
 
-           allocate (poly(jtrun,my/2,jtmax),dpoly(jtrun,my/2,jtmax),          &
-                     eps4(jtrun,jtmax),wdfac(jtrun,jtmax),wcfac(jtrun,jtmax), &
-                     cim(jtmax), stat=ierr)
-           if (ierr/= 0) then
-               write(6,*) 'mod_const : allocate fail 1 '
-               stop
-           end if
+    ! sit
+    logical :: do_sit
 
-           allocate (aki(lev+1),bki(lev+1),                         &
-                     sigma(lev+1,2),dsigma(lev,2), stat= ierr)
+    common/constL/lsimpl,lzadv,yesdia,dopbl,docup,dorad,   &
+            dolsp, dograv,doshl, dodry, donnmi,ozon,       &
+            restrt,hdiff, cstar, update,doincr,hybrid,     &
+            doo3l,ndsladvh2,docgrav,out_green,out_hp,      &
+            ldailyFCTsst,ldailyFCTicesndpt,lFCTweight,     &
+            dailyClm_option,lopgsst,do_sit
 
-           if (ierr/= 0) then
-               write(6,*) 'mod_const : allocate fail 2 '
-               stop
-           end if
 
-           allocate (mlsort(jtrun,jtrun),msort(mlmax),lsort(mlmax), &
-                     stat= ierr)
+    character(len=80) ifilin,cwbout,bckfile,namlsts, &
+            ifilout,crdate,ocards,phyout,cntrl, &
+            ifilin_ncep,ifilin_sst,ifilin_nc,   &
+            ifilin_ClmANA,ifilin_ClmFCT
 
-           if (ierr/= 0) then
-               write(6,*) 'mod_const : allocate fail 3 '
-               stop
-           end if
+    common/files/ifilin,cwbout,bckfile,namlsts, &
+            ifilout,crdate,ocards,phyout,cntrl, &
+            ifilin_ncep,ifilin_sst,ifilin_nc,   &
+            ifilin_ClmANA,ifilin_ClmFCT
 
-           allocate (weight(my),sinl(my),cosl(my),           &
-           cor(my),onocos(my),sig(lev+1),dsig(lev),          &
-           tmean(lev),spalm(lev),eigval(lev),evecin(lev,lev),&
-           evectr(lev,lev),arrhyd(lev,lev),arsddt(lev,lev),  &
-           pmcor(lev),tmcor(lev,lev),tmeans(lev),            &
-                     stat= ierr)
+    character(len=16), dimension(:), allocatable, save  :: outdir
 
-           if (ierr/= 0) then
-               write(6,*) 'mod_const : allocate fail 4 '
-               stop
-           end if
+    !dms34
+    integer(kind=8) ::  idtg,idtg2
+    common/constI8/idtg,idtg2
 
-!CWB2015
-           sig=0.
+    !dms34
+    !ggdef, gmdef, gsdef : grid system definition for gg, gm, gs
+    character(len=4)  ::  ggdef,gmdef,gsdef
+    common/dmskey34/ggdef,gmdef,gsdef
 
-           allocate (outdir(nout),stat= ierr)
+    real, dimension(:,:,:), allocatable, save  :: poly,dpoly
+    real, dimension(:,:)  , allocatable, save  :: eps4,wdfac,wcfac
+    real, dimension(:)    , allocatable, save  :: cim
+    real, dimension(:)    , allocatable, save  :: eps4L   ! for 2dMPI
 
-           if (ierr/= 0) then
-               write(6,*) 'mod_const : allocate fail 5 '
-               stop
-           end if
+    contains 
 
-           return
+      subroutine allocate_const_array
+        implicit none
+        integer  ierr
 
-         end subroutine
+        allocate (poly(jtrun,my/2,jtmax),dpoly(jtrun,my/2,jtmax),          &
+                  eps4(jtrun,jtmax),wdfac(jtrun,jtmax),wcfac(jtrun,jtmax), &
+                  cim(jtmax), stat=ierr)
+        if (ierr/= 0) then
+            write(6,*) 'mod_const : allocate fail 1 '
+            stop
+        end if
 
-         subroutine deallocate_const_array
+        allocate (aki(lev+1),bki(lev+1),                         &
+                  sigma(lev+1,2),dsigma(lev,2), stat= ierr)
+        if (ierr/= 0) then
+            write(6,*) 'mod_const : allocate fail 2 '
+            stop
+        end if
 
-           deallocate(poly,dpoly,eps4,wdfac,wcfac,cim)
-           deallocate(aki,bki,sigma,dsigma)
-           deallocate(mlsort,msort,lsort)
-           deallocate(weight,sinl,cosl,cor,onocos,sig,dsig,  &
-                      tmean,spalm,eigval,pmcor,tmeans)
-           deallocate(outdir)
+        allocate (mlsort(jtrun,jtrun),msort(mlmax),lsort(mlmax), &
+                  stat= ierr)
+        if (ierr/= 0) then
+            write(6,*) 'mod_const : allocate fail 3 '
+            stop
+        end if
 
-           return
+        allocate (weight(my),sinl(my),cosl(my),           &
+        cor(my),onocos(my),sig(lev+1),dsig(lev),          &
+        tmean(lev),spalm(lev),eigval(lev),evecin(lev,lev),&
+        evectr(lev,lev),arrhyd(lev,lev),arsddt(lev,lev),  &
+        pmcor(lev),tmcor(lev,lev),tmeans(lev),            &
+                  stat= ierr)
+        if (ierr/= 0) then
+            write(6,*) 'mod_const : allocate fail 4 '
+            stop
+        end if
 
-         end subroutine
+        sig=0.
 
-      end module const
+        allocate (outdir(nout),stat= ierr)
+        if (ierr/= 0) then
+            write(6,*) 'mod_const : allocate fail 5 '
+            stop
+        end if
+      end subroutine
+
+      subroutine deallocate_const_array
+        implicit none
+     
+        deallocate(poly,dpoly,eps4,wdfac,wcfac,cim)
+        deallocate(aki,bki,sigma,dsigma)
+        deallocate(mlsort,msort,lsort)
+        deallocate(weight,sinl,cosl,cor,onocos,sig,dsig,  &
+                   tmean,spalm,eigval,pmcor,tmeans)
+        deallocate(outdir)
+      end subroutine
+  end module const
