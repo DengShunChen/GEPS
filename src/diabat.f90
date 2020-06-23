@@ -471,6 +471,7 @@
       kuo=0
       rcup2=0.
       islimsk=0
+      kpbl=1
 
 !CWB2016 
       icsdsw=0
@@ -1391,7 +1392,7 @@
       endif    !(end if nmcup=5)
 !xb110<
 
-      if ( docup .and. (nmcup.eq.2) .or. (nmcup.eq.3) .or. (nmcup.eq. 6) ) then
+      if ( docup .and. (nmcup.eq.2 .or. nmcup.eq.3 .or. nmcup.eq. 6) ) then
 !
 ! setting for nmcup=2,3 and new shallow convection
 ! setting for nmcup=6 and scale-aware shallow convection
@@ -1725,9 +1726,9 @@
 !
 !!!            rhc(i,kc)=0.999-0.08*cos(d2r*arg)**2    !a3
 !byl            rhc(i,kc)=0.95-0.07*cos(d2r*xlat(j))    !v2
-            rhc(i,kc)=0.98-0.12*cos(d2r*arg)**2.0    !v3
+            rhc(i,kc)=0.98-0.05*cos(d2r*arg)**2.0    !v3
 !byl            psautco(i)  = 8.0e-4 * work1(i) + 5.0e-4 * work2(i)
-            psautco(i)  = 4.0e-4
+            psautco(i)  = 5.0e-4
 !            tem   = (max(min(plt(i,k,jj),900.)-700.,0.01) / 200.)
 !            rhc(i,kc)=tem*rhc(i,kc)+(1.-tem)*0.7
 !!!!             rhc(i,kc)=(1.-coefrhc)*(0.7+0.15*cos(d2r*xlat(j))**2)  &
