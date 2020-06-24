@@ -1,6 +1,6 @@
 SHELL=/bin/ksh
 
-MACHINE=fx10
+MACHINE=fx100
 
 SRCS  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
 	mod_const.f90 mod_index.f90 mod_fftcom.f90 mod_fj_pad.f90 mod_grid.f90 \

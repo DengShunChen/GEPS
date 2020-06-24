@@ -6,6 +6,7 @@
 #define mpp_root_pe() 0
 #define p_parallel_io (myrank .eq. 0)
 #define p_pe myrank
+#define sstmin 240.
 #endif
 
 !    read wtfn12, wsfn12 data
@@ -387,7 +388,7 @@
               CALL read_dailyFCT_dayp1(idtg_FCT)
             endif
             if(dailyClm_option .ge. 1)then
-              CALL read_dailyClm_2days(idtg1,idtg_FCT,icurrenttau,dailyClm_option)
+              CALL read_dailyClm_2days(idtg1,idtg_FCT,icurrenttau)
             endif
 
             timevals_dailyFCT(2)=ydate2
@@ -438,7 +439,7 @@
               if(dailyClm_option .eq. 2) then
                 dailyClmFCTsst(:,:,1)=dailyClmFCTsst(:,:,2)
               endif
-              CALL read_dailyClm_dayp1(idtg1,idtg_FCT,icurrenttau,dailyClm_option)
+              CALL read_dailyClm_dayp1(idtg1,idtg_FCT,icurrenttau)
             endif
 
             timevals_dailyFCT(2)=ydate2
@@ -539,7 +540,7 @@
               endif
 
               dailyFCTsst(ii,jj,2)=MERGE(ssttemp(i,j),xmissing,  &
-                   (ssttemp(i,j).GE.271. .AND. ssttemp(i,j) .LE. 400.))
+                   (ssttemp(i,j).GE.sstmin .AND. ssttemp(i,j) .LE. 400.))
               if(ldailyFCTicesndpt)then
                 dailyFCTcice(ii,jj,2)=MERGE(cicetemp(i,j),xmissing,  &
                                          (cicetemp(i,j) .GE. 0))
@@ -572,7 +573,7 @@
                     else
                       jjtemp=jtemp
                     endif
-                    if (ssttemp(iitemp,jjtemp).GE.271. .AND. ssttemp(iitemp,jjtemp) .LE. 400.)then
+                    if (ssttemp(iitemp,jjtemp).GE.sstmin .AND. ssttemp(iitemp,jjtemp) .LE. 400.)then
                       sst_suntemp=sst_suntemp+ssttemp(iitemp,jjtemp)
                       sst_counttemp=sst_counttemp+1.
                     endif
@@ -588,9 +589,9 @@
                     endif
                   enddo
                 enddo
-                if(ssttemp(i,j).LT.271. .OR. ssttemp(i,j) .GT. 400.)then
+                if(ssttemp(i,j).LT.sstmin .OR. ssttemp(i,j) .GT. 400.)then
                   ssttemp(i,j)=sst_suntemp/sst_counttemp
-                  if (ssttemp(i,j).GE.271. .AND. ssttemp(i,j) .LE. 400.)then
+                  if (ssttemp(i,j).GE.sstmin .AND. ssttemp(i,j) .LE. 400.)then
                     dailyFCTsst(ii,jj,2)=ssttemp(i,j)
                   else
                     dailyFCTsst(ii,jj,2)=dailyFCTsst(ii,jj,1)
@@ -611,7 +612,11 @@
                   endif
                 endif
               endif
-              dFCTsstdt(ii,jj)=(dailyFCTsst(ii,jj,2)-dailyFCTsst(ii,jj,1))/(24.*3600.)
+              if(dailyFCTsst(ii,jj,1).ge.sstmin .AND. dailyFCTsst(ii,jj,2).ge.sstmin)then 
+                dFCTsstdt(ii,jj)=(dailyFCTsst(ii,jj,2)-dailyFCTsst(ii,jj,1))/(24.*3600.)
+              else
+                dFCTsstdt(ii,jj)=0.
+              endif
               if(ldailyFCTicesndpt)then
                 dFCTcicedt(ii,jj)=(dailyFCTcice(ii,jj,2)-dailyFCTcice(ii,jj,1))/(24.*3600.)
                 dFCTsndepthdt(ii,jj)=(dailyFCTsndepth(ii,jj,2)-dailyFCTsndepth(ii,jj,1))/(24.*3600.)
@@ -633,7 +638,7 @@
         END SUBROUTINE read_dailyFCT_dayp1
 
 
-        SUBROUTINE read_dailyClm_2days(idtg1,idtg_2,itau,ioption)
+        SUBROUTINE read_dailyClm_2days(idtg1,idtg_2,itau)
 
           INTEGER*8 idtg1,idtg_2
           INTEGER itau
@@ -644,7 +649,6 @@
           REAL sstANA0(nx,my),sstANA1(nx,my)
           REAL sstFCT0(nx,my),sstFCT1(nx,my)
           INTEGER i,j,ii,jj,nxj,istat
-          INTEGER ioption
           REAL wweight
 
           write(cdtg,'(i12)') idtg1
@@ -673,14 +677,14 @@
 !          endif
 
 
-          sstANA0=MERGE(sstANA0,xmissing,(sstANA0.GE.271. .AND. sstANA0.LE.400.))
-          sstANA1=MERGE(sstANA1,xmissing,(sstANA1.GE.271. .AND. sstANA1.LE.400.))
+          sstANA0=MERGE(sstANA0,xmissing,(sstANA0.GE.sstmin .AND. sstANA0.LE.400.))
+          sstANA1=MERGE(sstANA1,xmissing,(sstANA1.GE.sstmin .AND. sstANA1.LE.400.))
 
           CALL fill_missing2(sstANA0(:,:),nx,my,1,.FALSE.)
           CALL fill_missing2(sstANA1(:,:),nx,my,1,.FALSE.)
 
 
-          if(ioption .eq. 2) then     !dailyClm_option=2, read forcast climatology sst
+          if(dailyClm_option .eq. 2) then     !dailyClm_option=2, read forcast climatology sst
    13       format('W00100',i4.4,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
             write(lrec,13) itau,ggdef,imm,idd
             call dmsread(nx,my,lrec,lncrec,'H',ifilin_ClmFCT,sstFCT0(:,:),istat)
@@ -695,8 +699,8 @@
 !              call reducepick(sstFCT1(1,1),nxdef,nx,my)
 !            endif 
 
-            sstFCT0=MERGE(sstFCT0,xmissing,(sstFCT0.GE.271. .AND. sstFCT0.LE.400.))
-            sstFCT1=MERGE(sstFCT1,xmissing,(sstFCT1.GE.271. .AND. sstFCT1.LE.400.))
+            sstFCT0=MERGE(sstFCT0,xmissing,(sstFCT0.GE.sstmin .AND. sstFCT0.LE.400.))
+            sstFCT1=MERGE(sstFCT1,xmissing,(sstFCT1.GE.sstmin .AND. sstFCT1.LE.400.))
 
             CALL fill_missing2(sstFCT0(:,:),nx,my,1,.FALSE.)
             CALL fill_missing2(sstFCT1(:,:),nx,my,1,.FALSE.)
@@ -718,15 +722,22 @@
               dailyClmANAsst(ii,jj,0)=sstANA0(i,j)
               dailyClmANAsst(ii,jj,1)=sstANA0(i,j)
               dailyClmANAsst(ii,jj,2)=sstANA1(i,j)
-              if(ioption .eq. 1) then   !dailyClm_option=1
+              if(dailyClm_option .eq. 1) then   !dailyClm_option=1
+                if(ldailyFCTsst)then
+                !similar to (Yuejian Zhu, operational)             
+                  wweight=min(float(itau)/24./35.,1.)
+                  dailyFCTsst(ii,jj,2)=(1.-wweight)*dailyFCTsst(ii,jj,2)    &
+                                      +wweight*dailyClmANAsst(ii,jj,2)
+                else
                 !persistent anomaly sst
                 !SSTf_t=[SSTa_t0-SSTc_t0]*exp(-(t-t0)/90)+SSTc_t
                 !(Yuejian Zhu, operational)
-                wweight=exp(-float(itau)/(90.*24.))
-                dailyFCTsst(ii,jj,2)=wweight*(ANAsstT0(ii,jj)-dailyClmANAsst(ii,jj,0))  &
-                                     +dailyClmANAsst(ii,jj,2)
+                  wweight=exp(-float(itau)/(90.*24.))
+                  dailyFCTsst(ii,jj,2)=wweight*(ANAsstT0(ii,jj)-dailyClmANAsst(ii,jj,0))  &
+                                      +dailyClmANAsst(ii,jj,2)
+                endif
               endif 
-              if(ioption .eq. 2) then   !dailyClm_option=2
+              if(dailyClm_option .eq. 2) then   !dailyClm_option=2
                 dailyClmFCTsst(ii,jj,0)=sstFCT0(i,j)
                 dailyClmFCTsst(ii,jj,1)=sstFCT0(i,j)
                 dailyClmFCTsst(ii,jj,2)=sstFCT1(i,j)
@@ -736,7 +747,11 @@
                      +dailyClmANAsst(ii,jj,2) )+wweight*(dailyFCTsst(ii,jj,2)    &
                      -(dailyClmFCTsst(ii,jj,2)-dailyClmANAsst(ii,jj,2)))
               endif
-              dFCTsstdt(ii,jj)=(dailyFCTsst(ii,jj,2)-dailyFCTsst(ii,jj,1))/(24.*3600.)
+              if(dailyFCTsst(ii,jj,1).ge.sstmin .AND.dailyFCTsst(ii,jj,2).ge.sstmin)then
+                dFCTsstdt(ii,jj)=(dailyFCTsst(ii,jj,2)-dailyFCTsst(ii,jj,1))/(24.*3600.)
+              else
+                dFCTsstdt(ii,jj)=0.
+              endif
 
               if(myrank.eq.myrank_check .AND.    &
                 i.eq.ii_check .AND. jj.eq.jj_check) then
@@ -746,7 +761,7 @@
                   ,",dailyClmANAsst(ii,jj,1)=",dailyClmANAsst(ii,jj,1)   &
                   ,",dailyClmANAsst(ii,jj,2)=",dailyClmANAsst(ii,jj,2)   &
                   ,",dFCTsstdt(ii,jj)=",dFCTsstdt(ii,jj)
-                if(ioption .eq. 2) then
+                if(dailyClm_option .eq. 2) then
                   print*,",dailyClmFCTsst(ii,jj,0)=",dailyClmFCTsst(ii,jj,0)   &
                     ,",dailyClmFCTsst(ii,jj,1)=",dailyClmFCTsst(ii,jj,1)   &
                     ,",dailyClmFCTsst(ii,jj,2)=",dailyClmFCTsst(ii,jj,2)
@@ -759,7 +774,7 @@
         END SUBROUTINE read_dailyClm_2days
 
                
-        SUBROUTINE read_dailyClm_dayp1(idtg1,idtg_2,itau,ioption)
+        SUBROUTINE read_dailyClm_dayp1(idtg1,idtg_2,itau)
 
           INTEGER*8 idtg1,idtg_2
           INTEGER itau
@@ -769,7 +784,6 @@
           CHARACTER lrec*26
           REAL sstANA(nx,my),sstFCT(nx,my)
           INTEGER i,j,ii,jj,nxj,istat
-          INTEGER ioption
           REAL wweight
 
           write(cdtg,'(i12)') idtg1
@@ -791,12 +805,12 @@
 !            call reducepick(sstANA(1,1),nxdef,nx,my)
 !          endif
 
-          sstANA=MERGE(sstANA,xmissing,(sstANA.GE.271. .AND. sstANA.LE.400.))
+          sstANA=MERGE(sstANA,xmissing,(sstANA.GE.sstmin .AND. sstANA.LE.400.))
           CALL fill_missing2(sstANA(:,:),nx,my,1,.FALSE.)
 
 
 
-          if(ioption .eq. 2) then
+          if(dailyClm_option .eq. 2) then
    13       format('W00100',i4.4,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
             write(lrec,13) itau,ggdef,imm,idd
             call dmsread(nx,my,lrec,lncrec,'H',ifilin_ClmFCT,sstFCT(:,:),istat)
@@ -805,7 +819,7 @@
 !              call reducepick(sstFCT(1,1),nxdef,nx,my)
 !            endif
 
-            sstFCT=MERGE(sstFCT,xmissing,(sstFCT.GE.271. .AND. sstFCT.LE.400.))
+            sstFCT=MERGE(sstFCT,xmissing,(sstFCT.GE.sstmin .AND. sstFCT.LE.400.))
             CALL fill_missing2(sstFCT(:,:),nx,my,1,.FALSE.)
           endif
 
@@ -820,15 +834,22 @@
             DO ii=1,nxj
               i=nxjstart(j)+ii-1
               dailyClmANAsst(ii,jj,2)=sstANA(i,j)
-              if(ioption .eq. 1) then   !dailyClm_option=1
+              if(dailyClm_option .eq. 1) then   !dailyClm_option=1
+                if(ldailyFCTsst)then
+                !similar to (Yuejian Zhu, operational)             
+                  wweight=min(float(itau)/24./35.,1.)
+                  dailyFCTsst(ii,jj,2)=(1.-wweight)*dailyFCTsst(ii,jj,2)    &
+                                       +wweight*dailyClmANAsst(ii,jj,2)
+                else
                 !persistent anomaly sst
                 !SSTf_t=[SSTa_t0-SSTc_t0]*exp(-(t-t0)/90)+SSTc_t
                 !(Yuejian Zhu, operational)
-                wweight=exp(-float(itau)/(90.*24.))
-                dailyFCTsst(ii,jj,2)=wweight*(ANAsstT0(ii,jj)-dailyClmANAsst(ii,jj,0))  &
-                                     +dailyClmANAsst(ii,jj,2)
+                  wweight=exp(-float(itau)/(90.*24.))
+                  dailyFCTsst(ii,jj,2)=wweight*(ANAsstT0(ii,jj)-dailyClmANAsst(ii,jj,0))  &
+                                       +dailyClmANAsst(ii,jj,2)
+                endif
               endif
-              if(ioption .eq. 2) then   !dailyClm_option=2
+              if(dailyClm_option .eq. 2) then   !dailyClm_option=2
                 dailyClmFCTsst(ii,jj,2)=sstFCT(i,j)
                 !idea from Yuejian Zhu(2018 JGR)
                  wweight=min(float(itau)/24./35.,1.)
@@ -836,8 +857,11 @@
                      +dailyClmANAsst(ii,jj,2))+wweight*(dailyFCTsst(ii,jj,2)    &
                      -(dailyClmFCTsst(ii,jj,2)-dailyClmANAsst(ii,jj,2)))
               endif
-              dFCTsstdt(ii,jj)=(dailyFCTsst(ii,jj,2)-dailyFCTsst(ii,jj,1))/(24.*3600.)
-
+              if(dailyFCTsst(ii,jj,1).ge.sstmin .AND. dailyFCTsst(ii,jj,2).ge.sstmin)then
+                dFCTsstdt(ii,jj)=(dailyFCTsst(ii,jj,2)-dailyFCTsst(ii,jj,1))/(24.*3600.)
+              else
+                dFCTsstdt(ii,jj)=0.
+              endif
 
               if(myrank.eq.myrank_check .AND.    &
                 ii.eq.ii_check .AND. jj.eq.jj_check) then
@@ -845,7 +869,7 @@
                   ,",ii=",ii,",jj=",jj                                   &
                   ,",dailyClmANAsst(ii,jj,2)=",dailyClmANAsst(ii,jj,2) &
                   ,",dFCTsstdt(ii,jj)=",dFCTsstdt(ii,jj)
-                if(ioption .eq. 2)then
+                if(dailyClm_option .eq. 2)then
                   print*,",dailyClmFCTsst(ii,jj,2)=",dailyClmFCTsst(ii,jj,2)
                 endif
               endif

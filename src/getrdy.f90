@@ -996,8 +996,8 @@
         do i=2,nxj
           xlon(i,jj)=xlon(1,jj)+float(i-1)*360./nxj
           
-          if( (abs(xlon(i,jj)-180.) .le. 0.25) .AND. &
-              (abs(xlat(j)-34.) .le. 0.15) ) then
+          if( (abs(xlon(i,jj)-48.22) .le. 0.25) .AND. &
+              (abs(xlat(j)-49.) .le. 0.15) ) then
             nxjpart=nxdef_2d(j)
             do ii=1,nxjpart
               if(nxjstart(j)+ii-1 .eq. i)then
@@ -1025,11 +1025,6 @@
 ! read forecast sst
 !---------------------------------
       IF(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. dailyClm_option .ge.1 ) THEN
-        if(ldailyFCTsst .AND. dailyClm_option .eq. 1) then
-          print *,'ldailyFCTsst & dailyClm_option=1'   &
-                 ,', use ldailyFCTsst, set dailyClm_option=-99.'
-          dailyClm_option=-99
-        endif  
         CALL read_dailyFCT(idtg,taui,dt,tg,cice,sndepth)
       ENDIF
 

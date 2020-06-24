@@ -1093,11 +1093,20 @@
               obswtbn(ii,jj)=dta*dFCTsstdt(ii,jj)+obswtbp(ii,jj)
               obswtbp(ii,jj)=obswtbt(ii,jj)
               obswtbt(ii,jj)=obswtbn(ii,jj)
+              if(myrank .eq. myrank_check .AND. ii .eq. ii_check  &
+                .AND. jj .eq. jj_check) then
+                print *,'before dsst/dt: myrank=',myrank           &
+                       ,',ii=',ii,',jj=',jj,',ocean=',ocean(ii,jj)    &
+                       ,',tg=',tg(ii,jj)
+              endif
+
               if(ocean(ii,jj))then
-                tseadiffSIT(ii,jj)=0.
                 tseadiffFCT(ii,jj)=dta*dFCTsstdt(ii,jj)
-                if(do_sit .AND. sitmask(ii,jj) .EQ. 1. ) then
+                tsean(ii,jj)=tseadiffFCT(ii,jj)+tseap(ii,jj)
+                if(do_sit) then
+                if( sitmask(ii,jj) .EQ. 1. ) then
                   if(lrun_sitvdiff .AND. ltrigsit )then
+                    tseadiffSIT(ii,jj)=0.
                     sumdSITdt(ii,jj)=sumdSITdt(ii,jj)+dtswdt(ii,jj)
                     countdSITdt(ii,jj)=countdSITdt(ii,jj)+1.
                   endif
@@ -1125,12 +1134,13 @@
                     sumdSITdt(ii,jj)=0.
                     countdSITdt(ii,jj)=0.
                     tseadiffSIT24(ii,jj)=tseadiffSIT24(ii,jj)+tseadiffSIT(ii,jj)/dta*dtx
+                    tsean(ii,jj)=tseadiffFCT(ii,jj)+tseadiffSIT(ii,jj)  &
+                                 +tseap(ii,jj)
                   endif
+                endif
                 endif
                 tseadiffFCT24(ii,jj)=tseadiffFCT24(ii,jj)+tseadiffFCT(ii,jj)/dta*dtx
 
-                tsean(ii,jj)=tseadiffFCT(ii,jj)+tseadiffSIT(ii,jj)  &
-                             +tseap(ii,jj)
                 tseap(ii,jj)=tseat(ii,jj) + tfilt*(tseap(ii,jj)     &
                               -2.0*tseat(ii,jj)+tsean(ii,jj) )
                 tseat(ii,jj)=tsean(ii,jj)
@@ -1140,37 +1150,28 @@
                   tg(ii,jj)=tseat(ii,jj)
                 endif
 
-                if(myrank .eq. myrank_check .AND. ii .eq. ii_check  &
-                  .AND. jj .eq. jj_check) then
-                  print *,'after update tg: myrank=',myrank         &
+              endif
+
+              if(myrank .eq. myrank_check .AND. ii .eq. ii_check  &
+                .AND. jj .eq. jj_check) then
+                print *,'after update tg: myrank=',myrank         &
                        ,',ii=',ii,',jj=',jj                         &
                        ,',tseap=',tseap(ii,jj),',tg=',tg(ii,jj)     &
                        ,',tsean=',tsean(ii,jj)                      &
                        ,',tseadiffFCT=',tseadiffFCT(ii,jj)
+                if(do_sit) then
                   if(sitmask(ii,jj).EQ.1. .AND. (lrun_sitvdiff      &
                       .OR. (dtaup .lt. dtx_tau)) )then
                     print *,',tseadiffSIT=',tseadiffSIT(ii,jj)      &
                            ,',tseadiffSIT24=',tseadiffSIT24(ii,jj)  &
                            ,',ratioSIT=',ratioSIT(ii,jj)
-
                   endif
                 endif
-
               endif
+
             end do
           end do
           CALL read_dailyFCT(idtg,tau,dt,tg,cice,sndepth)
-        endif
-
-        if(tau .lt. 0.2)then
-          call unify_reduceintp(nx,my,my_max,ratioSIT,glob)
-!byl      call mpe2d_unify(glob,qflux)
-          call syslbl ('w00002',idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!byl      if(lwrite) call
-!dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-          call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-          call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
         endif
 !
 ! accumulate some flux every time step to output point (24 hour)
@@ -1382,45 +1383,6 @@
         dt24 = 0.
       endif 
 !
-!pscheckdata
-      if(0 .eq. 1)then
-      dtaup=abs(tau+0.001-672.167)
-      if(myrank .eq. 0 ) then
-        print *,'pscheckdata,dtaup=',dtaup
-      endif
-      if(dtaup .lt. dtx_tau)then
-        itau = tau + 0.1
-        nc=0
-        call unify_reduceintp(nx,my,my_max,tg,glob)
-!byl      call mpe2d_unify(glob,qflux)
-        call syslbl ('S00101',idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!byl      if(lwrite) call
-!dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-        call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-
-        call unify_reduceintp(nx,my,my_max,dFCTsstdt,glob)
-!byl      call mpe2d_unify(glob,qflux)
-        call syslbl ('W00101',idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!byl      if(lwrite) call
-!dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-        call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-
-        call unify_reduceintp(nx,my,my_max,dtswdt,glob)
-!byl      call mpe2d_unify(glob,qflux)
-        call syslbl ('W00102',idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!byl      if(lwrite) call
-!dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-        call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      endif
-      endif
-!pscheckdata
-
       dtaup= mod(tau+0.001, tauo)
       histim=(dtaup .lt. dtx_tau)
 !       if(myrank.eq.0)print *,'chkhis dtaup,tauo,dtx_tau=',dtaup,tauo,dtx_tau
