@@ -24,10 +24,8 @@
 !
 !     integer, parameter ::  no=2*((jtrun+1)/2)+(jtrun/2)+10
       real      eval(no),evec(no*no),epos(no*no),x(no*2)
-!byl      real      a(jtrun,jtrun,lev),b(jtrun,jtrun,lev)
-      real      a(jtrun,jtrun,nnmivm),b(jtrun,jtrun,nnmivm)
-!byl      real      mx(no*no),h(jtrun,jtmax,lev),c(jtrun,jtrun,lev)
-      real      mx(no*no),h(jtrun,jtmax,nnmivm),c(jtrun,jtrun,nnmivm)
+      real      a(jtrun,jtrun,lev),b(jtrun,jtrun,lev)
+      real      mx(no*no),h(jtrun,jtmax,lev),c(jtrun,jtrun,lev)
       integer   nw(jtrun,jtmax)
       real      phiten(levp,2,jtrun,jtmax)
       real      wk(no*no),wc(no*2),wd(no*2),ew(no*no)
@@ -46,9 +44,8 @@
 !
 !  define constants and comput coefficients for initializatin
 !
-!byl      call  inicons (rad,omega,eigval,lev,jtrun,jtmax, &
       call  inicons (rad,omega,eigval,lev,jtrun,jtmax, &
-                     nw,a,b,c,h,nnmivm)
+                     nw,a,b,c,h)
 !
 !  begin to iterration, now doing 3 iterrations
 !
