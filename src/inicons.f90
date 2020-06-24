@@ -1,5 +1,5 @@
       subroutine inicons(rad,omega,eigval,lev,jtrun,jtmax, &
-                         nw,a,b,c,h,nnmivm)
+                         nw,a,b,c,h)
 !
 !  purpose:  define constants and calculate the coefficients for
 !            initialization modual
@@ -26,11 +26,9 @@
       use index
 
       implicit none
-      integer  lev,jtrun,jtmax,nw(jtrun,jtmax),nnmivm
-!byl      real     a(jtrun,jtrun,lev),b(jtrun,jtrun,lev),c(jtrun,jtrun,lev)
-      real a(jtrun,jtrun,nnmivm),b(jtrun,jtrun,nnmivm),c(jtrun,jtrun,nnmivm)
-!byl      real     eigval(lev),h(jtrun,jtmax,lev)
-      real     eigval(lev),h(jtrun,jtmax,nnmivm)
+      integer  lev,jtrun,jtmax,nw(jtrun,jtmax)
+      real     a(jtrun,jtrun,lev),b(jtrun,jtrun,lev),c(jtrun,jtrun,lev)
+      real     eigval(lev),h(jtrun,jtmax,lev)
 
       integer  k,l,m,n,m1,mf,mm,mn,nnp1
       real     omega,omega2,omga2r2,rad,rad2,tem,epxn
@@ -53,8 +51,7 @@
 !
 !CWB2014 fixed the undefined value h in vartran loop
       h=0.
-!      do k=1,lev
-      do k=1,nnmivm
+      do k=1,lev
         tem=eigval(k)/omga2r2
         do m=1,mlistnum
           mf=mlist(m)
@@ -66,8 +63,7 @@
 !
 !  compute coefficients array of coefficient matrix
 !
-!      do k=1,lev
-      do k=1,nnmivm
+      do k=1,lev
         a(1,1,k)=0.
         b(1,1,k)=0.
         c(1,1,k)=0.
