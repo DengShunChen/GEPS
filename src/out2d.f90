@@ -827,8 +827,8 @@
       do i=1,nxj
 !byl       glob(i,j)=glob1(i,j)*sfac2+glob2(i,j)*sfac3 &
 !byl                  +glob3(i,j)*sfac4
-       globp(i,jj)=soil_xy(1,1,10)*sfac2+soil_xy(1,1,11)*sfac3 &
-                  +soil_xy(1,1,12)*sfac4
+       globp(i,jj)=soil_xy(i,jj,10)*sfac2+soil_xy(i,jj,11)*sfac3 &
+                  +soil_xy(i,jj,12)*sfac4
       end do
       end do
       call unify_reduceintp(nx,my,my_max,globp,glob)
