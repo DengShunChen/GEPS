@@ -1119,6 +1119,13 @@
                      , sld_adj,zice(1,jj),cice(1,jj),xtice(1,jj)            &
                      , hpbl(1,jj),asl(1,1,jj),atl(1,1,jj),xmu(1,jj),gfx(1,jj) &
                      , kpbl(1,jj),nmpbl,j,isot,ivegsrc,sfemis(1,jj) )
+
+      if((myrank .eq. myrank_check) .AND. (jj .eq. jj_check) ) then
+        print *,'pbl_noah:myrank=',myrank,',tg(',ii_check,',',jj_check      &
+               ,')=',tg(ii_check,jj_check),',tt=',tt(ii_check,lev,jj_check) &
+               ,',qflux=',qflux(ii_check,jj_check),'hflux='            &
+               ,hflux(ii_check,jj_check)
+      endif
 !
 !     update tt by radiation heating/cooling rate: dtrad (k/day)
 !

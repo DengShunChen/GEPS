@@ -1171,7 +1171,7 @@
 
             end do
           end do
-          CALL read_dailyFCT(idtg,tau,dt,tg,cice,sndepth)
+          CALL read_dailyFCT(idtg,tau,dt,tg,cice,sndepth,xlon,xlat,ocean)
         endif
 !
 ! accumulate some flux every time step to output point (24 hour)
