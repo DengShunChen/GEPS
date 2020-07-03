@@ -134,8 +134,10 @@ INSTALL = /usr/bin/install
 # FFLAGS  = -c -X9 -Free -CcdRR8 -Cpp -DTIMING -DMULTIPLE -DUSE_FFTW -DW3TAG \
            -Kfast,parallel,openmp,ocl,autoobjstack \
 	   -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE) 
- FFLAGS  = ${FFLAGS_COM} ${LIBS_COM} ${OMP_COM} ${DEFINE_FLAGS} ${MSG_COM} $(INCLUDE) 
- CFLAGS  = ${CFLAGS_COM} 
+ FFLAGS       = ${FFLAGS_COM}       ${LIBS_COM} ${OMP_COM} ${DEFINE_FLAGS} ${MSG_COM} $(INCLUDE) 
+ FFLAGS_NOPAR = ${FFLAGS_COM}       ${LIBS_COM} ${DEFINE_FLAGS} ${MSG_COM} $(INCLUDE) 
+ FFLAGS_GWDPS = ${FFLAGS_COM_GWDPS} ${LIBS_COM} ${OMP_COM} ${DEFINE_FLAGS} ${MSG_COM} $(INCLUDE)
+ CFLAGS       = ${CFLAGS_COM} 
 #           -Kfast,parallel,openmp,ocl,autoobjstack -Nquickdbg
 #---------------------------------------------------------------------------------------------
 # For fx10 compiler, some subroutine, such as rcloud, can not use auto-parallel option.
@@ -154,9 +156,13 @@ $(CMD):	$(OBJS)
 	$(FC90) -o $(@)  $(OBJS)  $(LDFLAGS) $(LIBS)
 
 .f90.o:
+	@echo
+	@echo 'compile --> '$<
 	$(FC90) $(FFLAGS) $<
 
 .c.o:
+	@echo
+	@echo 'compile -->'$<
 	$(CC) $(CFLAGS) $<
 
 clean :
