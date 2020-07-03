@@ -187,11 +187,6 @@ endif
 #include ./make.dependency
 
 %.o: %.mod
-fftx.o : fftx.f90 
-	 $(FC90) $(FFLAGS) -Knoparallel $*.f90
-pbl_noah.o : pbl_noah.f90 mod_paramt.o mod_index.o mod_rank.o mod_mpe.o 
-	$(FC90) $(FFLAGS) -Knosimd pbl_noah.f90
-rcloud.o : rcloud.f90
-	$(FC90) $(FFLAGS) -Knosimd rcloud.f90 
-ndslfv_pack.o : ndslfv_pack.f90 mod_rank.o mod_index.o mod_grid.o mod_param.o
-	 $(FC90) $(FFLAGS) -Knoparallel $*.f90
+
+include ./make.rules.$(MACHINE)
+
