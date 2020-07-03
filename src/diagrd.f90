@@ -62,7 +62,7 @@
 !                                                                      c
 !######################################################################c
 !
-      use index, only : nxp
+!      use index, only : nxp
 
       implicit  none
 
