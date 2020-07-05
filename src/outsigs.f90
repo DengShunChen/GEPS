@@ -5,7 +5,7 @@
                          , slc,stc,canopy,zice,ggdef,gmdef)
       use index
       use mpe
-      use radn, only : ntoz
+      use radn, only : ntoz,ntcw,ntrw,ntiw,ntsw,ntgl
 
       implicit  none
 
@@ -135,8 +135,16 @@
 !
         if ( myrank .lt. lev ) then
           k=myrank+1
-          if(ntrac.eq.2)then
+          if(ntrac.eq.ntcw)then
             write(typ,'("m",i2.2,"550")')k     ! cloud liquid water content
+          else if(ntrac.eq.ntrw)then
+            write(typ,'("m",i2.2,"551")')k     ! rain 
+          else if(ntrac.eq.ntiw)then
+            write(typ,'("m",i2.2,"552")')k     ! cloud ice content
+          else if(ntrac.eq.ntsw)then
+            write(typ,'("m",i2.2,"553")')k     ! snow 
+          else if(ntrac.eq.ntgl)then
+            write(typ,'("m",i2.2,"554")')k     ! graupel
           else if(ntrac.eq.ntoz)then
             write(typ,'("m",i2.2,"560")')k     ! ozone
           else

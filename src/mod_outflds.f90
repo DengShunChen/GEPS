@@ -388,6 +388,8 @@ contains
       character*26 ihdg,ihdg2
       character*6 lrec(lpout)
       character*4 ggdef
+      character*3 cspec(6)
+      data cspec/'500','550','551','552','553','554'/
 !
       logical :: lwrite
 !
@@ -397,21 +399,13 @@ contains
       tens(lev)= 0.0
       tens(lev+1)= 0.0
 !
-      if(ntrac.eq.1)then
+      if(ntrac.lt.ntoz)then ! hydrometeor
 
       do k = 1, lpout-1
        lpl = int(plev(k)+0.001)
-       write( lrec(k), '(i3.3,a3)' ) lpl,'500'
+       write( lrec(k), '(i3.3,a3)' ) lpl,cspec(ntrac)
       end do
-      lrec(lpout) = 'h00500'
-
-      else if(ntrac.eq.2)then
-
-      do k = 1, lpout-1
-       lpl = int(plev(k)+0.001)
-       write( lrec(k), '(i3.3,a3)' ) lpl,'550'
-      end do
-      lrec(lpout) = 'h00550'
+      write( lrec(lpout), '(a3,a3)' ) 'h00',cspec(ntrac)
 !
       else if(ntrac.eq.ntoz)then
 !
