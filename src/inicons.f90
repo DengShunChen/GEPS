@@ -28,7 +28,7 @@
       implicit none
       integer  lev,jtrun,jtmax,nw(jtrun,jtmax),nnmivm
 !byl      real     a(jtrun,jtrun,lev),b(jtrun,jtrun,lev),c(jtrun,jtrun,lev)
-      real a(jtrun,jtrun,nnmivm),b(jtrun,jtrun,nnmivm),c(jtrun,jtrun,nnmivm)
+      real     a(jtrun,jtrun,nnmivm),b(jtrun,jtrun,nnmivm),c(jtrun,jtrun,nnmivm)
 !byl      real     eigval(lev),h(jtrun,jtmax,lev)
       real     eigval(lev),h(jtrun,jtmax,nnmivm)
 
@@ -53,7 +53,7 @@
 !
 !CWB2014 fixed the undefined value h in vartran loop
       h=0.
-!      do k=1,lev
+!byl      do k=1,lev
       do k=1,nnmivm
         tem=eigval(k)/omga2r2
         do m=1,mlistnum
@@ -66,7 +66,7 @@
 !
 !  compute coefficients array of coefficient matrix
 !
-!      do k=1,lev
+!byl      do k=1,lev
       do k=1,nnmivm
         a(1,1,k)=0.
         b(1,1,k)=0.
