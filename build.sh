@@ -46,7 +46,7 @@ fi
 set -x
 
 # load libs
-export MDIR=$(cd ..;pwd)
+export MDIR=$(pwd)
 . /usr/share/Modules/init/bash
 module use  ${MDIR}/modulefiles
 module av
@@ -54,7 +54,9 @@ module show modulefile.tcogfs.${MACHINE}
 module load modulefile.tcogfs.${MACHINE}
 module list
 module unuse ${MDIR}/modulefiles
+
 # compile
+cd src/
 make clean
 make -j12
 
