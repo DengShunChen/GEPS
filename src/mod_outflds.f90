@@ -370,6 +370,7 @@ contains
       use index
       use rank, only : myrank
       use radn, only : ntoz
+      use param, only : ncld
 
       implicit  none
 
@@ -417,7 +418,7 @@ contains
         end do
         lrec(lpout) = 'h00560'
 !
-      else if(ntrac.eq.ntoz+1)then
+      else if(ntrac.eq.ncld+1)then
 !
         do k = 1, lpout-1
           lpl = int(plev(k)+0.001)

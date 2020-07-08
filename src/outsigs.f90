@@ -29,7 +29,7 @@
       character typ*6,ihdg*26,ihdg2*26
       character*4 ggdef,gmdef
 !
-      integer   i,lenc,k,jj,j,nxj,istat,kk,iout_b10,ntrac
+      integer   i,lenc,k,jj,j,nxj,istat,kk,iout_b10,ntrac,nclds
       real      xx,capa,pk2top,sfac2,sfac3,sfac4
 
       do i = 1, nx*my
@@ -38,6 +38,11 @@
       enddo
 !
       lenc=nx*my
+      if ( ntoz .gt. 0 ) then
+        nclds=ntoz-1
+      else
+        nclds=ncld
+      endif
 
 !
 !  convert virture potential temperature to temperature
@@ -125,7 +130,7 @@
 !
       do k=1,lev
         wrk1=0.
-        do ntrac=2,ntoz-1
+        do ntrac=2,nclds
           do jj = 1, jlistnum
             j=jlist1(jj)
             nxj=nxdef_2d(j)
@@ -145,10 +150,10 @@
         call dmswrit_split(nx,my,ihdg,lenc,'H',ifilout,mout,istat)
       endif
 !
-! output all hydrometeors one by one
+! output all hydrometeors and ozone one by one
 !
       if( nmmiph .gt. 2 ) then
-        do ntrac=2,ntoz-1
+        do ntrac=2,nclds
           do k=1,lev
             kk = (ntrac-1)*lev+k
             do 26 jj = 1, jlistnum
@@ -184,24 +189,26 @@
       end if
 !
 ! output ozone
-! 
-      do k=1,lev
-        do jj = 1, jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
-          do i = 1,nxj
-            wrk1(i,jj)=qt(i,k+(ntoz-1)*lev,jj)
-          enddo
-        enddo
-        call unify_reduceintp(nx,my,my_max,wrk1,work)
-        if ( myrank .eq. k-1 ) mout=work
-      enddo
 !
-      if ( myrank .lt. lev ) then
-        k=myrank+1
-        write(typ,'("m",i2.2,"560")')k
-        call syslbl (typ,idtg,itau,gmdef,ihdg)
-        call dmswrit_split(nx,my,ihdg,lenc,'H',ifilout,mout,istat)
+      if ( ntoz .eq. ncld ) then 
+        do k=1,lev
+          do jj = 1, jlistnum
+            j=jlist1(jj)
+            nxj=nxdef_2d(j)
+            do i = 1,nxj
+              wrk1(i,jj)=qt(i,k+(ntoz-1)*lev,jj)
+            enddo
+          enddo
+          call unify_reduceintp(nx,my,my_max,wrk1,work)
+          if ( myrank .eq. k-1 ) mout=work
+        enddo
+!
+        if ( myrank .lt. lev ) then
+          k=myrank+1
+          write(typ,'("m",i2.2,"560")')k
+          call syslbl (typ,idtg,itau,gmdef,ihdg)
+          call dmswrit_split(nx,my,ihdg,lenc,'H',ifilout,mout,istat)
+        endif
       endif
 
 

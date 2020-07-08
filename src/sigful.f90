@@ -35,7 +35,7 @@
 
       integer   nx,my,my_max,lev,ncld,lmax,jtrun,jtmax,KL
       integer   ktrop,nxmy,nxlev,lncrec,lmaxp1,lmaxp2,k,itaux,itaup
-      integer   istat,i,ii,jj,j,nxj,kk,lqwset,m,mf,n,llts,ntrac
+      integer   istat,i,ii,jj,j,nxj,kk,lqwset,m,mf,n,llts,ntrac,nclds
 
       real      taup,cp,rad,rgas,grav,capa,taux,ptop,dummy,ppp,fac
       real      alaps,rdg,ttt1,ttt2,apha,ttt,sigp,x1,opok,pk800,pk300
@@ -67,6 +67,7 @@
       character*26 lrec
       character*6 typ
       character*80 ifilin,ifilout
+      character*3 cspec(6)
 !dms34
       integer*8 idtg,idtg2
 !
@@ -76,6 +77,13 @@
                ,300.0,350.0,400.0,450.0,500.0,550.0,600.0,650.0      &
                ,700.0,750.0,800.0,850.0,900.0,925.0,950.0,975.0      &
                ,1000.0/
+      data cspec/'500','551','553','552','554','555'/
+!
+      if ( ntoz .gt. 0 ) then
+        nclds=ncld-1
+      else
+        nclds=ncld
+      endif
 !
 !CWBinit
       plnow=0.
@@ -143,6 +151,7 @@
 !
 !  read in q at sigma levels
 !
+      hld4=1.0e-20
       do 73 k = 1, levp
         KL=lev-Llist(k)+1
       write (typ, '("m",i2.2,"500")' ) KL
@@ -161,39 +170,71 @@
 !
 !  get first guest as initial
 !
-      ntrac=2
-      do k = 1, levp
-      KL=lev-Llist(k)+1
-      write (typ, '("m",i2.2,"550")' ) KL    ! cloud liquid water content
-      call syslbl (typ,idtg2,itaup,gmdef,lrec)
-      call dmsread_split (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
+        if ( nmmiph .ge. 2 ) then
+          ntrac=2
+          do k = 1, levp
+            KL=lev-Llist(k)+1
+            write (typ, '("m",i2.2,"550")' ) KL    ! cloud liquid water content
+            call syslbl (typ,idtg2,itaup,gmdef,lrec)
+            call dmsread_split (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
 !
 ! reset liquid water if too large in stratusphere
-      lqwset=18
-      if(KL.le.lqwset)then
-        do j = 1,my
-          do i = 1, nx
-            if(hld1(i,j).lt.1.0e-12)hld1(i,j)=1.0e-12
-            if(hld1(i,j).ge.1.0e-10)hld1(i,j)=1.0e-10
-          enddo
-        enddo
-      endif
+            lqwset=18
+            if(KL.le.lqwset)then
+              do j = 1,my
+                do i = 1, nx
+                  if(hld1(i,j).lt.1.0e-12)hld1(i,j)=1.0e-12
+                  if(hld1(i,j).ge.1.0e-10)hld1(i,j)=1.0e-10
+                enddo
+              enddo
+            endif
 !
-      do jj = 1, jlistnum
-       j=jlist1(jj)
-       nxj=nxdef(j)
-       if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
-      do i = 1, nxj
+            do jj = 1, jlistnum
+              j=jlist1(jj)
+              nxj=nxdef(j)
+              if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
+              do i = 1, nxj
 !  no cloud ice data, simple way to split cloud water and ice temporary
-        if ( hld3(i,k,jj)-273.15 .le. -15. .and. nmmiph .gt. 2 ) then
-          ntrac = ntiw
+                if ( hld3(i,k,jj)-273.15 .le. -15. .and. nmmiph .gt. 2 ) then
+                  ntrac = ntiw
+                else
+                  ntrac = ntcw
+                endif
+                hld4(i,k,ntrac,jj) = hld1(i,j)
+              end do
+            end do
+          end do
+!
         else
-          ntrac = ntcw
+!
+          do ntrac=2,nclds
+            do k = 1, levp
+              KL=lev-Llist(k)+1
+              write (typ, '("m",i2.2,a3)' ) KL,cspec(ntrac)    ! cloud liquid water content
+              call syslbl (typ,idtg2,itaup,gmdef,lrec)
+              call dmsread_split (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
+! reset liquid water if too large in stratusphere
+              lqwset=18
+              if(KL.le.lqwset)then
+                do j = 1,my
+                  do i = 1, nx
+                    hld1(i,j)=max(hld1(i,j),1.0e-20)
+                  enddo
+                enddo
+              endif
+!
+              do jj = 1, jlistnum
+                j=jlist1(jj)
+                nxj=nxdef(j)
+                if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
+                do i = 1, nxj
+                  hld4(i,k,ntrac,jj) = hld1(i,j)
+                enddo
+              enddo
+            enddo
+          enddo
+!
         endif
-        hld4(i,k,ntrac,jj) = hld1(i,j)
-      end do
-      end do
-      end do
 !
 !  read "observed ozone" at sigma levels for doing ozone forecast
 !

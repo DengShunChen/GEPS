@@ -85,7 +85,7 @@
       character*6 labx
 
       integer   nxmy,nxlev,nxly,ntau,jj,j,nxj,k,i,n,nk,ngq,ntt,kk,ntrac
-      integer   llts,numz,numq,numt,iqwout,num
+      integer   llts,numz,numq,numt,iqwout,num,nclds
       real      rad,ograv,alaps,rdg,ttb,ttp,ttt,ttt1,ttt2,anlslp
       real      apha,pl1000,splog,ax,bx,cx,dx,tmid,tsf,tadia,xx,deltap
 !
@@ -111,6 +111,12 @@
       nxmy = nx*my
       nxlev= nx*lev
       nxly = nx*lev*my
+!
+      if ( ntoz .gt. 0 ) then
+        nclds=ntoz-1
+      else
+        nclds=ncld
+      endif
 !  
       wk_xy = 0.
 
@@ -431,7 +437,7 @@
       iqwout = 0   ! do output for qw
       if( iqwout .eq. 0 .and. nmmiph .ge. 2 )then
 !  output all hydrometeors
-        do ntrac=1,ntoz-1
+        do ntrac=1,nclds
           if ( ntrac .eq. 1 .or. nmmiph .gt. 2 ) then
             do jj = 1, jlistnum
               j=jlist1(jj)
@@ -454,22 +460,24 @@
         enddo
 !
 !  output ozone
-        do jj = 1, jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
-          do k = 1, lev
+        if ( ntoz .eq. ncld ) then
+          do jj = 1, jlistnum
+            j=jlist1(jj)
+            nxj=nxdef_2d(j)
+            do k = 1, lev
+              do i = 1,nxj
+                tmp(i,k,jj)=qt(i,k+(ntoz-1)*lev,jj)
+              enddo
+            enddo
             do i = 1,nxj
-              tmp(i,k,jj)=qt(i,k+(ntoz-1)*lev,jj)
+              bt1(i,jj)=tmp(i,lev,jj)
             enddo
           enddo
-          do i = 1,nxj
-            bt1(i,jj)=tmp(i,lev,jj)
-          enddo
-        enddo
 !!        call mpe_unify(bt1,nx,my,2,mpe_double)
-        if(myrank.eq.0)print*,' outfld : start shumout2, lwrite =',lwrite
-          call shumout2(nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,numq &
-          ,whtlevq,pkout,plog,pllp,tmp,bt1,pres3d,glob,ggdef,ntoz,lwrite)
+          if(myrank.eq.0)print*,' outfld : start shumout2, lwrite =',lwrite
+            call shumout2(nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,numq &
+            ,whtlevq,pkout,plog,pllp,tmp,bt1,pres3d,glob,ggdef,ntoz,lwrite)
+        endif
 !        
 !  output for combination of all cloud water and cloud ice
         tmp=0.
@@ -477,7 +485,7 @@
           j=jlist1(jj)
           nxj=nxdef_2d(j)
           do k = 1, lev
-            do ntrac=2,ntoz-1
+            do ntrac=2,nclds
               do i = 1,nxj
                 tmp(i,k,jj)=tmp(i,k,jj)+qt(i,k+(ntrac-1)*lev,jj)
               enddo
@@ -490,7 +498,7 @@
 !!        call mpe_unify(bt1,nx,my,2,mpe_double)
         if(myrank.eq.0)print*,' outfld : start shumout2, lwrite =',lwrite
           call shumout2(nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,numq &
-          ,whtlevq,pkout,plog,pllp,tmp,bt1,pres3d,glob,ggdef,ntoz+1,lwrite)
+          ,whtlevq,pkout,plog,pllp,tmp,bt1,pres3d,glob,ggdef,ncld+1,lwrite)
 
       endif
 !
