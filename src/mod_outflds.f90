@@ -389,9 +389,11 @@ contains
       character*6 lrec(lpout)
       character*4 ggdef
       character*3 cspec(6)
-      data cspec/'500','550','551','552','553','554'/
-!
       logical :: lwrite
+!
+      cspec=(/'500','551','553','552','554','555'/)
+!
+
 !
       do k = 1, lev+1
        tens(k) = 1.0
@@ -399,7 +401,7 @@ contains
       tens(lev)= 0.0
       tens(lev+1)= 0.0
 !
-      if(ntrac.lt.ntoz)then ! hydrometeor
+      if(ntrac.lt.ntoz)then ! all hydrometeors
 
       do k = 1, lpout-1
        lpl = int(plev(k)+0.001)
@@ -414,6 +416,14 @@ contains
           write( lrec(k), '(i3.3,a3)' ) lpl,'560'   ! ozone
         end do
         lrec(lpout) = 'h00560'
+!
+      else if(ntrac.eq.ntoz+1)then
+!
+        do k = 1, lpout-1
+          lpl = int(plev(k)+0.001)
+          write( lrec(k), '(i3.3,a3)' ) lpl,'550'   ! combine cloud water and cloud ice together
+        end do
+        lrec(lpout) = 'h00550'
       else
         goto 40
       endif
