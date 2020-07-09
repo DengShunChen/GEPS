@@ -19,7 +19,6 @@
       use rank
       use index
       use mod_outflds
-      use const, only : nmmiph
       use radn, only : ntcw,ntiw,ntoz
 
       implicit  none
@@ -435,10 +434,10 @@
 !  output clout water content if necessnary
 !
       iqwout = 0   ! do output for qw
-      if( iqwout .eq. 0 .and. nmmiph .ge. 2 )then
+      if( iqwout .eq. 0 .and. nclds .ge. 2 )then
 !  output all hydrometeors
         do ntrac=1,nclds
-          if ( ntrac .eq. 1 .or. nmmiph .gt. 2 ) then
+          if ( ntrac .eq. 1 .or. nclds .gt. 2 ) then
             do jj = 1, jlistnum
               j=jlist1(jj)
               nxj=nxdef_2d(j)

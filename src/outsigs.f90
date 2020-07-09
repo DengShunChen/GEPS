@@ -6,7 +6,6 @@
       use index
       use mpe
       use radn, only : ntoz,ntcw,ntrw,ntiw,ntsw,ntgl
-      use const, only : nmmiph
 
       implicit  none
 
@@ -152,7 +151,7 @@
 !
 ! output all hydrometeors and ozone one by one
 !
-      if( nmmiph .gt. 2 ) then
+      if( nclds .gt. 2 ) then
         do ntrac=2,nclds
           do k=1,lev
             kk = (ntrac-1)*lev+k

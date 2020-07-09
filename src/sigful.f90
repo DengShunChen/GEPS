@@ -29,7 +29,6 @@
       use rank
       use index
       use radn, only : ntoz,ntcw,ntiw
-      use const, only: nmmiph
 
       implicit  none
 
@@ -68,6 +67,8 @@
       character*6 typ
       character*80 ifilin,ifilout
       character*3 cspec(6)
+      character*34 key
+      integer      inistat
 !dms34
       integer*8 idtg,idtg2
 !
@@ -167,10 +168,33 @@
   73  continue
 !
       if( ncld .ge. 2 ) then
+!  check initial data of all hydrometeors
+!
+        if ( nclds .gt. 2 ) then
+          inistat=0
+
+          if(col_rank .eq. 0) then
+            do ntrac=2,nclds
+              write (typ, '("m",i2.2,a3)' ) Llist(1),cspec(ntrac) 
+              call syslbl (typ,idtg2,itaup,gmdef,lrec)
+              write(key,'(a26,a1,i7.7)') lrec,'H',lncrec
+              call dmschkr (ifilin,key//char(0),istat)
+              inistat=inistat+istat
+            enddo
+          endif
+
+          call mpe_global_sum(inistat,1,mpe_integer)
+          if ( myrank .eq. 0 .and. inistat .gt. 0 ) then 
+            print *,'========== Warning!!! ==========='
+            print *,'not enough initial data for all hydrometeors!!'
+          endif
+        else
+          inistat=1
+        endif
 !
 !  get first guest as initial
 !
-        if ( nmmiph .ge. 2 ) then
+        if ( inistat .gt. 0) then
           ntrac=2
           do k = 1, levp
             KL=lev-Llist(k)+1
@@ -183,8 +207,8 @@
             if(KL.le.lqwset)then
               do j = 1,my
                 do i = 1, nx
-                  if(hld1(i,j).lt.1.0e-12)hld1(i,j)=1.0e-12
-                  if(hld1(i,j).ge.1.0e-10)hld1(i,j)=1.0e-10
+                  if(hld1(i,j).lt.1.0e-20)hld1(i,j)=1.0e-20
+                  if(hld1(i,j).ge.1.0e-18)hld1(i,j)=1.0e-18
                 enddo
               enddo
             endif
@@ -195,7 +219,7 @@
               if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
               do i = 1, nxj
 !  no cloud ice data, simple way to split cloud water and ice temporary
-                if ( hld3(i,k,jj)-273.15 .le. -15. .and. nmmiph .gt. 2 ) then
+                if ( hld3(i,k,jj)-273.15 .le. -15. .and. nclds .ge. 3 ) then
                   ntrac = ntiw
                 else
                   ntrac = ntcw

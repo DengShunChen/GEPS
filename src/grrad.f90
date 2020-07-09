@@ -1600,8 +1600,8 @@
 
        elseif(icmphys == 3) then      ! zhao/moorthi's prognostic cloud+pdfcld
 !
-      if ( me == 0 .and. myrank == 0 )                                  &
-          print *,'### call progcld3 -zhao/moorhi with PDF cloud###' 
+         if ( me == 0 .and. myrank == 0 )                               &
+           print *,'### call progcld3 -zhao/moorhi with PDF cloud###' 
          call progcld3                                                  &
 !  ---  inputs:
      &     ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,clw,cnvw,cnvc,          &
@@ -1612,19 +1612,19 @@
      &       clouds,cldsa,mtopa,mbota                                   &
      &      )
 !
-        elseif (icmphys == 6 .or. icmphys == 8) then    ! wsm6 & Thompson
-          if ( me == 0 .and. myrank == 0 ) then
-             if ( icmphys == 6 ) print *,'### call WSM6 cloud###' 
-             if ( icmphys == 8 ) print *,'### call Thompson cloud###' 
-          endif
-          
-          if (kdt == 1) then
-            phy_f3d(:,:,1) = 10.
-            phy_f3d(:,:,2) = 50.
-            phy_f3d(:,:,3) = 250.
-          endif
+       elseif (icmphys == 6 .or. icmphys == 8) then    ! wsm6 & Thompson
+         if ( me == 0 .and. myrank == 0 ) then
+            if ( icmphys == 6 ) print *,'### call WSM6 cloud###' 
+            if ( icmphys == 8 ) print *,'### call Thompson cloud###' 
+         endif
+         
+         if (kdt == 1) then
+           phy_f3d(:,:,1) = 10.
+           phy_f3d(:,:,2) = 50.
+           phy_f3d(:,:,3) = 250.
+         endif
 !
-        call progcld4                                &
+         call progcld4                               &
 !  --- inputs
           ( plyr,plvl,tlyr,qlyr,qstl,rhly,tracer1,   &
             xlat,xlon,slmsk,                         &
