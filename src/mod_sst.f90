@@ -667,7 +667,6 @@
           sstANA1=0.
           sstFCT0=0.
           sstFCT1=0.
-          wweight=0.
 
           !dailyClm_option>=1, read climatology ana. sst
    11     format('W00100',4x,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
@@ -725,6 +724,7 @@
               call reducepick(sstFCT1(1,j),nxdef(j),nx,1)
             end if
             DO ii=1,nxj
+              wweight=0.
               i=nxjstart(j)+ii-1
               dailyClmANAsst(ii,jj,0)=sstANA0(i,j)
               dailyClmANAsst(ii,jj,1)=sstANA0(i,j)
@@ -769,11 +769,12 @@
                 i.eq.ii_check .AND. jj.eq.jj_check) then
                 print*,"myrank=",myrank,",i=",i,",j=",j                &
                   ,",ii=",ii,",jj=",jj                                 &
+                  ,",plat=",plat(j),",abs(plat(j))=",abs(plat(j))      &
                   ,",dailyClmANAsst(ii,jj,0)=",dailyClmANAsst(ii,jj,0) &
                   ,",dailyClmANAsst(ii,jj,1)=",dailyClmANAsst(ii,jj,1) &
                   ,",dailyClmANAsst(ii,jj,2)=",dailyClmANAsst(ii,jj,2) &
-                  ,",itau=",itau                                       &
-                  ,",wweight=",wweight,dailyFCTsst(ii,jj,2)            &
+                  ,",itau=",itau,",wweight=",wweight                   &
+                  ,",dailyFCTsst(ii,jj,2)=",dailyFCTsst(ii,jj,2)            &
                   ,",dFCTsstdt(ii,jj)=",dFCTsstdt(ii,jj)
                 if(dailyClm_option .eq. 2) then
                   print*,",dailyClmFCTsst(ii,jj,0)=",dailyClmFCTsst(ii,jj,0)   &
@@ -810,7 +811,6 @@
           lncrec=nx*my
           sstANA=0.          
           sstFCT=0.          
-          wweight=0.
 
 
    11     format('W00100',4x,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
@@ -848,6 +848,7 @@
               call reducepick(sstFCT(1,j),nxdef(j),nx,1)
             end if
             DO ii=1,nxj
+              wweight=0.
               i=nxjstart(j)+ii-1
               dailyClmANAsst(ii,jj,2)=sstANA(i,j)
               if(locean(ii,jj) .AND. dailyClm_option .eq. 1) then   !dailyClm_option=1
@@ -886,11 +887,12 @@
 
               if(myrank.eq.myrank_check .AND.    &
                 ii.eq.ii_check .AND. jj.eq.jj_check) then
-                print*,"myrank=",myrank,",i=",i,",j=",j              &
-                  ,",ii=",ii,",jj=",jj                                   &
+                print*,"myrank=",myrank,",i=",i,",j=",j                &
+                  ,",ii=",ii,",jj=",jj                                 &
+                  ,",plat=",plat(j),",abs(plat(j))=",abs(plat(j))      &
                   ,",dailyClmANAsst(ii,jj,2)=",dailyClmANAsst(ii,jj,2) &
-                  ,",itau=",itau                                       &
-                  ,",wweight=",wweight,dailyFCTsst(ii,jj,2)            &
+                  ,",itau=",itau,",wweight=",wweight                   &
+                  ,",dailyFCTsst(ii,jj,2)=",dailyFCTsst(ii,jj,2)       &
                   ,",dFCTsstdt(ii,jj)=",dFCTsstdt(ii,jj)
                 if(dailyClm_option .eq. 2)then
                   print*,",dailyClmFCTsst(ii,jj,2)=",dailyClmFCTsst(ii,jj,2)
