@@ -202,17 +202,6 @@
             call syslbl (typ,idtg2,itaup,gmdef,lrec)
             call dmsread_split (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
 !
-! reset liquid water if too large in stratusphere
-            lqwset=18
-            if(KL.le.lqwset)then
-              do j = 1,my
-                do i = 1, nx
-                  if(hld1(i,j).lt.1.0e-20)hld1(i,j)=1.0e-20
-                  if(hld1(i,j).ge.1.0e-18)hld1(i,j)=1.0e-18
-                enddo
-              enddo
-            endif
-!
             do jj = 1, jlistnum
               j=jlist1(jj)
               nxj=nxdef(j)
@@ -224,7 +213,7 @@
                 else
                   ntrac = ntcw
                 endif
-                hld4(i,k,ntrac,jj) = hld1(i,j)
+                hld4(i,k,ntrac,jj) = max(hld1(i,j),1.0e-20)
               end do
             end do
           end do
