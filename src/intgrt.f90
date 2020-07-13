@@ -358,7 +358,7 @@
 !
 ! read mountant variables for topographic gravity wave drag
 !
-      if(dograv .and. nmgwor .eq. 2) then
+      if(yesdia .and. dograv .and. nmgwor .eq. 2) then
          call read_mtnvar(nx,my,mtnvar,hprime_b)
 !
          if( myrank .eq. 0 ) &

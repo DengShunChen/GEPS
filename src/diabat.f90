@@ -473,6 +473,7 @@
       kuo=0
       rcup2=0.
       islimsk=0
+      kpbl=1
 
 !CWB2016 
       icsdsw=0
@@ -1052,7 +1053,7 @@
 !xb110<
 !
 !
-      if ( dopbl .and. (nmpbl.eq.1) .and. (nmland.eq.1))                      &
+      if ( dopbl .and. (nmpbl.eq.1 .and. nmland.eq.1))                        &
          call pbltke ( nxjp(j),nxp,lev,ktpbl,dta,grav,rgas,cp,xkapa,hltm,ptop &
                      , tice,hice,tg(1,jj),z0(1,jj),land(1,jj)                 &
                      , sgeo(1,jj),phi,pst(1,jj),upp,vpp                       &
@@ -1078,7 +1079,7 @@
           enddo
           endif ! end of dosppt if stetement
 !
-      if ( dopbl .and. (nmpbl.eq.2) .and. (nmland.eq.1))                      &
+      if ( dopbl .and. (nmpbl.eq.2 .and. nmland.eq.1))                        &
          call pbltke_n ( nxjp(j),nxp,lev,ktpbl,dta,grav,rgas,cp,xkapa,hltm,ptop &
                      , tice,hice,tg(1,jj),z0(1,jj),land(1,jj)                 &
                      , sgeo(1,jj),phi,pst(1,jj),upp,vpp                       &
@@ -1321,7 +1322,7 @@
 !
 !cyea---->
 !c 20120926 for Tiedtke cumulus
-      if ( docup .and. (nmcup .eq. 4) .and. (ncld .ge. 2) ) then
+      if ( docup .and. (nmcup .eq. 4 .and. ncld .ge. 2) ) then
         do k=1,lev-1
           do i = 1, nxj
             dotc(i,k)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
@@ -1362,7 +1363,7 @@
       endif    !(end if nmcup=4)
 !
 !xb110>
-      if ( docup .and. (nmcup .eq. 5) .and. (ncld .ge. 2) ) then
+      if ( docup .and. (nmcup .eq. 5 .and. ncld .ge. 2) ) then
 
         do i=1,nxj
           garea(i)  = tem1*tem2
@@ -1406,7 +1407,7 @@
       endif    !(end if nmcup=5)
 !xb110<
 
-      if ( docup .and. (nmcup.eq.2) .or. (nmcup.eq.3) .or. (nmcup.eq. 6) ) then
+      if ( docup .and. (nmcup.eq.2 .or. nmcup.eq.3 .or. nmcup.eq. 6) ) then
 !
 ! setting for nmcup=2,3 and new shallow convection
 ! setting for nmcup=6 and scale-aware shallow convection
@@ -1716,7 +1717,7 @@
                   , grav,nxjp(j),nxp,lev,evaprh,rlsp(1,jj),cp,hltm,nlsp(1,j)   &
                   , ilsp(1,j) )
 !
-      if ( dolsp .and. (ncld.eq.2) .or. (ncld.eq.3)) then
+      if ( dolsp .and. (ncld.eq.2 .or. ncld.eq.3)) then
 !
         deg_ju=23.45*sin(d2r*(360./365.)*(julian+284.))
         arg=xlat(j)-deg_ju
@@ -1740,9 +1741,9 @@
 !
 !!!            rhc(i,kc)=0.999-0.08*cos(d2r*arg)**2    !a3
 !byl            rhc(i,kc)=0.95-0.07*cos(d2r*xlat(j))    !v2
-            rhc(i,kc)=0.98-0.12*cos(d2r*arg)**2.0    !v3
+            rhc(i,kc)=0.98-0.05*cos(d2r*arg)**2.0    !v3
 !byl            psautco(i)  = 8.0e-4 * work1(i) + 5.0e-4 * work2(i)
-            psautco(i)  = 4.0e-4
+            psautco(i)  = 5.0e-4
 !            tem   = (max(min(plt(i,k,jj),900.)-700.,0.01) / 200.)
 !            rhc(i,kc)=tem*rhc(i,kc)+(1.-tem)*0.7
 !!!!             rhc(i,kc)=(1.-coefrhc)*(0.7+0.15*cos(d2r*xlat(j))**2)  &
