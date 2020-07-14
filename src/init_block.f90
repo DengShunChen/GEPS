@@ -136,8 +136,8 @@
       nmgwor=2
       nmgwcv=2
       mtnvar=14
-      cgwd = 1.0
-      cmbk = 1.2
+      cgwd = 1.2
+      cmbk = 1.0
 
 !
 ! specify the default option for reduced grids

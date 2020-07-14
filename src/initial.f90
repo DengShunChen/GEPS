@@ -26,7 +26,6 @@
       real      eval(no),evec(no*no),epos(no*no),x(no*2)
 !byl      real      a(jtrun,jtrun,lev),b(jtrun,jtrun,lev)
       real      a(jtrun,jtrun,nnmivm),b(jtrun,jtrun,nnmivm)
-!byl      real      mx(no*no),h(jtrun,jtmax,lev),c(jtrun,jtrun,lev)
       real      mx(no*no),h(jtrun,jtmax,nnmivm),c(jtrun,jtrun,nnmivm)
       integer   nw(jtrun,jtmax)
       real      phiten(levp,2,jtrun,jtmax)
@@ -46,7 +45,6 @@
 !
 !  define constants and comput coefficients for initializatin
 !
-!byl      call  inicons (rad,omega,eigval,lev,jtrun,jtmax, &
       call  inicons (rad,omega,eigval,lev,jtrun,jtmax, &
                      nw,a,b,c,h,nnmivm)
 !
@@ -103,7 +101,7 @@
 !
       if(L.eq.Llist(L)) &
           call vartran (vorten,divten,phiten,nw,jtrun,jtmax,levp,L, &
-                       rad,omega,h,+2)
+                       rad,omega,h(1,1,L),+2)
 !
 !   begin to initialize horizontal modes
 !
@@ -133,7 +131,7 @@
 !       +1:symmetric
 !
       if(L.eq.Llist(L)) &
-            call coftrix (mf,L,mx,ns,a,b,c,jtrun,lev,+1)
+            call coftrix (mf,L,mx,ns,a(1,1,L),b(1,1,L),c(1,1,L),jtrun,lev,+1)
 
       call mpe2d_row_broadcast(mx,no*no)
 !
@@ -167,7 +165,7 @@
 !       -1:antisymmetric
 !
       if(L.eq.Llist(L)) &
-            call coftrix (mf,L,mx,na,a,b,c,jtrun,lev,-1)
+            call coftrix (mf,L,mx,na,a(1,1,L),b(1,1,L),c(1,1,L),jtrun,lev,-1)
 
       call mpe2d_row_broadcast(mx,no*no)
 !
@@ -202,7 +200,7 @@
 !
       if(L.eq.Llist(L)) &
           call vartran (vorten,divten,phiten,nw,jtrun,jtmax,levp,L, &
-                        rad,omega,h,-2)
+                        rad,omega,h(1,1,L),-2)
 !
  110    continue
 !
