@@ -132,8 +132,8 @@
       nmgwor=2
       nmgwcv=2
       mtnvar=14
-      cgwd = 1.0
-      cmbk = 1.2
+      cmbk = 1.0
+      cgwd = 1.2
 !-for Cloud Micro Physics
       nmmiph=2
       ntinc=7
