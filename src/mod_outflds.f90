@@ -374,7 +374,7 @@ contains
 
       implicit  none
 
-      integer   nx,my,my_max,lpout,lev,itau,num,ntrac,ncnt
+      integer   nx,my,my_max,lpout,lev,itau,num,ntrac,ncnt,ntrchk
 
       real      pkout(lpout),pklp(nxp,my_max)                        &
       , pk(nxp,lev,my_max),dpd(nxp,lev,my_max),dpdb(nxp,my_max)      &
@@ -394,7 +394,8 @@ contains
 !
       cspec=(/'500','551','553','552','554','555'/)
 !
-
+      ntrchk=ncld
+      if ( ntoz .gt. 0 ) ntrchk=ncld-1
 !
       do k = 1, lev+1
        tens(k) = 1.0
@@ -402,7 +403,7 @@ contains
       tens(lev)= 0.0
       tens(lev+1)= 0.0
 !
-      if(ntrac.lt.ntoz)then ! all hydrometeors
+      if(ntrac.le.ntrchk)then ! all hydrometeors
 
       do k = 1, lpout-1
        lpl = int(plev(k)+0.001)
