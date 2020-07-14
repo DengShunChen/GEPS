@@ -1,5 +1,5 @@
       subroutine ndslfv_monoadvv (ddtemp,qvadv,vdzonl,vdmerd,pdot      &
-                                , lonsperlat,deltim)
+                                , pt,lonsperlat,deltim)
 !
 ! a routine to do non-iteration semi-Lagrangain advection
 ! considering advection  with monotonicity in interpolation
@@ -10,7 +10,7 @@
 !
 !
       use param
-      use grid
+      use grid, only : latpart,ndslvvar
       use index
       use rank
       use const
@@ -21,6 +21,7 @@
 !ch   real plev(lonfull,lev+1)
       real pdot(nxp,    lev+1,latpart)
       real plev(nxp,    lev+1)
+      real pt(nxp,latpart)
 !      integer,intent(in):: global_lats_a(my)
       integer,intent(in):: lonsperlat(my)
       real,   intent(in):: deltim
@@ -261,6 +262,140 @@
             qvadv(i,kk,lan) = qqlon(i,kq,lan)
           enddo
         enddo
+        enddo
+!
+!       if( lprint ) then
+!       call mymaxmin(qqlon(1,kqq,lan),lons_lat,lonfull,1,' q vertadv')
+!       print *,' ------------------------------------------- '
+!       print *,' finish updating n+1* in grid_gr at lan=',lan
+!       endif
+!
+      enddo
+!$omp end parallel do
+
+!
+! ===============================
+!
+      return
+      end
+!
+! -------------------------------
+      subroutine ndslfv_monoadvv_fgnl(pten,vdzonl,vdmerd,pdot      &
+                                , pt,lonsperlat,deltim)
+!
+! a routine to do non-iteration semi-Lagrangain advection
+! considering advection  with monotonicity in interpolation
+! contact: hann-ming henry juang
+! program log:
+! 2011 02 20 : henry juang, initial implemented into nems as NDSL with mass_dp
+! 2013 09 30 : henry juang, add option of theta advection, (used later)
+!
+!
+      use param
+      use grid, only : latpart
+      use index
+      use rank
+      use const
+
+      implicit none
+
+      real pdot(nxp,    lev+1,latpart)
+      real plev(nxp,    lev+1)
+      real pt(nxp,latpart)
+      integer,intent(in):: lonsperlat(my)
+      real,   intent(in):: deltim
+
+      real      qqlon(nxp,    lev*3,latpart)
+      real      vdmerd(nxp,lev,my_max),vdzonl(nxp,lev,my_max)
+      real      pten(nxp,lev,my_max)
+      real      rdt2,dt2
+
+      integer mono,mass,nvars
+      integer ii,i,n,k,kk,lon,lan,lat,lons_lat
+      integer kuu, kvv, ktt
+      integer ku , kv, kt
+!
+!     lprint = .false.
+
+!     if( lprint ) then
+!       print *,' enter ndslfv_advect  with monotonicity '
+!     endif
+!
+      mono  = 1
+      mass  = 0
+!      cons0 = 0.0
+!      cons1 = 1.0
+!
+!      levh = ncld * lev
+!
+      kuu = 1
+      kvv = kuu + lev
+      ktt = kvv + lev
+
+      nvars = 3
+!
+      rdt2 = 0.5 / deltim
+      dt2 =  2. * deltim
+!
+!$omp parallel do                                                &
+!$omp private(lan,lat,lons_lat,plev,i,k,n,kk,mass,ku,kv,kt)      &
+!$omp schedule(dynamic)
+
+!      do lan=1,lats_node_a
+      do lan=1,jlistnum
+
+!        lat = global_lats_a(ipt_lats_node_a-1+lan)
+        lat = jlist1(lan)
+        lons_lat = lonsperlat(lat)
+
+        plev(:,lev+1) = 0.0
+        do k=lev,1,-1
+          kk=lev-k+1
+          do i=1,lons_lat
+            plev(i,k)=plev(i,k+1)+dsigma(kk,1)*pt(i,lan)+dsigma(kk,2)
+          enddo
+        enddo
+
+!       if( lprint ) then
+!       do k=1,lev
+!       print *,' k= ',k
+!       call mymaxmin(pdot(1,k,lan),lons_lat,lonfull,1,' pdot ')
+!       call mymaxmin(plev(1,k),lons_lat,lonfull,1,' plev ')
+!       enddo
+!       endif
+!
+! d z t at n+1*
+!       kappa = con_rd / con_cp
+        do k=1,lev
+          kk=lev-k+1
+          ku=kuu+k-1
+          kv=kvv+k-1
+          kt=ktt+k-1
+          do i=1,lons_lat
+            qqlon(i,ku,lan) = vdzonl(i,kk,lan)
+            qqlon(i,kv,lan) = vdmerd(i,kk,lan)
+            qqlon(i,kt,lan) = pten(i,kk,lan)
+          enddo
+        enddo
+!
+!
+        mass=0
+!
+        call vertical_cell_advect (lons_lat,nxp,    lev,nvars, &
+                  deltim,plev,pdot(1,1,lan),qqlon(1,1,lan),mass)
+!
+!
+! u v t tendency at n
+        do k=1,lev
+          kk=lev-k+1
+          ku=kuu+k-1
+          kv=kvv+k-1
+          kt=ktt+k-1
+          do i=1,lons_lat
+            vdzonl(i,kk,lan) = qqlon(i,ku,lan)
+            vdmerd(i,kk,lan) = qqlon(i,kv,lan)
+            pten(i,kk,lan)   = qqlon(i,kt,lan)
+          enddo
         enddo
 !
 !       if( lprint ) then

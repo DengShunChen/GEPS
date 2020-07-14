@@ -1543,10 +1543,12 @@
 !
         do k=1,lev
          do i=1,lons_lat
-           vdzonl(i,k,lan) = (vdzonlr(i,k,lan)-dlphi(i,k,lan)/radsq) &
-                             * dt2 + vdzonl(i,k,lan)
-           vdmerd(i,k,lan) = (vdmerdr(i,k,lan)-dtphi(i,k,lan)/radsq  &
-                             / onocos(lat))*dt2 + vdmerd(i,k,lan)
+!ttl           vdzonl(i,k,lan) = (vdzonlr(i,k,lan)-dlphi(i,k,lan)/radsq) &
+!ttl                             * dt2 + vdzonl(i,k,lan)
+!ttl           vdmerd(i,k,lan) = (vdmerdr(i,k,lan)-dtphi(i,k,lan)/radsq  &
+!ttl                             / onocos(lat))*dt2 + vdmerd(i,k,lan)
+           vdzonl(i,k,lan) = vdzonlr(i,k,lan) * dt2 + vdzonl(i,k,lan)
+           vdmerd(i,k,lan) = vdmerdr(i,k,lan) * dt2 + vdmerd(i,k,lan)
          enddo
         enddo
       enddo
