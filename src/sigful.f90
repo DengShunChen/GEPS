@@ -226,22 +226,13 @@
               write (typ, '("m",i2.2,a3)' ) KL,cspec(ntrac)    ! cloud liquid water content
               call syslbl (typ,idtg2,itaup,gmdef,lrec)
               call dmsread_split (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
-! reset liquid water if too large in stratusphere
-              lqwset=18
-              if(KL.le.lqwset)then
-                do j = 1,my
-                  do i = 1, nx
-                    hld1(i,j)=max(hld1(i,j),1.0e-20)
-                  enddo
-                enddo
-              endif
 !
               do jj = 1, jlistnum
                 j=jlist1(jj)
                 nxj=nxdef(j)
                 if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
                 do i = 1, nxj
-                  hld4(i,k,ntrac,jj) = hld1(i,j)
+                  hld4(i,k,ntrac,jj) = max(hld1(i,j),1.0e-20)
                 enddo
               enddo
             enddo
