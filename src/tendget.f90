@@ -143,7 +143,7 @@
         enddo
         do k = 1, lev*ncld
           do i = 1, nxj
-            qm(i,k,jj) = qt(i,k,jj)
+            qp(i,k,jj) = qt(i,k,jj)
           enddo
         enddo
 !!        do i = 1, nxj
@@ -151,7 +151,7 @@
 !!        enddo
       enddo
 !ch>
-! transpose partial to full: ut -> ut_sl, vt -> vt_sl, ttm -> ttm_sl, qm -> qm_sl
+! transpose partial to full: ut -> ut_sl, vt -> vt_sl, ttm -> ttm_sl, qp -> qm_sl
 
 #ifdef MULTIPLE
       call mpe2d_transpose_ndsl_p2f_multi(ut   ,vt   ,ttp   ,dummy,dummy,qm,    &
@@ -164,7 +164,7 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f(ttp,ttm_sl,  &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f(qm,qm_sl,    &
+      call mpe2d_transpose_ndsl_p2f(qp,qm_sl,    &
                                     nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 #endif
 
@@ -235,12 +235,22 @@
 !
 !       update all horizontal informations
 !
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          do i=1,nxj
+            do k=1,lev
+              vdmerdr(i,k,jj)=vdmerdr(i,k,jj)-dtphi(i,k,jj)/radsq/onocos(j)
+              vdzonlr(i,k,jj)=vdzonlr(i,k,jj)-dlphi(i,k,jj)/radsq
+            enddo
+          enddo
+        enddo !jj = 1,jlistnum
         call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlr,vdmerdr,dta)
 !
 !
 !       Vertical Advection
 !
-        call ndslfv_monoadvv(ddtemp,qvadv,vdzonl,vdmerd,pdot          &
+        call ndslfv_monoadvv(ddtemp,qvadv,vdzonl,vdmerd,pdot,pt        &
                             ,nxjp,dta)
 !
       do jj = 1, jlistnum

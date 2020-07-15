@@ -15,7 +15,6 @@
       real, dimension(:,:,:),allocatable,save :: ut,vt,sd,rvor,rdiv,&
                            tt,qt,phi,plt,pk,pk2,up,vp,ttp,qp
 !! for Semi-Lagrangian
-      real, dimension(:,:,:),allocatable,save :: qm
       real, dimension(:,:,:),allocatable,save :: dlphi,dtphi,     &
                              ut_sl,vt_sl
 !!                             ut_sl,vt_sl,uum_sl,vvm_sl,ttm_sl
@@ -87,8 +86,7 @@
            end if
 
            allocate (dlphi(nxp,lev,my_max),  &
-                     dtphi(nxp,lev,my_max),  &
-                     qm(nxp,lev*ncld,my_max) ,stat=ierr)
+                     dtphi(nxp,lev,my_max),stat=ierr)
 
            if (ierr/= 0) then
                write(6,*) 'mod_grid for ndsl : allocate fail 4'
@@ -111,7 +109,6 @@
            deallocate ( pt,dlpl,dtpl,sgeo,pdiff, &
                ptend,t1000,tsave,std,ptp)
 ! for Semi-Lagrangian
-           deallocate (qm)
            deallocate (gslati,gglati,lonstr,lonlen,latstr,latlen)
            deallocate (dlphi,dtphi)
 !!         deallocate (ut_sl,vt_sl,uum_sl,vvm_sl,ttm_sl,qm_sl,pt_sl,ptp_sl)

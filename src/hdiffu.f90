@@ -1,6 +1,6 @@
       subroutine hdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld,amp   &
                         , rad,cosl,ut,vt,vornow,divnow,temnow,eps4     &
-                        , trefs)
+                        , trefs,jump)
       use index
       use mpe
       use rank
@@ -9,7 +9,7 @@
 
       implicit  none
 
-      integer   my,my_max,nx,jtrun,jtmax,lev,ncld
+      integer   my,my_max,nx,jtrun,jtmax,lev,ncld,jump
       real      dta,rad
 
       real      cosl(my),ut(nxp,lev,my_max),vt(nxp,lev,my_max),  &
@@ -36,6 +36,7 @@
       nf=jtrun-1
       wmax(1:lev)= 0.0
 !
+      if ( jump .gt. 0 ) then
       do jj =1,jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
@@ -55,6 +56,7 @@
                                  ' windmax=',wmax(k)
         endif
       enddo
+      endif
 !
 !
         hfilt = (radsq/(nf*(nf+1)))**2.

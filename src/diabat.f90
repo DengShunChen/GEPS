@@ -319,7 +319,7 @@
 !
       real qt_shum_old(nxp,lev*ncld,my_max)
 !
-      real,intent(in) :: sppt3d(nxp,lev,my_max)
+      real,intent(inout) :: sppt3d(nxp,lev,my_max)
       real ru
       integer itimestep,ii
       logical dosppt
@@ -428,7 +428,7 @@
 !xb110>
 !for new precpd & nTDK
       real      u0(nxp,lev),v0(nxp,lev),t0(nxp,lev),q0(nxp,lev*ncld)
-      real      upp(nxp,lev),vpp(nxp,lev)
+      real      upp(nxp,lev),vpp(nxp,lev),ttpp(nxp,lev)
 !for lightning
       real      flash(nxp,my_max)        !flash density (unit in flashes km^-2 day^-1)
       real      ztenh(nxp,lev),zqenh(nxp,lev),rho(nxp,lev)              &
@@ -864,7 +864,7 @@
       vpp(i,k) = vp(i,k,jj)*xx
       tt(i,k,jj) = tt(i,k,jj)*pk(i,k,jj) / (1.0+0.608*qt(i,k,jj))
 !byl      ttpn(i,k,jj) = ttp(i,k,jj)*pkn(i,k,jj)/(1.0+0.608*qp(i,k,jj))
-      ttp(i,k,jj) = ttp(i,k,jj) / (1.0+0.608*qp(i,k,jj))
+      ttpp(i,k) = ttp(i,k,jj) / (1.0+0.608*qp(i,k,jj))
   230 continue
 !
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -1046,7 +1046,7 @@
          call pbltke ( nxjp(j),nxp,lev,ktpbl,dta,grav,rgas,cp,xkapa,hltm,ptop &
                      , tice,hice,tg(1,jj),z0(1,jj),land(1,jj)                 &
                      , sgeo(1,jj),phi,pst(1,jj),upp,vpp                       &
-                     , ttp(1,1,jj),qp(1,1,jj),ut(1,1,jj),vt(1,1,jj)           &
+                     , ttpp,qp(1,1,jj),ut(1,1,jj),vt(1,1,jj)                  &
                      , tt(1,1,jj),qt(1,1,jj),pk(1,1,jj),pk2(1,1,jj)           &
                      , ustar(1,jj),tstar(1,jj),qstar(1,jj),e(1,1,jj)          &
                      , eps(1,1,jj),hflux(1,jj),qflux(1,jj),fwd                &
@@ -1073,7 +1073,7 @@
          call pbltke_n ( nxjp(j),nxp,lev,ktpbl,dta,grav,rgas,cp,xkapa,hltm,ptop &
                      , tice,hice,tg(1,jj),z0(1,jj),land(1,jj)                 &
                      , sgeo(1,jj),phi,pst(1,jj),upp,vpp                       &
-                     , ttp(1,1,jj),qp(1,1,jj),ut(1,1,jj),vt(1,1,jj)           &
+                     , ttpp,qp(1,1,jj),ut(1,1,jj),vt(1,1,jj)                  &
                      , tt(1,1,jj),qt(1,1,jj),pk(1,1,jj),pk2(1,1,jj)           &
                      , ustar(1,jj),tstar(1,jj),qstar(1,jj),e(1,1,jj)          &
                      , eps(1,1,jj),hflux(1,jj),qflux(1,jj),fwd                &
@@ -1090,7 +1090,7 @@
        call pbl_noah ( nxjp(j),nxp,lev,ktpbl,dta,grav,rgas,cp,xkapa,hltm,ptop &
                      , tice,hice,tg(1,jj),z0(1,jj),land(1,jj)                 &
                       , sgeo(1,jj),phi,pst(1,jj),upp,vpp                      &
-                     , ttp(1,1,jj),qp(1,1,jj),ut(1,1,jj),vt(1,1,jj)           &
+                     , ttpp,qp(1,1,jj),ut(1,1,jj),vt(1,1,jj)                  &
                      , tt(1,1,jj),qt(1,1,jj),pk(1,1,jj),pk2(1,1,jj)           &
                      , ustar(1,jj),tstar(1,jj),qstar(1,jj),e(1,1,jj)          &
                      , eps(1,1,jj),hflux(1,jj),qflux(1,jj),fwd                &
@@ -1142,25 +1142,25 @@
 ! SHUM process
 !  John Tseng
 !
-    if (dosppt) then
+      if (dosppt) then
 ! there's no need to add perturbation for ozone tracer. (
 ! modified by PangYen Liu
-      if (ntoz .eq. 0 ) then
-        nk = ncld
-      else
-        nk = ncld-1
-      endif
+        if (ntoz .eq. 0 ) then
+          nk = ncld
+        else
+          nk = ncld-1
+        endif
 !
-      do n=1,nk
-        do k=1,lev
-          kk = (n-1)*lev+k
-          do i=1,nxj
-            ru=sppt3d(i,k,jj)*exp(-(k-65.)*(k-65.)/400.)*0.01
-            qt(i,kk,jj)=(1+ru)*qt(i,kk,jj)-ru*qt_shum_old(i,kk,jj)
-            if (qt(i,kk,jj).lt.0) qt(i,kk,jj)=0.
+        do n=1,nk
+          do k=1,lev
+            kk = (n-1)*lev+k
+            do i=1,nxj
+              ru=sppt3d(i,k,jj)*exp(-(k-65.)*(k-65.)/400.)*0.01
+              qt(i,kk,jj)=(1+ru)*qt(i,kk,jj)-ru*qt_shum_old(i,kk,jj)
+              if (qt(i,kk,jj).lt.0) qt(i,kk,jj)=0.
+            enddo
           enddo
         enddo
-      enddo
 !!      do k=1,lev
 !!      do i=1,nxj
 !!      ru=sppt3d(i,k,jj)*exp(-(k-65.)*(k-65.)/400.)*0.01
@@ -1176,7 +1176,7 @@
 !!      enddo
 !!      enddo
 !
-    endif ! end dosppt if stetement
+      endif ! end dosppt if stetement
 
 !
       if(dograv .and. (nmgwor .eq. 1) )                                &
@@ -1316,7 +1316,7 @@
         enddo
         call cumastr_driv(nxjp(j),nxp,lev,dt,grav,rgas,cp,hltm,ptop &
                        , land(1,jj),sgeo(1,jj),phi,upp              &
-                       , vpp,ttp(1,1,jj),qp(1,1,jj)                 &
+                       , vpp,ttpp,qp(1,1,jj)                        &
                        , ut(1,1,jj),vt(1,1,jj),tt(1,1,jj)           &
                        , qt(1,1,jj),rcup(1,jj),pk(1,1,jj)           &
                        , pk2(1,1,jj),dotc,qflux(1,jj)               &
@@ -2240,53 +2240,43 @@
 ! sppt tendencies
 !        John Tseng
 !
-    if (dosppt) then
-      do jj=1,jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-        do k=1,lev
-          do i=1,nxj
-            ru=sppt3d(i,k,jj)
-            ttp(i,k,jj)=ru*(tt(i,k,jj)-tt_sppt_old(i,k,jj)) !write out for checking
-            ut(i,k,jj) = (1+ru)*ut(i,k,jj) - ru*ut_sppt_old(i,k,jj)
-            vt(i,k,jj) = (1+ru)*vt(i,k,jj) - ru*vt_sppt_old(i,k,jj)
-            tt(i,k,jj) = (1+ru)*tt(i,k,jj) - ru*tt_sppt_old(i,k,jj)
+      if (dosppt) then
+        do jj=1,jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          do k=1,lev
+            do i=1,nxj
+              ru=sppt3d(i,k,jj)
+              ut(i,k,jj) = (1+ru)*ut(i,k,jj) - ru*ut_sppt_old(i,k,jj)
+              vt(i,k,jj) = (1+ru)*vt(i,k,jj) - ru*vt_sppt_old(i,k,jj)
+              tt(i,k,jj) = (1+ru)*tt(i,k,jj) - ru*tt_sppt_old(i,k,jj)
+            enddo
           enddo
-        enddo
 ! there's no need to add perturbation for ozone tracer. (
 ! modified by PangYen Liu
-      if (ntoz .eq. 0 ) then
-        nk = ncld
-      else
-        nk = ncld-1
-      endif
+        if (ntoz .eq. 0 ) then
+          nk = ncld
+        else
+          nk = ncld-1
+        endif
 
-      do n=1,nk
-        do k=1,lev
-          kk = (n-1)*lev+k
-          do i=1,nxj
-            ru=sppt3d(i,k,jj)
-            qt(i,kk,jj) = (1+ru)*qt(i,kk,jj) - ru*qt_sppt_old(i,kk,jj)
-            if (qt(i,kk,jj).lt.0) qt(i,kk,jj) = 0.
+        do n=1,nk
+          do k=1,lev
+            kk = (n-1)*lev+k
+            do i=1,nxj
+              ru=sppt3d(i,k,jj)
+              qt(i,kk,jj) = (1+ru)*qt(i,kk,jj) - ru*qt_sppt_old(i,kk,jj)
+              if (qt(i,kk,jj).lt.0) qt(i,kk,jj) = 0.
+            enddo
           enddo
         enddo
-      enddo
-!!      do k=1,lev
-!!      do i=1,nxj
-!!      ru=sppt3d(i,k,jj)
-!!      qt(i,k,jj)=(1+ru)*qt(i,k,jj)-ru*qt_sppt_old(i,k,jj)
-!!      if (qt(i,k,jj).lt.0) qt(i,k,j)=0.
-!!      enddo
-!!      enddo
-!!      do k=lev+1,lev*ncld
-!!      do i=1,nxj
-!!      ru=sppt3d(i,k-lev,jj)
-!!      qt(i,k,jj)=(1+ru)*qt(i,k,jj)-ru*qt_sppt_old(i,k,jj)
-!!      if (qt(i,k,jj).lt.0) qt(i,k,jj)=0.
-!!      enddo
-!!      enddo
-      enddo
-    endif ! end dosppt if stetement
+        do k=1,lev
+          do i=1,nxj
+            sppt3d(i,k,jj)=ru*(tt(i,k,jj)-tt_sppt_old(i,k,jj)) !write out for checking
+          enddo
+        enddo
+        enddo
+      endif ! end dosppt if stetement
 !
 !--------------------------------------------------------------------------------
 !     update o3l to qt
