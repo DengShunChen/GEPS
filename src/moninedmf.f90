@@ -1057,7 +1057,6 @@
             rtg(i,k,1) = qtend
             dtsfc(i)   = dtsfc(i)+cont*del(i,k)*ttend
             dqsfc(i)   = dqsfc(i)+conq*del(i,k)*qtend
-            t1(i,k)    = a1(i,k)
             q1(i,k,1)  = a2(i,k)
          enddo
       enddo
@@ -1111,6 +1110,12 @@
         enddo
 !
       endif
+!    update temperature tendency to model layer mean temperature
+      do  k = 1,km
+         do i = 1,im
+            t1(i,k) = t1(i,k) + tau(i,k) * dt2
+         enddo
+      enddo
 !
 !     compute tridiagonal matrix elements for momentum
 !

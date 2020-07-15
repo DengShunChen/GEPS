@@ -219,7 +219,7 @@
       call cuadjtq_n(nxj,klon,klev,ik,zph,ptu,pqu,loflag,icall)
         do jl = 1, nxj          
         if( loflag(jl) ) then
-          pqu(jl,jk) =max(pqu(jl,jk),0) !xb110, to make sure that pqu is positive
+          pqu(jl,jk) =max(pqu(jl,jk),0.) !xb110, to make sure that pqu is positive
           zdq = max((zqold(jl) - pqu(jl,jk)),0.)
           plu(jl,jk) = plu(jl,jk+1) + zdq
           zlglac=zdq*((1.-foealfa(ptu(jl,jk))) - &
@@ -434,7 +434,7 @@
  
         do jl = 1, nxj              
         if( loflag(jl) ) then
-          pqu(jl,jk) =max(pqu(jl,jk),0) !xb110, to make sure that pqu is positive
+          pqu(jl,jk) =max(pqu(jl,jk),0.) !xb110, to make sure that pqu is positive
           zdq = max((zqold(jl) - pqu(jl,jk)),0.)
           plu(jl,jk) = plu(jl,jk+1) + zdq
           zlglac=zdq*((1.-foealfa(ptu(jl,jk))) - &
