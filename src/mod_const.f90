@@ -35,10 +35,10 @@
  
     real ::                                                &
          capa,cp,rad,radsq,grav,omega,rgas,stbo,s0,hltm,   &
-         ptop,ptmean,tfilt,dt,tau,taui,taue,tauo,          &
+         ptop,ptmean,dt,tau,taui,taue,tauo,                &
          hours,frad,evaprh,qgini,                          &
          tice,hice,cutfreq,taup,hfilt,ptmeans,             &
-         taureg,cgw,domfc,otgreen,cgwd,cmbk
+         taureg,cgw,domfc,otgreen,cgwd,cmbk,spl1,spl2
     !sit
     real :: fsit         !fsit>0., turn on sit_vdiff when mod(tau/fsit)<0.001
                          !default fsit<=0., turn on sit_vdiff every tau
@@ -46,10 +46,10 @@
  
     common/constR/                                         &
          capa,cp,rad,radsq,grav,omega,rgas,stbo,s0,hltm,   &
-         ptop,ptmean,tfilt,dt,tau,taui,taue,tauo,          &
+         ptop,ptmean,dt,tau,taui,taue,tauo,                &
          hours,frad,evaprh,qgini,                          &
          tice,hice,cutfreq,taup,hfilt,ptmeans,             &
-         taureg,cgw,fsit,domfc,otgreen
+         taureg,cgw,fsit,domfc,otgreen,spl1,spl2
     ! sppt parameters
     real  :: de_corretime_500,de_corretime_1000,de_corretime_2000, &
              facsppt500,facsppt1000,facsppt2000

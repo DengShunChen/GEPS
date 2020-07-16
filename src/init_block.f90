@@ -27,8 +27,10 @@
 !!      grav=9.80616
 
       dt=900.0
-      tfilt=0.02
-
+!  sponge layer 
+      spl1=5.
+      spl2=100.
+!
       frad=1.0
       ptop=1.0
       ptmean=1000.0
