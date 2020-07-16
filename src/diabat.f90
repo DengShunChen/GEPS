@@ -390,7 +390,7 @@
                 islimsk(nxp)
       real      sl(lev),delcup(lev),slimsk(nxp)
       real      dotc(nxp,lev),phil(nxp,lev),utc(nxp,lev),vtc(nxp,lev)
-      real      cldwrk(nxp,my_max),sd(nxp,lev,my_max),xkt2(nx)
+      real      cldwrk(nxp,my_max),sd(nxp,lev+1,my_max),xkt2(nx)
 ! for new shlcon
       real      rcup2(nxp)
 ! for scale-aware convection
@@ -958,15 +958,10 @@
         enddo
       endif
 !
-      do k=1,lev-1
-        kc=lev-k+1
+      do k=1,lev
         do i = 1, nxj
           dotc(i,kc)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
-          dotc(i,kc)=dotc(i,kc)
         enddo
-      enddo
-      do i = 1,nxj
-        dotc(i,1)=0.5*sd(i,lev,jj)
       enddo
 
 !      if (myrank .eq. 0) then
@@ -1306,13 +1301,11 @@
 !cyea---->
 !c 20120926 for Tiedtke cumulus
       if ( docup .and. (nmcup .eq. 4 .and. ncld .ge. 2) ) then
-        do k=1,lev-1
+        do k=1,lev
+          kc=lev-k+1
           do i = 1, nxj
-            dotc(i,k)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
+            dotc(i,kc)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
           enddo
-        enddo
-        do i = 1,nxj
-          dotc(i,lev)=0.5*sd(i,lev,jj)
         enddo
         call cumastr_driv(nxjp(j),nxp,lev,dt,grav,rgas,cp,hltm,ptop &
                        , land(1,jj),sgeo(1,jj),phi,upp              &
@@ -1351,13 +1344,11 @@
         do i=1,nxj
           garea(i)  = tem1*tem2
         enddo
-        do k=1,lev-1
+        do k=1,lev
+          kc=lev-k+1
           do i = 1, nxj
-            dotc(i,k)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
+            dotc(i,kc)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
           enddo
-        enddo
-        do i = 1,nxj
-          dotc(i,lev)=0.5*sd(i,lev,jj)
         enddo
 
         call cumastr_driv_n                                               &
@@ -1409,15 +1400,11 @@
           psfc(i)  = pst(i,jj)*0.1        ! change to cb
           garea(i)  = tem1*tem2
         enddo
-        do k=1,lev-1
-          kc=lev-k+1
+        do k=1,lev
           do i = 1, nxj
-            dotc(i,kc)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
-            dotc(i,kc)=dotc(i,kc)*0.1
+            dotc(i,k)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
+            dotc(i,k)=dotc(i,k)*0.1
           enddo
-        enddo
-        do i = 1,nxj
-          dotc(i,1)=0.5*sd(i,lev,jj)*0.1
         enddo
         do k=1,lev
           kc=lev-k+1
@@ -1614,15 +1601,11 @@
           garea(i) = tem1*tem2
 
         enddo
-        do k=1,lev-1
-          kc=lev-k+1
+        do k=1,lev
           do i = 1, nxj
-            dotc(i,kc)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
-            dotc(i,kc)=dotc(i,kc)*0.1
+            dotc(i,k)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
+            dotc(i,k)=dotc(i,k)*0.1
           enddo
-        enddo
-        do i = 1,nxj
-          dotc(i,1)=0.5*sd(i,lev,jj)*0.1
         enddo
         do k=1,lev
           kc=lev-k+1

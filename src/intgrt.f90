@@ -74,7 +74,7 @@
                 vvm_sl(nx,levp,my_max),                            &
                 uum_sl(nx,levp,my_max)
 !
-      real      ndsldta,ndsldtah
+      real      ndsldta,ndsldtah,facm(2,2)
       integer   ierr,itter,itt
 !
       real      glob(nx,my), &
@@ -209,6 +209,8 @@
 !
       lmax  = 16
       nfxr  = 33
+!
+      data facm/1.,0.,1.5,-0.5/
 !
 ! output initialization field
 !
@@ -648,23 +650,6 @@
 !
 !  global mean tempertures (tbar) and specific humid (qbar)
 !
-!!      sqhaf = sqrt(0.5)
-!!      flag  =.false.
-!!      do m = 1, mlistnum
-!!        mf=mlist(m)
-!!        if ( mf.eq.1 ) then
-!!          flag=.true.
-!!          do k = 1, lev
-!!            tbar(k) = sqhaf*temnow(k,1,1,m)
-!!          enddo
-!!          do k = 1, lev*ncld
-!!            qbar(k) = sqhaf*qnow(k,1,1,m)
-!!          enddo
-!!        endif
-!!      enddo
-!!      call mpe_broadcast(tbar,lev,flag,mpe_double)
-!!      call mpe_broadcast(qbar,lev*ncld,flag,mpe_double)
-!
       do m=1,mlistnum
         mf=mlist(m)
         do n=mf,jtrun
@@ -680,24 +665,23 @@
           enddo
         enddo
       enddo
-!!      do m=1,mlistnum
-!!        mf=mlist(m)
-!!        do n=mf,jtrun
-!!          do k = 1, levp*ncld*2
-!!            qten(k,1,n,m)   = 0.0
-!!          enddo
-!!        enddo
-!!      enddo
  
 !     estimate all field at t+dt/2
+        itt=min(itimestep,2)
         do m = 1, mlistnum
           mf=mlist(m)
           do n = mf, jtrun
             do i = 1, 2
             do k = 1, levp
-              vorold(k,i,n,m)= 1.5*vornow(k,i,n,m)-0.5*vorold(k,i,n,m)
-              divold(k,i,n,m)= 1.5*divnow(k,i,n,m)-0.5*divold(k,i,n,m)
-              temold(k,i,n,m)= 1.5*temnow(k,i,n,m)-0.5*temold(k,i,n,m)
+!              vorold(k,i,n,m)= 1.5*vornow(k,i,n,m)-0.5*vorold(k,i,n,m)
+!              divold(k,i,n,m)= 1.5*divnow(k,i,n,m)-0.5*divold(k,i,n,m)
+!              temold(k,i,n,m)= 1.5*temnow(k,i,n,m)-0.5*temold(k,i,n,m)
+              vorold(k,i,n,m)=facm(1,itt) * vornow(k,i,n,m)    &
+                             +facm(2,itt) * vorold(k,i,n,m)
+              divold(k,i,n,m)=facm(1,itt) * divnow(k,i,n,m)    &
+                             +facm(2,itt) * divold(k,i,n,m)
+              temold(k,i,n,m)=facm(1,itt) * temnow(k,i,n,m)    &
+                             +facm(2,itt) * temold(k,i,n,m)
             enddo
             enddo
           enddo
@@ -709,8 +693,12 @@
         do m = 1, mlistnum
           mf=mlist(m)
           do n = mf, jtrun
-            plold(n,m,1)= 1.5*plnow(n,m,1)-0.5*plold(n,m,1)
-            plold(n,m,2)= 1.5*plnow(n,m,2)-0.5*plold(n,m,2)
+!            plold(n,m,1)= 1.5*plnow(n,m,1)-0.5*plold(n,m,1)
+!            plold(n,m,2)= 1.5*plnow(n,m,2)-0.5*plold(n,m,2)
+            plold(n,m,1)=facm(1,itt) * plnow(n,m,1)   &
+                        +facm(2,itt) * plold(n,m,1)
+            plold(n,m,2)=facm(1,itt) * plnow(n,m,2)   &
+                        +facm(2,itt) * plold(n,m,2)
           enddo
         enddo
 !
@@ -770,7 +758,7 @@
 !
 !   new p**capa quantities were computed in previous diabat call
 !
-        if (.not.yesdia) call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pt(1,jj), &
+        if (.not.yesdia) call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,ptp(1,jj), &
                                pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
 !
 !
@@ -793,18 +781,6 @@
 !
 !     estimated grid non-linear forcing at t-dt/2 by time average grid non-linear forcing at t-dt and t.
 !
-      if ( itimestep .eq. 1 ) then
-        do jj = 1, jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
-          do k = 1, lev
-            do i = 1,nxj
-              pdotp(i,k,jj) = pdot(i,k,jj)
-            enddo
-          enddo
-        enddo
-      endif
-
       do jj = 1, jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
@@ -815,7 +791,9 @@
             pten(i,k,jj)=deldmp(i,jj)*dsigma(k,1)
           enddo
           do k=1,lev+1
-            pdotp(i,k,jj) = 1.5*pdot(i,k,jj)-0.5*pdotp(i,k,jj)
+!            pdotp(i,k,jj) = 1.5*pdot(i,k,jj)-0.5*pdotp(i,k,jj)
+            pdotp(i,k,jj) = facm(1,itt)*pdot(i,k,jj)   &
+                          + facm(2,itt)*pdotp(i,k,jj)
           enddo
         enddo
       enddo !jj = 1,jlistnum
@@ -861,25 +839,15 @@
         enddo
       enddo !jj = 1,jlistnum
 !
-      call mpe2d_unify_nx(ww1,deldm) 
-      call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1         &
-                  ,plten,nsizey)
-      do m = 1, mlistnum
-        mf=mlist(m)
-        do n = mf, jtrun
-          pltemp(n,m,1)= dta*plten(n,m,1)+plnow(n,m,1)
-          pltemp(n,m,2)= dta*plten(n,m,2)+plnow(n,m,2)
-        enddo
-      enddo
-      call transr1(jtrun,jtmax,nx,my,my_max,poly,pltemp,pt,nsizey)
+
 !
-      do jj = 1, jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-        do i=1,nxj
-          deldm(i,jj)= 0.5*(pt(i,jj)+ptp(i,jj))
-        enddo
-      enddo !jj = 1,jlistnum
+!      do jj = 1, jlistnum
+!        j=jlist1(jj)
+!        nxj=nxdef_2d(j)
+!        do i=1,nxj
+!          deldm(i,jj)= 0.5*(pt(i,jj)+ptp(i,jj))
+!        enddo
+!      enddo !jj = 1,jlistnum
 
 
 ! transpose partial to full: ut -> ut_sl, vt -> vt_sl, ut -> uum_sl, vt -> vvm_sl, tt -> ttm_sl, qp -> qm_sl
@@ -945,7 +913,7 @@
 !
 !       Vertical Advection
 !
-        call ndslfv_monoadvv(ddtemp,qt,vdzonl,vdmerd,pdotp,deldm      &
+        call ndslfv_monoadvv(ddtemp,qt,vdzonl,vdmerd,pdotp,pt      &
                             ,nxjp,ndsldta)
 
 !
@@ -961,6 +929,18 @@
           enddo
         enddo
       enddo
+!
+      call mpe2d_unify_nx(ww1,deldm) 
+      call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1         &
+                  ,plten,nsizey)
+      do m = 1, mlistnum
+        mf=mlist(m)
+        do n = mf, jtrun
+          pltemp(n,m,1)= dta*plten(n,m,1)+plnow(n,m,1)
+          pltemp(n,m,2)= dta*plten(n,m,2)+plnow(n,m,2)
+        enddo
+      enddo
+      call transr1(jtrun,jtmax,nx,my,my_max,poly,pltemp,pt,nsizey)
 
 !  prepare randome numbers for sppt3d
 !
@@ -994,7 +974,7 @@
                       , fm,fh,fm10,fh2,srflag                                   &
                       , rld,km_soil,smc,stc,canopy,runoff                       &
                       , sigmaf,istyp,ivegtyp,wltsmc,refsmc,maxsmc,dfkt,xktk,dfk &
-                      , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,deltaq,cnvwr,cnvcr,sd      &
+                      , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,deltaq,cnvwr,cnvcr,pdotp   &
                       , shdmax,shdmin,snoalb                                    &
                       , slopetyp,sld,slc,zice,cice,xtice,sncover,sndepth        &
                       , ctot,chig,cmid,clow,hpbl,asl,atl,cosz                   &
