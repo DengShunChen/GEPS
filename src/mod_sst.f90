@@ -748,7 +748,7 @@
                                       +dailyClmANAsst(ii,jj,2)
                 endif
               endif 
-              if(locean(ii,jj) .AND. dailyClm_option .eq. 2) then   !dailyClm_option=2
+              if(ldailyFCTsst .AND. locean(ii,jj) .AND. dailyClm_option .eq. 2) then   !dailyClm_option=2
                 dailyClmFCTsst(ii,jj,0)=sstFCT0(i,j)
                 dailyClmFCTsst(ii,jj,1)=sstFCT0(i,j)
                 dailyClmFCTsst(ii,jj,2)=sstFCT1(i,j)
@@ -870,7 +870,7 @@
                                        +dailyClmANAsst(ii,jj,2)
                 endif
               endif
-              if(locean(ii,jj) .AND. dailyClm_option .eq. 2) then   !dailyClm_option=2
+              if(ldailyFCTsst .AND. locean(ii,jj) .AND. dailyClm_option .eq. 2) then   !dailyClm_option=2
                 dailyClmFCTsst(ii,jj,2)=sstFCT(i,j)
                 !idea from Yuejian Zhu(2018 JGR)
                  wweight=min(max(float(itau)/24./35.,0.),1.)
