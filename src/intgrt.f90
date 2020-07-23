@@ -66,13 +66,12 @@
                 vdmerd(nxp,lev,my_max),vdzonl(nxp,lev,my_max),     &
                 vdmerdr(nxp,lev,my_max),vdzonlr(nxp,lev,my_max),   &
                 vdmerdrp(nxp,lev,my_max),vdzonlrp(nxp,lev,my_max), &
-                deldmp(nxp,my_max),pdotp(nxp,lev+1,latpart),       &
 !                qmt(nxp,lev*ncld,my_max),                      &
                 ttm_sl(nx,levp,my_max),                            &
                 pten_sl(nx,levp,my_max),                           &
                 qm_sl(nx,levp*ncld,my_max),                        &
                 vvm_sl(nx,levp,my_max),                            &
-                uum_sl(nx,levp,my_max)
+                uum_sl(nx,levp,my_max),ptm(nxp,my_max)
 !
       real      ndsldta,ndsldtah,facm(2,2)
       integer   ierr,itter,itt
@@ -357,9 +356,6 @@
       sld=0.
       recn=1
 !
-
-      pdotp=0.
-
 !
 ! read mountant variables for topographic gravity wave drag
 !
@@ -370,7 +366,6 @@
            print*,'read mtnvar=14 hprime_b=',(hprime_b(1,i,1),i=1,mtnvar)
       endif
 !
-
 !#ifndef NO_OUT
 !       rh2100=rh2*100. 
 !       rh10100=rh10*100. 
@@ -673,9 +668,6 @@
           do n = mf, jtrun
             do i = 1, 2
             do k = 1, levp
-!              vorold(k,i,n,m)= 1.5*vornow(k,i,n,m)-0.5*vorold(k,i,n,m)
-!              divold(k,i,n,m)= 1.5*divnow(k,i,n,m)-0.5*divold(k,i,n,m)
-!              temold(k,i,n,m)= 1.5*temnow(k,i,n,m)-0.5*temold(k,i,n,m)
               vorold(k,i,n,m)=facm(1,itt) * vornow(k,i,n,m)    &
                              +facm(2,itt) * vorold(k,i,n,m)
               divold(k,i,n,m)=facm(1,itt) * divnow(k,i,n,m)    &
@@ -686,15 +678,10 @@
             enddo
           enddo
         enddo
-      if (hdiff) call hdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld       &
-                             , hfiltx,rad,cosl,ut,vt,vorold,divold,temold  &
-                             , eps4,trefs,0)
 !
         do m = 1, mlistnum
           mf=mlist(m)
           do n = mf, jtrun
-!            plold(n,m,1)= 1.5*plnow(n,m,1)-0.5*plold(n,m,1)
-!            plold(n,m,2)= 1.5*plnow(n,m,2)-0.5*plold(n,m,2)
             plold(n,m,1)=facm(1,itt) * plnow(n,m,1)   &
                         +facm(2,itt) * plold(n,m,1)
             plold(n,m,2)=facm(1,itt) * plnow(n,m,2)   &
@@ -723,10 +710,14 @@
       enddo
 ! Transfer Spectral to Gridpoint for u,v,t,q,ps at n-1
 !        call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temold,cc,1,nsizey)
-!        call ujoinsr(cc,ttp,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+!        call ujoinsr(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+        call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divold,cc,1,nsizey)
+        call ujoinsr(cc,rdiv,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
         call tranuv(jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac    &
                    ,poly,dpoly,vorold,divold,ut,vt,nsizey)
         call transr1(jtrun,jtmax,nx,my,my_max,poly,plold,pt,nsizey)
+!!        call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,plnow      &
+!!                   ,dlpl,dtpl,nsizey)
 
 ! for Semi-Lagrangian advection
 !
@@ -737,7 +728,7 @@
        vdzonlr=0.
        ddtemp=0.
        pten=0.
-       deldmp=0.
+       ptm=0.
        deldm=0.
        vdmerdrp=0.
        vdzonlrp=0.
@@ -764,12 +755,12 @@
 !
 !       Calculate Vertical velocity & Stream Functions
 !
-        call gridnl_hybrid_ndsl (nxjp(j),nxp,lev,ncld                  &
+        call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld              &
         , cp,radsq,up(1,1,jj),vp(1,1,jj),rdiv(1,1,jj),ttp(1,1,jj)      &
         , qp(1,1,jj),phi(1,1,jj),ptp(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
         , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)         &
         , diveng(1,1,jj),vdmerdr(1,1,jj),vdzonlr(1,1,jj),pten(1,1,jj)  &
-        , deldmp(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),sgeo(1,jj) )
+        , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),sgeo(1,jj),1 )
 !
       enddo !jj = 1,jlistnum
 
@@ -786,14 +777,11 @@
         nxj=nxdef_2d(j)
         do i=1,nxj
           do k=1,lev
-            vdmerdr(i,k,jj)=vdmerdr(i,k,jj)-dtphi(i,k,jj)/radsq/onocos(j)
-            vdzonlr(i,k,jj)=vdzonlr(i,k,jj)-dlphi(i,k,jj)/radsq
-            pten(i,k,jj)=deldmp(i,jj)*dsigma(k,1)
-          enddo
-          do k=1,lev+1
-!            pdotp(i,k,jj) = 1.5*pdot(i,k,jj)-0.5*pdotp(i,k,jj)
-            pdotp(i,k,jj) = facm(1,itt)*pdot(i,k,jj)   &
-                          + facm(2,itt)*pdotp(i,k,jj)
+            vdmerdr(i,k,jj)=vdmerdr(i,k,jj)-dtphi(i,k,jj) &
+                            /radsq/onocos(j) 
+            vdzonlr(i,k,jj)=vdzonlr(i,k,jj)-dlphi(i,k,jj) &
+                            /radsq
+            pten(i,k,jj)=dsigma(k,2)+ptp(i,jj)*dsigma(k,1)
           enddo
         enddo
       enddo !jj = 1,jlistnum
@@ -821,8 +809,29 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_f2p(vvm_sl,vdmerdrp, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
+!
+      do jj = 1, jlistnum
 
-      call ndslfv_monoadvv_fgnl(pten,vdzonlr,vdmerdr,pdotp,pt &
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        do i=1,nxj
+          do k=1,lev
+            pten(i,k,jj)=(pten(i,k,jj)-dsigma(k,2)-ptp(i,jj)*dsigma(k,1))/dta 
+          enddo
+        enddo
+!
+!       Calculate Vertical velocity & Stream Functions
+!
+        call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld              &
+        , cp,radsq,up(1,1,jj),vp(1,1,jj),rdiv(1,1,jj),ttp(1,1,jj)      &
+        , qp(1,1,jj),phi(1,1,jj),pt(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
+        , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)         &
+        , diveng(1,1,jj),vdmerd(1,1,jj),vdzonl(1,1,jj),pten(1,1,jj)    &
+        , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),sgeo(1,jj),2 )
+!
+      enddo !jj = 1,jlistnum
+!
+      call ndslfv_monoadvv_fgnl(vdzonlrp,vdmerdrp,pdot,pt &
                           ,nxjp,ndsldta)
 !
 !     estimat grid non-linear forcing at t+dt/2 by averaging grid non-linear forcing at t and t+dt
@@ -833,22 +842,11 @@
         do i=1,nxj
           do k=1,lev
             vdmerdr(i,k,jj) = 0.5*(vdmerdrp(i,k,jj)+vdmerdr(i,k,jj)) 
-            vdzonlr(i,k,jj) = 0.5*(vdzonlrp(i,k,jj)+vdzonlr(i,k,jj)) 
-            deldm(i,jj)= deldm(i,jj)+0.5*(dsigma(k,1)*deldmp(i,jj)+pten(i,k,jj))
+            vdzonlr(i,k,jj) = 0.5*(vdzonlrp(i,k,jj)+vdzonlr(i,k,jj))
           enddo
         enddo
       enddo !jj = 1,jlistnum
 !
-
-!
-!      do jj = 1, jlistnum
-!        j=jlist1(jj)
-!        nxj=nxdef_2d(j)
-!        do i=1,nxj
-!          deldm(i,jj)= 0.5*(pt(i,jj)+ptp(i,jj))
-!        enddo
-!      enddo !jj = 1,jlistnum
-
 
 ! transpose partial to full: ut -> ut_sl, vt -> vt_sl, ut -> uum_sl, vt -> vvm_sl, tt -> ttm_sl, qp -> qm_sl
 
@@ -913,22 +911,9 @@
 !
 !       Vertical Advection
 !
-        call ndslfv_monoadvv(ddtemp,qt,vdzonl,vdmerd,pdotp,pt      &
+        call ndslfv_monoadvv(ddtemp,qt,vdzonl,vdmerd,pdot,pt      &
                             ,nxjp,ndsldta)
-
 !
-!  before a time step,save previous time u,v,t,q as
-!  previous time u,v,t,q which used by physical parameterization
-!
-      do jj = 1, jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-        do k = 1, lev
-          do i = 1,nxj
-            pdotp(i,k,jj) = pdot(i,k,jj)
-          enddo
-        enddo
-      enddo
 !
       call mpe2d_unify_nx(ww1,deldm) 
       call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1         &
@@ -941,7 +926,7 @@
         enddo
       enddo
       call transr1(jtrun,jtmax,nx,my,my_max,poly,pltemp,pt,nsizey)
-
+!
 !  prepare randome numbers for sppt3d
 !
       if (dosppt) then
@@ -974,7 +959,7 @@
                       , fm,fh,fm10,fh2,srflag                                   &
                       , rld,km_soil,smc,stc,canopy,runoff                       &
                       , sigmaf,istyp,ivegtyp,wltsmc,refsmc,maxsmc,dfkt,xktk,dfk &
-                      , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,deltaq,cnvwr,cnvcr,pdotp   &
+                      , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,deltaq,cnvwr,cnvcr,pdot    &
                       , shdmax,shdmin,snoalb                                    &
                       , slopetyp,sld,slc,zice,cice,xtice,sncover,sndepth        &
                       , ctot,chig,cmid,clow,hpbl,asl,atl,cosz                   &
@@ -1012,7 +997,6 @@
                 ddtemp(i,k,jj) = ( ddtemp(i,k,jj) - ttp(i,k,jj)) / dta
               enddo
             enddo
-
           enddo
 !
           call joinrs(cc,ddtemp,dummy,dummy,dummy,nx,my_max,lev        &
@@ -1109,7 +1093,7 @@
 !
       if (hdiff) call hdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld       &
                              , hfiltx,rad,cosl,ut,vt,vornow,divnow,temnow  &
-                             , eps4,trefs,1)
+                             , eps4,trefs)
 !
 !        forward=.false.
 !        dta= 2.0*dtx

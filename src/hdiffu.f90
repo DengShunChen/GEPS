@@ -1,6 +1,6 @@
       subroutine hdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld,amp   &
                         , rad,cosl,ut,vt,vornow,divnow,temnow,eps4     &
-                        , trefs,jump)
+                        , trefs)
       use index
       use mpe
       use rank
@@ -9,7 +9,7 @@
 
       implicit  none
 
-      integer   my,my_max,nx,jtrun,jtmax,lev,ncld,jump
+      integer   my,my_max,nx,jtrun,jtmax,lev,ncld
       real      dta,rad
 
       real      cosl(my),ut(nxp,lev,my_max),vt(nxp,lev,my_max),  &
@@ -24,7 +24,7 @@
 
       integer   jj,j,nxj,k,i,m,n,mf,nc,kk,KL
       real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu
-      real      hfilt,hfilt2,nf,kfac
+      real      hfilt,hfilt2,nf,kfac,dec,coefu,factop
       real      c1,c2,c3
       logical   windchk
 
@@ -36,7 +36,6 @@
       nf=jtrun-1
       wmax(1:lev)= 0.0
 !
-      if ( jump .gt. 0 ) then
       do jj =1,jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
@@ -56,17 +55,18 @@
                                  ' windmax=',wmax(k)
         endif
       enddo
-      endif
 !
 !
-        hfilt = (radsq/(nf*(nf+1)))**2.
-        hfilt2 = radsq/(nf*(nf+1))
+      hfilt = (radsq/(nf*(nf+1)))**2.
+      hfilt2 = radsq/(nf*(nf+1))
+!      factop = 3.
+!      coefu = factop/float(hdk2(3)-hdk2(2))
       if ( octahedral ) then
-        hfilt = hfilt/(6.*dta)
-        hfilt2 = hfilt2/(6.*dta)
+        hfilt = hfilt/(2.*dta)
+        hfilt2= hfilt2/(2.*dta)
       else
         hfilt = 16.*hfilt/dta
-        hfilt2 =16.*hfilt2/dta
+        hfilt2= 16.*hfilt2/dta
       endif
 
       do 100 k=1,levp  ! levp -> lev
@@ -85,10 +85,13 @@
 !            fact= 1.
 
 !          if ( KL .le. hdk2 ) then
-        kfac = 1.0 + max(float(hdk2-KL),0.) 
-        facd = amp * (kfac + 4.*max(float(hdk1-KL),0.))
-        facv = amp * (kfac + 2.*max(float(hdk1-KL),0.))
-        fact = amp * (kfac + 2.*max(float(hdk1-KL),0.))
+!        dec=max(min(coefu*(hdk2(3)-KL),factop),0.)       &
+!           -max(min(0.25*coefu*(hdk2(1)-KL),factop),0.)
+!        kfac = 1.0 + dec
+        kfac = 1.0 + max(float(hdk2(2)-KL),0.) 
+        facd = amp * (kfac + 2.*max(float(hdk1-KL),0.))
+        facv = amp * (kfac + 1.*max(float(hdk1-KL),0.))
+        fact = amp * (kfac + 1.*max(float(hdk1-KL),0.))
 !          endif
 
 
@@ -219,6 +222,7 @@
       hfilt2 = radsq/(nf*(nf+1))
       hfilt2 = hfilt2/(nf*dta)
 
+
       do 100 k=1,levp  ! levp -> lev
 !
 !       if( wmax(k) .gt. windmax2 ) then
@@ -230,16 +234,15 @@
 
          KL=Llist(k)
 !
-            facd= 1.
-            facv= 1.
-            fact= 1.
-
-          if ( KL .le. hdk2 ) then
-            facd= 1.0 + float(hdk2-KL)
-            facv= 1.0 + float(hdk2-KL)
-            fact= 1.0 + float(hdk2-KL)
-            if ( KL .le. hdk1 ) facd=facd*(1.+float(hdk1-KL))
-          endif
+!         facd= 1.
+!         facv= 1.
+!         fact= 1.
+!         if ( KL .le. hdk2(2) ) then
+         facd= 1.0 + max(float(hdk2(2)-KL),0.)
+         facv= 1.0 + max(float(hdk2(2)-KL),0.)
+         fact= 1.0 + max(float(hdk2(2)-KL),0.)
+         if ( KL .le. hdk1 ) facd=facd*(1.+float(hdk1-KL))
+!         endif
 
 
           facd = facd*amp

@@ -280,7 +280,7 @@
       end
 !
 ! -------------------------------
-      subroutine ndslfv_monoadvv_fgnl(pten,vdzonl,vdmerd,pdot      &
+      subroutine ndslfv_monoadvv_fgnl(vdzonl,vdmerd,pdot      &
                                 , pt,lonsperlat,deltim)
 !
 ! a routine to do non-iteration semi-Lagrangain advection
@@ -307,7 +307,6 @@
 
       real      qqlon(nxp,    lev*3,latpart)
       real      vdmerd(nxp,lev,my_max),vdzonl(nxp,lev,my_max)
-      real      pten(nxp,lev,my_max)
       real      rdt2,dt2
 
       integer mono,mass,nvars
@@ -330,15 +329,15 @@
 !
       kuu = 1
       kvv = kuu + lev
-      ktt = kvv + lev
+!      ktt = kvv + lev
 
-      nvars = 3
+      nvars = 2
 !
       rdt2 = 0.5 / deltim
       dt2 =  2. * deltim
 !
 !$omp parallel do                                                &
-!$omp private(lan,lat,lons_lat,plev,i,k,n,kk,mass,ku,kv,kt)      &
+!$omp private(lan,lat,lons_lat,plev,i,k,n,kk,mass,ku,kv)         &
 !$omp schedule(dynamic)
 
 !      do lan=1,lats_node_a
@@ -370,11 +369,11 @@
           kk=lev-k+1
           ku=kuu+k-1
           kv=kvv+k-1
-          kt=ktt+k-1
+!          kt=ktt+k-1
           do i=1,lons_lat
             qqlon(i,ku,lan) = vdzonl(i,kk,lan)
             qqlon(i,kv,lan) = vdmerd(i,kk,lan)
-            qqlon(i,kt,lan) = pten(i,kk,lan)
+!            qqlon(i,kt,lan) = pten(i,kk,lan)
           enddo
         enddo
 !
@@ -390,11 +389,11 @@
           kk=lev-k+1
           ku=kuu+k-1
           kv=kvv+k-1
-          kt=ktt+k-1
+!          kt=ktt+k-1
           do i=1,lons_lat
             vdzonl(i,kk,lan) = qqlon(i,ku,lan)
             vdmerd(i,kk,lan) = qqlon(i,kv,lan)
-            pten(i,kk,lan)   = qqlon(i,kt,lan)
+!            pten(i,kk,lan)   = qqlon(i,kt,lan)
           enddo
         enddo
 !

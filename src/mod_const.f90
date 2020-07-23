@@ -64,7 +64,7 @@
     logical :: ndsladvh2
 
     !for horizontal diffusion
-    integer :: hdk1,hdk2
+    integer :: hdk1,hdk2(3)
 
     !for pdf cloud
     logical :: pdfcloud
