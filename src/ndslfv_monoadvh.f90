@@ -1609,7 +1609,7 @@
       return
       end
 ! ------------------------------
-      subroutine ndslfv_monoadvh2_fgnl(ddtemp,vdzonl,vdmerd    &
+      subroutine ndslfv_monoadvh2_fgnl(vdzonl,vdmerd    &
                 , lonsperlat,deltim,levs)
 !
 ! a routine to do non-iteration semi-Lagrangain advection
@@ -1628,19 +1628,19 @@
       implicit none
 
 !ch   real ddtemp(nx,levs,my_max),qvadv(nx,levs*ncld,my_max)
-      real ddtemp(nx,levs,my_max)
+!!      real ddtemp(nx,levs,my_max)
       real vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
       integer,intent(in):: lonsperlat(my)
       real,   intent(in):: deltim
 
       real      uulon(lonfull,levs,latpart)
       real      vvlon(lonfull,levs,latpart)
-      real      qqlon(lonfull,levs*3,latpart)
-      real      rrlon(lonfull,levs*3,latpart)
+      real      qqlon(lonfull,levs*2,latpart)
+      real      rrlon(lonfull,levs*2,latpart)
 
       real      vvlat(latfull,levs,lonpart)
-      real      qqlat(latfull,levs*3,lonpart)
-      real      rrlat(latfull,levs*3,lonpart)
+      real      qqlat(latfull,levs*2,lonpart)
+      real      rrlat(latfull,levs*2,lonpart)
       real      xr    (lonfull,levs)
       real      xcp   (lonfull,levs)
       real      sumrq (lonfull,levs)
@@ -1652,8 +1652,8 @@
       integer mono,mass,levs
       integer nlevs,nvars!,levh
       integer i,j,n,k,lon,lan,lat,lons_lat,irc,kk,KL
-      integer kuu, kvv, ktt, nqq
-      integer ku , kv , kt
+      integer kuu, kvv, ktt, kup, nqq
+      integer ku , kv , kt,  kp
 !
 !      lprint = .false.
 
@@ -1671,9 +1671,10 @@
 !      kuu = kvv + lev
       kuu = 1
       kvv = kuu + levs
-      ktt = kvv + levs
+!      ktt = kvv + levs
+!      kup = ktt + levs
 
-      nvars = 3
+      nvars = 2
       nlevs = nvars * levs
 !
       rdt2 = 0.5 / deltim
@@ -1684,7 +1685,7 @@
 !
 
 !$omp parallel do                                                      &
-!$omp private(lan,lat,lons_lat,rma,rm2a,i,n,kk,k,kt,kv,ku) &
+!$omp private(lan,lat,lons_lat,rma,rm2a,i,n,kk,k,kv,ku) &
 !$omp schedule(dynamic)
       do lan=1,jlistnum
 
@@ -1722,8 +1723,6 @@
         do k=1,levs
           ku=kuu+k-1
           kv=kvv+k-1
-          kt=ktt+k-1
-!!        kp=kup+k-1
           kk=levs-k+1
 !ch>
 !       KL=lev-Llist(k)+1
@@ -1736,7 +1735,7 @@
 
             qqlon(i,ku,lan) = vdzonl(i,k,lan)
             qqlon(i,kv,lan) = vdmerd(i,k,lan)
-            qqlon(i,kt,lan) = ddtemp(i,k,lan)
+!!            qqlon(i,kt,lan) = ddtemp(i,k,lan)
 !!            qqlon(i,kp,lan) = dsigma(KL,1)*ptp_sl(i,lan)+dsigma(KL,2)
           enddo
         enddo
@@ -1982,7 +1981,7 @@
 !      print *,' ndslfv_advect adv loop in x for last '
 
 !$omp parallel do                                                &
-!$omp private(lan,lat,lons_lat,i,k,kk,n,kt,kv,ku)    &
+!$omp private(lan,lat,lons_lat,i,k,kk,n,kv,ku)    &
 !$omp schedule(dynamic)
 
       do lan=1,jlistnum
@@ -2067,7 +2066,7 @@
           kk=levs-k+1
           ku=kuu+k-1
           kv=kvv+k-1
-          kt=ktt+k-1
+!!          kt=ktt+k-1
 !!          kp=kup+k-1
 !ch>
 !       KL=lev-Llist(k)+1:w
@@ -2081,7 +2080,7 @@
 
             vdzonl(i,k ,lan) = qqlon(i,ku,lan)
             vdmerd(i,k ,lan) = qqlon(i,kv,lan)
-            ddtemp(i,k ,lan) = qqlon(i,kt,lan)
+!            ddtemp(i,k ,lan) = qqlon(i,kt,lan)
 !            pten(i,k ,lan)    =(qqlon(i,kp,lan)-(dsigma(KL,1)          &
 !                               *ptp_sl(i,lan)+dsigma(KL,2)))*rdt2
           enddo

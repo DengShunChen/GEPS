@@ -221,9 +221,9 @@
 !
       k= 1
       do 22 i=1,nxj
-!!        deldm(i)= -dsigma(k,1)*(ut(i,k)*dlpl(i)*onocos+vt(i,k)*dtpl(i))   &
-!!                  -rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
-        deldm(i)= pten(i,k)-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
+        deldm(i)= -dsigma(k,1)*(ut(i,k)*dlpl(i)*onocos+vt(i,k)*dtpl(i))   &
+                  -rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
+!!!        deldm(i)= pten(i,k)-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
 !        deldm(i)= -dsig(k)*(ut(i,k)*dlpl(i)*onocos+vt(i,k)*dtpl(i)
 !     *            +rdiv(i,k)*pt(i))
         sd(i,k+1)= deldm(i)
@@ -231,9 +231,9 @@
 !
       do 2 k=2,lev-1
       do 2 i=1,nxj
-!!        deldm(i)= deldm(i)-dsigma(k,1)*(ut(i,k)*dlpl(i)*onocos            &
-!!                 +vt(i,k)*dtpl(i))-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
-        deldm(i)= deldm(i)+pten(i,k)-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
+        deldm(i)= deldm(i)-dsigma(k,1)*(ut(i,k)*dlpl(i)*onocos            &
+                 +vt(i,k)*dtpl(i))-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
+!!!        deldm(i)= deldm(i)+pten(i,k)-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
 !        deldm(i)= deldm(i)-dsig(k)*(ut(i,k)*dlpl(i)*onocos
 !     *           +vt(i,k)*dtpl(i)+rdiv(i,k)*pt(i))
         sd(i,k+1)= deldm(i)
@@ -241,9 +241,9 @@
 !
       k= lev
       do 24 i=1,nxj
-!!        deldm(i)= deldm(i)-dsigma(k,1)*(ut(i,k)*dlpl(i)*onocos            &
-!!                 +vt(i,k)*dtpl(i))-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
-        deldm(i)= deldm(i)+pten(i,k)-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
+        deldm(i)= deldm(i)-dsigma(k,1)*(ut(i,k)*dlpl(i)*onocos            &
+                 +vt(i,k)*dtpl(i))-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
+!!!        deldm(i)= deldm(i)+pten(i,k)-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
 !        deldm(i)= deldm(i)-dsig(k)*(ut(i,k)*dlpl(i)*onocos
 !     *           +vt(i,k)*dtpl(i)+rdiv(i,k)*pt(i))
    24 continue

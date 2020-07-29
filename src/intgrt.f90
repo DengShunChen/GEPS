@@ -711,13 +711,10 @@
 ! Transfer Spectral to Gridpoint for u,v,t,q,ps at n-1
 !        call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temold,cc,1,nsizey)
 !        call ujoinsr(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-        call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divold,cc,1,nsizey)
-        call ujoinsr(cc,rdiv,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+
         call tranuv(jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac    &
                    ,poly,dpoly,vorold,divold,ut,vt,nsizey)
         call transr1(jtrun,jtmax,nx,my,my_max,poly,plold,pt,nsizey)
-!!        call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,plnow      &
-!!                   ,dlpl,dtpl,nsizey)
 
 ! for Semi-Lagrangian advection
 !
@@ -781,7 +778,6 @@
                             /radsq/onocos(j) 
             vdzonlr(i,k,jj)=vdzonlr(i,k,jj)-dlphi(i,k,jj) &
                             /radsq
-            pten(i,k,jj)=dsigma(k,2)+ptp(i,jj)*dsigma(k,1)
           enddo
         enddo
       enddo !jj = 1,jlistnum
@@ -796,34 +792,30 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f(vdmerdr,vvm_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f(pten,ttm_sl,  &
-                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
+!
       do itt = 1,itter
-        call ndslfv_monoadvh2_fgnl(ttm_sl,uum_sl,vvm_sl   &
+        call ndslfv_monoadvh2_fgnl(uum_sl,vvm_sl       &
                              ,nxdef,ndsldtah,levp)
       enddo
-
-      call mpe2d_transpose_ndsl_f2p(ttm_sl,pten, &
-                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
+!
       call mpe2d_transpose_ndsl_f2p(uum_sl,vdzonlrp, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_f2p(vvm_sl,vdmerdrp, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !
+      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divold,cc,1,nsizey)
+      call ujoinsr(cc,rdiv,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,plold      &
+                 ,dlpl,dtpl,nsizey)
+!
       do jj = 1, jlistnum
-
         j=jlist1(jj)
         nxj=nxdef_2d(j)
-        do i=1,nxj
-          do k=1,lev
-            pten(i,k,jj)=(pten(i,k,jj)-dsigma(k,2)-ptp(i,jj)*dsigma(k,1))/dta 
-          enddo
-        enddo
 !
 !       Calculate Vertical velocity & Stream Functions
 !
         call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld              &
-        , cp,radsq,up(1,1,jj),vp(1,1,jj),rdiv(1,1,jj),ttp(1,1,jj)      &
+        , cp,radsq,ut(1,1,jj),vt(1,1,jj),rdiv(1,1,jj),tt(1,1,jj)       &
         , qp(1,1,jj),phi(1,1,jj),pt(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
         , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)         &
         , diveng(1,1,jj),vdmerd(1,1,jj),vdzonl(1,1,jj),pten(1,1,jj)    &

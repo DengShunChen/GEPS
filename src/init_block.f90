@@ -227,7 +227,8 @@
            1.0000000 /)
       endif
 !
-      tmeans=300.
+!      tmeans=300.
+      tmeans=350.
 
 !-- for hybrid coordinates, ptmeans reset for numerical stability
 !      ptmeans=800.
