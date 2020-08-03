@@ -960,7 +960,7 @@
 !
       do k=1,lev
         do i = 1, nxj
-          dotc(i,kc)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
+          dotc(i,k)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
         enddo
       enddo
 
