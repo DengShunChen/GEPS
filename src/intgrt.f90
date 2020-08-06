@@ -73,7 +73,7 @@
                 vvm_sl(nx,levp,my_max),                            &
                 uum_sl(nx,levp,my_max),ptm(nxp,my_max)
 !
-      real      ndsldta,ndsldtah,facm(2,2)
+      real      ndsldta,ndsldtah,facm(2,2),af
       integer   ierr,itter,itt
 !
       real      glob(nx,my), &
@@ -814,17 +814,40 @@
 !
 !       Calculate Vertical velocity & Stream Functions
 !
-        call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld              &
+!!        call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld              &
+        call gridnl_hybrid_ndsl (nxjp(j),nxp,lev,ncld                  &
         , cp,radsq,ut(1,1,jj),vt(1,1,jj),rdiv(1,1,jj),tt(1,1,jj)       &
         , qp(1,1,jj),phi(1,1,jj),pt(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
         , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)         &
         , diveng(1,1,jj),vdmerd(1,1,jj),vdzonl(1,1,jj),pten(1,1,jj)    &
-        , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),sgeo(1,jj),2 )
+!!        , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),sgeo(1,jj),2 )
+        , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),sgeo(1,jj) )
 !
       enddo !jj = 1,jlistnum
 !
       call ndslfv_monoadvv_fgnl(vdzonlrp,vdmerdrp,pdot,pt &
                           ,nxjp,ndsldta)
+!
+      call joinrs(cc,diveng,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc       &
+                 ,hldten,1,nsizey)
+      call trngra3(jtrun,jtmax,nx,levp,my,my_max,cim,poly,dpoly      &
+                 ,hldten,dlphi,dtphi,nsizey)
+!
+!     estimated grid non-linear forcing at t-dt/2 by time average grid non-linear forcing at t-dt and t.
+!
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        do i=1,nxj
+          do k=1,lev
+            vdmerd(i,k,jj)=vdmerd(i,k,jj)-dtphi(i,k,jj) &
+                           /radsq/onocos(j) 
+            vdzonl(i,k,jj)=vdzonl(i,k,jj)-dlphi(i,k,jj) &
+                           /radsq
+          enddo
+        enddo
+      enddo !jj = 1,jlistnum
 !
 !     estimat grid non-linear forcing at t+dt/2 by averaging grid non-linear forcing at t and t+dt
 !
@@ -833,8 +856,11 @@
         nxj=nxdef_2d(j)
         do i=1,nxj
           do k=1,lev
-            vdmerdr(i,k,jj) = 0.5*(vdmerdrp(i,k,jj)+vdmerdr(i,k,jj)) 
-            vdzonlr(i,k,jj) = 0.5*(vdzonlrp(i,k,jj)+vdzonlr(i,k,jj))
+            af=max(min(float(k/hdk2(3))-0.05,1.),0.)
+            vdmerdr(i,k,jj) = af*0.5*(vdmerdrp(i,k,jj)+vdmerdr(i,k,jj)) &
+                             +(1.-af)*vdmerd(i,k,jj)
+            vdzonlr(i,k,jj) = af*0.5*(vdzonlrp(i,k,jj)+vdzonlr(i,k,jj)) &
+                             +(1.-af)*vdzonl(i,k,jj)
           enddo
         enddo
       enddo !jj = 1,jlistnum
