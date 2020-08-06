@@ -349,7 +349,8 @@ CONTAINS
                                                            worka
   REAL, DIMENSION( its:ite , kts:kte ) ::                         &
                                                          den_tmp, &
-                                                        delz_tmp
+                                                        delz_tmp, &
+                                                           t_tmp
   REAL, DIMENSION( its:ite , kts:kte ) ::                         &
                                                            pigen, &
                                                            pidep, &
@@ -621,12 +622,13 @@ CONTAINS
 !----------------------------------------------------------------
       do k = kts, kte
         do i = its, ite
+              t_tmp(i,k) = t(i,k)
           qrs_tmp(i,k,1) = qrs(i,k,1)
           qrs_tmp(i,k,2) = qrs(i,k,2)
           qrs_tmp(i,k,3) = qrs(i,k,3)
         enddo
       enddo
-      call slope_wsm6(qrs_tmp,den_tmp,denfac,t,rslope,rslopeb,rslope2,rslope3, & 
+      call slope_wsm6(qrs_tmp,den_tmp,denfac,t_tmp,rslope,rslopeb,rslope2,rslope3, & 
                      work1,its,ite,kts,kte)
 !
       do k = kte, kts, -1
@@ -645,9 +647,9 @@ CONTAINS
           if(qrs(i,k,1).le.0.0) workr(i,k) = 0.0
         enddo
       enddo
-      call nislfv_rain_plm(idim,kdim,den_tmp,denfac,t,delz_tmp,workr,denqrs1,  &
+      call nislfv_rain_plm(idim,kdim,den_tmp,denfac,t_tmp,delz_tmp,workr,denqrs1,  &
                            delqrs1,dtcld,1,1)
-      call nislfv_rain_plm6(idim,kdim,den_tmp,denfac,t,delz_tmp,worka,         & 
+      call nislfv_rain_plm6(idim,kdim,den_tmp,denfac,t_tmp,delz_tmp,worka,         & 
                            denqrs2,denqrs3,delqrs2,delqrs3,dtcld,1,1)
       do k = kts, kte
         do i = its, ite
@@ -671,7 +673,7 @@ CONTAINS
           qrs_tmp(i,k,3) = qrs(i,k,3)
         enddo
       enddo
-      call slope_wsm6(qrs_tmp,den_tmp,denfac,t,rslope,rslopeb,rslope2,rslope3, &
+      call slope_wsm6(qrs_tmp,den_tmp,denfac,t_tmp,rslope,rslopeb,rslope2,rslope3, &
                      work1,its,ite,kts,kte)
 !
       do k = kte, kts, -1 
@@ -695,6 +697,7 @@ CONTAINS
               qrs(i,k,2) = qrs(i,k,2) + psmlt(i,k)
               qrs(i,k,1) = qrs(i,k,1) - psmlt(i,k)
               t(i,k) = t(i,k) + xlf/cpm(i,k)*psmlt(i,k)
+              t_tmp(i,k) = t(i,k)
             endif
 !---------------------------------------------------------------
 ! pgmlt: melting of graupel [HL A23]  [LFO 47]
@@ -710,6 +713,7 @@ CONTAINS
               qrs(i,k,3) = qrs(i,k,3) + pgmlt(i,k)
               qrs(i,k,1) = qrs(i,k,1) - pgmlt(i,k)
               t(i,k) = t(i,k) + xlf/cpm(i,k)*pgmlt(i,k)
+              t_tmp(i,k) = t(i,k)
             endif
           endif
         enddo
@@ -736,7 +740,7 @@ CONTAINS
           denqci(i,k) = den(i,k)*qci(i,k,2)
         enddo
       enddo
-      call nislfv_rain_plm(idim,kdim,den_tmp,denfac,t,delz_tmp,work1c,denqci,  &
+      call nislfv_rain_plm(idim,kdim,den_tmp,denfac,t_tmp,delz_tmp,work1c,denqci,  &
                            delqi,dtcld,1,0)
       do k = kts, kte
         do i = its, ite
@@ -852,12 +856,13 @@ CONTAINS
 !
       do k = kts, kte
         do i = its, ite
+              t_tmp(i,k) = t(i,k)
           qrs_tmp(i,k,1) = qrs(i,k,1)
           qrs_tmp(i,k,2) = qrs(i,k,2)
           qrs_tmp(i,k,3) = qrs(i,k,3)
         enddo
       enddo
-      call slope_wsm6(qrs_tmp,den_tmp,denfac,t,rslope,rslopeb,rslope2,rslope3, &
+      call slope_wsm6(qrs_tmp,den_tmp,denfac,t_tmp,rslope,rslopeb,rslope2,rslope3, &
                      work1,its,ite,kts,kte)
 !------------------------------------------------------------------
 !     work1:  the thermodynamic term in the denominator associated with
