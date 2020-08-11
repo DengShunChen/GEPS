@@ -805,12 +805,16 @@
 !
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divold,cc,1,nsizey)
       call ujoinsr(cc,rdiv,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temold,cc,1,nsizey)
+      call ujoinsr(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,plold      &
                  ,dlpl,dtpl,nsizey)
 !
       do jj = 1, jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
+        call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pt(1,jj),   &
+                                pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
 !
 !       Calculate Vertical velocity & Stream Functions
 !
