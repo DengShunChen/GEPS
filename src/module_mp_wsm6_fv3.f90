@@ -923,9 +923,9 @@ CONTAINS
                          +precr2*work2(i,k)*coeres)/work1(i,k,1)
             if(prevp(i,k).lt.0.) then
               prevp(i,k) = max(prevp(i,k),-qrs(i,k,1)/dtcld)
-              prevp(i,k) = max(prevp(i,k),satdt/2)
+              prevp(i,k) = max(prevp(i,k),satdt/2.)
             else
-              prevp(i,k) = min(prevp(i,k),satdt/2)
+              prevp(i,k) = min(prevp(i,k),satdt/2.)
             endif
           endif
         enddo
@@ -1110,10 +1110,10 @@ CONTAINS
               pidep(i,k) = 4.*diameter*xni(i,k)*(rh(i,k,2)-1.)/work1(i,k,2)
               supice = satdt-prevp(i,k)
               if(pidep(i,k).lt.0.) then
-                pidep(i,k) = max(max(pidep(i,k),satdt/2),supice)
+                pidep(i,k) = max(max(pidep(i,k),satdt/2.),supice)
                 pidep(i,k) = max(pidep(i,k),-qci(i,k,2)/dtcld)
               else
-                pidep(i,k) = min(min(pidep(i,k),satdt/2),supice)
+                pidep(i,k) = min(min(pidep(i,k),satdt/2.),supice)
               endif
               if(abs(prevp(i,k)+pidep(i,k)).ge.abs(satdt)) ifsat = 1
             endif
@@ -1128,9 +1128,9 @@ CONTAINS
               supice = satdt-prevp(i,k)-pidep(i,k)
               if(psdep(i,k).lt.0.) then
                 psdep(i,k) = max(psdep(i,k),-qrs(i,k,2)/dtcld)
-                psdep(i,k) = max(max(psdep(i,k),satdt/2),supice)
+                psdep(i,k) = max(max(psdep(i,k),satdt/2.),supice)
               else
-                psdep(i,k) = min(min(psdep(i,k),satdt/2),supice)
+                psdep(i,k) = min(min(psdep(i,k),satdt/2.),supice)
               endif
               if(abs(prevp(i,k)+pidep(i,k)+psdep(i,k)).ge.abs(satdt))          &
                 ifsat = 1
@@ -1146,9 +1146,9 @@ CONTAINS
               supice = satdt-prevp(i,k)-pidep(i,k)-psdep(i,k)
               if(pgdep(i,k).lt.0.) then
                 pgdep(i,k) = max(pgdep(i,k),-qrs(i,k,3)/dtcld)
-                pgdep(i,k) = max(max(pgdep(i,k),satdt/2),supice)
+                pgdep(i,k) = max(max(pgdep(i,k),satdt/2.),supice)
               else
-                pgdep(i,k) = min(min(pgdep(i,k),satdt/2),supice)
+                pgdep(i,k) = min(min(pgdep(i,k),satdt/2.),supice)
               endif
               if(abs(prevp(i,k)+pidep(i,k)+psdep(i,k)+pgdep(i,k)).ge.          &
                 abs(satdt)) ifsat = 1
@@ -1881,7 +1881,7 @@ CONTAINS
       real  allold, allnew, zz, dzamin, cflmax, decfl
       real  dz(km), ww(km), qq(km), wd(km), wa(km), was(km)
       real  den(km), denfac(km), tk(km)
-      real  wi(km+1), zi(km+1), za(km+1)
+      real  wi(km+1), zi(km+1), za(km+2) !hmhj
       real  qn(km), qr(km),tmp(km),tmp1(km),tmp2(km),tmp3(km)
       real  dza(km+1), qa(km+1), qmi(km+1), qpi(km+1)
 !
@@ -1916,11 +1916,11 @@ CONTAINS
  100  continue
 ! plm is 2nd order, we can use 2nd order wi or 3rd order wi
 ! 2nd order interpolation to get wi
-      wi(1) = ww(1)
-      wi(km+1) = ww(km)
-      do k=2,km
-        wi(k) = (ww(k)*dz(k-1)+ww(k-1)*dz(k))/(dz(k-1)+dz(k))
-      enddo
+!      wi(1) = ww(1)
+!      wi(km+1) = ww(km)
+!      do k=2,km
+!        wi(k) = (ww(k)*dz(k-1)+ww(k-1)*dz(k))/(dz(k-1)+dz(k))
+!      enddo
 ! 3rd order interpolation to get wi
       fa1 = 9./16.
       fa2 = 1./16.
@@ -1949,11 +1949,12 @@ CONTAINS
       do k=1,km+1
         za(k) = zi(k) - wi(k)*dt
       enddo
+      za(km+2)=zi(km+1) !hmhj
 !
-      do k=1,km
+      do k=1,km+1 !hmhj
         dza(k) = za(k+1)-za(k)
       enddo
-      dza(km+1) = zi(km+1) - za(km+1)
+!hmhj      dza(km+1) = zi(km+1) - za(km+1)
 !
 ! computer deformation at arrival point
       do k=1,km
@@ -2020,7 +2021,7 @@ CONTAINS
                            cycle find_kb
                          endif
                enddo find_kb
-               find_kt : do kk=kt,km
+               find_kt : do kk=kt,km+2  !hmhj
                          if( zi(k+1).le.za(kk) ) then
                            kt = kk
                            exit find_kt
@@ -2072,7 +2073,12 @@ CONTAINS
                       precip(i) = precip(i) + qa(k)*dza(k)
                       cycle sum_precip
                     else if ( za(k).lt.0.0 .and. za(k+1).ge.0.0 ) then
-                      precip(i) = precip(i) + qa(k)*(0.0-za(k))
+!hmhj for pcm         precip(i) = precip(i) + qa(k)*(0.0-za(k))
+                      th = (0.0-za(k))/dza(k)
+                      th2= th*th
+                      qqd = 0.5*(qpi(k)-qmi(k))
+                      qqh = qqd*th2+qmi(k)*th
+                      precip(i) = precip(i) + qqh*dza(k)
                       exit sum_precip
                     endif
                     exit sum_precip
@@ -2121,7 +2127,7 @@ CONTAINS
       real  allold, allnew, zz, dzamin, cflmax, decfl
       real  dz(km), ww(km), qq(km), qq2(km), wd(km), wa(km), wa2(km), was(km)
       real  den(km), denfac(km), tk(km)
-      real  wi(km+1), zi(km+1), za(km+1)
+      real  wi(km+1), zi(km+1), za(km+2) !hmhj
       real  qn(km), qr(km),qr2(km),tmp(km),tmp1(km),tmp2(km),tmp3(km)
       real  dza(km+1), qa(km+1), qa2(km+1),qmi(km+1), qpi(km+1)
 !
@@ -2159,11 +2165,11 @@ CONTAINS
  100  continue
 ! plm is 2nd order, we can use 2nd order wi or 3rd order wi
 ! 2nd order interpolation to get wi
-      wi(1) = ww(1)
-      wi(km+1) = ww(km)
-      do k=2,km
-        wi(k) = (ww(k)*dz(k-1)+ww(k-1)*dz(k))/(dz(k-1)+dz(k))
-      enddo
+!      wi(1) = ww(1)
+!      wi(km+1) = ww(km)
+!      do k=2,km
+!        wi(k) = (ww(k)*dz(k-1)+ww(k-1)*dz(k))/(dz(k-1)+dz(k))
+!      enddo
 ! 3rd order interpolation to get wi
       fa1 = 9./16.
       fa2 = 1./16.
@@ -2192,11 +2198,12 @@ CONTAINS
       do k=1,km+1
         za(k) = zi(k) - wi(k)*dt
       enddo
+      za(km+2)=zi(km+1) !hmhj
 !
-      do k=1,km
+      do k=1,km+1 !hmhj
         dza(k) = za(k+1)-za(k)
       enddo
-      dza(km+1) = zi(km+1) - za(km+1)
+!hmhj      dza(km+1) = zi(km+1) - za(km+1)
 !
 ! computer deformation at arrival point
       do k=1,km
@@ -2282,7 +2289,7 @@ CONTAINS
                            cycle find_kb
                          endif
                enddo find_kb
-               find_kt : do kk=kt,km
+               find_kt : do kk=kt,km+2  !hmhj
                          if( zi(k+1).le.za(kk) ) then
                            kt = kk
                            exit find_kt
@@ -2334,7 +2341,12 @@ CONTAINS
                       precip(i) = precip(i) + qa(k)*dza(k)
                       cycle sum_precip
                     else if ( za(k).lt.0.0 .and. za(k+1).ge.0.0 ) then
-                      precip(i) = precip(i) + qa(k)*(0.0-za(k))
+!hmhj for pcm         precip(i) = precip(i) + qa(k)*(0.0-za(k))
+                      th = (0.0-za(k))/dza(k)
+                      th2= th*th
+                      qqd = 0.5*(qpi(k)-qmi(k))
+                      qqh = qqd*th2+qmi(k)*th
+                      precip(i) = precip(i) + qqh*dza(k)
                       exit sum_precip
                     endif
                     exit sum_precip
