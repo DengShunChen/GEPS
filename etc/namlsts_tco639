@@ -20,6 +20,8 @@
  update=t,
  lsimpl=t,
  tfilt=0.04,
+ spl1=5.,
+ spl2=100.,
  hfilt=1.,
  ksgeo=2,
  yesdia=t,

@@ -69,7 +69,7 @@
                       , facsppt500,facsppt1000,facsppt2000,ndsladvh2    &
                       , ldailyFCTsst,ldailyFCTicesndpt,lFCTweight       &
                       , dailyClm_option,lopgsst,do_sit,fsit,pdfcloud    &
-                      , cmbk,cgwd,ncepicthk,nmmiph
+                      , cmbk,cgwd,ncepicthk,nmmiph,spl1,spl2
 !
       real    si(lev+1)
       logical flag
@@ -301,8 +301,8 @@
 !  horizontal diffusion settings for sponge layer
       do k = 1, lev
         prslp=sigma(k,2)+sigma(k,1)*1000.+ptop
-        if ( prslp .le.   5. ) hdk1=k
-        if ( prslp .le. 100. ) hdk2=k
+        if ( prslp .le. spl1 ) hdk1=k
+        if ( prslp .le. spl2 ) hdk2=k
       enddo
 !
 !
