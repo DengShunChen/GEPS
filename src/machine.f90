@@ -1,4 +1,4 @@
-      MODULE MACHINE
+    MODULE MACHINE
 
       IMPLICIT NONE
       SAVE
@@ -12,4 +12,4 @@
 !
       real(kind=kind_evod), parameter :: mprec = 1.e-12           ! machine precision to restrict dep
 
-      END MODULE MACHINE
+    END MODULE MACHINE

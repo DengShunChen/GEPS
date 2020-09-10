@@ -647,7 +647,7 @@
              dtlw,dtsw,lsswr,lslwr,lssav,                               &
              ix,im,lm,me,lprnt,ipt,kdt,myrank,                          &
              ntiw,ntrw,ntsw,ntgl,uni_cloud,lmfshal,lmfdeep2,            &
-             deltaq,sup,cnvw,cnvc,                                      &
+             deltaq,sup,cnvw,cnvc,phy_f3d,                              &
 !  ---  outputs:
              htrsw,sfalb,coszen,coszdg,                                 &
              htrlw,tsflw,semis,cldcov,                                  &
@@ -1041,7 +1041,7 @@
              mbota(im,3), mtopa(im,3), lp1, nb, lmk, lmp, kd, lla, llb, &
              lya, lyb, kt, kb
 !
-      real (kind=kind_phys), dimension(im,lm+ltp,3)   :: phy_f3d
+      real (kind=kind_phys), dimension(ix,lm+ltp,3)   :: phy_f3d
       logical uni_cloud,lmfshal,lmfdeep2
 
 !  ---  for debug test use
@@ -1574,7 +1574,7 @@
 
         if (icmphys == 1) then           ! zhao/moorthi's prognostic cloud scheme
  
-      if (me==0 .and. myrank ==0)                                       &
+      if ( me == 0 .and. myrank == 0 )                                  &
           print *,'### call progcld1 -zhao/moorhi ###' 
           call progcld1                                                 &
 !  ---  inputs:
@@ -1600,8 +1600,8 @@
 
        elseif(icmphys == 3) then      ! zhao/moorthi's prognostic cloud+pdfcld
 !
-      if (me==0 .and. myrank ==0)                                       &
-          print *,'### call progcld3 -zhao/moorhi with PDF cloud###' 
+         if ( me == 0 .and. myrank == 0 )                               &
+           print *,'### call progcld3 -zhao/moorhi with PDF cloud###' 
          call progcld3                                                  &
 !  ---  inputs:
      &     ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,clw,cnvw,cnvc,          &
@@ -1612,16 +1612,30 @@
      &       clouds,cldsa,mtopa,mbota                                   &
      &      )
 !
-        elseif (icmphys == 4) then    ! wsm6
+       elseif (icmphys == 6 .or. icmphys == 8) then    ! wsm6 & Thompson
+         if ( me == 0 .and. myrank == 0 ) then
+            if ( icmphys == 6 ) print *,'### call WSM6 cloud###' 
+            if ( icmphys == 8 ) print *,'### call Thompson cloud###' 
+         endif
+         
+         if (kdt == 1) then
+           phy_f3d(:,:,1) = 10.
+           phy_f3d(:,:,2) = 50.
+           phy_f3d(:,:,3) = 250.
+         endif
 !
-          call progcld4 (plyr,plvl,tlyr,qlyr,qstl,rhly,tracer1,   &    !--- inputs
-                         xlat,xlon,slmsk,                         &
-                         ntrac-1,ntcw,ntiw,ntrw,ntsw,ntgl,        &
-                         im, lmk, lmp,                            &
-                         uni_cloud,lmfshal,lmfdeep2,              &
-                         cldcov(:,1:LMK),phy_f3d(:,:,1),          &
-                         phy_f3d(:,:,2),phy_f3d(:,:,3),           &
-                         clouds,cldsa,mtopa,mbota)
+         call progcld4                               &
+!  --- inputs
+          ( plyr,plvl,tlyr,qlyr,qstl,rhly,tracer1,   &
+            xlat,xlon,slmsk,                         &
+            ntrac,ntcw,ntiw,ntrw,ntsw,ntgl,          &
+            im, lmk, lmp,                            &
+            uni_cloud,lmfshal,lmfdeep2,              &
+            cldcov(:,1:lmk),phy_f3d(:,:,1),          &
+            phy_f3d(:,:,2),phy_f3d(:,:,3),           &
+!   --- outputs:
+            clouds,cldsa,mtopa,mbota                 &
+           )
 
         endif                            ! end if_icmphys
 

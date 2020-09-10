@@ -5,7 +5,7 @@
                          , slc,stc,canopy,zice,ggdef,gmdef)
       use index
       use mpe
-      use radn, only : ntoz
+      use radn, only : ntoz,ntcw,ntrw,ntiw,ntsw,ntgl
 
       implicit  none
 
@@ -28,7 +28,7 @@
       character typ*6,ihdg*26,ihdg2*26
       character*4 ggdef,gmdef
 !
-      integer   i,lenc,k,jj,j,nxj,istat,kk,iout_b10,ntrac
+      integer   i,lenc,k,jj,j,nxj,istat,kk,iout_b10,ntrac,nclds
       real      xx,capa,pk2top,sfac2,sfac3,sfac4
 
       do i = 1, nx*my
@@ -37,6 +37,11 @@
       enddo
 !
       lenc=nx*my
+      if ( ntoz .gt. 0 ) then
+        nclds=ntoz-1
+      else
+        nclds=ncld
+      endif
 
 !
 !  convert virture potential temperature to temperature
@@ -119,35 +124,93 @@
         call dmswrit_split(nx,my,ihdg,lenc,'H',ifilout,mout,istat)
       endif
 !
-      if( ncld .ge. 2 ) then
-      do ntrac=2,ncld
-        do k=1,lev
-          kk = (ntrac-1)*lev+k
-          do 26 jj = 1, jlistnum
+! combine cloud water and cloud ice together once there is consideration of 
+! more hydrometeors in microphysic scheme.
+!
+      do k=1,lev
+        wrk1=0.
+        do ntrac=2,nclds
+          do jj = 1, jlistnum
             j=jlist1(jj)
             nxj=nxdef_2d(j)
-          do 26 i = 1,nxj
-            wrk1(i,jj)=qt(i,kk,jj)
- 26       continue
+            do i = 1,nxj
+              wrk1(i,jj)=wrk1(i,jj)+qt(i,k+(ntrac-1)*lev,jj)
+            enddo
+          enddo
+        enddo
+        call unify_reduceintp(nx,my,my_max,wrk1,work)
+        if ( myrank .eq. k-1 ) mout=work
+      enddo
+!
+      if ( myrank .lt. lev ) then
+        k=myrank+1
+        write(typ,'("m",i2.2,"550")')k
+        call syslbl (typ,idtg,itau,gmdef,ihdg)
+        call dmswrit_split(nx,my,ihdg,lenc,'H',ifilout,mout,istat)
+      endif
+!
+! output all hydrometeors and ozone one by one
+!
+      if( nclds .gt. 2 ) then
+        do ntrac=2,nclds
+          do k=1,lev
+            kk = (ntrac-1)*lev+k
+            do 26 jj = 1, jlistnum
+              j=jlist1(jj)
+              nxj=nxdef_2d(j)
+            do 26 i = 1,nxj
+              wrk1(i,jj)=qt(i,kk,jj)
+ 26         continue
+            call unify_reduceintp(nx,my,my_max,wrk1,work)
+            if ( myrank .eq. k-1 ) mout=work
+          enddo
+!
+          if ( myrank .lt. lev ) then
+            k=myrank+1
+            if(ntrac.eq.ntcw)then
+              write(typ,'("m",i2.2,"551")')k     ! cloud liquid water content
+            else if(ntrac.eq.ntiw)then
+              write(typ,'("m",i2.2,"552")')k     ! cloud ice content
+            else if(ntrac.eq.ntrw)then
+              write(typ,'("m",i2.2,"553")')k     ! rain
+            else if(ntrac.eq.ntsw)then
+              write(typ,'("m",i2.2,"554")')k     ! snow 
+            else if(ntrac.eq.ntgl)then
+              write(typ,'("m",i2.2,"555")')k     ! graupel
+            else
+              goto 27
+            endif
+            call syslbl (typ,idtg,itau,gmdef,ihdg)
+            call dmswrit_split(nx,my,ihdg,lenc,'H',ifilout,mout,istat)
+          endif
+ 27       continue
+        enddo
+      end if
+!
+! output ozone
+!
+      if ( ntoz .eq. ncld ) then 
+        do k=1,lev
+          do jj = 1, jlistnum
+            j=jlist1(jj)
+            nxj=nxdef_2d(j)
+            do i = 1,nxj
+              wrk1(i,jj)=qt(i,k+(ntoz-1)*lev,jj)
+            enddo
+          enddo
           call unify_reduceintp(nx,my,my_max,wrk1,work)
           if ( myrank .eq. k-1 ) mout=work
         enddo
 !
         if ( myrank .lt. lev ) then
           k=myrank+1
-          if(ntrac.eq.2)then
-            write(typ,'("m",i2.2,"550")')k     ! cloud liquid water content
-          else if(ntrac.eq.ntoz)then
-            write(typ,'("m",i2.2,"560")')k     ! ozone
-          else
-            goto 27
-          endif
+          write(typ,'("m",i2.2,"560")')k
           call syslbl (typ,idtg,itau,gmdef,ihdg)
           call dmswrit_split(nx,my,ihdg,lenc,'H',ifilout,mout,istat)
         endif
- 27   continue
-      enddo
-      end if
+      endif
+
+
 !
 !  stop outputting rdiv (26/12/2000)
 !
@@ -413,6 +476,7 @@
 !
       use index
       use mpe
+      use const, only : ncepicthk
 !
       implicit  none
       integer   nx,my,itau,my_max
@@ -470,6 +534,7 @@
       enddo
       enddo
 !
+      if ( .not. ncepicthk ) then
       call syslbl ('w00092',idtg,itau,ggdef,ihdg)
       call dmsread(nx,my,ihdg,lenc,'H',ifilout,work,istat)
 !byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
@@ -483,6 +548,7 @@
          ii=ii+1
       enddo
       enddo
+      endif
 !
       return
       end

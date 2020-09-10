@@ -740,7 +740,7 @@
 !       Horizontal Advection
         do itt = 1,itter
         call ndslfv_monoadvh(ttm_sl,qm_sl,pten_sl,uum_sl,vvm_sl  &
-                             ,nxdef,ndsldta,xy,levp)
+                             ,nxdef,ndsldtah,xy,levp)
         enddo
 
 
@@ -895,7 +895,7 @@
                       , shdmax,shdmin,snoalb                                    &
                       , slopetyp,sld,slc,zice,cice,xtice,sncover,sndepth        &
                       , ctot,chig,cmid,clow,hpbl,asl,atl,cosz                   &
-                      , nmgwor,nmgwcv,hprime_b,mtnvar,docgrav                   &
+                      , nmgwor,nmgwcv,hprime_b,mtnvar,docgrav,nmmiph            &
 !--------------------------------------------------------------------------------
                       , fusl,fdsl,fuir,fdir                                     &
                       , fuslr,fdslr,fuirr,fdirr                                 &

@@ -8,9 +8,11 @@
 ! for rad_initialize 
 !--------------------------------------------------------------------------   
       integer, save ::  levr,ictm,isol,ico2,iaer,ialb,iems,         &
-               num_p3d,ntoz,iovr_sw,iovr_lw,isubc_sw,isubc_lw,      &
+               ntoz,iovr_sw,iovr_lw,isubc_sw,isubc_lw,              &
                icliq_sw,icice_sw,icliq_lw,icice_lw,                 &
-               iflip,me,irad,ntcw,nclds,ioutsigr,ntiw,ntrw,ntsw,ntgl
+               iflip,me,irad,ntcw,ioutsigr,ntiw,ntrw,ntsw,          &
+               ntgl,ntinc,ntrnc
+                 
       integer, save :: idate(8) 
       logical, save :: sashal,crick_proof,ccnorm,norad_precip
       real,    save :: sdec,cdec,slag,solcon

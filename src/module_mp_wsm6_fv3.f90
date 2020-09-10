@@ -76,10 +76,11 @@ CONTAINS
                  ,delt                                             &
                  ,rainncv                                          &
                  ,sr                                               &
-                 ,slimsk                                           &
+                 ,islmsk                                           &
                  ,re_cloud, re_ice,   re_snow                      &  ! for radiation   
                  ,ims,ime,kms,kme                                  &
-                 ,its,ite,kts,kte,rhc                              &
+                 ,its,ite,kts,kte                                  &
+                 ,snowncv,graupelncv                               &
                                                                    )
 !-------------------------------------------------------------------
   IMPLICIT NONE
@@ -87,8 +88,7 @@ CONTAINS
   INTEGER,      INTENT(IN   )    ::   ims,ime, kms,kme ,           &
                                       its,ite, kts,kte
   REAL, DIMENSION( ims:ime , kms:kme+1), INTENT(IN   ) ::     phii 
-  REAL, DIMENSION( ims:ime), INTENT(IN   ) ::               slimsk !rsun 
-  INTEGER, DIMENSION( ims:ime) ::                           islmsk !rsun 
+  INTEGER, DIMENSION( ims:ime), INTENT(IN   ) ::            islmsk !rsun 
   REAL, DIMENSION( ims:ime , kms:kme),                            &
         INTENT(INOUT) ::                                          &
                                                               t,  &
@@ -102,8 +102,7 @@ CONTAINS
   REAL, DIMENSION( ims:ime , kms:kme),                            &
         INTENT(IN   ) ::                                          &
                                                                p, &
-                                                             del, &
-                                                             rhc
+                                                            del
   REAL, INTENT(IN   ) ::                                    delt
   REAL, DIMENSION( ims:ime ),                                     &
         INTENT(INOUT) ::                                          &
@@ -124,10 +123,14 @@ CONTAINS
                                                        refl_10cm
 !+---+-----------------------------------------------------------------+
 
-  REAL, DIMENSION( ims:ime )::                              snow, &
-                                                         snowncv
-  REAL, DIMENSION( ims:ime ) ::                          graupel, &
-                                                      graupelncv
+  REAL, DIMENSION( ims:ime ), OPTIONAL,                           &
+        INTENT(INOUT) ::                                 snowncv
+
+  REAL, DIMENSION( ims:ime ), OPTIONAL,                           &
+        INTENT(INOUT) ::                              graupelncv
+
+  REAL, DIMENSION( ims:ime ) ::                             snow, &
+                                                         graupel
 ! LOCAL VAR
   REAL, DIMENSION( its:ite , kts:kte, 2 ) ::   qci
   REAL, DIMENSION( its:ite , kts:kte, 3 ) ::   qrs
@@ -144,14 +147,6 @@ CONTAINS
   REAL, DIMENSION( kts:kte ) :: re_qc, re_qi, re_qs
   real :: tmp
   integer :: islmski
-
-         islmsk=0
-         DO i=its,ite
-           if (slimsk(i) .lt. 0.5) islmsk(i)=0
-           if ( (slimsk(i) .gt. 0.5) .and. (slimsk(i) .lt. 1.5) ) islmsk(i)=1
-           if (slimsk(i) .gt. 1.5) islmsk(i)=2
-         ENDDO
-         
 
          DO k=kts,kte
          DO i=its,ite
@@ -178,7 +173,6 @@ CONTAINS
                     ,its,ite, kts,kte                              &
                     ,snow=snow,snowncv=snowncv                     &
                     ,graupel=graupel,graupelncv=graupelncv         &
-                    ,rhc=rhc                                       &
                                                          ) 
          DO K=kts,kte
          DO I=its,ite
@@ -215,9 +209,9 @@ CONTAINS
                                 islmski,                                & !rsun 
                                 kts, kte, i)
             do k=kts,kte
-              re_cloud(i,k) = MAX(2.51E-6,  MIN(re_qc(k),  50.E-6))
-              re_ice(i,k)   = MAX(10.01E-6, MIN(re_qi(k), 125.E-6))
-              re_snow(i,k)  = MAX(25.E-6,   MIN(re_qs(k), 999.E-6))
+              re_cloud(i,k) = MAX(2.51E-6,  MIN(re_qc(k),  50.E-6))*1.e6
+              re_ice(i,k)   = MAX(10.01E-6, MIN(re_qi(k), 125.E-6))*1.e6
+              re_snow(i,k)  = MAX(25.E-6,   MIN(re_qs(k), 999.E-6))*1.e6
             enddo 
           enddo   
         endif     ! has_reqc, etc...
@@ -234,7 +228,7 @@ CONTAINS
                    ,ims,ime, kms,kme                              &
                    ,its,ite, kts,kte                              &
                    ,snow,snowncv                                  &
-                   ,graupel,graupelncv,rhc                        &
+                   ,graupel,graupelncv                            &
                                                                   )
 !-------------------------------------------------------------------
   IMPLICIT NONE
@@ -295,8 +289,7 @@ CONTAINS
         INTENT(IN   ) ::                                          &
                                                              den, &
                                                                p, &
-                                                             del, &
-                                                             rhc
+                                                             del
 
   INTEGER, DIMENSION( ims:ime),                                   &
         INTENT(IN   ) ::                                   islmsk
@@ -356,7 +349,8 @@ CONTAINS
                                                            worka
   REAL, DIMENSION( its:ite , kts:kte ) ::                         &
                                                          den_tmp, &
-                                                        delz_tmp
+                                                        delz_tmp, &
+                                                           t_tmp
   REAL, DIMENSION( its:ite , kts:kte ) ::                         &
                                                            pigen, &
                                                            pidep, &
@@ -628,12 +622,13 @@ CONTAINS
 !----------------------------------------------------------------
       do k = kts, kte
         do i = its, ite
+              t_tmp(i,k) = t(i,k)
           qrs_tmp(i,k,1) = qrs(i,k,1)
           qrs_tmp(i,k,2) = qrs(i,k,2)
           qrs_tmp(i,k,3) = qrs(i,k,3)
         enddo
       enddo
-      call slope_wsm6(qrs_tmp,den_tmp,denfac,t,rslope,rslopeb,rslope2,rslope3, & 
+      call slope_wsm6(qrs_tmp,den_tmp,denfac,t_tmp,rslope,rslopeb,rslope2,rslope3, & 
                      work1,its,ite,kts,kte)
 !
       do k = kte, kts, -1
@@ -652,9 +647,9 @@ CONTAINS
           if(qrs(i,k,1).le.0.0) workr(i,k) = 0.0
         enddo
       enddo
-      call nislfv_rain_plm(idim,kdim,den_tmp,denfac,t,delz_tmp,workr,denqrs1,  &
+      call nislfv_rain_plm(idim,kdim,den_tmp,denfac,t_tmp,delz_tmp,workr,denqrs1,  &
                            delqrs1,dtcld,1,1)
-      call nislfv_rain_plm6(idim,kdim,den_tmp,denfac,t,delz_tmp,worka,         & 
+      call nislfv_rain_plm6(idim,kdim,den_tmp,denfac,t_tmp,delz_tmp,worka,         & 
                            denqrs2,denqrs3,delqrs2,delqrs3,dtcld,1,1)
       do k = kts, kte
         do i = its, ite
@@ -678,7 +673,7 @@ CONTAINS
           qrs_tmp(i,k,3) = qrs(i,k,3)
         enddo
       enddo
-      call slope_wsm6(qrs_tmp,den_tmp,denfac,t,rslope,rslopeb,rslope2,rslope3, &
+      call slope_wsm6(qrs_tmp,den_tmp,denfac,t_tmp,rslope,rslopeb,rslope2,rslope3, &
                      work1,its,ite,kts,kte)
 !
       do k = kte, kts, -1 
@@ -702,6 +697,7 @@ CONTAINS
               qrs(i,k,2) = qrs(i,k,2) + psmlt(i,k)
               qrs(i,k,1) = qrs(i,k,1) - psmlt(i,k)
               t(i,k) = t(i,k) + xlf/cpm(i,k)*psmlt(i,k)
+              t_tmp(i,k) = t(i,k)
             endif
 !---------------------------------------------------------------
 ! pgmlt: melting of graupel [HL A23]  [LFO 47]
@@ -717,6 +713,7 @@ CONTAINS
               qrs(i,k,3) = qrs(i,k,3) + pgmlt(i,k)
               qrs(i,k,1) = qrs(i,k,1) - pgmlt(i,k)
               t(i,k) = t(i,k) + xlf/cpm(i,k)*pgmlt(i,k)
+              t_tmp(i,k) = t(i,k)
             endif
           endif
         enddo
@@ -743,7 +740,7 @@ CONTAINS
           denqci(i,k) = den(i,k)*qci(i,k,2)
         enddo
       enddo
-      call nislfv_rain_plm(idim,kdim,den_tmp,denfac,t,delz_tmp,work1c,denqci,  &
+      call nislfv_rain_plm(idim,kdim,den_tmp,denfac,t_tmp,delz_tmp,work1c,denqci,  &
                            delqi,dtcld,1,0)
       do k = kts, kte
         do i = its, ite
@@ -762,7 +759,7 @@ CONTAINS
         fallsum_qsi = fall(i,kts,2)+fallc(i,kts)
         fallsum_qg = fall(i,kts,3)
         if(fallsum.gt.0.) then
-          rainncv(i) = fallsum*delz(i,kts)/denr*dtcld + rainncv(i)
+          rainncv(i) = fallsum*delz(i,kts)/denr*dtcld*1000. + rainncv(i)
         endif
         if(fallsum_qsi.gt.0.) then
           tstepsnow(i)   = fallsum_qsi*delz(i,kts)/denr*dtcld                  &
@@ -859,12 +856,13 @@ CONTAINS
 !
       do k = kts, kte
         do i = its, ite
+              t_tmp(i,k) = t(i,k)
           qrs_tmp(i,k,1) = qrs(i,k,1)
           qrs_tmp(i,k,2) = qrs(i,k,2)
           qrs_tmp(i,k,3) = qrs(i,k,3)
         enddo
       enddo
-      call slope_wsm6(qrs_tmp,den_tmp,denfac,t,rslope,rslopeb,rslope2,rslope3, &
+      call slope_wsm6(qrs_tmp,den_tmp,denfac,t_tmp,rslope,rslopeb,rslope2,rslope3, &
                      work1,its,ite,kts,kte)
 !------------------------------------------------------------------
 !     work1:  the thermodynamic term in the denominator associated with
@@ -921,13 +919,13 @@ CONTAINS
 !---------------------------------------------------------------
           if(qrs(i,k,1).gt.0.) then
             coeres = rslope2(i,k,1)*sqrt(rslope(i,k,1)*rslopeb(i,k,1))
-            prevp(i,k) = (rh(i,k,1)-rhc(i,k))*(precr1*rslope2(i,k,1)           &
+            prevp(i,k) = (rh(i,k,1)-1.)*(precr1*rslope2(i,k,1)                 &
                          +precr2*work2(i,k)*coeres)/work1(i,k,1)
             if(prevp(i,k).lt.0.) then
               prevp(i,k) = max(prevp(i,k),-qrs(i,k,1)/dtcld)
-              prevp(i,k) = max(prevp(i,k),satdt/2)
+              prevp(i,k) = max(prevp(i,k),satdt/2.)
             else
-              prevp(i,k) = min(prevp(i,k),satdt/2)
+              prevp(i,k) = min(prevp(i,k),satdt/2.)
             endif
           endif
         enddo
@@ -1109,13 +1107,13 @@ CONTAINS
 !       (T<T0: V->I or I->V)
 !-------------------------------------------------------------
             if(qci(i,k,2).gt.0.and.ifsat.ne.1) then
-              pidep(i,k) = 4.*diameter*xni(i,k)*(rh(i,k,2)-rhc(i,k))/work1(i,k,2)
+              pidep(i,k) = 4.*diameter*xni(i,k)*(rh(i,k,2)-1.)/work1(i,k,2)
               supice = satdt-prevp(i,k)
               if(pidep(i,k).lt.0.) then
-                pidep(i,k) = max(max(pidep(i,k),satdt/2),supice)
+                pidep(i,k) = max(max(pidep(i,k),satdt/2.),supice)
                 pidep(i,k) = max(pidep(i,k),-qci(i,k,2)/dtcld)
               else
-                pidep(i,k) = min(min(pidep(i,k),satdt/2),supice)
+                pidep(i,k) = min(min(pidep(i,k),satdt/2.),supice)
               endif
               if(abs(prevp(i,k)+pidep(i,k)).ge.abs(satdt)) ifsat = 1
             endif
@@ -1125,14 +1123,14 @@ CONTAINS
 !-------------------------------------------------------------
             if(qrs(i,k,2).gt.0..and.ifsat.ne.1) then
               coeres = rslope2(i,k,2)*sqrt(rslope(i,k,2)*rslopeb(i,k,2))
-              psdep(i,k) = (rh(i,k,2)-rhc(i,k))*n0sfac(i,k)*(precs1*rslope2(i,k,2)   &    
+              psdep(i,k) = (rh(i,k,2)-1.)*n0sfac(i,k)*(precs1*rslope2(i,k,2)   &    
                            + precs2*work2(i,k)*coeres)/work1(i,k,2)
               supice = satdt-prevp(i,k)-pidep(i,k)
               if(psdep(i,k).lt.0.) then
                 psdep(i,k) = max(psdep(i,k),-qrs(i,k,2)/dtcld)
-                psdep(i,k) = max(max(psdep(i,k),satdt/2),supice)
+                psdep(i,k) = max(max(psdep(i,k),satdt/2.),supice)
               else
-                psdep(i,k) = min(min(psdep(i,k),satdt/2),supice)
+                psdep(i,k) = min(min(psdep(i,k),satdt/2.),supice)
               endif
               if(abs(prevp(i,k)+pidep(i,k)+psdep(i,k)).ge.abs(satdt))          &
                 ifsat = 1
@@ -1143,14 +1141,14 @@ CONTAINS
 !-------------------------------------------------------------
             if(qrs(i,k,3).gt.0..and.ifsat.ne.1) then
               coeres = rslope2(i,k,3)*sqrt(rslope(i,k,3)*rslopeb(i,k,3))
-              pgdep(i,k) = (rh(i,k,2)-rhc(i,k))*(precg1*rslope2(i,k,3)         &
+              pgdep(i,k) = (rh(i,k,2)-1.)*(precg1*rslope2(i,k,3)               &
                               +precg2*work2(i,k)*coeres)/work1(i,k,2)
               supice = satdt-prevp(i,k)-pidep(i,k)-psdep(i,k)
               if(pgdep(i,k).lt.0.) then
                 pgdep(i,k) = max(pgdep(i,k),-qrs(i,k,3)/dtcld)
-                pgdep(i,k) = max(max(pgdep(i,k),satdt/2),supice)
+                pgdep(i,k) = max(max(pgdep(i,k),satdt/2.),supice)
               else
-                pgdep(i,k) = min(min(pgdep(i,k),satdt/2),supice)
+                pgdep(i,k) = min(min(pgdep(i,k),satdt/2.),supice)
               endif
               if(abs(prevp(i,k)+pidep(i,k)+psdep(i,k)+pgdep(i,k)).ge.          &
                 abs(satdt)) ifsat = 1
@@ -1191,9 +1189,9 @@ CONTAINS
 !       (T>=T0: S->V)
 !-------------------------------------------------------------
           if(supcol.lt.0.) then
-            if(qrs(i,k,2).gt.0..and.rh(i,k,1).lt.rhc(i,k)) then
+            if(qrs(i,k,2).gt.0..and.rh(i,k,1).lt.1.) then
               coeres = rslope2(i,k,2)*sqrt(rslope(i,k,2)*rslopeb(i,k,2))
-              psevp(i,k) = (rh(i,k,1)-rhc(i,k))*n0sfac(i,k)*(precs1            &
+              psevp(i,k) = (rh(i,k,1)-1.)*n0sfac(i,k)*(precs1                  &
                            *rslope2(i,k,2)+precs2*work2(i,k)                   &
                            *coeres)/work1(i,k,1)
               psevp(i,k) = min(max(psevp(i,k),-qrs(i,k,2)/dtcld),0.)
@@ -1202,9 +1200,9 @@ CONTAINS
 ! pgevp: Evaporation of melting graupel [HL A25] [RH84 A19]
 !       (T>=T0: G->V)
 !-------------------------------------------------------------
-            if(qrs(i,k,3).gt.0..and.rh(i,k,1).lt.rhc(i,k)) then
+            if(qrs(i,k,3).gt.0..and.rh(i,k,1).lt.1.) then
               coeres = rslope2(i,k,3)*sqrt(rslope(i,k,3)*rslopeb(i,k,3))
-              pgevp(i,k) = (rh(i,k,1)-rhc(i,k))*(precg1*rslope2(i,k,3)         &
+              pgevp(i,k) = (rh(i,k,1)-1.)*(precg1*rslope2(i,k,3)               &
                          +precg2*work2(i,k)*coeres)/work1(i,k,1)
               pgevp(i,k) = min(max(pgevp(i,k),-qrs(i,k,3)/dtcld),0.)
             endif
@@ -1883,7 +1881,7 @@ CONTAINS
       real  allold, allnew, zz, dzamin, cflmax, decfl
       real  dz(km), ww(km), qq(km), wd(km), wa(km), was(km)
       real  den(km), denfac(km), tk(km)
-      real  wi(km+1), zi(km+1), za(km+1)
+      real  wi(km+1), zi(km+1), za(km+2) !hmhj
       real  qn(km), qr(km),tmp(km),tmp1(km),tmp2(km),tmp3(km)
       real  dza(km+1), qa(km+1), qmi(km+1), qpi(km+1)
 !
@@ -1918,11 +1916,11 @@ CONTAINS
  100  continue
 ! plm is 2nd order, we can use 2nd order wi or 3rd order wi
 ! 2nd order interpolation to get wi
-      wi(1) = ww(1)
-      wi(km+1) = ww(km)
-      do k=2,km
-        wi(k) = (ww(k)*dz(k-1)+ww(k-1)*dz(k))/(dz(k-1)+dz(k))
-      enddo
+!      wi(1) = ww(1)
+!      wi(km+1) = ww(km)
+!      do k=2,km
+!        wi(k) = (ww(k)*dz(k-1)+ww(k-1)*dz(k))/(dz(k-1)+dz(k))
+!      enddo
 ! 3rd order interpolation to get wi
       fa1 = 9./16.
       fa2 = 1./16.
@@ -1951,11 +1949,12 @@ CONTAINS
       do k=1,km+1
         za(k) = zi(k) - wi(k)*dt
       enddo
+      za(km+2)=zi(km+1) !hmhj
 !
-      do k=1,km
+      do k=1,km+1 !hmhj
         dza(k) = za(k+1)-za(k)
       enddo
-      dza(km+1) = zi(km+1) - za(km+1)
+!hmhj      dza(km+1) = zi(km+1) - za(km+1)
 !
 ! computer deformation at arrival point
       do k=1,km
@@ -2022,7 +2021,7 @@ CONTAINS
                            cycle find_kb
                          endif
                enddo find_kb
-               find_kt : do kk=kt,km
+               find_kt : do kk=kt,km+2  !hmhj
                          if( zi(k+1).le.za(kk) ) then
                            kt = kk
                            exit find_kt
@@ -2074,7 +2073,12 @@ CONTAINS
                       precip(i) = precip(i) + qa(k)*dza(k)
                       cycle sum_precip
                     else if ( za(k).lt.0.0 .and. za(k+1).ge.0.0 ) then
-                      precip(i) = precip(i) + qa(k)*(0.0-za(k))
+!hmhj for pcm         precip(i) = precip(i) + qa(k)*(0.0-za(k))
+                      th = (0.0-za(k))/dza(k)
+                      th2= th*th
+                      qqd = 0.5*(qpi(k)-qmi(k))
+                      qqh = qqd*th2+qmi(k)*th
+                      precip(i) = precip(i) + qqh*dza(k)
                       exit sum_precip
                     endif
                     exit sum_precip
@@ -2123,7 +2127,7 @@ CONTAINS
       real  allold, allnew, zz, dzamin, cflmax, decfl
       real  dz(km), ww(km), qq(km), qq2(km), wd(km), wa(km), wa2(km), was(km)
       real  den(km), denfac(km), tk(km)
-      real  wi(km+1), zi(km+1), za(km+1)
+      real  wi(km+1), zi(km+1), za(km+2) !hmhj
       real  qn(km), qr(km),qr2(km),tmp(km),tmp1(km),tmp2(km),tmp3(km)
       real  dza(km+1), qa(km+1), qa2(km+1),qmi(km+1), qpi(km+1)
 !
@@ -2161,11 +2165,11 @@ CONTAINS
  100  continue
 ! plm is 2nd order, we can use 2nd order wi or 3rd order wi
 ! 2nd order interpolation to get wi
-      wi(1) = ww(1)
-      wi(km+1) = ww(km)
-      do k=2,km
-        wi(k) = (ww(k)*dz(k-1)+ww(k-1)*dz(k))/(dz(k-1)+dz(k))
-      enddo
+!      wi(1) = ww(1)
+!      wi(km+1) = ww(km)
+!      do k=2,km
+!        wi(k) = (ww(k)*dz(k-1)+ww(k-1)*dz(k))/(dz(k-1)+dz(k))
+!      enddo
 ! 3rd order interpolation to get wi
       fa1 = 9./16.
       fa2 = 1./16.
@@ -2194,11 +2198,12 @@ CONTAINS
       do k=1,km+1
         za(k) = zi(k) - wi(k)*dt
       enddo
+      za(km+2)=zi(km+1) !hmhj
 !
-      do k=1,km
+      do k=1,km+1 !hmhj
         dza(k) = za(k+1)-za(k)
       enddo
-      dza(km+1) = zi(km+1) - za(km+1)
+!hmhj      dza(km+1) = zi(km+1) - za(km+1)
 !
 ! computer deformation at arrival point
       do k=1,km
@@ -2284,7 +2289,7 @@ CONTAINS
                            cycle find_kb
                          endif
                enddo find_kb
-               find_kt : do kk=kt,km
+               find_kt : do kk=kt,km+2  !hmhj
                          if( zi(k+1).le.za(kk) ) then
                            kt = kk
                            exit find_kt
@@ -2336,7 +2341,12 @@ CONTAINS
                       precip(i) = precip(i) + qa(k)*dza(k)
                       cycle sum_precip
                     else if ( za(k).lt.0.0 .and. za(k+1).ge.0.0 ) then
-                      precip(i) = precip(i) + qa(k)*(0.0-za(k))
+!hmhj for pcm         precip(i) = precip(i) + qa(k)*(0.0-za(k))
+                      th = (0.0-za(k))/dza(k)
+                      th2= th*th
+                      qqd = 0.5*(qpi(k)-qmi(k))
+                      qqh = qqd*th2+qmi(k)*th
+                      precip(i) = precip(i) + qqh*dza(k)
                       exit sum_precip
                     endif
                     exit sum_precip

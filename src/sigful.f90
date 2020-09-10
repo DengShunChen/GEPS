@@ -28,13 +28,13 @@
       use mpe
       use rank
       use index
-      use radn, only : ntoz
+      use radn, only : ntoz,ntcw,ntiw
 
       implicit  none
 
       integer   nx,my,my_max,lev,ncld,lmax,jtrun,jtmax,KL
       integer   ktrop,nxmy,nxlev,lncrec,lmaxp1,lmaxp2,k,itaux,itaup
-      integer   istat,i,ii,jj,j,nxj,kk,lqwset,m,mf,n,llts,ntrac
+      integer   istat,i,ii,jj,j,nxj,kk,lqwset,m,mf,n,llts,ntrac,nclds
 
       real      taup,cp,rad,rgas,grav,capa,taux,ptop,dummy,ppp,fac
       real      alaps,rdg,ttt1,ttt2,apha,ttt,sigp,x1,opok,pk800,pk300
@@ -66,6 +66,9 @@
       character*26 lrec
       character*6 typ
       character*80 ifilin,ifilout
+      character*3 cspec(6)
+      character*34 key
+      integer      inistat
 !dms34
       integer*8 idtg,idtg2
 !
@@ -75,6 +78,13 @@
                ,300.0,350.0,400.0,450.0,500.0,550.0,600.0,650.0      &
                ,700.0,750.0,800.0,850.0,900.0,925.0,950.0,975.0      &
                ,1000.0/
+      data cspec/'500','551','553','552','554','555'/
+!
+      if ( ntoz .gt. 0 ) then
+        nclds=ncld-1
+      else
+        nclds=ncld
+      endif
 !
 !CWBinit
       plnow=0.
@@ -142,6 +152,7 @@
 !
 !  read in q at sigma levels
 !
+      hld4=1.0e-20
       do 73 k = 1, levp
         KL=lev-Llist(k)+1
       write (typ, '("m",i2.2,"500")' ) KL
@@ -157,40 +168,81 @@
   73  continue
 !
       if( ncld .ge. 2 ) then
+!  check initial data of all hydrometeors
+!
+        if ( nclds .gt. 2 ) then
+          inistat=0
+
+          if(col_rank .eq. 0) then
+            do ntrac=2,nclds
+              write (typ, '("m",i2.2,a3)' ) Llist(1),cspec(ntrac) 
+              call syslbl (typ,idtg2,itaup,gmdef,lrec)
+              write(key,'(a26,a1,i7.7)') lrec,'H',lncrec
+              call dmschkr (ifilin,key//char(0),istat)
+              inistat=inistat+istat
+            enddo
+          endif
+
+          call mpe_global_sum(inistat,1,mpe_integer)
+          if ( myrank .eq. 0 .and. inistat .gt. 0 ) then 
+            print *,'========== Warning!!! ==========='
+            print *,'not enough initial data for all hydrometeors!!'
+          endif
+        else
+          inistat=1
+        endif
 !
 !  get first guest as initial
 !
-      ntrac=2
-      do k = 1, levp
-      KL=lev-Llist(k)+1
-      write (typ, '("m",i2.2,"550")' ) KL    ! cloud liquid water content
-      call syslbl (typ,idtg2,itaup,gmdef,lrec)
-      call dmsread_split (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
+        if ( inistat .gt. 0) then
+          ntrac=2
+          do k = 1, levp
+            KL=lev-Llist(k)+1
+            write (typ, '("m",i2.2,"550")' ) KL    ! cloud liquid water content
+            call syslbl (typ,idtg2,itaup,gmdef,lrec)
+            call dmsread_split (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
 !
-! reset liquid water if too large in stratusphere
-      lqwset=18
-      if(KL.le.lqwset)then
-        do j = 1,my
-          do i = 1, nx
-            if(hld1(i,j).lt.1.0e-12)hld1(i,j)=1.0e-12
-            if(hld1(i,j).ge.1.0e-10)hld1(i,j)=1.0e-10
+            do jj = 1, jlistnum
+              j=jlist1(jj)
+              nxj=nxdef(j)
+              if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
+              do i = 1, nxj
+!  no cloud ice data, simple way to split cloud water and ice temporary
+                if ( hld3(i,k,jj)-273.15 .le. -15. .and. nclds .ge. 3 ) then
+                  ntrac = ntiw
+                else
+                  ntrac = ntcw
+                endif
+                hld4(i,k,ntrac,jj) = max(hld1(i,j),1.0e-20)
+              end do
+            end do
+          end do
+!
+        else
+!
+          do ntrac=2,nclds
+            do k = 1, levp
+              KL=lev-Llist(k)+1
+              write (typ, '("m",i2.2,a3)' ) KL,cspec(ntrac)    ! cloud liquid water content
+              call syslbl (typ,idtg2,itaup,gmdef,lrec)
+              call dmsread_split (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
+!
+              do jj = 1, jlistnum
+                j=jlist1(jj)
+                nxj=nxdef(j)
+                if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
+                do i = 1, nxj
+                  hld4(i,k,ntrac,jj) = max(hld1(i,j),1.0e-20)
+                enddo
+              enddo
+            enddo
           enddo
-        enddo
-      endif
 !
-      do jj = 1, jlistnum
-       j=jlist1(jj)
-       nxj=nxdef(j)
-       if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
-      do i = 1, nxj
-        hld4(i,k,ntrac,jj) = hld1(i,j)
-      end do
-      end do
-      end do
+        endif
 !
 !  read "observed ozone" at sigma levels for doing ozone forecast
 !
-      if(ncld.ge.3)then
+      if(ncld.eq.ntoz)then
       ntrac=ntoz
       do k = 1, levp
         KL=lev-Llist(k)+1

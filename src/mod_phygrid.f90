@@ -145,7 +145,7 @@
                write(6,*) 'mod_phygrid : allocate fail 7 '
                stop
            end if
-
+!
            return
 
          end subroutine

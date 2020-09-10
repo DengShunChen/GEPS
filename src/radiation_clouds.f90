@@ -302,8 +302,10 @@
             print *,'   --- ferrier cloud microphysics'
           elseif (icmphys == 3) then
             print *,'   --- zhao/carr/sundqvist + pdf cloud'
-          elseif (icmphys == 4) then
+          elseif (icmphys == 6) then
             print *,'   --- WSM6 microphysics'
+          elseif (icmphys == 8) then
+            print *,'   --- Thompson microphysics'
           else
             print *,'  !!! error in cloud microphysc specification!!!', &
      &              '  icmphys (np3d) =',icmphys

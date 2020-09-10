@@ -2,8 +2,8 @@
       subroutine rad_initialize                                         &
 !...................................
 !  ---  inputs:
-     &     ( si,levr,ictm,isol,ico2,iaer,ialb,iems,ntcw,            &
-     &       num_p3d,ntoz,iovr_sw,iovr_lw,isubc_sw,isubc_lw,            &
+     &     ( si,levr,ictm,isol,ico2,iaer,ialb,iems,ntcw,                &
+     &       nmmiph,ntoz,iovr_sw,iovr_lw,isubc_sw,isubc_lw,             &
      &       icliq_sw,icice_sw,icliq_lw,icice_lw,                       &
      &       sashal,crick_proof,ccnorm,norad_precip,idate,iflip,me,myrank)
 !  ---  outputs: ( none )
@@ -75,9 +75,9 @@
 !                        =2 future development (not yet)                !
 !   ntcw             :=0 no cloud condensate calculated                 !
 !                     >0 array index location for cloud condensate      !
-!   num_p3d          :=3: ferrier's microphysics cloud scheme           !
+!   nmmiph          :=3: ferrier's microphysics cloud scheme           !
 !                     =4: zhao/carr/sundqvist microphysics cloud        !
-!                     =5: WSM6 microphysics cloud                       !
+!                     =5: WSM6 & Thompson microphysics cloud            !
 !   ntoz             : ozone data control flag                          !
 !                     =0: use climatological ozone profile              !
 !                     >0: use interactive ozone profile                 !
@@ -132,7 +132,7 @@
 
 !  ---  input:
       integer,  intent(in) :: levr, ictm, isol, ico2, iaer,             &
-     &       ntcw, ialb, iems, num_p3d, ntoz, iovr_sw, iovr_lw,         &
+     &       ntcw, ialb, iems, nmmiph, ntoz, iovr_sw, iovr_lw,          &
      &       icliq_sw,icice_sw,icliq_lw,icice_lw,                       &
      &       isubc_sw, isubc_lw, iflip, me, idate(8),myrank
 
@@ -171,19 +171,22 @@
 
       if ( ntcw > 0 ) then
         icldflg = 1                     ! prognostic cloud optical prop scheme
+
+        if ( nmmiph == 2 ) then
+          if ( pdfcloud ) then
+            icmphys = 3                 ! zhao/moorthi's prognostic with PDF cloud scheme 
+          else
+            icmphys = 1                 ! zhao/moorthi's prognostic cloud scheme
+          endif
+        elseif ( nmmiph == 3 ) then
+          icmphys = 2                   ! ferrier's microphysics
+        elseif ( nmmiph == 6 ) then
+          icmphys = 6                   ! WSM6 microphysics
+        elseif ( nmmiph == 8 ) then
+          icmphys = 8                   ! Thompson microphysics
+        endif
       else
         icldflg = 0                     ! diagnostic cloud optical prop scheme
-      endif
-      if ( num_p3d == 4 ) then
-        if ( pdfcloud ) then
-          icmphys = 3                   ! zhao/moorthi's prognostic with PDF cloud scheme 
-        else
-          icmphys = 1                   ! zhao/moorthi's prognostic cloud scheme
-        endif
-      elseif ( num_p3d == 3 ) then
-        icmphys = 2                     ! ferrier's microphysics
-      elseif ( num_p3d == 5 ) then
-        icmphys = 4                     ! WSM6 microphysics
       endif
       iovrsw = iovr_sw                  ! cloud overlapping control flag for sw
       iovrlw = iovr_lw                  ! cloud overlapping control flag for lw
@@ -215,7 +218,7 @@
         print *,' si =',si
         print *,' levr=',levr,' ictm=',ictm,' isol=',isol,' ico2=',ico2,&
                 ' iaer=',iaer,' ialb=',ialb,' iems=',iems,' ntcw=',ntcw  
-        print *,' num_p3d=',num_p3d,' ntoz=',ntoz,' iovr_sw=',iovr_sw,  &
+        print *,' nmmiph=',nmmiph,' ntoz=',ntoz,' iovr_sw=',iovr_sw,    &
                 ' iovr_lw=',iovr_lw,' isubc_sw=',isubc_sw,              &
                 ' isubc_lw=',isubc_lw,' iflip=',iflip,'  me=',me         
         print *,' sashal=',sashal,' crick_proof=',crick_proof,          &
