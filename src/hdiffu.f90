@@ -126,8 +126,8 @@
             vornow(k,2,n,m)=vornow(k,2,n,m)/c1
             divnow(k,1,n,m)=divnow(k,1,n,m)/c2
             divnow(k,2,n,m)=divnow(k,2,n,m)/c2
-!            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
-!            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
+!!            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
+!!            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
             temnow(k,1,n,m)=temnow(k,1,n,m)/c3
             temnow(k,2,n,m)=temnow(k,2,n,m)/c3
           enddo
@@ -313,7 +313,7 @@
 !
 !--------------------------------------------------------------------
       subroutine whdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld,amp   &
-                        , rad,cosl,ut,vt,vornow,divnow,temnow,eps4) 
+                        , rad,cosl,ut,vt,vornow,divnow,temnow,eps4,trefs) 
       use index
       use mpe
       use rank
@@ -439,8 +439,8 @@
             vornow(k,2,n,m)=vornow(k,2,n,m)/c1
             divnow(k,1,n,m)=divnow(k,1,n,m)/c2
             divnow(k,2,n,m)=divnow(k,2,n,m)/c2
-!            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
-!            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
+!!            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
+!!            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
             temnow(k,1,n,m)=temnow(k,1,n,m)/c3
             temnow(k,2,n,m)=temnow(k,2,n,m)/c3
           enddo
