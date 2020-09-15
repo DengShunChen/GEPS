@@ -1029,6 +1029,7 @@
             j=jlist1(jj)
             nxj=nxdef_2d(j)
             do ii = 1,nxj
+              dFCTsstdt(ii,jj)=0.
               obswtbt(ii,jj)=dta*dFCTsstdt(ii,jj)+obswtbp(ii,jj)
               if(ocean(ii,jj))then
                 tseadiffFCT(ii,jj)=dta*dFCTsstdt(ii,jj)
@@ -1084,6 +1085,7 @@
 ! update tg, dSST/dt (W00100)
 !
         if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. dailyClm_option.ge.1) then
+          if(tau .ge. 24.) then
           do jj = 1, jlistnum
             j=jlist1(jj)
             nxj=nxdef_2d(j)
@@ -1171,6 +1173,8 @@
 
             end do
           end do
+!end if(tau .ge. 24.)
+          endif
           CALL read_dailyFCT(idtg,tau,dt,tg,cice,sndepth,xlon,xlat,ocean)
         endif
 !
