@@ -323,7 +323,7 @@
       implicit  none
 
       integer   my,my_max,nx,jtrun,jtmax,lev,ncld
-      real      dta,rad
+      real      dta,rad,ord
 
       real      cosl(my),ut(nxp,lev,my_max),vt(nxp,lev,my_max),  &
                 vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),   &
@@ -342,38 +342,15 @@
       logical   windchk
 
       data      windmax1/80./, windmax2/100./, windmax3/130./
+      data      ord/4./
 !!      data      windmax1/70./, windmax2/100./, windmax3/130./
 !
 
 !
       nf=jtrun-1
-      wmax(1:lev)= 0.0
 !
-      do jj =1,jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-        xx=rad/cosl(j)
-        do k=1,lev
-          do i=1,nxj
-            wmax(k)= max(wmax(k),xx*sqrt(ut(i,k,jj)**2+vt(i,k,jj)**2))
-          enddo
-        enddo
-      enddo
-!
-      call mpe_global_max(wmax,lev,mpe_double)
-!
-!      do k=1,lev
-!        if( wmax(k) .gt. windmax3 ) then
-!          if(myrank.eq.0)print *,'wmax gt windmax at','k= ',k,         &
-!                                 ' windmax=',wmax(k)
-!        endif
-!      enddo
-!
-!
-      hfilt = (radsq/(nf*(nf+1)))**2.
+      hfilt = (radsq/(nf*(nf+1)))**ord
       hfilt2 = radsq/(nf*(nf+1))
-!      factop = 3.
-!      coefu = factop/float(hdk2(3)-hdk2(2))
       if ( octahedral ) then
         hfilt = hfilt/(6.*dta)
         hfilt2= hfilt2/(6.*dta)
@@ -383,10 +360,6 @@
       endif
 
       do 100 k=1,levp  ! levp -> lev
-!
-!       if( wmax(k) .gt. windmax2 ) then
-!         if(myrank.eq.0)print *,'wmax gt windmax at','k= ',k,         &
-!                                ' windmax=',wmax(k)
 !
 !  compute diffusion coefficients
 !
@@ -402,21 +375,16 @@
 !           -max(min(0.25*coefu*(hdk2(1)-KL),factop),0.)
 !        kfac = 1.0 + dec
         kfac = 1.0 + max(float(hdk2(2)-KL),0.) 
-        facd = amp * (kfac + 2.*max(float(hdk1-KL),0.))
-        facv = amp * (kfac + 1.*max(float(hdk1-KL),0.))
-        fact = amp * (kfac + 1.*max(float(hdk1-KL),0.))
+        facd = 1. * (kfac + 2.*max(float(hdk1-KL),0.))
+!!        facv = amp * (kfac + 1.*max(float(hdk1-KL),0.))
+!!        fact = amp * (kfac + 1.*max(float(hdk1-KL),0.))
+!!        facd = amp * kfac 
+!!        facv = amp * kfac
+!!        fact = amp * kfac
 !          endif
-
-
-!        if ( KL .le. hdk1 ) then
-!          ddiffu =facd*hfilt2
-!        else
-!          ddiffu =facd*hfilt
-!        endif
-
-!        tdiffu =fact*hfilt
-!        vdiffu =facv*hfilt
-          
+        facd = 240. * facd
+!!        facv =  1. * facv
+!!        fact =  1. * fact
 
 !
 !  difuse vorticity and divergence fields
@@ -426,23 +394,23 @@
           mf=mlist(m)
           do n=mf,jtrun
 
-            c1=1.+dta*facv*hfilt*eps4(n,m)**2
-            c3=1.+dta*fact*hfilt*eps4(n,m)**2
+!!            c1=1.+dta*facv*hfilt*eps4(n,m)**ord
+!!            c3=1.+dta*fact*hfilt*eps4(n,m)**ord
 
             if ( KL .le. hdk1 ) then
               c2=1.+dta*facd*hfilt2*eps4(n,m)
             else
-              c2=1.+dta*facd*hfilt*eps4(n,m)**2
+              c2=1.+dta*facd*hfilt*eps4(n,m)**ord
             endif
 
-            vornow(k,1,n,m)=vornow(k,1,n,m)/c1
-            vornow(k,2,n,m)=vornow(k,2,n,m)/c1
+!!            vornow(k,1,n,m)=vornow(k,1,n,m)/c1
+!!            vornow(k,2,n,m)=vornow(k,2,n,m)/c1
             divnow(k,1,n,m)=divnow(k,1,n,m)/c2
             divnow(k,2,n,m)=divnow(k,2,n,m)/c2
 !!            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
 !!            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
-            temnow(k,1,n,m)=temnow(k,1,n,m)/c3
-            temnow(k,2,n,m)=temnow(k,2,n,m)/c3
+!!            temnow(k,1,n,m)=temnow(k,1,n,m)/c3
+!!            temnow(k,2,n,m)=temnow(k,2,n,m)/c3
           enddo
         enddo
  100  continue
