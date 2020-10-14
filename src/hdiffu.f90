@@ -313,7 +313,8 @@
 !
 !--------------------------------------------------------------------
       subroutine whdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld,amp   &
-                        , rad,cosl,ut,vt,vornow,divnow,temnow,eps4,trefs) 
+                        , rad,cosl,ut,vt,vornow,divnow,temnow,plnow    &
+                        , eps4,trefs) 
       use index
       use mpe
       use rank
@@ -328,7 +329,7 @@
       real      cosl(my),ut(nxp,lev,my_max),vt(nxp,lev,my_max),  &
                 vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),   &
                 temnow(levp,2,jtrun,jtmax),eps4(jtrun,jtmax),            &
-                trefs(levp,2,jtrun,jtmax)
+                trefs(levp,2,jtrun,jtmax),plnow(jtrun,jtmax,2)
 !
 !     parameter ( ktop=4, ktop2=ktop/2 ) ! top "ktop" levels are inhenced
 !
@@ -337,7 +338,7 @@
 
       integer   jj,j,nxj,k,i,m,n,mf,nc,kk,KL
       real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu
-      real      hfilt,hfilt2,nf,kfac,dec,coefu,factop
+      real      hfilt,hfilt2,hfilt4,nf,kfac,dec,coefu,factop
       real      c1,c2,c3
       logical   windchk
 
@@ -376,15 +377,15 @@
 !        kfac = 1.0 + dec
         kfac = 1.0 + max(float(hdk2(2)-KL),0.) 
         facd = 1. * (kfac + 2.*max(float(hdk1-KL),0.))
-!!        facv = amp * (kfac + 1.*max(float(hdk1-KL),0.))
+        facv = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
 !!        fact = amp * (kfac + 1.*max(float(hdk1-KL),0.))
 !!        facd = amp * kfac 
 !!        facv = amp * kfac
 !!        fact = amp * kfac
 !          endif
         facd = 240. * facd
-!!        facv =  1. * facv
-!!        fact =  1. * fact
+        facv =   1. * facv
+!!        fact = facd
 
 !
 !  difuse vorticity and divergence fields
@@ -394,7 +395,7 @@
           mf=mlist(m)
           do n=mf,jtrun
 
-!!            c1=1.+dta*facv*hfilt*eps4(n,m)**ord
+            c1=1.+dta*facv*hfilt*eps4(n,m)**ord
 !!            c3=1.+dta*fact*hfilt*eps4(n,m)**ord
 
             if ( KL .le. hdk1 ) then
@@ -403,8 +404,8 @@
               c2=1.+dta*facd*hfilt*eps4(n,m)**ord
             endif
 
-!!            vornow(k,1,n,m)=vornow(k,1,n,m)/c1
-!!            vornow(k,2,n,m)=vornow(k,2,n,m)/c1
+            vornow(k,1,n,m)=vornow(k,1,n,m)/c1
+            vornow(k,2,n,m)=vornow(k,2,n,m)/c1
             divnow(k,1,n,m)=divnow(k,1,n,m)/c2
             divnow(k,2,n,m)=divnow(k,2,n,m)/c2
 !!            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
@@ -414,6 +415,16 @@
           enddo
         enddo
  100  continue
+!!
+      fact = 0.5 
+      do m=1,mlistnum
+          mf=mlist(m)
+          do n=mf,jtrun
+             c3=1.+dta*fact*hfilt*eps4(n,m)**ord
+             plnow(n,m,1)=plnow(n,m,1)/c3
+             plnow(n,m,2)=plnow(n,m,2)/c3
+          enddo
+      enddo
 !
 !--------------------------------------------------------------------
       return

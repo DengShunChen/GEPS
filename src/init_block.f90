@@ -28,7 +28,7 @@
 
       dt=900.0
 !  sponge layer 
-      spl1=5.
+      spl1=10.
       spl2=100.
 !
       frad=1.0

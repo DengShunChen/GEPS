@@ -151,7 +151,7 @@
                         , cp,radsq,ut,vt,rdiv,tt,qt,phi,pt           &
                         , dtpl,dlpl,sinl,pk,pk2,dsigma,sigma,onocos  &
                         , cor,diveng,vdmerd,vdzonl,pten,deldm,sdpbl  &
-                        , sd,pdot,sgeo,step)
+                        , sd,pdot,sgeo)
 !
 !  real to spectral transformation, compute non-linear contributions
 !  to spectral tendencies
@@ -210,10 +210,9 @@
 !
       real      sd(nx,lev),pdot(nx,lev+1),spal(nx,lev),odpsig(nx,lev)
 
-      integer   k,i,kbgn,kk,step
+      integer   k,i,kbgn,kk
       real      px,px_pbl
 
-      if ( step .eq. 2 ) then
 !CWB2014 fixed undefined value problem in diabat line 665
       sd=0.
 !
@@ -221,10 +220,9 @@
 !
       k= 1
       do 22 i=1,nxj
-        deldm(i)= -dsigma(k,1)*(ut(i,k)*dlpl(i)*onocos+vt(i,k)*dtpl(i))   &
-                  -rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
-!!        deldm(i)= pten(i,k)
-!!        deldm(i)= pten(i,k)-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
+!!        deldm(i)= -dsigma(k,1)*(ut(i,k)*dlpl(i)*onocos+vt(i,k)*dtpl(i))   &
+!!                  -rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
+        deldm(i)= pten(i,k)-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
 !        deldm(i)= -dsig(k)*(ut(i,k)*dlpl(i)*onocos+vt(i,k)*dtpl(i)
 !     *            +rdiv(i,k)*pt(i))
         sd(i,k+1)= deldm(i)
@@ -232,10 +230,9 @@
 !
       do 2 k=2,lev-1
       do 2 i=1,nxj
-        deldm(i)= deldm(i)-dsigma(k,1)*(ut(i,k)*dlpl(i)*onocos            &
-                 +vt(i,k)*dtpl(i))-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
-!!        deldm(i)= deldm(i)+pten(i,k)
-!!        deldm(i)= deldm(i)+pten(i,k)-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
+!!        deldm(i)= deldm(i)-dsigma(k,1)*(ut(i,k)*dlpl(i)*onocos            &
+!!                 +vt(i,k)*dtpl(i))-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
+        deldm(i)= deldm(i)+pten(i,k)-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
 !        deldm(i)= deldm(i)-dsig(k)*(ut(i,k)*dlpl(i)*onocos
 !     *           +vt(i,k)*dtpl(i)+rdiv(i,k)*pt(i))
         sd(i,k+1)= deldm(i)
@@ -243,10 +240,9 @@
 !
       k= lev
       do 24 i=1,nxj
-        deldm(i)= deldm(i)-dsigma(k,1)*(ut(i,k)*dlpl(i)*onocos            &
-                 +vt(i,k)*dtpl(i))-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
-!!        deldm(i)= deldm(i)+pten(i,k)
-!!        deldm(i)= deldm(i)+pten(i,k)-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
+!!        deldm(i)= deldm(i)-dsigma(k,1)*(ut(i,k)*dlpl(i)*onocos            &
+!!                 +vt(i,k)*dtpl(i))-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
+        deldm(i)= deldm(i)+pten(i,k)-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
 !        deldm(i)= deldm(i)-dsig(k)*(ut(i,k)*dlpl(i)*onocos
 !     *           +vt(i,k)*dtpl(i)+rdiv(i,k)*pt(i))
    24 continue
@@ -283,8 +279,6 @@
         endif
     4 continue
 !
-      else if ( step .eq. 1 ) then
-!
       call vstruc_hybrid_cwb(nxj,nx,lev,cp,radsq,sigma,dsigma,pt,tt,qt &
                    ,pk,pk2,spal,odpsig,phi,ncld)
 !
@@ -293,9 +287,8 @@
         vdmerd(i,k)= -spal(i,k)*dtpl(i)/onocos!-ut(i,k)*cor             &
 !                     -(ut(i,k)*ut(i,k)+vt(i,k)*vt(i,k))*onocos*sinl
         vdzonl(i,k)= -spal(i,k)*dlpl(i)!+vt(i,k)*cor
+
         diveng(i,k)= sgeo(i)+phi(i,k)
-!        diveng(i,k)= phi(i,k)
   13  continue
-      endif
       return
       end
