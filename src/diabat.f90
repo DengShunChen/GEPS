@@ -30,8 +30,8 @@
                     , ss_clr,rs_clr,asol_clr,olr_clr,sld_clr,rld_clr           &
                     , alvsf,alvwf,alnsf,alnwf,facsf,facwf                      &
                     , idtg,doo3l,nfxr,sfalb,sfemis,isot,ivegsrc                &
-! sppt
-                    , dosppt,sppt3d,itimestep,lrun_sitvdiff,ic_sit             &
+! sit
+                    , lrun_sitvdiff,ic_sit             &
 !xb110>
                     , flash,tsflw)
 !xb110<
@@ -168,7 +168,7 @@
       use rank
       use index
       use const,                 ONLY:do_sit,ldailyFCTsst,dailyClm_option    &
-                                     ,pdfcloud,cmbk,cgwd
+                                     ,pdfcloud,cmbk,cgwd, dosppt, doshum
       use mod_sitgrid
       USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
       USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt
@@ -184,6 +184,7 @@
       use physcons, only :con_rd,con_fvirt,con_rerth,con_rv
 ! for land_noah_new
       use namelist_soilveg, only :MAX_SLOPETYP,MAX_SOILTYP,MAX_VEGTYP
+      use mod_stochastic_physics, only : sppt3d, shum3d
 !-----------------------------------------------------------------------
       implicit  none
 !-----------------------------------------------------------------------
@@ -319,10 +320,8 @@
 !
       real qt_shum_old(nxp,lev*ncld,my_max)
 !
-      real,intent(in) :: sppt3d(nxp,lev,my_max)
       real ru
-      integer itimestep,ii
-      logical dosppt
+      integer ii
 
 ! for MP WSM6 & Thompson
       logical uni_cloud,lmfshal,lmfdeep2
@@ -755,13 +754,14 @@
 !     initial albx by climate values of gwet and alb, while it may
 !     be updated in grdcon according ground conditions
 !
-      do 180 jj = 1, jlistnum
-       j=jlist1(jj)
-       nxj=nxdef_2d(j)
-      do 180 i = 1, nxj
-       albx(i,jj)  = alb(i,jj)
-       albedo2(i,jj)  = alb(i,jj)
-  180 continue
+      do jj = 1, jlistnum
+         j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        do i = 1, nxj
+          albx(i,jj)  = alb(i,jj)
+          albedo2(i,jj)  = alb(i,jj)
+        enddo
+      enddo
 !
 !-----------------------------------------------------------------------
       if(ntoz.gt.0)then
@@ -807,7 +807,7 @@
 !                                                                      c
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !
-      do 290 jj =1, jlistnum
+    do 290 jj =1, jlistnum
       j=jlist1(jj)
       nxj=nxdef_2d(j)
 !
@@ -1041,7 +1041,16 @@
       end do
 !xb110<
 !
-!
+!      ! keep the old control values for SHUM
+      if (doshum) then
+        do k = 1, lev*ncld
+          do i = 1, nxj
+            qt_shum_old(i,k,jj)=qt(i,k,jj)
+          enddo
+        enddo
+      endif ! end of doshum if stetement
+
+
       if ( dopbl .and. (nmpbl.eq.1 .and. nmland.eq.1))                        &
          call pbltke ( nxjp(j),nxp,lev,ktpbl,dta,grav,rgas,cp,xkapa,hltm,ptop &
                      , tice,hice,tg(1,jj),z0(1,jj),land(1,jj)                 &
@@ -1060,15 +1069,6 @@
                      , runoff(1,jj),sigmaf(1,jj),istyp(1,jj),ivegtyp(1,jj)    &
                      , wlt,ref,tsat,dfkt,xktk,dfk )
 
-! keep the old control values for SPPT
-        if (dosppt) then
-          do k = 1, lev*ncld
-            do i = 1, nxj
-              qt_shum_old(i,k,jj)=qt(i,k,jj)
-            enddo
-          enddo
-        endif ! end of dosppt if stetement
-!
       if ( dopbl .and. (nmpbl.eq.2 .and. nmland.eq.1))                        &
          call pbltke_n ( nxjp(j),nxp,lev,ktpbl,dta,grav,rgas,cp,xkapa,hltm,ptop &
                      , tice,hice,tg(1,jj),z0(1,jj),land(1,jj)                 &
@@ -1113,10 +1113,11 @@
 !
 !     update tt by radiation heating/cooling rate: dtrad (k/day)
 !
-      do 240 k = 1, lev
-      do 240 i = 1, nxj
-      tt(i,k,jj) = tt(i,k,jj) + dta*dtrad(i,k,jj)/86400.0
-  240 continue
+      do k = 1, lev
+        do i = 1, nxj
+          tt(i,k,jj) = tt(i,k,jj) + dta*dtrad(i,k,jj)/86400.0
+        enddo
+      enddo
 !
 !
 !     recompute phi by tt after pbl to ensure consistence of phi & phi2
@@ -1142,9 +1143,9 @@
 ! SHUM process
 !  John Tseng
 !
-    if (dosppt) then
-! there's no need to add perturbation for ozone tracer. (
-! modified by PangYen Liu
+    if (doshum) then
+      ! there's no need to add perturbation for ozone tracer. (
+      ! modified by PangYen Liu
       if (ntoz .eq. 0 ) then
         nk = ncld
       else
@@ -1155,28 +1156,13 @@
         do k=1,lev
           kk = (n-1)*lev+k
           do i=1,nxj
-            ru=sppt3d(i,k,jj)*exp(-(k-65.)*(k-65.)/400.)*0.01
+            ru=shum3d(i,k,jj)
             qt(i,kk,jj)=(1+ru)*qt(i,kk,jj)-ru*qt_shum_old(i,kk,jj)
             if (qt(i,kk,jj).lt.0) qt(i,kk,jj)=0.
           enddo
         enddo
       enddo
-!!      do k=1,lev
-!!      do i=1,nxj
-!!      ru=sppt3d(i,k,jj)*exp(-(k-65.)*(k-65.)/400.)*0.01
-!!      qt(i,k,jj)=(1+ru)*qt(i,k,jj)-ru*qt_shum_old(i,k,jj)
-!!      if (qt(i,k,jj).lt.0) qt(i,k,jj)=0.
-!!      enddo
-!!      enddo
-!!      do k=lev+1,lev*ncld
-!!      do i=1,nxj
-!!      ru=sppt3d(i,k-lev,jj)*exp(-(k-65.)*(k-65.)/400.)*0.01
-!!      qt(i,k,jj)=(1+ru)*qt(i,k,jj)-ru*qt_shum_old(i,k,jj)
-!!      if (qt(i,k,jj).lt.0) qt(i,k,jj)=0.
-!!      enddo
-!!      enddo
-!
-    endif ! end dosppt if stetement
+    endif ! end doshum if stetement
 
 !
       if(dograv .and. (nmgwor .eq. 1) )                                &
@@ -2184,14 +2170,14 @@
         endif  !end lrun_sitvdiff
 
 
-         if(myrank.eq.myrank_check .AND. jj.EQ.jj_check .AND. ii .EQ. ii_check) then
+        if(myrank.eq.myrank_check .AND. jj.EQ.jj_check .AND. ii .EQ. ii_check) then
            print*,'after sit_vdiff: sitlat(',ii_check,')=',sitlat(ii_check)  &
                  ,',sitlon(',ii_check,',jj)=',sitlon(ii_check,jj)            &
                  ,',sitlclass=',sitlclass(ii_check,jj)                       &
                  ,',sitmask=',sitmask(ii_check,jj),',tg=',tg(ii_check,jj)    &
                  ,',tsw=',tsw(ii_check,jj),',dtswdt=',dtswdt(ii_check,jj)    &
                  ,',tgold=',tgold(ii_check,jj)
-         endif
+        endif
 
         if(jj .eq. jlistnum) then
           deallocate(sstm)
@@ -2213,7 +2199,6 @@
           deallocate(obswtbtm)
           deallocate(tgtm)
           if (lrun_sitvdiff) dtfsit=0.
-
         endif
       endif  !end do_sit
 
@@ -2226,12 +2211,13 @@
 !     change real temp back to virtual potential temperature
 !
       yy = cosl(j) / radus
-      do 270 k = 1, lev
-      do 270 i = 1, nxj
-        ut(i,k,jj) = ut(i,k,jj)*yy
-        vt(i,k,jj) = vt(i,k,jj)*yy
-        tt(i,k,jj) = tt(i,k,jj)*(1.0+0.608*qt(i,k,jj))/pk(i,k,jj)
-  270 continue
+      do  k = 1, lev
+        do  i = 1, nxj
+          ut(i,k,jj) = ut(i,k,jj)*yy
+          vt(i,k,jj) = vt(i,k,jj)*yy
+          tt(i,k,jj) = tt(i,k,jj)*(1.0+0.608*qt(i,k,jj))/pk(i,k,jj)
+        enddo
+      enddo
 !
 !
 !
@@ -2247,44 +2233,29 @@
         do k=1,lev
           do i=1,nxj
             ru=sppt3d(i,k,jj)
-            ttp(i,k,jj)=ru*(tt(i,k,jj)-tt_sppt_old(i,k,jj)) !write out for checking
             ut(i,k,jj) = (1+ru)*ut(i,k,jj) - ru*ut_sppt_old(i,k,jj)
             vt(i,k,jj) = (1+ru)*vt(i,k,jj) - ru*vt_sppt_old(i,k,jj)
             tt(i,k,jj) = (1+ru)*tt(i,k,jj) - ru*tt_sppt_old(i,k,jj)
           enddo
         enddo
-! there's no need to add perturbation for ozone tracer. (
-! modified by PangYen Liu
-      if (ntoz .eq. 0 ) then
-        nk = ncld
-      else
-        nk = ncld-1
-      endif
+      ! there's no need to add perturbation for ozone tracer. (
+      ! modified by PangYen Liu
+        if (ntoz .eq. 0 ) then
+          nk = ncld
+        else
+          nk = ncld-1
+        endif
 
-      do n=1,nk
-        do k=1,lev
-          kk = (n-1)*lev+k
-          do i=1,nxj
-            ru=sppt3d(i,k,jj)
-            qt(i,kk,jj) = (1+ru)*qt(i,kk,jj) - ru*qt_sppt_old(i,kk,jj)
-            if (qt(i,kk,jj).lt.0) qt(i,kk,jj) = 0.
+        do n=1,nk
+          do k=1,lev
+            kk = (n-1)*lev+k
+            do i=1,nxj
+              ru = sppt3d(i,k,jj)
+              qt(i,kk,jj) = (1+ru)*qt(i,kk,jj) - ru*qt_sppt_old(i,kk,jj)
+              if (qt(i,kk,jj).lt.0) qt(i,kk,jj) = 0.
+            enddo
           enddo
         enddo
-      enddo
-!!      do k=1,lev
-!!      do i=1,nxj
-!!      ru=sppt3d(i,k,jj)
-!!      qt(i,k,jj)=(1+ru)*qt(i,k,jj)-ru*qt_sppt_old(i,k,jj)
-!!      if (qt(i,k,jj).lt.0) qt(i,k,j)=0.
-!!      enddo
-!!      enddo
-!!      do k=lev+1,lev*ncld
-!!      do i=1,nxj
-!!      ru=sppt3d(i,k-lev,jj)
-!!      qt(i,k,jj)=(1+ru)*qt(i,k,jj)-ru*qt_sppt_old(i,k,jj)
-!!      if (qt(i,k,jj).lt.0) qt(i,k,jj)=0.
-!!      enddo
-!!      enddo
       enddo
     endif ! end dosppt if stetement
 !

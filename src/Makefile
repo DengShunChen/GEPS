@@ -14,53 +14,52 @@ SRCS_f90  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
 	readozpl.f90 rozphys.f90 readalb.f90 \
 	prerrtmg.f90 rrtmg.f90\
 	cup92.f90 cupcwb.f90 dayfil.f90 days.f90 dcbase.f90 diabat.f90 \
-        gensppt3dv5.f90  spptout.f90 \
+  mod_stochastic_physics.f90 mersenne_twister.f90 \
 	diagrd.f90 dmsread.f90 dmswrit.f90 drychk.f90 drycon.f90 \
 	eeps.f90 eigen.f90 eigrs.f90 evpcup.f90 gwdp.f90 \
         gwdc.f90 read_mtnvar.f90 gwdps.f90 \
 	gathv.f90 gausl3.f90 gauslv.f90 geostd.f90 \
 	getphi.f90 getrdy.f90 gfcst.f90 glbmean.f90 \
 	grdcon.f90 grdtpw.f90 hdiffu.f90 \
-	incrini.f90 inicons.f90 initial.f90 intgrt.f90 invmtx.f90 lgndr.f90 lsp.f90 \
-	maxp.f90 minp.f90 mixpbl.f90 mtxmlp.f90 mtxprt.f90 \
-	nnmi.f90 out24.f90 out2d.f90 out2d_mfc.f90 outflds.f90 outflds_green.f90 \
-        outflds_fv3.f90 outflds_hp.f90 outsigs.f90 outsigr.f90 pbltke.f90 \
-	postq.f90 qmaxn3.f90 qprint.f90 stemp.f90 vterpj.f90 \
-	qprnt3.f90 qsatq.f90 radir99.f90 radsl99.f90 radtn99.f90 \
-	rcloud.f90 rcmpir24.f90 rcmpir24c.f90 rcmpsl2.f90 rcmpsl2c.f90 \
-	rkdisir.f90 roptir.f90 rqkir.f90 mxslvc.f90 \
-	readclx.f90 rozone.f90 setupv.f90 \
-	sfcpbl.f90 shlcon.f90 sigful.f90 siimpl.f90 sortml.f90 \
-	splin1.f90 splinc.f90 srms.f90 structrn.f90 stupij.f90 stupiy.f90 \
-	syslbl.f90 tendget.f90 \
-	trandv.f90 tranrs.f90 transr.f90 tranuv.f90 trdih.f90 \
-	trdiv2.f90 trdivv.f90 triadj.f90 trigau.f90 trngra.f90 trngra3.f90 \
-	ttstd.f90 uzmean.f90 varpht.f90 vartran.f90 vartrix.f90 \
-	voterp.f90 vterp.f90 whtrec.f90 whttau.f90 \
-	zilch.f90 zimadv.f90 zx.f90 check.f90 chlen.f90 \
-	ctemp2.f90 ncoling.f90 \
-	fftx.f90 eispack.f90 indexx.f90 eigenlib.f90 crayfun.f90 \
-	qmaxn3p.f90 transr1.f90 tranrs1.f90 make_list.f90 \
-	gather_spec.f90 scatter_spec.f90 \
-	joinrs.f90 joinsr.f90 ujoinrs.f90 ujoinsr.f90 \
-	mpe_unify.f90 \
-	mpe_transpose_sr.f90 mpe_transpose_rs.f90 \
-	mpe_transpose_sr1.f90 mpe_transpose_rs1.f90  \
-	mpe_barrier.f90  mpe_init.f90 mpe_finalize.f90 \
-	mpe_gather_io.f90 mpe_scatter_io.f90 sfcuvt.f90 \
-        mp_scheme.f90 module_mp_radar.f90 module_mp_wsm6_fv3.f90 module_mp_thompson_gfs.f90 \
-	landpack.f90 landsfc.f90 landsmc.f90 \
-	rstrandz.f90 rstrantq.f90 fpvs.f90 gpvs.f90 gscond.f90 precpd.f90 precpd_n.f90\
-	sascnv.f90 sascnv_n.f90 sascnv_sa.f90 landsfc_n.f90 mixpbl_n.f90 pbltke_n.f90 \
-	reducepick.f90 reducegrid.f90 pnmy.f90 reduceintp.f90 tracking.f90 smth9.f90 \
-	gridnl_hybrid_ndsl.f90 vstruc_hybrid.f90 \
-	matrix_hybrid_cwb.f90 pmatrx_hybrid_cwb.f90 prexp_hybrid_cwb.f90 \
-	vstruc_hybrid_cwb.f90 rayleifr.f90 pbl_noah.f90 cwb.f90 nor_gwdp.f90 normalize.f90 \
-	coszenpm.f90 shalcnv_new.f90 mixpbl_new.f90 bl_ysu.f90 shalcnv_sa.f90\
-	qmax2d.f90 iw3jdn.f90 w3fs26.f90\
-	physpara.f90 funcphys.f90 iounitdef.f90 \
-	module_bfmicrophysics.f90 \
-	random_number.f90\
+		incrini.f90 inicons.f90 initial.f90 intgrt.f90 invmtx.f90 lgndr.f90 lsp.f90 \
+		maxp.f90 minp.f90 mixpbl.f90 mtxmlp.f90 mtxprt.f90 \
+		nnmi.f90 out24.f90 out2d.f90 out2d_mfc.f90 outflds.f90 outflds_green.f90 \
+					outflds_fv3.f90 outflds_hp.f90 outsigs.f90 outsigr.f90 pbltke.f90 \
+		postq.f90 qmaxn3.f90 qprint.f90 stemp.f90 vterpj.f90 \
+		qprnt3.f90 qsatq.f90 radir99.f90 radsl99.f90 radtn99.f90 \
+		rcloud.f90 rcmpir24.f90 rcmpir24c.f90 rcmpsl2.f90 rcmpsl2c.f90 \
+		rkdisir.f90 roptir.f90 rqkir.f90 mxslvc.f90 \
+		readclx.f90 rozone.f90 setupv.f90 \
+		sfcpbl.f90 shlcon.f90 sigful.f90 siimpl.f90 sortml.f90 \
+		splin1.f90 splinc.f90 srms.f90 structrn.f90 stupij.f90 stupiy.f90 \
+		syslbl.f90 tendget.f90 \
+		trandv.f90 tranrs.f90 transr.f90 tranuv.f90 trdih.f90 \
+		trdiv2.f90 trdivv.f90 triadj.f90 trigau.f90 trngra.f90 trngra3.f90 \
+		ttstd.f90 uzmean.f90 varpht.f90 vartran.f90 vartrix.f90 \
+		voterp.f90 vterp.f90 whtrec.f90 whttau.f90 \
+		zilch.f90 zimadv.f90 zx.f90 check.f90 chlen.f90 \
+		ctemp2.f90 ncoling.f90 \
+		fftx.f90 eispack.f90 indexx.f90 eigenlib.f90 crayfun.f90 \
+		qmaxn3p.f90 transr1.f90 tranrs1.f90 make_list.f90 \
+		gather_spec.f90 scatter_spec.f90 \
+		joinrs.f90 joinsr.f90 ujoinrs.f90 ujoinsr.f90 \
+		mpe_unify.f90 \
+		mpe_transpose_sr.f90 mpe_transpose_rs.f90 \
+		mpe_transpose_sr1.f90 mpe_transpose_rs1.f90  \
+		mpe_barrier.f90  mpe_init.f90 mpe_finalize.f90 \
+		mpe_gather_io.f90 mpe_scatter_io.f90 sfcuvt.f90 \
+					mp_scheme.f90 module_mp_radar.f90 module_mp_wsm6_fv3.f90 module_mp_thompson_gfs.f90 \
+		landpack.f90 landsfc.f90 landsmc.f90 \
+		rstrandz.f90 rstrantq.f90 fpvs.f90 gpvs.f90 gscond.f90 precpd.f90 precpd_n.f90\
+		sascnv.f90 sascnv_n.f90 sascnv_sa.f90 landsfc_n.f90 mixpbl_n.f90 pbltke_n.f90 \
+		reducepick.f90 reducegrid.f90 pnmy.f90 reduceintp.f90 tracking.f90 smth9.f90 \
+		gridnl_hybrid_ndsl.f90 vstruc_hybrid.f90 \
+		matrix_hybrid_cwb.f90 pmatrx_hybrid_cwb.f90 prexp_hybrid_cwb.f90 \
+		vstruc_hybrid_cwb.f90 rayleifr.f90 pbl_noah.f90 cwb.f90 nor_gwdp.f90 normalize.f90 \
+		coszenpm.f90 shalcnv_new.f90 mixpbl_new.f90 bl_ysu.f90 shalcnv_sa.f90\
+		qmax2d.f90 iw3jdn.f90 w3fs26.f90\
+		physpara.f90 funcphys.f90 iounitdef.f90 \
+		module_bfmicrophysics.f90 \
 	radlw_param.f90\
 	radsw_param.f90\
 	radlw_datatb.f90 radlw_main.f90 \
@@ -83,7 +82,7 @@ SRCS_f90  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
         mod_sitgrid.f90 mod_eos_ocean.f90 mod_sit_vdiff.f90 outsit.f90 \
         mod_sst.f90 mod_netcdf.f90 mod_sit_control.f90 samfdeepcnv.f90 samfshalcnv.f90 \
         moninedmf.f90 mfpbl.f90 unify_reduceintp.f90 unify_reducepick.f90 \
-        gscondp.f90 precpdp.f90 
+        gscondp.f90 precpdp.f90
 
 SRCS_c = cwb_fftw.c
 

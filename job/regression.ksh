@@ -12,17 +12,25 @@
  mkdir -p $GFSWRK
 
 #-- dms data
+ JCAP=${JCAP:-639}
+
+ if [ $JCAP = 639  ] ; then
+   DMSFLAG=GJ
+ elif [ $JCAP = 383  ] ; then 
+   DMSFLAG=GI
+ fi
+
  dtg='18090800'
  fgdtg=$(/nwpr/gfs/xb80/bin/Caldtg.ksh ${dtg} -6)
 
  idmshead='MASOPS'
  idmsbody=''
  idmstail=''
- idmsdb='TCo639L72'
+ idmsdb="TCo${JCAP}L72"
 
  odmshead='UnitTest'
  odmsbody=${dtg}
- odmstail='GJMG'
+ odmstail="${DMSFLAG}MG"
  odmsdb=${idmsdb}
 
 #-- executable
@@ -38,7 +46,8 @@
   export LNCP='ln -fs'
 
   # maybe no need to change
-  export source="/data/common/gfs/dms_data/TCo639L72_S2TY.ufs/T_exp2018090800"           # TCo IC data path
+#  export source="/data/common/gfs/dms_data/TCo639L72_S2TY.ufs/T_exp20${dtg}"           # TCo IC data path
+  export source="/nwpr/gfs/xb126/data2/Tool/Nemsio2Dms_v2/OUTPUT/ncep_ana.ufs/TCo${JCAP}l72_${dtg}"           # TCo IC data path
 
   # link/copy DMS files
   export target="${dmsdb_home}/${idmsdb}.ufs"
@@ -50,12 +59,14 @@
        ${LNCP} ${source}/*${fgdtg}* ${target}/${idmshead}${idmsbody}${idmstail}
 
  ${DMSPATH}/rdmsdbcrt -p ufs bckdms
- ${DMSPATH}/rdmscrt BCK_TCo639_GJ30S@bckdms
+ ${DMSPATH}/rdmscrt BCK_TCo${JCAP}_${DMSFLAG}30S@bckdms
 
  export source="/data/common/gfs/dms_data/bckdms.ufs"
  export target="${dmsdb_home}/bckdms.ufs"
  
- ${LNCP} ${source}/BCK_TCo639_GJ30S/* ${target}/BCK_TCo639_GJ30S
+ if [ ! -e ${target}/BCK_TCo${JCAP}_${DMSFLAG}30S ] ; then
+   ${LNCP} ${source}/BCK_TCo${JCAP}_${DMSFLAG}30S/* ${target}/BCK_TCo${JCAP}_${DMSFLAG}30S
+ fi
 #----------------------------------------------------------------#
 
 
@@ -85,7 +96,7 @@ export FIXDIR=${GFSFIX}
 
 export ANADMS=${idmsfile}
 export FCSTDMS=${odmsfile}
-export BCKOPS=BCK_TCo639_GJ30S@bckdms
+export BCKOPS=BCK_TCo${JCAP}_${DMSFLAG}30S@bckdms
 
 ${DMSPATH}/rdmspurge -f FCSTDMS
 ${DMSPATH}/rdmscrt -l34 FCSTDMS
@@ -109,6 +120,14 @@ cp $NWPETC/gfsctl $GFSWRK/gfsctl
 cp $NWPETC/ocards $GFSWRK/ocards
 cp $NWPETC/namlsts $GFSWRK/namlsts
 
+if [ $JCAP = 639  ] ; then
+  MODLST_RES='dt=225., tfilt=0.040, hfilt=1., cgw=4.2e-5,'
+  MODEL_BASIC='nco=640,'
+elif [ $JCAP = 383  ] ; then
+  MODLST_RES='dt=360., tfilt=0.050, hfilt=1., cgw=2.6e-5,'
+  MODEL_BASIC='nco=384,'
+fi
+
 cat > ${GFSWRK}/namlsts << EOF
  &model_param
   nco=640,
@@ -119,31 +138,35 @@ cat > ${GFSWRK}/namlsts << EOF
   io_quilting=f,
   npex=${NPEX},
   npey=${NPEY},
+  ${MODEL_BASIC}
  &end
 
  &modlst
   taui=0.0, taue=120.0, tauo=1.0, taup=6.0, taureg=6.,
   dt=225.0,
-  cstar=f, update=t, lzadv=t, lsimpl=t,
+  cstar=f, update=t, lsimpl=t,
   tfilt=0.04, hfilt=1.,
   ksgeo=2, yesdia=t,
   dopbl=t, docup=t, dorad=t, dolsp=t, doshl=t, dodry=f, dograv=t, docgrav=t,
-  donnmi=t, dosppt=f, dospptout=f,
+  donnmi=t, 
+  dosppt=f, dospptout=f, doshum=f,
   cutfreq=3, nnmivm=3,
   doincr=f,
   hdiff=t, frad=1.0,
   ldiag=0,
   idg=40, jdg=108,
-  itypbl=0, numreduce=8, ptmeans=800., ptop=0.1,
+  itypbl=0, numreduce=5, ptmeans=800., ptop=0.1,
   nmcup=6, nmpbl=4, nmland=2, nmshl=3,
   nmgwor=2, nmgwcv=2,
   ktcup=20, cgw=4.2e-5,
   mtnvar=14, doo3l=t,
   irad=2, ioutsigr=1,
-  ggdef='gj0g', gmdef='gjmg',
+  ggdef='${DMSFLAG}0G', gmdef='${DMSFLAG}MG',
   domfc=384., out_green=t, otgreen=3., out_hp=f,
   ndsladvh2=f,
   isot=1, ivegsrc=1, cgwd=1.20, cmbk=1.00,
+  spl1=50.,
+  ${MODLST_RES}
  &end
 
  &typ
@@ -151,6 +174,16 @@ cat > ${GFSWRK}/namlsts << EOF
   trk_intv=3,
   write_tau=6,
  &end
+ 
+ &stochy_physics
+  ncep_seeds = false,
+  sppt = 0.8,0.4,0.2,0.08,0.04
+  sppt_decort = 2.16E4,2.592E5,2.592E6,7.776E6,3.1536E7 
+  sppt_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
+  shum = 0.15,-999,-999,-999,-999
+  shum_decort = 2.16E4,1.728E5,2.592E6,7.776E6,3.1536E7
+  shum_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
+ /
 EOF
 
 

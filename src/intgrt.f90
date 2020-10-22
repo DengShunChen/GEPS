@@ -50,8 +50,10 @@
       use radn
       use albn
 !-----------------------------------------------------------------------
-
-!
+      use mod_stochastic_physics, only : spptout, & 
+                  init_stochastic_physics, &
+                  run_stochastic_physics, & 
+                  destroy_stochastic_physics
 !-----------------------------------------------------------------------
 
       implicit  none
@@ -141,17 +143,8 @@
               cosw,tengi,dt24,tg2,dtx_tau,hfiltx,sqhaf,     &
               dummy,dt1,sptend,wmax,xx,facw,dtaup!!,          &
 !!              sptendmax2,sptendmax1,dt_chg
-! sppt variables
-!            by John Tseng 2017/12/13 
-!            modified by PangYen Liu for 2D-MPI 2019/02/20
-!      real sppt2d(nx,my)
-!      real rold500(mlmax_c,2),rold1000(mlmax_c,2),rold2000(mlmax_c,2)
-!      real rold500(jtrun_c,jtmax_c,2),rold1000(jtrun_c,jtmax_c,2),  &
-!           rold2000(jtrun_c,jtmax_c,2)
-      real sppt3d(nxp,lev,my_max)
-      real sppt2d500(nxp,my_max),sppt2d1000(nxp,my_max)   &
-          ,sppt2d2000(nxp,my_max)
-      integer itimestep,recn
+
+      integer itimestep
 
 ! for io quilting
       character*34 keydoit,keydone
@@ -351,7 +344,6 @@
       gfx=0.
       rld=0.
       sld=0.
-      recn=1
 !
 ! read mountant variables for topographic gravity wave drag
 !
@@ -531,9 +523,10 @@
 !***********************************************************************
 !     start time integration iterations
 !***********************************************************************
-!
-! sppt
-      itimestep=1
+  itimestep=1
+
+  ! stochastic_physics
+  call init_stochastic_physics(dta)   
 !
 !!      n_stable=0
 !!      n_unstable=0
@@ -559,29 +552,27 @@
 !      else
 !        dt_trk=tauo
 !      endif
-! store first idtg to idtg_sst
+      ! store first idtg to idtg_sst
       icurrenttau=int(tau)
       call dtgfix12(idtg,idtg_sst,icurrenttau)
       if(myrank .eq. 0) print*,'idtg_sst=',idtg_sst
 
-! read opgsst data
+      ! read opgsst data
       if(lopgsst) then
         call allocate_opgsst_array
-
         if(myrank .eq. 0) print *,'myrank=',myrank,'idtg_sst=',idtg_sst
           call read_opgsst(idtg_sst,ggdef,ocean,ice)
           icurrentyear=idtg_sst/100000000
-
       endif   !end lopgsst
 !
  10   continue
-!
+
       dtx_tau=dtx/3600.
-!
+
       if(myrank .eq. 0) then 
          print *,'forcast begin tau=',itaui,' to tau=',itaue
 
-! for io quilting
+      ! for io quilting
       if(io_quilting)then
          ntag=ntag+1
          call mpe_send_key(keydoit,ntag,istat)
@@ -847,15 +838,8 @@
         enddo
       enddo
 
-!  prepare randome numbers for sppt3d
-!
-      if (dosppt) then
-      call gensppt3dv5(nx,my,my_max,lev,sppt3d                &
-        ,sppt2d500,sppt2d1000,sppt2d2000                      &
-        ,facsppt500,facsppt1000,facsppt2000                   &
-        ,de_corretime_500,de_corretime_1000,de_corretime_2000 &
-        ,dta,itimestep )
-      endif ! dosppt
+      !  stochastic_physics
+      call run_stochastic_physics()
 !
       do m = 1, mlistnum
         mf=mlist(m)
@@ -900,7 +884,7 @@
                       , ss_clr,rs_clr,asol_clr,olr_clr,sld_clr,rld_clr          &
                       , alvsf,alvwf,alnsf,alnwf,facsf,facwf                     &
                       , idtg,doo3l,nfxr,sfalb,sfemis,isot,ivegsrc               &
-                      , dosppt,sppt3d,itimestep,lrun_sitvdiff,ic_sit            &
+                      , lrun_sitvdiff,ic_sit            &
 !xb110>
 !byl                      , rmr,smr,flash)
                       , flash,tsflw)
@@ -911,7 +895,7 @@
 !
           call rayleifr(nx,my,my_max,lev,rad,cosl,dt,ut,vt)
         endif    ! end of (yesdia)
-        itimestep=itimestep+1   ! for sppt time evolution)
+        itimestep=itimestep+1 
 !
 !  after phyical parameterization,transform grid point u,v,t,q to
 !  spectrum
@@ -1621,9 +1605,8 @@
         endif
 !      endif
 !
-      if (dospptout .and.  (mod(tau+0.001, 1.) .lt. 0.01)) then
-         call spptout(nx,my,my_max,lev,sppt2d500,sppt2d1000,sppt2d2000 &
-                     ,ttp,recn,tau)
+      if (dosppt .and.  dospptout .and.  (mod(tau+0.001, 1.) .lt. 0.01)) then
+         call spptout(tau)
       endif
 !
 !for update sst(W00100), seaice(W00091), snowdepth(B00650)
@@ -1809,7 +1792,7 @@
         if(myrank .eq. 0) then
            print *,' finished integration '
 
-! for io quilting
+      ! for io quilting
       if(io_quilting)then
          ntag=ntag+1
          call mpe_send_key(keydoit,ntag,istat)
@@ -1862,5 +1845,7 @@
 !
       go to 10
 !
-      return
-      end
+      ! finilize stochastic_physics
+      call destroy_stochastic_physics()
+
+      end subroutine intgrt
