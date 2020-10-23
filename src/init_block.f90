@@ -31,7 +31,7 @@
       spl1=5.
       spl2=100.
 
-      tfilt=0.02
+      tfilt=0.04
 
       frad=1.0
       ptop=1.0

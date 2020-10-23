@@ -83,10 +83,13 @@
 !            fact= 1.
 
 !          if ( KL .le. hdk2 ) then
-        kfac = 1.0 + max(float(hdk2-KL),0.) 
-        facd = amp * (kfac + 4.*max(float(hdk1-KL),0.))
-        facv = amp * (kfac + 2.*max(float(hdk1-KL),0.))
-        fact = amp * (kfac + 2.*max(float(hdk1-KL),0.))
+        kfac = 1.0 + 1. * min(max(float(hdk2-KL),0.),25.)
+!!        facd = 2.* amp * (kfac + 1.*max(float(hdk1-KL),0.))
+!!        facv = amp * (kfac + 0.5*max(float(hdk1-KL),0.))
+!!        fact = amp * (kfac + 0.5*max(float(hdk1-KL),0.))
+        facd = 2.* amp * kfac 
+        facv = amp * kfac 
+        fact = amp * kfac 
 !          endif
 
 
@@ -139,7 +142,7 @@
 !
       windchk=.false.
       do k=1,8
-        if ( wmax(k) .gt. windmax3 ) windchk=.true.
+        if ( wmax(k) .gt. windmax2 ) windchk=.true.
       enddo
 !      if (wmax(1).gt.windmax3 .or. wmax(2).gt.windmax3 .or. &
 !          wmax(3).gt.windmax3)then
@@ -318,7 +321,7 @@
       implicit  none
 
       integer   ktop,ktopm1
-      parameter ( ktop=6, ktopm1=ktop-1 ) ! top "ktop" levels are filtered
+      parameter ( ktop=10, ktopm1=ktop-1 ) ! top "ktop" levels are filtered
 !     parameter ( ktop=4, ktopm1=ktop-1 ) ! top "ktop" levels are filtered
 !     parameter ( ktop=6, ktopm1=ktop-1 ) ! top "ktop" levels are filtered
 !
@@ -341,13 +344,15 @@
 !     endif
 !2dMPI <
 
-      wvn_top(1) = jtrun*2./3.
-!      wvn_top(1) = 155
+!      wvn_top(1) = jtrun*1./3.
+      wvn_top(1) = 155
       wvn_top(ktop) = jtrun
-      djt = ( wvn_top(ktop) - wvn_top(1) ) / ktopm1
+!!      djt = ( wvn_top(ktop) - wvn_top(1) ) / ktopm1
+
       do k = 2, ktopm1
+        djt = ( wvn_top(ktop) - wvn_top(1) ) * exp(-0.4*(k-1))
 !        wvn_top(k) = (jtrun + wvn_top(k-1))*0.5
-        wvn_top(k) = min( wvn_top(k-1) + djt , float(jtrun) )
+        wvn_top(k) = min( wvn_top(ktop) - djt , float(jtrun) )
       enddo
 !
       pi = 3.141596

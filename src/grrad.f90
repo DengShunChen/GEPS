@@ -1551,31 +1551,31 @@
 !  --- ...  obtain cloud information for radiation calculations
 
       if (ntcw > 0) then                   ! prognostic cloud scheme
-
-        do k = 1, lmk
-          do i = 1, im
-            clw(i,k) = 0.0
-          enddo
-
-          do j = 1, ncld
-            lv = ntcw + j - 1
+!
+        if (icmphys == 1) then           ! zhao/moorthi's prognostic cloud scheme
+!
+          do k = 1, lmk
             do i = 1, im
-!byl               clw(i,k) = clw(i,k) + tracer1(i,k,lv)   ! cloud condensate amount
-               clw(i,k) = clw(i,k) + tracer1(i,k,lv) + cnvw(i,k)  ! cloud condensate amount
+              clw(i,k) = 0.0
+            enddo
+
+            do j = 1, ncld
+              lv = ntcw + j - 1
+              do i = 1, im
+!byl                 clw(i,k) = clw(i,k) + tracer1(i,k,lv)   ! cloud condensate amount
+                 clw(i,k) = clw(i,k) + tracer1(i,k,lv) + cnvw(i,k)  ! cloud condensate amount
+              enddo
             enddo
           enddo
-        enddo
 
-        do k = 1, lmk
-          do i = 1, im
-            if ( clw(i,k) < epsq ) clw(i,k) = 0.0
+          do k = 1, lmk
+            do i = 1, im
+              if ( clw(i,k) < epsq ) clw(i,k) = 0.0
+            enddo
           enddo
-        enddo
-
-        if (icmphys == 1) then           ! zhao/moorthi's prognostic cloud scheme
  
-      if ( me == 0 .and. myrank == 0 )                                  &
-          print *,'### call progcld1 -zhao/moorhi ###' 
+          if ( me == 0 .and. myrank == 0 )                              &
+            print *,'### call progcld1 -zhao/moorhi ###' 
           call progcld1                                                 &
 !  ---  inputs:
      &     ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,clw,                    &
@@ -1599,6 +1599,25 @@
 !    &      )
 
        elseif(icmphys == 3) then      ! zhao/moorthi's prognostic cloud+pdfcld
+!
+          do k = 1, lmk
+            do i = 1, im
+              clw(i,k) = 0.0
+            enddo
+
+            do j = 1, ncld
+              lv = ntcw + j - 1
+              do i = 1, im
+                 clw(i,k) = clw(i,k) + tracer1(i,k,lv)   ! cloud condensate amount
+              enddo
+            enddo
+          enddo
+
+          do k = 1, lmk
+            do i = 1, im
+              if ( clw(i,k) < epsq ) clw(i,k) = 0.0
+            enddo
+          enddo
 !
          if ( me == 0 .and. myrank == 0 )                               &
            print *,'### call progcld3 -zhao/moorhi with PDF cloud###' 
