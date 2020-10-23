@@ -297,24 +297,22 @@ contains
 
       noise = 0.
       do ml=1,rpattern(n)%mlmax
-        ms = rpattern(n)%msort(ml)
-        ns = rpattern(n)%lsort(ml)
-        !if (myrank.eq.0) write(6,*)'n/ml/ns/ms=',n,ml,ns,ms
-        noise(ml,1) = 1./sqrt(float(2*(ns-1))+1)
-        noise(ml,2) = 1./sqrt(float(2*(ns-1))+1)
-        if (ms .eq. 1) then
-          noise(ml,1) = sqrt(2.)/sqrt(float(2*(ns-1))+1)
+        noise(ml,1) = 1./sqrt(float(2*(rpattern(n)%lsort(ml)-1))+1)
+        noise(ml,2) = 1./sqrt(float(2*(rpattern(n)%lsort(ml)-1))+1)
+        if (rpattern(n)%msort(ml) .eq. 1) then
+          noise(ml,1) = sqrt(2.)/sqrt(float(2*(rpattern(n)%lsort(ml)-1))+1)
           noise(ml,2) = 0.
         endif
       enddo
+
       noise(1,1) = 0. 
       noise(1,2) = 0.
       noise = noise*sqrt(1./float(rpattern(n)%jtrun))
 
       ! set up the amplitude of noise
       do ml=1,rpattern(n)%mlmax
-        ns = rpattern(n)%lsort(ml)
-        rpattern(n)%varspec(ml) = sqrt(float(rpattern(n)%jtrun)*exp(-rkT*float(ns)*(float(ns-1))))
+        rpattern(n)%varspec(ml) = sqrt(float(rpattern(n)%jtrun) & 
+            * exp(-rkT*float(rpattern(n)%lsort(ml))*(float(rpattern(n)%lsort(ml)-1))))
       enddo
 
       noise(:,1) = noise(:,1)*rpattern(n)%varspec
@@ -323,8 +321,7 @@ contains
       ! get specral variance
       var=0.
       do ml=1,rpattern(n)%mlmax
-        ms = rpattern(n)%msort(ml)
-        if (ms .ne. 1) then
+        if (rpattern(n)%msort(ml) .ne. 1) then
           var = var + (noise(ml,1)**2 + noise(ml,2)**2)
         else
           var = var + 0.5*(noise(ml,1)**2 + noise(ml,2)**2)
@@ -333,8 +330,8 @@ contains
       rpattern(n)%varspec = rpattern(n)%varspec / var
 
 #ifdef VERBOSE
-      if (myrank.eq.0) write(6,*)'sqrt(var)=',sqrt(var)
-      if (myrank.eq.0) write(6,*)'rpattern(n)%varspec=',rpattern(n)%varspec
+      if (myrank.eq.0) write(6,*)'total variance =',var
+      if (myrank.eq.0) write(6,*)'rpattern(n)%varspec =',rpattern(n)%varspec
 #endif
       ! initialize spectrum coefficient 
       noise = 0. 
@@ -351,10 +348,11 @@ contains
 
     if (myrank.eq.0) then
       write(6,*)'mod_stochastic_physics : dt    = ',dt
+      write(6,*)'mod_stochastic_physics : stdev = ',rpattern%stdev
       write(6,*)'mod_stochastic_physics : jtrun = ',rpattern%jtrun
       write(6,*)'mod_stochastic_physics : mlmax = ',rpattern%mlmax
       write(6,*)'mod_stochastic_physics : tau   = ',rpattern%decortau
-      write(6,*)'mod_stochastic_physics : phi= ',rpattern%phi
+      write(6,*)'mod_stochastic_physics : phi   = ',rpattern%phi
     endif
 
   end subroutine get_random_pattern_init
@@ -422,7 +420,7 @@ contains
         do k=1,lev
           nxj=nxdef_2d(j)
           do i=1,nxj
-            n3d(i,k,jj) = n3d(i,k,jj) + rpattern(n)%n2d(i,jj)*vfact(k)
+            n3d(i,k,jj)=n3d(i,k,jj)+rpattern(n)%n2d(i,jj)*vfact(k)
           enddo
         enddo
       enddo
@@ -445,18 +443,15 @@ contains
 
     noise=0.
     do ml=1,rpattern%mlmax
-      ms = rpattern%msort(ml)
-      ns = rpattern%lsort(ml)
       ! set up to red noise 
-      noise(ml,1) = noise_gauss(ml)/sqrt(float(2*(ns-1)+1))
-      noise(ml,2) = noise_gauss(rpattern%mlmax+ml)/sqrt(float(2*(ns-1)+1))
-      ! zero out the imagnary part when m(zonal wavenumber) equal to 1
-      if (ms .eq. 1) then
+      noise(ml,1) = noise_gauss(ml)/sqrt(float(2*(rpattern%lsort(ml)-1)+1))
+      noise(ml,2) = noise_gauss(rpattern%mlmax+ml)/sqrt(float(2*(rpattern%lsort(ml)-1)+1))
+      ! zero out the imagenary part when m(zonal wavenumber) equal to 1
+      if (rpattern%msort(ml) .eq. 1) then
         noise(ml,1) = sqrt(2.)*noise(ml,1)
         noise(ml,2) = 0.
       endif
     enddo
-
   end subroutine get_noise
 
   subroutine gen_random_pattern_2d(sppt2d,rpattern)
@@ -471,12 +466,10 @@ contains
     call get_noise(rpattern,noise) 
 
     !  radom pattern advance with first order AR
-    do ml=1,rpattern%mlmax
-      rpattern%spec(ml,1) = rpattern%phi*rpattern%spec(ml,1) + & 
-            sqrt(1.-rpattern%phi**2.)*rpattern%stdev*rpattern%varspec(ml)*noise(ml,1)
-      rpattern%spec(ml,2) = rpattern%phi*rpattern%spec(ml,2) + & 
-            sqrt(1.-rpattern%phi**2.)*rpattern%stdev*rpattern%varspec(ml)*noise(ml,2)
-    enddo
+    rpattern%spec(:,1) = rpattern%phi*rpattern%spec(:,1) + & 
+          sqrt(1.-rpattern%phi**2.)*rpattern%stdev*rpattern%varspec*noise(:,1)
+    rpattern%spec(:,2) = rpattern%phi*rpattern%spec(:,2) + & 
+          sqrt(1.-rpattern%phi**2.)*rpattern%stdev*rpattern%varspec*noise(:,2)
 
     ! transform spectral to physical space 
     call transr_sppt(rpattern%jtrun,rpattern%mlmax,nx,my,1,rpattern%poly,rpattern%spec,sppt2d)
