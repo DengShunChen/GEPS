@@ -39,5 +39,5 @@ setenv LDFLAGS_COM "-qopt-report"
 setenv OMP_COM "-parallel"
 setenv CFLAGS_COM "-c"
 
-# Loading nceplibs modules
+# Loading modules
 module add intel/18.0.3
