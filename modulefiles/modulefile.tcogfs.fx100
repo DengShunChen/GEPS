@@ -57,9 +57,6 @@ setenv LIBS_COM "-SSL2BLAMP"
 setenv OMP_COM "-Kopenmp,parallel"
 setenv CFLAGS_COM "-c -Xg"
 
-#setenv FFLAGS_COM "-fp-model source"
-#setenv LDFLAGS_COM "-mkl"
-
 # Known conflicts
 
 # Loading nceplibs modules

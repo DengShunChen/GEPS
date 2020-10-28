@@ -440,10 +440,11 @@
 !     endif
 !2dMPI <
 
-!      wvn_top(1) = jtrun*2./3.
+!      wvn_top(1) = jtrun*1./3.
       wvn_top(1) = 155
       wvn_top(ktop+1) = jtrun
-!      djt = ( wvn_top(ktop) - wvn_top(1) ) / ktopm1
+!!      djt = ( wvn_top(ktop) - wvn_top(1) ) / ktopm1
+
       do k = 2, ktop
         djt = ( wvn_top(ktop+1) - wvn_top(1) ) * exp(-0.7*(k-1))
 !        wvn_top(k) = (jtrun + wvn_top(k-1))*0.5
@@ -460,7 +461,6 @@
 !
       if( mode .eq. 0 ) then
         do k = 1, lev
-
 !2dMPI >
         KL=Llist(k)
         if( KL .le. ktop ) then

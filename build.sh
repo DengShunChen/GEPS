@@ -5,7 +5,7 @@
 # 
 # 1. select targe machine(fx10, fx100, or pcc) 
 # 2. run this building up script
-#   ./build.sh
+#   ./build.sh [MACHINE]
 #                                                                Deng-Shun Chen
 #                                                                   2020-04-28
 #------------------------------------------------------------------------------
