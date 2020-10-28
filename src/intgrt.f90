@@ -140,12 +140,12 @@
       integer i,j,k,m,n,jj,kk,mf,kw,nxj,nml,lmax,leng,nxmy, &
               jlim,mlst,mlmax2,itaui,itaue,itauo,itaup,     &
               ntau,itau,lcwb,lphy,ifromtau,itotau,istat,    &
-              istst,ii !,n_stable,n_unstable,nc_stable
+              istst,ii ,n_stable,n_unstable,nc_stable
 
       real    www,dtx,dta,thdai,tkei,tpei,dsigp,            &
               cosw,tengi,dt24,tg2,dtx_tau,hfiltx,sqhaf,     &
-              dummy,dt1,sptend,wmax,xx,facw,dtaup!!,          &
-!!              sptendmax2,sptendmax1,dt_chg
+              dummy,dt1,sptend,wmax,xx,facw,dtaup,          &
+              sptendmax3,sptendmax2,sptendmax1,dt_chg,prslp
 ! sppt variables
 !            by John Tseng 2017/12/13 
 !            modified by PangYen Liu for 2D-MPI 2019/02/20
@@ -435,11 +435,12 @@
       dtx=dt
 !
       forward = itaui .eq. 0
-      if (forward)  then
-        dta = dtx
-      else
-        dta = 2*dtx
-      endif
+!!      if (forward)  then
+      dta = dtx
+!!      else
+!!        dta = 2*dtx
+!!      endif
+
 !
 !  compute initial moisture and potential temperature
 !
@@ -560,24 +561,25 @@
 !!      call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,spgeo    &
 !!                  ,dlgeo,dtgeo,nsizey)
 !
-!!      n_stable=0
-!!      n_unstable=0
-!!      if(nx.eq.960)then
-!!        dt_chg=225.
-!!        nc_stable=15
-!!        sptendmax2=0.461
-!!        sptendmax1=0.4375
-!!      else if(nx.eq.1536)then
-!!        dt_chg=120.
-!!        nc_stable=20
-!!        sptendmax2=0.430
-!!        sptendmax1=0.4075
-!!      else
-!!        dt_chg=dt
-!!        nc_stable=20
-!!        sptendmax2=0.430
-!!        sptendmax1=0.4075
-!!      endif
+      n_stable=0
+      n_unstable=0
+      if(nco.eq.180)then
+        dt_chg=1800.
+        nc_stable=1
+        sptendmax2=0.461
+        sptendmax1=0.4375
+      else if(nco.eq.384)then
+        dt_chg=720.
+        nc_stable=2
+        sptendmax2=0.3975
+        sptendmax1=0.3575
+      else if(nco.eq.640) then
+        dt_chg=450.
+        nc_stable=4
+        sptendmax3=0.4405
+        sptendmax2=0.4105
+        sptendmax1=0.3685
+      endif
 !
 !      if(typhoon)then
 !        dt_trk=6.
@@ -662,7 +664,8 @@
 !!      else if(tau.gt.48. .and. tau.le.72.)then
 !!         hfiltx=hfilt*2.
 !!      else
-         hfiltx=hfilt
+           hfiltx=hfilt
+
 !!      endif
 !
 !  global mean tempertures (tbar) and specific humid (qbar)
@@ -690,10 +693,10 @@
           do n = mf, jtrun
             do i = 1, 2
             do k = 1, levp
-              vormid(k,i,n,m)= facm(1,itt) * vornow(k,i,n,m)   &
-                             + facm(2,itt) * vorold(k,i,n,m)
-              divmid(k,i,n,m)= facm(1,itt) * divnow(k,i,n,m)   &
-                             + facm(2,itt) * divold(k,i,n,m)
+!!              vormid(k,i,n,m)= facm(1,itt) * vornow(k,i,n,m)   &
+!!                             + facm(2,itt) * vorold(k,i,n,m)
+!!              divmid(k,i,n,m)= facm(1,itt) * divnow(k,i,n,m)   &
+!!                             + facm(2,itt) * divold(k,i,n,m)
               temmid(k,i,n,m)= facm(1,itt) * temnow(k,i,n,m)    &
                              + facm(2,itt) * temold(k,i,n,m)
               vorold(k,i,n,m)= vornow(k,i,n,m) 
@@ -838,34 +841,23 @@
                           ,nxjp,0.5*ndsldta,2)
 !
       call trandv ( jtrun,jtmax,nx,my,my_max,lev,vdzonl,vdmerd,weight,cim &
-                   ,onocos,poly,dpoly,vorten,divten,nsizey)
-
-
+                   ,onocos,poly,dpoly,vormid,divmid,nsizey)
 !
-        call whdiffu ( 0.5*dta,my,my_max,nx,jtrun,jtmax,lev,ncld   &
-                     ,hfiltx,rad,cosl,up,vp,vorten,divten,temmid   &
-                     ,plmid,eps4,trefs)
-!
-        do m = 1, mlistnum
-          mf=mlist(m)
-          do n = mf, jtrun
-            do i = 1, 2
-            do k = 1, levp
-              vormid(k,i,n,m)= 0.5*vormid(k,i,n,m)+0.5*vorten(k,i,n,m)
-              divmid(k,i,n,m)= 0.5*divmid(k,i,n,m)+0.5*divten(k,i,n,m)
-            enddo
-            enddo
-          enddo
-        enddo
 !!        do m = 1, mlistnum
 !!          mf=mlist(m)
 !!          do n = mf, jtrun
-!!            pltemp(n,m,1)= 0.5*dta*plten(n,m,1)+plold(n,m,1)
-!!            pltemp(n,m,2)= 0.5*dta*plten(n,m,2)+plold(n,m,2)
-!!            plmid(n,m,1)= 0.5*(plmid(n,m,1)+pltemp(n,m,1))
-!!            plmid(n,m,2)= 0.5*(plmid(n,m,2)+pltemp(n,m,2))
+!!            do i = 1, 2
+!!            do k = 1, levp
+!!              vormid(k,i,n,m)= 0.4*vormid(k,i,n,m)+0.6*vorten(k,i,n,m)
+!!              divmid(k,i,n,m)= 0.4*divmid(k,i,n,m)+0.6*divten(k,i,n,m)
+!!            enddo
+!!            enddo
 !!          enddo
 !!        enddo
+!
+      call whdiffu ( 0.5*dta,my,my_max,nx,jtrun,jtmax,lev,ncld   &
+                   ,hfiltx,rad,cosl,up,vp,vormid,divmid,temten   &
+                   ,plmid,eps4,divnow,vornow,temnow,plnow)
 !
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divmid,cc,1,nsizey)
       call ujoinsr(cc,rdiv,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
@@ -874,16 +866,9 @@
       call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,plmid      &
                  ,dlpl,dtpl,nsizey)
       call transr1(jtrun,jtmax,nx,my,my_max,poly,plmid,ptm,nsizey)
+
+
 !
-!!      do jj = 1, jlistnum
-!!        j=jlist1(jj)
-!!        nxj=nxdef_2d(j)
-!!        do k=1,lev
-!!          do i=1,nxj
-!!            diveng(i,k,jj)=dsigma(k,1)*ptp(i,jj)+dsigma(k,2)
-!!          enddo
-!!        enddo
-!!      enddo !jj = 1,jlistnum
 !
 !     advet grid non-linear forcing from t-dt/2 to t+dt/2 via NDSL advection
 !
@@ -1237,7 +1222,7 @@
 
 !
       if (hdiff) call hdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld       &
-                             , hfiltx,rad,cosl,ut,vt,vornow,divnow,temnow  &
+                             , hfiltx,rad,cosl,um,vm,vornow,divnow,temnow  &
                              , eps4,trefs)
 !
 !        forward=.false.
@@ -1246,6 +1231,7 @@
 !
 !ttl      endif     ! end of (forward)
         if ( mod(itimestep,2) .eq. 0 ) xy = -1 * xy
+!!        xy = -1 * xy
 !
 ! accumulate some flux every time step to output point (24 hour)
 ! 1994 11 11
@@ -1301,31 +1287,35 @@
 !
 !  detact instability occure or not
 !
-!!      if(tau.gt.24.) then
-!!!        sptendmax2=0.439
-!!!        sptendmax1=0.409
-!!        if(sptend.le.sptendmax1)n_stable=n_stable+1
-!!        if(sptend.gt.sptendmax2)n_unstable=n_unstable+1
-!!        if(myrank .eq. 0) print *,'n_stable=',n_stable,' n_unstable=',n_unstable
-!!        if( mod(tau+0.001, 1.) .lt. dtx_tau)then
-!!          if(n_stable .gt. nc_stable)then
-!!            dtx=dt_chg
-!!            dta=dtx*2
-!!            dtx_tau=dtx/3600.
-!!            if(myrank .eq. 0)print *,'** stable change dt=',dtx,' sec**'
-!!          else if(n_unstable .gt. nc_stable)then
+      if(tau.gt.24.) then
+!        sptendmax2=0.409
+!        sptendmax1=0.379
+        if(sptend.le.sptendmax1)n_stable=n_stable+1
+        if(sptend.gt.sptendmax2)n_unstable=n_unstable+1
+        if(myrank .eq. 0) print *,'n_stable=',n_stable,' n_unstable=' &
+                                 ,n_unstable
+        if( mod(tau+0.001, 1.) .lt. dtx_tau)then
+          if(n_stable .gt. nc_stable)then
 !!            dtx=dt
-!!            dta=dtx*2
+!!            dta=dtx
 !!            dtx_tau=dtx/3600.
-!!            hfiltx=hfilt*.4
-!!            if(myrank .eq. 0)print *,'** unstable change dt=',dtx,' sec**'
-!!          else
-!!            if(myrank .eq. 0)print *,'** keep dt=',dtx,' sec**'
-!!          endif
-!!          n_unstable=0
-!!          n_stable=0
-!!        endif
-!!      endif
+            hfilt=0.5
+            if(myrank .eq. 0)print *,'** stable change hfilt=',hfilt
+          else if(n_unstable .gt. nc_stable)then
+!!            dtx=dt
+!!            dta=dtx
+!!            dtx_tau=dtx/3600.
+            hfilt=4.
+            if ( sptend .gt. sptendmax3 ) hfilt=6.
+            if(myrank .eq. 0)print *,'** unstable change hfilt=',hfilt
+          else
+            hfilt=1.0
+            if(myrank .eq. 0)print *,'** keep hfilt=',hfilt
+          endif
+          n_unstable=0
+          n_stable=0
+        endif
+      endif
 !
 ! output sit var. at "outsitmean" interval
 !

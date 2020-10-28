@@ -62,7 +62,7 @@
 
       real wrk1(lev,2,jtp),wrk2(lev,2,jtp),wrk3(lev,2,jtp),&
            wrk4(lev,2,jtp),wrk5(lev,2,jtp),wrk6(lev,2,jtp)
-      alpha = 0.8
+      alpha = 0.7
       dd = alpha*dta
       odd= 1.0/dd
       dd2= dd*dd

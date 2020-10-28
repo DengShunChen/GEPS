@@ -71,40 +71,14 @@
 
       do 100 k=1,levp  ! levp -> lev
 !
-!       if( wmax(k) .gt. windmax2 ) then
-!         if(myrank.eq.0)print *,'wmax gt windmax at','k= ',k,         &
-!                                ' windmax=',wmax(k)
-!
 !  compute diffusion coefficients
 !
-
         KL=Llist(k)
 !
-!            facd= 1.
-!            facv= 1.
-!            fact= 1.
-
-!          if ( KL .le. hdk2 ) then
-!        dec=max(min(coefu*(hdk2(3)-KL),factop),0.)       &
-!           -max(min(0.25*coefu*(hdk2(2)-KL),factop),0.)
-!        kfac = 1.0 + dec
-        kfac = 1.0 + max(float(hdk2(2)-KL),0.)
-        facd = amp * (kfac + 2.*max(float(hdk1-KL),0.))
-        facv = amp * (kfac + 1.*max(float(hdk1-KL),0.))
-        fact = amp * (kfac + 1.*max(float(hdk1-KL),0.))
-!          endif
-
-
-!        if ( KL .le. hdk1 ) then
-!          ddiffu =facd*hfilt2
-!        else
-!          ddiffu =facd*hfilt
-!        endif
-
-!        tdiffu =fact*hfilt
-!        vdiffu =facv*hfilt
-          
-
+        kfac = 1.0 + 2.*min(max(float(hdk2(1)-KL),0.),25.)
+        facd = 2. * amp * (kfac + 2.*max(float(hdk1-KL),0.))
+        facv = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
+        fact = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
 !
 !  difuse vorticity and divergence fields
 !  diffuse moisture and temperature fields
@@ -146,8 +120,6 @@
       do k=1,8
         if ( wmax(k) .gt. windmax3 ) windchk=.true.
       enddo
-!      if (wmax(1).gt.windmax3 .or. wmax(2).gt.windmax3 .or. &
-!          wmax(3).gt.windmax3)then
       if ( windchk ) then
        call filter_top(jtrun,jtmax,levp,ncld,temnow,vornow,divnow)
       end if
@@ -225,26 +197,16 @@
 
       do 100 k=1,levp  ! levp -> lev
 !
-!       if( wmax(k) .gt. windmax2 ) then
-!         if(myrank.eq.0)print *,'wmax gt windmax at','k= ',k,         &
-!                                ' windmax=',wmax(k)
-!
 !  compute diffusion coefficients
 !
 
          KL=Llist(k)
 !
-!         facd= 1.
-!         facv= 1.
-!         fact= 1.
-!         if ( KL .le. hdk2(2) ) then
-         facd= 1.0 + max(float(hdk2(2)-KL),0.)
-         facv= 1.0 + max(float(hdk2(2)-KL),0.)
-         fact= 1.0 + max(float(hdk2(2)-KL),0.)
+         facd= 1.0 + max(float(hdk2(1)-KL),0.)
+         facv= 1.0 + max(float(hdk2(1)-KL),0.)
+         fact= 1.0 + max(float(hdk2(1)-KL),0.)
          if ( KL .le. hdk1 ) facd=facd*(1.+float(hdk1-KL))
-!         endif
-
-
+!
           facd = facd*amp
           facv = facv*amp
           fact = fact*amp
@@ -302,8 +264,7 @@
       do k=1,8
         if ( wmax(k) .gt. windmax3 ) windchk=.true.
       enddo
-!      if (wmax(1).gt.windmax3 .or. wmax(2).gt.windmax3 .or. &
-!          wmax(3).gt.windmax3)then
+!
       if ( windchk ) then
        call filter_top(jtrun,jtmax,levp,ncld,temnow,vornow,divnow)
       end if
@@ -314,7 +275,7 @@
 !--------------------------------------------------------------------
       subroutine whdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld,amp   &
                         , rad,cosl,ut,vt,vornow,divnow,temnow,plnow    &
-                        , eps4,trefs) 
+                        , eps4,drefs,zrefs,trefs,prefs) 
       use index
       use mpe
       use rank
@@ -324,12 +285,14 @@
       implicit  none
 
       integer   my,my_max,nx,jtrun,jtmax,lev,ncld
-      real      dta,rad,ord
+      real      dta,rad
 
       real      cosl(my),ut(nxp,lev,my_max),vt(nxp,lev,my_max),  &
                 vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),   &
                 temnow(levp,2,jtrun,jtmax),eps4(jtrun,jtmax),            &
-                trefs(levp,2,jtrun,jtmax),plnow(jtrun,jtmax,2)
+                trefs(levp,2,jtrun,jtmax),plnow(jtrun,jtmax,2),          &
+                zrefs(levp,2,jtrun,jtmax),drefs(levp,2,jtrun,jtmax),     &
+                prefs(jtrun,jtmax,2)
 !
 !     parameter ( ktop=4, ktop2=ktop/2 ) ! top "ktop" levels are inhenced
 !
@@ -338,26 +301,41 @@
 
       integer   jj,j,nxj,k,i,m,n,mf,nc,kk,KL
       real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu
-      real      hfilt,hfilt2,hfilt4,nf,kfac,dec,coefu,factop
-      real      c1,c2,c3
+      real      hfilt2,hfilt4,hfilt6,nf,kfac,dec,coefu,factop
+      real      c1,c2,c3,c4
       logical   windchk
 
       data      windmax1/80./, windmax2/100./, windmax3/130./
-      data      ord/4./
 !!      data      windmax1/70./, windmax2/100./, windmax3/130./
 !
-
+!      wmax(1:lev)= 0.0
+!
+!      do jj =1,jlistnum
+!        j=jlist1(jj)
+!        nxj=nxdef_2d(j)
+!        xx=rad/cosl(j)
+!        do k=1,lev
+!          do i=1,nxj
+!            wmax(k)= max(wmax(k),xx*sqrt(ut(i,k,jj)**2+vt(i,k,jj)**2))
+!          enddo
+!        enddo
+!      enddo
+!
+!      call mpe_global_max(wmax,lev,mpe_double)
 !
       nf=jtrun-1
 !
-      hfilt = (radsq/(nf*(nf+1)))**ord
+      hfilt6 = (radsq/(nf*(nf+1)))**3.
+      hfilt4 = (radsq/(nf*(nf+1)))**2.
       hfilt2 = radsq/(nf*(nf+1))
       if ( octahedral ) then
-        hfilt = hfilt/(6.*dta)
-        hfilt2= hfilt2/(6.*dta)
+        hfilt6 = hfilt6/(6.*dta)
+        hfilt4 = hfilt4/(6.*dta)
+        hfilt2 = hfilt2/(6.*dta)
       else
-        hfilt = 16.*hfilt/dta
-        hfilt2= 16.*hfilt2/dta
+        hfilt6 = 16.*hfilt6/dta
+        hfilt4 = 16.*hfilt4/dta
+        hfilt2 = 16.*hfilt2/dta
       endif
 
       do 100 k=1,levp  ! levp -> lev
@@ -367,25 +345,17 @@
 
         KL=Llist(k)
 !
-!            facd= 1.
-!            facv= 1.
-!            fact= 1.
-
-!          if ( KL .le. hdk2 ) then
-!        dec=max(min(coefu*(hdk2(3)-KL),factop),0.)       &
-!           -max(min(0.25*coefu*(hdk2(1)-KL),factop),0.)
-!        kfac = 1.0 + dec
-        kfac = 1.0 + max(float(hdk2(2)-KL),0.) 
-        facd = 1. * (kfac + 2.*max(float(hdk1-KL),0.))
-        facv = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
-!!        fact = amp * (kfac + 1.*max(float(hdk1-KL),0.))
+        kfac = 1.0 + max(float(hdk2(1)-KL),0.)
+        facd = 1. * (kfac + 4.*max(float(hdk1-KL),0.))
+        facv = 1. * (kfac + 2.*max(float(hdk1-KL),0.))
+        fact = 1. * (kfac + 2.*max(float(hdk1-KL),0.))
 !!        facd = amp * kfac 
 !!        facv = amp * kfac
 !!        fact = amp * kfac
 !          endif
-        facd = 240. * facd
+        facd =  60. * facd 
         facv =   1. * facv
-!!        fact = facd
+        fact =   1. * fact
 
 !
 !  difuse vorticity and divergence fields
@@ -395,36 +365,41 @@
           mf=mlist(m)
           do n=mf,jtrun
 
-            c1=1.+dta*facv*hfilt*eps4(n,m)**ord
-!!            c3=1.+dta*fact*hfilt*eps4(n,m)**ord
+            c1=1.+dta*facv*hfilt4*eps4(n,m)**2.
+!!            c3=1.+dta*fact*hfilt6*eps4(n,m)**3.
 
-            if ( KL .le. hdk1 ) then
+!            if ( KL .le. hdk1 ) then
               c2=1.+dta*facd*hfilt2*eps4(n,m)
-            else
-              c2=1.+dta*facd*hfilt*eps4(n,m)**ord
-            endif
+!            else
+!              c2=1.+dta*facd*hfilt4*eps4(n,m)**2.
+!            endif
 
-            vornow(k,1,n,m)=vornow(k,1,n,m)/c1
-            vornow(k,2,n,m)=vornow(k,2,n,m)/c1
-            divnow(k,1,n,m)=divnow(k,1,n,m)/c2
-            divnow(k,2,n,m)=divnow(k,2,n,m)/c2
+            vornow(k,1,n,m)=(vornow(k,1,n,m)+(c1-1.)*zrefs(k,1,n,m))/c1
+            vornow(k,2,n,m)=(vornow(k,2,n,m)+(c1-1.)*zrefs(k,2,n,m))/c1
+            divnow(k,1,n,m)=(divnow(k,1,n,m)+(c2-1.)*drefs(k,1,n,m))/c2
+            divnow(k,2,n,m)=(divnow(k,2,n,m)+(c2-1.)*drefs(k,2,n,m))/c2
 !!            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
 !!            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
-!!            temnow(k,1,n,m)=temnow(k,1,n,m)/c3
-!!            temnow(k,2,n,m)=temnow(k,2,n,m)/c3
           enddo
         enddo
  100  continue
 !!
-      fact = 0.5 
+      fact = 1.0
       do m=1,mlistnum
           mf=mlist(m)
           do n=mf,jtrun
-             c3=1.+dta*fact*hfilt*eps4(n,m)**ord
-             plnow(n,m,1)=plnow(n,m,1)/c3
-             plnow(n,m,2)=plnow(n,m,2)/c3
+             c4=1.+dta*fact*hfilt4*eps4(n,m)**2.
+             plnow(n,m,1)=(plnow(n,m,1)+(c4-1.)*prefs(n,m,1))/c4
+             plnow(n,m,2)=(plnow(n,m,2)+(c4-1.)*prefs(n,m,2))/c4
           enddo
       enddo
+!
+!      windchk=.false.
+!      do k=1,8
+!        if ( wmax(k) .gt. windmax3 ) windchk=.true.
+!      enddo
+!      if ( windchk ) &
+!       call filter_top(jtrun,jtmax,levp,ncld,temnow,vornow,divnow)
 !
 !--------------------------------------------------------------------
       return
@@ -442,7 +417,7 @@
       implicit  none
 
       integer   ktop,ktopm1
-      parameter ( ktop=6, ktopm1=ktop-1 ) ! top "ktop" levels are filtered
+      parameter ( ktop=10, ktopm1=ktop-1 ) ! top "ktop" levels are filtered
 !     parameter ( ktop=4, ktopm1=ktop-1 ) ! top "ktop" levels are filtered
 !     parameter ( ktop=6, ktopm1=ktop-1 ) ! top "ktop" levels are filtered
 !
@@ -453,7 +428,7 @@
 !
       real      wvn_top(ktop+1),djt
 
-      integer   k,mode,m,mf,n,nflt,IERR
+      integer   k,mode,m,mf,n,nflt,IERR,KL
       real      pi,flt,fac
 !
 
@@ -465,13 +440,14 @@
 !     endif
 !2dMPI <
 
-      wvn_top(1) = jtrun*2./3.
-!      wvn_top(1) = 155
-      wvn_top(ktop) = jtrun
-      djt = ( wvn_top(ktop) - wvn_top(1) ) / ktopm1
-      do k = 2, ktopm1
+!      wvn_top(1) = jtrun*2./3.
+      wvn_top(1) = 155
+      wvn_top(ktop+1) = jtrun
+!      djt = ( wvn_top(ktop) - wvn_top(1) ) / ktopm1
+      do k = 2, ktop
+        djt = ( wvn_top(ktop+1) - wvn_top(1) ) * exp(-0.7*(k-1))
 !        wvn_top(k) = (jtrun + wvn_top(k-1))*0.5
-        wvn_top(k) = min( wvn_top(k-1) + djt , float(jtrun) )
+        wvn_top(k) = min( wvn_top(ktop+1) - djt , float(jtrun) )
       enddo
 !
       pi = 3.141596
@@ -483,9 +459,11 @@
       mode = 1
 !
       if( mode .eq. 0 ) then
-        do k = 1, ktop
+        do k = 1, lev
+
 !2dMPI >
-        if((K.ge.Lstart) .and. (K.le.Lend))then
+        KL=Llist(k)
+        if( KL .le. ktop ) then
 !2dMPI <
           do m = 1, mlistnum
             mf=max(2,mlist(m))
@@ -517,9 +495,10 @@
 !2dMPI <
         enddo
       else
-        do k = 1, ktop
+        do k = 1, lev
 !2dMPI >
-        if((K.ge.Lstart) .and. (K.le.Lend))then
+        KL=Llist(k)
+        if( KL .le. ktop ) then
 !2dMPI <
           do m = 1, mlistnum
             mf=max(2,mlist(m))
