@@ -1299,23 +1299,29 @@
 !!            dtx=dt
 !!            dta=dtx
 !!            dtx_tau=dtx/3600.
-            hfilt=0.5
+            hfilt=1.
+            spl1=5.
             if(myrank .eq. 0)print *,'** stable change hfilt=',hfilt
           else if(n_unstable .gt. nc_stable)then
 !!            dtx=dt
 !!            dta=dtx
 !!            dtx_tau=dtx/3600.
             hfilt=4.
-            if ( sptend .gt. sptendmax3 ) hfilt=6.
+            spl1=20.
             if(myrank .eq. 0)print *,'** unstable change hfilt=',hfilt
           else
             hfilt=1.0
+            spl1=10.
             if(myrank .eq. 0)print *,'** keep hfilt=',hfilt
           endif
           n_unstable=0
           n_stable=0
         endif
       endif
+      do k = 1, lev
+        prslp=sigma(k,2)+sigma(k,1)*1000.+ptop
+        if ( prslp .le. spl1  ) hdk1=k
+      enddo
 !
 ! output sit var. at "outsitmean" interval
 !

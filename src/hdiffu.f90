@@ -353,7 +353,7 @@
 !!        facv = amp * kfac
 !!        fact = amp * kfac
 !          endif
-        facd = 200. * facd 
+        facd = 150. * facd 
         facv =  10. * facv
         fact =   1. * fact
 
