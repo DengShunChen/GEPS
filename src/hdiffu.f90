@@ -332,7 +332,7 @@
 !
       real      wvn_top(ktop+1),djt
 
-      integer   k,mode,m,mf,n,nflt,IERR
+      integer   k,mode,m,mf,n,nflt,IERR,KL
       real      pi,flt,fac
 !
 
