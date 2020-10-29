@@ -38,6 +38,7 @@
       integer   mlmax2,j,k,l,ic,m,mf,n,ns,na,nbig,kk,kL
       real      bal,dummy
       logical   nnmical
+      integer   brank   !root rank of row_broadcast
 !
       mlmax2 = mlmax*2
       if(myrank .eq. 0) print *,'jrtun=',jtrun,' mlmax=',mlmax
@@ -92,9 +93,11 @@
 
         do 110 L=1,nnmivm
           nnmical=.false.
+          brank=0
           if( (L .ge. Lstart) .and. (L .le. Lend)) then
             k=L-Lstart+1
             nnmical=.true.
+            brank=row_rank
           endif
 !
           if(myrank .eq. 0) print *,'vertical mode l=',L
@@ -133,7 +136,7 @@
             call vartrix (vorten,divten,phiten,levp, &
                          k,x,ns,m,nbig,jtrun,jtmax,+1,+2)
 
-      call mpe2d_row_broadcast(x,no*2)
+      call mpe2d_row_broadcast(x,no*2,brank)
 
 !
 !  construct coefficient matrix
@@ -143,7 +146,7 @@
       if(nnmical) &
             call coftrix (mf,L,mx,ns,a(1,1,L),b(1,1,L),c(1,1,L),jtrun,lev,+1)
 
-      call mpe2d_row_broadcast(mx,no*no)
+      call mpe2d_row_broadcast(mx,no*no,brank)
 !
 !   fine the eigenvector and eigenvalues of the symmetric matrix
 !
@@ -171,7 +174,7 @@
             call vartrix (vorten,divten,phiten,levp, &
                           k,x,na,m,nbig,jtrun,jtmax,-1,+2)
 
-      call mpe2d_row_broadcast(x,no*2)
+      call mpe2d_row_broadcast(x,no*2,brank)
 !
 !  construct coefficient matrix
 !       -1:antisymmetric
@@ -180,7 +183,7 @@
       if(nnmical) &
             call coftrix (mf,L,mx,na,a(1,1,L),b(1,1,L),c(1,1,L),jtrun,lev,-1)
 
-      call mpe2d_row_broadcast(mx,no*no)
+      call mpe2d_row_broadcast(mx,no*no,brank)
 !
 !   fine the eigenvector and eigenvalues of the antisymmetric matrix
 !

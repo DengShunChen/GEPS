@@ -238,7 +238,7 @@
       return
       end
 !----------------------------------------------------------------------------------------
-      subroutine mpe2d_row_broadcast(buf,n)
+      subroutine mpe2d_row_broadcast(buf,n,brank)
 
 ! broadcast for row
 
@@ -246,8 +246,10 @@
       use index
 
       real*8 buf(n)
+      integer brank
 
-      call MPI_BCAST( BUF, N, MPI_DOUBLE_PRECISION, 0, row_comm, IERR )
+!     call MPI_BCAST( BUF, N, MPI_DOUBLE_PRECISION, 0, row_comm, IERR )
+      call MPI_BCAST( BUF, N, MPI_DOUBLE_PRECISION, brank, row_comm, IERR )
 
       return
       end
