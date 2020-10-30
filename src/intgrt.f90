@@ -145,7 +145,7 @@
       real    www,dtx,dta,thdai,tkei,tpei,dsigp,            &
               cosw,tengi,dt24,tg2,dtx_tau,hfiltx,sqhaf,     &
               dummy,dt1,sptend,wmax,xx,facw,dtaup,          &
-              sptendmax3,sptendmax2,sptendmax1,dt_chg,prslp
+              sptendmax2,sptendmax1,dt_chg,prslp
 ! sppt variables
 !            by John Tseng 2017/12/13 
 !            modified by PangYen Liu for 2D-MPI 2019/02/20
@@ -564,19 +564,18 @@
       n_stable=0
       n_unstable=0
       if(nco.eq.180)then
-        dt_chg=1800.
+!!        dt_chg=1800.
         nc_stable=1
-        sptendmax2=0.461
-        sptendmax1=0.4375
+        sptendmax2=0.3905
+        sptendmax1=0.3485
       else if(nco.eq.384)then
-        dt_chg=720.
+!!        dt_chg=720.
         nc_stable=2
-        sptendmax2=0.3975
-        sptendmax1=0.3575
+        sptendmax2=0.4005
+        sptendmax1=0.3585
       else if(nco.eq.640) then
-        dt_chg=450.
+!!        dt_chg=450.
         nc_stable=4
-        sptendmax3=0.4405
         sptendmax2=0.4105
         sptendmax1=0.3685
       endif
