@@ -142,7 +142,7 @@
 !
       windchk=.false.
       do k=1,8
-        if ( wmax(k) .gt. windmax2 ) windchk=.true.
+        if ( wmax(k) .gt. windmax3 ) windchk=.true.
       enddo
 !      if (wmax(1).gt.windmax3 .or. wmax(2).gt.windmax3 .or. &
 !          wmax(3).gt.windmax3)then
@@ -332,7 +332,7 @@
 !
       real      wvn_top(ktop+1),djt
 
-      integer   k,mode,m,mf,n,nflt,IERR
+      integer   k,mode,m,mf,n,nflt,IERR,KL
       real      pi,flt,fac
 !
 
@@ -346,13 +346,13 @@
 
 !      wvn_top(1) = jtrun*1./3.
       wvn_top(1) = 155
-      wvn_top(ktop) = jtrun
+      wvn_top(ktop+1) = jtrun
 !!      djt = ( wvn_top(ktop) - wvn_top(1) ) / ktopm1
 
-      do k = 2, ktopm1
-        djt = ( wvn_top(ktop) - wvn_top(1) ) * exp(-0.4*(k-1))
+      do k = 2, ktop
+        djt = ( wvn_top(ktop+1) - wvn_top(1) ) * exp(-0.7*(k-1))
 !        wvn_top(k) = (jtrun + wvn_top(k-1))*0.5
-        wvn_top(k) = min( wvn_top(ktop) - djt , float(jtrun) )
+        wvn_top(k) = min( wvn_top(ktop+1) - djt , float(jtrun) )
       enddo
 !
       pi = 3.141596
@@ -364,9 +364,10 @@
       mode = 1
 !
       if( mode .eq. 0 ) then
-        do k = 1, ktop
+        do k = 1, lev
 !2dMPI >
-        if((K.ge.Lstart) .and. (K.le.Lend))then
+        KL=Llist(k)
+        if( KL .le. ktop ) then
 !2dMPI <
           do m = 1, mlistnum
             mf=max(2,mlist(m))
@@ -398,9 +399,10 @@
 !2dMPI <
         enddo
       else
-        do k = 1, ktop
+        do k = 1, lev
 !2dMPI >
-        if((K.ge.Lstart) .and. (K.le.Lend))then
+        KL=Llist(k)
+        if( KL .le. ktop ) then
 !2dMPI <
           do m = 1, mlistnum
             mf=max(2,mlist(m))

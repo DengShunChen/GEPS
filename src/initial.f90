@@ -37,6 +37,8 @@
 
       integer   mlmax2,j,k,l,ic,m,mf,n,ns,na,nbig,kk,kL
       real      bal,dummy
+      logical   nnmical
+      integer   brank   !root rank of row_broadcast
 !
       mlmax2 = mlmax*2
       if(myrank .eq. 0) print *,'jrtun=',jtrun,' mlmax=',mlmax
@@ -88,7 +90,15 @@
 !
 !   begin initialize the first liz (now,liz=3) modes.
 !
+
         do 110 L=1,nnmivm
+          nnmical=.false.
+          brank=0
+          if( (L .ge. Lstart) .and. (L .le. Lend)) then
+            k=L-Lstart+1
+            nnmical=.true.
+            brank=row_rank
+          endif
 !
           if(myrank .eq. 0) print *,'vertical mode l=',L
 !
@@ -99,8 +109,9 @@
 !   do nondimensionalize of the variables
 !         +2:nondimensionalize
 !
-      if(L.eq.Llist(L)) &
-          call vartran (vorten,divten,phiten,nw,jtrun,jtmax,levp,L, &
+!      if(L.eq.Llist(L)) &
+      if(nnmical) &
+          call vartran (vorten,divten,phiten,nw,jtrun,jtmax,levp,k, &
                        rad,omega,h(1,1,L),+2)
 !
 !   begin to initialize horizontal modes
@@ -120,20 +131,22 @@
 !  create variable vector
 !       +1:symmetric, +2:creation
 !
-      if(L.eq.Llist(L)) &
+!      if(L.eq.Llist(L)) &
+      if(nnmical) &
             call vartrix (vorten,divten,phiten,levp, &
-                         L,x,ns,m,nbig,jtrun,jtmax,+1,+2)
+                         k,x,ns,m,nbig,jtrun,jtmax,+1,+2)
 
-      call mpe2d_row_broadcast(x,no*2)
+      call mpe2d_row_broadcast(x,no*2,brank)
 
 !
 !  construct coefficient matrix
 !       +1:symmetric
 !
-      if(L.eq.Llist(L)) &
+!      if(L.eq.Llist(L)) &
+      if(nnmical) &
             call coftrix (mf,L,mx,ns,a(1,1,L),b(1,1,L),c(1,1,L),jtrun,lev,+1)
 
-      call mpe2d_row_broadcast(mx,no*no)
+      call mpe2d_row_broadcast(mx,no*no,brank)
 !
 !   fine the eigenvector and eigenvalues of the symmetric matrix
 !
@@ -146,28 +159,31 @@
 !   decompose the variable vector back to 3 individual variable
 !       +1:symmetric , -2:decompose
 !
-      if(L.eq.Llist(L)) &
+!      if(L.eq.Llist(L)) &
+      if(nnmical) &
             call vartrix (vorten,divten,phiten,levp, &
-                          L,x,ns,m,nbig,jtrun,jtmax,+1,-2)
+                          k,x,ns,m,nbig,jtrun,jtmax,+1,-2)
 !
 !   do antisymmtric case
 !
 !   construct variable vector from 3 individual variable
 !       -1:antisymmetric , +2 : creation
 !
-      if(L.eq.Llist(L)) &
+!      if(L.eq.Llist(L)) &
+      if(nnmical) &
             call vartrix (vorten,divten,phiten,levp, &
-                          L,x,na,m,nbig,jtrun,jtmax,-1,+2)
+                          k,x,na,m,nbig,jtrun,jtmax,-1,+2)
 
-      call mpe2d_row_broadcast(x,no*2)
+      call mpe2d_row_broadcast(x,no*2,brank)
 !
 !  construct coefficient matrix
 !       -1:antisymmetric
 !
-      if(L.eq.Llist(L)) &
+!      if(L.eq.Llist(L)) &
+      if(nnmical) &
             call coftrix (mf,L,mx,na,a(1,1,L),b(1,1,L),c(1,1,L),jtrun,lev,-1)
 
-      call mpe2d_row_broadcast(mx,no*no)
+      call mpe2d_row_broadcast(mx,no*no,brank)
 !
 !   fine the eigenvector and eigenvalues of the antisymmetric matrix
 !
@@ -180,9 +196,10 @@
 !   decompose the variable vector back to 3 individual variable
 !       +1:symmetric , -2:decompose
 !
-      if(L.eq.Llist(L)) &
+!      if(L.eq.Llist(L)) &
+      if(nnmical) &
             call vartrix (vorten,divten,phiten,levp, &
-                          L,x,na,m,nbig,jtrun,jtmax,-1,-2)
+                          k,x,na,m,nbig,jtrun,jtmax,-1,-2)
             bal_tmp(mf) = bal
             bal = 0.
 !
@@ -198,8 +215,9 @@
 !   dimensionlize the variables
 !     -2:dimensionalize
 !
-      if(L.eq.Llist(L)) &
-          call vartran (vorten,divten,phiten,nw,jtrun,jtmax,levp,L, &
+!      if(L.eq.Llist(L)) &
+      if(nnmical) &
+          call vartran (vorten,divten,phiten,nw,jtrun,jtmax,levp,k, &
                         rad,omega,h(1,1,L),-2)
 !
  110    continue
@@ -208,11 +226,11 @@
 !
 
 !2dMPI>
-         kL=1
-         kk=Llist(nnmivm+1)
-         if(kk .le.levp)then
-            kL=nnmivm+1
-         endif
+!!         kL=1
+!!         kk=Llist(nnmivm+1)
+!!         if(kk .le.levp)then
+!!            kL=nnmivm+1
+!!         endif
 !2dMPI<
 
          do m=1,mlistnum
@@ -220,10 +238,13 @@
            do n=mf,jtrun
              do j = 1, 2
 !              do k = nnmivm+1,lev
-               do k = kL,levp
-                 vorten(k,j,n,m)= 0.
-                 divten(k,j,n,m)= 0.
-                 phiten(k,j,n,m)= 0.
+               do k = 1,levp
+                 kk=Llist(k)
+                 if ( kk .gt. nnmivm ) then
+                   vorten(k,j,n,m)= 0.
+                   divten(k,j,n,m)= 0.
+                   phiten(k,j,n,m)= 0.
+                 endif
                enddo
              enddo
            enddo
