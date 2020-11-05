@@ -216,6 +216,10 @@
       data facm/1.,0.,1.5,-0.5/
 !      data facm/0.,0.,0.5,0.,0.875,-0.375/
 !
+! for two time level coefficient of merging PGF
+!
+      af=0.5
+!
 ! output initialization field
 !
       if(wrestrt)then
@@ -566,18 +570,18 @@
       if(nco.eq.180)then
 !!        dt_chg=1800.
         nc_stable=1
-        sptendmax2=0.3905
-        sptendmax1=0.3485
+        sptendmax2=0.4005
+        sptendmax1=0.3505
       else if(nco.eq.384)then
 !!        dt_chg=720.
         nc_stable=2
-        sptendmax2=0.4005
-        sptendmax1=0.3585
+        sptendmax2=0.4105
+        sptendmax1=0.3605
       else if(nco.eq.640) then
 !!        dt_chg=450.
         nc_stable=4
-        sptendmax2=0.4105
-        sptendmax1=0.3685
+        sptendmax2=0.4205
+        sptendmax1=0.3705
       endif
 !
 !      if(typhoon)then
@@ -847,8 +851,8 @@
 !!          do n = mf, jtrun
 !!            do i = 1, 2
 !!            do k = 1, levp
-!!              vormid(k,i,n,m)= 0.4*vormid(k,i,n,m)+0.6*vorten(k,i,n,m)
-!!              divmid(k,i,n,m)= 0.4*divmid(k,i,n,m)+0.6*divten(k,i,n,m)
+!!              vormid(k,i,n,m)= 0.3*vormid(k,i,n,m)+0.7*vorten(k,i,n,m)
+!!              divmid(k,i,n,m)= 0.3*divmid(k,i,n,m)+0.7*divten(k,i,n,m)
 !!            enddo
 !!            enddo
 !!          enddo
@@ -1015,7 +1019,7 @@
 !
 !     estimat grid non-linear forcing at t+dt/2 by averaging grid non-linear forcing at t and t+dt
 !
-      af=0.75
+
       do jj = 1, jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
@@ -1299,17 +1303,20 @@
 !!            dta=dtx
 !!            dtx_tau=dtx/3600.
             hfilt=1.
-            spl1=5.
+            af=0.7
+            spl1=10.
             if(myrank .eq. 0)print *,'** stable change hfilt=',hfilt
           else if(n_unstable .gt. nc_stable)then
 !!            dtx=dt
 !!            dta=dtx
 !!            dtx_tau=dtx/3600.
             hfilt=4.
+            af=0.3
             spl1=20.
             if(myrank .eq. 0)print *,'** unstable change hfilt=',hfilt
           else
-            hfilt=1.0
+            hfilt=1.
+            af=0.5
             spl1=10.
             if(myrank .eq. 0)print *,'** keep hfilt=',hfilt
           endif

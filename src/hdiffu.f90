@@ -76,7 +76,7 @@
         KL=Llist(k)
 !
         kfac = 1.0 + 2.*min(max(float(hdk2(1)-KL),0.),25.)
-        facd = 2. * amp * (kfac + 2.*max(float(hdk1-KL),0.))
+        facd = 1. * amp * (kfac + 2.*max(float(hdk1-KL),0.))
         facv = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
         fact = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
 !
@@ -346,15 +346,15 @@
         KL=Llist(k)
 !
         kfac = 1.0 + max(float(hdk2(1)-KL),0.)
-        facd = 1. * (kfac + 4.*max(float(hdk1-KL),0.))
-        facv = 1. * (kfac + 2.*max(float(hdk1-KL),0.))
-        fact = 1. * (kfac + 2.*max(float(hdk1-KL),0.))
+        facd = 1. * amp * (kfac + 2.*max(float(hdk1-KL),0.))
+        facv = 1. * amp * (kfac + 1.*max(float(hdk1-KL),0.))
+        fact = 1. * amp * (kfac + 1.*max(float(hdk1-KL),0.))
 !!        facd = amp * kfac 
 !!        facv = amp * kfac
 !!        fact = amp * kfac
 !          endif
-        facd = 150. * facd 
-        facv =  10. * facv
+        facd = 360. * facd 
+        facv =   1. * facv
         fact =   1. * fact
 
 !
@@ -365,34 +365,36 @@
           mf=mlist(m)
           do n=mf,jtrun
 
-            c1=1.+dta*facv*hfilt4*eps4(n,m)**2.
-!!            c3=1.+dta*fact*hfilt6*eps4(n,m)**3.
+            c1=1.+dta*facv*hfilt6*eps4(n,m)**3.
+!!            c2=1.+dta*facd*hfilt6*eps4(n,m)**3.
+            c2=1.+dta*facd*hfilt4*eps4(n,m)**2.
+!!            c2=1.+dta*facd*hfilt2*eps4(n,m)
 
-!            if ( KL .le. hdk1 ) then
-              c2=1.+dta*facd*hfilt2*eps4(n,m)
-!            else
-!              c2=1.+dta*facd*hfilt4*eps4(n,m)**2.
-!            endif
+!!            c3=1.+dta*fact*hfilt6*eps4(n,m)**3.
 
             vornow(k,1,n,m)=(vornow(k,1,n,m)+(c1-1.)*zrefs(k,1,n,m))/c1
             vornow(k,2,n,m)=(vornow(k,2,n,m)+(c1-1.)*zrefs(k,2,n,m))/c1
             divnow(k,1,n,m)=(divnow(k,1,n,m)+(c2-1.)*drefs(k,1,n,m))/c2
             divnow(k,2,n,m)=(divnow(k,2,n,m)+(c2-1.)*drefs(k,2,n,m))/c2
+!!            vornow(k,1,n,m)=vornow(k,1,n,m)/c1
+!!            vornow(k,2,n,m)=vornow(k,2,n,m)/c1
+!!            divnow(k,1,n,m)=divnow(k,1,n,m)/c2
+!!            divnow(k,2,n,m)=divnow(k,2,n,m)/c2
 !!            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
 !!            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
           enddo
         enddo
  100  continue
 !!
-      fact = 1.0
-      do m=1,mlistnum
-          mf=mlist(m)
-          do n=mf,jtrun
-             c4=1.+dta*fact*hfilt4*eps4(n,m)**2.
-             plnow(n,m,1)=(plnow(n,m,1)+(c4-1.)*prefs(n,m,1))/c4
-             plnow(n,m,2)=(plnow(n,m,2)+(c4-1.)*prefs(n,m,2))/c4
-          enddo
-      enddo
+!!      fact = 1.0
+!!      do m=1,mlistnum
+!!          mf=mlist(m)
+!!          do n=mf,jtrun
+!!             c4=1.+dta*fact*hfilt4*eps4(n,m)**2.
+!!             plnow(n,m,1)=(plnow(n,m,1)+(c4-1.)*prefs(n,m,1))/c4
+!!             plnow(n,m,2)=(plnow(n,m,2)+(c4-1.)*prefs(n,m,2))/c4
+!!          enddo
+!!      enddo
 !
 !      windchk=.false.
 !      do k=1,8
