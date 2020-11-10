@@ -69,7 +69,7 @@
                 vdmerdg(nxp,lev,my_max),vdzonlg(nxp,lev,my_max),   &
                 um(nxp,lev,my_max),vm(nxp,lev,my_max),             &
                 tm(nxp,lev,my_max),                                &
-!                qmt(nxp,lev*ncld,my_max),                      &
+                rdivm(nxp,lev,my_max),                             &
                 ttm_sl(nx,levp,my_max),                            &
                 pten_sl(nx,levp,my_max),                           &
                 qm_sl(nx,levp*ncld,my_max),                        &
@@ -218,7 +218,7 @@
 !
 ! for two time level coefficient of merging PGF
 !
-      af=0.5
+      af=0.6
 !
 ! output initialization field
 !
@@ -364,6 +364,7 @@
       rld=0.
       sld=0.
       recn=1
+      rdivm=0.
 !
 
 !
@@ -731,6 +732,8 @@
                        + facm(2,itt) * vp(i,k,jj)
             tm(i,k,jj) = facm(1,itt) * tt(i,k,jj) &
                        + facm(2,itt) * ttp(i,k,jj)
+            rdivm(i,k,jj)= facm(1,itt) * rdiv(i,k,jj) &
+                         + facm(2,itt) * rdivm(i,k,jj)
             up(i,k,jj) = ut(i,k,jj)
             vp(i,k,jj) = vt(i,k,jj)
             ttp(i,k,jj)= tt(i,k,jj)
@@ -864,8 +867,6 @@
 !
 !     calculate vertical velocity at mid-point
 !
-      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divmid,cc,1,nsizey)
-      call ujoinsr(cc,rdiv,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,plmid      &
                  ,dlpl,dtpl,nsizey)
 !
@@ -874,7 +875,7 @@
         nxj=nxdef_2d(j)
 !
         call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld              &
-        , cp,radsq,um(1,1,jj),vm(1,1,jj),rdiv(1,1,jj),tm(1,1,jj)       &
+        , cp,radsq,um(1,1,jj),vm(1,1,jj),rdivm(1,1,jj),tm(1,1,jj)       &
         , qt(1,1,jj),phi(1,1,jj),ptm(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
         , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)         &
         , diveng(1,1,jj),vdmerdg(1,1,jj),vdzonlg(1,1,jj),pten(1,1,jj)  &
@@ -931,7 +932,7 @@
       call tranuv(jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac    &
                  ,poly,dpoly,vormid,divmid,um,vm,nsizey)
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divmid,cc,1,nsizey)
-      call ujoinsr(cc,rdiv,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      call ujoinsr(cc,rdivm,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
 !!      call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,plmid      &
 !!                 ,dlpl,dtpl,nsizey)
 !!      call transr1(jtrun,jtmax,nx,my,my_max,poly,plmid,ptm,nsizey)
@@ -957,7 +958,7 @@
 !
 !!        call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld              &
         call gridnl_hybrid_ndsl (nxjp(j),nxp,lev,ncld                   &
-        , cp,radsq,um(1,1,jj),vm(1,1,jj),rdiv(1,1,jj),tm(1,1,jj)        &
+        , cp,radsq,um(1,1,jj),vm(1,1,jj),rdivm(1,1,jj),tm(1,1,jj)       &
         , qp(1,1,jj),phi(1,1,jj),ptm(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
         , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)          &
         , diveng(1,1,jj),vdmerdg(1,1,jj),vdzonlg(1,1,jj),pten(1,1,jj)   &
@@ -1152,6 +1153,7 @@
                 vdzonl(i,k,jj) = ( vdzonl(i,k,jj) - up(i,k,jj) ) / dta
                 vdmerd(i,k,jj) = ( vp(i,k,jj) - vdmerd(i,k,jj) ) / dta
                 ddtemp(i,k,jj) = ( ddtemp(i,k,jj) - ttp(i,k,jj)) / dta
+                rdivm(i,k,jj)  = rdiv(i,k,jj)
               enddo
             enddo
           enddo
