@@ -275,7 +275,7 @@
 !--------------------------------------------------------------------
       subroutine whdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld,amp   &
                         , rad,cosl,ut,vt,vornow,divnow,temnow,plnow    &
-                        , eps4,drefs,zrefs,trefs,prefs) 
+                        , eps4,trefs) 
       use index
       use mpe
       use rank
@@ -290,9 +290,7 @@
       real      cosl(my),ut(nxp,lev,my_max),vt(nxp,lev,my_max),  &
                 vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),   &
                 temnow(levp,2,jtrun,jtmax),eps4(jtrun,jtmax),            &
-                trefs(levp,2,jtrun,jtmax),plnow(jtrun,jtmax,2),          &
-                zrefs(levp,2,jtrun,jtmax),drefs(levp,2,jtrun,jtmax),     &
-                prefs(jtrun,jtmax,2)
+                trefs(levp,2,jtrun,jtmax),plnow(jtrun,jtmax,2)
 !
 !     parameter ( ktop=4, ktop2=ktop/2 ) ! top "ktop" levels are inhenced
 !
@@ -353,7 +351,7 @@
 !!        facv = amp * kfac
 !!        fact = amp * kfac
 !          endif
-        facd = 360. * facd 
+        facd = 300. * facd 
         facv =   1. * facv
         fact =   1. * fact
 
@@ -372,14 +370,10 @@
 
 !!            c3=1.+dta*fact*hfilt6*eps4(n,m)**3.
 
-            vornow(k,1,n,m)=(vornow(k,1,n,m)+(c1-1.)*zrefs(k,1,n,m))/c1
-            vornow(k,2,n,m)=(vornow(k,2,n,m)+(c1-1.)*zrefs(k,2,n,m))/c1
-            divnow(k,1,n,m)=(divnow(k,1,n,m)+(c2-1.)*drefs(k,1,n,m))/c2
-            divnow(k,2,n,m)=(divnow(k,2,n,m)+(c2-1.)*drefs(k,2,n,m))/c2
-!!            vornow(k,1,n,m)=vornow(k,1,n,m)/c1
-!!            vornow(k,2,n,m)=vornow(k,2,n,m)/c1
-!!            divnow(k,1,n,m)=divnow(k,1,n,m)/c2
-!!            divnow(k,2,n,m)=divnow(k,2,n,m)/c2
+            vornow(k,1,n,m)=vornow(k,1,n,m)/c1
+            vornow(k,2,n,m)=vornow(k,2,n,m)/c1
+            divnow(k,1,n,m)=divnow(k,1,n,m)/c2
+            divnow(k,2,n,m)=divnow(k,2,n,m)/c2
 !!            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
 !!            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
           enddo
@@ -391,8 +385,8 @@
 !!          mf=mlist(m)
 !!          do n=mf,jtrun
 !!             c4=1.+dta*fact*hfilt4*eps4(n,m)**2.
-!!             plnow(n,m,1)=(plnow(n,m,1)+(c4-1.)*prefs(n,m,1))/c4
-!!             plnow(n,m,2)=(plnow(n,m,2)+(c4-1.)*prefs(n,m,2))/c4
+!!             plnow(n,m,1)=plnow(n,m,1)/c4
+!!             plnow(n,m,2)=plnow(n,m,2)/c4
 !!          enddo
 !!      enddo
 !

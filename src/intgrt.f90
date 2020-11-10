@@ -365,8 +365,7 @@
       sld=0.
       recn=1
 !
-      vdmerdrp=0.
-      vdzonlrp=0.
+
 !
 !
 ! read mountant variables for topographic gravity wave drag
@@ -726,8 +725,10 @@
         nxj=nxdef_2d(j)
         do k = 1, lev
           do i = 1,nxj
-            um(i,k,jj) = ut(i,k,jj)
-            vm(i,k,jj) = vt(i,k,jj)
+            um(i,k,jj) = facm(1,itt) * ut(i,k,jj) &
+                       + facm(2,itt) * up(i,k,jj)
+            vm(i,k,jj) = facm(1,itt) * vt(i,k,jj) &
+                       + facm(2,itt) * vp(i,k,jj)
             tm(i,k,jj) = facm(1,itt) * tt(i,k,jj) &
                        + facm(2,itt) * ttp(i,k,jj)
             up(i,k,jj) = ut(i,k,jj)
@@ -741,8 +742,8 @@
           enddo
         enddo
         do i = 1,nxj
-!!          ptm(i,jj)= facm(1,itt) * pt(i,jj) &
-!!                   + facm(2,itt) * ptp(i,jj)
+          ptm(i,jj)= facm(1,itt) * pt(i,jj) &
+                   + facm(2,itt) * ptp(i,jj)
           ptp(i,jj)= pt(i,jj)
         enddo
       enddo
@@ -759,6 +760,8 @@
        vdzonl=0.
        vdmerdr=0.
        vdzonlr=0.
+       vdmerdrp=0.
+       vdzonlrp=0.
        ddtemp=0.
        pten=0.
 
@@ -769,20 +772,47 @@
        ndsldta = 0.5*dta
        ndsldtah= ndsldta/float(itter)
 !
+!
+!     advet grid non-linear forcing from t-dt/2 to t+dt/2 via NDSL advection
+!
+      call mpe2d_transpose_ndsl_p2f(um,ut_sl,    &
+                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
+      call mpe2d_transpose_ndsl_p2f(vm,vt_sl,    &
+                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
+
+      call mpe2d_transpose_ndsl_p2f(up,uum_sl,    &
+                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
+      call mpe2d_transpose_ndsl_p2f(vp,vvm_sl,    &
+                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
+!!      call mpe2d_transpose_ndsl_p2f(tm,ttm_sl,    &
+!!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
+!
+      do itt = 1,itter
+        call ndslfv_monoadvh_fgnl(uum_sl,vvm_sl,ttm_sl     &
+                             ,nxdef,ndsldtah,xy,levp,2)
+      enddo
+!
+      call mpe2d_transpose_ndsl_f2p(uum_sl,vdzonl, &
+                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
+      call mpe2d_transpose_ndsl_f2p(vvm_sl,vdmerd, &
+                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
+!!      call mpe2d_transpose_ndsl_f2p(ttm_sl,ddtemp, &
+!!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
+!
+!    advect pressure gradient force from t to t+dt
+!
       do jj = 1, jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
-        call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,ptp(1,jj),  &
-                                pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
 !
 !       Calculate Vertical velocity & Stream Functions
 !
-        call gridnl_hybrid_ndsl (nxjp(j),nxp,lev,ncld                  &
-        , cp,radsq,up(1,1,jj),vp(1,1,jj),rdiv(1,1,jj),ttp(1,1,jj)       &
-        , qp(1,1,jj),phi(1,1,jj),ptp(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
+        call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld              &
+        , cp,radsq,ut(1,1,jj),vt(1,1,jj),rdiv(1,1,jj),tt(1,1,jj)       &
+        , qt(1,1,jj),phi(1,1,jj),pt(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
         , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)         &
         , diveng(1,1,jj),vdmerdr(1,1,jj),vdzonlr(1,1,jj),pten(1,1,jj)  &
-        , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),sgeo(1,jj) )
+        , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),sgeo(1,jj),1 )
 !
       enddo !jj = 1,jlistnum
 !
@@ -794,7 +824,6 @@
 !!      call mpe2d_unify_nx(ww1,deldm) 
 !!      call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1         &
 !!                  ,plten,nsizey)
-
 !
       do jj = 1, jlistnum
         j=jlist1(jj)
@@ -803,82 +832,16 @@
           do i=1,nxj
             vdmerdr(i,k,jj) = vdmerdr(i,k,jj)-dtphi(i,k,jj)/radsq/onocos(j)
             vdzonlr(i,k,jj) = vdzonlr(i,k,jj)-dlphi(i,k,jj)/radsq 
-            vdmerdg(i,k,jj) = vdmerdr(i,k,jj)          &
-                             -up(i,k,jj)*cor(j)-(up(i,k,jj)*up(i,k,jj) &
-                             +vp(i,k,jj)*vp(i,k,jj))*onocos(j)*sinl(j)
-            vdzonlg(i,k,jj) = vdzonlr(i,k,jj)          &
-                             +vp(i,k,jj)*cor(j)
           enddo
         enddo
       enddo !jj = 1,jlistnum
 !
-!     advet grid non-linear forcing from t-dt/2 to t+dt/2 via NDSL advection
+!     advet grid pressure gradient force from t to t+dt via NDSL advection
 !
-      call mpe2d_transpose_ndsl_p2f(up,ut_sl,    &
-                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f(vp,vt_sl,    &
-                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-
-      call mpe2d_transpose_ndsl_p2f(um,uum_sl,    &
-                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f(vm,vvm_sl,    &
-                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-!!      call mpe2d_transpose_ndsl_p2f(tm,ttm_sl,    &
+!!      call mpe2d_transpose_ndsl_p2f(um,ut_sl,    &
 !!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-!
-      do itt = 1,itter
-        call ndslfv_monoadvh_fgnl(uum_sl,vvm_sl,ttm_sl     &
-                             ,nxdef,0.5*ndsldtah,xy,levp,2)
-      enddo
-!
-      call mpe2d_transpose_ndsl_f2p(uum_sl,vdzonl, &
-                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_f2p(vvm_sl,vdmerd, &
-                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-!!      call mpe2d_transpose_ndsl_f2p(ttm_sl,ddtemp, &
+!!      call mpe2d_transpose_ndsl_p2f(vm,vt_sl,    &
 !!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-!
-      call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlg,vdmerdg,0.5*ndsldta)
-!
-      call ndslfv_monoadvv_fgnl(vdzonl,vdmerd,ddtemp,pdot,ptp &
-                          ,nxjp,0.5*ndsldta,2)
-!
-      call trandv ( jtrun,jtmax,nx,my,my_max,lev,vdzonl,vdmerd,weight,cim &
-                   ,onocos,poly,dpoly,vormid,divmid,nsizey)
-!
-!!        do m = 1, mlistnum
-!!          mf=mlist(m)
-!!          do n = mf, jtrun
-!!            do i = 1, 2
-!!            do k = 1, levp
-!!              vormid(k,i,n,m)= 0.3*vormid(k,i,n,m)+0.7*vorten(k,i,n,m)
-!!              divmid(k,i,n,m)= 0.3*divmid(k,i,n,m)+0.7*divten(k,i,n,m)
-!!            enddo
-!!            enddo
-!!          enddo
-!!        enddo
-!
-      call whdiffu ( 0.5*dta,my,my_max,nx,jtrun,jtmax,lev,ncld   &
-                   ,hfiltx,rad,cosl,up,vp,vormid,divmid,temten   &
-                   ,plmid,eps4,divnow,vornow,temnow,plnow)
-!
-      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divmid,cc,1,nsizey)
-      call ujoinsr(cc,rdiv,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-      call tranuv(jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac    &
-                 ,poly,dpoly,vormid,divmid,um,vm,nsizey)
-      call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,plmid      &
-                 ,dlpl,dtpl,nsizey)
-      call transr1(jtrun,jtmax,nx,my,my_max,poly,plmid,ptm,nsizey)
-
-
-!
-!
-!     advet grid non-linear forcing from t-dt/2 to t+dt/2 via NDSL advection
-!
-      call mpe2d_transpose_ndsl_p2f(um,ut_sl,    &
-                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f(vm,vt_sl,    &
-                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f(vdzonlr,uum_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f(vdmerdr,vvm_sl,    &
@@ -897,16 +860,82 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !!      call mpe2d_transpose_ndsl_f2p(ttm_sl,pten, &
 !!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
+
 !
-!!      do jj = 1, jlistnum
-!!        j=jlist1(jj)
-!!        nxj=nxdef_2d(j)
-!!        do k=1,lev
-!!          do i=1,nxj
-!!            pten(i,k,jj)=(pten(i,k,jj)-diveng(i,k,jj))/dta
-!!          enddo
-!!        enddo
-!!      enddo !jj = 1,jlistnum
+!     calculate vertical velocity at mid-point
+!
+      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divmid,cc,1,nsizey)
+      call ujoinsr(cc,rdiv,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,plmid      &
+                 ,dlpl,dtpl,nsizey)
+!
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+!
+        call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld              &
+        , cp,radsq,um(1,1,jj),vm(1,1,jj),rdiv(1,1,jj),tm(1,1,jj)       &
+        , qt(1,1,jj),phi(1,1,jj),ptm(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
+        , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)         &
+        , diveng(1,1,jj),vdmerdg(1,1,jj),vdzonlg(1,1,jj),pten(1,1,jj)  &
+        , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),sgeo(1,jj),2 )
+!
+      enddo !jj = 1,jlistnum
+!
+      call ndslfv_monoadvv_fgnl(vdzonlrp,vdmerdrp,ddtemp,pdot,ptm &
+                          ,nxjp,ndsldta,2)
+!
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        do k=1,lev
+          do i=1,nxj
+            vdmerdr(i,k,jj) = 0.5*(vdmerdr(i,k,jj)+vdmerdrp(i,k,jj))
+            vdzonlr(i,k,jj) = 0.5*(vdzonlr(i,k,jj)+vdzonlrp(i,k,jj))
+            vdmerdrp(i,k,jj) = vdmerdr(i,k,jj)          &
+                             -um(i,k,jj)*cor(j)-(um(i,k,jj)*um(i,k,jj) &
+                             +vm(i,k,jj)*vm(i,k,jj))*onocos(j)*sinl(j)
+            vdzonlrp(i,k,jj) = vdzonlr(i,k,jj)          &
+                             +vm(i,k,jj)*cor(j)
+          enddo
+        enddo
+      enddo !jj = 1,jlistnum
+
+      call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlrp,vdmerdrp,ndsldta)
+!
+      call ndslfv_monoadvv_fgnl(vdzonl,vdmerd,ddtemp,pdot,ptm &
+                          ,nxjp,ndsldta,2)
+!
+      call trandv ( jtrun,jtmax,nx,my,my_max,lev,vdzonl,vdmerd,weight,cim &
+                   ,onocos,poly,dpoly,vormid,divmid,nsizey)
+
+!
+      call whdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld       &
+                   ,hfiltx,rad,cosl,up,vp,vormid,divmid,temmid   &
+                   ,plmid,eps4,trefs)
+!
+        do m = 1, mlistnum
+          mf=mlist(m)
+          do n = mf, jtrun
+            do i = 1, 2
+            do k = 1, levp
+              vormid(k,i,n,m)= 0.5*(vormid(k,i,n,m)+vornow(k,i,n,m))
+              divmid(k,i,n,m)= 0.5*(divmid(k,i,n,m)+divnow(k,i,n,m))
+            enddo
+            enddo
+          enddo
+        enddo
+!
+!     update all new wind field at mid-point
+!
+      call tranuv(jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac    &
+                 ,poly,dpoly,vormid,divmid,um,vm,nsizey)
+      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divmid,cc,1,nsizey)
+      call ujoinsr(cc,rdiv,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+!!      call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,plmid      &
+!!                 ,dlpl,dtpl,nsizey)
+!!      call transr1(jtrun,jtmax,nx,my,my_max,poly,plmid,ptm,nsizey)
+
 !
 !  the gaussian quadrature loop for spectral tendencies.  subroutine
 !  'gridnl' is called for companion mirror image gaussian latitudes
@@ -934,42 +963,36 @@
         , diveng(1,1,jj),vdmerdg(1,1,jj),vdzonlg(1,1,jj),pten(1,1,jj)   &
         , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),sgeo(1,jj) )
       enddo !jj = 1,jlistnum
-
+!
       call joinrs(cc,diveng,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc       &
                  ,hldten,1,nsizey)
       call trngra3(jtrun,jtmax,nx,levp,my,my_max,cim,poly,dpoly      &
                  ,hldten,dlphi,dtphi,nsizey)
-
-!
-!     estimated grid non-linear forcing at t-dt/2 by time average grid non-linear forcing at t-dt and t.
 !
       do jj = 1, jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
         do k=1,lev
           do i=1,nxj
-            vdmerdg(i,k,jj)=vdmerdg(i,k,jj)-dtphi(i,k,jj)/radsq/onocos(j)
-            vdzonlg(i,k,jj)=vdzonlg(i,k,jj)-dlphi(i,k,jj)/radsq
+            vdmerdg(i,k,jj) = vdmerdg(i,k,jj)-dtphi(i,k,jj)/radsq/onocos(j)
+            vdzonlg(i,k,jj) = vdzonlg(i,k,jj)-dlphi(i,k,jj)/radsq 
           enddo
         enddo
       enddo !jj = 1,jlistnum
-
-      call ndslfv_monoadvv_fgnl(vdzonlrp,vdmerdrp,ddtemp,pdot,ptm &
-                          ,nxjp,ndsldta,2)
 !
 
 ! transpose partial to full: ut -> ut_sl, vt -> vt_sl, ut -> uum_sl, vt -> vvm_sl, tt -> ttm_sl, qp -> qm_sl
 
 #ifdef MULTIPLE
-      call mpe2d_transpose_ndsl_p2f_multi(ut   ,vt   ,up   ,vp   ,tt   ,qp   , &
+      call mpe2d_transpose_ndsl_p2f_multi(um   ,vm   ,up   ,vp   ,tt   ,qp   , &
                                     ut_sl,vt_sl,uum_sl,vvm_sl,ttm_sl,qm_sl, &
                                     nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm,6)
 #else
-!!      call mpe2d_transpose_ndsl_p2f(um,ut_sl,    &
-!!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-!!      call mpe2d_transpose_ndsl_p2f(vm,vt_sl,    &
-!!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
+      call mpe2d_transpose_ndsl_p2f(um,ut_sl,    &
+                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
+      call mpe2d_transpose_ndsl_p2f(vm,vt_sl,    &
+                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f(up,uum_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f(vp,vvm_sl,    &
@@ -1025,14 +1048,12 @@
         nxj=nxdef_2d(j)
         do i=1,nxj
           do k=1,lev
-            vdmerdrp(i,k,jj) = 0.5*(vdmerdrp(i,k,jj)+vdmerdr(i,k,jj))
-            vdzonlrp(i,k,jj) = 0.5*(vdzonlrp(i,k,jj)+vdzonlr(i,k,jj))
-            vdmerdrp(i,k,jj) = af*vdmerdrp(i,k,jj)+(1.-af)*vdmerdg(i,k,jj)
-            vdzonlrp(i,k,jj) = af*vdzonlrp(i,k,jj)+(1.-af)*vdzonlg(i,k,jj)
-            vdmerdrp(i,k,jj) = vdmerdrp(i,k,jj)                        &
+            vdmerdr(i,k,jj) = af*vdmerdr(i,k,jj)+(1.-af)*vdmerdg(i,k,jj)
+            vdzonlr(i,k,jj) = af*vdzonlr(i,k,jj)+(1.-af)*vdzonlg(i,k,jj)
+            vdmerdr(i,k,jj) = vdmerdr(i,k,jj)                          &
                              -um(i,k,jj)*cor(j)-(um(i,k,jj)*um(i,k,jj) &
                              +vm(i,k,jj)*vm(i,k,jj))*onocos(j)*sinl(j) 
-            vdzonlrp(i,k,jj) = vdzonlrp(i,k,jj)                        &
+            vdzonlr(i,k,jj) = vdzonlr(i,k,jj)                          &
                              +vm(i,k,jj)*cor(j)
           enddo
         enddo
@@ -1041,7 +1062,7 @@
 !
 !       update all horizontal informations
 !
-        call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlrp,vdmerdrp,ndsldta)
+        call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlr,vdmerdr,ndsldta)
 !
 !       Vertical Advection
 !
@@ -1271,6 +1292,14 @@
       call ujoinsr(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       call transr1(jtrun,jtmax,nx,my,my_max,poly,plnow,pt,nsizey)
 !
+!   computing new p**capa quantities
+!
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pt(1,jj), &
+                          pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
+      enddo
+!
 !  zonal and meridional gradients of terrain pressure
 !
 !!      do m = 1, mlistnum
@@ -1299,25 +1328,16 @@
                                  ,n_unstable
         if( mod(tau+0.001, 1.) .lt. dtx_tau)then
           if(n_stable .gt. nc_stable)then
-!!            dtx=dt
-!!            dta=dtx
-!!            dtx_tau=dtx/3600.
             hfilt=1.
-            af=0.7
-            spl1=10.
+            spl1=5.
             if(myrank .eq. 0)print *,'** stable change hfilt=',hfilt
           else if(n_unstable .gt. nc_stable)then
-!!            dtx=dt
-!!            dta=dtx
-!!            dtx_tau=dtx/3600.
             hfilt=4.
-            af=0.3
-            spl1=20.
+            spl1=10.
             if(myrank .eq. 0)print *,'** unstable change hfilt=',hfilt
           else
             hfilt=1.
-            af=0.5
-            spl1=10.
+            spl1=5.
             if(myrank .eq. 0)print *,'** keep hfilt=',hfilt
           endif
           n_unstable=0

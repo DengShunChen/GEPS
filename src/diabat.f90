@@ -835,8 +835,6 @@
 !
       call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pst(1,jj), &
                           pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
-!byl      call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,ps(1,jj),  &
-!byl                          pkn(1,1,jj),pk2n(1,1,jj),pltn(1,1,jj) )
 !
 !     hydrostatic equation
 !
