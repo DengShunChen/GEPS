@@ -251,7 +251,8 @@ contains
 
     do n=1,nscale
       ncx = 2.*pi*rerth/rpattern(n)%lenscale
-      rpattern(n)%jtrun = 2*((1+(ncx-1)/3)/2) 
+   !  rpattern(n)%jtrun = 2*((1+(ncx-1)/3)/2) 
+      rpattern(n)%jtrun = 2*((1+(4*ncx-1)/4)/2)
       rpattern(n)%mlmax = rpattern(n)%jtrun*(rpattern(n)%jtrun+1)/2
 
       allocate(rpattern(n)%n2d(nxp,my_max))
@@ -327,7 +328,7 @@ contains
           var = var + 0.5*(noise(ml,1)**2 + noise(ml,2)**2)
         endif
       enddo
-      rpattern(n)%varspec = rpattern(n)%varspec / var
+      rpattern(n)%varspec = rpattern(n)%varspec / sqrt(var)
 
 #ifdef VERBOSE
       if (myrank.eq.0) write(6,*)'total variance =',var
