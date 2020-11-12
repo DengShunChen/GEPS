@@ -41,7 +41,7 @@
 !  ---  inputs:
            ( nmmiph,nx,nxj,lev,ncld,plt,pst,dsigma,                    &
              phii,islimsk,q0,kdt,ntcw,ntrw,ntiw,ntsw,ntgl,             &
-             ntinc,ntrnc,tpi,me,dta,                                   &
+             ntinc,ntrnc,tpi,me,dta,rhc,                               &
 !  ---  inputs/outputs:
              tt,qt,                                                    &
 !  ---  outputs:
@@ -61,6 +61,7 @@
       real,     intent(in)    :: tpi,dta
       real,     intent(in)    :: plt(nx,lev),pst(nx),dsigma(lev,2),    &
                                  phii(nx,lev+1),q0(nx,lev*ncld)
+      real,     intent(in)    :: rhc(nx,lev)
 !  ---  inputs/outputs:
       real,     intent(inout) :: tt(nx,lev),qt(nx,lev*ncld)
 !  ---  outputs:
@@ -110,8 +111,8 @@
 !
 !          WSM6
            if ( nmmiph .eq. 6 )                                        &
-           call wsm6(ttc,phii,qtc,qtr,qtrw,qti,qtsw,qtgl,prsl,del,     &
-                     dta,rainncv,sr,islimsk,re_cloud,re_ice,re_snow,   &
+           call wsm6(ttc,phii,qtc,qtr,qtrw,qti,qtsw,qtgl,prsl,del,dta, &
+                     rainncv,sr,islimsk,rhc,re_cloud,re_ice,re_snow,   &
                      1,nx,1,lev,1,nxj,1,lev,snowncv,graupelncv)
 !          Thompson
            if ( nmmiph .eq. 8 )then

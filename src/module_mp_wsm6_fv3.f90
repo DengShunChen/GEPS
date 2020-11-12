@@ -77,6 +77,7 @@ CONTAINS
                  ,rainncv                                          &
                  ,sr                                               &
                  ,islmsk                                           &
+                 ,rhc                                              &
                  ,re_cloud, re_ice,   re_snow                      &  ! for radiation   
                  ,ims,ime,kms,kme                                  &
                  ,its,ite,kts,kte                                  &
@@ -108,6 +109,9 @@ CONTAINS
         INTENT(INOUT) ::                                          &
                                                          rainncv, &
                                                               sr
+  REAL, DIMENSION( ims:ime , kms:kme ),                           &
+        INTENT(IN   ) ::                                          &
+                                                             rhc 
 ! for radiation connecting
   INTEGER ::                                                      &
                                                         has_reqc, &
@@ -169,6 +173,7 @@ CONTAINS
                     ,rainncv                                       &
                     ,sr                                            &
                     ,islmsk                                        &
+                    ,rhc                                           &
                     ,ims,ime, kms,kme                              &
                     ,its,ite, kts,kte                              &
                     ,snow=snow,snowncv=snowncv                     &
@@ -225,6 +230,7 @@ CONTAINS
                    ,rainncv                                       &
                    ,sr                                            &
                    ,islmsk                                        & !rsun 
+                   ,rhc                                           & !byliu
                    ,ims,ime, kms,kme                              &
                    ,its,ite, kts,kte                              &
                    ,snow,snowncv                                  &
@@ -328,6 +334,9 @@ CONTAINS
   REAL, DIMENSION( ims:ime ), OPTIONAL,                  &
         INTENT(INOUT) ::                                 graupel, &
                                                       graupelncv
+  REAL, DIMENSION( ims:ime , kms:kme ),                           &
+        INTENT(IN   ) ::                                          &
+                                                             rhc 
 ! LOCAL VAR
   REAL, DIMENSION( its:ite , kts:kte , 3) ::                      &
                                                               rh, &
@@ -919,7 +928,8 @@ CONTAINS
 !---------------------------------------------------------------
           if(qrs(i,k,1).gt.0.) then
             coeres = rslope2(i,k,1)*sqrt(rslope(i,k,1)*rslopeb(i,k,1))
-            prevp(i,k) = (rh(i,k,1)-1.)*(precr1*rslope2(i,k,1)                 &
+!            prevp(i,k) = (rh(i,k,1)-1.)*(precr1*rslope2(i,k,1)                 &
+            prevp(i,k) = (rh(i,k,1)-rhc(i,k))*(precr1*rslope2(i,k,1)            &
                          +precr2*work2(i,k)*coeres)/work1(i,k,1)
             if(prevp(i,k).lt.0.) then
               prevp(i,k) = max(prevp(i,k),-qrs(i,k,1)/dtcld)
@@ -1107,7 +1117,8 @@ CONTAINS
 !       (T<T0: V->I or I->V)
 !-------------------------------------------------------------
             if(qci(i,k,2).gt.0.and.ifsat.ne.1) then
-              pidep(i,k) = 4.*diameter*xni(i,k)*(rh(i,k,2)-1.)/work1(i,k,2)
+!              pidep(i,k) = 4.*diameter*xni(i,k)*(rh(i,k,2)-1.)/work1(i,k,2)
+              pidep(i,k) = 4.*diameter*xni(i,k)*(rh(i,k,2)-rhc(i,k))/work1(i,k,2)
               supice = satdt-prevp(i,k)
               if(pidep(i,k).lt.0.) then
                 pidep(i,k) = max(max(pidep(i,k),satdt/2.),supice)
@@ -1123,7 +1134,8 @@ CONTAINS
 !-------------------------------------------------------------
             if(qrs(i,k,2).gt.0..and.ifsat.ne.1) then
               coeres = rslope2(i,k,2)*sqrt(rslope(i,k,2)*rslopeb(i,k,2))
-              psdep(i,k) = (rh(i,k,2)-1.)*n0sfac(i,k)*(precs1*rslope2(i,k,2)   &    
+!              psdep(i,k) = (rh(i,k,2)-1.)*n0sfac(i,k)*(precs1*rslope2(i,k,2)   &    
+              psdep(i,k) = (rh(i,k,2)-rhc(i,k))*n0sfac(i,k)*(precs1*rslope2(i,k,2)   &    
                            + precs2*work2(i,k)*coeres)/work1(i,k,2)
               supice = satdt-prevp(i,k)-pidep(i,k)
               if(psdep(i,k).lt.0.) then
@@ -1141,7 +1153,8 @@ CONTAINS
 !-------------------------------------------------------------
             if(qrs(i,k,3).gt.0..and.ifsat.ne.1) then
               coeres = rslope2(i,k,3)*sqrt(rslope(i,k,3)*rslopeb(i,k,3))
-              pgdep(i,k) = (rh(i,k,2)-1.)*(precg1*rslope2(i,k,3)               &
+!              pgdep(i,k) = (rh(i,k,2)-1.)*(precg1*rslope2(i,k,3)               &
+              pgdep(i,k) = (rh(i,k,2)-rhc(i,k))*(precg1*rslope2(i,k,3)               &
                               +precg2*work2(i,k)*coeres)/work1(i,k,2)
               supice = satdt-prevp(i,k)-pidep(i,k)-psdep(i,k)
               if(pgdep(i,k).lt.0.) then
@@ -1189,9 +1202,11 @@ CONTAINS
 !       (T>=T0: S->V)
 !-------------------------------------------------------------
           if(supcol.lt.0.) then
-            if(qrs(i,k,2).gt.0..and.rh(i,k,1).lt.1.) then
+!            if(qrs(i,k,2).gt.0..and.rh(i,k,1).lt.1.) then
+            if(qrs(i,k,2).gt.0..and.rh(i,k,1).lt.rhc(i,k)) then
               coeres = rslope2(i,k,2)*sqrt(rslope(i,k,2)*rslopeb(i,k,2))
-              psevp(i,k) = (rh(i,k,1)-1.)*n0sfac(i,k)*(precs1                  &
+!              psevp(i,k) = (rh(i,k,1)-1.)*n0sfac(i,k)*(precs1                  &
+              psevp(i,k) = (rh(i,k,1)-rhc(i,k))*n0sfac(i,k)*(precs1            &
                            *rslope2(i,k,2)+precs2*work2(i,k)                   &
                            *coeres)/work1(i,k,1)
               psevp(i,k) = min(max(psevp(i,k),-qrs(i,k,2)/dtcld),0.)
@@ -1200,9 +1215,11 @@ CONTAINS
 ! pgevp: Evaporation of melting graupel [HL A25] [RH84 A19]
 !       (T>=T0: G->V)
 !-------------------------------------------------------------
-            if(qrs(i,k,3).gt.0..and.rh(i,k,1).lt.1.) then
+!            if(qrs(i,k,3).gt.0..and.rh(i,k,1).lt.1.) then
+            if(qrs(i,k,3).gt.0..and.rh(i,k,1).lt.rhc(i,k)) then
               coeres = rslope2(i,k,3)*sqrt(rslope(i,k,3)*rslopeb(i,k,3))
-              pgevp(i,k) = (rh(i,k,1)-1.)*(precg1*rslope2(i,k,3)               &
+!              pgevp(i,k) = (rh(i,k,1)-1.)*(precg1*rslope2(i,k,3)               &
+              pgevp(i,k) = (rh(i,k,1)-rhc(i,k))*(precg1*rslope2(i,k,3)          &
                          +precg2*work2(i,k)*coeres)/work1(i,k,1)
               pgevp(i,k) = min(max(pgevp(i,k),-qrs(i,k,3)/dtcld),0.)
             endif

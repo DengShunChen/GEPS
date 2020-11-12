@@ -380,15 +380,15 @@
         enddo
  100  continue
 !!
-!!      fact = 1.0
-!!      do m=1,mlistnum
-!!          mf=mlist(m)
-!!          do n=mf,jtrun
-!!             c4=1.+dta*fact*hfilt4*eps4(n,m)**2.
-!!             plnow(n,m,1)=plnow(n,m,1)/c4
-!!             plnow(n,m,2)=plnow(n,m,2)/c4
-!!          enddo
-!!      enddo
+      fact = 1.0
+      do m=1,mlistnum
+          mf=mlist(m)
+          do n=mf,jtrun
+             c4=1.+dta*fact*hfilt4*eps4(n,m)**2.
+             plnow(n,m,1)=plnow(n,m,1)/c4
+             plnow(n,m,2)=plnow(n,m,2)/c4
+          enddo
+      enddo
 !
 !      windchk=.false.
 !      do k=1,8

@@ -1672,16 +1672,7 @@
                      , plt(1,1,jj),tt(1,1,jj), qt(1,1,jj),nshl(j)              &
                      , rcup(1,jj),ncld )
 !
-      if ( dolsp .and. (ntcw.eq.0))                                            &
-!        call lspmst ( tt(1,1,jj),qt(1,1,jj),plt(1,1,jj),ptop,pst(1,jj)
-!                 , dsigma,grav,nxj,nx,lev,evaprh,rlsp(1,jj),cp,hltm
-!                 , nlsp(1,j),ilsp(1,j) )
-!
-         call lsp ( tt(1,1,jj),qt(1,1,jj),plt(1,1,jj),pst(1,jj),dsigma         &
-                  , grav,nxjp(j),nxp,lev,evaprh,rlsp(1,jj),cp,hltm,nlsp(1,j)   &
-                  , ilsp(1,j) )
-!
-      if ( dolsp .and. (nmmiph.eq.2)) then
+!     Criteria of relative humidity (RHc)
 !
         deg_ju=23.45*sin(d2r*(360./365.)*(julian+284.))
         arg=xlat(j)-deg_ju
@@ -1691,10 +1682,6 @@
           arg=-89.9999
         endif
 !
-        lprnt=.false.
-        do i=1,nxj
-          psfc(i)  = pst(i,jj)*0.1        ! change to cb
-        enddo
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
@@ -1706,8 +1693,6 @@
 !!!            rhc(i,kc)=0.999-0.08*cos(d2r*arg)**2    !a3
 !byl            rhc(i,kc)=0.95-0.07*cos(d2r*xlat(j))    !v2
             rhc(i,kc)=0.98-0.07*cos(d2r*arg)**2.0    !v3
-!byl            psautco(i)  = 8.0e-4 * work1(i) + 5.0e-4 * work2(i)
-            psautco(i)  = 4.5e-4
 !            tem   = (max(min(plt(i,k,jj),900.)-700.,0.01) / 200.)
 !            rhc(i,kc)=tem*rhc(i,kc)+(1.-tem)*0.7
 !!!!             rhc(i,kc)=(1.-coefrhc)*(0.7+0.15*cos(d2r*xlat(j))**2)  &
@@ -1724,6 +1709,29 @@
 !            rhc(i,kc)=rhc(i,kc)*tem
 !
 !!            if(rhc(i,kc).ge.0.98)rhc(i,kc)=0.98
+          enddo
+        enddo
+!
+      if ( dolsp .and. (ntcw.eq.0))                                            &
+!        call lspmst ( tt(1,1,jj),qt(1,1,jj),plt(1,1,jj),ptop,pst(1,jj)
+!                 , dsigma,grav,nxj,nx,lev,evaprh,rlsp(1,jj),cp,hltm
+!                 , nlsp(1,j),ilsp(1,j) )
+!
+         call lsp ( tt(1,1,jj),qt(1,1,jj),plt(1,1,jj),pst(1,jj),dsigma         &
+                  , grav,nxjp(j),nxp,lev,evaprh,rlsp(1,jj),cp,hltm,nlsp(1,j)   &
+                  , ilsp(1,j) )
+!
+      if ( dolsp .and. (nmmiph.eq.2)) then
+!
+        lprnt=.false.
+        do i=1,nxj
+          psfc(i)  = pst(i,jj)*0.1        ! change to cb
+!byl            psautco(i)  = 8.0e-4 * work1(i) + 5.0e-4 * work2(i)
+          psautco(i)  = 4.5e-4
+        enddo
+        do k=1,lev
+          kc=lev-k+1
+          do i=1,nxj
             prsl(i,kc) = plt(i,k,jj)*0.1 ! change to cb
 !            phil(i,kc) = phi(i,k)-sgeo(i,jj)
             del(i,kc) = (dsigma(k,1)*pst(i,jj)+dsigma(k,2))*0.1  ! change to cb
@@ -1782,7 +1790,7 @@
 !  ---  inputs:
            ( nmmiph,nxp,nxjp(j),lev,ncld,plt(1,1,jj),pst(1,jj),dsigma, &
              phii,islimsk,q0,kdt,ntcw,ntrw,ntiw,ntsw,ntgl,             &
-             ntinc,ntrnc,tpi,me,dta,                                   &
+             ntinc,ntrnc,tpi,me,dta,rhc,                               &
 !  ---  inputs/outputs:
              tt(1,1,jj),qt(1,1,jj),                                    &
 !  ---  outputs:
