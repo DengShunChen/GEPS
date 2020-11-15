@@ -530,14 +530,12 @@
 !     define local control variables
 !
       fluxcl = .true.
-      if (fwd) then
-         dta    = dt
-         rainfc = 1.0
+      dta    = dt
+      rainfc = 1.0
+      if (itimestep .le. 1) then
          doozon = .true.
          kdt    = 1
       else
-         dta    = 2.0*dt
-         rainfc = 0.5
          doozon = .false.
          kdt    = 0
       endif
@@ -1692,7 +1690,7 @@
 !
 !!!            rhc(i,kc)=0.999-0.08*cos(d2r*arg)**2    !a3
 !byl            rhc(i,kc)=0.95-0.07*cos(d2r*xlat(j))    !v2
-            rhc(i,kc)=0.98-0.07*cos(d2r*arg)**2.0    !v3
+            rhc(i,kc)=0.98-0.05*cos(d2r*arg)**2.0    !v3
 !            tem   = (max(min(plt(i,k,jj),900.)-700.,0.01) / 200.)
 !            rhc(i,kc)=tem*rhc(i,kc)+(1.-tem)*0.7
 !!!!             rhc(i,kc)=(1.-coefrhc)*(0.7+0.15*cos(d2r*xlat(j))**2)  &
@@ -1727,7 +1725,7 @@
         do i=1,nxj
           psfc(i)  = pst(i,jj)*0.1        ! change to cb
 !byl            psautco(i)  = 8.0e-4 * work1(i) + 5.0e-4 * work2(i)
-          psautco(i)  = 4.5e-4
+          psautco(i)  = 5.0e-4
         enddo
         do k=1,lev
           kc=lev-k+1
