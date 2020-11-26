@@ -218,7 +218,7 @@
 !
 ! for two time level coefficient of merging PGF
 !
-      af=0.6
+      af=0.1
 !
 ! output initialization field
 !

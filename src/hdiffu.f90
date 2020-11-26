@@ -344,14 +344,14 @@
         KL=Llist(k)
 !
         kfac = 1.0 + max(float(hdk2(1)-KL),0.)
-        facd = 1. * amp * (kfac + 2.*max(float(hdk1-KL),0.))
-        facv = 1. * amp * (kfac + 1.*max(float(hdk1-KL),0.))
-        fact = 1. * amp * (kfac + 1.*max(float(hdk1-KL),0.))
+        facd = 1. * (kfac + 2.*max(float(hdk1-KL),0.))
+        facv = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
+        fact = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
 !!        facd = amp * kfac 
 !!        facv = amp * kfac
 !!        fact = amp * kfac
 !          endif
-        facd = 300. * facd 
+        facd =  30. * facd 
         facv =   1. * facv
         fact =   1. * fact
 
@@ -365,8 +365,8 @@
 
             c1=1.+dta*facv*hfilt6*eps4(n,m)**3.
 !!            c2=1.+dta*facd*hfilt6*eps4(n,m)**3.
-            c2=1.+dta*facd*hfilt4*eps4(n,m)**2.
-!!            c2=1.+dta*facd*hfilt2*eps4(n,m)
+!!            c2=1.+dta*facd*hfilt4*eps4(n,m)**2.
+            c2=1.+dta*facd*hfilt2*eps4(n,m)
 
 !!            c3=1.+dta*fact*hfilt6*eps4(n,m)**3.
 
@@ -436,7 +436,7 @@
 !     endif
 !2dMPI <
 
-!      wvn_top(1) = jtrun*1./3.
+!      wvn_top(1) = jtrun*2./3.
       wvn_top(1) = 155
       wvn_top(ktop+1) = jtrun
 !!      djt = ( wvn_top(ktop) - wvn_top(1) ) / ktopm1
