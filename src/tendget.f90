@@ -240,12 +240,12 @@
           nxj=nxdef_2d(j)
           do i=1,nxj
             do k=1,lev
-              vdmerdr(i,k,jj)=vdmerdr(i,k,jj)-dtphi(i,k,jj)/radsq/onocos(j) &
-                             -ut(i,k,jj)*cor(j)-(ut(i,k,jj)*ut(i,k,jj)      &
-                             +vt(i,k,jj)*vt(i,k,jj))*onocos(j)*sinl(j) 
+              vdmerdr(i,k,jj)=vdmerdr(i,k,jj)-dtphi(i,k,jj)/radsq/onocos(j)! &
+!                             -ut(i,k,jj)*cor(j)-(ut(i,k,jj)*ut(i,k,jj)      &
+!                             +vt(i,k,jj)*vt(i,k,jj))*onocos(j)*sinl(j) 
 
-              vdzonlr(i,k,jj)=vdzonlr(i,k,jj)-dlphi(i,k,jj)/radsq           &
-                             +vt(i,k,jj)*cor(j)
+              vdzonlr(i,k,jj)=vdzonlr(i,k,jj)-dlphi(i,k,jj)/radsq!           &
+!                             +vt(i,k,jj)*cor(j)
             enddo
           enddo
         enddo !jj = 1,jlistnum

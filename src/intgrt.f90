@@ -893,11 +893,11 @@
           do i=1,nxj
             vdmerdr(i,k,jj) = 0.5*(vdmerdr(i,k,jj)+vdmerdrp(i,k,jj))
             vdzonlr(i,k,jj) = 0.5*(vdzonlr(i,k,jj)+vdzonlrp(i,k,jj))
-            vdmerdrp(i,k,jj) = vdmerdr(i,k,jj)          &
-                             -um(i,k,jj)*cor(j)-(um(i,k,jj)*um(i,k,jj) &
-                             +vm(i,k,jj)*vm(i,k,jj))*onocos(j)*sinl(j)
-            vdzonlrp(i,k,jj) = vdzonlr(i,k,jj)          &
-                             +vm(i,k,jj)*cor(j)
+            vdmerdrp(i,k,jj) = vdmerdr(i,k,jj)!          &
+!!                             -um(i,k,jj)*cor(j)-(um(i,k,jj)*um(i,k,jj) &
+!!                             +vm(i,k,jj)*vm(i,k,jj))*onocos(j)*sinl(j)
+            vdzonlrp(i,k,jj) = vdzonlr(i,k,jj)!          &
+!!                             +vm(i,k,jj)*cor(j)
           enddo
         enddo
       enddo !jj = 1,jlistnum
@@ -1051,11 +1051,11 @@
           do k=1,lev
             vdmerdr(i,k,jj) = af*vdmerdr(i,k,jj)+(1.-af)*vdmerdg(i,k,jj)
             vdzonlr(i,k,jj) = af*vdzonlr(i,k,jj)+(1.-af)*vdzonlg(i,k,jj)
-            vdmerdr(i,k,jj) = vdmerdr(i,k,jj)                          &
-                             -um(i,k,jj)*cor(j)-(um(i,k,jj)*um(i,k,jj) &
-                             +vm(i,k,jj)*vm(i,k,jj))*onocos(j)*sinl(j) 
-            vdzonlr(i,k,jj) = vdzonlr(i,k,jj)                          &
-                             +vm(i,k,jj)*cor(j)
+!!            vdmerdr(i,k,jj) = vdmerdr(i,k,jj)                          &
+!!                             -um(i,k,jj)*cor(j)-(um(i,k,jj)*um(i,k,jj) &
+!!                             +vm(i,k,jj)*vm(i,k,jj))*onocos(j)*sinl(j) 
+!!            vdzonlr(i,k,jj) = vdzonlr(i,k,jj)                          &
+!!                             +vm(i,k,jj)*cor(j)
           enddo
         enddo
       enddo !jj = 1,jlistnum

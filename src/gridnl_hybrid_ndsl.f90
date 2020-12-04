@@ -137,9 +137,9 @@
 !
       do 13 k=1,lev
       do 13 i=1,nxj
-        vdmerd(i,k)= -spal(i,k)*dtpl(i)/onocos!-ut(i,k)*cor             &
-!                     -(ut(i,k)*ut(i,k)+vt(i,k)*vt(i,k))*onocos*sinl
-        vdzonl(i,k)= -spal(i,k)*dlpl(i)!+vt(i,k)*cor
+        vdmerd(i,k)= -spal(i,k)*dtpl(i)/onocos-ut(i,k)*cor             &
+                     -(ut(i,k)*ut(i,k)+vt(i,k)*vt(i,k))*onocos*sinl
+        vdzonl(i,k)= -spal(i,k)*dlpl(i)+vt(i,k)*cor
 
         diveng(i,k)= sgeo(i)+phi(i,k)
   13  continue
@@ -287,9 +287,9 @@
 !
       do 13 k=1,lev
       do 13 i=1,nxj
-        vdmerd(i,k)= -spal(i,k)*dtpl(i)/onocos!-ut(i,k)*cor             &
-!                     -(ut(i,k)*ut(i,k)+vt(i,k)*vt(i,k))*onocos*sinl
-        vdzonl(i,k)= -spal(i,k)*dlpl(i)!+vt(i,k)*cor
+        vdmerd(i,k)= -spal(i,k)*dtpl(i)/onocos-ut(i,k)*cor             &
+                     -(ut(i,k)*ut(i,k)+vt(i,k)*vt(i,k))*onocos*sinl
+        vdzonl(i,k)= -spal(i,k)*dlpl(i)+vt(i,k)*cor
 
         diveng(i,k)= sgeo(i)+phi(i,k)
   13  continue
