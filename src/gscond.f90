@@ -241,7 +241,7 @@
           tik   = t(i,k)
           pres  = prsl(i,k)   * h1000
           pp0   = (pres / ps(i)) * psp1(i)
-           at    = (tik-tp1(i,k)) * rdt
+          at    = (tik-tp1(i,k)) * rdt
           aq    = (qik-qp1(i,k)) * rdt
           ap    = (pres-pp0)    * rdt
 ! tik and tp just across 2-time level

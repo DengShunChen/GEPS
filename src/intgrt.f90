@@ -891,12 +891,12 @@
         nxj=nxdef_2d(j)
         do k=1,lev
           do i=1,nxj
-            vdmerdr(i,k,jj) = 0.5*(vdmerdr(i,k,jj)+vdmerdrp(i,k,jj))
-            vdzonlr(i,k,jj) = 0.5*(vdzonlr(i,k,jj)+vdzonlrp(i,k,jj))
-            vdmerdrp(i,k,jj) = vdmerdr(i,k,jj)!          &
+            vdmerdrp(i,k,jj) = 0.5*(vdmerdr(i,k,jj)+vdmerdrp(i,k,jj))
+            vdzonlrp(i,k,jj) = 0.5*(vdzonlr(i,k,jj)+vdzonlrp(i,k,jj))
+!!            vdmerdrp(i,k,jj) = vdmerdr(i,k,jj)!          &
 !!                             -um(i,k,jj)*cor(j)-(um(i,k,jj)*um(i,k,jj) &
 !!                             +vm(i,k,jj)*vm(i,k,jj))*onocos(j)*sinl(j)
-            vdzonlrp(i,k,jj) = vdzonlr(i,k,jj)!          &
+!!            vdzonlrp(i,k,jj) = vdzonlr(i,k,jj)!          &
 !!                             +vm(i,k,jj)*cor(j)
           enddo
         enddo
@@ -1049,8 +1049,8 @@
         nxj=nxdef_2d(j)
         do i=1,nxj
           do k=1,lev
-            vdmerdr(i,k,jj) = af*vdmerdr(i,k,jj)+(1.-af)*vdmerdg(i,k,jj)
-            vdzonlr(i,k,jj) = af*vdzonlr(i,k,jj)+(1.-af)*vdzonlg(i,k,jj)
+            vdmerdrp(i,k,jj) = af*vdmerdrp(i,k,jj)+(1.-af)*vdmerdg(i,k,jj)
+            vdzonlrp(i,k,jj) = af*vdzonlrp(i,k,jj)+(1.-af)*vdzonlg(i,k,jj)
 !!            vdmerdr(i,k,jj) = vdmerdr(i,k,jj)                          &
 !!                             -um(i,k,jj)*cor(j)-(um(i,k,jj)*um(i,k,jj) &
 !!                             +vm(i,k,jj)*vm(i,k,jj))*onocos(j)*sinl(j) 
@@ -1063,7 +1063,7 @@
 !
 !       update all horizontal informations
 !
-        call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlr,vdmerdr,ndsldta)
+        call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlrp,vdmerdrp,ndsldta)
 !
 !       Vertical Advection
 !

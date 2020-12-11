@@ -351,7 +351,7 @@
 !!        facv = amp * kfac
 !!        fact = amp * kfac
 !          endif
-        facd =  30. * facd 
+        facd =  300. * facd 
         facv =   1. * facv
         fact =   1. * fact
 
@@ -365,8 +365,8 @@
 
             c1=1.+dta*facv*hfilt6*eps4(n,m)**3.
 !!            c2=1.+dta*facd*hfilt6*eps4(n,m)**3.
-!!            c2=1.+dta*facd*hfilt4*eps4(n,m)**2.
-            c2=1.+dta*facd*hfilt2*eps4(n,m)
+            c2=1.+dta*facd*hfilt4*eps4(n,m)**2.
+!!            c2=1.+dta*facd*hfilt2*eps4(n,m)
 
 !!            c3=1.+dta*fact*hfilt6*eps4(n,m)**3.
 
