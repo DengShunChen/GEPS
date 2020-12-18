@@ -785,18 +785,8 @@
       do jj=1,jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
-        do k=1,lev
-          do i=1,nxj
-            ut_sppt_old(i,k,jj)=ut(i,k,jj)
-            vt_sppt_old(i,k,jj)=vt(i,k,jj)
-            tt_sppt_old(i,k,jj)=tt(i,k,jj)
-          enddo
-        enddo
-        do k = 1, lev*ncld
-          do i = 1, nxj
-            qt_sppt_old(i,k,jj)=qt(i,k,jj)
-          enddo
-        enddo
+
+
       enddo
     endif ! end dosppt if stetement
 !
@@ -850,23 +840,41 @@
       phi(i,k) = phi(i,k+1) +cp*(tt(i,k,jj)*(pk2(i,k,jj)-pk(i,k,jj))   &
                             + tt(i,k+1,jj)*(pk(i,k+1,jj)-pk2(i,k,jj)))
   210 continue
-!
-!     deweight u,v by cosl/radus, and
-!     change t from virtual potential temperature to real temperature
-!     change ttp from virtual potential temperature to potential temperature
-!
+
+    !-----------------------------------------------------------------------------
+    !  deweight u,v by cosl/radus, and
+    !  change t from virtual potential temperature to real temperature
+    !  change ttp from virtual potential temperature to potential temperature
+    !-----------------------------------------------------------------------------
       xx = radus/cosl(j)
-      do 230 k = 1, lev
-      do 230 i = 1, nxj
-      ut(i,k,jj) = ut(i,k,jj)*xx
-      vt(i,k,jj) = vt(i,k,jj)*xx
-      upp(i,k) = up(i,k,jj)*xx
-      vpp(i,k) = vp(i,k,jj)*xx
-      tt(i,k,jj) = tt(i,k,jj)*pk(i,k,jj) / (1.0+0.608*qt(i,k,jj))
+      do k = 1, lev
+      do i = 1, nxj
+        ut(i,k,jj)  = ut(i,k,jj)*xx
+        vt(i,k,jj)  = vt(i,k,jj)*xx
+        upp(i,k)    = up(i,k,jj)*xx
+        vpp(i,k)    = vp(i,k,jj)*xx
+        tt(i,k,jj)  = tt(i,k,jj)*pk(i,k,jj) / (1.0+0.608*qt(i,k,jj))
 !byl      ttpn(i,k,jj) = ttp(i,k,jj)*pkn(i,k,jj)/(1.0+0.608*qp(i,k,jj))
-      ttp(i,k,jj) = ttp(i,k,jj) / (1.0+0.608*qp(i,k,jj))
-  230 continue
-!
+        ttp(i,k,jj) = ttp(i,k,jj) / (1.0+0.608*qp(i,k,jj))
+      enddo
+      enddo
+    !-----------------------------------------------------------------------------
+      if (dosppt) then
+        ! Save u, v, t, and q for SPPT
+        do k=1,lev
+          do i=1,nxj
+            ut_sppt_old(i,k,jj)=ut(i,k,jj)
+            vt_sppt_old(i,k,jj)=vt(i,k,jj)
+            tt_sppt_old(i,k,jj)=tt(i,k,jj)
+          enddo
+        enddo
+        do k = 1, lev*ncld
+          do i = 1, nxj
+            qt_sppt_old(i,k,jj)=qt(i,k,jj)
+          enddo
+        enddo
+      endif ! end dosppt if stetement
+
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !
 !     start physical process calculation (from long to short time scale)
@@ -904,8 +912,6 @@
 !-----------------------------------------------------------------------
       if (uprad .and. (irad .eq. 1))  then
 !      if (myrank .eq. 0) print *,'### use radtn99 scheme'
-
-
 
          call radtn99 ( fluxcl,ozon,nxjp(j),nxp,lev,ncld,lvlwx(jj),julian       &
                     , stbo,s0,grav                                              &
@@ -2206,30 +2212,9 @@
         print*,'after do_sit: myrank=',myrank,',jj=',jj       &
               ,'ii=',ii_check,',tg=',tg(ii_check,jj)
       endif
-!--------------------------------------------------------------------------------
-!     weight back u and v by cosl/radus and
-!     change real temp back to virtual potential temperature
-!
-      yy = cosl(j) / radus
-      do  k = 1, lev
-        do  i = 1, nxj
-          ut(i,k,jj) = ut(i,k,jj)*yy
-          vt(i,k,jj) = vt(i,k,jj)*yy
-          tt(i,k,jj) = tt(i,k,jj)*(1.0+0.608*qt(i,k,jj))/pk(i,k,jj)
-        enddo
-      enddo
-!
-!
-!
-  290 continue
-!
-! sppt tendencies
-!        John Tseng
-!
-    if (dosppt) then
-      do jj=1,jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
+
+      ! sppt tendencies
+      if (dosppt) then
         do k=1,lev
           do i=1,nxj
             ru=sppt3d(i,k,jj)
@@ -2238,14 +2223,12 @@
             tt(i,k,jj) = (1+ru)*tt(i,k,jj) - ru*tt_sppt_old(i,k,jj)
           enddo
         enddo
+
       ! there's no need to add perturbation for ozone tracer. (
       ! modified by PangYen Liu
-        if (ntoz .eq. 0 ) then
-          nk = ncld
-        else
-          nk = ncld-1
-        endif
-
+        nk = 1  ! 1: specific humidity
+                ! 2: specific humidity + cloud water
+                ! 3: specific humidity + cloud water + ozone
         do n=1,nk
           do k=1,lev
             kk = (n-1)*lev+k
@@ -2256,8 +2239,22 @@
             enddo
           enddo
         enddo
+      endif
+
+    !--------------------------------------------------------------------------------
+    !     weight back u and v by cosl/radus and
+    !     change real temp back to virtual potential temperature
+    !--------------------------------------------------------------------------------
+      yy = cosl(j) / radus
+      do  k = 1, lev
+        do  i = 1, nxj
+          ut(i,k,jj) = ut(i,k,jj)*yy
+          vt(i,k,jj) = vt(i,k,jj)*yy
+          tt(i,k,jj) = tt(i,k,jj)*(1.0+0.608*qt(i,k,jj))/pk(i,k,jj)
+        enddo
       enddo
-    endif ! end dosppt if stetement
+!     
+  290 continue  ! end of big j-loop for diabatic calculation
 !
 !--------------------------------------------------------------------------------
 !     update o3l to qt
