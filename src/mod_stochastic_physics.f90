@@ -37,6 +37,7 @@ module mod_stochastic_physics
   integer :: nsppt
   real, allocatable, save :: sppt3d(:,:,:)
   real :: sppt(5) = -999.             ! amplitude(0.~1.)
+  real :: sppt_seed(5) = -999.        ! random seeds
   real :: sppt_decort(5) = -999.      ! time scales(seconds)
   real :: sppt_lscale(5) = -999.      ! length scales(meters)
   real, allocatable, dimension(:) :: vfact_sppt
@@ -45,14 +46,15 @@ module mod_stochastic_physics
   integer :: nshum
   real, allocatable, save :: shum3d(:,:,:)
   real :: shum(5) = -999.             ! amplitude(0.~1.)
+  real :: shum_seed(5) = -999.         ! random seeds
   real :: shum_decort(5) = -999.      ! time scales(seconds)
   real :: shum_lscale(5) = -999.      ! length scales(meters)
   real, allocatable, dimension(:) :: vfact_shum
 
   public random_pattern
 
-  public nsppt, sppt, sppt_decort, sppt_lscale, sppt3d
-  public nshum, shum, shum_decort, shum_lscale, shum3d
+  public nsppt, sppt, sppt_seed, sppt_decort, sppt_lscale, sppt3d
+  public nshum, shum, shum_seed, shum_decort, shum_lscale, shum3d
 
   public  init_stochastic_physics, &
            run_stochastic_physics, &
@@ -90,8 +92,13 @@ contains
         rpattern_sppt(n)%stdev = sppt(n)
         rpattern_sppt(n)%decortau = sppt_decort(n)
         rpattern_sppt(n)%lenscale = sppt_lscale(n)
-        if (myrank .eq. 0 ) write(6,*)'mod_stochastic_physics : sppt : stdev/decort/lscale', &
-          sppt(n),sppt_decort(n),sppt_lscale(n)
+        rpattern_sppt(n)%seed = int(sppt_seed(n))
+        if (myrank .eq. 0 ) then
+          write(6,*)'mod_stochastic_physics : sppt : stdev  ',sppt(n)
+          write(6,*)'mod_stochastic_physics : sppt : decort ',sppt_decort(n)
+          write(6,*)'mod_stochastic_physics : sppt : lscale ',sppt_lscale(n)
+          write(6,*)'mod_stochastic_physics : sppt : seed   ',sppt_seed(n)
+        endif
       enddo
 
       allocate(sppt3d(nxp,lev,my_max))       
@@ -144,8 +151,13 @@ contains
         rpattern_shum(n)%stdev = shum(n)
         rpattern_shum(n)%decortau = shum_decort(n)
         rpattern_shum(n)%lenscale = shum_lscale(n)
-        if (myrank .eq. 0 ) write(6,*)'mod_stochastic_physics : shum : stdev/decort/lscale', &
-          shum(n),shum_decort(n),shum_lscale(n)
+        rpattern_shum(n)%seed = int(shum_seed(n))
+        if (myrank .eq. 0 ) then
+          write(6,*)'mod_stochastic_physics : shum : stdev  ',shum(n)
+          write(6,*)'mod_stochastic_physics : shum : decort ',shum_decort(n)
+          write(6,*)'mod_stochastic_physics : shum : lscale ',shum_lscale(n)
+          write(6,*)'mod_stochastic_physics : shum : seed   ',shum_seed(n)
+        endif
       enddo
 
       allocate(shum3d(nxp,lev,my_max))       
@@ -279,10 +291,12 @@ contains
           count_trunc = iscale*(count/iscale)
           count4 = count - count_trunc
         endif
-          print *,'using seed',count4
       endif
-      call mpe_bcast(count4,1,0,mpe_double)
-      rpattern(n)%seed = count4
+      call mpe_bcast(count4,1,0,mpe_double) 
+      if (rpattern(n)%seed == -999 ) then
+        rpattern(n)%seed = count4
+      endif
+      if (myrank.eq.0) write(6,*)'scale',n,' : using seed :',rpattern(n)%seed
       call random_setseed(rpattern(n)%seed,rpattern(n)%rstate)
 
       ! horizontal decorrelation 
@@ -350,6 +364,7 @@ contains
     if (myrank.eq.0) then
       write(6,*)'mod_stochastic_physics : dt    = ',dt
       write(6,*)'mod_stochastic_physics : stdev = ',rpattern%stdev
+      write(6,*)'mod_stochastic_physics : seed  = ',rpattern%seed
       write(6,*)'mod_stochastic_physics : jtrun = ',rpattern%jtrun
       write(6,*)'mod_stochastic_physics : mlmax = ',rpattern%mlmax
       write(6,*)'mod_stochastic_physics : tau   = ',rpattern%decortau
