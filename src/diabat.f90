@@ -313,14 +313,13 @@
 ! for sppt
 !        by John Tseng 2017/12/13
 
-      real ut_sppt_old(nxp,lev,my_max)        &
-          ,vt_sppt_old(nxp,lev,my_max)        &
-          ,tt_sppt_old(nxp,lev,my_max)        &
-          ,qt_sppt_old(nxp,lev*ncld,my_max)
-!
-      real qt_shum_old(nxp,lev*ncld,my_max)
-!
+      real :: ut_sppt_old(nxp,lev,my_max)     
+      real :: vt_sppt_old(nxp,lev,my_max)        
+      real :: tt_sppt_old(nxp,lev,my_max)        
+      real :: qt_sppt_old(nxp,lev*ncld,my_max)
+      real :: qt_shum_old(nxp,lev*ncld,my_max)
       real ru
+
       integer ii
 
 ! for MP WSM6 & Thompson
@@ -777,20 +776,6 @@
         enddo
       enddo
       endif
-!
-!
-! keep the old control values for SPPT
-!
-    if (dosppt) then
-      do jj=1,jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-
-
-      enddo
-    endif ! end dosppt if stetement
-!
-!
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !                                                                      c
 !     begin big j-loop for diabatic calculation in each latitude ring  c
@@ -858,7 +843,8 @@
         ttp(i,k,jj) = ttp(i,k,jj) / (1.0+0.608*qp(i,k,jj))
       enddo
       enddo
-    !-----------------------------------------------------------------------------
+      !-----------------------------------------------------------------------------
+      ! keep the old control values for SPPT
       if (dosppt) then
         ! Save u, v, t, and q for SPPT
         do k=1,lev
@@ -1146,31 +1132,25 @@
        call get_phi(nxjp(j),nxp,lev,ptop,cp,rgas,grav,                &
                    pk(1,1,jj),pk2(1,1,jj),tt(1,1,jj),qt(1,1,jj),phii)
 !
-! SHUM process
-!  John Tseng
-!
-    if (doshum) then
-      ! there's no need to add perturbation for ozone tracer. (
-      ! modified by PangYen Liu
-      if (ntoz .eq. 0 ) then
-        nk = ncld
-      else
-        nk = ncld-1
-      endif
-!
-      do n=1,nk
-        do k=1,lev
-          kk = (n-1)*lev+k
-          do i=1,nxj
-            ru=shum3d(i,k,jj)
-            qt(i,kk,jj)=(1+ru)*qt(i,kk,jj)-ru*qt_shum_old(i,kk,jj)
-            if (qt(i,kk,jj).lt.0) qt(i,kk,jj)=0.
+      ! SHUM process
+      if (doshum) then
+        ! there's no need to add perturbation for ozone tracer. (
+        ! modified by PangYen Liu
+        nk = 1  ! 1: specific humidity
+                ! 2: specific humidity + cloud water
+                ! 3: specific humidity + cloud water + ozone
+        do n=1,nk
+          do k=1,lev
+            kk = (n-1)*lev+k
+            do i=1,nxj
+              ru=shum3d(i,k,jj)
+              qt(i,kk,jj)=(1+ru)*qt(i,kk,jj)-ru*qt_shum_old(i,kk,jj)
+              if (qt(i,kk,jj).lt.0) qt(i,kk,jj)=0.
+            enddo
           enddo
         enddo
-      enddo
-    endif ! end doshum if stetement
+      endif 
 
-!
       if(dograv .and. (nmgwor .eq. 1) )                                &
        call gwdp (j,nxjp(j),nxp,lev,                                   &
                   ut(1,1,jj),vt(1,1,jj),tt(1,1,jj),qt(1,1,jj),         &
