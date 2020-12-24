@@ -7651,10 +7651,10 @@ END SUBROUTINE thermocline
       pwv(jl,jk)= pwv(jl,jk)+restore_v
 
 !ps      IF(GDCHK3) WRITE(nerr,*) "before random:pwu(",jl,",",jk,")=",pwu(jl,jk),",pwv=",pwv(jl,jk)
-      call random_number(urand)
-      urand=0.01*(urand*2.-1.)      !-0.05<=urand<0.05
-      pwu(jl,jk)=pwu(jl,jk)*(1.+urand)
-      pwv(jl,jk)=pwv(jl,jk)*(1.+urand)
+!ps      call random_number(urand)
+!ps      urand=0.01*(urand*2.-1.)      !-0.05<=urand<0.05
+!ps      pwu(jl,jk)=pwu(jl,jk)*(1.+urand)
+!ps      pwv(jl,jk)=pwv(jl,jk)*(1.+urand)
 !ps      IF(GDCHK3) then
 !ps        WRITE(nerr,*) "after random: urand=",urand,",pwu(",jl,",",jk,")=",pwu(jl,jk),",pwv=",pwv(jl,jk)
 !ps      ENDIF

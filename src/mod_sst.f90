@@ -355,9 +355,6 @@
             tseadiffFCT24=0.
           endif
 
-          IF (.NOT. ALLOCATED(dailyFCTsst)) ALLOCATE (dailyFCTsst(nxp,my_max,2))
-          IF (.NOT. ALLOCATED(dFCTsstdt)) ALLOCATE (dFCTsstdt(nxp,my_max))
-
           IF(ldailyFCTicesndpt) THEN
             IF (.NOT. ALLOCATED(dailyFCTcice)) ALLOCATE (dailyFCTcice(nxp,my_max,2))
             IF (.NOT. ALLOCATED(dailyFCTsndepth)) ALLOCATE (dailyFCTsndepth(nxp,my_max,2))

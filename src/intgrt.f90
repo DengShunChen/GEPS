@@ -1173,8 +1173,7 @@
 
             end do
           end do
-!end if(tau .ge. 24.)
-          endif
+          endif  !end if(tau .ge. 24.)
           CALL read_dailyFCT(idtg,tau,dt,tg,cice,sndepth,xlon,xlat,ocean)
         endif
 !
