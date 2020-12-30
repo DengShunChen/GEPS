@@ -518,10 +518,10 @@
 !
           call mpe_global_sum(icwarn,1,mpe_integer)
           if ( myrank .eq. 0 .and. icwarn .gt. 0 ) then
-          print*,"==================   Warnig!!!   ==================="
-          print*,"=  ice thickness not consistent with sea ice mask  ="
-          print*,"=  set the thickness to 1 meter for first guess    ="
-          print*,"================================= =================="
+          print*,achar(27)//"[1;31m==================   Warnig!!!   ==================="//achar(27)//'[1;m'
+          print*,achar(27)//"[1;31m=  ice thickness not consistent with sea ice mask  ="//achar(27)//'[1;m'
+          print*,achar(27)//"[1;31m=  set the thickness to 1 meter for first guess    ="//achar(27)//'[1;m'
+          print*,achar(27)//"[1;31m===================================================="//achar(27)//'[1;m'
           endif 
 ! 
         endif     !end of (ncepice)

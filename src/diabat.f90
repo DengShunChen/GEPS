@@ -26,8 +26,8 @@
                     , ss_clr,rs_clr,asol_clr,olr_clr,sld_clr,rld_clr           &
                     , alvsf,alvwf,alnsf,alnwf,facsf,facwf                      &
                     , idtg,doo3l,nfxr,sfalb,sfemis,isot,ivegsrc                &
-! sppt
-                    , dosppt,sppt3d,itimestep,lrun_sitvdiff,ic_sit             &
+! sit
+                    , lrun_sitvdiff,ic_sit             &
 !xb110>
                     , flash,tsflw)
 !xb110<
@@ -167,7 +167,7 @@
       use rank
       use index
       use const,                 ONLY:do_sit,ldailyFCTsst,dailyClm_option    &
-                                     ,pdfcloud,cmbk,cgwd,fsit
+                                     ,pdfcloud,cmbk,cgwd, fsit, dosppt, doshum
       use mod_sitgrid
       USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
       USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt &
@@ -185,6 +185,7 @@
       use physcons, only :con_rd,con_fvirt,con_rerth,con_rv
 ! for land_noah_new
       use namelist_soilveg, only :MAX_SLOPETYP,MAX_SOILTYP,MAX_VEGTYP
+      use mod_stochastic_physics, only : sppt3d, shum3d
 !-----------------------------------------------------------------------
       implicit  none
 !-----------------------------------------------------------------------
@@ -313,17 +314,14 @@
 ! for sppt
 !        by John Tseng 2017/12/13
 
-      real ut_sppt_old(nxp,lev,my_max)        &
-          ,vt_sppt_old(nxp,lev,my_max)        &
-          ,tt_sppt_old(nxp,lev,my_max)        &
-          ,qt_sppt_old(nxp,lev*ncld,my_max)
-!
-      real qt_shum_old(nxp,lev*ncld,my_max)
-!
-      real,intent(in) :: sppt3d(nxp,lev,my_max)
+      real :: ut_sppt_old(nxp,lev,my_max)     
+      real :: vt_sppt_old(nxp,lev,my_max)        
+      real :: tt_sppt_old(nxp,lev,my_max)        
+      real :: qt_sppt_old(nxp,lev*ncld,my_max)
+      real :: qt_shum_old(nxp,lev*ncld,my_max)
       real ru
-      integer itimestep,ii
-      logical dosppt
+
+      integer ii
 
 ! for MP WSM6 & Thompson
       logical uni_cloud,lmfshal,lmfdeep2
@@ -757,13 +755,14 @@
 !     initial albx by climate values of gwet and alb, while it may
 !     be updated in grdcon according ground conditions
 !
-      do 180 jj = 1, jlistnum
-       j=jlist1(jj)
-       nxj=nxdef_2d(j)
-      do 180 i = 1, nxj
-       albx(i,jj)  = alb(i,jj)
-       albedo2(i,jj)  = alb(i,jj)
-  180 continue
+      do jj = 1, jlistnum
+         j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        do i = 1, nxj
+          albx(i,jj)  = alb(i,jj)
+          albedo2(i,jj)  = alb(i,jj)
+        enddo
+      enddo
 !
 !-----------------------------------------------------------------------
       if(ntoz.gt.0)then
@@ -779,37 +778,13 @@
         enddo
       enddo
       endif
-!
-!
-! keep the old control values for SPPT
-!
-    if (dosppt) then
-      do jj=1,jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-        do k=1,lev
-          do i=1,nxj
-            ut_sppt_old(i,k,jj)=ut(i,k,jj)
-            vt_sppt_old(i,k,jj)=vt(i,k,jj)
-            tt_sppt_old(i,k,jj)=tt(i,k,jj)
-          enddo
-        enddo
-        do k = 1, lev*ncld
-          do i = 1, nxj
-            qt_sppt_old(i,k,jj)=qt(i,k,jj)
-          enddo
-        enddo
-      enddo
-    endif ! end dosppt if stetement
-!
-!
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !                                                                      c
 !     begin big j-loop for diabatic calculation in each latitude ring  c
 !                                                                      c
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !
-      do 290 jj =1, jlistnum
+    do 290 jj =1, jlistnum
       j=jlist1(jj)
       nxj=nxdef_2d(j)
 !
@@ -852,23 +827,42 @@
       phi(i,k) = phi(i,k+1) +cp*(tt(i,k,jj)*(pk2(i,k,jj)-pk(i,k,jj))   &
                             + tt(i,k+1,jj)*(pk(i,k+1,jj)-pk2(i,k,jj)))
   210 continue
-!
-!     deweight u,v by cosl/radus, and
-!     change t from virtual potential temperature to real temperature
-!     change ttp from virtual potential temperature to potential temperature
-!
+
+    !-----------------------------------------------------------------------------
+    !  deweight u,v by cosl/radus, and
+    !  change t from virtual potential temperature to real temperature
+    !  change ttp from virtual potential temperature to potential temperature
+    !-----------------------------------------------------------------------------
       xx = radus/cosl(j)
-      do 230 k = 1, lev
-      do 230 i = 1, nxj
-      ut(i,k,jj) = ut(i,k,jj)*xx
-      vt(i,k,jj) = vt(i,k,jj)*xx
-      upp(i,k) = up(i,k,jj)*xx
-      vpp(i,k) = vp(i,k,jj)*xx
-      tt(i,k,jj) = tt(i,k,jj)*pk(i,k,jj) / (1.0+0.608*qt(i,k,jj))
+      do k = 1, lev
+      do i = 1, nxj
+        ut(i,k,jj)  = ut(i,k,jj)*xx
+        vt(i,k,jj)  = vt(i,k,jj)*xx
+        upp(i,k)    = up(i,k,jj)*xx
+        vpp(i,k)    = vp(i,k,jj)*xx
+        tt(i,k,jj)  = tt(i,k,jj)*pk(i,k,jj) / (1.0+0.608*qt(i,k,jj))
 !byl      ttpn(i,k,jj) = ttp(i,k,jj)*pkn(i,k,jj)/(1.0+0.608*qp(i,k,jj))
-      ttp(i,k,jj) = ttp(i,k,jj) / (1.0+0.608*qp(i,k,jj))
-  230 continue
-!
+        ttp(i,k,jj) = ttp(i,k,jj) / (1.0+0.608*qp(i,k,jj))
+      enddo
+      enddo
+      !-----------------------------------------------------------------------------
+      ! keep the old control values for SPPT
+      if (dosppt) then
+        ! Save u, v, t, and q for SPPT
+        do k=1,lev
+          do i=1,nxj
+            ut_sppt_old(i,k,jj)=ut(i,k,jj)
+            vt_sppt_old(i,k,jj)=vt(i,k,jj)
+            tt_sppt_old(i,k,jj)=tt(i,k,jj)
+          enddo
+        enddo
+        do k = 1, lev*ncld
+          do i = 1, nxj
+            qt_sppt_old(i,k,jj)=qt(i,k,jj)
+          enddo
+        enddo
+      endif ! end dosppt if stetement
+
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !
 !     start physical process calculation (from long to short time scale)
@@ -906,8 +900,6 @@
 !-----------------------------------------------------------------------
       if (uprad .and. (irad .eq. 1))  then
 !      if (myrank .eq. 0) print *,'### use radtn99 scheme'
-
-
 
          call radtn99 ( fluxcl,ozon,nxjp(j),nxp,lev,ncld,lvlwx(jj),julian       &
                     , stbo,s0,grav                                              &
@@ -1044,7 +1036,16 @@
       end do
 !xb110<
 !
-!
+!      ! keep the old control values for SHUM
+      if (doshum) then
+        do k = 1, lev*ncld
+          do i = 1, nxj
+            qt_shum_old(i,k,jj)=qt(i,k,jj)
+          enddo
+        enddo
+      endif ! end of doshum if stetement
+
+
       if ( dopbl .and. (nmpbl.eq.1 .and. nmland.eq.1))                        &
          call pbltke ( nxjp(j),nxp,lev,ktpbl,dta,grav,rgas,cp,xkapa,hltm,ptop &
                      , tice,hice,tg(1,jj),z0(1,jj),land(1,jj)                 &
@@ -1063,15 +1064,6 @@
                      , runoff(1,jj),sigmaf(1,jj),istyp(1,jj),ivegtyp(1,jj)    &
                      , wlt,ref,tsat,dfkt,xktk,dfk )
 
-! keep the old control values for SPPT
-        if (dosppt) then
-          do k = 1, lev*ncld
-            do i = 1, nxj
-              qt_shum_old(i,k,jj)=qt(i,k,jj)
-            enddo
-          enddo
-        endif ! end of dosppt if stetement
-!
       if ( dopbl .and. (nmpbl.eq.2 .and. nmland.eq.1))                        &
          call pbltke_n ( nxjp(j),nxp,lev,ktpbl,dta,grav,rgas,cp,xkapa,hltm,ptop &
                      , tice,hice,tg(1,jj),z0(1,jj),land(1,jj)                 &
@@ -1123,10 +1115,11 @@
 !
 !     update tt by radiation heating/cooling rate: dtrad (k/day)
 !
-      do 240 k = 1, lev
-      do 240 i = 1, nxj
-      tt(i,k,jj) = tt(i,k,jj) + dta*dtrad(i,k,jj)/86400.0
-  240 continue
+      do k = 1, lev
+        do i = 1, nxj
+          tt(i,k,jj) = tt(i,k,jj) + dta*dtrad(i,k,jj)/86400.0
+        enddo
+      enddo
 !
 !
 !     recompute phi by tt after pbl to ensure consistence of phi & phi2
@@ -1149,46 +1142,25 @@
        call get_phi(nxjp(j),nxp,lev,ptop,cp,rgas,grav,                &
                    pk(1,1,jj),pk2(1,1,jj),tt(1,1,jj),qt(1,1,jj),phii)
 !
-! SHUM process
-!  John Tseng
-!
-    if (dosppt) then
-! there's no need to add perturbation for ozone tracer. (
-! modified by PangYen Liu
-      if (ntoz .eq. 0 ) then
-        nk = ncld
-      else
-        nk = ncld-1
-      endif
-!
-      do n=1,nk
-        do k=1,lev
-          kk = (n-1)*lev+k
-          do i=1,nxj
-            ru=sppt3d(i,k,jj)*exp(-(k-65.)*(k-65.)/400.)*0.01
-            qt(i,kk,jj)=(1+ru)*qt(i,kk,jj)-ru*qt_shum_old(i,kk,jj)
-            if (qt(i,kk,jj).lt.0) qt(i,kk,jj)=0.
+      ! SHUM process
+      if (doshum) then
+        ! there's no need to add perturbation for ozone tracer. (
+        ! modified by PangYen Liu
+        nk = 1  ! 1: specific humidity
+                ! 2: specific humidity + cloud water
+                ! 3: specific humidity + cloud water + ozone
+        do n=1,nk
+          do k=1,lev
+            kk = (n-1)*lev+k
+            do i=1,nxj
+              ru=shum3d(i,k,jj)
+              qt(i,kk,jj)=(1+ru)*qt(i,kk,jj)-ru*qt_shum_old(i,kk,jj)
+              if (qt(i,kk,jj).lt.0) qt(i,kk,jj)=0.
+            enddo
           enddo
         enddo
-      enddo
-!!      do k=1,lev
-!!      do i=1,nxj
-!!      ru=sppt3d(i,k,jj)*exp(-(k-65.)*(k-65.)/400.)*0.01
-!!      qt(i,k,jj)=(1+ru)*qt(i,k,jj)-ru*qt_shum_old(i,k,jj)
-!!      if (qt(i,k,jj).lt.0) qt(i,k,jj)=0.
-!!      enddo
-!!      enddo
-!!      do k=lev+1,lev*ncld
-!!      do i=1,nxj
-!!      ru=sppt3d(i,k-lev,jj)*exp(-(k-65.)*(k-65.)/400.)*0.01
-!!      qt(i,k,jj)=(1+ru)*qt(i,k,jj)-ru*qt_shum_old(i,k,jj)
-!!      if (qt(i,k,jj).lt.0) qt(i,k,jj)=0.
-!!      enddo
-!!      enddo
-!
-    endif ! end dosppt if stetement
+      endif 
 
-!
       if(dograv .and. (nmgwor .eq. 1) )                                &
        call gwdp (j,nxjp(j),nxp,lev,                                   &
                   ut(1,1,jj),vt(1,1,jj),tt(1,1,jj),qt(1,1,jj),         &
@@ -2164,77 +2136,48 @@
               ,'ii=',ii_check,',tg=',tg(ii_check,jj)
       endif
 
-!----------------------------------------
-
-!---------------------------------------
-
-
-!--------------------------------------------------------------------------------
-!     weight back u and v by cosl/radus and
-!     change real temp back to virtual potential temperature
-!
-      yy = cosl(j) / radus
-      do 270 k = 1, lev
-      do 270 i = 1, nxj
-        ut(i,k,jj) = ut(i,k,jj)*yy
-        vt(i,k,jj) = vt(i,k,jj)*yy
-        tt(i,k,jj) = tt(i,k,jj)*(1.0+0.608*qt(i,k,jj))/pk(i,k,jj)
-  270 continue
-!
-!
-!
-  290 continue
-!
-! sppt tendencies
-!        John Tseng
-!
-    if (dosppt) then
-      do jj=1,jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
+      ! sppt tendencies
+      if (dosppt) then
         do k=1,lev
           do i=1,nxj
             ru=sppt3d(i,k,jj)
-            ttp(i,k,jj)=ru*(tt(i,k,jj)-tt_sppt_old(i,k,jj)) !write out for checking
             ut(i,k,jj) = (1+ru)*ut(i,k,jj) - ru*ut_sppt_old(i,k,jj)
             vt(i,k,jj) = (1+ru)*vt(i,k,jj) - ru*vt_sppt_old(i,k,jj)
             tt(i,k,jj) = (1+ru)*tt(i,k,jj) - ru*tt_sppt_old(i,k,jj)
           enddo
         enddo
-! there's no need to add perturbation for ozone tracer. (
-! modified by PangYen Liu
-      if (ntoz .eq. 0 ) then
-        nk = ncld
-      else
-        nk = ncld-1
-      endif
 
-      do n=1,nk
-        do k=1,lev
-          kk = (n-1)*lev+k
-          do i=1,nxj
-            ru=sppt3d(i,k,jj)
-            qt(i,kk,jj) = (1+ru)*qt(i,kk,jj) - ru*qt_sppt_old(i,kk,jj)
-            if (qt(i,kk,jj).lt.0) qt(i,kk,jj) = 0.
+      ! there's no need to add perturbation for ozone tracer. (
+      ! modified by PangYen Liu
+        nk = 1  ! 1: specific humidity
+                ! 2: specific humidity + cloud water
+                ! 3: specific humidity + cloud water + ozone
+        do n=1,nk
+          do k=1,lev
+            kk = (n-1)*lev+k
+            do i=1,nxj
+              ru = sppt3d(i,k,jj)
+              qt(i,kk,jj) = (1+ru)*qt(i,kk,jj) - ru*qt_sppt_old(i,kk,jj)
+              if (qt(i,kk,jj).lt.0) qt(i,kk,jj) = 0.
+            enddo
           enddo
         enddo
+      endif
+
+    !--------------------------------------------------------------------------------
+    !     weight back u and v by cosl/radus and
+    !     change real temp back to virtual potential temperature
+    !--------------------------------------------------------------------------------
+      yy = cosl(j) / radus
+      do  k = 1, lev
+        do  i = 1, nxj
+          ut(i,k,jj) = ut(i,k,jj)*yy
+          vt(i,k,jj) = vt(i,k,jj)*yy
+          tt(i,k,jj) = tt(i,k,jj)*(1.0+0.608*qt(i,k,jj))/pk(i,k,jj)
+        enddo
       enddo
-!!      do k=1,lev
-!!      do i=1,nxj
-!!      ru=sppt3d(i,k,jj)
-!!      qt(i,k,jj)=(1+ru)*qt(i,k,jj)-ru*qt_sppt_old(i,k,jj)
-!!      if (qt(i,k,jj).lt.0) qt(i,k,j)=0.
-!!      enddo
-!!      enddo
-!!      do k=lev+1,lev*ncld
-!!      do i=1,nxj
-!!      ru=sppt3d(i,k-lev,jj)
-!!      qt(i,k,jj)=(1+ru)*qt(i,k,jj)-ru*qt_sppt_old(i,k,jj)
-!!      if (qt(i,k,jj).lt.0) qt(i,k,jj)=0.
-!!      enddo
-!!      enddo
-      enddo
-    endif ! end dosppt if stetement
+!     
+  290 continue  ! end of big j-loop for diabatic calculation
 !
 !--------------------------------------------------------------------------------
 !     update o3l to qt

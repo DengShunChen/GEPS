@@ -28,7 +28,7 @@
  idmstail=''
  idmsdb="TCo${JCAP}L72"
 
- odmshead='UnitTest'
+ odmshead='STOC'
  odmsbody=${dtg}
  odmstail="${DMSFLAG}MG"
  odmsdb=${idmsdb}
@@ -133,9 +133,9 @@ cat > ${GFSWRK}/namlsts << EOF
   nco=640,
   lev=72,
   ncld=3,
-  octahedral=t,
+  octahedral=true,
   nout=9000,
-  io_quilting=f,
+  io_quilting=false,
   npex=${NPEX},
   npey=${NPEY},
   ${MODEL_BASIC}
@@ -147,13 +147,13 @@ cat > ${GFSWRK}/namlsts << EOF
   cstar=f, update=t, lsimpl=t,
   tfilt=0.04, hfilt=1.,
   ksgeo=2, yesdia=t,
-  dopbl=t, docup=t, dorad=t, dolsp=t, doshl=t, dodry=f, dograv=t, docgrav=t,
-  donnmi=t, 
-  dosppt=false, dospptout=false, doshum=false,
+  dopbl=t, docup=t, dorad=t, dolsp=t, doshl=t, dodry=f, dograv=t, docgrav=false,
+  donnmi=true, 
+  dosppt=true, dospptout=false, 
+  doshum=false,
   cutfreq=3, nnmivm=3,
   doincr=f,
-  hdiff=t, frad=1.0,
-  ldiag=0,
+  hdiff=t, frad=1.0, ldiag=0,
   idg=40, jdg=108,
   itypbl=0, numreduce=5, ptmeans=800., ptop=0.1,
   nmcup=6, nmpbl=4, nmland=2, nmshl=3,
@@ -162,10 +162,10 @@ cat > ${GFSWRK}/namlsts << EOF
   mtnvar=14, doo3l=t,
   irad=2, ioutsigr=1,
   ggdef='${DMSFLAG}0G', gmdef='${DMSFLAG}MG',
-  domfc=384., out_green=t, otgreen=3., out_hp=f,
-  ndsladvh2=f,
+  domfc=384., out_green=t, otgreen=3., out_hp=false,
+  ndsladvh2=false,
   isot=1, ivegsrc=1, cgwd=1.20, cmbk=1.00,
-  spl1=50.,
+  spl1=5.,
   ${MODLST_RES}
  &end
 
@@ -176,14 +176,17 @@ cat > ${GFSWRK}/namlsts << EOF
  &end
  
  &stochy_physics
-  ncep_seeds = false,
-  sppt = 0.8,0.4,0.2,0.08,0.04
+  ncep_seeds = true,
+  sppt = 0.30,0.15,0.10,0.08,0.04
+  sppt_seed = 60605500,60605500,60605500,30198051,30198070
   sppt_decort = 2.16E4,2.592E5,2.592E6,7.776E6,3.1536E7 
   sppt_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
-  shum = 0.8,-999,-999,-999,-999
+  shum = 0.20,-999,-999,-999,-999
+  shum_seed = 30198296,-999,-999,-999,-999
   shum_decort = 2.16E4,1.728E5,2.592E6,7.776E6,3.1536E7
   shum_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
  /
+
 EOF
 
 

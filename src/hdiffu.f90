@@ -83,10 +83,13 @@
 !            fact= 1.
 
 !          if ( KL .le. hdk2 ) then
-        kfac = 1.0 + max(float(hdk2-KL),0.) 
-        facd = amp * (kfac + 4.*max(float(hdk1-KL),0.))
-        facv = amp * (kfac + 2.*max(float(hdk1-KL),0.))
-        fact = amp * (kfac + 2.*max(float(hdk1-KL),0.))
+        kfac = 1.0 + 1. * min(max(float(hdk2-KL),0.),25.)
+!!        facd = 2.* amp * (kfac + 1.*max(float(hdk1-KL),0.))
+!!        facv = amp * (kfac + 0.5*max(float(hdk1-KL),0.))
+!!        fact = amp * (kfac + 0.5*max(float(hdk1-KL),0.))
+        facd = 2.* amp * kfac 
+        facv = amp * kfac 
+        fact = amp * kfac 
 !          endif
 
 
@@ -318,7 +321,7 @@
       implicit  none
 
       integer   ktop,ktopm1
-      parameter ( ktop=6, ktopm1=ktop-1 ) ! top "ktop" levels are filtered
+      parameter ( ktop=10, ktopm1=ktop-1 ) ! top "ktop" levels are filtered
 !     parameter ( ktop=4, ktopm1=ktop-1 ) ! top "ktop" levels are filtered
 !     parameter ( ktop=6, ktopm1=ktop-1 ) ! top "ktop" levels are filtered
 !
@@ -329,7 +332,7 @@
 !
       real      wvn_top(ktop+1),djt
 
-      integer   k,mode,m,mf,n,nflt,IERR
+      integer   k,mode,m,mf,n,nflt,IERR,KL
       real      pi,flt,fac
 !
 
@@ -341,13 +344,15 @@
 !     endif
 !2dMPI <
 
-      wvn_top(1) = jtrun*2./3.
-!      wvn_top(1) = 155
-      wvn_top(ktop) = jtrun
-      djt = ( wvn_top(ktop) - wvn_top(1) ) / ktopm1
-      do k = 2, ktopm1
+!      wvn_top(1) = jtrun*1./3.
+      wvn_top(1) = 155
+      wvn_top(ktop+1) = jtrun
+!!      djt = ( wvn_top(ktop) - wvn_top(1) ) / ktopm1
+
+      do k = 2, ktop
+        djt = ( wvn_top(ktop+1) - wvn_top(1) ) * exp(-0.7*(k-1))
 !        wvn_top(k) = (jtrun + wvn_top(k-1))*0.5
-        wvn_top(k) = min( wvn_top(k-1) + djt , float(jtrun) )
+        wvn_top(k) = min( wvn_top(ktop+1) - djt , float(jtrun) )
       enddo
 !
       pi = 3.141596
@@ -359,9 +364,10 @@
       mode = 1
 !
       if( mode .eq. 0 ) then
-        do k = 1, ktop
+        do k = 1, lev
 !2dMPI >
-        if((K.ge.Lstart) .and. (K.le.Lend))then
+        KL=Llist(k)
+        if( KL .le. ktop ) then
 !2dMPI <
           do m = 1, mlistnum
             mf=max(2,mlist(m))
@@ -393,9 +399,10 @@
 !2dMPI <
         enddo
       else
-        do k = 1, ktop
+        do k = 1, lev
 !2dMPI >
-        if((K.ge.Lstart) .and. (K.le.Lend))then
+        KL=Llist(k)
+        if( KL .le. ktop ) then
 !2dMPI <
           do m = 1, mlistnum
             mf=max(2,mlist(m))
