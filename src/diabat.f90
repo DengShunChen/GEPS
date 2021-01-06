@@ -316,9 +316,11 @@
       real :: ut_sppt_old(nxp,lev,my_max)     
       real :: vt_sppt_old(nxp,lev,my_max)        
       real :: tt_sppt_old(nxp,lev,my_max)        
-      real :: qt_sppt_old(nxp,lev*ncld,my_max)
-      real :: qt_shum_old(nxp,lev*ncld,my_max)
-      real ru
+      real :: qt_sppt_old(nxp,lev,my_max)
+      real :: dtradc(nxp,lev,my_max)
+!      real :: qt_shum_old(nxp,lev*ncld,my_max)
+      integer :: zmtnblck(nxp)
+      real ru,vru,upert,vpert,tpert,qpert,qnew,dtdtr
 
       integer ii
 
@@ -852,10 +854,6 @@
             ut_sppt_old(i,k,jj)=ut(i,k,jj)
             vt_sppt_old(i,k,jj)=vt(i,k,jj)
             tt_sppt_old(i,k,jj)=tt(i,k,jj)
-          enddo
-        enddo
-        do k = 1, lev*ncld
-          do i = 1, nxj
             qt_sppt_old(i,k,jj)=qt(i,k,jj)
           enddo
         enddo
@@ -1006,9 +1004,10 @@
           ( solhr,slag,sdec,cdec,sinl(j),cosl(j),                     &
             xlonr(1,jj),cosz(1,jj),tg(1,jj),tt(1,lev,jj),tsflw(1,jj), &
             sld(1,jj),ss(1,jj),rld(1,jj),asl(1,1,jj),atl(1,1,jj),     &
-            nxp, nxjp(j), lev,                                        &
+            asl_clr(1,1,jj),atl_clr(1,1,jj),nxp, nxjp(j), lev,        &
 !  ---  outputs:
-            dtrad(1,1,jj),sld_adj,ss_adj,rld_adj,xmu(1,jj) )
+            dtrad(1,1,jj),dtradc(1,1,jj),sld_adj,ss_adj,rld_adj,      &
+            xmu(1,jj) )
 
       do i = 1, nxj
          rld_adj(i) = rld_adj(i) * sfemis(i,jj)
@@ -1033,15 +1032,6 @@
       end do
 !xb110<
 !
-!      ! keep the old control values for SHUM
-      if (doshum) then
-        do k = 1, lev*ncld
-          do i = 1, nxj
-            qt_shum_old(i,k,jj)=qt(i,k,jj)
-          enddo
-        enddo
-      endif ! end of doshum if stetement
-
 
       if ( dopbl .and. (nmpbl.eq.1 .and. nmland.eq.1))                        &
          call pbltke ( nxjp(j),nxp,lev,ktpbl,dta,grav,rgas,cp,xkapa,hltm,ptop &
@@ -1118,24 +1108,7 @@
                   pk(1,1,jj),pk2(1,1,jj),tt(1,1,jj),qt(1,1,jj),       &
                   phii,phi)
 !
-      ! SHUM process
-      if (doshum) then
-        ! there's no need to add perturbation for ozone tracer. (
-        ! modified by PangYen Liu
-        nk = 1  ! 1: specific humidity
-                ! 2: specific humidity + cloud water
-                ! 3: specific humidity + cloud water + ozone
-        do n=1,nk
-          do k=1,lev
-            kk = (n-1)*lev+k
-            do i=1,nxj
-              ru=shum3d(i,k,jj)
-              qt(i,kk,jj)=(1+ru)*qt(i,kk,jj)-ru*qt_shum_old(i,kk,jj)
-              if (qt(i,kk,jj).lt.0) qt(i,kk,jj)=0.
-            enddo
-          enddo
-        enddo
-      endif 
+
 
       if(dograv .and. (nmgwor .eq. 1) )                                &
        call gwdp (j,nxjp(j),nxp,lev,                                   &
@@ -1212,7 +1185,7 @@
 !               theta,sigmaog,gamma,elvmax,dusfcg, dvsfcg,          &
                theta,sigmaog,gamma,elvmax,ugws(1,jj),vgws(1,jj),   &
                grav,cp,con_rd,con_rv, nx, mtnvar, cdmbgwd,         &
-               me)
+               me,zmtnblck)
 !
         do k=1,lev
           kc=lev-k+1
@@ -2167,16 +2140,46 @@
       ! sppt tendencies
       if (dosppt) then
         do k=1,lev
+          kc=lev-k+1
           do i=1,nxj
-            ru=sppt3d(i,k,jj)
-            ut(i,k,jj) = (1+ru)*ut(i,k,jj) - ru*ut_sppt_old(i,k,jj)
-            vt(i,k,jj) = (1+ru)*vt(i,k,jj) - ru*vt_sppt_old(i,k,jj)
-            tt(i,k,jj) = (1+ru)*tt(i,k,jj) - ru*tt_sppt_old(i,k,jj)
+            vru=1.
+            if (kc.gt.zmtnblck(i)+2) then
+               vru=1.0
+            endif
+            if (kc.le.zmtnblck(i)) then
+               vru=0.0
+            endif
+            if (kc.eq.zmtnblck(i)+1) then
+               vru=0.333333
+            endif
+            if (kc.eq.zmtnblck(i)+2) then
+               vru=0.666667
+            endif
+!
+            ru = sppt3d(i,k,jj) * vru + 1.
+            dtdtr = dtradc(i,k,jj) * dta / 86400.
+            upert = ( ut(i,k,jj) - ut_sppt_old(i,k,jj) ) * ru
+            vpert = ( vt(i,k,jj) - vt_sppt_old(i,k,jj) ) * ru
+            tpert = ( tt(i,k,jj) - tt_sppt_old(i,k,jj) - dtdtr ) * ru
+            qpert = ( qt(i,k,jj) - qt_sppt_old(i,k,jj) ) * ru
+!
+            ut(i,k,jj) = ut_sppt_old(i,k,jj) + upert
+            vt(i,k,jj) = vt_sppt_old(i,k,jj) + vpert
+
+            !negative humidity check  
+            qnew = qt_sppt_old(i,k,jj) + qpert
+            if ( qnew .ge. 1.0e-10 ) then
+               qt(i,k,jj) = qnew
+               tt(i,k,jj) = tt_sppt_old(i,k,jj) + tpert + dtdtr
+            endif
           enddo
         enddo
-
-      ! there's no need to add perturbation for ozone tracer. (
-      ! modified by PangYen Liu
+      endif
+!
+      ! SHUM process
+      if (doshum) then
+        ! there's no need to add perturbation for ozone tracer. (
+        ! modified by PangYen Liu
         nk = 1  ! 1: specific humidity
                 ! 2: specific humidity + cloud water
                 ! 3: specific humidity + cloud water + ozone
@@ -2184,13 +2187,12 @@
           do k=1,lev
             kk = (n-1)*lev+k
             do i=1,nxj
-              ru = sppt3d(i,k,jj)
-              qt(i,kk,jj) = (1+ru)*qt(i,kk,jj) - ru*qt_sppt_old(i,kk,jj)
-              if (qt(i,kk,jj).lt.0) qt(i,kk,jj) = 0.
+              ru=shum3d(i,k,jj)
+              qt(i,kk,jj)=qt(i,kk,jj)*(1.+ru)
             enddo
           enddo
         enddo
-      endif
+      endif 
 
     !--------------------------------------------------------------------------------
     !     weight back u and v by cosl/radus and

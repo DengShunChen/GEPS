@@ -142,15 +142,15 @@ cat > ${GFSWRK}/namlsts << EOF
  &end
 
  &modlst
-  taui=0.0, taue=120.0, tauo=1.0, taup=6.0, taureg=6.,
+  taui=0.0, taue=1080.0, tauo=1.0, taup=6.0, taureg=6.,
   dt=225.0,
   cstar=f, update=t, lsimpl=t,
   tfilt=0.04, hfilt=1.,
   ksgeo=2, yesdia=t,
-  dopbl=t, docup=t, dorad=t, dolsp=t, doshl=t, dodry=f, dograv=t, docgrav=false,
+  dopbl=t, docup=t, dorad=t, dolsp=t, doshl=t, dodry=f, dograv=t, docgrav=t,
   donnmi=true, 
   dosppt=true, dospptout=false, 
-  doshum=false,
+  doshum=true,
   cutfreq=3, nnmivm=3,
   doincr=f,
   hdiff=t, frad=1.0, ldiag=0,
@@ -181,7 +181,7 @@ cat > ${GFSWRK}/namlsts << EOF
   sppt_seed = 60605500,60605500,60605500,30198051,30198070
   sppt_decort = 2.16E4,2.592E5,2.592E6,7.776E6,3.1536E7 
   sppt_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
-  shum = 0.20,-999,-999,-999,-999
+  shum = 0.004,-999,-999,-999,-999
   shum_seed = 30198296,-999,-999,-999,-999
   shum_decort = 2.16E4,1.728E5,2.592E6,7.776E6,3.1536E7
   shum_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
