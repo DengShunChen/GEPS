@@ -348,7 +348,7 @@
                 aflxd(lev+2,my),aflxu(lev+2,my),                         &
                 dtcupx(my),dtcupz(lev,my),dqcupz(lev,my),dtcupd(lev),    &
                 dqcupd(lev),dtcupl(lev),dqcupl(lev),xkmx(2,my),xkmd(lev),&
-                phi(nxp,lev),theda(nxp,lev),albx(nxp,my_max), &
+                phi(nxp,lev),albx(nxp,my_max), &
                 cofx(nxp*3,my_max),dphi(nxp,lev)
 
       real      wkj(4,my),dsigpp(lev),qt_diff(ncld)
@@ -920,12 +920,12 @@
                     , asl_clr(1,1,jj),atl_clr(1,1,jj)                           &
                     , clds(1,1,jj),rld_clr(1,jj),sld_clr(1,jj))
 !--------------------------------------------------------------------------------
-         do 265 i = 1, nxj
+         do i = 1, nxj
          asol(i,jj) = plcl(i,jj)
          olr(i,jj)  = cumtop(i,jj)
 !cc      tg2 = tg(i,jj)*tg(i,jj)
 !cc      rld(i,jj)  = stbo*(tg2*tg2) - rs(i,jj)
-  265    continue
+         enddo
          endif  ! for uprad .and. irad=1
 !--------------------------------------------------------------------------------
 !   RRTMG scheme
@@ -1114,23 +1114,9 @@
 !
 !     recompute phi by tt after pbl to ensure consistence of phi & phi2
 !
-      do 250 k = 1, lev
-      do 250 i = 1, nxj
-      theda(i,k) = tt(i,k,jj)*(1.0+0.608*qt(i,k,jj)) / pk(i,k,jj)
-  250 continue
-!
-      do 251 i = 1 ,nxj
-      phi(i,lev) = sgeo(i,jj)+  &
-                   cp*theda(i,lev)*(pk2(i,lev,jj)-pk(i,lev,jj))
-  251 continue
-      do 252 k = lev-1, 1, -1
-      do 252 i = 1,nxj
-      phi(i,k) = phi(i,k+1) +cp*(theda(i,k)*(pk2(i,k,jj)-pk(i,k,jj))  &
-                            +theda(i,k+1)*(pk(i,k+1,jj)-pk2(i,k,jj)))
-  252 continue
-!
-       call get_phi(nxjp(j),nxp,lev,ptop,cp,rgas,grav,                &
-                   pk(1,1,jj),pk2(1,1,jj),tt(1,1,jj),qt(1,1,jj),phii)
+      call get_phi(nxjp(j),nxp,lev,ptop,cp,rgas,grav,sgeo(1,jj),      &
+                  pk(1,1,jj),pk2(1,1,jj),tt(1,1,jj),qt(1,1,jj),       &
+                  phii,phi)
 !
       ! SHUM process
       if (doshum) then
@@ -1242,23 +1228,9 @@
 !
 !     recompute phi by tt after pbl to ensure consistence of phi & phi2
 !
-      do 253 k = 1, lev
-      do 253 i = 1, nxj
-      theda(i,k) = tt(i,k,jj)*(1.0+0.608*qt(i,k,jj)) / pk(i,k,jj)
-  253 continue
-!
-      do 254 i = 1 ,nxj
-      phi(i,lev) = sgeo(i,jj)+  &
-                   cp*theda(i,lev)*(pk2(i,lev,jj)-pk(i,lev,jj))
-  254 continue
-      do 255 k = lev-1, 1, -1
-      do 255 i = 1,nxj
-      phi(i,k) = phi(i,k+1) +cp*(theda(i,k)*(pk2(i,k,jj)-pk(i,k,jj))  &
-                            +theda(i,k+1)*(pk(i,k+1,jj)-pk2(i,k,jj)))
-  255 continue
-!
-      call get_phi(nxjp(j),nxp,lev,ptop,cp,rgas,grav,                &
-                  pk(1,1,jj),pk2(1,1,jj),tt(1,1,jj),qt(1,1,jj),phii)
+      call get_phi(nxjp(j),nxp,lev,ptop,cp,rgas,grav,sgeo(1,jj),      &
+                  pk(1,1,jj),pk2(1,1,jj),tt(1,1,jj),qt(1,1,jj),       &
+                  phii,phi)
 !
       do k=1,lev
         do i=1,nxj
@@ -1656,7 +1628,6 @@
 !
        endif  !(end of doshl .and. (nmshl.eq.2 .or. nmshl.eq.3)
 !
-
       if ( doshl .and. (nmshl .eq.1))                                          &
          call shlcon ( nxjp(j),nxp,lev,ktshl,dta,grav,rgas,cp,xkapa,hltm,ptop  &
                      , dsigma,tg(1,jj),pk(1,1,jj),pst(1,jj),sgeo(1,jj),phi     &

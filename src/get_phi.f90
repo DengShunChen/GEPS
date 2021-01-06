@@ -1,14 +1,14 @@
-       subroutine get_phi(nxj,nx,lev,ptop,cp,r,g,pk,pk2,tt,qt,phii)
+       subroutine get_phi(nxj,nx,lev,ptop,cp,r,g,sgeo,pk,pk2,tt,qt,phii)
 
         integer nxj,nx,lev,i,k,kc
         real    ptop,cp,r,g,pk(nx,lev),pk2(nx,lev),         &
-                tt(nx,lev),qt(nx,lev)
+                tt(nx,lev),qt(nx,lev),sgeo(nx)
         real    pk2x(nx,lev),pkx(nx,lev),dhgtz(nx,lev),     &
-                ppd,ppp,ppu,ttv,dhgt
+                ppd,ppp,ppu,ttv,dhgt,theda(nx,lev)
 
-        real    phii(nx,lev+1)
+        real    phii(nx,lev+1),phi(nx,lev)
 !
-! geopotential height over model interface for WSM6
+! geopotential height at model interface
 !
       do k=1,lev
       call vlog(pk2x(1,k),pk2(1,k),nxj)
@@ -50,6 +50,26 @@
        do i = 1, nxj
           phii(i,kc)=phii(i,kc-1)+dhgtz(i,k)*g
       enddo
+      enddo
+!
+!
+! geopotential height at model layer
+!
+      do k = 1, lev
+        do i = 1, nxj
+          theda(i,k) = tt(i,k)*(1.0+0.608*qt(i,k))/pk(i,k)
+        enddo
+      enddo
+!
+      do i = 1 ,nxj
+        phi(i,lev) = sgeo(i)+cp*theda(i,lev)*(pk2(i,lev)-pk(i,lev))
+      enddo
+!
+      do k = lev-1, 1, -1
+        do i = 1,nxj
+          phi(i,k) = phi(i,k+1) +cp*(theda(i,k)*(pk2(i,k)-pk(i,k)) &
+                    +theda(i,k+1)*(pk(i,k+1)-pk2(i,k)))
+        enddo
       enddo
 !
       return
