@@ -41,6 +41,12 @@ module mod_stochastic_physics
   real :: sppt_decort(5) = -999.      ! time scales(seconds)
   real :: sppt_lscale(5) = -999.      ! length scales(meters)
   real, allocatable, dimension(:) :: vfact_sppt
+  real, public :: sppt_sigtop1 = 0.1
+  real, public :: sppt_sigtop2 = 0.025
+  real, public :: sppt_sigbot1 = 0.975
+  real, public :: sppt_sigbot2 = 0.9
+  logical, public :: sppt_sfclimit=.true.
+  logical, public :: sppt_logit=.false.
 
   ! SHUM
   integer :: nshum
@@ -50,6 +56,7 @@ module mod_stochastic_physics
   real :: shum_decort(5) = -999.      ! time scales(seconds)
   real :: shum_lscale(5) = -999.      ! length scales(meters)
   real, allocatable, dimension(:) :: vfact_shum
+  real, public :: shum_sigefold = 0.2
 
   public random_pattern
 
@@ -68,10 +75,7 @@ contains
   subroutine init_stochastic_physics(dtau)
     implicit none
     integer :: n, k 
-    logical :: sppt_sfclimit=.true.
     real :: sl(lev)
-    real :: shum_sigefold, sppt_sigtop1, sppt_sigtop2
-    real :: sppt_sigbot1, sppt_sigbot2
     real :: dtau
 
     ! calculation sigma values
@@ -106,8 +110,6 @@ contains
       call get_random_pattern_init(rpattern_sppt,nsppt,dtau)
 
       ! set up vfact_sppt
-      sppt_sigtop1 = 0.1
-      sppt_sigtop2 = 0.025
       allocate(vfact_sppt(lev))
       do k=1,lev
         if (sl(k) .lt. sppt_sigtop1 .and. sl(k) .gt. sppt_sigtop2) then
@@ -119,8 +121,6 @@ contains
         endif
       enddo
 
-      sppt_sigbot1 = 0.90
-      sppt_sigbot2 = 0.80
       if (sppt_sfclimit) then
       ! vfact_sppt(lev-1)=vfact_sppt(lev-2)*0.5
       ! vfact_sppt(lev)=0.0
@@ -165,7 +165,6 @@ contains
       shum3d = 0.
       call get_random_pattern_init(rpattern_shum,nshum,dtau)
 
-      shum_sigefold = 0.2 
       allocate(vfact_shum(lev))
       do k=1,lev
          vfact_shum(k) = exp((sl(k)-1.)/shum_sigefold)
@@ -186,21 +185,12 @@ contains
 
     if (dosppt) then
       call get_random_pattern_run(rpattern_sppt,nsppt)
-      call get_stochy_physics(rpattern_sppt,nsppt,vfact_sppt,sppt3d)
-#ifdef VERBOSE
-      do k=1,lev
-        call check_global_values(sppt3d(:,k,:),k,'mod_stochastic_physics sppt3d')
-      enddo
-#endif
+      call get_stochy_physics(rpattern_sppt,nsppt,vfact_sppt,s  ppt3d)
+      if (sppt_logit) sppt3d(:,:,:) = (2./(1.+exp(sppt3d(:,:,:))))-1.
     endif
     if (doshum) then
       call get_random_pattern_run(rpattern_shum,nshum)
       call get_stochy_physics(rpattern_shum,nshum,vfact_shum,shum3d)
-#ifdef VERBOSE
-      do k=1,lev
-        call check_global_values(shum3d(:,k,:),k,'mod_stochastic_physics shum3d')
-      enddo
-#endif
     endif
 
   end subroutine run_stochastic_physics

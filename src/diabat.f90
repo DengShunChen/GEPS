@@ -337,7 +337,9 @@
       real :: tt_sppt(nxp,lev,my_max)        
       real :: qt_sppt(nxp,lev*ncld,my_max)
 #endif
-      real :: ru
+      real :: dtradc(nxp,lev,my_max)
+      integer :: zmtnblck(nxp)
+      real :: ru,vru,upert,vpert,tpert,qpert,qnew,dtdtr
 
       integer ii
 
@@ -367,7 +369,7 @@
                 aflxd(lev+2,my),aflxu(lev+2,my),                         &
                 dtcupx(my),dtcupz(lev,my),dqcupz(lev,my),dtcupd(lev),    &
                 dqcupd(lev),dtcupl(lev),dqcupl(lev),xkmx(2,my),xkmd(lev),&
-                phi(nxp,lev),theda(nxp,lev),albx(nxp,my_max), &
+                phi(nxp,lev),albx(nxp,my_max), &
                 cofx(nxp*3,my_max),dphi(nxp,lev)
 
       real      wkj(4,my),dsigpp(lev),qt_diff(ncld)
@@ -412,6 +414,7 @@
       real      rcup2(nxp)
 ! for scale-aware convection
       real      garea(nxp),tpr,tem1,tem2,jup,jdn,tpi
+      real,     parameter :: qmin=1.0e-10
 ! for wsm6 & thompson
       integer   nmmiph
       real      phii(nxp,lev+1)
@@ -860,10 +863,14 @@
       !-----------------------------------------------------------------------------
       if (dosppt) then
         ! Save u, v, t, and q for SPPT
-        ut_save_sppt(1:nxj,1:lev,jj)      = ut(1:nxj,1:lev,jj)
-        vt_save_sppt(1:nxj,1:lev,jj)      = vt(1:nxj,1:lev,jj)
-        tt_save_sppt(1:nxj,1:lev,jj)      = tt(1:nxj,1:lev,jj)
-        qt_save_sppt(1:nxj,1:lev*ncld,jj) = qt(1:nxj,1:lev*ncld,jj)
+        do k=1,lev
+          do i=1,nxj
+            ut_save_sppt(i,k,jj)=ut(i,k,jj)
+            vt_save_sppt(i,k,jj)=vt(i,k,jj)
+            tt_save_sppt(i,k,jj)=tt(i,k,jj)
+            qt_save_sppt(i,k,jj)=qt(i,k,jj)
+          enddo
+        enddo
       endif ! end dosppt if stetement
 
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -910,11 +917,13 @@
                     , asl_clr(1,1,jj),atl_clr(1,1,jj)                           &
                     , clds(1,1,jj),rld_clr(1,jj),sld_clr(1,jj))
 !--------------------------------------------------------------------------------
-        do i = 1, nxj
-          asol(i,jj) = plcl(i,jj)
-          olr(i,jj)  = cumtop(i,jj)
-        enddo
-      endif  ! for uprad .and. irad=1
+         do i = 1, nxj
+         asol(i,jj) = plcl(i,jj)
+         olr(i,jj)  = cumtop(i,jj)
+!cc      tg2 = tg(i,jj)*tg(i,jj)
+!cc      rld(i,jj)  = stbo*(tg2*tg2) - rs(i,jj)
+         enddo
+         endif  ! for uprad .and. irad=1
 !--------------------------------------------------------------------------------
 !   RRTMG scheme
 !--------------------------------------------------------------------------------
@@ -983,9 +992,10 @@
           ( solhr,slag,sdec,cdec,sinl(j),cosl(j),                     &
             xlonr(1,jj),cosz(1,jj),tg(1,jj),tt(1,lev,jj),tsflw(1,jj), &
             sld(1,jj),ss(1,jj),rld(1,jj),asl(1,1,jj),atl(1,1,jj),     &
-            nxp, nxjp(j), lev,                                        &
-          !  ---  outputs:
-            dtrad(1,1,jj),sld_adj,ss_adj,rld_adj,xmu(1,jj) )
+            asl_clr(1,1,jj),atl_clr(1,1,jj),nxp, nxjp(j), lev,        &
+!  ---  outputs:
+            dtrad(1,1,jj),dtradc(1,1,jj),sld_adj,ss_adj,rld_adj,      &
+            xmu(1,jj) )
 
         do i = 1, nxj
           rld_adj(i) = rld_adj(i) * sfemis(i,jj)
@@ -1008,15 +1018,9 @@
       end do
 !xb110<
 !
-!     ! save qt before PBL scheme for SHUM
-      if (doshum) then
-        qt_save_shum(1:nxj,1:lev*ncld,jj) = qt(1:nxj,1:lev*ncld,jj)
-      endif ! end of doshum if stetement
-
 !=======================================================================
 ! PBL scheme
 !=======================================================================
-
       if ( dopbl .and. (nmpbl.eq.1 .and. nmland.eq.1))                        &
          call pbltke ( nxjp(j),nxp,lev,ktpbl,dta,grav,rgas,cp,xkapa,hltm,ptop &
                      , tice,hice,tg(1,jj),z0(1,jj),land(1,jj)                 &
@@ -1088,36 +1092,10 @@
 !
 !     recompute phi by tt after pbl to ensure consistence of phi & phi2
 !
-      do 250 k = 1, lev
-      do 250 i = 1, nxj
-      theda(i,k) = tt(i,k,jj)*(1.0+0.608*qt(i,k,jj)) / pk(i,k,jj)
-  250 continue
+      call get_phi(nxjp(j),nxp,lev,ptop,cp,rgas,grav,sgeo(1,jj),      &
+                  pk(1,1,jj),pk2(1,1,jj),tt(1,1,jj),qt(1,1,jj),       &
+                  phii,phi)
 !
-      do 251 i = 1 ,nxj
-      phi(i,lev) = sgeo(i,jj)+  &
-                   cp*theda(i,lev)*(pk2(i,lev,jj)-pk(i,lev,jj))
-  251 continue
-      do 252 k = lev-1, 1, -1
-      do 252 i = 1,nxj
-      phi(i,k) = phi(i,k+1) +cp*(theda(i,k)*(pk2(i,k,jj)-pk(i,k,jj))  &
-                            +theda(i,k+1)*(pk(i,k+1,jj)-pk2(i,k,jj)))
-  252 continue
-
-       call get_phi(nxjp(j),nxp,lev,ptop,cp,rgas,grav,                &
-                   pk(1,1,jj),pk2(1,1,jj),tt(1,1,jj),qt(1,1,jj),phii)
-
-      ! SHUM process
-      if (doshum) then
-        ! there's no need to add perturbation for ozone tracer. (
-        ! modified by PangYen Liu
-        qt(1:nxj,1:lev,jj) = (1 + shum3d(1:nxj,1:lev,jj))*qt(1:nxj,1:lev,jj) &
-                           - shum3d(1:nxj,1:lev,jj)*qt_save_shum(1:nxj,1:lev,jj)
-        do k=1,lev
-          do i=1,nxj
-            if (qt(i,k,jj).lt.0) qt(i,k,jj)=0.
-          enddo
-        enddo
-      endif 
 
 #ifdef VERBOSE
         ut_pbl(1:nxj,1:lev,jj)      = ut(1:nxj,1:lev,jj)
@@ -1204,7 +1182,7 @@
 !               theta,sigmaog,gamma,elvmax,dusfcg, dvsfcg,          &
                theta,sigmaog,gamma,elvmax,ugws(1,jj),vgws(1,jj),   &
                grav,cp,con_rd,con_rv, nx, mtnvar, cdmbgwd,         &
-               me)
+               me,zmtnblck)
 
         do k=1,lev
           kc=lev-k+1
@@ -1219,24 +1197,10 @@
 !
 !     recompute phi by tt after pbl to ensure consistence of phi & phi2
 !
-      do 253 k = 1, lev
-      do 253 i = 1, nxj
-      theda(i,k) = tt(i,k,jj)*(1.0+0.608*qt(i,k,jj)) / pk(i,k,jj)
-  253 continue
+      call get_phi(nxjp(j),nxp,lev,ptop,cp,rgas,grav,sgeo(1,jj),      &
+                  pk(1,1,jj),pk2(1,1,jj),tt(1,1,jj),qt(1,1,jj),       &
+                  phii,phi)
 !
-      do 254 i = 1 ,nxj
-      phi(i,lev) = sgeo(i,jj)+  &
-                   cp*theda(i,lev)*(pk2(i,lev,jj)-pk(i,lev,jj))
-  254 continue
-      do 255 k = lev-1, 1, -1
-      do 255 i = 1,nxj
-      phi(i,k) = phi(i,k+1) +cp*(theda(i,k)*(pk2(i,k,jj)-pk(i,k,jj))  &
-                            +theda(i,k+1)*(pk(i,k+1,jj)-pk2(i,k,jj)))
-  255 continue
-
-      call get_phi(nxjp(j),nxp,lev,ptop,cp,rgas,grav,                &
-                  pk(1,1,jj),pk2(1,1,jj),tt(1,1,jj),qt(1,1,jj),phii)
-
       do k=1,lev
         do i=1,nxj
           tt_bfcnv(i,k) = tt(i,k,jj)
@@ -1428,8 +1392,8 @@
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
-            qt(i,k    ,jj) = max(qtc(i,kc),0.)
-            qt(i,k+lev,jj) = max(qtr(i,kc),0.)
+            qt(i,k    ,jj) = max(qtc(i,kc),qmin)
+            qt(i,k+lev,jj) = max(qtr(i,kc),qmin)
             if ( nmmiph .gt. 2 ) qt(i,(ntiw-1)*lev+k,jj) = qti(i,kc)
             tt(i,k    ,jj) = ttc(i,kc)
             ut(i,k    ,jj) = utc(i,kc)
@@ -1490,12 +1454,10 @@
           enddo
         enddo
 
-      ! do i = 1, nxj
-      !   cumabs(i) = 0.0
-      !   work3(i)  = 0.0
-      ! enddo
-        cumabs(1:nxj) = 0.0
-         work3(1:nxj)  = 0.0
+        do i = 1, nxj
+          cumabs(i) = 0.0
+          work3(i)  = 0.0
+        enddo
 
         do k = 1, lev
           do i = 1, nxj
@@ -1520,26 +1482,24 @@
                      ktop(1,jj),kbot(1,jj),kuo(1,jj),cldf,cumabs,    &
                      grav,cp,con_rd,con_fvirt,dta,dlength,           &
                      utgwc,vtgwc,tauctx,taucty,j)
-     !  do k=1,lev
-     !    do i=1,nxj
-     !      ut(i,k,jj) = ut(i,k,jj) + utgwc(i,k) * dta
-     !      vt(i,k,jj) = vt(i,k,jj) + vtgwc(i,k) * dta
-     !    enddo
-     !  enddo
-        ut(1:nxj,1:lev,jj) = ut(1:nxj,1:lev,jj) + utgwc(1:nxj,1:lev) * dta
-        vt(1:nxj,1:lev,jj) = vt(1:nxj,1:lev,jj) + vtgwc(1:nxj,1:lev) * dta
+        do k=1,lev
+          do i=1,nxj
+            ut(i,k,jj) = ut(i,k,jj) + utgwc(i,k) * dta
+            vt(i,k,jj) = vt(i,k,jj) + vtgwc(i,k) * dta
+          enddo
+        enddo
       endif  !(end of docgrav and nmgwcv=2)
 
 !=======================================================================
 ! shallow convection 
 !=======================================================================
       if( doshl .and. (nmshl.eq.2 .or. nmshl.eq.3) ) then
-      ! do i=1,nxj
-      !   psfc(i)  = pst(i,jj)*0.1        ! change to cb
-      !   garea(i) = tem1*tem2
-      ! enddo
-        psfc(1:nxj)  = pst(1:nxj,jj)*0.1 ! change to cb
-        garea(1:nxj) = tem1*tem2
+        do i=1,nxj
+          psfc(i)  = pst(i,jj)*0.1        ! change to cb
+          garea(i) = tem1*tem2
+        enddo
+      ! psfc(1:nxj)  = pst(1:nxj,jj)*0.1 ! change to cb
+      ! garea(1:nxj) = tem1*tem2
 
         do k=1,lev-1
           kc=lev-k+1
@@ -1548,10 +1508,10 @@
             dotc(i,kc)=dotc(i,kc)*0.1
           enddo
         enddo
-       !do i = 1,nxj
-       !  dotc(i,1) = 0.5*sd(i,lev,jj)*0.1
-       !enddo
-        dotc(1:nxj,1) = 0.5*sd(1:nxj,lev,jj)*0.1
+        do i = 1,nxj
+          dotc(i,1) = 0.5*sd(i,lev,jj)*0.1
+        enddo
+       !dotc(1:nxj,1) = 0.5*sd(1:nxj,lev,jj)*0.1
 
         do k=1,lev
           kc=lev-k+1
@@ -1569,12 +1529,12 @@
           enddo
         enddo
 !
-      ! do i=1,nxj
-      !    heat(i)=-ustar(i,jj)*tstar(i,jj)
-      !    evap(i)=-ustar(i,jj)*qstar(i,jj)
-      ! enddo
-        heat(1:nxj)=-ustar(1:nxj,jj)*tstar(1:nxj,jj)
-        evap(1:nxj)=-ustar(1:nxj,jj)*qstar(1:nxj,jj)
+        do i=1,nxj
+           heat(i)=-ustar(i,jj)*tstar(i,jj)
+           evap(i)=-ustar(i,jj)*qstar(i,jj)
+        enddo
+      ! heat(1:nxj)=-ustar(1:nxj,jj)*tstar(1:nxj,jj)
+      ! evap(1:nxj)=-ustar(1:nxj,jj)*qstar(1:nxj,jj)
         
 !
         ! new version shalcon
@@ -1598,16 +1558,16 @@
             ,islimsk,garea,dotc,ncld,hpbl(1,jj),cnvw,cnvc)
         endif
 
-      ! do i=1,nxj
-      !   rcup(i,jj) = rcup(i,jj)+rcup2(i) * 1000.         ! mm/call
-      ! enddo
-       rcup(1:nxj,jj) = rcup(1:nxj,jj)+rcup2(1:nxj) * 1000.         ! mm/call
+        do i=1,nxj
+          rcup(i,jj) = rcup(i,jj)+rcup2(i) * 1000.         ! mm/call
+        enddo
+      !rcup(1:nxj,jj) = rcup(1:nxj,jj)+rcup2(1:nxj) * 1000.         ! mm/call
 
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
-            qt(i,k    ,jj) = qtc(i,kc)
-            qt(i,k+lev,jj) = qtr(i,kc)
+            qt(i,k    ,jj) = max(qtc(i,kc),qmin)
+            qt(i,k+lev,jj) = max(qtr(i,kc),qmin)
             if ( nmmiph .gt. 2 ) qt(i,(ntiw-1)*lev+k,jj) = qti(i,kc)
             tt(i,k    ,jj) = ttc(i,kc)
             ut(i,k    ,jj) = utc(i,kc)
@@ -1721,8 +1681,8 @@
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
-            qt(i,k    ,jj) = qtc(i,kc)
-            qt(i,k+lev,jj) = qtr(i,kc)
+            qt(i,k    ,jj) = max(qtc(i,kc),qmin)
+            qt(i,k+lev,jj) = max(qtr(i,kc),qmin)
             tt(i,k    ,jj) = ttc(i,kc)
           enddo
         enddo
@@ -2161,20 +2121,60 @@
 #endif
       ! sppt tendencies
       if (dosppt) then
-        ut(1:nxj,1:lev,jj)=(1 + sppt3d(1:nxj,1:lev,jj)) *           ut(1:nxj,1:lev,jj)      &
-                          -     sppt3d(1:nxj,1:lev,jj)  * ut_save_sppt(1:nxj,1:lev,jj)
-        vt(1:nxj,1:lev,jj)=(1 + sppt3d(1:nxj,1:lev,jj)) *           vt(1:nxj,1:lev,jj)      &
-                          -     sppt3d(1:nxj,1:lev,jj)  * vt_save_sppt(1:nxj,1:lev,jj)
-        tt(1:nxj,1:lev,jj)=(1 + sppt3d(1:nxj,1:lev,jj)) *           tt(1:nxj,1:lev,jj)      &
-                          -     sppt3d(1:nxj,1:lev,jj)  * tt_save_sppt(1:nxj,1:lev,jj)
-        qt(1:nxj,1:lev,jj)=(1 + sppt3d(1:nxj,1:lev,jj)) *           qt(1:nxj,1:lev,jj)      & 
-                          -     sppt3d(1:nxj,1:lev,jj)  * qt_save_sppt(1:nxj,1:lev,jj)
         do k=1,lev
+          kc=lev-k+1
           do i=1,nxj
-            if (qt(i,k,jj).lt.0) qt(i,k,jj) = 0.
+            vru=1.
+            if (kc.gt.zmtnblck(i)+2) then
+               vru=1.0
+            endif
+            if (kc.le.zmtnblck(i)) then
+               vru=0.0
+            endif
+            if (kc.eq.zmtnblck(i)+1) then
+               vru=0.333333
+            endif
+            if (kc.eq.zmtnblck(i)+2) then
+               vru=0.666667
+            endif
+!
+            ru = sppt3d(i,k,jj) * vru + 1.
+            dtdtr = dtradc(i,k,jj) * dta / 86400.
+            upert = ( ut(i,k,jj) - ut_save_sppt(i,k,jj) ) * ru
+            vpert = ( vt(i,k,jj) - vt_save_sppt(i,k,jj) ) * ru
+            tpert = ( tt(i,k,jj) - tt_save_sppt(i,k,jj) - dtdtr ) * ru
+            qpert = ( qt(i,k,jj) - qt_save_sppt(i,k,jj) ) * ru
+!
+            ut(i,k,jj) = ut_save_sppt(i,k,jj) + upert
+            vt(i,k,jj) = vt_save_sppt(i,k,jj) + vpert
+
+            !negative humidity check  
+            qnew = qt_save_sppt(i,k,jj) + qpert
+            if ( qnew .ge. qmin ) then
+               qt(i,k,jj) = qnew
+               tt(i,k,jj) = tt_save_sppt(i,k,jj) + tpert + dtdtr
+            endif
           enddo
         enddo
       endif
+!
+      ! SHUM process
+      if (doshum) then
+        ! there's no need to add perturbation for cloud & ozone tracer. 
+        ! modified by PangYen Liu
+        nk = 1  ! 1: specific humidity
+                ! 2: specific humidity + cloud water
+                ! 3: specific humidity + cloud water + ozone
+        do n=1,nk
+          do k=1,lev
+            kk = (n-1)*lev+k
+            do i=1,nxj
+              ru=shum3d(i,k,jj)
+              qt(i,kk,jj)=qt(i,kk,jj)*(1.+ru)
+            enddo
+          enddo
+        enddo
+      endif 
 
 #ifdef VERBOSE
       ! Save u, v, t, and q for SPPT

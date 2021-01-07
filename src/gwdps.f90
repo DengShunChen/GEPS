@@ -2,7 +2,7 @@
                     prsi,del,prsl,prslk,phii, phil,deltim,kdt,           &
                     hprime,oc,oa4,clx4,theta,sigma,gamma,elvmax,         &
                     dusfc,dvsfc,g, cp, rd, rv, imx,                      &
-                    nmtvr, cdmbgwd, me)
+                    nmtvr, cdmbgwd, me, rdxzb)
 !
 !   ********************************************************************
 ! ----->  i m p l e m e n t a t i o n    v e r s i o n   <----------
@@ -124,6 +124,7 @@
 !lzl           hprime(im)
       real oc(im),     oa4(ix,4), clx4(ix,4),                            &
            hprime(im)
+      integer rdxzb(ix)
 
 
 ! for lm mtn blocking
@@ -293,6 +294,7 @@
 !
       if ( nmtvr .eq. 14) then 
 ! ----  for lm and gwd calculation points
+        rdxzb(:)  = 0
         ipt = 0
         npt = 0
         do i = 1,im
@@ -460,8 +462,11 @@
               up(i)  =  uds(i,k) * cos(ang(i,k))
               ek(i)  = 0.5 *  up(i) * up(i) 
 
-! --- dividing stream lime  is found when pe =exceeds ek.
-              if ( pe(i) .ge.  ek(i) ) idxzb(i) = k
+! --- dividing stream line  is found when pe =exceeds ek.
+              if ( pe(i) .ge.  ek(i) ) then
+                idxzb(i) = k
+                rdxzb(i) = k
+              endif
 ! --- then mtn blocked flow is between zb=k(idxzb(i)) and surface
 !
             endif
@@ -546,6 +551,7 @@
 !
         do i=1,npt
           idxzb(i) = 0
+          rdxzb(i) = 0
         enddo
       endif
 !

@@ -124,7 +124,7 @@ if [ $JCAP = 639  ] ; then
   MODLST_RES='dt=225., tfilt=0.040, hfilt=1., cgw=4.2e-5,'
   MODEL_BASIC='nco=640,'
 elif [ $JCAP = 383  ] ; then
-  MODLST_RES='dt=360., tfilt=0.050, hfilt=1.5, cgw=2.6e-5,'
+  MODLST_RES='dt=360., tfilt=0.050, hfilt=1, cgw=2.6e-5,'
   MODEL_BASIC='nco=384,'
 fi
 
@@ -142,7 +142,7 @@ cat > ${GFSWRK}/namlsts << EOF
  &end
 
  &modlst
-  taui=0.0, taue=120.0, tauo=1.0, taup=6.0, taureg=6.,
+  taui=0.0, taue=1080.0, tauo=1.0, taup=6.0, taureg=6.,
   dt=225.0,
   cstar=f, update=t, lsimpl=t,
   tfilt=0.04, hfilt=1.,
@@ -157,8 +157,8 @@ cat > ${GFSWRK}/namlsts << EOF
   hdiff=t, frad=1.0, ldiag=0,
   idg=40, jdg=108,
   itypbl=0, numreduce=5, ptmeans=800., ptop=0.1,
-  irad=2, nmland=2, nmpbl=3,
-  nmcup=3, nmshl=2, nmmiph=2,  
+  irad=2, nmland=2,
+  nmcup=6, nmshl=3, nmpbl=4, nmmiph=2,  
   nmgwor=2, nmgwcv=2,
   ktcup=20, cgw=4.2e-5,
   mtnvar=14, doo3l=t,
@@ -178,7 +178,8 @@ cat > ${GFSWRK}/namlsts << EOF
  &end
  
  &stochy_physics
-  ncep_seeds = false,
+  ncep_seeds = true,
+  sppt_logit = true,
   sppt = 0.80,0.4,0.10,0.08,0.04
   sppt_seed = 1878981022, 1046881385, 1551676790, 2041328465, 1442149336
   sppt_decort = 2.16E4,2.592E5,2.592E6,7.776E6,3.1536E7 

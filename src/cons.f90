@@ -35,8 +35,11 @@
       USE mo_convect_tables, only : set_lookup_tables
       ! for stochastic_physics
       use mod_stochastic_physics, only : ncep_seeds, &
-                      sppt, sppt_seed, sppt_decort, sppt_lscale, &
-                      shum, shum_seed, shum_decort, shum_lscale
+                   sppt, sppt_seed, sppt_decort, sppt_lscale, &
+                   sppt_sigtop1, sppt_sigtop2, sppt_sigbot1, sppt_sigbot2, &
+                   sppt_sfclimit, sppt_logit, &
+                   shum, shum_seed, shum_decort, shum_lscale, &
+                   shum_sigefold
 
       implicit  none
 
@@ -91,9 +94,12 @@
 
       namelist /typ/ write_tau, write_mem, trk_intv, min_trk_pres
 
-      namelist /stochy_physics/ ncep_seeds & 
-                              , sppt, sppt_seed, sppt_decort, sppt_lscale &
-                              , shum, shum_seed, shum_decort, shum_lscale
+      namelist /stochy_physics/ ncep_seeds, & 
+                   sppt, sppt_seed, sppt_decort, sppt_lscale, &
+                   sppt_sigtop1, sppt_sigtop2, sppt_sigbot1, sppt_sigbot2, &
+                   sppt_sfclimit, sppt_logit, &
+                   shum, shum_seed, shum_decort, shum_lscale, &
+                   shum_sigefold
 
 ! for ECHAM4 Tiedtke cumulus scheme
       call cuparam
