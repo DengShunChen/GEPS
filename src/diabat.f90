@@ -395,6 +395,7 @@
       real      rcup2(nxp)
 ! for scale-aware convection
       real      garea(nxp),tpr,tem1,tem2,jup,jdn,tpi
+      real,     parameter :: qmin=1.0e-10
 ! for wsm6 & thompson
       integer   nmmiph
       real      phii(nxp,lev+1)
@@ -1413,8 +1414,8 @@
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
-            qt(i,k    ,jj) = max(qtc(i,kc),0.)
-            qt(i,k+lev,jj) = max(qtr(i,kc),0.)
+            qt(i,k    ,jj) = max(qtc(i,kc),qmin)
+            qt(i,k+lev,jj) = max(qtr(i,kc),qmin)
             if ( nmmiph .gt. 2 ) qt(i,(ntiw-1)*lev+k,jj) = qti(i,kc)
             tt(i,k    ,jj) = ttc(i,kc)
             ut(i,k    ,jj) = utc(i,kc)
@@ -1588,8 +1589,8 @@
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
-            qt(i,k    ,jj) = qtc(i,kc)
-            qt(i,k+lev,jj) = qtr(i,kc)
+            qt(i,k    ,jj) = max(qtc(i,kc),qmin)
+            qt(i,k+lev,jj) = max(qtr(i,kc),qmin)
             if ( nmmiph .gt. 2 ) qt(i,(ntiw-1)*lev+k,jj) = qti(i,kc)
             tt(i,k    ,jj) = ttc(i,kc)
             ut(i,k    ,jj) = utc(i,kc)
@@ -1703,8 +1704,8 @@
 !byl        do k=ktcup,lev
           kc=lev-k+1
           do i=1,nxj
-            qt(i,k    ,jj) = qtc(i,kc)
-            qt(i,k+lev,jj) = qtr(i,kc)
+            qt(i,k    ,jj) = max(qtc(i,kc),qmin)
+            qt(i,k+lev,jj) = max(qtr(i,kc),qmin)
             tt(i,k    ,jj) = ttc(i,kc)
           enddo
         enddo
@@ -2168,7 +2169,7 @@
 
             !negative humidity check  
             qnew = qt_sppt_old(i,k,jj) + qpert
-            if ( qnew .ge. 1.0e-10 ) then
+            if ( qnew .ge. qmin ) then
                qt(i,k,jj) = qnew
                tt(i,k,jj) = tt_sppt_old(i,k,jj) + tpert + dtdtr
             endif
@@ -2178,7 +2179,7 @@
 !
       ! SHUM process
       if (doshum) then
-        ! there's no need to add perturbation for ozone tracer. (
+        ! there's no need to add perturbation for cloud & ozone tracer. 
         ! modified by PangYen Liu
         nk = 1  ! 1: specific humidity
                 ! 2: specific humidity + cloud water
