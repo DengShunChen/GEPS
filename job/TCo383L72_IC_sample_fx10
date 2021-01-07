@@ -1,7 +1,7 @@
 #!/bin/ksh
 #PJM -L "node=48:noncont"
 #PJM -L rscgrp=research
-#PJM -L elapse=2:00:00
+#PJM -L elapse=3:00:00
 #PJM -L node-mem=unlimited
 #PJM --no-stging
 #PJM --mpi "proc=768"
