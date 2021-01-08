@@ -57,7 +57,14 @@
     logical :: lsimpl,lzadv, yesdia,dopbl, docup, dorad,      &
             dolsp, dograv,doshl, dodry, donnmi,ozon,       &
             restrt,hdiff, cstar, update,doincr,hybrid,     &
-            doo3l, dosppt, dospptout, doshum,  docgrav
+            doo3l, docgrav
+
+    ! for stochastic physics
+    logical :: dosppt       =.false.
+    logical :: dospptout    =.false.
+    logical :: doshum       =.false.
+    logical :: use_zmtnblck =.false.
+         
     logical :: out_green,out_hp
 
     !for Semi-Lagrangain

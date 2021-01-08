@@ -58,5 +58,5 @@ module unuse ${MDIR}/modulefiles
 # compile
 cd src/
 make clean
-make -j12
+make -j24
 

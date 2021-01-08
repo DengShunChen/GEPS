@@ -1,5 +1,5 @@
 module mod_stochastic_physics
-  use mpe
+  use mpe, only : mpe_bcast, mpe_double
   use rank, only : myrank
   use index
   use param
@@ -41,6 +41,12 @@ module mod_stochastic_physics
   real :: sppt_decort(5) = -999.      ! time scales(seconds)
   real :: sppt_lscale(5) = -999.      ! length scales(meters)
   real, allocatable, dimension(:) :: vfact_sppt
+  real, public :: sppt_sigtop1 = 0.1
+  real, public :: sppt_sigtop2 = 0.025
+  real, public :: sppt_sigbot1 = 0.975
+  real, public :: sppt_sigbot2 = 0.9
+  logical, public :: sppt_sfclimit=.false.
+  logical, public :: sppt_logit=.true.
 
   ! SHUM
   integer :: nshum
@@ -50,6 +56,7 @@ module mod_stochastic_physics
   real :: shum_decort(5) = -999.      ! time scales(seconds)
   real :: shum_lscale(5) = -999.      ! length scales(meters)
   real, allocatable, dimension(:) :: vfact_shum
+  real, public :: shum_sigefold = 0.2
 
   public random_pattern
 
@@ -61,16 +68,14 @@ module mod_stochastic_physics
        destroy_stochastic_physics
 
   public spptout
+  public avevar_sppt2d
  
 contains
 
   subroutine init_stochastic_physics(dtau)
     implicit none
     integer :: n, k 
-    logical :: sppt_sfclimit=.true.
     real :: sl(lev)
-    real :: shum_sigefold, sppt_sigtop1, sppt_sigtop2
-    real :: sppt_sigbot1, sppt_sigbot2
     real :: dtau
 
     ! calculation sigma values
@@ -105,8 +110,6 @@ contains
       call get_random_pattern_init(rpattern_sppt,nsppt,dtau)
 
       ! set up vfact_sppt
-      sppt_sigtop1 = 0.1
-      sppt_sigtop2 = 0.025
       allocate(vfact_sppt(lev))
       do k=1,lev
         if (sl(k) .lt. sppt_sigtop1 .and. sl(k) .gt. sppt_sigtop2) then
@@ -118,8 +121,6 @@ contains
         endif
       enddo
 
-      sppt_sigbot1 = 0.975
-      sppt_sigbot2 = 0.9
       if (sppt_sfclimit) then
       ! vfact_sppt(lev-1)=vfact_sppt(lev-2)*0.5
       ! vfact_sppt(lev)=0.0
@@ -164,7 +165,6 @@ contains
       shum3d = 0.
       call get_random_pattern_init(rpattern_shum,nshum,dtau)
 
-      shum_sigefold = 0.2 
       allocate(vfact_shum(lev))
       do k=1,lev
          vfact_shum(k) = exp((sl(k)-1.)/shum_sigefold)
@@ -185,29 +185,13 @@ contains
 
     if (dosppt) then
       call get_random_pattern_run(rpattern_sppt,nsppt)
-      call get_stochy_physics(rpattern_sppt,nsppt,vfact_sppt,sppt3d)
-#ifdef VERBOSE
-      do k=1,lev
-        call unify_reduceintp(nx,my,my_max,sppt3d(:,k,:),glob)   
-        if (myrank.eq.0) then
-          call avevar_sppt2d(glob,nx,my,aves,vars,stds)
-          write(6,*)'mod_stochastic_physics : sppt3d : k,aves,vars,stds = ',k,aves,vars,stds
-        endif
-      enddo
-#endif
+      call get_stochy_physics(rpattern_sppt,nsppt,vfact_sppt,s  ppt3d)
+      if (sppt_logit) sppt3d(:,:,:) = (2./(1.+exp(sppt3d(:,:,:))))-1.
     endif
     if (doshum) then
       call get_random_pattern_run(rpattern_shum,nshum)
       call get_stochy_physics(rpattern_shum,nshum,vfact_shum,shum3d)
-#ifdef VERBOSE
-      do k=1,lev
-        call unify_reduceintp(nx,my,my_max,shum3d(:,k,:),glob)   
-        if (myrank.eq.0) then
-          call avevar_sppt2d(glob,nx,my,aves,vars,stds)
-          write(6,*)'mod_stochastic_physics : shum3d : k,aves,vars,stds = ',k,aves,vars,stds
-        endif
-      enddo
-#endif
+      if (sppt_logit) shum3d(:,:,:) = (2./(1.+exp(shum3d(:,:,:))))-1.
     endif
 
   end subroutine run_stochastic_physics
@@ -529,9 +513,8 @@ contains
       eps4(ml)= rl*rlm/radsq
       cim(ml)= rm
     enddo
-! 
+ 
 !   gaussian quadrature weights and latitudes
-! 
     one = 1.0
     onem= -one
     call gausl3 (my,onem,one,weight,sinl)
@@ -551,88 +534,88 @@ contains
 
   end subroutine get_legendre_poly  
 
-  FUNCTION fun_gasdev(idum)result(gasdev)
-      INTEGER :: idum
-      REAL :: gasdev
-      INTEGER,save :: iset=0
-      REAL :: fac,rsq,v1,v2,ran1
-      real, save :: gset
+! FUNCTION fun_gasdev(idum)result(gasdev)
+!     INTEGER :: idum
+!     REAL :: gasdev
+!     INTEGER,save :: iset=0
+!     REAL :: fac,rsq,v1,v2,ran1
+!     real, save :: gset
 
-      if (iset.eq.0) then
-   11   v1=2.*fun_ran1(idum)-1.
-        v2=2.*fun_ran1(idum)-1.
-        rsq=v1**2+v2**2
-        if(rsq.ge.1..or.rsq.eq.0.)goto 11
-        fac=sqrt(-2.*log(rsq)/rsq)
-        gset=v1*fac
-        gasdev=v2*fac
-        iset=1
-      else
-        gasdev=gset
-        iset=0
-      endif
-  END FUNCTION fun_gasdev
+!     if (iset.eq.0) then
+!  11   v1=2.*fun_ran1(idum)-1.
+!       v2=2.*fun_ran1(idum)-1.
+!       rsq=v1**2+v2**2
+!       if(rsq.ge.1..or.rsq.eq.0.)goto 11
+!       fac=sqrt(-2.*log(rsq)/rsq)
+!       gset=v1*fac
+!       gasdev=v2*fac
+!       iset=1
+!     else
+!       gasdev=gset
+!       iset=0
+!     endif
+! END FUNCTION fun_gasdev
 
-  FUNCTION fun_ran1(idum)result(ran1)
-      INTEGER idum,IA,IM,IQ,IR,NTAB,NDIV
-      REAL ran1,AM,EPS,RNMX
-      PARAMETER (IA=16807,IM=2147483647,AM=1./IM,IQ=127773,IR=2836, &
-      NTAB=32,NDIV=1+(IM-1)/NTAB,EPS=1.2e-7,RNMX=1.-EPS)
-      INTEGER j,k,iv(NTAB),iy
-      SAVE iv,iy
-      DATA iv /NTAB*0/, iy /0/
-      if (idum.le.0.or.iy.eq.0) then
-        idum=max(-idum,1)
-        do j=NTAB+8,1,-1
-          k=idum/IQ
-          idum=IA*(idum-k*IQ)-IR*k
-          if (idum.lt.0) idum=idum+IM
-          if (j.le.NTAB) iv(j)=idum
-        enddo
-        iy=iv(1)
-      endif
-      k=idum/IQ
-      idum=IA*(idum-k*IQ)-IR*k
-      if (idum.lt.0) idum=idum+IM
-      j=1+iy/NDIV
-      iy=iv(j)
-      iv(j)=idum
-      ran1=min(AM*iy,RNMX)
-      return
-  END FUNCTION fun_ran1
+! FUNCTION fun_ran1(idum)result(ran1)
+!     INTEGER idum,IA,IM,IQ,IR,NTAB,NDIV
+!     REAL ran1,AM,EPS,RNMX
+!     PARAMETER (IA=16807,IM=2147483647,AM=1./IM,IQ=127773,IR=2836, &
+!     NTAB=32,NDIV=1+(IM-1)/NTAB,EPS=1.2e-7,RNMX=1.-EPS)
+!     INTEGER j,k,iv(NTAB),iy
+!     SAVE iv,iy
+!     DATA iv /NTAB*0/, iy /0/
+!     if (idum.le.0.or.iy.eq.0) then
+!       idum=max(-idum,1)
+!       do j=NTAB+8,1,-1
+!         k=idum/IQ
+!         idum=IA*(idum-k*IQ)-IR*k
+!         if (idum.lt.0) idum=idum+IM
+!         if (j.le.NTAB) iv(j)=idum
+!       enddo
+!       iy=iv(1)
+!     endif
+!     k=idum/IQ
+!     idum=IA*(idum-k*IQ)-IR*k
+!     if (idum.lt.0) idum=idum+IM
+!     j=1+iy/NDIV
+!     iy=iv(j)
+!     iv(j)=idum
+!     ran1=min(AM*iy,RNMX)
+!     return
+! END FUNCTION fun_ran1
 
-  FUNCTION fun_ran2(idum)result(ran2)
-      INTEGER idum,IM1,IM2,IMM1,IA1,IA2,IQ1,IQ2,IR1,IR2,NTAB,NDIV
-      REAL ran2,AM,EPS,RNMX
-      PARAMETER (IM1=2147483563,IM2=2147483399,AM=1./IM1,IMM1=IM1-1, &
-      IA1=40014,IA2=40692,IQ1=53668,IQ2=52774,IR1=12211,IR2=3791,    &
-      NTAB=32,NDIV=1+IMM1/NTAB,EPS=1.2e-7,RNMX=1.-EPS)
-      INTEGER idum2,j,k,iv(NTAB),iy
-      SAVE iv,iy,idum2
-      DATA idum2/123456789/, iv/NTAB*0/, iy/0/
-      if (idum.le.0) then
-        idum=max(-idum,1)
-        idum2=idum
-        do j=NTAB+8,1,-1
-          k=idum/IQ1
-          idum=IA1*(idum-k*IQ1)-k*IR1
-          if (idum.lt.0) idum=idum+IM1
-          if (j.le.NTAB) iv(j)=idum
-        enddo
-        iy=iv(1)
-      endif
-      k=idum/IQ1
-      idum=IA1*(idum-k*IQ1)-k*IR1
-      if (idum.lt.0) idum=idum+IM1
-      k=idum2/IQ2
-      idum2=IA2*(idum2-k*IQ2)-k*IR2
-      if (idum2.lt.0) idum2=idum2+IM2
-      j=1+iy/NDIV
-      iy=iv(j)-idum2
-      iv(j)=idum
-      if(iy.lt.1)iy=iy+IMM1
-      ran2=min(AM*iy,RNMX)
-  END FUNCTION fun_ran2
+! FUNCTION fun_ran2(idum)result(ran2)
+!     INTEGER idum,IM1,IM2,IMM1,IA1,IA2,IQ1,IQ2,IR1,IR2,NTAB,NDIV
+!     REAL ran2,AM,EPS,RNMX
+!     PARAMETER (IM1=2147483563,IM2=2147483399,AM=1./IM1,IMM1=IM1-1, &
+!     IA1=40014,IA2=40692,IQ1=53668,IQ2=52774,IR1=12211,IR2=3791,    &
+!     NTAB=32,NDIV=1+IMM1/NTAB,EPS=1.2e-7,RNMX=1.-EPS)
+!     INTEGER idum2,j,k,iv(NTAB),iy
+!     SAVE iv,iy,idum2
+!     DATA idum2/123456789/, iv/NTAB*0/, iy/0/
+!     if (idum.le.0) then
+!       idum=max(-idum,1)
+!       idum2=idum
+!       do j=NTAB+8,1,-1
+!         k=idum/IQ1
+!         idum=IA1*(idum-k*IQ1)-k*IR1
+!         if (idum.lt.0) idum=idum+IM1
+!         if (j.le.NTAB) iv(j)=idum
+!       enddo
+!       iy=iv(1)
+!     endif
+!     k=idum/IQ1
+!     idum=IA1*(idum-k*IQ1)-k*IR1
+!     if (idum.lt.0) idum=idum+IM1
+!     k=idum2/IQ2
+!     idum2=IA2*(idum2-k*IQ2)-k*IR2
+!     if (idum2.lt.0) idum2=idum2+IM2
+!     j=1+iy/NDIV
+!     iy=iv(j)-idum2
+!     iv(j)=idum
+!     if(iy.lt.1)iy=iy+IMM1
+!     ran2=min(AM*iy,RNMX)
+! END FUNCTION fun_ran2
 
 
   SUBROUTINE avevar_sppt(data,n,ave,var,std)
@@ -659,37 +642,34 @@ contains
 !
 !
   SUBROUTINE avevar_sppt2d(data2d,n,m,ave,var,std)
-      INTEGER n,m,nmdim
-      REAL ave,var,data2d(n,m),data(n*m)
-      INTEGER i,j
-      REAL s,ep,std
-!c
-      nmdim=0
-      do j=1,m
-        do i=1,n
-        nmdim=nmdim+1
-        data(nmdim)=data2d(i,j)
-        enddo
+    INTEGER :: n,m,nmdim
+    REAL :: ave,var,data2d(n,m),data(n*m)
+    INTEGER :: i,j
+    REAL :: s,ep,std
+
+    nmdim=0
+    do j=1,m
+      do i=1,n
+      nmdim=nmdim+1
+      data(nmdim)=data2d(i,j)
       enddo
-      
-      ave=0.0
-      do j=1,nmdim
-        ave=ave+data(j)
-      enddo
-      ave=ave/nmdim
-      var=0.0
-      ep=0.0
-      do j=1,nmdim
-        s=data(j)-ave
-        ep=ep+s
-        var=var+s*s
-!c      print *,'s= ',s
-!c      print *,'ep= ',ep
-      enddo
-!c      var=(var-ep**2/n)/(n-1)    ! sample numners < 30
-      var=(var-ep**2/nmdim)/nmdim
-      std=sqrt(var)
-      
+    enddo
+    
+    ave=0.0
+    do j=1,nmdim
+      ave=ave+data(j)
+    enddo
+    ave=ave/nmdim
+    var=0.0
+    ep=0.0
+    do j=1,nmdim
+      s=data(j)-ave
+      ep=ep+s
+      var=var+s*s
+    enddo
+!   var=(var-ep**2/n)/(n-1)    ! sample numners < 30
+    var=(var-ep**2/nmdim)/nmdim
+    std=sqrt(var) 
   end SUBROUTINE avevar_sppt2d
 
   subroutine removegt2std(scaleval,nx,my,aves,stds)

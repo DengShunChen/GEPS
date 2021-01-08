@@ -17,10 +17,10 @@
 !      inputs:                                                          !
 !          ( solhr,slag,sdec,cdec,sinlat,coslat,                        !
 !            xlon,coszen,tsea,tf,tsflw,                                 !
-!            sfcdsw,sfcnsw,sfcdlw,swh,hlw,                              !
+!            sfcdsw,sfcnsw,sfcdlw,swh,hlw,swhc,hlwc,                    !
 !            ix, im, levs,                                              !
 !      input/output:                                                    !
-!            dtrad,                                                      !
+!            dtrad,dtradc,                                              !
 !      outputs:                                                         !
 !            adjsfcdsw,adjsfcnsw,adjsfcdlw,adjsfculw,xmu,xcosz)         !
 !                                                                       !
@@ -64,11 +64,15 @@
 !     sfcdlw (im)  - real, total sky sfc downward lw flux ( w/m**2 )    !
 !     swh(ix,levs) - real, total sky sw heating rates ( k/s )           !
 !     hlw(ix,levs) - real, total sky lw heating rates ( k/s )           !
+!     swhc(ix,levs)- real, clear sky sw heating rates ( k/s )           !
+!     hlwc(ix,levs)- real, clear sky lw heating rates ( k/s )           !
 !     ix, im       - integer, horiz. dimention and num of used points   !
 !     levs         - integer, vertical layer dimension                  !
 !                                                                       !
 !  input/output:                                                        !
-!     dtrad(im,levs)- real, model time step adjusted total radiation     !
+!     dtrad(im,levs)- real, model time step adjusted total radiation    !
+!                          heating rates ( k/s )                        !
+!     dtradc(im,levs)-real, model time step adjusted clear sky radiation!
 !                          heating rates ( k/s )                        !
 !                                                                       !
 !  outputs:                                                             !
@@ -88,9 +92,9 @@
           ( solhr,slag,sdec,cdec,sinlat,coslat,                        &
             xlon,coszen,tsea,tf,tsflw,                                 &
             sfcdsw,sfcnsw,sfcdlw,swh,hlw,                              &
-            ix, im, levs,                                              &
+            swhc,hlwc,ix, im, levs,                                    &
 !  ---  output:
-            dtrad,                                                     &
+            dtrad,dtradc,                                              &
 !  ---  outputs:
             adjsfcdsw,adjsfcnsw,adjsfcdlw,adjsfcnlw,xmu                &
           )
@@ -116,9 +120,11 @@
            sfcdsw, sfcnsw
 
       real(kind=kind_phys), dimension(ix,levs), intent(in) :: swh, hlw
+      real(kind=kind_phys), dimension(ix,levs), intent(in) :: swhc, hlwc
 
 !  ---  input/output:
-      real(kind=kind_phys), dimension(ix,levs), intent(inout) :: dtrad
+      real(kind=kind_phys), dimension(ix,levs), intent(inout) :: dtrad &
+                                                                ,dtradc
 
 !  ---  outputs:
       real(kind=kind_phys), dimension(ix), intent(out) ::              &
@@ -183,6 +189,7 @@
       do k = 1, levs
         do i = 1, im
           dtrad(i,k) = swh(i,k)*xmu(i) + hlw(i,k)
+          dtradc(i,k) = swhc(i,k)*xmu(i) + hlwc(i,k)
         enddo
       enddo
 !
