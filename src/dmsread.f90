@@ -59,7 +59,9 @@
 !
       else
 !
+#ifdef VERBOSE
       if(myrank .eq. 0) print *,'dms key=',key,' found'
+#endif
 !
       endif
 !
@@ -128,7 +130,9 @@
 !
       else
 !
+#ifdef VERBOSE
       if(myrank .eq. 0) print *,'dms key=',key,' found'
+#endif
 !
       endif
 !
@@ -196,7 +200,9 @@
 !
       else
 !
+#ifdef VERBOSE
       if(col_rank .eq. 0) print *,'dms key=',key,' found'
+#endif
 !
       endif
 !

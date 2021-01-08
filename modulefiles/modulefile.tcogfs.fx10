@@ -21,7 +21,11 @@ setenv C_COMP $LANG_HOME/bin/fccpx
 setenv C_COMP_MP $LANG_HOME/bin/mpifccpx
 
 setenv FFLAGS_COM "-c -X9 -Free -CcdRR8 -Cpp -Kfast,ocl,autoobjstack -x- -fw"
-setenv DEFINE_FLAGS "-DTIMING -DUSE_FFTW -DW3TAG"
+#setenv FFLAGS_COM "-c -X9 -Free -CcdRR8 -Cpp -x- -fw"
+
+setenv DEFINE_FLAGS "-DTIMING -DUSE_FFTW -DW3TAG "
+#setenv DEFINE_FLAGS "-DTIMING -DUSE_FFTW -DW3TAG -DVERBOSE"
+
 setenv MSG_COM "-Ec -Qa,d,i,p,t,x -Koptmsg=2"
 setenv LIBS_COM "-SSL2BLAMP"
 setenv OMP_COM "-Kopenmp,parallel"

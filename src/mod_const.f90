@@ -50,14 +50,18 @@
          hours,frad,evaprh,qgini,                          &
          tice,hice,cutfreq,taup,hfilt,ptmeans,             &
          taureg,cgw,fsit,domfc,otgreen,spl1,spl2
-    ! sppt parameters
-    real  :: de_corretime_500,de_corretime_1000,de_corretime_2000, &
-             facsppt500,facsppt1000,facsppt2000
-               
+              
     logical :: lsimpl,lzadv, yesdia,dopbl, docup, dorad,      &
             dolsp, dograv,doshl, dodry, donnmi,ozon,       &
             restrt,hdiff, cstar, update,doincr,hybrid,     &
-            doo3l, dosppt, dospptout,   docgrav
+            doo3l, docgrav
+
+    ! for stochastic physics
+    logical :: dosppt       =.false.
+    logical :: dospptout    =.false.
+    logical :: doshum       =.false.
+    logical :: use_zmtnblck =.false.
+         
     logical :: out_green,out_hp
 
     !for Semi-Lagrangain

@@ -96,21 +96,11 @@
       pdfcloud=.false.
 ! ncep ice thickness
       ncepicthk=.false.
-! sppt
+! stochastic physics
       dosppt=.false.
       dospptout=.false.
+      doshum=.false.
 !---------------------------------------------------------------------------
-! sppt parameters, de_corretime unit is hour
-!
-      de_corretime_500=6.
-      de_corretime_1000=72.    ! 3d=3.*24.
-      de_corretime_2000=720.   ! 30d=30.*24.
-!
-! perturbation amplitude factor, basically do not great than 0.17
-!
-      facsppt500=0.15
-      facsppt1000=0.05
-      facsppt2000=0.015
 !
 ! specify the default option for cup and pbl
 !
