@@ -142,7 +142,7 @@ cat > ${GFSWRK}/namlsts << EOF
  &end
 
  &modlst
-  taui=0.0, taue=1080.0, tauo=1.0, taup=6.0, taureg=6.,
+  taui=0.0, taue=120.0, tauo=1.0, taup=6.0, taureg=6.,
   dt=225.0,
   cstar=f, update=t, lsimpl=t,
   tfilt=0.04, hfilt=1.,
