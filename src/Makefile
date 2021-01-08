@@ -69,7 +69,6 @@ SRCS_f90  = \
   gathv.f90 \
   gausl3.f90 \
   gauslv.f90 \
-  gensppt3dv5.f90 \
   geostd.f90 \
   get_model_param.f90 \
   get_phi.f90 \

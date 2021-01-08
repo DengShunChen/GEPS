@@ -1,5 +1,5 @@
 module mod_stochastic_physics
-  use mpe
+  use mpe, only : mpe_bcast, mpe_double
   use rank, only : myrank
   use index
   use param
@@ -45,8 +45,8 @@ module mod_stochastic_physics
   real, public :: sppt_sigtop2 = 0.025
   real, public :: sppt_sigbot1 = 0.975
   real, public :: sppt_sigbot2 = 0.9
-  logical, public :: sppt_sfclimit=.true.
-  logical, public :: sppt_logit=.false.
+  logical, public :: sppt_sfclimit=.false.
+  logical, public :: sppt_logit=.true.
 
   ! SHUM
   integer :: nshum
@@ -191,6 +191,7 @@ contains
     if (doshum) then
       call get_random_pattern_run(rpattern_shum,nshum)
       call get_stochy_physics(rpattern_shum,nshum,vfact_shum,shum3d)
+      if (sppt_logit) shum3d(:,:,:) = (2./(1.+exp(shum3d(:,:,:))))-1.
     endif
 
   end subroutine run_stochastic_physics

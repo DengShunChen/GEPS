@@ -179,15 +179,22 @@ cat > ${GFSWRK}/namlsts << EOF
  
  &stochy_physics
   ncep_seeds = true,
+  use_zmtnblck = true,
   sppt_logit = true,
+  sppt_sigtop1 = 0.1,
+  sppt_sigtop2 = 0.025, 
+  sppt_sfclimit = true,
+  sppt_sigbot1 = 0.975,
+  sppt_sigbot2 = 0.9,
   sppt = 0.80,0.4,0.10,0.08,0.04
   sppt_seed = 1878981022, 1046881385, 1551676790, 2041328465, 1442149336
   sppt_decort = 2.16E4,2.592E5,2.592E6,7.776E6,3.1536E7 
   sppt_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
-  shum = 0.250,-999,-999,-999,-999
+  shum = 0.04,-999,-999,-999,-999
   shum_seed = 2140313855,-999,-999,-999,-999
   shum_decort = 2.16E4,1.728E5,2.592E6,7.776E6,3.1536E7
   shum_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
+  shum_sigefold = 0.2,
  /
 
 EOF

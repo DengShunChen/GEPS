@@ -95,6 +95,7 @@
       namelist /typ/ write_tau, write_mem, trk_intv, min_trk_pres
 
       namelist /stochy_physics/ ncep_seeds, & 
+                   use_zmtnblck, & 
                    sppt, sppt_seed, sppt_decort, sppt_lscale, &
                    sppt_sigtop1, sppt_sigtop2, sppt_sigbot1, sppt_sigbot2, &
                    sppt_sfclimit, sppt_logit, &

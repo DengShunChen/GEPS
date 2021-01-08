@@ -167,8 +167,9 @@
       use mpe
       use rank
       use index
-      use const,                 ONLY:do_sit,ldailyFCTsst,dailyClm_option    &
-                                     ,pdfcloud,cmbk,cgwd, dosppt, doshum
+      use const,                 ONLY:do_sit,ldailyFCTsst,dailyClm_option,    &
+                                      pdfcloud,cmbk,cgwd, dosppt, doshum,     &
+                                      use_zmtnblck
       use mod_sitgrid
       USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
       USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt
@@ -2137,14 +2138,16 @@
             if (kc.eq.zmtnblck(i)+2) then
                vru=0.666667
             endif
-!
-            ru = sppt3d(i,k,jj) * vru + 1.
+
+            ru = sppt3d(i,k,jj) + 1.
+            if (use_zmtnblck) ru = (ru - 1.) * vru + 1.
+
             dtdtr = dtradc(i,k,jj) * dta / 86400.
             upert = ( ut(i,k,jj) - ut_save_sppt(i,k,jj) ) * ru
             vpert = ( vt(i,k,jj) - vt_save_sppt(i,k,jj) ) * ru
             tpert = ( tt(i,k,jj) - tt_save_sppt(i,k,jj) - dtdtr ) * ru
             qpert = ( qt(i,k,jj) - qt_save_sppt(i,k,jj) ) * ru
-!
+
             ut(i,k,jj) = ut_save_sppt(i,k,jj) + upert
             vt(i,k,jj) = vt_save_sppt(i,k,jj) + vpert
 
@@ -2157,7 +2160,7 @@
           enddo
         enddo
       endif
-!
+
       ! SHUM process
       if (doshum) then
         ! there's no need to add perturbation for cloud & ozone tracer. 
@@ -2196,7 +2199,7 @@
           tt(i,k,jj) = tt(i,k,jj)*(1.0+0.608*qt(i,k,jj))/pk(i,k,jj)
         enddo
       enddo
-!     
+     
   290 continue  ! end of big j-loop for diabatic calculation
 
 #ifdef VERBOSE
