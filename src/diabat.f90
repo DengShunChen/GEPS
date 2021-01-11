@@ -176,8 +176,7 @@
       USE mod_eos_ocean,         ONLY:AirVaporPressure,CalcSm
       USE mod_sst,               ONLY:time_weights,now1,now2,wgto1,wgto2 &
                                      ,obswtbnmw1,obswtbnmw2,obswtbwgt1   &
-                                     ,obswtbwgt2,dailyFCTsst,obswtbt     &
-                                     ,myrank_check,ii_check,jj_check
+                                     ,obswtbwgt2,dailyFCTsst,obswtbt
       USE mo_netcdf,             ONLY:lkvl
 !-----------------------------------------------------------------------
       use radn
@@ -1085,12 +1084,6 @@
                      , hpbl(1,jj),asl(1,1,jj),atl(1,1,jj),xmu(1,jj),gfx(1,jj) &
                      , kpbl(1,jj),nmpbl,nmmiph,j,isot,ivegsrc,sfemis(1,jj) )
 
-      if((myrank .eq. myrank_check) .AND. (jj .eq. jj_check) ) then
-        print *,'pbl_noah:myrank=',myrank,',tg(',ii_check,',',jj_check      &
-               ,')=',tg(ii_check,jj_check),',tt=',tt(ii_check,lev,jj_check) &
-               ,',qflux=',qflux(ii_check,jj_check),'hflux='            &
-               ,hflux(ii_check,jj_check)
-      endif
 !
 !     update tt by radiation heating/cooling rate: dtrad (k/day)
 !
@@ -1726,11 +1719,6 @@
 !=======================================================================
 ! SIT scheme, cal. dTsit/dt
 !=======================================================================
-      if(myrank .EQ. myrank_check .AND. jj .EQ. jj_check ) then
-        print*,'before do_sit: myrank=',myrank,',jj=',jj       &
-              ,'ii=',ii_check,',tg=',tg(ii_check,jj)
-      endif
-
       if(do_sit) then
         dtsit=dt
 
@@ -1766,10 +1754,6 @@
 
         if (jj .eq. 1) then
           dtfsit=dtfsit+dtsit
-          if(myrank .EQ. myrank_check ) then
-            print*,'myrank=',myrank,',jj=',jj   &
-                  ,',dtfsit=',dtfsit,',dtsit=',dtsit
-          endif
         endif
         do ii = 1, nxj
           i=nxjstart(j)+ii-1
@@ -1799,17 +1783,6 @@
             xticefsit(ii,jj)=xticefsit(ii,jj)+xtice(ii,jj)*dtsit
             obswtbfsit(ii,jj)=obswtbfsit(ii,jj)+obswtbt(ii,jj)*dtsit
             tgfsit(ii,jj)=tgfsit(ii,jj)+tg(ii,jj)*dtsit
-            if(myrank .EQ. myrank_check .AND.    &
-              jj .EQ. jj_check .AND. ii.EQ. ii_check) then
-              print*,'in not lrun_sitvdiff:myrank=',myrank,',jj=',jj &
-                 ,',j=',j,',sitlat(',ii_check,')=',sitlat(ii)        &
-                 ,',sitlon(',ii_check,',jj)=',sitlon(ii,jj)          &
-                 ,',sitlclass=',sitlclass(ii,jj)                     &
-                 ,',sitmask=',sitmask(ii,jj),',tg=',tg(ii,jj)        &
-                 ,',tgfsit=',tgfsit(ii,jj)                           &
-                 ,',obswtb=',obswtb(ii,jj),',obswtbfsit=',obswtbfsit(ii,jj) &
-                 ,',dta=',dta,',dt=',dt,',dtfsit=',dtfsit
-            endif
           endif
 
           if(lrun_sitvdiff)then
@@ -1911,44 +1884,9 @@
             dtswdt(ii,jj)=0.
 
           endif    !end (lrun_sitvdiff)
-
-          if(myrank .EQ. myrank_check .AND.         &
-            jj .EQ. jj_check .AND. ii .EQ. ii_check) then
-            print*,'before sit_vidff:myrank=',myrank,',jj=',jj     &
-                 ,',j=',j,',sitlat(',ii_check,')=',sitlat(ii)      &
-                 ,',sitlon(',ii_check,',jj)=',sitlon(ii,jj)        &
-                 ,',sitlclass=',sitlclass(ii,jj)                   &
-                 ,',sitmask=',sitmask(ii,jj),',tg=',tg(ii,jj)      &
-                 ,',tsw=',tsw(ii,jj),',dtswdt=',dtswdt(ii,jj)      &
-                 ,',dta=',dta,',dt=',dt,',dtfsit=',dtfsit
-          endif
         enddo    !end i=1,nxj
 
         if(lrun_sitvdiff) then
-         if(myrank.EQ.myrank_check .AND. jj.EQ.jj_check) then
-            ii=ii_check
-          print *,"myrank=",myrank,",jj=",jj
-          print *,"sitlat=",sitlat(ii),"sitlon=",sitlon(ii,jj)
-          print *,"sitcor=",sitcor(ii,jj),",slm=",slm(ii,jj)
-          print *,"sitclass=",sitlclass(ii,jj),"sitmask=",sitmask(ii,jj)
-          print *,"tg=",tg(ii,jj)
-
-      2300 FORMAT(1X,23(A11,E13.5))
-
-          WRITE(nerr,2300)           &
-           "1tau,",tau,",tg,",tg(ii,jj),",tsw,",tsw(ii,jj)             &
-          ,",fluxw,",fluxw(ii,jj),",dfluxs,",dfluxs(ii,jj)             &
-          ,",soflw,",soflw(ii,jj),",fluxi,",fluxi(ii,jj),",sofli,"     &
-          ,sofli(ii,jj),",ustrw,",ustrw(ii,jj),",vstrw,",vstrw(ii,jj)  &
-          ,",hflux,",hflux(ii,jj),",qflux,",qflux(ii,jj)               &
-          ,",cice,",cice(ii,jj),",zice,",zice(ii,jj),",rsf,",rsf(ii,jj)&
-          ,",ssf,",ssf(ii,jj),",evapw,",evapw(ii,jj),",disch,",disch(ii,jj)    &
-          ,",t2tm,",t2tm(ii),",wind10w,",wind10w(ii,jj),",obsseaice," &
-          ,obsseaice(ii,jj),",sitws0,",sitws(ii,jj,0)                  &
-          ,",obswtbtm,",obswtbtm(ii)
-
-         endif
-
          call sit_vdiff ( nxjp(j), nxp, jj, istep, dtfsit,             &
               sitlat, sitlon(:,jj), tau, tauhr,                        &
               sitcor(:,jj), slm(:,jj), sitlclass(:,jj),                &
@@ -2007,23 +1945,8 @@
         endif
         call storesittau(nxjp(j),jj,nxp,my_max,lkvl,sitwt,sitws,sitwu,sitwv,dtfsit)
         call storesit24(nxjp(j),jj,nxp,my_max,lkvl,sitwt,sitws,sitwu,sitwv,dtfsit)
-        
-
-        if(myrank .EQ. myrank_check .AND.         &
-          jj .EQ. jj_check .AND. ii .EQ. ii_check) then
-          print*,'after sit_vdiff:myrank=',myrank                &
-                ,',ii=',ii,',jj=',jj,',i=',i,',j=',j              &
-                ,',sitlat(',ii_check,')=',sitlat(ii)              &
-                ,',sitlon(',ii_check,',jj)=',sitlon(ii,jj)        &
-                ,',sitlclass=',sitlclass(ii,jj)                   &
-                ,',sitmask=',sitmask(ii,jj),',tg=',tg(ii,jj)      &
-                ,',tsw=',tsw(ii,jj),',dtswdt=',dtswdt(ii,jj)      &
-                ,',dta=',dta,',dt=',dt,',dtfsit=',dtfsit          &
-                ,',lsftobswt=',lsftobswt
-        endif
 
        endif  !end lrun_sitvdiff
-
 
        deallocate(sstm)
        deallocate(rstm)
@@ -2048,10 +1971,6 @@
        endif
       endif  !end do_sit
 
-      if(myrank .EQ. myrank_check .AND. jj .EQ. jj_check ) then
-        print*,'after do_sit: myrank=',myrank,',jj=',jj       &
-              ,'ii=',ii_check,',tg=',tg(ii_check,jj)
-      endif
 
 !=======================================================================
 ! Add SPPT pertubation 

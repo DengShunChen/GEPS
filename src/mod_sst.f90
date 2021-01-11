@@ -50,7 +50,6 @@
         PUBLIC :: ANAsstT0,dailyClmANAsst,dailyClmFCTsst
         PUBLIC :: deallocate_dailyFCT_array
         PUBLIC :: outtseadiffFCT24
-        PUBLIC :: myrank_check,ii_check,jj_check
         PUBLIC :: tseap,tseat,tsean
 
 
@@ -138,7 +137,6 @@
 !for time_interpolation
       REAL wgt1,wgt2,obswtbwgt1,obswtbwgt2,wgto1,wgto2
       INTEGER nmw1,nmw2,obswtbnmw1,obswtbnmw2,now1,now2
-      INTEGER myrank_check,ii_check,jj_check
 
 
   !*    1.0 COEFFICIENTS IN sit_ocean MODEL
@@ -391,33 +389,6 @@
             endif
 
             timevals_dailyFCT(2)=ydate2
-            if(myrank .eq. myrank_check) then
-              print*,"read_dailyFCT: tg1=",tg1(ii_check,jj_check)
-              if(ldailyFCTsst) then
-                print*,"1.dailyFCTsst(",ii_check,",",jj_check,",1)=" &
-                      , dailyFCTsst(ii_check,jj_check,1)      &
-                      ,",dailyFCTsst(",ii_check,",",jj_check,",2)="   &
-                      , dailyFCTsst(ii_check,jj_check,2)      &
-                      ,",dFCTsstdt(",ii_check,",",jj_check,")="       &
-                      , dFCTsstdt(ii_check,jj_check) 
-              endif
-              if(dailyClm_option .ge. 1)then
-                print*,"dailyClmANAssst(",ii_check,",",jj_check,",0)=" &
-                      , dailyClmANAsst(ii_check,jj_check,0)            &
-                      ,",dailyClmANAsst(",ii_check,",",jj_check,",1)=" &
-                      , dailyClmANAsst(ii_check,jj_check,1)            &
-                      ,",dailyClmANAsst(",ii_check,",",jj_check,",2)=" &
-                      , dailyClmANAsst(ii_check,jj_check,2) 
-                if(dailyClm_option .eq. 2)then
-                  print*,",dailyClmFCTsst(",ii_check,",",jj_check,",0)="&
-                       , dailyClmFCTsst(ii_check,jj_check,0)            &
-                       ,",dailyClmFCTsst(",ii_check,",",jj_check,",1)=" &
-                       , dailyClmFCTsst(ii_check,jj_check,1)            &
-                       ,",dailyClmFCTsst(",ii_check,",",jj_check,",2)=" &
-                       , dailyClmFCTsst(ii_check,jj_check,2)
-                endif
-              endif
-            endif
           ELSEIF (ydate.LT.timevals_dailyFCT(2)) THEN
      ! data were read. Note that initial value of  timevals_godas=0.
             RETURN
@@ -442,32 +413,6 @@
             endif
 
             timevals_dailyFCT(2)=ydate2
-            if(myrank .eq. myrank_check) then
-              print*,"read_dailyFCT: myrank=",myrank,",ii=",ii_check   &
-                    ,",jj=",jj_check,",tg1=",tg1(ii_check,jj_check)
-              if(ldailyFCTsst) then
-                print*,"2.myrank=",myrank,",dailyFCTsst(",ii_check,","  &
-                      ,jj_check,",1)=",dailyFCTsst(ii_check,jj_check,1) &
-                      ,",dailyFCTsst(",ii_check,",",jj_check,",2)="   &
-                      , dailyFCTsst(ii_check,jj_check,2)
-              endif
-              if(dailyClm_option .ge. 1)then
-                print*,"2.dailyClmANAsst(",ii_check,",",jj_check,",0)="  &
-                      , dailyClmANAsst(ii_check,jj_check,0)     &
-                      ,",dailyClmANAsst(",ii_check,",",jj_check,",1)="  &
-                      , dailyClmANAsst(ii_check,jj_check,1)     &
-                      ,",dailyClmANAsst(",ii_check,",",jj_check,",2)="  &
-                      , dailyClmANAsst(ii_check,jj_check,2)
-                if(dailyClm_option .eq. 2)then
-                  print*,",dailyClmFCTsst(",ii_check,",",jj_check,",0)="&
-                       , dailyClmFCTsst(ii_check,jj_check,0)            &
-                       ,",dailyClmFCTsst(",ii_check,",",jj_check,",1)=" &
-                       , dailyClmFCTsst(ii_check,jj_check,1)            &
-                       ,",dailyClmFCTsst(",ii_check,",",jj_check,",2)=" &
-                       , dailyClmFCTsst(ii_check,jj_check,2)
-                endif
-              endif
-            endif
 
           ENDIF
           
@@ -533,12 +478,6 @@
 
             DO ii=1,nxj
               i=nxjstart(j)+ii-1
-              if(myrank .eq. myrank_check .AND. &
-                 i .eq. ii_check .AND. jj .eq. jj_check) then
-                 print*,"read_dailyFCT_dayp1: ssttemp(",ii_check,"," &
-                       ,j,")=",ssttemp(ii_check,j)
-              endif
-
               dailyFCTsst(ii,jj,2)=MERGE(ssttemp(i,j),xmissing,  &
                    (ssttemp(i,j).GE.sstmin .AND. ssttemp(i,j) .LE. 400.))
               if(ldailyFCTicesndpt)then
@@ -621,15 +560,6 @@
               if(ldailyFCTicesndpt)then
                 dFCTcicedt(ii,jj)=(dailyFCTcice(ii,jj,2)-dailyFCTcice(ii,jj,1))/(24.*3600.)
                 dFCTsndepthdt(ii,jj)=(dailyFCTsndepth(ii,jj,2)-dailyFCTsndepth(ii,jj,1))/(24.*3600.)
-              endif
-
-              if(myrank .eq. myrank_check .AND. &
-                ii .eq. ii_check .AND. jj.eq. jj_check) then
-                print*,"read_dailyFCT_dayp1: myrank=",myrank          &
-                      ,",i=",i,",j=",j,",ii=",ii, ",jj=",jj           &
-                      ,",ssttemp(i,j)=",ssttemp(i,j)                  &
-                      ,",dailyFCTsst(ii,jj,2)=",dailyFCTsst(ii,jj,2)  &
-                      ,",dFCTsstdt(ii,jj)=",dFCTsstdt(ii,jj)
               endif
 
             ENDDO  !end do ii
@@ -762,24 +692,6 @@
                 dFCTsstdt(ii,jj)=0.
               endif
 
-              if(myrank.eq.myrank_check .AND.    &
-                i.eq.ii_check .AND. jj.eq.jj_check) then
-                print*,"myrank=",myrank,",i=",i,",j=",j                &
-                  ,",ii=",ii,",jj=",jj                                 &
-                  ,",plat=",plat(j),",abs(plat(j))=",abs(plat(j))      &
-                  ,",dailyClmANAsst(ii,jj,0)=",dailyClmANAsst(ii,jj,0) &
-                  ,",dailyClmANAsst(ii,jj,1)=",dailyClmANAsst(ii,jj,1) &
-                  ,",dailyClmANAsst(ii,jj,2)=",dailyClmANAsst(ii,jj,2) &
-                  ,",itau=",itau,",wweight=",wweight                   &
-                  ,",dailyFCTsst(ii,jj,2)=",dailyFCTsst(ii,jj,2)            &
-                  ,",dFCTsstdt(ii,jj)=",dFCTsstdt(ii,jj)
-                if(dailyClm_option .eq. 2) then
-                  print*,",dailyClmFCTsst(ii,jj,0)=",dailyClmFCTsst(ii,jj,0)   &
-                    ,",dailyClmFCTsst(ii,jj,1)=",dailyClmFCTsst(ii,jj,1)   &
-                    ,",dailyClmFCTsst(ii,jj,2)=",dailyClmFCTsst(ii,jj,2)
-                endif
-                 
-              endif
             ENDDO  !end do ii
           ENDDO    !end do jj
         
@@ -882,19 +794,6 @@
                 dFCTsstdt(ii,jj)=0.
               endif
 
-              if(myrank.eq.myrank_check .AND.    &
-                ii.eq.ii_check .AND. jj.eq.jj_check) then
-                print*,"myrank=",myrank,",i=",i,",j=",j                &
-                  ,",ii=",ii,",jj=",jj                                 &
-                  ,",plat=",plat(j),",abs(plat(j))=",abs(plat(j))      &
-                  ,",dailyClmANAsst(ii,jj,2)=",dailyClmANAsst(ii,jj,2) &
-                  ,",itau=",itau,",wweight=",wweight                   &
-                  ,",dailyFCTsst(ii,jj,2)=",dailyFCTsst(ii,jj,2)       &
-                  ,",dFCTsstdt(ii,jj)=",dFCTsstdt(ii,jj)
-                if(dailyClm_option .eq. 2)then
-                  print*,",dailyClmFCTsst(ii,jj,2)=",dailyClmFCTsst(ii,jj,2)
-                endif
-              endif
             ENDDO
           ENDDO
 
@@ -1934,13 +1833,7 @@
         DO jk = 1, nodepth0
           flag=.false.
           if(myrank .eq. 0) flag=.true.
-!          call mpe_broadcast(zin(:,jk,:),nx*my,flag,mpe_double)
           call mpe_bcast(zin(:,jk,:),nx*my,0,mpe_double)
-!          if( lreduce.eq.1 ) call reducepick (zin(1,jk,1),nxdef,nx,my)
-!          IF(myrank.eq. myrank_check) THEN
-!            print *,"after broadcast,woa0: irec=",irec,  &
-!                         ",zin:(212,",jk,",235)=",zin(212,jk,ngl+1-235)
-!          ENDIF
           DO j=1,ngl
             if(irec .eq. 5) then
               zintemp(:,j)=zin(:,1,ngl-j+1)
@@ -1957,33 +1850,14 @@
               i=nxjstart(j)+ii-1
               IF (irec .eq. 1) THEN
                 ot0(ii,jk,jj)=zintemp(i,j)
-                IF((myrank.eq.myrank_check) .and.     &
-                  (jj.eq.jj_check) .and. (ii.eq.ii_check))THEN
-                  print *,"myrank=",myrank
-                  print *,"WOA0:ot0(",ii,",",jk,",",jj,")=",ot0(ii,jk,jj)
-                ENDIF
               ELSE IF(irec .eq. 2) THEN
                 os0(ii,jk,jj)=zintemp(i,j)
-!                IF((myrank.eq.myrank_check) .and. (jj.eq.jj_check) .and. (ii.eq.ii_check))THEN
-!                  print *,"myrank=",myrank
-!                  print *,"WOA0:os0(",ii,",",jk,",",jj,")=",os0(ii,jk,jj)
-!                ENDIF
               ELSE IF(irec .eq. 3) THEN
                 ou0(ii,jk,jj)=zintemp(i,j)
-!                IF((myrank.eq.myrank_check) .and. (jj.eq.jj_check) .and. (ii.eq.ii_check))THEN
-!                  print *,"WOA0:ou0(",ii,",",jk,",",jj,")=",ou0(ii,jk,jj)
-!                ENDIF
               ELSE IF(irec .eq. 4) THEN
                 ov0(ii,jk,jj)=zintemp(i,j)
-!                IF((myrank.eq.myrank_check) .and. (jj.eq.jj_check) .and. (ii.eq.ii_check))THEN
-!                  print *,"WOA0:ov0(",ii,",",jk,",",jj,")=",ov0(ii,jk,jj)
-!                ENDIF
               ELSE IF(irec .eq. 5) THEN
                 mixedlayer0(ii,jj)=zintemp(i,j)
-                IF((myrank.eq.myrank_check) .and.     &
-                  (jj.eq.jj_check) .and. (ii.eq.ii_check))THEN
-                  print *,"WOA0:mixedlayer0(",ii,",",jj,")=",mixedlayer0(ii,jj)
-                ENDIF
               ENDIF
             ENDDO
           ENDDO
@@ -2469,12 +2343,6 @@
          DO jj = 1, jlistnum
            j=jlist1(jj)
            nxj=nxdef_2d(j)
-           if((myrank.eq.myrank_check).AND.(jj.eq.jj_check)) then
-             print *,'before pick, ottemp(521,',j,')=' &
-                    ,ottemp(521,j)
-             print *,'before pick, ottemp(777,',j,')=' &
-                    ,ottemp(777,j)
-           endif  
            if( lreduce.eq.1 ) then
              call reducepick(ottemp(1,j),nxdef(j),nx,1)
              call reducepick(ostemp(1,j),nxdef(j),nx,1)
@@ -2483,22 +2351,10 @@
              if(jk .eq. 1) then
                call reducepick(zmixedlayer(1,j),nxdef(j),nx,1)
              endif
-             if((myrank.eq.myrank_check).AND.(jj.eq.jj_check)) then
-               print *,'after pick, ottemp(521,',j,')=' &
-                    ,ottemp(521,j)
-               print *,'after pick, ottemp(777,',j,')=' &
-                    ,ottemp(777,j)
-             endif
            endif
            DO ii=1,nxj
              i=nxjstart(j)+ii-1
              ot12(ii,jk,jj,dayID) = ottemp(i,j)
-             if((myrank.eq.myrank_check).AND.   &
-                (ii.eq.ii_check).AND.(jj.eq.jj_check)) then
-                print *,'i=',i,',j=',j,',ngl=',ngl     &
-                       ,',ot12(',ii,',',jk,',',jj,',',dayID,')=' &
-                       ,ot12(ii,jk,jj,dayID)
-             endif
              os12(ii,jk,jj,dayID) = ostemp(i,j)
              ou12(ii,jk,jj,dayID) = outemp(i,j)
              ov12(ii,jk,jj,dayID) = ovtemp(i,j)
@@ -2510,7 +2366,6 @@
        ENDDO
 
 
-!ps       IF (p_parallel_io) THEN
          DEALLOCATE (zot)
          DEALLOCATE (zos)
          DEALLOCATE (zou)

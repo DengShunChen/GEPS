@@ -41,8 +41,7 @@
                                  ,obswtbnmw1,obswtbnmw2,obswtbwgt1,obswtbwgt2   &
                                  ,obswtbp,obswtbt,obswtbn,tseap,tseat,tsean     &
                                  ,dFCTsstdt,tseadiffFCT,tseadiffFCT24           &
-                                 ,outtseadiffFCT24                              &
-                                 ,myrank_check,ii_check,jj_check
+                                 ,outtseadiffFCT24
       USE mo_netcdf,           ONLY:lkvl,cleanup_netcdf
 !-----------------------------------------------------------------------
       use raddiag
@@ -1018,14 +1017,6 @@
               if(ocean(ii,jj))then
                 tseadiffFCT(ii,jj)=dta*dFCTsstdt(ii,jj)
                 tseat(ii,jj)=dta*dFCTsstdt(ii,jj)+ tseap(ii,jj)
-                if(myrank .eq. myrank_check .AND. ii .eq. ii_check     &
-                  .AND. jj .eq. jj_check) then
-                  print *,'forward update tg: myrank=',myrank          &
-                       ,',ii=',ii,',jj=',jj                            &
-                       ,',tseap=',tseap(ii,jj),',tseat=',tseat(ii,jj)  &
-                       ,',tsean=',tsean(ii,jj)                         &
-                       ,',tseadiffFCT=',tseadiffFCT(ii,jj)
-                endif
               endif
             end do
           end do
@@ -1079,12 +1070,6 @@
               obswtbn(ii,jj)=dta*dFCTsstdt(ii,jj)+obswtbp(ii,jj)
               obswtbp(ii,jj)=obswtbt(ii,jj)
               obswtbt(ii,jj)=obswtbn(ii,jj)
-              if(myrank .eq. myrank_check .AND. ii .eq. ii_check  &
-                .AND. jj .eq. jj_check) then
-                print *,'before dsst/dt: myrank=',myrank           &
-                       ,',ii=',ii,',jj=',jj,',ocean=',ocean(ii,jj)    &
-                       ,',tg=',tg(ii,jj)
-              endif
 
               if(ocean(ii,jj))then
                 tseadiffFCT(ii,jj)=dta*dFCTsstdt(ii,jj)
@@ -1109,14 +1094,6 @@
                                           ,abs(fsitchg))
                       endif
                     endif
-                    if(myrank .eq. myrank_check .AND. ii .eq. ii_check  &
-                       .AND. jj .eq. jj_check) then
-                      print *,'in dSITdt_intv: myrank=',myrank        &
-                             ,',ii=',ii,',jj=',jj,',ratioSIT='        &
-                             ,ratioSIT(ii,jj),',sundSITdt='           &
-                             ,sumdSITdt(ii,jj),',countdSITdt='        &
-                             ,countdSITdt(ii,jj)
-                    endif
                     sumdSITdt(ii,jj)=0.
                     countdSITdt(ii,jj)=0.
                     tseadiffSIT24(ii,jj)=tseadiffSIT24(ii,jj)+tseadiffSIT(ii,jj)/dta*dtx
@@ -1136,23 +1113,6 @@
                   tg(ii,jj)=tseat(ii,jj)
                 endif
 
-              endif
-
-              if(myrank .eq. myrank_check .AND. ii .eq. ii_check  &
-                .AND. jj .eq. jj_check) then
-                print *,'after update tg: myrank=',myrank         &
-                       ,',ii=',ii,',jj=',jj                         &
-                       ,',tseap=',tseap(ii,jj),',tg=',tg(ii,jj)     &
-                       ,',tsean=',tsean(ii,jj)                      &
-                       ,',tseadiffFCT=',tseadiffFCT(ii,jj)
-                if(do_sit) then
-                  if(sitmask(ii,jj).EQ.1. .AND. (lrun_sitvdiff      &
-                      .OR. (dtaup .lt. dtx_tau)) )then
-                    print *,',tseadiffSIT=',tseadiffSIT(ii,jj)      &
-                           ,',tseadiffSIT24=',tseadiffSIT24(ii,jj)  &
-                           ,',ratioSIT=',ratioSIT(ii,jj)
-                  endif
-                endif
               endif
 
             end do

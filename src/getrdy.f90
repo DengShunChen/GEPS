@@ -43,8 +43,7 @@
       use mod_sst,           only:read_woa0,read_godas,read_dailygodas &
                                 ,read_dailyFCT,obswtbp,obswtbt         &
                                 ,ifilin_ocaf,read_ocaf,read_ocaf0      &
-                                ,wtfn12,wsfn12,time_weights,mask1st    &
-                                ,myrank_check,ii_check,jj_check
+                                ,wtfn12,wsfn12,time_weights,mask1st
       USE mo_netcdf,         ONLY:lkvl,set_ocndepth
 !-----------------------------------------------------------------------
 
@@ -1013,24 +1012,7 @@
         xlon(1,jj)=0.
         do i=2,nxj
           xlon(i,jj)=xlon(1,jj)+float(i-1)*360./nxj
-          
-          if( (abs(xlon(i,jj)-152.4) .le. 0.25) .AND. &
-              (abs(xlat(j)-19.4) .le. 0.15) ) then
-            nxjpart=nxdef_2d(j)
-            do ii=1,nxjpart
-              if(nxjstart(j)+ii-1 .eq. i)then
-                myrank_check=myrank
-                ii_check=ii
-                jj_check=jj
-                print *,'in getrdy, myrank=',myrank,',ii=',ii,',jj=' &
-                       ,jj,',i=',i,',j=',j,',xlat=',xlat(j)     &
-                       ,',xlon=',xlon(i,jj)
-                endif
-             enddo
-          endif
-
           if(xlon(i,jj).gt.180. .and. xlon(i,jj).lt.360.)then
-
             xlon(i,jj)=-180.0+abs(xlon(i,jj)-180.)
           else if(xlon(i,jj).ge.360.)then
             xlon(i,jj)=xlon(i,jj)-360.
