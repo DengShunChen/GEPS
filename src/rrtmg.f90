@@ -11,7 +11,8 @@
              nx,nxj,lev,ncld,lprnt,ipt,kdt,solhr,                   &
              uni_cloud,lmfshal,lmfdeep2,                            &
              deltaq,sup,cnvw,cnvc,                                  &
-             ftp,ftp1,fqp,nmmiph,                                   &
+             ftp,ftp1,fqp,fqp1,nmmiph,                              &
+             cldcov0,                                               &
 !    -  outputs:
              asol,olr,ss,rs,sld,rld,tsflwr,                         &
              ctot,chig,cmid,clow,                                   &
@@ -21,7 +22,8 @@
              fuslr,fdslr,fuirr,fdirr,                               &
              htrsw0,htrlw0,cosz,                                    &
              asol_clr,olr_clr,ss_clr,rs_clr,                        &
-             sld_clr,rld_clr,sfalb_g,semis_g)
+             sld_clr,rld_clr,sfalb_g,semis_g,                       &
+             phy3d ) 
 ! -------------------------------------------------------------------
 ! --- for RRTMG scheme :
 !
@@ -81,8 +83,9 @@
 ! --- for pdf cloud
       real    sup
       real    deltaq(nx,lev),cnvw(nx,lev),cnvc(nx,lev)
-! --- for MP WSM6 & Thompson
-      real    ftp(nx,lev),ftp1(nx,lev),fqp(nx,lev),phy3d(nx,lev,3)
+! --- for MP WSM6 & Thompson & GFDL
+      real    ftp(nx,lev),ftp1(nx,lev),fqp(nx,lev),fqp1(nx,lev)
+      real    phy3d(nx,lev,5)
 
 ! -------------------------------------------------------------------
 ! --- for rrtmg output:
@@ -104,7 +107,8 @@
 !      real    dtrad(nx,lev)
       real    ctot(nx),chig(nx),cmid(nx),clow(nx),csbl(nx)
 
-      real    cldcov(nx,lev)
+      real    cldcov0(nx,lev)  ! input  layer cloud fraction (of last time step from microphysics)
+      real    cldcov(nx,lev)   ! output layer cloud fraction
       real    dummy3(nx,lev)
       
 
@@ -195,6 +199,20 @@
           enddo
         enddo
       endif
+
+      if ( nmmiph.eq.11 ) then
+! for MP GFDL effective radius
+        nclds = 5
+        do k = 1, lev
+          do i = 1, nxj
+            phy3d(i,k,1) = ftp(i,k)    ! effective radius for liquid water (micron)
+            phy3d(i,k,2) = ftp1(i,k)   ! effective radius for ice water    (micron)
+            phy3d(i,k,3) = fqp(i,k)    ! effective radius for snow water   (micron)
+            phy3d(i,k,4) = fqp1(i,k)   ! effective radius for rain water   (micron)
+          enddo
+        enddo
+      endif
+           
       if ( nmmiph.eq.2 ) then
         nclds=1
         phy3d=0.
@@ -431,6 +449,7 @@
              nx,nxj,lev,me,lprnt,ipt,kdt,myrank,                     &
              ntiw,ntrw,ntsw,ntgl,uni_cloud,lmfshal,lmfdeep2,         &
              deltaq,sup,cnvw,cnvc,phy3d,                             &
+             cldcov0,                                                &
 !  ---  outputs:
              dummy1,sfalb,coszen,coszdg,                             &
              dummy2,tsflw,semis,dummy3,                              &

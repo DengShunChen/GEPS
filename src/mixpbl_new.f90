@@ -767,7 +767,7 @@
          a1(i,1) = t1(i,1)   + beta(i) * heat(i)
          a2(i,1) = q1(i,1,1) + beta(i) * evap(i)
       enddo
-      if(ntrac.eq.2) then
+      if(ntrac.ge.2) then
         do k = 2, ntrac
           is = (k-1) * km
           do i = 1, im
@@ -808,7 +808,7 @@
           a1(i,k+1) = t1(i,k+1)-dtodsu*dsdzt
         enddo
       enddo
-      if(ntrac.eq.2) then
+      if(ntrac.ge.2) then
         do kk = 2, ntrac
           is = (kk-1) * km
           do k = 1, km1
@@ -845,7 +845,7 @@
 !     enddo
 !     endif
 !
-      if(ntrac.eq.2) then
+      if(ntrac.ge.2) then
         do kk = 2, ntrac
           is = (kk-1) * km
           do k = 1, km
@@ -864,7 +864,7 @@
             q1(i,k,1)    = a2(i,k)
          enddo
        enddo
-       if(ntrac.eq.2)then
+       if(ntrac.ge.2)then
         do kk = 2, ntrac
           is = (kk-1) * km
           do k = 1, km

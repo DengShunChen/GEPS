@@ -19,7 +19,7 @@
 !* If not, see <http://www.gnu.org/licenses/>.
 !***********************************************************************
 
-!>@brief The module 'gfdl_cloud_microphys' contains the full GFDL cloud
+!>@brief The module 'module_mp_gfdl_fv3' contains the full GFDL cloud
 !! microphysics \cite chen2013seasonal.
 !>@details The module is paired with 'fv_cmp', which performs the "fast"
 !! processes
@@ -34,7 +34,7 @@
 ! developer: shian-jiann lin, linjiong zhou
 ! =======================================================================
 
-module gfdl_cloud_microphys_mod
+module module_mp_gfdl
     
     ! use mpp_mod, only: stdlog, mpp_pe, mpp_root_pe, mpp_clock_id, &
     ! mpp_clock_begin, mpp_clock_end, clock_routine, &
@@ -60,7 +60,7 @@ module gfdl_cloud_microphys_mod
     logical :: module_is_initialized = .false.
     logical :: qsmith_tables_initialized = .false.
     
-    character (len = 17) :: mod_name = 'gfdl_cloud_microphys'
+    character (len = 14) :: mod_name = 'module_mp_gfdl'
     
     real, parameter :: grav = 9.80665 !< gfs: acceleration due to gravity
     real, parameter :: rdgas = 287.05 !< gfs: gas constant for dry air
@@ -331,22 +331,15 @@ contains
 
 !>@brief The subroutine 'gfdl_cloud_microphys_driver' executes the full GFDL
 !! cloud microphysics.
-subroutine gfdl_cloud_microphys_driver 
-            ( qv, ql, qr, qi, qs, qg, qa, qn, qv_dt, ql_dt, qr_dt, qi_dt, &
-              qs_dt, qg_dt, qa_dt, pt_dt, pt, w, uin, vin, udt, vdt, dz,  &
-              delp, area, dt_in, land, rain, snow, ice, graupel,          &
-              hydrostatic, phys_hydrostatic, iis, iie, jjs, jje, kks, kke,&
-               ktop, kbot )!, seconds)
+subroutine gfdl_cloud_microphys_driver                                    &
+            ( qv, ql, qr, qi, qs, qg, qa, qn,                             &
+              qv_dt, ql_dt, qr_dt, qi_dt, qs_dt, qg_dt, qa_dt,            &
+              pt_dt, pt, w, uin, vin, udt, vdt,                           &
+              dz, delp, area, dt_in, land,                                &
+              rain, snow, ice, graupel,                                   &
+              hydrostatic, phys_hydrostatic,                              & 
+              iis, iie, jjs, jje, kks, kke, ktop, kbot )!, seconds)
 
-!   qv : ??
-!   ql : ntcw , liquid water
-!   qr : ntrw , rain water
-!   qi : ntiw , ice water
-!   qs : ntsw , snow water
-!   qg : ntgl , graupel
-!   qa : ntclamt , cloud amount
-!   qn : ??
- 
     implicit none
     
     logical, intent (in) :: hydrostatic, phys_hydrostatic
@@ -520,9 +513,15 @@ subroutine gfdl_cloud_microphys_driver
     ! used = send_data (id_var, w_var, time, is_in = iis, js_in = jjs)
     ! endif
     
-    ! convert to mm / day
-    
-    convt = 86400. * rdt * rgrav
+    !! convert to mm / day  (original)
+    ! convt = 86400. * rdt * rgrav
+
+    !! convert to mm / s
+    ! convt = rdt * rgrav
+
+    ! convert to mm
+     convt = rgrav
+
     do j = js, je
         do i = is, ie
             rain (i, j) = rain (i, j) * convt
@@ -1702,7 +1701,7 @@ subroutine icloud (ktop, kbot, tzk, p1, qvk, qlk, qrk, qik, qsk, qgk, dp1, &
                 endif
                 
                 ! -----------------------------------------------------------------------
-                ! pasut: autoconversion: cloud ice -- > snow
+                ! psaut: autoconversion: cloud ice -- > snow
                 ! -----------------------------------------------------------------------
                 
                 ! -----------------------------------------------------------------------
@@ -3424,22 +3423,19 @@ end subroutine setupm
 ! =======================================================================
 
 !subroutine gfdl_cloud_microphys_init (me, master, nlunit, input_nml_file, logunit, fn_nml)
-subroutine gfdl_cloud_microphys_init                                    &
-           ( me, myrank, nlunit, input_nml_file, logunit, fn_nml )
+subroutine gfdl_cloud_microphys_init ()  
     
     implicit none
     
-    integer, intent (in) :: me
-!    integer, intent (in) :: master
-    integer, intent (in) :: myrank
-    integer, intent (in) :: nlunit
-    integer, intent (in) :: logunit
+!    integer, intent (in) :: me
+!    integer, intent (in) :: myrank
+!    integer, intent (in) :: nlunit
     
-    character (len = 64), intent (in) :: fn_nml
-    character (len = *),  intent (in) :: input_nml_file(:)
+!    character (len = 64), intent (in) :: fn_nml
+!    character (len = *),  intent (in) :: input_nml_file
     
-    integer :: ios
-    logical :: exists
+!    integer :: ios
+!    logical :: exists
     
     ! integer, intent (in) :: id, jd, kd
     ! integer, intent (in) :: axes (4)
@@ -3451,28 +3447,26 @@ subroutine gfdl_cloud_microphys_init                                    &
     
     ! master = (mpp_pe () .eq.mpp_root_pe ())
     
-#ifdef INTERNAL_FILE_NML
-    read (input_nml_file, nml = gfdl_cloud_microphysics_nml)
-#else
-    inquire (file = trim (fn_nml), exist = exists)
-    if (.not. exists) then
-      write (6,*) 'gfdl - mp :: namelist file: ', trim (fn_nml), ' does not exist'
-      stop
-    else
-      open (unit = nlunit, file = fn_nml, readonly, status = 'old', iostat = ios)
-    endif
-    rewind (nlunit)
-    read (nlunit, nml = gfdl_cloud_microphysics_nml)
-    close (nlunit)
-#endif
+!#ifdef INTERNAL_FILE_NML
+!    read (input_nml_file, nml = gfdl_cloud_microphysics_nml)
+!#else
+!    inquire (file = trim (fn_nml), exist = exists)
+!    if (.not. exists) then
+!      write (6,*) 'gfdl - mp :: namelist file: ', trim (fn_nml), ' does not exist'
+!      stop
+!    else
+!      open (unit = nlunit, file = fn_nml, readonly, status = 'old', iostat = ios)
+!    endif
+!    rewind (nlunit)
+!    read (nlunit, nml = gfdl_cloud_microphysics_nml)
+!    close (nlunit)
+!#endif
     
-    ! write version number and namelist to log file
-!    if (me == master) then
-    if ( me==0 .and. myrank==0 ) then
-        write (logunit, *) " ================================================================== "
-        write (logunit, *) "gfdl_cloud_microphys_mod"
-        write (logunit, nml = gfdl_cloud_microphysics_nml)
-    endif
+!    if ( me==0 .and. myrank==0 ) then
+!        print *, " ================================================================== "
+!        print *, "gfdl_cloud_microphys_mod"
+!        write (*, nml = gfdl_cloud_microphysics_nml)
+!    endif
     
     if (do_setup) then
         call setup_con
@@ -4611,9 +4605,12 @@ end subroutine interpolate_z
 !! species.
 ! =======================================================================
 
-subroutine cloud_diagnosis (is, ie, js, je, den, qw, qi, qr, qs, qg, t, &
-         rew, rei, rer, res, reg)
-!        qcw, qci, qcr, qcs, qcg, rew, rei, rer, res, reg)
+subroutine cloud_diagnosis                                              &
+!   --- input  :
+        ( is, ie, js, je, den, qw, qi, qr, qs, qg, t,                   &
+!   --- output :
+          rew, rei, rer, res, reg)
+!         qcw, qci, qcr, qcs, qcg, rew, rei, rer, res, reg)
     
     implicit none
     
@@ -4739,4 +4736,4 @@ subroutine cloud_diagnosis (is, ie, js, je, den, qw, qi, qr, qs, qg, t, &
     
 end subroutine cloud_diagnosis
 
-end module gfdl_cloud_microphys_mod
+end module module_mp_gfdl

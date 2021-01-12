@@ -506,7 +506,8 @@
            call dmsexit(-1)
         endif
 !
-        if ( nmmiph.eq.6 .or. nmmiph.eq.8 ) call mp_init(nmmiph,myrank)
+        if ( nmmiph.eq.6 .or. nmmiph.eq.8 .or. nmmiph.eq.11 )           &
+          call mp_init(nmmiph,myrank)
 !
       endif
 

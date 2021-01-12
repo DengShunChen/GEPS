@@ -48,7 +48,7 @@ SRCS_f90  = mod_param.f90 mod_paramt.f90 mod_rank.f90 machine.f90 physcons.f90 \
 	mpe_transpose_sr1.f90 mpe_transpose_rs1.f90  \
 	mpe_barrier.f90  mpe_init.f90 mpe_finalize.f90 \
 	mpe_gather_io.f90 mpe_scatter_io.f90 sfcuvt.f90 \
-        mp_scheme.f90 module_mp_radar.f90 module_mp_wsm6_fv3.f90 module_mp_thompson_gfs.f90 \
+        mp_scheme.f90 module_mp_radar.f90 module_mp_wsm6_fv3.f90 module_mp_thompson_gfs.f90 module_mp_gfdl_fv3.f90 \
 	landpack.f90 landsfc.f90 landsmc.f90 \
 	rstrandz.f90 rstrantq.f90 fpvs.f90 gpvs.f90 gscond.f90 precpd.f90 precpd_n.f90\
 	sascnv.f90 sascnv_n.f90 sascnv_sa.f90 landsfc_n.f90 mixpbl_n.f90 pbltke_n.f90 \

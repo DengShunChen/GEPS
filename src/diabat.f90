@@ -184,9 +184,6 @@
       use physcons, only :con_rd,con_fvirt,con_rerth,con_rv
 ! for land_noah_new
       use namelist_soilveg, only :MAX_SLOPETYP,MAX_SOILTYP,MAX_VEGTYP
-! GFDL MP
-      use gfdl_cloud_microphys_mod, only: gfdl_cloud_microphys_driver,  &
-                                          cloud_diagnosis
 !-----------------------------------------------------------------------
       implicit  none
 !-----------------------------------------------------------------------
@@ -336,41 +333,10 @@
       real      fnor
       data      fnor/0.5/
 
-!--- GFDL microphysics
-!      logical effr_in  !if using effective radii of cloud species in radiation for Morrison-Gettleman MP scheme
-      logical :: lgfdlmprad=.false. !if using GFDL MP radiation interaction
-      real, parameter :: con_p001=0.001d0, con_day=86400.d0,            &
-                         rainmin=1.0e-13
-!      real crain, csnow, total_precip
-!      real(kind=kind_phys), dimension(Model%ntrac-Model%ncld+2) ::      &
-!      real, dimension(Model%ntrac-ncld+2) ::  fscav, fswtr
-      real frland(nxp,1),area(nxp,1),rain0(nxp,1),snow0(nxp,1),         &
-           ice(nxp,1),graupel0(nxp,1)
-      real rain1(nxp,my_max) !accumulated rain
-!      real(kind=kind_phys), dimension(size(Grid%xlon,1))  ::            &
-!           ccwfac, dlength, cumabs, gflx,                               &
-!           raincs, snowmt, cd, cdq, qss, dusfcg, dvsfcg, dusfc1,        &
-!           dvsfc1,  dtsfc1, dqsfc1, rb, drain,  cld1d, evap, hflx,      &
-!           stress, t850, ep1d, gamt, gamq, sigmaf, oc, theta, gamma,    &
-!           sigma, elvmax, wind, work1, work2, runof, xmu, fm10, fh2,    &
-!           tsurf,  tx1, tx2, ctei_r, evbs, evcw, trans, sbsno, snowc,   &
-!           frland, adjsfcdsw, adjsfcnsw, adjsfcdlw, adjsfculw,          &
-!           adjnirbmu, adjnirdfu, adjvisbmu, adjvisdfu, adjnirbmd,       &
-!           adjnirdfd, adjvisbmd, adjvisdfd, gabsbdlw, xcosz, tseal,     &
-!           snohf, dlqfac, work3, ctei_rml, cldf, domr, domzr, domip,    &
-!           doms, psautco_l, prautco_l, ocalnirbm_cpl, ocalnirdf_cpl,    &
-!           ocalvisbm_cpl, ocalvisdf_cpl, dtzm, temrain1 
-!           , garea, cice, zice, tice,               
-      real delp(nxp,1,lev),dz(nxp,1,lev),                               &
-           qv1(nxp,1,lev),ql1(nxp,1,lev),qr1(nxp,1,lev),qi1(nxp,1,lev), &
-           qs1(nxp,1,lev),qg1(nxp,1,lev),qa1(nxp,1,lev),qn1(nxp,1,lev), &
-           pt(nxp,1,lev),w(nwp,1,lev),uin(nxp,1,lev),vin(nxp,1,lev),    &
-           qv_dt(nxp,1,lev),ql_dt(nxp,1,lev),qr_dt(nxp,1,lev),          &
-           qi_dt(nxp,1,lev),qs_dt(nxp,1,lev),qg_dt(nxp,1,lev),          &
-           udt(nxp,1,lev),vdt(nxp,1,lev),pt_dt(nxp,1,lev)
-!--- GFDL modification for FV3
-!      real(kind=kind_phys), dimension(size(Grid%xlon,1),Model%levs+1) ::&
-!           del_gz
+! for GFDL microphysics
+      real area(nxp,1)
+      real phy3d(nxp,lev,5)  !effective radius (micron)
+      real clds0(nxp,lev,my_max) !layer cloud fraction from MP
 
 !#######################################################################
 !
@@ -522,9 +488,8 @@
       uni_cloud=.false. !if using SHOC scheme, it should be .true.
       lmfshal=( nmshl .eq. 2 .or. nmshl .eq. 3 ) ! .true. if using mass-flux shallow convection
       lmfdeep2=( nmcup .eq. 6 ) ! .true. if using scale-aware deep con
-!GFDL MP
-      frland=0.
-!      effr_in = .false.  ! .true. if using M-G MP scheme
+! GFDLMP
+      clds0=clds
 
 
 !     define local constants
@@ -869,8 +834,6 @@
         if(land(i,jj))islimsk(i)=1
         if(ocean(i,jj))islimsk(i)=0
         if(ice(i,jj))islimsk(i)=2
-
-        if( slimsk(i) == 1. ) frland(i,1) = 1.  !!GFDL MP
       enddo
 !
 !    compute new time level p**kapa quantites
@@ -1037,7 +1000,8 @@
              nxp,nxjp(j),lev,ncld,lprnt,ipt,kdt,solhr,                     &
              uni_cloud,lmfshal,lmfdeep2,                                   &
              deltaq(1,1,jj),sup,cnvwr(1,1,jj),cnvcr(1,1,jj),               &
-             ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),nmmiph,                  &
+             ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),fqp1(1,1,jj),nmmiph,     &
+             clds0(1,1,jj),                                                &
 !  ---  outputs:
              asol(1,jj),olr(1,jj),ss(1,jj),rs(1,jj),                       &
              sld(1,jj),rld(1,jj),tsflw(1,jj),                              &
@@ -1047,7 +1011,8 @@
              fuslr(1,1,jj),fdslr(1,1,jj),fuirr(1,1,jj),fdirr(1,1,jj),      &
              asl_clr(1,1,jj),atl_clr(1,1,jj),cosz(1,jj),                   &
              asol_clr(1,jj),olr_clr(1,jj),ss_clr(1,jj),rs_clr(1,jj),       &
-             sld_clr(1,jj),rld_clr(1,jj),sfalb(1,jj),sfemis(1,jj))
+             sld_clr(1,jj),rld_clr(1,jj),sfalb(1,jj),sfemis(1,jj),         &
+             phy3d ) 
 !      if (myrank .eq. 0) then
 !          print *,'### rrtmg ok !!'
 !      endif
@@ -1840,149 +1805,32 @@
 !
       endif !( dolsp .and. nmmiph.eq.2 )
 !
-      if ( dolsp .and. (nmmiph.eq.6 .or. nmmiph.eq.8) ) then
-!
-      call mp_scheme                                                   &
-!  ---  inputs:
-           ( nmmiph,nxp,nxjp(j),lev,ncld,plt(1,1,jj),pst(1,jj),dsigma, &
-             phii,islimsk,q0,kdt,ntcw,ntrw,ntiw,ntsw,ntgl,             &
-             ntinc,ntrnc,tpi,me,dta,                                   &
-!  ---  inputs/outputs:
-             tt(1,1,jj),qt(1,1,jj),                                    &
-!  ---  outputs:
-             ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),rlsp(1,jj),sr(1,jj) )
-!    
-      endif
-!
+      if ( dolsp .and. (nmmiph.eq.6 .or. nmmiph.eq.8 .or. nmmiph.eq.11) ) then
 
-!  GFDL MP
-      if ( dolsp .and. nmmiph.eq.11 ) then
-
-      do i = 1, nxj
-        area(i,1)  = tem1*tem2
-      enddo
-
-      rain0 = 0.0
-      snow0 = 0.0
-      ice0  = 0.0
-      graupel0 = 0.0
-
-      qn1   = 0.0
-      qv_dt = 0.0
-      ql_dt = 0.0
-      qr_dt = 0.0
-      qi_dt = 0.0
-      qs_dt = 0.0
-      qg_dt = 0.0
-      qa_dt = 0.0
-      pt_dt = 0.0
-      udt   = 0.0
-      vdt   = 0.0
-
-      do k = 1, lev+1
+! for GFDL MP
+      do k = 1, lev + 1
         do i = 1, nxj
           prsi(i,k) = 100.*(sigma(k,1)*pst(i,jj)+sigma(k,2)+ptop) !interface pressure (Pa)
         enddo
       enddo
-
-      do k = 1, lev - 1
-        do i = 1, nxj
-          dotc(i,k) = 0.5*(sd(i,k,jj)+sd(i,k+1,jj))  !layer mean vertical velocity (Pa/s)
-        enddo
-      enddo
-      dotc(1:nxp,lev) = 0.5*sd(1:nxp,lev,jj)
-
-      do k = 1, lev
-        kc = lev - k + 1
-        do i = 1, nxj
-          prsl(i,k)   = 100.0 * plt(i,k,jj)     !layer mean pressure (Pa)
-
-          qv1(i,1,k)  = qt(i,             k,jj) !water vapor
-          ql1(i,1,k)  = qt(i,(ntcw-1)*lev+k,jj) !cloud water
-          qr1(i,1,k)  = qt(i,(ntrw-1)*lev+k,jj) !rain
-          qi1(i,1,k)  = qt(i,(ntiw-1)*lev+k,jj) !cloud ice
-          qs1(i,1,k)  = qt(i,(ntsw-1)*lev+k,jj) !snow
-          qg1(i,1,k)  = qt(i,(ntgl-1)*lev+k,jj) !graupel
-          qa1(i,1,k)  = 0.                      !cloud amount
-          pt(i,1,k)   = tt(i,k,jj)              !temperature
-          w(i,1,k)    = -dotc(i,k)*(1+con_fvirt*qtv1(i,1,k))           &
-                         *pt(i,1,k)/prsl(i,k)*con_rd/grav
-          uin(i,1,k)  = ut(i,k,jj)              !zonal wind
-          vin(i,1,k)  = vt(i,k,jj)              !meridional wind
-          delp(i,1,k) = prsi(i,k+1)-prsi(i,k)   !differences of interface pressure (Pa)
-          dz(i,1,k)   = (phii(i,kc+1)-phii(i,kc))/grav !--->not sure
-        enddo
-      enddo
-
-      call gfdl_cloud_microphys_driver                                  &
-           ( qv1, ql1, qr1, qi1, qs1, qg1, qa1, qn1, qv_dt, ql_dt,      &
-             qr_dt, qi_dt, qs_dt, qg_dt, qa_dt, pt_dt, pt, w, uin, vin, &
-             udt, vdt, dz, delp, area, dta, frland, rain0, snow0,       &
-             ice0, graupel0, .false., .true., 1, nxp, 1,                &
-             1  ,  1 , lev,  1  , lev )! ,seconds )
-
-      tem = dta * con_p001 / con_day
       do i = 1, nxj
-!        rain0(i,1) = max(con_d00, rain0(i,1))
-!        snow0(i,1) = max(con_d00, snow0(i,1))
-!        ice0(i,1)  = max(con_d00, ice0(i,1))
-!        graupel0(i,1)  = max(con_d00, graupel0(i,1))
-        if ( rain0(i,1)*tem < rainmin ) rain0(i,1) = 0.0
-        if ( ice0(i,1)*tem  < rainmin ) ice0(i,1)  = 0.0
-        if ( snow0(i,1)*tem < rainmin ) snow0(i,1) = 0.0
-        if ( graupel0(i,1)*tem < rainmin ) graupel0(i,1) = 0.0
-
-        !accumulated rain
-        rain1(i,jj) = (rain0(i,1)+snow0(i,1)+ice0(i,1)+graupel0(i,1))   &
-                      *tem
-        if ( rain1(i) > rainmin ) then                                  &
-          !snow ratio, ratio of snow to total precipitation
-          sr(i,jj) = (snow0(i,1)+ice0(i,1) +graupel0(i,1))              &
-                    /(rain0(i,1)+snow0(i,1)+ice0(i,1)+graupel0(i,1))
-        else
-          sr(i,jj) = 0.0
-        endif
+        area(i,1) = tem1*tem2  !area of grid box
       enddo
 
-      do k = 1, lev
-        kk = lev - k + 1
-        do i = 1, nxj
-          qt(i,             k,jj) = qv1(i,1,k) + qv_dt(i,1,k) * dta
-          qt(i,(ntcw-1)*lev+k,jj) = ql1(i,1,k) + ql_dt(i,1,k) * dta
-          qt(i,(ntrw-1)*lev+k,jj) = qr1(i,1,k) + qr_dt(i,1,k) * dta
-          qt(i,(ntiw-1)*lev+k,jj) = qi1(i,1,k) + qi_dt(i,1,k) * dta
-          qt(i,(ntsw-1)*lev+k,jj) = qs1(i,1,k) + qs_dt(i,1,k) * dta
-          qt(i,(ntgl-1)*lev+k,jj) = qg1(i,1,k) + qg_dt(i,1,k) * dta
-          tt(i,k,jj)  = pt(i,1,k)  + pt_dt(i,1,k) * dta
-          ut(i,k,jj)  = uin(i,1,k) + udt(i,1,k)   * dta
-          vt(i,k,jj)  = vin(i,1,k) + vdt(i,1,k)   * dta
-          dotc(i,j,k) = -w(i,1,k)*grav/con_rd*prsl(i,k)/pt(i,1,k)       &
-                        /(1+con_fvirt*qt(i,k,jj)) !--->not sure
-        enddo
-
-!        if ( effr_in ) then  !if using M-G scheme
-!          do i = 1, nxp
-!            den(i,k) = 0.622*prsl(i,k)/(con_rd*tt(i,k,jj)*(qt(i,k,1)+0.622))
-!          enddo
-!        endif
-      enddo
-
-!      if ( effr_in ) then  !if using M-G scheme
-!        call cloud_diagnosis                                            &
-!             ( 1, nxp, 1, lev, den(1:nxp,1:lev),                        &
-!               qt(1:nxp,((ntcw-1)*lev+1):ntcw,jj),                      &
-!               qt(1:nxp,((ntiw-1)*lev+1):ntiw,jj),                      &
-!               qt(1:nxp,((ntrw-1)*lev+1):ntrw,jj),                      &
-!               qt(1:nxp,((ntsw-1)*lev+1):ntsw,jj),                      &
-!               qt(1:nxp,((ntgl-1)*lev+1):ntgl,jj),                      &
-!               tt(1:nxp,1:lev,jj),                                      &
-!               phy_f3d(1:nxp,1:lev,1),phy_f3d(1:nxp,1:lev,2),           &
-!               phy_f3d(1:nxp,1:lev,3),phy_f3d(1:nxp,1:lev,4),           &
-!               phy_f3d(1:nxp,1:lev,5) )
+      call mp_scheme                                                   &
+!  ---  inputs:
+           ( nmmiph,nxp,nxjp(j),lev,ncld,plt(1,1,jj),prsi,             &
+             pst(1,jj),dsigma,phii,islimsk,q0,kdt,ntcw,ntrw,ntiw,ntsw, &
+             ntgl,ntinc,ntrnc,tpi,me,dta,area,                         &
+!  ---  inputs/outputs:
+             tt(1,1,jj),qt(1,1,jj),clds(1,1,jj),                       &
+             ut(1,1,jj),vt(1,1,jj),sd(1,1,jj),                         &
+!  ---  outputs:
+             ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),fqp1(1,1,jj),        &
+             rlsp(1,jj),sr(1,jj) )
+!    
       endif
-
-      endif
-
+!
       if ( dodry ) then
          do k=1,lev
            dsigpp(k) = dsigma(k,1)+dsigma(k,2)/1000.
