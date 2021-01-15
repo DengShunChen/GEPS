@@ -76,7 +76,7 @@
                 vvm_sl(nx,levp,my_max),                            &
                 uum_sl(nx,levp,my_max),ptm(nxp,my_max)
 !
-      real      ndsldta,ndsldtah,facm(2,2),af
+      real      ndsldta,ndsldtah,facm(2,2),af,alpha
       integer   ierr,itter,ittw,itt
 !
       real      glob(nx,my), &
@@ -215,6 +215,10 @@
 !
       data facm/1.,0.,1.5,-0.5/
 !      data facm/0.,0.,0.5,0.,0.875,-0.375/
+!
+! for forward weighting Semi-Implicit
+!
+      alpha=0.7
 !
 ! for two time level coefficient of merging PGF
 !
@@ -875,14 +879,33 @@
         nxj=nxdef_2d(j)
 !
         call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld              &
+!byl        call gridnl_hybrid_ndsl (nxjp(j),nxp,lev,ncld                  &
         , cp,radsq,um(1,1,jj),vm(1,1,jj),rdivm(1,1,jj),tm(1,1,jj)       &
         , qt(1,1,jj),phi(1,1,jj),ptm(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
         , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)         &
         , diveng(1,1,jj),vdmerdg(1,1,jj),vdzonlg(1,1,jj),pten(1,1,jj)  &
         , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),sgeo(1,jj),2 )
+!byl        , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),sgeo(1,jj) )
 !
       enddo !jj = 1,jlistnum
 !
+!!      call joinrs(cc,diveng,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+!!      call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc       &
+!!                 ,hldten,1,nsizey)
+!!      call trngra3(jtrun,jtmax,nx,levp,my,my_max,cim,poly,dpoly      &
+!!                 ,hldten,dlphi,dtphi,nsizey)
+!
+!!      do jj = 1, jlistnum
+!!        j=jlist1(jj)
+!!        nxj=nxdef_2d(j)
+!!        do k=1,lev
+!!          do i=1,nxj
+!!            vdmerdg(i,k,jj) = vdmerdg(i,k,jj)-dtphi(i,k,jj)/radsq/onocos(j)
+!!            vdzonlg(i,k,jj) = vdzonlg(i,k,jj)-dlphi(i,k,jj)/radsq 
+!!          enddo
+!!        enddo
+!!      enddo !jj = 1,jlistnum
+
       call ndslfv_monoadvv_fgnl(vdzonlrp,vdmerdrp,ddtemp,pdot,ptm &
                           ,nxjp,ndsldta,2)
 !
@@ -893,11 +916,8 @@
           do i=1,nxj
             vdmerdrp(i,k,jj) = 0.5*(vdmerdr(i,k,jj)+vdmerdrp(i,k,jj))
             vdzonlrp(i,k,jj) = 0.5*(vdzonlr(i,k,jj)+vdzonlrp(i,k,jj))
-!!            vdmerdrp(i,k,jj) = vdmerdr(i,k,jj)!          &
-!!                             -um(i,k,jj)*cor(j)-(um(i,k,jj)*um(i,k,jj) &
-!!                             +vm(i,k,jj)*vm(i,k,jj))*onocos(j)*sinl(j)
-!!            vdzonlrp(i,k,jj) = vdzonlr(i,k,jj)!          &
-!!                             +vm(i,k,jj)*cor(j)
+!!            vdmerdrp(i,k,jj) = 0.9*vdmerdrp(i,k,jj)+(1.-0.9)*vdmerdg(i,k,jj)
+!!            vdzonlrp(i,k,jj) = 0.9*vdzonlrp(i,k,jj)+(1.-0.9)*vdzonlg(i,k,jj)
           enddo
         enddo
       enddo !jj = 1,jlistnum
@@ -933,9 +953,9 @@
                  ,poly,dpoly,vormid,divmid,um,vm,nsizey)
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divmid,cc,1,nsizey)
       call ujoinsr(cc,rdivm,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-!!      call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,plmid      &
-!!                 ,dlpl,dtpl,nsizey)
-!!      call transr1(jtrun,jtmax,nx,my,my_max,poly,plmid,ptm,nsizey)
+      call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,plmid      &
+                 ,dlpl,dtpl,nsizey)
+      call transr1(jtrun,jtmax,nx,my,my_max,poly,plmid,ptm,nsizey)
 
 !
 !  the gaussian quadrature loop for spectral tendencies.  subroutine
@@ -1051,11 +1071,6 @@
           do k=1,lev
             vdmerdrp(i,k,jj) = af*vdmerdrp(i,k,jj)+(1.-af)*vdmerdg(i,k,jj)
             vdzonlrp(i,k,jj) = af*vdzonlrp(i,k,jj)+(1.-af)*vdzonlg(i,k,jj)
-!!            vdmerdr(i,k,jj) = vdmerdr(i,k,jj)                          &
-!!                             -um(i,k,jj)*cor(j)-(um(i,k,jj)*um(i,k,jj) &
-!!                             +vm(i,k,jj)*vm(i,k,jj))*onocos(j)*sinl(j) 
-!!            vdzonlr(i,k,jj) = vdzonlr(i,k,jj)                          &
-!!                             +vm(i,k,jj)*cor(j)
           enddo
         enddo
       enddo !jj = 1,jlistnum
@@ -1172,7 +1187,7 @@
 !
       call siimpl ( jtrun,jtmax,lev,dta,ptmeans,dsigma,spalm,eps4,eigval &
                   , evecin,evectr,arrhyd,arsddt,temnow,divnow,plnow      &
-                  , temmid,divmid,plmid,temten,divten,plten)
+                  , temmid,divmid,plmid,temten,divten,plten,alpha)
 !
       endif
 !
@@ -1326,21 +1341,27 @@
 !        sptendmax1=0.379
         if(sptend.le.sptendmax1)n_stable=n_stable+1
         if(sptend.gt.sptendmax2)n_unstable=n_unstable+1
-        if(myrank .eq. 0) print *,'n_stable=',n_stable,' n_unstable=' &
+        if(myrank .eq. 0) print *,'n_stable=',n_stable,' n_unstable='  &
                                  ,n_unstable
         if( mod(tau+0.001, 1.) .lt. dtx_tau)then
           if(n_stable .gt. nc_stable)then
-            hfilt=1.
+            hfilt=0.5
+            alpha=0.7
             spl1=5.
-            if(myrank .eq. 0)print *,'** stable change hfilt=',hfilt
+            if(myrank .eq. 0)print *,'** stable change hfilt=',hfilt,  &
+                             ' and keep alpha=',alpha
           else if(n_unstable .gt. nc_stable)then
-            hfilt=4.
-            spl1=10.
-            if(myrank .eq. 0)print *,'** unstable change hfilt=',hfilt
+            hfilt=2.
+            alpha=0.75
+            spl1=5.
+            if(myrank .eq. 0)print *,'** unstable change hfilt=',hfilt,&
+                             ' and alpha=',alpha
           else
             hfilt=1.
+            alpha=0.7
             spl1=5.
-            if(myrank .eq. 0)print *,'** keep hfilt=',hfilt
+            if(myrank .eq. 0)print *,'** keep hfilt=',hfilt,           &
+                             ' and alpha=',alpha
           endif
           n_unstable=0
           n_stable=0

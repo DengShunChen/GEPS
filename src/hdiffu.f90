@@ -49,12 +49,12 @@
 !
       call mpe_global_max(wmax,lev,mpe_double)
 !
-      do k=1,lev
-        if( wmax(k) .gt. windmax3 ) then
-          if(myrank.eq.0)print *,'wmax gt windmax at','k= ',k,         &
-                                 ' windmax=',wmax(k)
-        endif
-      enddo
+!!      do k=1,lev
+!!        if( wmax(k) .gt. windmax3 ) then
+!!          if(myrank.eq.0)print *,'wmax gt windmax at','k= ',k,         &
+!!                                 ' windmax=',wmax(k)
+!!        endif
+!!      enddo
 !
 !
       hfilt = (radsq/(nf*(nf+1)))**2.
@@ -306,20 +306,20 @@
       data      windmax1/80./, windmax2/100./, windmax3/130./
 !!      data      windmax1/70./, windmax2/100./, windmax3/130./
 !
-!      wmax(1:lev)= 0.0
+      wmax(1:lev)= 0.0
 !
-!      do jj =1,jlistnum
-!        j=jlist1(jj)
-!        nxj=nxdef_2d(j)
-!        xx=rad/cosl(j)
-!        do k=1,lev
-!          do i=1,nxj
-!            wmax(k)= max(wmax(k),xx*sqrt(ut(i,k,jj)**2+vt(i,k,jj)**2))
-!          enddo
-!        enddo
-!      enddo
+      do jj =1,jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        xx=rad/cosl(j)
+        do k=1,lev
+          do i=1,nxj
+            wmax(k)= max(wmax(k),xx*sqrt(ut(i,k,jj)**2+vt(i,k,jj)**2))
+          enddo
+        enddo
+      enddo
 !
-!      call mpe_global_max(wmax,lev,mpe_double)
+      call mpe_global_max(wmax,lev,mpe_double)
 !
       nf=jtrun-1
 !
@@ -351,9 +351,9 @@
 !!        facv = amp * kfac
 !!        fact = amp * kfac
 !          endif
-        facd =  300. * facd 
-        facv =   1. * facv
-        fact =   1. * fact
+        facd = 600.* amp
+        facv = amp * facv
+        fact = amp * fact
 
 !
 !  difuse vorticity and divergence fields
@@ -390,16 +390,69 @@
           enddo
       enddo
 !
-!      windchk=.false.
-!      do k=1,8
-!        if ( wmax(k) .gt. windmax3 ) windchk=.true.
-!      enddo
-!      if ( windchk ) &
-!       call filter_top(jtrun,jtmax,levp,ncld,temnow,vornow,divnow)
+      windchk=.false.
+      do k=1,8
+        if ( wmax(k) .gt. windmax3 ) windchk=.true.
+      enddo
+      if ( windchk ) &
+       call filter_top(jtrun,jtmax,levp,ncld,temnow,vornow,divnow)
 !
 !--------------------------------------------------------------------
       return
       end
+!
+!--------------------------------------------------------------------
+      subroutine phdiffu ( dta,my,my_max,nx,jtrun,jtmax,amp,plnow,eps4) 
+      use index
+      use mpe
+      use rank
+      use const, only : radsq
+      use param, only : octahedral
+
+      implicit  none
+
+      integer   my,my_max,nx,jtrun,jtmax
+      real      dta
+
+      real      eps4(jtrun,jtmax),plnow(jtrun,jtmax,2)
+!
+!     parameter ( ktop=4, ktop2=ktop/2 ) ! top "ktop" levels are inhenced
+!
+      integer   jj,j,nxj,k,i,m,n,mf
+      real      xx,facp,amp
+      real      hfilt2,hfilt4,hfilt6,nf
+      real      c4
+!
+      nf=jtrun-1
+!
+      hfilt6 = (radsq/(nf*(nf+1)))**3.
+      hfilt4 = (radsq/(nf*(nf+1)))**2.
+      hfilt2 = radsq/(nf*(nf+1))
+      if ( octahedral ) then
+        hfilt6 = hfilt6/(6.*dta)
+        hfilt4 = hfilt4/(6.*dta)
+        hfilt2 = hfilt2/(6.*dta)
+      else
+        hfilt6 = 16.*hfilt6/dta
+        hfilt4 = 16.*hfilt4/dta
+        hfilt2 = 16.*hfilt2/dta
+      endif
+
+!!
+      facp = 1.0 * amp
+      do m=1,mlistnum
+          mf=mlist(m)
+          do n=mf,jtrun
+             c4=1.+dta*facp*hfilt4*eps4(n,m)**2.
+             plnow(n,m,1)=plnow(n,m,1)/c4
+             plnow(n,m,2)=plnow(n,m,2)/c4
+          enddo
+      enddo
+!
+!--------------------------------------------------------------------
+      return
+      end
+!
 !
 !--------------------------------------------------------------------
       subroutine filter_top(jtrun,jtmax,lev,ncld,temnow     &
