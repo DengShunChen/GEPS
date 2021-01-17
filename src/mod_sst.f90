@@ -6,9 +6,7 @@
 #define mpp_root_pe() 0
 #define p_parallel_io (myrank .eq. 0)
 #define p_pe myrank
-#define myrank_check 55 
-#define jj_check 4
-#define ii_check 1
+#define sstmin 270
 #endif
 
 !    read wtfn12, wsfn12 data
@@ -19,7 +17,8 @@
         use index
         use const,             ONLY:ggdef,ifilin_nc,ifilin_sst,ifilin_ncep  &
                                    ,ldailyFCTsst,ldailyFCTicesndpt,ifilin   &
-                                   ,dailyClm_option,ifilin_ClmANA,ifilin_ClmFCT
+                                   ,dailyClm_option,ifilin_ClmANA,ifilin_ClmFCT &
+                                   ,do_sit
         use mod_sit_control,   ONLY: lwarning_msg,xmissing,lwoa0,lsitstart &
                                     ,lamip,lmixedlayer,ngodas,nwoa0     &
                                     ,lgodas,ldailysst,locaf0 
@@ -36,7 +35,7 @@
         PUBLIC :: nodepth, odepths, ot12, os12, ou12, ov12,mixedlayer12
         PUBLIC :: nodepth0, odepth0, ot0, os0, ou0, ov0, mixedlayer0  
         PUBLIC :: lou, lov
-        PUBLIC :: nwdepth, wdepths, wtfn12, wsfn12,wtfn1st,wsfn1st
+        PUBLIC :: nwdepth, wdepths, wtfn12, wsfn12,wtfn1st,mask1st
         PUBLIC :: albice,albsn,albw,csn,cice,rhosn,rhoice,xkice,xksn,xkw,         &
                   omegas,wcri
         PUBLIC :: deallocate_ocaf_array,deallocate_woa0_array,deallocate_godas_array
@@ -47,8 +46,12 @@
         PUBLIC :: now1,now2,wgto1,wgto2             !! GODAS MONTHLY/PENTAD Data
         PUBLIC :: obswtbnmw1,obswtbnmw2,obswtbwgt1,obswtbwgt2     !obswtb Data
         PUBLIC :: dailyFCTsst,dailyFCTcice,dailyFCTsndepth
+        PUBLIC :: dFCTsstdt,dFCTcicedt,dFCTsndepthdt
         PUBLIC :: ANAsstT0,dailyClmANAsst,dailyClmFCTsst
         PUBLIC :: deallocate_dailyFCT_array
+        PUBLIC :: outtseadiffFCT24
+        PUBLIC :: tseap,tseat,tsean
+
 
         INCLUDE 'netcdf.inc'
 
@@ -96,7 +99,7 @@
         REAL, ALLOCATABLE :: wsfn12(:,:,:,:) ! (nlon,nwdepth,ngl,0:13) in global coordinates,
         REAL, ALLOCATABLE :: wtfn1st(:,:,:) ! (nlon,nwdepth,ngl) in global coordinates,
                                              ! observed water tempeature profile (K): "ot"       
-        REAL, ALLOCATABLE :: wsfn1st(:,:,:) ! (nlon,nwdepth,ngl) in global coordinates,
+        REAL, ALLOCATABLE :: mask1st(:,:) ! (nlon,nwdepth,ngl) in global coordinates,
 
   !! memory pointer for pentad GODAS OCEAN data (lgodas & ldailysst)
         REAL      :: timevals_godas(3) = 0.  ! absoulte time (e.g., 19971003.25) GODAS PENTAD Data
@@ -105,19 +108,36 @@
         INTEGER   :: nts_godas(3)            ! # of timestamps for pentad data at day-1, day+0 and day+1, in its repective file, respectively
 
   !! memory pointer for daily FCTsst data (ldailyFCTsst)
-        REAL      :: timevals_dailyFCT(3)= 0.   ! absoulte time (e.g.,19971003.25) daily forecast sst Data
-        REAL, ALLOCATABLE :: dailyFCTsst(:,:,:)    ! (nlon,ngl,2) at ydate, ydate+1 day in global coordinates,
-                                                   ! forecast daily water tempeature (K)
+        REAL      :: timevals_dailyFCT(2)= 0.       ! absoulte time (e.g.,19971003.25) daily forecast sst Data
+        REAL, ALLOCATABLE :: dailyFCTsst(:,:,:)     ! (nlon,ngl,2) at ydate, ydate+1 day in global coordinates,
+                                                    ! forecast daily water tempeature (K)
         REAL, ALLOCATABLE :: dailyFCTcice(:,:,:)    ! (nlon,ngl,2) at ydate, ydate+1 day in global coordinates,
-                                                   ! forecast sea ice fration
-        REAL, ALLOCATABLE :: dailyFCTsndepth(:,:,:)    ! (nlon,ngl,2) at ydate, ydate+1 day in global coordinates,
-                                                   ! forecast daily snow depth (mm)
-        REAL, ALLOCATABLE :: ANAsstT0(:,:)       ! (nlon,ngl), analysis SST at tau=0 
-        REAL, ALLOCATABLE :: dailyClmANAsst(:,:,:)    ! (nlon,ngl,2) at tau=0, ydate, ydate+1 day in global coordinates,
-                                                   ! reanalysis daily climatology water tempeature (K)
-        REAL, ALLOCATABLE :: dailyClmFCTsst(:,:,:)    ! (nlon,ngl,2) at ydate, ydate+1 day in global coordinates,
-                                                   ! forecast daily climatology water tempeature (K)
-       
+                                                    ! forecast sea ice fration
+        REAL, ALLOCATABLE :: dailyFCTsndepth(:,:,:) ! (nlon,ngl,2) at ydate, ydate+1 day in global coordinates,
+                                                    ! forecast daily snow depth (mm)
+        REAL, ALLOCATABLE :: ANAsstT0(:,:)          ! (nlon,ngl), analysis SST at tau=0 
+        REAL, ALLOCATABLE :: dailyClmANAsst(:,:,:)  ! (nlon,ngl,2) at tau=0, ydate, ydate+1 day in global coordinates,
+        REAL, ALLOCATABLE :: dailyClmFCTsst(:,:,:)  ! (nlon,ngl,2) at ydate, ydate+1 day in global coordinates,
+                                                    ! forecast climatology daily water tempeature (K)
+        REAL, ALLOCATABLE :: dFCTsstdt(:,:)         ! d(dailyFCTsst)/dt (K/s)
+        REAL, ALLOCATABLE :: dFCTcicedt(:,:)        ! d(dailyFCTcice)/dt (K/s)
+        REAL, ALLOCATABLE :: dFCTsndepthdt(:,:)     ! d(dailyFCTsndepth)/dt (K/s)
+        REAL, ALLOCATABLE :: obswtbp(:,:)           ! calculated obs. sst per (n-1) timestep
+        REAL, ALLOCATABLE :: obswtbt(:,:)           ! calculated obs. sst now (n) timestep 
+        REAL, ALLOCATABLE :: obswtbn(:,:)           ! calculated obs. sst next (n+1) timestep 
+        REAL, ALLOCATABLE :: tseadiffFCT(:,:)       ! the change of tg from dta*dFCTsstdt 
+        REAL, ALLOCATABLE :: tseadiffFCT24(:,:)     ! the average change of tg from dta*dFCTsstdt 
+        REAL, ALLOCATABLE :: tseap(:,:)             ! sst at pre. timestep (n-1)
+        REAL, ALLOCATABLE :: tseat(:,:)             ! sst at now timestep (n) 
+        REAL, ALLOCATABLE :: tsean(:,:)             ! sst at next timestep (n+1)
+
+
+!for opgsst
+      REAL, dimension(:,:,:),allocatable,save :: opgsst
+!for time_interpolation
+      REAL wgt1,wgt2,obswtbwgt1,obswtbwgt2,wgto1,wgto2
+      INTEGER nmw1,nmw2,obswtbnmw1,obswtbnmw2,now1,now2
+
 
   !*    1.0 COEFFICIENTS IN sit_ocean MODEL
 
@@ -148,15 +168,10 @@
       INTEGER, PARAMETER :: nerr = 6     ! error output stream
 
 
-!for opgsst
-      REAL, dimension(:,:,:),allocatable,save :: opgsst
-!for time_interpolation
-      REAL wgt1,wgt2,obswtbwgt1,obswtbwgt2,wgto1,wgto2
-      INTEGER nmw1,nmw2,obswtbnmw1,obswtbnmw2,now1,now2
-
 
         
       CONTAINS
+
 
 !---------------------------------------------------------
         subroutine allocate_opgsst_array
@@ -254,10 +269,13 @@
 
         subroutine deallocate_dailyFCT_array
 
-           if(ldailyFCTsst) deallocate (dailyFCTsst)
+           deallocate (obswtbp,obswtbt,obswtbn)
+           deallocate (tseap,tseat,tsean)
+           deallocate (tseadiffFCT,tseadiffFCT24)
+           deallocate (dailyFCTsst,dFCTsstdt)
            if(ldailyFCTicesndpt) then
-             deallocate (dailyFCTcice) 
-             deallocate (dailyFCTsndepth)
+             deallocate (dailyFCTcice,dailyFCTsndepth) 
+             deallocate (dFCTcicedt,dFCTsndepthdt)
            endif
            if(dailyClm_option .ge. 1) then
              deallocate (ANAsstT0)
@@ -271,7 +289,8 @@
         end subroutine deallocate_dailyFCT_array
 
 
-        SUBROUTINE read_dailyFCT(idtg1,tau,dtx,tg1,cice1,sndepth1)
+        SUBROUTINE read_dailyFCT(idtg1,tau,dtx,tg1,cice1,sndepth1  &
+                                ,plon,plat,locean)
 
           USE index
           USE rank
@@ -284,7 +303,8 @@
           INTEGER       :: yr, mo, dy, hr, mn
           character*12 cdtg
           real tg1(nxp,my_max),cice1(nxp,my_max),sndepth1(nxp,my_max)
-           
+          real plon(nx,my_max),plat(my)
+          logical  locean(nxp,my_max)
 
           icurrenttau=int(tau)
           tauleft=float(int((tau-int(tau)+0.001)*3600./dtx))*dtx   !(sec)
@@ -315,12 +335,29 @@
           read(cdtg,'(i12)')idtg_FCT
           if(myrank .eq. 0) print *,"read_dailyFCT,ydate2=",ydate2
 
-          IF(ldailyFCTsst) THEN
-            IF (.NOT. ALLOCATED(dailyFCTsst)) ALLOCATE (dailyFCTsst(nxp,my_max,2))
-          ENDIF
+
+          IF (.NOT. ALLOCATED(dailyFCTsst)) ALLOCATE (dailyFCTsst(nxp,my_max,2))
+          IF (.NOT. ALLOCATED(dFCTsstdt)) ALLOCATE (dFCTsstdt(nxp,my_max))
+          IF (.NOT. ALLOCATED(obswtbp)) ALLOCATE (obswtbp(nxp,my_max))
+          IF (.NOT. ALLOCATED(obswtbt)) ALLOCATE (obswtbt(nxp,my_max))
+          IF (.NOT. ALLOCATED(obswtbn)) ALLOCATE (obswtbn(nxp,my_max))
+          IF (.NOT. ALLOCATED(tseap)) ALLOCATE (tseap(nxp,my_max))
+          IF (.NOT. ALLOCATED(tseat)) ALLOCATE (tseat(nxp,my_max))
+          IF (.NOT. ALLOCATED(tsean)) ALLOCATE (tsean(nxp,my_max))
+          IF (.NOT. ALLOCATED(tseadiffFCT)) then
+            ALLOCATE (tseadiffFCT(nxp,my_max))
+            tseadiffFCT=0.
+          endif
+          IF (.NOT. ALLOCATED(tseadiffFCT24)) then
+            ALLOCATE (tseadiffFCT24(nxp,my_max))
+            tseadiffFCT24=0.
+          endif
+
           IF(ldailyFCTicesndpt) THEN
             IF (.NOT. ALLOCATED(dailyFCTcice)) ALLOCATE (dailyFCTcice(nxp,my_max,2))
             IF (.NOT. ALLOCATED(dailyFCTsndepth)) ALLOCATE (dailyFCTsndepth(nxp,my_max,2))
+            IF (.NOT. ALLOCATED(dFCTcicedt)) ALLOCATE (dFCTcicedt(nxp,my_max))
+            IF (.NOT. ALLOCATED(dFCTsndepthdt)) ALLOCATE (dFCTsndepthdt(nxp,my_max))
           ENDIF
           IF(dailyClm_option .ge. 1) THEN
             IF (.NOT. ALLOCATED(ANAsstT0)) ALLOCATE (ANAsstT0(nxp,my_max))
@@ -333,100 +370,58 @@
 
           IF ( (tau .eq. 0.) .OR. lsitstart) THEN
      !!! warm/cold start
-            timevals_dailyFCT(0)=ydate
             timevals_dailyFCT(1)=ydate
-            if(ldailyFCTsst) dailyFCTsst(:,:,1)=tg1(:,:)
+            dailyFCTsst(:,:,1)=tg1(:,:)
+            obswtbp(:,:)=tg1(:,:)
+            obswtbt(:,:)=tg1(:,:)
+            tseap(:,:)=tg1(:,:)
+            tseat(:,:)=tg1(:,:)
             if(dailyClm_option .ge. 1) ANAsstT0(:,:)=tg1(:,:)
             if(ldailyFCTicesndpt) then
               dailyFCTcice(:,:,1)=cice1(:,:)
               dailyFCTsndepth(:,:,1)=sndepth1(:,:)
             endif
-            if(ldailyFCTsst .or. ldailyFCTicesndpt) CALL read_dailyFCT_dayp1(idtg_FCT)
+            if(ldailyFCTsst .or. ldailyFCTicesndpt)then
+              CALL read_dailyFCT_dayp1(idtg_FCT,locean)
+            endif
             if(dailyClm_option .ge. 1)then
-              CALL read_dailyClm_2days(idtg1,idtg_FCT,icurrenttau,dailyClm_option)
+              CALL read_dailyClm_2days(idtg1,idtg_FCT,icurrenttau,plon,plat,locean)
             endif
 
             timevals_dailyFCT(2)=ydate2
-            if( myrank .eq. myrank_check) then
-              print*,"read_dailyFCT: tg1=",tg1(ii_check,jj_check)
-              if(ldailyFCTsst) then
-                print*,"1. dailyFCTsst(ii_check,jj_check,1)=" &
-                      , dailyFCTsst(ii_check,jj_check,1)      &
-                      ,",dailyFCTsst(ii_check,jj_check,2)="   &
-                      , dailyFCTsst(ii_check,jj_check,2)
-              endif
-              if(dailyClm_option .ge. 1)then
-                print*,"dailyClmANAssst(",ii_check,",",jj_check,",0)="  &
-                      , dailyClmANAsst(ii_check,jj_check,0)     &
-                      ,",dailyClmANAsst(",ii_check,",",jj_check,",1)="  &
-                      , dailyClmANAsst(ii_check,jj_check,1)     &
-                      ,",dailyClmANAsst(",ii_check,",",jj_check,",2)="  &
-                      , dailyClmANAsst(ii_check,jj_check,2)
-                if(dailyClm_option .eq. 2)then
-                  print*,",dailyClmFCTsst(",ii_check,",",jj_check,",0)="&
-                       , dailyClmFCTsst(ii_check,jj_check,0)            &
-                       ,",dailyClmFCTsst(",ii_check,",",jj_check,",1)=" &
-                       , dailyClmFCTsst(ii_check,jj_check,1)             &
-                       ,",dailyClmFCTsst(",ii_check,",",jj_check,",2)=" &
-                       , dailyClmFCTsst(ii_check,jj_check,2)
-                endif
-              endif
-            endif
           ELSEIF (ydate.LT.timevals_dailyFCT(2)) THEN
      ! data were read. Note that initial value of  timevals_godas=0.
             RETURN
           ELSE
      ! note that initial value of  timevals_godas=0.
      ! Shift left
-            if(ldailyFCTsst) dailyFCTsst(:,:,1)=dailyFCTsst(:,:,2)
+            dailyFCTsst(:,:,1)=dailyFCTsst(:,:,2)
             if(ldailyFCTicesndpt) then
               dailyFCTcice(:,:,1)=dailyFCTcice(:,:,2)
               dailyFCTsndepth(:,:,1)=dailyFCTsndepth(:,:,2)
             endif
             timevals_dailyFCT(1)=timevals_dailyFCT(2)
             if(ldailyFCTsst .or. ldailyFCTicesndpt) then
-              CALL read_dailyFCT_dayp1(idtg_FCT)    ! read next FCST data
+              CALL read_dailyFCT_dayp1(idtg_FCT,locean)    ! read next FCST data
             endif
             if(dailyClm_option .ge. 1)then
               dailyClmANAsst(:,:,1)=dailyClmANAsst(:,:,2)
               if(dailyClm_option .eq. 2) then
                 dailyClmFCTsst(:,:,1)=dailyClmFCTsst(:,:,2)
               endif
-              CALL read_dailyClm_dayp1(idtg1,idtg_FCT,icurrenttau,dailyClm_option)
+              CALL read_dailyClm_dayp1(idtg1,idtg_FCT,icurrenttau,plon,plat,locean)
             endif
 
             timevals_dailyFCT(2)=ydate2
-            if( myrank .eq. myrank_check) then
-              print*,"read_dailyFCT: tg1=",tg1(ii_check,jj_check)
-              if(ldailyFCTsst) then
-                print*,"1. dailyFCTsst(ii_check,jj_check,1)=" &
-                      , dailyFCTsst(ii_check,jj_check,1)      &
-                      ,",dailyFCTsst(ii_check,jj_check,2)="   &
-                      , dailyFCTsst(ii_check,jj_check,2)
-              endif
-              if(dailyClm_option .ge. 1)then
-                print*,"dailyClmANAssst(",ii_check,",",jj_check,",0)="  &
-                      , dailyClmANAsst(ii_check,jj_check,0)     &
-                      ,",dailyClmANAsst(",ii_check,",",jj_check,",1)="  &
-                      , dailyClmANAsst(ii_check,jj_check,1)     &
-                      ,",dailyClmANAsst(",ii_check,",",jj_check,",2)="  &
-                      , dailyClmANAsst(ii_check,jj_check,2)
-                if(dailyClm_option .eq. 2)then
-                  print*,",dailyClmFCTsst(",ii_check,",",jj_check,",0)="&
-                       , dailyClmFCTsst(ii_check,jj_check,0)            &
-                       ,",dailyClmFCTsst(",ii_check,",",jj_check,",1)=" &
-                       , dailyClmFCTsst(ii_check,jj_check,1)            &
-                       ,",dailyClmFCTsst(",ii_check,",",jj_check,",2)=" &
-                       , dailyClmFCTsst(ii_check,jj_check,2)
-                endif
-              endif
-            endif
 
           ENDIF
+          
+
+
 
       CONTAINS
      !-----------------------------------
-        SUBROUTINE read_dailyFCT_dayp1(idtg1)
+        SUBROUTINE read_dailyFCT_dayp1(idtg1,locean)
 
           INTEGER*8 idtg1
           INTEGER iyyyy,imm,idd,ihh,imn
@@ -438,6 +433,7 @@
           INTEGER iitemp,jjtemp
           REAL sst_suntemp,sst_counttemp 
           REAL cice_suntemp,cice_counttemp,sndpt_suntemp,sndpt_counttemp
+          LOGICAL locean(nxp,my_max)
 
           write(cdtg,'(i12)') idtg1
           read(cdtg,'(i4.4,i2.2,i2.2,i2.2,i2.2)') iyyyy,imm,idd,ihh,imn
@@ -482,13 +478,8 @@
 
             DO ii=1,nxj
               i=nxjstart(j)+ii-1
-              if( myrank .eq. myrank_check .AND. i .eq. ii_check .AND. jj .eq. jj_check) then
-                 print*,"read_dailyFCT_dayp1: ssttemp(",ii_check,"," &
-                       ,j,")=",ssttemp(ii_check,j)
-              endif
-
               dailyFCTsst(ii,jj,2)=MERGE(ssttemp(i,j),xmissing,  &
-                   (ssttemp(i,j).GE.271. .AND. ssttemp(i,j) .LE. 400.))
+                   (ssttemp(i,j).GE.sstmin .AND. ssttemp(i,j) .LE. 400.))
               if(ldailyFCTicesndpt)then
                 dailyFCTcice(ii,jj,2)=MERGE(cicetemp(i,j),xmissing,  &
                                          (cicetemp(i,j) .GE. 0))
@@ -521,7 +512,7 @@
                     else
                       jjtemp=jtemp
                     endif
-                    if (ssttemp(iitemp,jjtemp).GE.271. .AND. ssttemp(iitemp,jjtemp) .LE. 400.)then
+                    if (ssttemp(iitemp,jjtemp).GE.sstmin .AND. ssttemp(iitemp,jjtemp) .LE. 400.)then
                       sst_suntemp=sst_suntemp+ssttemp(iitemp,jjtemp)
                       sst_counttemp=sst_counttemp+1.
                     endif
@@ -537,12 +528,12 @@
                     endif
                   enddo
                 enddo
-                if(ssttemp(i,j).LT.271. .OR. ssttemp(i,j) .GT. 400.)then
+                if(ssttemp(i,j).LT.sstmin .OR. ssttemp(i,j) .GT. 400.)then
                   ssttemp(i,j)=sst_suntemp/sst_counttemp
-                  if (ssttemp(i,j).GE.271. .AND. ssttemp(i,j) .LE. 400.)then
+                  if (ssttemp(i,j).GE.sstmin .AND. ssttemp(i,j) .LE. 400.)then
                     dailyFCTsst(ii,jj,2)=ssttemp(i,j)
                   else
-                    dailyFCTsst(ii,jj,2)=xmissing
+                    dailyFCTsst(ii,jj,2)=dailyFCTsst(ii,jj,1)
                   endif
                 endif
                 if(ldailyFCTicesndpt)then
@@ -560,38 +551,38 @@
                   endif
                 endif
               endif
-
-              if (myrank .eq. myrank_check .AND. ii .eq. ii_check .AND. jj.eq. jj_check) then
-                print*,"myrank=",myrank,",i=",i,",j=",j   &
-                      ,",ii=",ii, ",jj=",jj               &
-                      ,",ssttemp(i,j)=",ssttemp(i,j)      &
-                      ,",dailyFCTsst(ii,jj,2)=",dailyFCTsst(ii,jj,2)
+              if(locean(ii,jj) .AND. dailyFCTsst(ii,jj,1).ge.sstmin &
+                 .AND. dailyFCTsst(ii,jj,2).ge.sstmin)then 
+                dFCTsstdt(ii,jj)=(dailyFCTsst(ii,jj,2)-dailyFCTsst(ii,jj,1))/(24.*3600.)
+              else
+                dFCTsstdt(ii,jj)=0.
+              endif
+              if(ldailyFCTicesndpt)then
+                dFCTcicedt(ii,jj)=(dailyFCTcice(ii,jj,2)-dailyFCTcice(ii,jj,1))/(24.*3600.)
+                dFCTsndepthdt(ii,jj)=(dailyFCTsndepth(ii,jj,2)-dailyFCTsndepth(ii,jj,1))/(24.*3600.)
               endif
 
             ENDDO  !end do ii
           ENDDO    !end do jj
 
-
-          if( myrank .eq. myrank_check) then
-            print*,"read_dailyFCT_dayp1: dailyFCTsst(",ii_check,",",jj_check,",2)=" &
-                   ,dailyFCTsst(ii_check,jj_check,2)
-          endif
         
         END SUBROUTINE read_dailyFCT_dayp1
 
 
-        SUBROUTINE read_dailyClm_2days(idtg1,idtg_2,itau,ioption)
+        SUBROUTINE read_dailyClm_2days(idtg1,idtg_2,itau,plon,plat,locean)
 
           INTEGER*8 idtg1,idtg_2
           INTEGER itau
           INTEGER iyyyy,imm,idd,ihh,imn
           INTEGER iyyyy2,imm2,idd2,ihh2,imn2
           INTEGER lncrec
-          character lrec*26
+          CHARACTER lrec*26
           REAL sstANA0(nx,my),sstANA1(nx,my)
           REAL sstFCT0(nx,my),sstFCT1(nx,my)
           INTEGER i,j,ii,jj,nxj,istat
-          INTEGER ioption
+          REAL wweight
+          REAL plon(nx,my_max),plat(my)
+          LOGICAL locean(nxp,my_max)
 
           write(cdtg,'(i12)') idtg1
           read(cdtg,'(i4.4,i2.2,i2.2,i2.2,i2.2)') iyyyy,imm,idd,ihh,imn
@@ -604,6 +595,7 @@
           sstFCT0=0.
           sstFCT1=0.
 
+          !dailyClm_option>=1, read climatology ana. sst
    11     format('W00100',4x,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
           write(lrec,11) ggdef,imm,idd
           call dmsread(nx,my,lrec,lncrec,'H',ifilin_ClmANA,sstANA0(:,:),istat)
@@ -618,20 +610,20 @@
 !          endif
 
 
-          sstANA0=MERGE(sstANA0,xmissing,(sstANA0.GE.271. .AND. sstANA0.LE.400.))
-          sstANA1=MERGE(sstANA1,xmissing,(sstANA1.GE.271. .AND. sstANA1.LE.400.))
+          sstANA0=MERGE(sstANA0,xmissing,(sstANA0.GE.sstmin .AND. sstANA0.LE.400.))
+          sstANA1=MERGE(sstANA1,xmissing,(sstANA1.GE.sstmin .AND. sstANA1.LE.400.))
 
           CALL fill_missing2(sstANA0(:,:),nx,my,1,.FALSE.)
           CALL fill_missing2(sstANA1(:,:),nx,my,1,.FALSE.)
 
 
-          if(ioption .eq. 2) then
+          if(dailyClm_option .eq. 2) then     !dailyClm_option=2, read forcast climatology sst
    13       format('W00100',i4.4,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
             write(lrec,13) itau,ggdef,imm,idd
             call dmsread(nx,my,lrec,lncrec,'H',ifilin_ClmFCT,sstFCT0(:,:),istat)
 
    14       format('W00100',i4.4,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
-            write(lrec,14) itau,ggdef,imm2,idd2
+            write(lrec,14) itau+24,ggdef,imm,idd
             call dmsread(nx,my,lrec,lncrec,'H',ifilin_ClmFCT,sstFCT1(:,:),istat)
 
 
@@ -640,8 +632,8 @@
 !              call reducepick(sstFCT1(1,1),nxdef,nx,my)
 !            endif 
 
-            sstFCT0=MERGE(sstFCT0,xmissing,(sstFCT0.GE.271. .AND. sstFCT0.LE.400.))
-            sstFCT1=MERGE(sstFCT1,xmissing,(sstFCT1.GE.271. .AND. sstFCT1.LE.400.))
+            sstFCT0=MERGE(sstFCT0,xmissing,(sstFCT0.GE.sstmin .AND. sstFCT0.LE.400.))
+            sstFCT1=MERGE(sstFCT1,xmissing,(sstFCT1.GE.sstmin .AND. sstFCT1.LE.400.))
 
             CALL fill_missing2(sstFCT0(:,:),nx,my,1,.FALSE.)
             CALL fill_missing2(sstFCT1(:,:),nx,my,1,.FALSE.)
@@ -659,45 +651,66 @@
               call reducepick(sstFCT1(1,j),nxdef(j),nx,1)
             end if
             DO ii=1,nxj
+              wweight=0.
               i=nxjstart(j)+ii-1
               dailyClmANAsst(ii,jj,0)=sstANA0(i,j)
               dailyClmANAsst(ii,jj,1)=sstANA0(i,j)
               dailyClmANAsst(ii,jj,2)=sstANA1(i,j)
-              if(ioption .eq. 2) then
+              if(locean(ii,jj) .AND. dailyClm_option .eq. 1) then   !dailyClm_option=1
+                if(ldailyFCTsst)then
+                !similar to (Yuejian Zhu, operational)             
+                !  wweight=min(float(itau)/24./35.,1.)
+                !do weigting when (tau>=14.*24. & abs(plat)>=40.)
+                  if((itau .gt. 14*24) .AND. (abs(plat(j)) .gt. 40.)) then
+                    wweight=min(max((float(itau)-14.*24.)/(24.*30.),0.),1.)
+                  endif
+                  dailyFCTsst(ii,jj,2)=(1.-wweight)*dailyFCTsst(ii,jj,2)    &
+                                      +wweight*dailyClmANAsst(ii,jj,2)
+                else
+                !persistent anomaly sst
+                !SSTf_t=[SSTa_t0-SSTc_t0]*exp(-(t-t0)/90)+SSTc_t
+                !(Yuejian Zhu, operational)
+                  wweight=min(max(exp(-float(itau)/(90.*24.)),0.),1.)
+                  dailyFCTsst(ii,jj,2)=wweight*(ANAsstT0(ii,jj)-dailyClmANAsst(ii,jj,0))  &
+                                      +dailyClmANAsst(ii,jj,2)
+                endif
+              endif 
+              if(ldailyFCTsst .AND. locean(ii,jj) .AND. dailyClm_option .eq. 2) then   !dailyClm_option=2
                 dailyClmFCTsst(ii,jj,0)=sstFCT0(i,j)
                 dailyClmFCTsst(ii,jj,1)=sstFCT0(i,j)
                 dailyClmFCTsst(ii,jj,2)=sstFCT1(i,j)
+                !idea from Yuejian Zhu(2018 JGR)
+                 wweight=min(max(float(itau)/24./35.,1.),0.)
+                 dailyFCTsst(ii,jj,2)=(1.-wweight)*(ANAsstT0(ii,jj)-dailyClmANAsst(ii,jj,0)    &
+                     +dailyClmANAsst(ii,jj,2) )+wweight*(dailyFCTsst(ii,jj,2)    &
+                     -(dailyClmFCTsst(ii,jj,2)-dailyClmANAsst(ii,jj,2)))
+              endif
+              if(locean(ii,jj) .AND. dailyFCTsst(ii,jj,1).ge.sstmin &
+                 .AND.dailyFCTsst(ii,jj,2).ge.sstmin)then
+                dFCTsstdt(ii,jj)=(dailyFCTsst(ii,jj,2)-dailyFCTsst(ii,jj,1))/(24.*3600.)
+              else
+                dFCTsstdt(ii,jj)=0.
               endif
 
-              if (myrank.eq.myrank_check .AND. i.eq.ii_check .AND. jj.eq.jj_check) then
-                print*,"myrank=",myrank,",i=",i,",j=",j                &
-                  ,",ii=",ii,",jj=",jj                                 &
-                  ,",dailyClmANAsst(ii,jj,0)=",dailyClmANAsst(ii,jj,0)   &
-                  ,",dailyClmANAsst(ii,jj,1)=",dailyClmANAsst(ii,jj,1)   &
-                  ,",dailyClmANAsst(ii,jj,2)=",dailyClmANAsst(ii,jj,2)
-                if(ioption .eq. 2) then
-                  print*,",dailyClmFCTsst(ii,jj,0)=",dailyClmFCTsst(ii,jj,0)   &
-                    ,",dailyClmFCTsst(ii,jj,1)=",dailyClmFCTsst(ii,jj,1)   &
-                    ,",dailyClmFCTsst(ii,jj,2)=",dailyClmFCTsst(ii,jj,2)
-                endif
-              endif
             ENDDO  !end do ii
           ENDDO    !end do jj
         
         END SUBROUTINE read_dailyClm_2days
 
                
-        SUBROUTINE read_dailyClm_dayp1(idtg1,idtg_2,itau,ioption)
+        SUBROUTINE read_dailyClm_dayp1(idtg1,idtg_2,itau,plon,plat,locean)
 
           INTEGER*8 idtg1,idtg_2
           INTEGER itau
           INTEGER iyyyy,imm,idd,ihh,imn
           INTEGER iyyyy2,imm2,idd2,ihh2,imn2
           INTEGER lncrec
-          character lrec*26
+          CHARACTER lrec*26
           REAL sstANA(nx,my),sstFCT(nx,my)
           INTEGER i,j,ii,jj,nxj,istat
-          INTEGER ioption
+          REAL wweight
+          REAL plon(nx,my_max),plat(my)
+          LOGICAL locean(nxp,my_max)
 
           write(cdtg,'(i12)') idtg1
           read(cdtg,'(i4.4,i2.2,i2.2,i2.2,i2.2)') iyyyy,imm,idd,ihh,imn
@@ -705,7 +718,6 @@
           read(cdtg,'(i4.4,i2.2,i2.2,i2.2,i2.2)') iyyyy2,imm2,idd2,ihh2,imn2
 
           lncrec=nx*my
-
           sstANA=0.          
           sstFCT=0.          
 
@@ -718,12 +730,12 @@
 !            call reducepick(sstANA(1,1),nxdef,nx,my)
 !          endif
 
-          sstANA=MERGE(sstANA,xmissing,(sstANA.GE.271. .AND. sstANA.LE.400.))
+          sstANA=MERGE(sstANA,xmissing,(sstANA.GE.sstmin .AND. sstANA.LE.400.))
           CALL fill_missing2(sstANA(:,:),nx,my,1,.FALSE.)
 
 
 
-          if(ioption .eq. 2) then
+          if(dailyClm_option .eq. 2) then
    13       format('W00100',i4.4,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
             write(lrec,13) itau,ggdef,imm,idd
             call dmsread(nx,my,lrec,lncrec,'H',ifilin_ClmFCT,sstFCT(:,:),istat)
@@ -732,7 +744,7 @@
 !              call reducepick(sstFCT(1,1),nxdef,nx,my)
 !            endif
 
-            sstFCT=MERGE(sstFCT,xmissing,(sstFCT.GE.271. .AND. sstFCT.LE.400.))
+            sstFCT=MERGE(sstFCT,xmissing,(sstFCT.GE.sstmin .AND. sstFCT.LE.400.))
             CALL fill_missing2(sstFCT(:,:),nx,my,1,.FALSE.)
           endif
 
@@ -745,20 +757,43 @@
               call reducepick(sstFCT(1,j),nxdef(j),nx,1)
             end if
             DO ii=1,nxj
+              wweight=0.
               i=nxjstart(j)+ii-1
               dailyClmANAsst(ii,jj,2)=sstANA(i,j)
-              if(ioption .eq. 2) then
-                dailyClmFCTsst(ii,jj,2)=sstFCT(i,j)
-              endif
-
-              if (myrank.eq.myrank_check .AND. ii.eq.ii_check .AND. jj.eq.jj_check) then
-                print*,"myrank=",myrank,",i=",i,",j=",j              &
-                  ,",ii=",ii,",jj=",jj                                   &
-                  ,",dailyClmANAsst(ii,jj,2)=",dailyClmANAsst(ii,jj,2)
-                if(ioption .eq. 2)then
-                  print*,",dailyClmFCTsst(ii,jj,2)=",dailyClmFCTsst(ii,jj,2)
+              if(locean(ii,jj) .AND. dailyClm_option .eq. 1) then   !dailyClm_option=1
+                if(ldailyFCTsst)then
+                !similar to (Yuejian Zhu, operational)             
+                !  wweight=min(float(itau)/24./35.,1.)
+                !do weigting when (tau>=14.*24. & abs(plat)>=40.)
+                  if((itau .gt. 14*24) .AND. (abs(plat(j)) .gt. 40.)) then
+                    wweight=min(max((float(itau)-14.*24.)/(24.*30.),0.),1.)
+                  endif
+                  dailyFCTsst(ii,jj,2)=(1.-wweight)*dailyFCTsst(ii,jj,2) &
+                                      +wweight*dailyClmANAsst(ii,jj,2)
+                else
+                !persistent anomaly sst
+                !SSTf_t=[SSTa_t0-SSTc_t0]*exp(-(t-t0)/90)+SSTc_t
+                !(Yuejian Zhu, operational)
+                  wweight=min(max(exp(-float(itau)/(90.*24.)),0.),1.)
+                  dailyFCTsst(ii,jj,2)=wweight*(ANAsstT0(ii,jj)-dailyClmANAsst(ii,jj,0))  &
+                                       +dailyClmANAsst(ii,jj,2)
                 endif
               endif
+              if(ldailyFCTsst .AND. locean(ii,jj) .AND. dailyClm_option .eq. 2) then   !dailyClm_option=2
+                dailyClmFCTsst(ii,jj,2)=sstFCT(i,j)
+                !idea from Yuejian Zhu(2018 JGR)
+                 wweight=min(max(float(itau)/24./35.,0.),1.)
+                 dailyFCTsst(ii,jj,2)=(1.-wweight)*(ANAsstT0(ii,jj)-dailyClmANAsst(ii,jj,0)   &
+                     +dailyClmANAsst(ii,jj,2))+wweight*(dailyFCTsst(ii,jj,2)    &
+                     -(dailyClmFCTsst(ii,jj,2)-dailyClmANAsst(ii,jj,2)))
+              endif
+              if(locean(ii,jj) .AND. dailyFCTsst(ii,jj,1).ge.sstmin &
+                .AND. dailyFCTsst(ii,jj,2).ge.sstmin)then
+                dFCTsstdt(ii,jj)=(dailyFCTsst(ii,jj,2)-dailyFCTsst(ii,jj,1))/(24.*3600.)
+              else
+                dFCTsstdt(ii,jj)=0.
+              endif
+
             ENDDO
           ENDDO
 
@@ -769,10 +804,44 @@
       END SUBROUTINE read_dailyFCT
 
 !---------------------------------------------------------------
+      SUBROUTINE outtseadiffFCT24(nx,my,my_max,dt24,ifilout,itau,idtg,ggdef)
+
+      use index 
+      use mpe
+
+      implicit none
+
+      integer   nx,my,my_max,itau
+      real      dt24
+      real wrk(nxp,my_max),glob(nx,my)
+      integer*8 idtg
+      character*80 ifilout
+      character*26 ihdg
+      character*4  ggdef
+      integer   imax,jmax,lenc,j,nxj,i,istat,jj
+
+      imax=nx
+      jmax=my
+      lenc= imax*jmax
+!
+      do jj = 1,jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        do i=1,nxj
+         wrk(i,jj)=tseadiffFCT24(i,jj)/dt24
+        enddo
+      enddo
+      call unify_reduceintp(nx,my,my_max,wrk,glob)
+      call syslbl ('w0001f',idtg,itau,ggdef,ihdg)
+      call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      tseadiffFCT24=0.
+
+      END SUBROUTINE 
+!---------------------------------------------------------------
         subroutine deallocate_ocaf_array  
 
            deallocate (wdepths,wtfn12,wsfn12)
-           if(locaf0) deallocate (wtfn1st,wsfn1st)
+           if(locaf0) deallocate (wtfn1st,mask1st)
            return
         
         end subroutine
@@ -940,63 +1009,30 @@
 
           if(.not. ALLOCATED(wdepths)) ALLOCATE(wdepths(1:lkvl+2))
           if(.not. ALLOCATED(wtfn1st)) ALLOCATE(wtfn1st(nxp,1:lkvl+2,my_max))
-!          if(.not. ALLOCATED(wsfn0)) ALLOCATE(wsfn0(nxp,1:lkvl+2,my_max))
+          if(.not. ALLOCATED(mask1st)) ALLOCATE(mask1st(nxp,my_max))
 
           nwdepth=lkvl+2
           wdepths(1:lkvl+2)=sit_zdepth(0:lkvl+1)
           wtfn1st=0.
-!          wsfn0=0.
+          mask1st=0.
 
           write(cdtg,'(i12)') idtg1
 !          read(cdtg,'(i4,i2,i8)')iyyyy,mm,ddhhmn
 
 
   11     format(i3.3,'TFN','0000',a4,a12)  ! ???TFM
-  12     format(i3.3,'SFN','0000',a4,a12)  ! ???SFM
-
-!          flag=.false.
-!          if(myrank.eq.0) then
-!            call dmsmsg("ALL",istat)
-!            print *,'ready to open ifilin_ocaf'
-!            call dmsopn(ifilin_ocaf,"r",istat)
-!            flag=.true.
-!          endif
-!          call mpe_broadcast(istat,1,flag,mpe_integer)
-!          if(istat.ne.0)then
-!            if(myrank.eq.0) print *,'dmsopn ocaf error'
-!            stop
-!            call mpe_finalize
-!            call dmsexit(-1)
-!          endif
-
+  12     format(i3.3,'MSK','0000',a4,a12)  ! ???SFM
 
 !          do k=1,lkvl+2
           do k=1,1
-!           if(myrank.eq.0) call dmsopn(ifilin_sst,"r",istat)
-!           call mpe_broadcast(istat,1,flag,mpe_integer)
-!           if(istat.ne.0)then
-!             if(myrank.eq.0) print *,'dmsopn sst error'
-!               call mpe_finalize
-!               call dmsexit(-1)
-!           endif
-
-
-!            write(cdtg,'(i12)') idtg1
-!            read(cdtg,'(i4,i8)')iyyyy,mmddhhmn
-
-!              iy=idtg_sst/1000000
 
            lncrec=nx*my
            write(lrec,11) k-1,ggdef,cdtg
            if(myrank .eq. 0) print *, 'lrec11=',lrec
            call dmsread(nx,my,lrec,lncrec,'H',ifilin,temp1(:,:),istat)
-!           write(lrec,12) k-1,ggdef,cdtg
-!           if(myrank .eq. 0) print *, 'lrec12=',lrec
-!           call dmsread(nx,my,lrec,lncrec,'H',ifilin,temp2(:,:),istat)
-!           if( myrank .eq. 72) then
-!             print *,"ocaf 1: wtfn(914,265)=",temp1(914,265)
-!             print *,"ocaf 2: wsfn(914,265)=",temp2(914,265)
-!           endif
+           write(lrec,12) k-1,ggdef,cdtg
+           if(myrank .eq. 0) print *, 'lrec12=',lrec
+           call dmsread(nx,my,lrec,lncrec,'H',ifilin,temp2(:,:),istat)
 
 !           if( lreduce.eq.1 ) call reducepick(temp1(1,1),nxdef,nx,my)
 !           if( lreduce.eq.1 ) call reducepick(temp2(1,1),nxdef,nx,my)
@@ -1007,26 +1043,12 @@
               nxj=nxdef_2d(j)
               if( lreduce.eq.1 )then
                 call reducepick (temp1(1,j),nxdef(j),nx,1)
-!                call reducepick (temp2(1,j),nxdef(j),nx,1)
+                call reducepick (temp2(1,j),nxdef(j),nx,1)
               endif
               do ii = 1, nxj
-!                  if(sitmask(i,jj).eq. 1)then
                  i=nxjstart(j)+ii-1
-                 wtfn1st(i,k,jj)=temp1(i,j)
-!                 wsfn0(i,k,jj)=temp2(i,j)
-!                  endif
-!                  if((myrank .EQ.72 ) .AND. (jj .EQ. 3) .AND. (i .EQ.
-!                  913))then
-!                    print
-!                    *,"wtfn12(913,",k,",3,",mm,")=",wtfn12(i,k,jj,mm) &
-!                           ,"wsfn12(913,",k,",3,",mm,")=",wsfn12(i,k,jj,mm)
-!                  endif
-!                  if((myrank .EQ.72 ) .AND. (jj .EQ. 3) .AND. (i .EQ.
-!                  914))then
-!                    print
-!                    *,"wtfn12(914,",k,",3,",mm,")=",wtfn12(i,k,jj,mm) &
-!                           ,"wsfn12(914,",k,",3,",mm,")=",wsfn12(i,k,jj,mm)
-!                  endif
+                 wtfn1st(ii,k,jj)=temp1(i,j)
+                 mask1st(ii,jj)=temp2(i,j)
               enddo   !end of ii
             enddo    !end of jj
          
@@ -1074,7 +1096,7 @@
           CHARACTER (12) :: cname, cwoa(nrec)
           
           REAL, ALLOCATABLE, TARGET :: zin(:,:,:,:)
-!          REAL, ALLOCATABLE, TARGET :: zintemp(:,:)
+          REAL, ALLOCATABLE, TARGET :: zintemp(:,:)
 !          REAL, POINTER :: gl_woa(:,:,:,:)
           REAL      :: missing_value
           
@@ -1296,6 +1318,7 @@
           cwoa(5) = 'mixedlayer'    ! ocean mixed layer (m)
           DO irec = 1, nrec
             IF (.NOT. ALLOCATED(zin)) ALLOCATE (zin(nlon,nodepth,ngl,0:13))
+            IF (.NOT. ALLOCATED(zintemp)) ALLOCATE (zintemp(nlon,ngl))
             IF (p_parallel_io) THEN
             !WRITE(nerr,'(/,A,I2)') ' Read GODAS 7.0 '
             !     Allocate memory for godas global fields
@@ -1315,6 +1338,7 @@
                                             '_FillValue', missing_value)
 !!          WRITE(nerr,*) 'pe=',p_pe,', read GODAS 7.1 _FillValue= ',missing_value
                   IF(irec .eq. 5) then
+                      jk=1
                       io_start(:) = (/       1,   1,  1,        1 /)
                       io_count(:) = (/ io_nlon, ngl,  1, io_ntime /)
                     ! for depth jk: read io_nlon longitudes, ngl latitudes and 12 months
@@ -1352,6 +1376,7 @@
                     ! read world ocean atlas data december of last year
                     CALL io_inq_varid (woanc0%file_id, cname, io_var_id)
                     IF(irec .eq. 5) then
+                      jk=1
                       io_start(:) = (/       1,   1,  1, 12 /)
                       io_count(:) = (/ io_nlon, ngl,  1, 1 /)
                       ! for depth jk: read io_nlon longitudes, ngl latitudes and 1 months
@@ -1382,6 +1407,7 @@
                     ! read world ocean atlas data january of next year
                     CALL io_inq_varid (woanc2%file_id, cname, io_var_id)
                     IF(irec .eq. 5) then
+                      jk=1
                       io_start(:) = (/       1,   1,  1, 1 /)
                       io_count(:) = (/ io_nlon, ngl,  1, 1 /)
                       ! for depth jk: read io_nlon longitudes, ngl latitudes and 1 months
@@ -1455,26 +1481,33 @@
                       ',zin(212,',jk,',235,',im,')=',zin(212,jk,ngl+1-235,im)
                 endif
 !                if( lreduce.eq.1 ) call reducepick(zin(1,jk,1,im),nxdef,nx,my)
+                Do j=1,ngl
+                  if(irec .eq. 5) then
+                    zintemp(:,j)=zin(:,1,ngl-j+1,im)
+                  else
+                    zintemp(:,j)=zin(:,jk,ngl-j+1,im)
+                  endif
+                ENDDO
     
                 DO jj = 1, jlistnum
                   j=jlist1(jj)
                   nxj=nxdef_2d(j)
-                  if( lreduce.eq.1 )call reducepick(zin(1,jk,j,im),nxdef(j),nx,1)
+                  if( lreduce.eq.1 )call reducepick(zintemp(1,j),nxdef(j),nx,1)
                   DO ii=1,nxj
                     i=nxjstart(j)+ii-1
                     IF(irec .eq. 1) THEN
-                      ot12(ii,jk,jj,im) = zin(i,jk,ngl-j+1,im)
+                      ot12(ii,jk,jj,im) = zintemp(i,j)
 !                      if((myrank.eq.44).AND.(i.eq.212).AND.(jj.eq.3).AND.(j.eq.235)) then
 !                        print *,'ot12(',i,',',jk,',',jj,',',im,')=',ot12(i,jk,jj,im) 
 !                      endif
                     ELSE IF(irec .eq. 2) THEN
-                      os12(ii,jk,jj,im) = zin(i,jk,ngl-j+1,im)
+                      os12(ii,jk,jj,im) = zintemp(i,j)
                     ELSE IF(irec .eq. 3) THEN
-                      ou12(ii,jk,jj,im) = zin(i,jk,ngl-j+1,im)
+                      ou12(ii,jk,jj,im) = zintemp(i,j)
                     ELSE IF(irec .eq. 4) THEN
-                      ov12(ii,jk,jj,im) = zin(i,jk,ngl-j+1,im)
+                      ov12(ii,jk,jj,im) = zintemp(i,j)
                     ELSE IF(irec .eq. 5) THEN
-                      mixedlayer12(ii,jj,im) = zin(i,1,ngl-j+1,im)
+                      mixedlayer12(ii,jj,im) = zintemp(i,j)
                     ENDIF
                   ENDDO
                 ENDDO
@@ -1500,8 +1533,8 @@
             WRITE(nerr,*) 'read GODAS'
           END IF
           
-!          DEALLOCATE (zintemp)
           DEALLOCATE (zin)
+          DEALLOCATE (zintemp)
         END SUBROUTINE read_godas
 
 
@@ -1575,6 +1608,7 @@
       CHARACTER (12) :: cname, cwoa0(nrec)
 
       REAL, ALLOCATABLE, TARGET :: zin(:,:,:)
+      REAL, ALLOCATABLE, TARGET :: zintemp(:,:)
       REAL, POINTER :: gl_woa0(:,:,:)
       REAL      :: missing_value
 
@@ -1698,6 +1732,7 @@
       cwoa0( 5) = 'mixedlayer'    ! ocean mixed layer (m)
       DO irec = 1, nrec
         IF (.NOT. ALLOCATED(zin)) ALLOCATE (zin(nlon,nodepth0,ngl))
+        IF (.NOT. ALLOCATED(zintemp)) ALLOCATE (zintemp(nlon,ngl))
       IF (p_parallel_io) THEN
 !!      WRITE(nerr,'(/,A,I2)') ' Read WOA0 7.0 '
       !     Allocate memory for WOA0 global fields
@@ -1798,50 +1833,31 @@
         DO jk = 1, nodepth0
           flag=.false.
           if(myrank .eq. 0) flag=.true.
-!          call mpe_broadcast(zin(:,jk,:),nx*my,flag,mpe_double)
           call mpe_bcast(zin(:,jk,:),nx*my,0,mpe_double)
-!          if( lreduce.eq.1 ) call reducepick (zin(1,jk,1),nxdef,nx,my)
-!          IF(myrank.eq. myrank_check) THEN
-!            print *,"after broadcast,woa0: irec=",irec,  &
-!                         ",zin:(212,",jk,",235)=",zin(212,jk,ngl+1-235)
-!          ENDIF
+          DO j=1,ngl
+            if(irec .eq. 5) then
+              zintemp(:,j)=zin(:,1,ngl-j+1)
+            else
+              zintemp(:,j)=zin(:,jk,ngl-j+1)
+            endif
+          ENDDO
 
           DO jj = 1, jlistnum
             j=jlist1(jj)
             nxj=nxdef_2d(j)
-            if( lreduce.eq.1 )call reducepick (zin(1,jk,j),nxdef(j),nx,1)
+            if( lreduce.eq.1 )call reducepick (zintemp(1,j),nxdef(j),nx,1)
             DO ii=1,nxj
               i=nxjstart(j)+ii-1
               IF (irec .eq. 1) THEN
-                ot0(ii,jk,jj)=zin(i,jk,ngl-j+1)
-!                IF((myrank.eq.44) .and. (jj.eq.3) .and. (ii.eq.1))THEN
-                IF((i.eq.768) .and. (j.eq.492) )THEN
-                  print *,"myrank=",myrank
-                  print *,"WOA0:ot0(",ii,",",jk,",",jj,")=",ot0(ii,jk,jj)
-                ENDIF
+                ot0(ii,jk,jj)=zintemp(i,j)
               ELSE IF(irec .eq. 2) THEN
-                os0(ii,jk,jj)=zin(i,jk,ngl-j+1)
-!                IF((myrank.eq.44) .and. (jj.eq.3) .and. (i.eq.1))THEN
-                IF((i.eq.768) .and. (j.eq.492) )THEN
-                  print *,"myrank=",myrank
-                  print *,"WOA0:os0(",ii,",",jk,",",jj,")=",os0(ii,jk,jj)
-                ENDIF
+                os0(ii,jk,jj)=zintemp(i,j)
               ELSE IF(irec .eq. 3) THEN
-                ou0(ii,jk,jj)=zin(i,jk,ngl-j+1)
-!                IF((myrank.eq.44) .and. (jj.eq.3) .and. (i.eq.1))THEN
-!                  print *,"WOA0:ou0(",ii,",",jk,",",jj,")=",ou0(ii,jk,jj)
-!                ENDIF
+                ou0(ii,jk,jj)=zintemp(i,j)
               ELSE IF(irec .eq. 4) THEN
-                ov0(ii,jk,jj)=zin(i,jk,ngl-j+1)
-!                IF((myrank.eq.44) .and. (jj.eq.3) .and. (i.eq.1))THEN
-!                  print *,"WOA0:ov0(",ii,",",jk,",",jj,")=",ov0(ii,jk,jj)
-!                ENDIF
+                ov0(ii,jk,jj)=zintemp(i,j)
               ELSE IF(irec .eq. 5) THEN
-                mixedlayer0(ii,jj)=zin(i,jk,ngl-j+1)
-!                IF((myrank.eq.44) .and. (jj.eq.3) .and. (i.eq.1))THEN
-                IF((i.eq.768) .and. (j.eq.492) )THEN
-                  print *,"WOA0:mixedlayer0(",ii,",",jj,")=",mixedlayer0(ii,jj)
-                ENDIF
+                mixedlayer0(ii,jj)=zintemp(i,j)
               ENDIF
             ENDDO
           ENDDO
@@ -2199,6 +2215,11 @@
 !ps       REAL, POINTER :: gl_ov(:,:,:)
 !!!       REAL(dp), POINTER :: gl_ow(:,:,:)
 !ps
+       REAL, ALLOCATABLE:: ottemp(:,:)
+       REAL, ALLOCATABLE:: ostemp(:,:)
+       REAL, ALLOCATABLE:: outemp(:,:)
+       REAL, ALLOCATABLE:: ovtemp(:,:)
+
        INTEGER jk,jj,j,nxj,i,ii
        INTEGER istat
 
@@ -2208,6 +2229,10 @@
        IF(.NOT. ALLOCATED(zou)) ALLOCATE (zou(nx,nodepth,my))
        IF(.NOT. ALLOCATED(zov)) ALLOCATE (zov(nx,nodepth,my))
        IF(.NOT. ALLOCATED(zmixedlayer)) ALLOCATE (zmixedlayer(nx,my))
+       IF(.NOT. ALLOCATED(ottemp)) ALLOCATE (ottemp(nx,my))
+       IF(.NOT. ALLOCATED(ostemp)) ALLOCATE (ostemp(nx,my))
+       IF(.NOT. ALLOCATED(outemp)) ALLOCATE (outemp(nx,my))
+       IF(.NOT. ALLOCATED(ovtemp)) ALLOCATE (ovtemp(nx,my))
 
        flag=.false.     
        IF (p_parallel_io) THEN
@@ -2301,6 +2326,11 @@
 !           call mpe_broadcast(zmixedlayer(:,:),nx*my,flag,mpe_double)
            call mpe_bcast(zmixedlayer(:,:),nx*my,0,mpe_double)
          endif
+         ottemp(:,:)=zot(:,jk,:)
+         ostemp(:,:)=zos(:,jk,:)
+         outemp(:,:)=zou(:,jk,:)
+         ovtemp(:,:)=zov(:,jk,:)
+         
 !         if( lreduce.eq.1 ) then
 !           call reducepick(zot(1,jk,1),nxdef,nx,my)
 !           call reducepick(zos(1,jk,1),nxdef,nx,my)
@@ -2314,37 +2344,37 @@
            j=jlist1(jj)
            nxj=nxdef_2d(j)
            if( lreduce.eq.1 ) then
-             call reducepick(zot(1,jk,j),nxdef(j),nx,1)
-             call reducepick(zos(1,jk,j),nxdef(j),nx,1)
-             call reducepick(zou(1,jk,j),nxdef(j),nx,1)
-             call reducepick(zov(1,jk,j),nxdef(j),nx,1)
+             call reducepick(ottemp(1,j),nxdef(j),nx,1)
+             call reducepick(ostemp(1,j),nxdef(j),nx,1)
+             call reducepick(outemp(1,j),nxdef(j),nx,1)
+             call reducepick(ovtemp(1,j),nxdef(j),nx,1)
              if(jk .eq. 1) then
                call reducepick(zmixedlayer(1,j),nxdef(j),nx,1)
              endif
            endif
            DO ii=1,nxj
              i=nxjstart(j)+ii-1
-             ot12(ii,jk,jj,dayID) = zot(i,jk,ngl-j+1)
-!             if((myrank.eq.44).AND.(i.eq.212).AND.(jj.eq.3).AND.(j.eq.235)) then
-!                print *,'ot12(',ii,',',jk,',',jj,',',dayID,')=',ot12(ii,jk,jj,dayID)
-!             endif
-             os12(ii,jk,jj,dayID) = zos(i,jk,ngl-j+1)
-             ou12(ii,jk,jj,dayID) = zou(i,jk,ngl-j+1)
-             ov12(ii,jk,jj,dayID) = zov(i,jk,ngl-j+1)
+             ot12(ii,jk,jj,dayID) = ottemp(i,j)
+             os12(ii,jk,jj,dayID) = ostemp(i,j)
+             ou12(ii,jk,jj,dayID) = outemp(i,j)
+             ov12(ii,jk,jj,dayID) = ovtemp(i,j)
              if(jk .eq. 1) then
-               mixedlayer12(ii,jj,dayID) = zmixedlayer(i,ngl-j+1)
+               mixedlayer12(ii,jj,dayID) = zmixedlayer(i,j)
              endif
            ENDDO
          ENDDO
        ENDDO
 
 
-!ps       IF (p_parallel_io) THEN
          DEALLOCATE (zot)
          DEALLOCATE (zos)
          DEALLOCATE (zou)
          DEALLOCATE (zov)
          DEALLOCATE (zmixedlayer)
+         DEALLOCATE (ottemp)
+         DEALLOCATE (ostemp)
+         DEALLOCATE (outemp)
+         DEALLOCATE (ovtemp)
 !!!         DEALLOCATE (zow)
 !ps       ENDIF
        END SUBROUTINE read_godas_dayp1
@@ -2359,8 +2389,8 @@
        INTEGER, INTENT(out):: nts
        INTEGER, INTENT(out):: istat
        REAL, INTENT(out):: recdate    ! record data in absolute time foremat, e.g., 20130911.1350
-       REAL, DIMENSION(nlon,nodepth,nlat), INTENT(out):: zot, zos, zou, zov
-       REAL, DIMENSION(nlon,nlat), INTENT(out):: zmixedlayer
+       REAL, DIMENSION(nlon,nodepth,nlat), INTENT(in out):: zot, zos, zou, zov
+       REAL, DIMENSION(nlon,nlat), INTENT(in out):: zmixedlayer
      
        REAL      :: missing_value
        INTEGER               :: io_ntime  ! number of timesteps in NetCDF file
@@ -2374,8 +2404,11 @@
        !!! INTEGER       :: start(4), COUNT(4), nvarid, ndimid, nts, tsID
        INTEGER       :: otid2,osid2,ouid2,ovid2,ndimid2,mixedid2
        REAL, ALLOCATABLE :: timevals2(:)
+       REAL, ALLOCATABLE :: ottemp(:,:),ostemp(:,:)
+       REAL, ALLOCATABLE :: outemp(:,:),ovtemp(:,:)
+       REAL, ALLOCATABLE :: mixlayertemp(:,:)
      
-     
+        
        ! read one-record godas data
        istat=0
        IF (.NOT.p_parallel_io) RETURN    !!! Only for p_parallel_io, else return
@@ -2400,24 +2433,28 @@
            WRITE(nerr,*) 'read_godas_1record:', 'To few time steps < 1'
            istat=-1
          ELSE
-           ALLOCATE (timevals2(nts))
+           IF(.NOT. ALLOCATED(timevals2)) ALLOCATE (timevals2(nts))
+           IF(.NOT. ALLOCATED(ottemp)) ALLOCATE (ottemp(nlon,nlat))
+           IF(.NOT. ALLOCATED(ostemp)) ALLOCATE (ostemp(nlon,nlat))
+           IF(.NOT. ALLOCATED(outemp)) ALLOCATE (outemp(nlon,nlat))
+           IF(.NOT. ALLOCATED(ovtemp)) ALLOCATE (ovtemp(nlon,nlat))
+           IF(.NOT. ALLOCATED(mixlayertemp)) ALLOCATE (mixlayertemp(nlon,nlat))
+
            CALL IO_INQ_VARID (gpnc2%file_id, 'time', io_var_id)
            CALL IO_GET_VAR_DOUBLE(gpnc2%file_id, io_var_id, timevals2)
+           IF (tsID.EQ.LAST_RECORD) tsID=nts     !!! modify tsID for LAST_RECORD
+
            recdate=timevals2(tsID)
            
-           WRITE (nerr,*) 'read_godas_1record: nts=',nts &
+           WRITE (nerr,*) 'read_godas_1record: nlon=',nlon &
+                        ,',nlat=',nlat,',nts=',nts &
+                        ,',tsID=',tsID   &
                         ,',timevals(tsID)=',timevals2(tsID)
            IF(tsID .lt. nts) THEN
              print *, 'read_godas_1record: timevals(tsID+1)=',timevals2(tsID+1)
            ENDIF
            DEALLOCATE (timevals2)
-           CALL IO_INQ_VARID (gpnc2%file_id, 'ot', otid2)
-           CALL IO_INQ_VARID (gpnc2%file_id, 'os', osid2)
-           CALL IO_INQ_VARID (gpnc2%file_id, 'ou', ouid2)
-           CALL IO_INQ_VARID (gpnc2%file_id, 'ov', ovid2)
-           CALL IO_INQ_VARID (gpnc2%file_id, 'mixedlayer', mixedid2)
-!!!       CALL IO_INQ_VARID (gpnc2%file_id, 'ow', owid2)
-           CALL io_get_att_double (gpnc2%file_id, otid2, '_FillValue', missing_value)
+
            IF (tsID.EQ.LAST_RECORD) tsID=nts     !!! modify tsID for LAST_RECORD
            IF (tsID .gt. nts) THEN
          !!! data out range, set to be missing value
@@ -2429,18 +2466,36 @@
              WRITE (nerr,*) 'read_dailygodas, date=',recdate &
                            ,'DATA out of range!!! Set to MISSING DATA!'
            ELSE
+
+           CALL IO_INQ_VARID (gpnc2%file_id, 'ot', otid2)
+           CALL IO_INQ_VARID (gpnc2%file_id, 'os', osid2)
+           CALL IO_INQ_VARID (gpnc2%file_id, 'ou', ouid2)
+           CALL IO_INQ_VARID (gpnc2%file_id, 'ov', ovid2)
+           CALL IO_INQ_VARID (gpnc2%file_id, 'mixedlayer', mixedid2)
+!!!       CALL IO_INQ_VARID (gpnc2%file_id, 'ow', owid2)
+           CALL io_get_att_double (gpnc2%file_id, otid2, '_FillValue', missing_value)
+
              DO jk=1, nodepth
                io_start(:) = (/ 1, 1, jk, tsID /)
                io_count(:) = (/ nlon, nlat, 1, 1 /)
-               CALL IO_GET_VARA_DOUBLE (gpnc2%file_id,otid2,io_start,io_count, zot(1:nlon,jk,1:nlat))
-               CALL IO_GET_VARA_DOUBLE (gpnc2%file_id,osid2,io_start,io_count, zos(1:nlon,jk,1:nlat))
-               CALL IO_GET_VARA_DOUBLE (gpnc2%file_id,ouid2,io_start,io_count, zou(1:nlon,jk,1:nlat))
-               CALL IO_GET_VARA_DOUBLE (gpnc2%file_id,ovid2,io_start,io_count, zov(1:nlon,jk,1:nlat))
+               CALL IO_GET_VARA_DOUBLE (gpnc2%file_id,otid2,io_start,io_count, ottemp(1:nlon,1:nlat))
+               CALL IO_GET_VARA_DOUBLE (gpnc2%file_id,osid2,io_start,io_count, ostemp(1:nlon,1:nlat))
+               CALL IO_GET_VARA_DOUBLE (gpnc2%file_id,ouid2,io_start,io_count, outemp(1:nlon,1:nlat))
+               CALL IO_GET_VARA_DOUBLE (gpnc2%file_id,ovid2,io_start,io_count, ovtemp(1:nlon,1:nlat))
                imixed_start(:) = (/ 1, 1, 1, tsID /)
                imixed_count(:) = (/ nlon, nlat, 1, 1 /)
                if(jk .eq. 1) then
-                 CALL IO_GET_VARA_DOUBLE (gpnc2%file_id,mixedid2,imixed_start,imixed_count, zmixedlayer(1:nlon,1:nlat))
+                 CALL IO_GET_VARA_DOUBLE (gpnc2%file_id,mixedid2,imixed_start,imixed_count, mixlayertemp(1:nlon,1:nlat))
                endif
+               DO j=1,nlat
+                 zot(:,jk,j)=ottemp(:,nlat-j+1)
+                 zos(:,jk,j)=ostemp(:,nlat-j+1)
+                 zou(:,jk,j)=outemp(:,nlat-j+1)
+                 zov(:,jk,j)=ovtemp(:,nlat-j+1)
+                 if(jk .eq. 1) then
+                   zmixedlayer(:,j)=mixlayertemp(:,nlat-j+1)
+                 endif
+               ENDDO
              ENDDO
              zot(:,:,:)=MERGE(zot(:,:,:),xmissing,zot(:,:,:).NE.missing_value)
              zos(:,:,:)=MERGE(zos(:,:,:),xmissing,zos(:,:,:).NE.missing_value)
@@ -2448,16 +2503,25 @@
              zov(:,:,:)=MERGE(zov(:,:,:),xmissing,zov(:,:,:).NE.missing_value)
              zmixedlayer(:,:)=MERGE(zmixedlayer(:,:),xmissing,zmixedlayer(:,:).NE.missing_value)
 !!!         zow(:,:,:,3)=MERGE(zow(:,:,:,3),xmissing,zow(:,:,:).NE.missing_value)
+
+             if(ALLOCATED(ottemp)) DEALLOCATE(ottemp)
+             if(ALLOCATED(ostemp)) DEALLOCATE(ostemp)
+             if(ALLOCATED(outemp)) DEALLOCATE(outemp)
+             if(ALLOCATED(ovtemp)) DEALLOCATE(ovtemp)
+             if(ALLOCATED(mixlayertemp)) DEALLOCATE(mixlayertemp)
+
            ENDIF
          ENDIF
          CALL IO_close(gpnc2)
          IF ( lwarning_msg.GE.2 ) THEN
-            WRITE (nerr,*) 'read_dailygodas, date=',recdate
+            WRITE (nerr,*) 'read_dailygodas, date=',recdate &
+                          ,'ot(777,1,256)=',zot(777,1,256)
          ENDIF
        ENDIF
+
        END SUBROUTINE read_godas_1record
       END SUBROUTINE read_dailygodas
-  ! ----------------------------------------------------------------------
+! ----------------------------------------------------------------------
 
 !------------------------------------------------------------------------------		
       SUBROUTINE fill_missing2(finout,io_nlon,io_ngl,ndepth,ldeep)
@@ -2742,15 +2806,15 @@
           obswtbnmw1 = 1
           obswtbnmw2 = 2
         
-          if(myrank .eq. 49) then
-            print *,'time weight, idtg1=',idtg1,',yr=',yr,',mo=',mo &
-                   ,',dy=',dy,',hr=',hr,',tauleft=',tauleft  & 
-                   ,',ydate=',ydate,',ydate1=',ydate1        &
-                   ,',ydate2=',ydate2,',ydatejd=',ydate_jd   &
-                  ,',ydate1jd=',ydate1_jd,',ydate2jd=',ydate2_jd &
-                  ,',obswtbwgt1=',obswtbwgt1   &
-                  ,',obswtbwgt2=',obswtbwgt2
-          endif
+!          if(myrank .eq. 49) then
+!            print *,'time weight, idtg1=',idtg1,',yr=',yr,',mo=',mo &
+!                   ,',dy=',dy,',hr=',hr,',tauleft=',tauleft  & 
+!                   ,',ydate=',ydate,',ydate1=',ydate1        &
+!                   ,',ydate2=',ydate2,',ydatejd=',ydate_jd   &
+!                  ,',ydate1jd=',ydate1_jd,',ydate2jd=',ydate2_jd &
+!                  ,',obswtbwgt1=',obswtbwgt1   &
+!                  ,',obswtbwgt2=',obswtbwgt2
+!          endif
 
          ENDIF
 

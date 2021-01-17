@@ -3,9 +3,10 @@
 ! modify to f90 by C-H Lee and sort by River Chen in 2015
 !
 !      USE param
+!      USE index
       USE mod_sit_control,     ONLY: xmissing
       USE mo_netcdf,         ONLY: lkvl
-  
+       
     
       implicit none
 
@@ -86,24 +87,25 @@
             oldsitws, oldsitwtke
      
       real,dimension(:,:), allocatable, save::           &
-              tgold, dtswdt
+              dtswdt, tseadiffSIT, tseadiffSIT24,        &
+              sumdSITdt, countdSITdt, ratioSIT
 
  
       contains 
 
-        subroutine allocate_sitgrid_array(nx,my_max)
+        subroutine allocate_sitgrid_array(nxp,my_max)
 
            integer  ierr
-           integer  nx,my_max
+           integer  nxp,my_max
 
 !    ! 2-d from ATM vars
            allocate (                                                  &
-         sitcor(nx,my_max),       slm(nx,my_max), sitlclass(nx,my_max),&
-        sitmask(nx,my_max),  sitmask2(nx,my_max),     bathy(nx,my_max),&
-           wlvl(nx,my_max),   ocnmask(nx,my_max), obox_mask(nx,my_max),&
-            sni(nx,my_max),       tsi(nx,my_max),      tsw(nx,my_max), &
-            tsl(nx,my_max),      tslm(nx,my_max),    tslm1(nx,my_max), &
-            ocu(nx,my_max),       ocv(nx,my_max), ctfreez2(nx,my_max), &
+         sitcor(nxp,my_max),       slm(nxp,my_max), sitlclass(nxp,my_max),&
+        sitmask(nxp,my_max),  sitmask2(nxp,my_max),     bathy(nxp,my_max),&
+           wlvl(nxp,my_max),   ocnmask(nxp,my_max), obox_mask(nxp,my_max),&
+            sni(nxp,my_max),       tsi(nxp,my_max),      tsw(nxp,my_max), &
+            tsl(nxp,my_max),      tslm(nxp,my_max),    tslm1(nxp,my_max), &
+            ocu(nxp,my_max),       ocv(nxp,my_max), ctfreez2(nxp,my_max), &
                 stat=ierr)
            if (ierr/= 0) then
              write(6,*) 'mod_sitgrid_2d : allocate fail 1 '
@@ -112,12 +114,12 @@
 
 !    ! 2-d SIT vars
            allocate (                                                  &
-          sitwtb(nx,my_max),  sitwub(nx,my_max), sitwvb(nx,my_max),    &
-          sitwsb(nx,my_max),  fluxiw(nx,my_max),   pme2(nx,my_max),    &
-        subfluxw(nx,my_max), wsubsal(nx,my_max),                       &
-           sitcc(nx,my_max),   sithc(nx,my_max), engwac(nx,my_max),    &
-              sc(nx,my_max), saltwac(nx,my_max),                       &
-           wtfns(nx,my_max),   wsfns(nx,my_max), stat=ierr)
+          sitwtb(nxp,my_max),  sitwub(nxp,my_max), sitwvb(nxp,my_max),    &
+          sitwsb(nxp,my_max),  fluxiw(nxp,my_max),   pme2(nxp,my_max),    &
+        subfluxw(nxp,my_max), wsubsal(nxp,my_max),                       &
+           sitcc(nxp,my_max),   sithc(nxp,my_max), engwac(nxp,my_max),    &
+              sc(nxp,my_max), saltwac(nxp,my_max),                       &
+           wtfns(nxp,my_max),   wsfns(nxp,my_max), stat=ierr)
           if (ierr/= 0) then
             write(6,*) 'mod_sitgrid_2d : allocate fail 2 '
             stop
@@ -125,8 +127,8 @@
 
 !    ! 4- OUTPUT only, original ATM variabels
           allocate (                                                   &
-           seaice(nx,my_max), grndcapc(nx,my_max),                     &
-         grndhflx(nx,my_max), grndflux(nx,my_max), stat=ierr)
+           seaice(nxp,my_max), grndcapc(nxp,my_max),                     &
+         grndhflx(nxp,my_max), grndflux(nxp,my_max), stat=ierr)
           if (ierr/= 0) then
             write(6,*) 'mod_sitgrid_2d : allocate fail 3 '
             stop
@@ -134,12 +136,12 @@
 
 !    ! other
           allocate(                                                    &
-            fluxw(nx,my_max),    dfluxs(nx,my_max),  soflw(nx,my_max), &
-            fluxi(nx,my_max),     sofli(nx,my_max),                    &
-        thickness(nx,my_max), obsseaice(nx,my_max), obswtb(nx,my_max), &
-           obswsb(nx,my_max),       rsf(nx,my_max),    ssf(nx,my_max), &
-            disch(nx,my_max),     ustrw(nx,my_max),  vstrw(nx,my_max), &
-            evapw(nx,my_max),   wind10w(nx,my_max), stat=ierr)
+            fluxw(nxp,my_max),    dfluxs(nxp,my_max),  soflw(nxp,my_max), &
+            fluxi(nxp,my_max),     sofli(nxp,my_max),                    &
+        thickness(nxp,my_max), obsseaice(nxp,my_max), obswtb(nxp,my_max), &
+           obswsb(nxp,my_max),       rsf(nxp,my_max),    ssf(nxp,my_max), &
+            disch(nxp,my_max),     ustrw(nxp,my_max),  vstrw(nxp,my_max), &
+            evapw(nxp,my_max),   wind10w(nxp,my_max), stat=ierr)
 
            if (ierr/= 0) then
                write(6,*) 'mod_sitgrid_2d : allocate fail 4 '
@@ -149,8 +151,8 @@
    
 !     & ! 3-d SIT vars: snow/ice
            allocate (                                                  &
-          zsi(nx,my_max,0:1), silw(nx,my_max,0:1),                     &
-        tsnic(nx,my_max,0:3), stat=ierr)
+          zsi(nxp,my_max,0:1), silw(nxp,my_max,0:1),                     &
+        tsnic(nxp,my_max,0:3), stat=ierr)
            if (ierr/= 0) then
                write(6,*) 'mod_sitgrid_3d : allocate fail 1 '
                stop
@@ -158,14 +160,14 @@
 
 !     & ! 3-d SIT vars: water column (part1)
            allocate (                                                  &
-               obswt(nx,my_max,0:lkvl+1),   obsws(nx,my_max,0:lkvl+1), &
-               obswu(nx,my_max,0:lkvl+1),   obswv(nx,my_max,0:lkvl+1), &
-               sitwt(nx,my_max,0:lkvl+1),   sitwu(nx,my_max,0:lkvl+1), &
-               sitwv(nx,my_max,0:lkvl+1),   sitww(nx,my_max,0:lkvl+1), &
-               sitws(nx,my_max,0:lkvl+1), sitwtke(nx,my_max,0:lkvl+1), &
-                wlmx(nx,my_max,0:lkvl+1),  wldisp(nx,my_max,0:lkvl+1), &
-                 wkm(nx,my_max,0:lkvl+1),     wkh(nx,my_max,0:lkvl+1), &
-            wrho1000(nx,my_max,0:lkvl+1),sftobswt(nx,my_max,0:lkvl+1), &
+               obswt(nxp,my_max,0:lkvl+1),   obsws(nxp,my_max,0:lkvl+1), &
+               obswu(nxp,my_max,0:lkvl+1),   obswv(nxp,my_max,0:lkvl+1), &
+               sitwt(nxp,my_max,0:lkvl+1),   sitwu(nxp,my_max,0:lkvl+1), &
+               sitwv(nxp,my_max,0:lkvl+1),   sitww(nxp,my_max,0:lkvl+1), &
+               sitws(nxp,my_max,0:lkvl+1), sitwtke(nxp,my_max,0:lkvl+1), &
+                wlmx(nxp,my_max,0:lkvl+1),  wldisp(nxp,my_max,0:lkvl+1), &
+                 wkm(nxp,my_max,0:lkvl+1),     wkh(nxp,my_max,0:lkvl+1), &
+            wrho1000(nxp,my_max,0:lkvl+1),sftobswt(nxp,my_max,0:lkvl+1), &
              stat=ierr)
            if (ierr/= 0) then
                write(6,*) 'mod_sitgrid_3d : allocate fail 2 '
@@ -174,12 +176,12 @@
 
 !     & ! 3-d SIT vars: water column (part2)
            allocate (                                                  &
-                 wtfn(nx,my_max,0:lkvl+1),  wsfn(nx,my_max,0:lkvl+1),  &
-                wtfn0(nx,my_max,0:lkvl+1), wsfn0(nx,my_max,0:lkvl+1),  &
-                awufl(nx,my_max,0:lkvl+1), awvfl(nx,my_max,0:lkvl+1),  &
-                awtfl(nx,my_max,0:lkvl+1), awsfl(nx,my_max,0:lkvl+1),  &
-               awtfl0(nx,my_max,0:lkvl+1),awsfl0(nx,my_max,0:lkvl+1),  &
-              awtkefl(nx,my_max,0:lkvl+1), stat=ierr)
+                 wtfn(nxp,my_max,0:lkvl+1),  wsfn(nxp,my_max,0:lkvl+1),  &
+                wtfn0(nxp,my_max,0:lkvl+1), wsfn0(nxp,my_max,0:lkvl+1),  &
+                awufl(nxp,my_max,0:lkvl+1), awvfl(nxp,my_max,0:lkvl+1),  &
+                awtfl(nxp,my_max,0:lkvl+1), awsfl(nxp,my_max,0:lkvl+1),  &
+               awtfl0(nxp,my_max,0:lkvl+1),awsfl0(nxp,my_max,0:lkvl+1),  &
+              awtkefl(nxp,my_max,0:lkvl+1), stat=ierr)
 
            if (ierr/= 0) then
                write(6,*) 'mod_sitgrid_3d : allocate fail 3 '
@@ -188,14 +190,14 @@
 
 ! for SIT var. every tau mean
            allocate (         &
-             sitwttau(nx,my_max,0:lkvl+1), sitwstau(nx,my_max,0:lkvl+1), &
-             sitwutau(nx,my_max,0:lkvl+1), sitwvtau(nx,my_max,0:lkvl+1), &
+             sitwttau(nxp,my_max,0:lkvl+1), sitwstau(nxp,my_max,0:lkvl+1), &
+             sitwutau(nxp,my_max,0:lkvl+1), sitwvtau(nxp,my_max,0:lkvl+1), &
              stat=ierr)
 
 ! for SIT var. daily mean
            allocate (         &
-             sitwt24(nx,my_max,0:lkvl+1), sitws24(nx,my_max,0:lkvl+1), &
-             sitwu24(nx,my_max,0:lkvl+1), sitwv24(nx,my_max,0:lkvl+1), &
+             sitwt24(nxp,my_max,0:lkvl+1), sitws24(nxp,my_max,0:lkvl+1), &
+             sitwu24(nxp,my_max,0:lkvl+1), sitwv24(nxp,my_max,0:lkvl+1), &
              stat=ierr)
 
            if (ierr/= 0) then
@@ -206,12 +208,12 @@
 
 ! for store vars. which sit_vdiff need during "fsit" period
            allocate(                                                   &
-          ssfsit(nx,my_max),    rsfsit(nx,my_max), hfluxfsit(nx,my_max), &
-       qfluxfsit(nx,my_max),   u10fsit(nx,my_max),   v10fsit(nx,my_max), &
-        rlspfsit(nx,my_max),  rcupfsit(nx,my_max), ustarfsit(nx,my_max), &
-          t2fsit(nx,my_max),   rh2fsit(nx,my_max),   pstfsit(nx,my_max), &
-        cicefsit(nx,my_max),   snrfsit(nx,my_max),  zicefsit(nx,my_max), &
-       xticefsit(nx,my_max),obswtbfsit(nx,my_max),    tgfsit(nx,my_max), &
+          ssfsit(nxp,my_max),    rsfsit(nxp,my_max), hfluxfsit(nxp,my_max), &
+       qfluxfsit(nxp,my_max),   u10fsit(nxp,my_max),   v10fsit(nxp,my_max), &
+        rlspfsit(nxp,my_max),  rcupfsit(nxp,my_max), ustarfsit(nxp,my_max), &
+          t2fsit(nxp,my_max),   rh2fsit(nxp,my_max),   pstfsit(nxp,my_max), &
+        cicefsit(nxp,my_max),   snrfsit(nxp,my_max),  zicefsit(nxp,my_max), &
+       xticefsit(nxp,my_max),obswtbfsit(nxp,my_max),    tgfsit(nxp,my_max), &
              stat=ierr)
 
           if (ierr/= 0) then
@@ -222,9 +224,9 @@
 ! for store latest 2 steps tsw
 !          allocate( oldtsw(nx,my_max,0:1), stat=ierr)
           allocate(                                                    &
-     oldsitwt(nx,my_max,0:lkvl+1,0:1),oldsitwu(nx,my_max,0:lkvl+1,0:1),&
-     oldsitwv(nx,my_max,0:lkvl+1,0:1),oldsitww(nx,my_max,0:lkvl+1,0:1),&
-     oldsitws(nx,my_max,0:lkvl+1,0:1),oldsitwtke(nx,my_max,0:lkvl+1,0:1), &
+     oldsitwt(nxp,my_max,0:lkvl+1,0:1),oldsitwu(nxp,my_max,0:lkvl+1,0:1),&
+     oldsitwv(nxp,my_max,0:lkvl+1,0:1),oldsitww(nxp,my_max,0:lkvl+1,0:1),&
+     oldsitws(nxp,my_max,0:lkvl+1,0:1),oldsitwtke(nxp,my_max,0:lkvl+1,0:1), &
           stat=ierr)
 
           if (ierr/= 0) then
@@ -232,7 +234,9 @@
                stop
            end if
 
-           allocate ( tgold(nx,my_max), dtswdt(nx,my_max), stat=ierr)
+           allocate ( dtswdt(nxp,my_max), tseadiffSIT(nxp,my_max),     &
+                     tseadiffSIT24(nxp,my_max), sumdSITdt(nxp,my_max), &
+                     countdSITdt(nxp,my_max), ratioSIT(nxp,my_max), stat=ierr)
 
           if (ierr/= 0) then
                write(6,*) 'mod_sitgrid_dtswdt : allocate fail 1 '
@@ -372,9 +376,12 @@
            oldsitww=xmissing
            oldsitws=xmissing
            oldsitwtke=xmissing
-           tgold=0.
            dtswdt=0.
-
+           tseadiffSIT=0.
+           tseadiffSIT24=0.
+           sumdSITdt=0.
+           countdSITdt=0.
+           ratioSIT=0.
            return
 
         end subroutine allocate_sitgrid_array
@@ -448,7 +455,8 @@
             oldsitwt, oldsitwu, oldsitwv,oldsitww,       &
             oldsitws,oldsitwtke)
 
-           deallocate ( tgold, dtswdt)
+           deallocate ( dtswdt, tseadiffSIT, tseadiffSIT24, &
+                        sumdSITdt, countdSITdt, ratioSIT)
 
            return
 

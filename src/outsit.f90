@@ -1,17 +1,14 @@
-#define myrank_check 50
-#define i_check 428
-#define jj_check 2
-
-      SUBROUTINE sitout(nx,my,itau,ifilout,idtg,num  &
+      SUBROUTINE sitout(nx,my,my_max,itau,ifilout,idtg,num  &
                        ,whtlev,ggdef)
       
       use rank
       use mpe
       use index
-      use mod_sitgrid 
+      use mod_sitgrid
+      use mod_sit_control,    only:outsitlev
 
       implicit none
-      integer nx,my,itau,num
+      integer nx,my,my_max,itau,num
       real whtlev(num)
    
 
@@ -19,139 +16,40 @@
       integer*8 idtg
       character*4 ggdef
       integer lenc,n,k,jj,j,nxj,ii,istat
-      character*26 lrec
-      character*6 typ
-      real, dimension(:,:), allocatable:: tm1,tm2,tm3   &
-                                        ,tm4,tm5,tm6    &
-                                        ,tm10,tm11,tm12
-
-  
-      allocate(tm1(nx,my))
-      allocate(tm2(nx,my))
-      allocate(tm3(nx,my))
-      allocate(tm4(nx,my))
-      allocate(tm5(nx,my))
-      allocate(tm6(nx,my))
-      allocate(tm10(nx,my))
-      allocate(tm11(nx,my))
-      allocate(tm12(nx,my))
+      character*26 ihdg,ihdg2
+      character*6 lrec
+      real wk1(nx,my),pout(nx,my)
+      integer ncnt
+ 
 
       lenc= nx*my
   
-      if (myrank.eq.0) print *,'in sitout, lkvl=',lkvl
+      ncnt=-1
+      do 10 k = 0, outsitlev+1
+        ncnt=ncnt+1
+        write( lrec, '(i3.3,a3)' ) k,'SWT'         !!sit wt
+        call syslbl (lrec,idtg,itau,ggdef,ihdg)
+        call unify_reduceintp(nx,my,my_max,sitwt(1,1,k),wk1)
+        if (myrank .eq. k) then
+          pout=wk1
+          ihdg2=ihdg
+        endif
+   10 continue
+      if(myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 
-      do 40 n=1, num
-        do 30 k = 0, lkvl+1
-            do jj =1, jlistnum
-              j=jlist1(jj)
-              nxj=nxdef_2d(j)
-              do ii = 1, nxj
-                tm1(ii,j)  = sitwt(ii,jj,k)
-                tm2(ii,j)  = sitwu(ii,jj,k)
-                tm3(ii,j)  = sitwv(ii,jj,k)
-                tm4(ii,j)  = sitww(ii,jj,k)
-                tm5(ii,j)  = sitws(ii,jj,k)
-                tm6(ii,j)  = sitwtke(ii,jj,k)
-                tm10(ii,j)  = obswt(ii,jj,k)
-                tm11(ii,j)  = wkm(ii,jj,k)
-                tm12(ii,j)  = wkh(ii,jj,k)
-              enddo
-            enddo
-      
-            call mpe_unify(tm1,nx,my,2,mpe_double)
-            call mpe_unify(tm2,nx,my,2,mpe_double)
-            call mpe_unify(tm3,nx,my,2,mpe_double)
-            call mpe_unify(tm4,nx,my,2,mpe_double)
-            call mpe_unify(tm5,nx,my,2,mpe_double)
-            call mpe_unify(tm6,nx,my,2,mpe_double)
-            call mpe_unify(tm10,nx,my,2,mpe_double)
-            call mpe_unify(tm11,nx,my,2,mpe_double)
-            call mpe_unify(tm12,nx,my,2,mpe_double)
+      ncnt=-1 
+      do 20 k = 0, outsitlev+1
+        ncnt=ncnt+1
+        write( lrec, '(i3.3,a3)' ) k,'OWT'        !!sit obswt
+        call syslbl (lrec,idtg,itau,ggdef,ihdg)
+        call unify_reduceintp(nx,my,my_max,obswt(1,1,k),wk1) 
+        if (myrank .eq. k) then
+          pout=wk1
+          ihdg2=ihdg
+        endif
+   20 continue
+      if(myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 
-            if( lreduce.eq.1 ) then
-              do jj = 1, jlistnum
-                j=jlist1(jj)
-                call reduceintp (tm1(1,j),nxdef(j),nx,1)
-                call reduceintp (tm2(1,j),nxdef(j),nx,1)
-                call reduceintp (tm3(1,j),nxdef(j),nx,1)
-                call reduceintp (tm4(1,j),nxdef(j),nx,1)
-                call reduceintp (tm5(1,j),nxdef(j),nx,1)
-                call reduceintp (tm6(1,j),nxdef(j),nx,1)
-                call reduceintp (tm10(1,j),nxdef(j),nx,1)
-                call reduceintp (tm11(1,j),nxdef(j),nx,1)
-                call reduceintp (tm12(1,j),nxdef(j),nx,1)
-              enddo
-              call mpe_unify(tm1,nx,my,5,mpe_double)
-              call mpe_unify(tm2,nx,my,5,mpe_double)
-              call mpe_unify(tm3,nx,my,5,mpe_double)
-              call mpe_unify(tm4,nx,my,5,mpe_double)
-              call mpe_unify(tm5,nx,my,5,mpe_double)
-              call mpe_unify(tm6,nx,my,5,mpe_double)
-              call mpe_unify(tm10,nx,my,5,mpe_double)
-              call mpe_unify(tm11,nx,my,5,mpe_double)
-              call mpe_unify(tm12,nx,my,5,mpe_double)
-            endif
-
-
-
-            write( typ, '(i3.3,a3)' ) k,'SWT'         !!sit wt
-            call syslbl (typ,idtg,itau,ggdef,lrec)
-!            if( lreduce.eq.1 ) call reduceintp (tm1,nxdef,nx,my)
-            call dmswrit(nx,my,lrec,lenc,'H',ifilout,tm1,istat)
-
-            write( typ, '(i3.3,a3)' ) k,'SWU'         !!sit wu
-            call syslbl (typ,idtg,itau,ggdef,lrec)
-!            if( lreduce.eq.1 ) call reduceintp (tm2,nxdef,nx,my)
-            call dmswrit(nx,my,lrec,lenc,'H',ifilout,tm2,istat)
-
-            write( typ, '(i3.3,a3)' ) k,'SWV'         !!sit wv
-            call syslbl (typ,idtg,itau,ggdef,lrec)
-!            if( lreduce.eq.1 ) call reduceintp (tm3,nxdef,nx,my)
-            call dmswrit(nx,my,lrec,lenc,'H',ifilout,tm3,istat)
-
-            write( typ, '(i3.3,a3)' ) k,'SWW'         !!sit ww
-            call syslbl (typ,idtg,itau,ggdef,lrec)
-!            if( lreduce.eq.1 ) call reduceintp (tm4,nxdef,nx,my)
-            call dmswrit(nx,my,lrec,lenc,'H',ifilout,tm4,istat)
-
-            write( typ, '(i3.3,a3)' ) k,'SWS'         !!sit ws
-            call syslbl (typ,idtg,itau,ggdef,lrec)
-!            if( lreduce.eq.1 ) call reduceintp (tm5,nxdef,nx,my)
-            call dmswrit(nx,my,lrec,lenc,'H',ifilout,tm5,istat)
-
-            write( typ, '(i3.3,a3)' ) k,'TKE'         !!sit wtke
-            call syslbl (typ,idtg,itau,ggdef,lrec)
-!            if( lreduce.eq.1 ) call reduceintp (tm6,nxdef,nx,my)
-            call dmswrit(nx,my,lrec,lenc,'H',ifilout,tm6,istat)
-
-            write( typ, '(i3.3,a3)' ) k,'OWT'        !!sit obswt
-            call syslbl (typ,idtg,itau,ggdef,lrec)
-!            if( lreduce.eq.1 ) call reduceintp (tm10,nxdef,nx,my)
-            call dmswrit(nx,my,lrec,lenc,'H',ifilout,tm10,istat)
-
-            write( typ, '(i3.3,a3)' ) k,'WKM'
-            call syslbl (typ,idtg,itau,ggdef,lrec)
-!            if( lreduce.eq.1 ) call reduceintp (tm11,nxdef,nx,my)
-            call dmswrit(nx,my,lrec,lenc,'H',ifilout,tm11,istat)
-            
-            write( typ, '(i3.3,a3)' ) k,'WKH'
-            call syslbl (typ,idtg,itau,ggdef,lrec)
-!            if( lreduce.eq.1 ) call reduceintp (tm12,nxdef,nx,my)
-            call dmswrit(nx,my,lrec,lenc,'H',ifilout,tm12,istat)
-
-
-   30   continue
-   40 continue
-      
-      deallocate(tm1)
-      deallocate(tm2)
-      deallocate(tm3)
-      deallocate(tm4)
-      deallocate(tm5)
-      deallocate(tm6)
-      deallocate(tm10)
-      deallocate(tm11)
-      deallocate(tm12)
   
       end subroutine sitout
 
@@ -267,90 +165,53 @@
 
 
 !--------------------------------------------------------------------------
-      SUBROUTINE writesitmean(nx,my,lkvl,ifilout,itau,idtg,ggdef)
+      SUBROUTINE writesitmean(nx,my,my_max,lkvl,ifilout,itau,idtg,ggdef)
 
       use rank
       use mpe
       use index
       use mod_sitgrid,     only:sitwttau,sitwstau,sitwutau,sitwvtau &
                                ,dtsittau
-      use mod_sit_control,only: xmissing
+      use mod_sit_control, only: xmissing,outsitlev
 
       implicit none
 
-      integer nx,lkvl,my,itau
+      integer nx,my,my_max,lkvl,itau
 
 
       character*60 ifilout
       integer*8 idtg
       character*4 ggdef
       integer lenc,k,jj,j,nxj,ii,istat
-      character*26 ihdg
+      character*26 ihdg,ihdg2
       character*6 lrec
-      real tm1(nx,my),tm2(nx,my),tm3(nx,my),tm4(nx,my)
-
-      tm1=0.
-!      tm2=0.
-!      tm3=0.
-!      tm4=0.
+      real glob2d(nxp,my_max) 
+      real wk1(nx,my),pout(nx,my)
+      integer ncnt
 
       lenc= nx*my
 
 
-      if (myrank.eq.0) print *,'in writesitmean lkvl=',lkvl
-      do k = 0, lkvl+1
-        do jj =1, jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
-          do ii = 1, nxj
-            if(dtsittau .ne. 0.) then
-              tm1(ii,j)  = sitwttau(ii,jj,k)/dtsittau
-!              tm2(i,j)  = sitwstau(i,jj,k)/dtsittau(i,jj,k)
-!              tm3(i,j)  = sitwutau(i,jj,k)/dtsittau(i,jj,k)
-!              tm4(i,j)  = sitwvtau(i,jj,k)/dtsittau(i,jj,k)
-            endif
-           enddo
-        enddo
-
-        call mpe_unify(tm1,nx,my,2,mpe_double)
-!        call mpe_unify(tm2,nx,my,2,mpe_double)
-!        call mpe_unify(tm3,nx,my,2,mpe_double)
-!        call mpe_unify(tm4,nx,my,2,mpe_double)
-
-        if( lreduce.eq.1 ) then
-          do jj = 1, jlistnum
-            j=jlist1(jj)
-            call reduceintp (tm1(1,j),nxdef(j),nx,1)
-          enddo
-          call mpe_unify(tm1,nx,my,5,mpe_double)
-        endif
-
-
+      ncnt=-1
+      do 10 k = 0, outsitlev+1
+        ncnt=ncnt+1
         write( lrec, '(i3.3,a3)' ) k,'WTT'
         call syslbl (lrec,idtg,itau,ggdef,ihdg)
-!        if( lreduce.eq.1 ) call reduceintp (tm1,nxdef,nx,my)
-        call dmswrit(nx,my,ihdg,lenc,'H',ifilout,tm1,istat)
+        if(dtsittau .ne. 0.) then
+          glob2d(:,:)= sitwttau(:,:,k)/dtsittau
+        else
+          glob2d=xmissing
+        endif
+        call unify_reduceintp(nx,my,my_max,glob2d,wk1)
+        if ( myrank .eq. ncnt ) then
+          pout=wk1
+          ihdg2=ihdg
+        endif
+   10 continue
 
-!        write( lrec, '(i3.3,a3)' ) k,'WST'
-!        call syslbl (lrec,idtg,itau,ggdef,ihdg)
-!        if( lreduce.eq.1 ) call reduceintp (tm2,nxdef,nx,my)
-!        call dmswrit(nx,my,ihdg,lenc,'H',ifilout,tm2,istat)
-
-!        write( lrec, '(i3.3,a3)' ) k,'WUT'
-!        call syslbl (lrec,idtg,itau,ggdef,ihdg)
-!        if( lreduce.eq.1 ) call reduceintp (tm3,nxdef,nx,my)
-!        call dmswrit(nx,my,ihdg,lenc,'H',ifilout,tm3,istat)
-
-!        write( lrec, '(i3.3,a3)' ) k,'WVT'
-!        call syslbl (lrec,idtg,itau,ggdef,ihdg)
-!        if( lreduce.eq.1 ) call reduceintp (tm4,nxdef,nx,my)
-!        call dmswrit(nx,my,ihdg,lenc,'H',ifilout,tm4,istat)
-      enddo
+      if(myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 
       sitwttau=0.
-!      sitwstau=0.
-!      sitwutau=0.
-!      sitwvtau=0.
       dtsittau=0.
 
       END SUBROUTINE writesitmean
@@ -358,130 +219,87 @@
 
 
 !--------------------------------------------------------------------------
-      SUBROUTINE outsit24(nx,my,lkvl,ifilout,itau,idtg,ggdef)
+      SUBROUTINE outsit24(nx,my,my_max,lkvl,ifilout,itau,idtg,ggdef)
       
       use rank
       use mpe
       use index
       use mod_sitgrid,    only: sitwt24,sitws24,sitwu24,sitwv24 &
                                ,dtsit24,wtfn0,wsfn0,obswt,sitwt
-      use mod_sit_control,only: xmissing
+      use mod_sit_control,only: xmissing,outsitlev
 
       implicit none
 
-      integer nx,lkvl,my,itau
+      integer nx,my,my_max,lkvl,itau
    
       character*60 ifilout
       integer*8 idtg
       character*4 ggdef
       integer lenc,k,jj,j,nxj,ii,istat
-      character*26 ihdg
+      character*26 ihdg,ihdg2
       character*6 lrec
-      real tm1(nx,my),tm2(nx,my),tm3(nx,my),tm4(nx,my)
+      real tm1(nxp,my_max),tm2(nxp,my_max),tm3(nxp,my_max)
+      real wk1(nx,my),pout(nx,my)
+      integer ncnt
 
       tm1=xmissing
       tm2=xmissing
       tm3=xmissing
-!      tm4=0.
 
       lenc= nx*my
-
   
-      if (myrank.eq.0) print *,'in outsit24 lkvl=',lkvl
-
-      do k = 0, lkvl+1
+      ncnt=-1
+      do 10 k = 0, outsitlev+1
+        ncnt=ncnt+1
         do jj =1, jlistnum
           j=jlist1(jj)
           nxj=nxdef_2d(j)
           do ii = 1, nxj
             if(dtsit24 .ne. 0.) then
-              tm1(ii,j)  = sitwt24(ii,jj,k)/dtsit24
+              tm1(ii,jj)  = sitwt24(ii,jj,k)/dtsit24
 !              tm2(ii,j)  = wtfn0(ii,jj,k)/dtsit24
               if(obswt(ii,jj,k) .ge. 271. ) then
-                tm2(ii,j) = (obswt(ii,jj,k)-sitwt(ii,jj,k))/dtsit24
+                tm2(ii,jj) = (obswt(ii,jj,k)-sitwt(ii,jj,k))/dtsit24
               else
-                tm2(ii,j) = 0.
+                tm2(ii,jj) = 0.
               endif
-              tm3(ii,j)  = wsfn0(ii,jj,k)/dtsit24
-!              tm2(i,j)  = sitws24(i,jj,k)/dtsit24(i,jj,k)
-!              tm3(i,j)  = sitwu24(i,jj,k)/dtsit24(i,jj,k)
-!              tm4(i,j)  = sitwv24(i,jj,k)/dtsit24(i,jj,k)
+              tm3(ii,jj)  = wsfn0(ii,jj,k)/dtsit24
             endif
           enddo
         enddo
-      
-        call mpe_unify(tm1,nx,my,2,mpe_double)
-        call mpe_unify(tm2,nx,my,2,mpe_double)
-        call mpe_unify(tm3,nx,my,2,mpe_double)
-!        call mpe_unify(tm4,nx,my,2,mpe_double)
-          
-        if( lreduce.eq.1 ) then
-          do jj = 1, jlistnum
-            j=jlist1(jj)
-            call reduceintp (tm1(1,j),nxdef_2d(j),nx,1)
-            call reduceintp (tm2(1,j),nxdef_2d(j),nx,1)
-            call reduceintp (tm3(1,j),nxdef_2d(j),nx,1)
-          enddo
-          call mpe_unify(tm1,nx,my,5,mpe_double)
-          call mpe_unify(tm2,nx,my,5,mpe_double)
-          call mpe_unify(tm3,nx,my,5,mpe_double)
-        endif
-
 
         write( lrec, '(i3.3,a3)' ) k,'WTF'
         call syslbl (lrec,idtg,itau,ggdef,ihdg)
-!        if( lreduce.eq.1 ) call reduceintp (tm1,nxdef,nx,my)
-        call dmswrit(nx,my,ihdg,lenc,'H',ifilout,tm1,istat)
+        call unify_reduceintp(nx,my,my_max,tm1,wk1)
 
-        write( lrec, '(i3.3,a3)' ) k,'TFN'
-        call syslbl (lrec,idtg,itau,ggdef,ihdg)
-!        if( lreduce.eq.1 ) call reduceintp (tm2,nxdef,nx,my)
-        call dmswrit(nx,my,ihdg,lenc,'H',ifilout,tm2,istat)
-
-        write( lrec, '(i3.3,a3)' ) k,'SFN'
-        call syslbl (lrec,idtg,itau,ggdef,ihdg)
-!        if( lreduce.eq.1 ) call reduceintp (tm3,nxdef,nx,my)
-        call dmswrit(nx,my,ihdg,lenc,'H',ifilout,tm3,istat)
-
-!        write( lrec, '(i3.3,a3)' ) k,'WSF'
-!        call syslbl (lrec,idtg,itau,ggdef,ihdg)
-!        if( lreduce.eq.1 ) call reduceintp (tm2,nxdef,nx,my)
-!        call dmswrit(nx,my,ihdg,lenc,'H',ifilout,tm2,istat)
-
-!        write( lrec, '(i3.3,a3)' ) k,'WUF'
-!        call syslbl (lrec,idtg,itau,ggdef,ihdg)
-!        if( lreduce.eq.1 ) call reduceintp (tm3,nxdef,nx,my)
-!        call dmswrit(nx,my,ihdg,lenc,'H',ifilout,tm3,istat)
-
-!        write( lrec, '(i3.3,a3)' ) k,'WVF'
-!        call syslbl (lrec,idtg,itau,ggdef,ihdg)
-!        if( lreduce.eq.1 ) call reduceintp (tm4,nxdef,nx,my)
-!        call dmswrit(nx,my,ihdg,lenc,'H',ifilout,tm4,istat)
-      enddo
+        if ( myrank .eq. ncnt ) then
+          pout=wk1
+          ihdg2=ihdg
+        endif
+!        call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+   10 continue
+      if(myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat) 
      
       sitwt24=0.
       wtfn0=0.
       wsfn0=0.
-!      sitws24=0.
-!      sitwu24=0.
-!      sitwv24=0.
       dtsit24=0. 
   
       end subroutine outsit24
 
 
 !--------------------------------------------------------------------------
-      SUBROUTINE outsitmon(nx,my,lkvl,ifilout,itau,idtg,ggdef)
+      SUBROUTINE outsitmon(nx,my,my_max,lkvl,ifilout,itau,idtg,ggdef)
       
       use rank
       use mpe
       use index
       use mod_sitgrid,        only: dtsitmon,wtfn,wtfns,wsfn,wsfns
-      use mod_sit_control,    only: xmissing
+      use mod_sit_control,    only: xmissing,outsitlev
   
       implicit none
 
-      integer nx,my,lkvl,itau
+      integer nx,my,my_max,lkvl,itau
   
 
 
@@ -490,92 +308,32 @@
       integer*8 idtg
       character*4 ggdef
       integer lenc,i,j,k,ii,jj,nxj,istat
-      character*26 ihdg
+      character*26 ihdg,ihdg2
       character*6 lrec
-      real tm1(nx,my),tm2(nx,my),tm3(nx,my),tm4(nx,my)
-
-      tm1=xmissing
-      tm2=xmissing
-      tm3=xmissing
-      tm4=xmissing
+      real glob2d(nxp,my_max),wk1(nx,my),pout(nx,my)
+      integer ncnt
 
       lenc= nx*my
-
   
-      if (myrank.eq.0) print *,'in outsitmon lkvl=',lkvl
-
-
-      do k = 0, lkvl+1
-        do jj =1, jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
-          do ii = 1, nxj
-            tm1(ii,j)  = wtfn(ii,jj,k)/dtsitmon
-            tm2(ii,j)  = wsfn(ii,jj,k)/dtsitmon
-            if(k .eq. 0) then
-              tm3(ii,j)  = wtfns(ii,jj)/dtsitmon
-              tm4(ii,j)  = wsfns(ii,jj)/dtsitmon
-            endif
-            if((ii .eq. 914) .AND. (jj .eq. 3) .AND. (myrank .eq. 72)) then
-              print *, 'wtfn(',ii,',3,',k,')=',wtfn(ii,jj,k) &
-                     , 'wsfn(',ii,',3,',k,')=',wsfn(ii,jj,k) &
-                     , 'wtfns(',ii,',3,)=',wtfns(ii,jj) &
-                     , 'wsfns(',ii,',3,)=',wsfns(ii,jj) &
-                     , 'dtsitmon=',dtsitmon
-            endif
-          enddo
-        enddo
-      
-        call mpe_unify(tm1,nx,my,2,mpe_double)
-        call mpe_unify(tm2,nx,my,2,mpe_double)
-        if(k.eq.0)then
-          call mpe_unify(tm3,nx,my,2,mpe_double)
-          call mpe_unify(tm4,nx,my,2,mpe_double)
-        endif
-          
-        if( lreduce.eq.1 ) then
-          do jj = 1, jlistnum
-           j=jlist1(jj)
-           call reduceintp (tm1(1,j),nxdef_2d(j),nx,1)
-           call reduceintp (tm2(1,j),nxdef_2d(j),nx,1)
-           if(k.eq.0)then
-             call reduceintp (tm3(1,j),nxdef_2d(j),nx,1)
-             call reduceintp (tm4(1,j),nxdef_2d(j),nx,1)
-           endif
-          enddo
-          call mpe_unify(tm1,nx,my,5,mpe_double)
-          call mpe_unify(tm2,nx,my,5,mpe_double)
-          if(k .eq. 0)then
-            call mpe_unify(tm3,nx,my,5,mpe_double)
-            call mpe_unify(tm4,nx,my,5,mpe_double)
-          endif
-        endif
-
+      ncnt=-1
+      do 10 k = 0, outsitlev+1
+        ncnt=ncnt+1
         write( lrec, '(i3.3,a3)' ) k,'TFM'
         call syslbl (lrec,idtg,itau,ggdef,ihdg)
-        if(myrank .eq. 0) print *, 'idtg=',idtg,',itau=',itau,',ggdef=',ggdef
-!        if( lreduce.eq.1 ) call reduceintp (tm1,nxdef,nx,my)
-        call dmswrit(nx,my,ihdg,lenc,'H',ifilout,tm1,istat)
-
-        write( lrec, '(i3.3,a3)' ) k,'SFM'
-        call syslbl (lrec,idtg,itau,ggdef,ihdg)
-!        if( lreduce.eq.1 ) call reduceintp (tm2,nxdef,nx,my)
-        call dmswrit(nx,my,ihdg,lenc,'H',ifilout,tm2,istat)
-
-        if(k .eq. 0) then
-          write( lrec, '(i3.3,a3)' ) k,'TFS'
-          call syslbl (lrec,idtg,itau,ggdef,ihdg)
-!         if( lreduce.eq.1 ) call reduceintp (tm3,nxdef,nx,my)
-          call dmswrit(nx,my,ihdg,lenc,'H',ifilout,tm3,istat)
-
-          write( lrec, '(i3.3,a3)' ) k,'SFS'
-          call syslbl (lrec,idtg,itau,ggdef,ihdg)
-!         if( lreduce.eq.1 ) call reduceintp (tm4,nxdef,nx,my)
-          call dmswrit(nx,my,ihdg,lenc,'H',ifilout,tm4,istat)
+        glob2d(:,:)=wtfn(:,:,k)/dtsitmon
+        call unify_reduceintp(nx,my,my_max,glob2d,wk1) 
+        if ( myrank .eq. ncnt ) then
+          pout=wk1
+          ihdg2=ihdg
         endif
+   10 continue
+      if(myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat) 
 
-      enddo
-
+        write( lrec, '(i3.3,a3)' ) k,'TFS'
+        call syslbl (lrec,idtg,itau,ggdef,ihdg)
+        glob2d(:,:)=wtfns(:,:)/dtsitmon
+        call unify_reduceintp(nx,my,my_max,glob2d,wk1) 
+        call dmswrit(nx,my,ihdg,lenc,'H',ifilout,wk1,istat)
 
 !reset wtfn,wsfn,wtfns,wsfns
       dtsitmon=0.
@@ -804,15 +562,6 @@
         call mpe_unify(tmp15,nx,my,2,mpe_double)  
         call mpe_unify(tmp16,nx,my,2,mpe_double)  
 
-!        if( lreduce.eq.1 ) then
-!          call reduceintp (tmp11,nxdef,nx,my)
-!          call reduceintp (tmp12,nxdef,nx,my)
-!          call reduceintp (tmp13,nxdef,nx,my)
-!          call reduceintp (tmp14,nxdef,nx,my)
-!          call reduceintp (tmp15,nxdef,nx,my)
-!          call reduceintp (tmp16,nxdef,nx,my)
-!        endif
-
         if( lreduce.eq.1 ) then
           do jj = 1, jlistnum
             j=jlist1(jj)
@@ -900,11 +649,6 @@
         call mpe_unify(tmp11,nx,my,2,mpe_double)  
         call mpe_unify(tmp12,nx,my,2,mpe_double)  
 
-!        if( lreduce.eq.1 ) then
-!          call reduceintp (tmp11,nxdef,nx,my)
-!          call reduceintp (tmp12,nxdef,nx,my)
-!        endif
-
         if( lreduce.eq.1 ) then
           do jj = 1, jlistnum
             j=jlist1(jj)
@@ -989,31 +733,6 @@
   
       flag=.false.
       if(myrank .eq. 0) flag=.true. 
-!      call mpe_broadcast(tmp1,nx*my,flag,mpe_double)
-!      call mpe_broadcast(tmp2,nx*my,flag,mpe_double)
-!      call mpe_broadcast(tmp3,nx*my,flag,mpe_double)
-!      call mpe_broadcast(tmp4,nx*my,flag,mpe_double)
-!      call mpe_broadcast(tmp5,nx*my,flag,mpe_double)
-!      call mpe_broadcast(tmp6,nx*my,flag,mpe_double)
-!      call mpe_broadcast(tmp7,nx*my,flag,mpe_double)
-!      call mpe_broadcast(tmp8,nx*my,flag,mpe_double)
-!      call mpe_broadcast(tmp9,nx*my,flag,mpe_double)
-!      call mpe_broadcast(tmp10,nx*my,flag,mpe_double)
-!      call mpe_broadcast(tmp11,nx*my,flag,mpe_double)
-!      if(lreduce .eq. 1) then
-!        call reducepick (tmp1,nxdef,nx,my)
-!        call reducepick (tmp2,nxdef,nx,my)
-!        call reducepick (tmp3,nxdef,nx,my)
-!        call reducepick (tmp4,nxdef,nx,my)
-!        call reducepick (tmp5,nxdef,nx,my)
-!        call reducepick (tmp6,nxdef,nx,my)
-!        call reducepick (tmp7,nxdef,nx,my)
-!        call reducepick (tmp8,nxdef,nx,my)
-!        call reducepick (tmp9,nxdef,nx,my)
-!        call reducepick (tmp10,nxdef,nx,my)
-!        call reducepick (tmp11,nxdef,nx,my)
-!      endif
-
       call mpe_bcast(tmp1,nx*my,0,mpe_double)
       call mpe_bcast(tmp2,nx*my,0,mpe_double)
       call mpe_bcast(tmp3,nx*my,0,mpe_double)
@@ -1144,22 +863,6 @@
       if(myrank .eq. 0) flag=.true. 
 
       do k = 0, lkvl+1
-!        call mpe_broadcast(tm11(:,k,:),nx*my,flag,mpe_double)
-!        call mpe_broadcast(tm12(:,k,:),nx*my,flag,mpe_double)
-!        call mpe_broadcast(tm13(:,k,:),nx*my,flag,mpe_double)
-!        call mpe_broadcast(tm14(:,k,:),nx*my,flag,mpe_double)
-!        call mpe_broadcast(tm15(:,k,:),nx*my,flag,mpe_double)
-!        call mpe_broadcast(tm16(:,k,:),nx*my,flag,mpe_double)
-
-!        if(lreduce .eq. 1) then 
-!          call reducepick (tm11(:,k,:),nxdef,nx,my)
-!          call reducepick (tm12(:,k,:),nxdef,nx,my)
-!          call reducepick (tm13(:,k,:),nxdef,nx,my)
-!          call reducepick (tm14(:,k,:),nxdef,nx,my)
-!          call reducepick (tm15(:,k,:),nxdef,nx,my)
-!          call reducepick (tm16(:,k,:),nxdef,nx,my)
-!        endif  
-
         call mpe_bcast(tm11(:,k,:),nx*my,0,mpe_double)
         call mpe_bcast(tm12(:,k,:),nx*my,0,mpe_double)
         call mpe_bcast(tm13(:,k,:),nx*my,0,mpe_double)
@@ -1236,13 +939,6 @@
       flag=.false.
       if(myrank .eq. 0) flag=.true. 
       do k = 0, lkvl+1
-!        call mpe_broadcast(tm11(:,k,:),nx*my,flag,mpe_double)    
-!        call mpe_broadcast(tm12(:,k,:),nx*my,flag,mpe_double)    
-!        if(lreduce .eq. 1) then 
-!          call reducepick (tm11(:,k,:),nxdef,nx,my)
-!          call reducepick (tm12(:,k,:),nxdef,nx,my)
-!        endif
-
         call mpe_bcast(tm11(:,k,:),nx*my,0,mpe_double)    
         call mpe_bcast(tm12(:,k,:),nx*my,0,mpe_double)    
 
@@ -1308,32 +1004,26 @@
         write( typ, '(i3.3,a3)' ) k,'SWT'           !!sit wt
         call syslbl (typ,idtg2,itaup,ggdef,lrec)
         call dmsread(nx,my,lrec,nxmy,'H',ifilin,tm1,istat)
-!        if( lreduce.eq.1 ) call reducepick (tm1,nxdef,nx,my)
 
         write( typ, '(i3.3,a3)' ) k,'SWU'           !!sit wu
         call syslbl (typ,idtg2,itaup,ggdef,lrec)
         call dmsread(nx,my,lrec,nxmy,'H',ifilin,tm2,istat)
-!        if( lreduce.eq.1 ) call reducepick (tm2,nxdef,nx,my)
 
         write( typ, '(i3.3,a3)' ) k,'SWV'           !!sit wv
         call syslbl (typ,idtg2,itaup,ggdef,lrec)
         call dmsread(nx,my,lrec,nxmy,'H',ifilin,tm3,istat)
-!        if( lreduce.eq.1 ) call reducepick (tm3,nxdef,nx,my)
 
         write( typ, '(i3.3,a3)' ) k,'SWW'           !!sit ww
         call syslbl (typ,idtg2,itaup,ggdef,lrec)
         call dmsread(nx,my,lrec,nxmy,'H',ifilin,tm4,istat)
-!        if( lreduce.eq.1 ) call reducepick (tm4,nxdef,nx,my)
 
         write( typ, '(i3.3,a3)' ) k,'SWS'           !!sit ws
         call syslbl (typ,idtg2,itaup,ggdef,lrec)
         call dmsread(nx,my,lrec,nxmy,'H',ifilin,tm5,istat)
-!        if( lreduce.eq.1 ) call reducepick (tm5,nxdef,nx,my)
 
         write( typ, '(i3.3,a3)' ) k,'TKE'           !!sit wtke
         call syslbl (typ,idtg2,itaup,ggdef,lrec)
         call dmsread(nx,my,lrec,nxmy,'H',ifilin,tm6,istat)
-!        if( lreduce.eq.1 ) call reducepick (tm6,nxdef,nx,my)
 
 
         do jj =1, jlistnum
@@ -1370,3 +1060,44 @@
 
       end subroutine readpre6hr_sit
 
+
+      SUBROUTINE outtseadiffSIT24(nx,my,my_max,ratioSIT,dt24,ifilout,itau,idtg,ggdef)
+
+      use mpe
+      use index
+      use mod_sitgrid,       only: tseadiffSIT24
+
+      implicit none
+
+      integer   nx,my,my_max,itau
+      real      dt24
+      real wrk(nxp,my_max),glob(nx,my)
+      real wrk2(nxp,my_max),ratioSIT(nxp,my_max)
+      integer*8 idtg
+      character*80 ifilout
+      character*26 ihdg
+      character*4  ggdef
+      integer   imax,jmax,lenc,j,nxj,i,istat,jj
+
+      imax=nx
+      jmax=my
+      lenc= imax*jmax
+!
+      do jj = 1,jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        do i=1,nxj
+         wrk(i,jj)=tseadiffSIT24(i,jj)/dt24
+         wrk2(i,jj)=ratioSIT(i,jj)
+        enddo
+      enddo
+      call unify_reduceintp(nx,my,my_max,wrk,glob)
+      call syslbl ('w0002f',idtg,itau,ggdef,ihdg)
+      call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      tseadiffSIT24=0.
+
+      call unify_reduceintp(nx,my,my_max,wrk2,glob)
+      call syslbl ('w00002',idtg,itau,ggdef,ihdg)
+      call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+
+      END SUBROUTINE outtseadiffSIT24
