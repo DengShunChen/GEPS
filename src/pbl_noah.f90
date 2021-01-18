@@ -268,6 +268,7 @@
       ntrac=ncld
       if ( nmmiph .eq. 6 ) ntrac=ncld-3
       if ( nmmiph .eq. 8 ) ntrac=ncld-4
+      if ( nmmiph .eq.11 ) ntrac=ncld-5  ! =7 for GFDLMP
       allocate(q1(nx,lev,ntrac))
 !
 ! --- ensure ktpbl selection is greater than 2

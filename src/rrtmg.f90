@@ -202,7 +202,7 @@
 
       if ( nmmiph.eq.11 ) then
 ! for MP GFDL effective radius
-        nclds = 5
+        nclds = 5  ! number of effective cloud condensates used in radiation processes
         do k = 1, lev
           do i = 1, nxj
             phy3d(i,k,1) = ftp(i,k)    ! effective radius for liquid water (micron)

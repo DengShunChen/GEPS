@@ -218,17 +218,17 @@
          
         do k = 1, lev - 1
           do i = 1, nxj
-            dot(i,k) = 0.5*(sd(i,k)+sd(i,k+1))    !vertical velocity (Pa/s)
+            dot(i,k) = 0.5*(sd(i,k)+sd(i,k+1))*100. !vertical velocity (Pa/s)
           enddo
         enddo
         do i = 1, nxj
-          dot(i,lev) = 0.5*sd(i,lev)
+          dot(i,lev) = 0.5*sd(i,lev)*100.
         enddo
 
         do k = 1, lev
           kc = lev - k + 1
           do i = 1, nxj
-            prsl(i,k)   = 100.0 * plt(i,k)         !layer mean pressure (Pa)
+            prsl(i,k)   = 100.0 * plt(i,k)        !layer mean pressure (Pa)
 
             qv1(i,1,k)  = qt(i,             k)
             ql1(i,1,k)  = qt(i,(ntcw-1)*lev+k)
@@ -267,7 +267,7 @@
             qtsw(i,k) = qs1(i,1,k) + qs_dt(i,1,k) * dta
             qtgl(i,k) = qg1(i,1,k) + qg_dt(i,1,k) * dta
             if ( lgfdlmprad ) then 
-               qa(i,k) = qa1(i,1,k) + qa_dt(i,1,k) * dta
+              qa(i,k) = qa1(i,1,k) + qa_dt(i,1,k) * dta
             endif
             qt(i,             k) = qtc(i,k)
             qt(i,(ntcw-1)*lev+k) = qtr(i,k)
