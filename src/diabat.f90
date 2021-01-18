@@ -1499,17 +1499,12 @@
       ! psfc(1:nxj)  = pst(1:nxj,jj)*0.1 ! change to cb
       ! garea(1:nxj) = tem1*tem2
 
-        do k=1,lev-1
-          kc=lev-k+1
+        do k=1,lev
           do i = 1, nxj
-            dotc(i,kc)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
-            dotc(i,kc)=dotc(i,kc)*0.1
+            dotc(i,k)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
+            dotc(i,k)=dotc(i,kc)*0.1
           enddo
         enddo
-        do i = 1,nxj
-          dotc(i,1) = 0.5*sd(i,lev,jj)*0.1
-        enddo
-       !dotc(1:nxj,1) = 0.5*sd(1:nxj,lev,jj)*0.1
 
         do k=1,lev
           kc=lev-k+1
