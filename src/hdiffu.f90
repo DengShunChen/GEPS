@@ -351,7 +351,7 @@
 !!        facv = amp * kfac
 !!        fact = amp * kfac
 !          endif
-        facd = 600.* amp
+        facd =  90.* amp * facd
         facv = amp * facv
         fact = amp * fact
 
@@ -365,8 +365,12 @@
 
             c1=1.+dta*facv*hfilt6*eps4(n,m)**3.
 !!            c2=1.+dta*facd*hfilt6*eps4(n,m)**3.
-            c2=1.+dta*facd*hfilt4*eps4(n,m)**2.
 !!            c2=1.+dta*facd*hfilt2*eps4(n,m)
+            if ( KL .le. hdk1 ) then
+              c2=1.+dta*facd*hfilt2*eps4(n,m)
+            else
+              c2=1.+dta*facd*hfilt4*eps4(n,m)**2
+            endif
 
 !!            c3=1.+dta*fact*hfilt6*eps4(n,m)**3.
 

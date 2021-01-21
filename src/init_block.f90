@@ -227,6 +227,14 @@
 !      ptmeans=800.
       ptmeans=600.
 !
+! for forward weighting Semi-Implicit
+!
+      alpha=0.7
+!
+! for two time level coefficient of merging PGF
+!
+      af=0.1
+!
       ifilin ='ifilin'
       ifilout='ifilout'
       cwbout ='cwbout'

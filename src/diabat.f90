@@ -352,7 +352,8 @@
 !byl      real      avgdrag_u(my,lev),avgdrag_v(my,lev),drag_u(lev),drag_v(lev)
       real      drag_u(lev),drag_v(lev)
       real      fnor
-      data      fnor/0.5/
+      logical   donor,upnor
+      data      donor/.true./,fnor/0.5/
 
 !#######################################################################
 !
@@ -582,6 +583,9 @@
 ! for nonorographic gravity wave drag
 !
       icnor = fnor*3600.0/dt + 0.0001
+      upnor = .false.
+      if ( (mod(iter,icnor).eq.0) .or. (iter.eq.1) )  upnor = .true.
+      upnor  = upnor  .and. donor
 !
       if (.not. dopbl)  then
         do jj = 1, jlistnum
@@ -1428,7 +1432,7 @@
 !=======================================================================
 ! convective gravity wave drag
 !=======================================================================
-      if( docgrav .and. (nmgwcv .eq. 1) )then
+      if( docgrav .and. upnor .and. (nmgwcv .eq. 1) )then
         call nor_gwdp (j,nxjp(j),nxp,lev,                         &
                   ut(1,1,jj),vt(1,1,jj),tt(1,1,jj),qt(1,1,jj),    &
                   plt(1,1,jj),pk(1,1,jj),pk2(1,1,jj),phi,dta,&

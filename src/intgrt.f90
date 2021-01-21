@@ -76,7 +76,7 @@
                 vvm_sl(nx,levp,my_max),                            &
                 uum_sl(nx,levp,my_max),ptm(nxp,my_max)
 !
-      real      ndsldta,ndsldtah,facm(2,2),af,alpha
+      real      ndsldta,ndsldtah,facm(2,2)
       integer   ierr,itter,ittw,itt
 !
       real      glob(nx,my), &
@@ -209,14 +209,7 @@
 !
       data facm/1.,0.,1.5,-0.5/
 !      data facm/0.,0.,0.5,0.,0.875,-0.375/
-!
-! for forward weighting Semi-Implicit
-!
-      alpha=0.7
-!
-! for two time level coefficient of merging PGF
-!
-      af=0.1
+
 !
 ! output initialization field
 !
