@@ -75,10 +75,13 @@
 !
         KL=Llist(k)
 !
-        kfac = 1.0 + 2.*min(max(float(hdk2(1)-KL),0.),25.)
-        facd = 1. * amp * (kfac + 2.*max(float(hdk1-KL),0.))
-        facv = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
-        fact = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
+        kfac = 1.0 + 1. * min(max(float(hdk2(1)-KL),0.),15.)
+!!        facd = 1. * amp * (kfac + 2.*max(float(hdk1-KL),0.))
+!!        facv = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
+!!        fact = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
+        facd = amp * kfac
+        facv = amp * kfac
+        fact = amp * kfac
 !
 !  difuse vorticity and divergence fields
 !  diffuse moisture and temperature fields
@@ -343,17 +346,14 @@
 
         KL=Llist(k)
 !
-        kfac = 1.0 + max(float(hdk2(1)-KL),0.)
-        facd = 1. * (kfac + 2.*max(float(hdk1-KL),0.))
-        facv = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
-        fact = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
-!!        facd = amp * kfac 
-!!        facv = amp * kfac
-!!        fact = amp * kfac
+        kfac = 1.0 + 2.*min(max(float(hdk2(2)-KL),0.),15)
+!!        facd = 1. * (kfac + 2.*max(float(hdk1-KL),0.))
+!!        facv = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
+!!        fact = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
+        facd = 15. * amp * kfac 
+        facv = amp * kfac
+        fact = amp * kfac
 !          endif
-        facd =  90.* amp * facd
-        facv = amp * facv
-        fact = amp * fact
 
 !
 !  difuse vorticity and divergence fields
@@ -364,12 +364,13 @@
           do n=mf,jtrun
 
             c1=1.+dta*facv*hfilt6*eps4(n,m)**3.
+!!            c1=1.+dta*facv*hfilt4*eps4(n,m)**2.
 !!            c2=1.+dta*facd*hfilt6*eps4(n,m)**3.
 !!            c2=1.+dta*facd*hfilt2*eps4(n,m)
             if ( KL .le. hdk1 ) then
               c2=1.+dta*facd*hfilt2*eps4(n,m)
             else
-              c2=1.+dta*facd*hfilt4*eps4(n,m)**2
+              c2=1.+dta*facd*hfilt4*eps4(n,m)**2.
             endif
 
 !!            c3=1.+dta*fact*hfilt6*eps4(n,m)**3.
