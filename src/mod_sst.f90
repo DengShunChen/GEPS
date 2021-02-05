@@ -612,8 +612,8 @@
           sstANA0=MERGE(sstANA0,xmissing,(sstANA0.GE.sstmin .AND. sstANA0.LE.400.))
           sstANA1=MERGE(sstANA1,xmissing,(sstANA1.GE.sstmin .AND. sstANA1.LE.400.))
 
-          CALL fill_missing2(sstANA0(:,:),nx,my,1,.FALSE.)
-          CALL fill_missing2(sstANA1(:,:),nx,my,1,.FALSE.)
+!ps          CALL fill_missing2(sstANA0(:,:),nx,my,1,.FALSE.)
+!ps          CALL fill_missing2(sstANA1(:,:),nx,my,1,.FALSE.)
 
 
           if(dailyClm_option .eq. 2) then     !dailyClm_option=2, read forcast climatology sst
@@ -634,8 +634,8 @@
             sstFCT0=MERGE(sstFCT0,xmissing,(sstFCT0.GE.sstmin .AND. sstFCT0.LE.400.))
             sstFCT1=MERGE(sstFCT1,xmissing,(sstFCT1.GE.sstmin .AND. sstFCT1.LE.400.))
 
-            CALL fill_missing2(sstFCT0(:,:),nx,my,1,.FALSE.)
-            CALL fill_missing2(sstFCT1(:,:),nx,my,1,.FALSE.)
+!ps            CALL fill_missing2(sstFCT0(:,:),nx,my,1,.FALSE.)
+!ps            CALL fill_missing2(sstFCT1(:,:),nx,my,1,.FALSE.)
           endif
 
 
@@ -730,7 +730,7 @@
 !          endif
 
           sstANA=MERGE(sstANA,xmissing,(sstANA.GE.sstmin .AND. sstANA.LE.400.))
-          CALL fill_missing2(sstANA(:,:),nx,my,1,.FALSE.)
+!ps          CALL fill_missing2(sstANA(:,:),nx,my,1,.FALSE.)
 
 
 
@@ -744,7 +744,7 @@
 !            endif
 
             sstFCT=MERGE(sstFCT,xmissing,(sstFCT.GE.sstmin .AND. sstFCT.LE.400.))
-            CALL fill_missing2(sstFCT(:,:),nx,my,1,.FALSE.)
+!ps            CALL fill_missing2(sstFCT(:,:),nx,my,1,.FALSE.)
           endif
 
 
@@ -918,19 +918,19 @@
 
           lncrec=nx*my
           do k=1,lkvl+2
-           do mm=1,12
-             write(lrec,11) k-1,ggdef,mm
-             if(myrank .eq. 0) print *, 'lrec11=',lrec
-             call dmsread(nx,my,lrec,lncrec,'H',ifilin_ocaf,temp1(:,:),istat)
-             write(lrec,12) k-1,ggdef,mm
-             if(myrank .eq. 0) print *, 'lrec12=',lrec
-             call dmsread(nx,my,lrec,lncrec,'H',ifilin_ocaf,temp2(:,:),istat)
-             if( myrank .eq. 72) then
-              print *,"ocaf: mm=",mm,",wtfn(914,265)=",temp1(914,265)
-              print *,"ocaf: mm=",mm,",wsfn(914,265)=",temp2(914,265)
-             endif
+            do mm=1,12
+              write(lrec,11) k-1,ggdef,mm
+              if(myrank .eq. 0) print *, 'lrec11=',lrec
+              call dmsread(nx,my,lrec,lncrec,'H',ifilin_ocaf,temp1(:,:),istat)
+              write(lrec,12) k-1,ggdef,mm
+              if(myrank .eq. 0) print *, 'lrec12=',lrec
+              call dmsread(nx,my,lrec,lncrec,'H',ifilin_ocaf,temp2(:,:),istat)
+              if( myrank .eq. 72) then
+                print *,"ocaf: mm=",mm,",wtfn(914,265)=",temp1(914,265)
+                print *,"ocaf: mm=",mm,",wsfn(914,265)=",temp2(914,265)
+              endif
 
-             do jj=1,jlistnum
+              do jj=1,jlistnum
                 j=jlist1(jj)
                 nxj=nxdef_2d(j)
                 if( lreduce.eq.1 )then
@@ -952,8 +952,8 @@
                   endif
                 enddo  !end do ii
               enddo    !end do jj
-            enddo    !end do mm 
-           enddo !end of k
+            enddo    !end do mm
+          enddo !end of k
 
          deallocate(temp1,temp2)
          call dmscls(ifilin_ocaf,istat)
@@ -1048,7 +1048,7 @@
 !   2009/10/23: modified the code from read_woa0
   
 !          USE mo_control,       ONLY: ngl, nlon, ngodas, lamip, lmlo
-!          USE mo_mpi,           ONLY: myrank .eq. 0, p_bcast, p_io, p_pe 
+!          USE mo_mpi,           ONLY: p_parallel_io, p_bcast, p_io, p_pe 
 !          USE mo_exception,     ONLY: finish, message, message_text
           
 !          USE mo_io,            ONLY: io_open_unit, io_close, io_read, &
@@ -1070,6 +1070,7 @@
           CHARACTER (12) :: cname, cwoa(nrec)
           
           REAL, ALLOCATABLE, TARGET :: zin(:,:)
+          REAL, ALLOCATABLE, TARGET :: zintemp(:,:)
 !          REAL, POINTER :: gl_woa(:,:,:,:)
           REAL      :: missing_value
           
@@ -1190,7 +1191,7 @@
               CALL io_inq_dimlen (woanc1%file_id, io_var_id, io_nlon)
               CALL io_inq_dimid  (woanc1%file_id, 'time', io_var_id)
               CALL io_inq_dimlen (woanc1%file_id, io_var_id, io_ntime)
-              !WRITE(nerr,'(/,A,I2)') ' Read GODAS 4.0 '              
+              !WRITE(nerr,'(/,A,I2)') ' Read GODAS 4.0 '
 !              WRITE(nerr,*) 'number of world ocean atlas data = ' &
 !                            ,'io_ngl=',io_ngl,',io_nlon=',io_nlon &
 !                            ,'io_ntime=',io_ntime
@@ -1230,7 +1231,7 @@
                 CALL io_inq_dimlen (woanc2%file_id, io_var_id, io_ndepth)
                 IF (io_ndepth/=nodepth) THEN
                    WRITE(nerr,*) 'read_godas: inconsistent number of ' &
-                                 ,'odepths between godas files',io_ndepth 
+                                 ,'odepths between godas files',io_ndepth
                    WRITE(nerr,*) 'expected number of odepths = ',nodepth
                    WRITE (message_text,*) 'Read nodepth error in file <',fn2,'>'
                    WRITE(nerr,*) '',message_text
@@ -1251,7 +1252,7 @@
           IF (.NOT. ALLOCATED(os12)) ALLOCATE (os12(nxp, nodepth, my_max, 0:13))
           IF (.NOT. ALLOCATED(ou12)) ALLOCATE (ou12(nxp, nodepth, my_max, 0:13))
           IF (.NOT. ALLOCATED(ov12)) ALLOCATE (ov12(nxp, nodepth, my_max, 0:13))
-          IF(.NOT. ALLOCATED(mixedlayer12)) ALLOCATE (mixedlayer12(nxp, my_max,0:13))
+          IF (.NOT. ALLOCATED(mixedlayer12)) ALLOCATE (mixedlayer12(nxp, my_max,0:13))
           
           ! Read odepths
           flag=.false.
@@ -1287,6 +1288,7 @@
               DO im=1, io_ntime
                 flag=.false.
                 IF (myrank .eq. 0) THEN
+                  IF (.NOT. ALLOCATED(zintemp)) ALLOCATE (zintemp(nlon,ngl))
                   ! read world ocean atlas data
                   IF (lex1) THEN
                     status = NF_INQ_VARID (woanc1%file_id, cname, io_var_id)
@@ -1302,15 +1304,16 @@
                       io_count(:) = (/ io_nlon, ngl,  1,  1 /)
                     ! for depth jk: read io_nlon longitudes, ngl latitudes and 12 months
                       CALL io_get_vara_double(woanc1%file_id,io_var_id,io_start,io_count, &
-                                        zin(1:io_nlon,1:ngl))
-                      zin=MERGE(zin,xmissing,zin.NE.missing_value)
-                      print *,'GODAS: irec=',irec,',jk=',jk,',im=',im &
-                             ,',zin(212,',jk,',235,',im,')=',zin(212,ngl+1-235)
+                                        zintemp(1:io_nlon,1:ngl))
+                      zintemp=MERGE(zintemp,xmissing,zintemp.NE.missing_value)
+                      Do j=1,ngl
+                        zin(:,j)=zintemp(:,ngl-j+1)
+                      ENDDO
                     ENDIF
                   ENDIF !end if(lex1)
                   flag=.true.
-                ENDIF !end if(myrank.eq.0) 
-                call mpe_bcast(zin(:,:),nx*my,0,mpe_double) 
+                ENDIF !end if(myrank.eq.0)
+                call mpe_bcast(zin(:,:),nx*my,0,mpe_double)
 
                 DO jj = 1, jlistnum
                   j=jlist1(jj)
@@ -1319,15 +1322,15 @@
                   DO ii=1,nxj
                     i=nxjstart(j)+ii-1
                     IF(irec .eq. 1) THEN
-                      ot12(ii,jk,jj,im) = zin(i,ngl-j+1)
+                      ot12(ii,jk,jj,im) = zin(i,j)
                     ELSE IF(irec .eq. 2) THEN
-                      os12(ii,jk,jj,im) = zin(i,ngl-j+1)
+                      os12(ii,jk,jj,im) = zin(i,j)
                     ELSE IF(irec .eq. 3) THEN
-                      ou12(ii,jk,jj,im) = zin(i,ngl-j+1)
+                      ou12(ii,jk,jj,im) = zin(i,j)
                     ELSE IF(irec .eq. 4) THEN
-                      ov12(ii,jk,jj,im) = zin(i,ngl-j+1)
+                      ov12(ii,jk,jj,im) = zin(i,j)
                     ELSE IF(irec .eq. 5) THEN
-                      mixedlayer12(ii,jj,im) = zin(i,ngl-j+1)
+                      mixedlayer12(ii,jj,im) = zin(i,j)
                     ENDIF
                   ENDDO
                 ENDDO
@@ -1356,7 +1359,7 @@
               IF(lamip .AND. .NOT. lmlo) THEN
                 flag=.false.
                 IF(myrank .eq. 0) THEN
-                  IF (lex0)THEN
+                  IF (lex0) THEN
                     status = NF_INQ_VARID (woanc0%file_id, cname, io_var_id)
                     IF (status /= NF_NOERR) THEN
                       WRITE(nerr,*) 'IO_INQ_VARID :', woanc0%file_id, cname
@@ -1368,9 +1371,10 @@
                       io_count(:) = (/ io_nlon, ngl,  1,  1 /)
                       ! for depth jk: read io_nlon longitudes, ngl latitudes and 1 months
                       CALL io_get_vara_double(woanc0%file_id,io_var_id,io_start,io_count, &
-                                           zin(1:io_nlon,1:io_ngl))
-                      print *,'GODAS: irec=',irec,',jk=',jk, &
-                                 ',zin(212,',jk,'235,0)=',zin(212,io_ngl+1-235)
+                                              zintemp(1:io_nlon,1:io_ngl))
+                      Do j=1,ngl
+                        zin(:,j)=zintemp(:,ngl-j+1)
+                      ENDDO
                     ENDIF
                   ENDIF  !end lex0
                   flag=.true.
@@ -1384,19 +1388,19 @@
                   DO ii=1,nxj
                     i=nxjstart(j)+ii-1
                     IF(irec .eq. 1) THEN
-                      ot12(ii,jk,jj,0) = zin(i,ngl-j+1)
+                      ot12(ii,jk,jj,0) = zin(i,j)
                     ELSE IF(irec .eq. 2) THEN
-                      os12(ii,jk,jj,0) = zin(i,ngl-j+1)
+                      os12(ii,jk,jj,0) = zin(i,j)
                     ELSE IF(irec .eq. 3) THEN
-                      ou12(ii,jk,jj,0) = zin(i,ngl-j+1)
+                      ou12(ii,jk,jj,0) = zin(i,j)
                     ELSE IF(irec .eq. 4) THEN
-                      ov12(ii,jk,jj,0) = zin(i,ngl-j+1)
+                      ov12(ii,jk,jj,0) = zin(i,j)
                     ELSE IF(irec .eq. 5) THEN
-                      mixedlayer12(ii,jj,0) = zin(i,ngl-j+1)
+                      mixedlayer12(ii,jj,0) = zin(i,j)
                     ENDIF
                   ENDDO
                 ENDDO
-                 
+
 
                 flag=.false.
                 IF (myrank .eq.0 ) THEN
@@ -1412,31 +1416,32 @@
                       io_count(:) = (/ io_nlon, ngl,  1,  1 /)
                       ! for depth jk: read io_nlon longitudes, ngl latitudes and 1 months
                       CALL io_get_vara_double(woanc2%file_id,io_var_id,io_start,io_count, &
-                                           zin(1:io_nlon,1:io_ngl))
-                      print *,'GODAS: irec=',irec,',jk=',jk, &
-                              ',zin(212,',jk,',235,13)=',zin(212,ngl-235+1)
+                                           zintemp(1:io_nlon,1:io_ngl))
+                      Do j=1,ngl
+                        zin(:,j)=zintemp(:,ngl-j+1)
+                      ENDDO
                     ENDIF
                   ENDIF  !end lex2
                   flag=.true.
-                ENDIF            
+                ENDIF
                 call mpe_bcast(zin(:,:),nx*my,0,mpe_double)
 
                 DO jj = 1, jlistnum
                   j=jlist1(jj)
                   nxj=nxdef_2d(j)
-                  if( lreduce.eq.1 )call reducepick(zin(1,j),nxdef(j),nx,1)
+                  if( lreduce.eq.1 ) call reducepick(zin(1,j),nxdef(j),nx,1)
                   DO ii=1,nxj
                     i=nxjstart(j)+ii-1
                     IF(irec .eq. 1) THEN
-                      ot12(ii,jk,jj,13) = zin(i,ngl-j+1)
+                      ot12(ii,jk,jj,13) = zin(i,j)
                     ELSE IF(irec .eq. 2) THEN
-                      os12(ii,jk,jj,13) = zin(i,ngl-j+1)
+                      os12(ii,jk,jj,13) = zin(i,j)
                     ELSE IF(irec .eq. 3) THEN
-                      ou12(ii,jk,jj,13) = zin(i,ngl-j+1)
+                      ou12(ii,jk,jj,13) = zin(i,j)
                     ELSE IF(irec .eq. 4) THEN
-                      ov12(ii,jk,jj,13) = zin(i,ngl-j+1)
+                      ov12(ii,jk,jj,13) = zin(i,j)
                     ELSE IF(irec .eq. 5) THEN
-                      mixedlayer12(ii,jj,13) = zin(i,ngl-j+1)
+                      mixedlayer12(ii,jj,13) = zin(i,j)
                     ENDIF
                   ENDDO
                 ENDDO
@@ -1457,7 +1462,7 @@
               IF (lex0) CALL io_close (woanc0)
               IF (lex2) CALL io_close (woanc2)       
             END IF
-!            DEALLOCATE (zin)
+            DEALLOCATE (zintemp)
             WRITE(nerr,*) 'read GODAS'
           END IF
           
@@ -1513,7 +1518,7 @@
 !
 ! ----------------------------------------------------------------------
 !    USE mo_control,       ONLY: ngl, nlon, nwoa0, lamip, lmlo
-!    USE mo_mpi,           ONLY: myrank .eq. 0, p_bcast, p_io, p_pe,p_parallel,p_all_comm,p_barrier
+!    USE mo_mpi,           ONLY: p_parallel_io, p_bcast, p_io, p_pe,p_parallel,p_all_comm,p_barrier
 !    USE mo_exception,     ONLY: finish, message, message_text
 
 !    USE mo_io,            ONLY: io_open_unit, io_close, io_read, &
@@ -1535,6 +1540,7 @@
       CHARACTER (12) :: cname, cwoa0(nrec)
 
       REAL, ALLOCATABLE, TARGET :: zin(:,:)
+      REAL, ALLOCATABLE, TARGET :: zintemp(:,:)
       REAL      :: missing_value
 
       INTEGER               :: io_nlon  ! number of longitudes in NetCDF file
@@ -1593,7 +1599,7 @@
         CALL io_inq_dimlen (woa0nc1%file_id, io_var_id, io_ngl)
         CALL io_inq_dimid  (woa0nc1%file_id, 'lon', io_var_id)
         CALL io_inq_dimlen (woa0nc1%file_id, io_var_id, io_nlon)
-        print *,"read W0A0 3.5"
+!        print *,"read W0A0 4.0"
         IF (io_ngl/=ngl) THEN
           WRITE(nerr,*) 'read_WOA0: unexpected resolution',io_nlon,io_ngl
           WRITE(nerr,*) 'expected number of latitudes = ',ngl
@@ -1646,6 +1652,7 @@
         DO jk = 1, zindepth
           flag=.false.
           IF (myrank .eq. 0) THEN
+            IF (.NOT. ALLOCATED(zintemp)) ALLOCATE (zintemp(nlon,ngl))
             ! read world ocean atlas data
             status = NF_INQ_VARID (woa0nc1%file_id, cname, io_var_id)
             IF (status /= NF_NOERR) THEN
@@ -1654,20 +1661,22 @@
             ELSE
               CALL io_get_att_double (woa0nc1%file_id, io_var_id, &
                                   '_FillValue', missing_value)
- 
+
               io_start(:) = (/       1,  1, jk, 1 /)
               io_count(:) = (/ io_nlon, io_ngl ,  1, 1 /)
               ! for depth jk: read io_nlon longitudes, ngl latitudes and
               ! 12 months
               CALL io_get_vara_double(woa0nc1%file_id,io_var_id,io_start,io_count,&
-                                      zin(1:io_nlon,1:io_ngl))
-              print *,"woa0: irec=",irec,",jk=",jk,"zin:(768,277)=",zin(768,ngl+1-277)
+                                      zintemp(1:io_nlon,1:io_ngl))
+              print *,"woa0: irec=",irec,",jk=",jk,"zintemp:(768,277)=",zintemp(768,ngl+1-277)
             ENDIF
-            zin(1:io_nlon,:)=MERGE(zin(1:io_nlon,:),xmissing,zin(1:io_nlon,:).NE.missing_value)
-            print *,"woa0: irec=",irec,",jk=",jk,"zin:(768,492)=",zin(768,492)
+            zintemp(1:io_nlon,:)=MERGE(zintemp(1:io_nlon,:),xmissing,zintemp(1:io_nlon,:).NE.missing_value)
+            Do j=1,ngl
+              zin(:,j)=zintemp(:,ngl-j+1)
+            ENDDO
             flag=.true.
           ENDIF
-     
+
           call mpe_bcast(zin(:,:),nx*my,0,mpe_double)
           DO jj = 1, jlistnum
             j=jlist1(jj)
@@ -1676,15 +1685,15 @@
             DO ii=1,nxj
               i=nxjstart(j)+ii-1
               IF (irec .eq. 1) THEN
-                ot0(ii,jk,jj)=zin(i,ngl-j+1)
+                ot0(ii,jk,jj)=zin(i,j)
               ELSE IF(irec .eq. 2) THEN
-                os0(ii,jk,jj)=zin(i,ngl-j+1)
+                os0(ii,jk,jj)=zin(i,j)
               ELSE IF(irec .eq. 3) THEN
-                ou0(ii,jk,jj)=zin(i,ngl-j+1)
+                ou0(ii,jk,jj)=zin(i,j)
               ELSE IF(irec .eq. 4) THEN
-                ov0(ii,jk,jj)=zin(i,ngl-j+1)
+                ov0(ii,jk,jj)=zin(i,j)
               ELSE IF(irec .eq. 5) THEN
-                mixedlayer0(ii,jj)=zin(i,ngl-j+1)
+                mixedlayer0(ii,jj)=zin(i,j)
               ENDIF
             ENDDO
           ENDDO
@@ -1695,6 +1704,7 @@
       IF (myrank .eq. 0) THEN
         CALL io_close (woa0nc1)
         WRITE(nerr,*) 'end read WOA0'
+        DEALLOCATE (zintemp)
       END IF
       DEALLOCATE (zin)
 
@@ -1715,7 +1725,7 @@
 !ps       USE mo_io,           ONLY: io_open_unit, io_close, io_open, &
 !ps                                io_var_id, io_file_id, io_read, &
 !ps                                gpnc0, gpnc1, gpnc2
-!ps       USE mo_mpi,           ONLY: myrank .eq. 0, p_bcast, p_io, p_pe
+!ps       USE mo_mpi,           ONLY: p_parallel_io, p_bcast, p_io, p_pe
 !ps       USE mo_transpose,     ONLY: scatter_gp
        USE mo_netcdf,        ONLY: io_open_unit, io_close, io_open, &
                                 io_inq_dimid, io_inq_dimlen,     &
@@ -1832,7 +1842,6 @@
        INTEGER       :: istat
        INTEGER       :: ndimid, nts1, tsID
        INTEGER       :: ndimid2, nts2
-       INTEGER       :: ivar
      
        REAL :: timevals_godas(3) = 0.  ! absoulte time (e.g., 19971003.25) GODAS PENTAD Data 
 
@@ -2019,8 +2028,8 @@
        INTEGER, PARAMETER :: nrec = 5
 
        INTEGER, INTENT(in):: dayID               ! dayID = DAY_MINUS1, THE_DAY_MINUS1, or DAY_PLUS1
-       REAL, ALLOCATABLE, TARGET :: zin2d(:,:)
-       REAL, ALLOCATABLE:: temp(:,:)
+       REAL, ALLOCATABLE, TARGET :: zin(:,:)
+       REAL, ALLOCATABLE, TARGET :: zintemp(:,:)
 
        INTEGER jk,jj,j,nxj,i,ii
        INTEGER istat
@@ -2057,7 +2066,7 @@
        ENDIF
 
        flag=.false.
-       istat=-1 
+       istat=-1
        IF (myrank .eq. 0) THEN
        INQUIRE (file=fn(files_godas(dayID)), exist=lex2)
        IF ( .NOT. lex2 ) THEN
@@ -2093,8 +2102,8 @@
          ENDIF
        ENDIF
        flag=.true.
-       ENDIF   !!endif (myrank.eq.0) 
-         
+       ENDIF   !!endif (myrank.eq.0)
+
 !       CALL mpe_broadcast (istat, 1, flag, mpe_integer)
        CALL mpe_bcast (istat, 1, 0, mpe_integer)
        if(istat .ne. 0)then
@@ -2109,7 +2118,7 @@
        CALL mpe_bcast(files_godas,3,0,mpe_integer)
        CALL mpe_bcast(nts_godas,3,0,mpe_integer)
 
-       IF(.NOT. ALLOCATED(zin2d)) ALLOCATE (zin2d(nx,my))
+       IF(.NOT. ALLOCATED(zin)) ALLOCATE (zin(nx,my))
        ! Codes read from GODAS
        cgodas(1) = 'ot'    ! ocean temperature profile (K)
        cgodas(2) = 'os'    ! ocean salinity profile (0/00)
@@ -2123,42 +2132,48 @@
          DO jk=1, zindepth
            flag=.false.
            IF(myrank .eq. 0) then
-             IF(.NOT. ALLOCATED(temp)) ALLOCATE (temp(nx,my))
+             IF(.NOT. ALLOCATED(zintemp)) ALLOCATE (zintemp(nx,my))
              CALL IO_INQ_VARID (gpnc2%file_id, cname, varid2)
              CALL io_get_att_double (gpnc2%file_id,varid2,'_FillValue', missing_value)
              io_start(:) = (/ 1, 1, jk, tsID_godas(dayID) /)
              io_count(:) = (/ nlon, nlat, 1, 1 /)
-             CALL IO_GET_VARA_DOUBLE(gpnc2%file_id,varid2,io_start,io_count,temp(1:nlon,1:nlat))
-             temp(1:nlon,:)=MERGE(temp(1:nlon,:),xmissing,temp(1:nlon,:).NE.missing_value)
-             DO j=1,nlat
-               zin2d(:,j)=temp(:,nlat-j+1)
+             CALL IO_GET_VARA_DOUBLE(gpnc2%file_id,varid2,io_start,io_count,zintemp(1:nlon,1:nlat))
+             zintemp(1:nlon,:)=MERGE(zintemp(1:nlon,:),xmissing,zintemp(1:nlon,:).NE.missing_value)
+             Do j=1,nlat
+               zin(:,j)=zintemp(:,nlat-j+1)
              ENDDO
              flag=.true.
            ENDIF   !end if (myrank .eq. 0)
-           call mpe_bcast(zin2d(:,:),nx*my,0,mpe_double)
+           call mpe_bcast(zin(:,:),nx*my,0,mpe_double)
 
            DO jj = 1, jlistnum
              j=jlist1(jj)
              nxj=nxdef_2d(j)
-             if( lreduce.eq.1 ) call reducepick(zin2d(1,j),nxdef(j),nx,1)
+             if( lreduce.eq.1 ) call reducepick(zin(1,j),nxdef(j),nx,1)
              DO ii=1,nxj
                i=nxjstart(j)+ii-1
-               if(irec .eq. 1) ot12(ii,jk,jj,dayID) = zin2d(i,j)
-               if(irec .eq. 2) os12(ii,jk,jj,dayID) = zin2d(i,j)
-               if(irec .eq. 3) ou12(ii,jk,jj,dayID) = zin2d(i,j)
-               if(irec .eq. 4) ov12(ii,jk,jj,dayID) = zin2d(i,j)
-               if(irec .eq. 5) mixedlayer12(ii,jj,dayID) = zin2d(i,j)
+               if(irec .eq. 1) then
+                 ot12(ii,jk,jj,dayID) = zin(i,j)
+               else if(irec .eq. 2) then
+                 os12(ii,jk,jj,dayID) = zin(i,j)
+               else if(irec .eq. 3) then
+                 ou12(ii,jk,jj,dayID) = zin(i,j)
+               else if(irec .eq. 4) then
+                 ov12(ii,jk,jj,dayID) = zin(i,j)
+               else if(irec .eq. 5) then
+                 mixedlayer12(ii,jj,dayID) = zin(i,j)
+               endif
              ENDDO
            ENDDO  !!end jj
          ENDDO  !!end jk
        ENDDO   !!end irec
 
-       if(myrank .eq. 0) then
+       IF(myrank .eq. 0) THEN
          CALL IO_close(gpnc2)
-         DEALLOCATE (temp)
-       endif
+         DEALLOCATE (zintemp)
+       ENDIF
 
-       DEALLOCATE (zin2d)
+       DEALLOCATE (zin)
 
        END SUBROUTINE read_godas_dayp1
 
