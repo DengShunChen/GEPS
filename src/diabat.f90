@@ -1692,6 +1692,12 @@
       endif !( dolsp .and. nmmiph.eq.2 )
 
       if ( dolsp .and. (nmmiph.eq.6 .or. nmmiph.eq.8) ) then
+        do k=1,lev
+          kc=lev-k+1
+          do i=1,nxj
+            rhc(i,kc)=0.98-0.07*cos(d2r*arg)**2.0    !wsm6
+          enddo
+        enddo
         call mp_scheme                                                   &
           !  ---  inputs:
            ( nmmiph,nxp,nxjp(j),lev,ncld,plt(1,1,jj),pst(1,jj),dsigma, &

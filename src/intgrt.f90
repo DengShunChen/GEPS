@@ -1399,7 +1399,7 @@
 !
 !  detact instability occure or not
 !
-      if(tau.gt.24.) then
+      if(tau.gt.12.) then
 !        sptendmax2=0.409
 !        sptendmax1=0.379
         if(sptend.le.sptendmax1)n_stable=n_stable+1
