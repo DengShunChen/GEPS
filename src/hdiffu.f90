@@ -346,11 +346,11 @@
 
         KL=Llist(k)
 !
-        kfac = 1.0 + 2.*min(max(float(hdk2(2)-KL),0.),15.)
+        kfac = 1.0 + 2.*min(max(float(hdk2(2)-KL),0.),20.)
 !!        facd = 1. * (kfac + 2.*max(float(hdk1-KL),0.))
 !!        facv = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
 !!        fact = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
-        facd = 40. * amp * kfac 
+        facd = 60. * amp * kfac 
         facv = amp * kfac
         fact = amp * kfac
 !          endif
