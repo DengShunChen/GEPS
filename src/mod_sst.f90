@@ -4,7 +4,6 @@
 #define ngl my
 #define nlat my
 #define mpp_root_pe() 0
-#define p_parallel_io (myrank .eq. 0)
 #define p_pe myrank
 #define sstmin 270
 #endif
@@ -613,8 +612,8 @@
           sstANA0=MERGE(sstANA0,xmissing,(sstANA0.GE.sstmin .AND. sstANA0.LE.400.))
           sstANA1=MERGE(sstANA1,xmissing,(sstANA1.GE.sstmin .AND. sstANA1.LE.400.))
 
-          CALL fill_missing2(sstANA0(:,:),nx,my,1,.FALSE.)
-          CALL fill_missing2(sstANA1(:,:),nx,my,1,.FALSE.)
+!ps          CALL fill_missing2(sstANA0(:,:),nx,my,1,.FALSE.)
+!ps          CALL fill_missing2(sstANA1(:,:),nx,my,1,.FALSE.)
 
 
           if(dailyClm_option .eq. 2) then     !dailyClm_option=2, read forcast climatology sst
@@ -635,8 +634,8 @@
             sstFCT0=MERGE(sstFCT0,xmissing,(sstFCT0.GE.sstmin .AND. sstFCT0.LE.400.))
             sstFCT1=MERGE(sstFCT1,xmissing,(sstFCT1.GE.sstmin .AND. sstFCT1.LE.400.))
 
-            CALL fill_missing2(sstFCT0(:,:),nx,my,1,.FALSE.)
-            CALL fill_missing2(sstFCT1(:,:),nx,my,1,.FALSE.)
+!ps            CALL fill_missing2(sstFCT0(:,:),nx,my,1,.FALSE.)
+!ps            CALL fill_missing2(sstFCT1(:,:),nx,my,1,.FALSE.)
           endif
 
 
@@ -731,7 +730,7 @@
 !          endif
 
           sstANA=MERGE(sstANA,xmissing,(sstANA.GE.sstmin .AND. sstANA.LE.400.))
-          CALL fill_missing2(sstANA(:,:),nx,my,1,.FALSE.)
+!ps          CALL fill_missing2(sstANA(:,:),nx,my,1,.FALSE.)
 
 
 
@@ -745,7 +744,7 @@
 !            endif
 
             sstFCT=MERGE(sstFCT,xmissing,(sstFCT.GE.sstmin .AND. sstFCT.LE.400.))
-            CALL fill_missing2(sstFCT(:,:),nx,my,1,.FALSE.)
+!ps            CALL fill_missing2(sstFCT(:,:),nx,my,1,.FALSE.)
           endif
 
 
@@ -881,11 +880,11 @@
           integer istat,k,mm,lncrec
           integer j,jj,nxj,i,ii
           character lrec*26
-          REAL, ALLOCATABLE, TARGET :: temp1(:,:,:),temp2(:,:,:)
+          REAL, ALLOCATABLE, TARGET :: temp1(:,:),temp2(:,:)
           logical flag
 !       
-          if(.not. ALLOCATED(temp1)) allocate (temp1(nx,12,my))
-          if(.not. ALLOCATED(temp2)) allocate (temp2(nx,12,my))
+          if(.not. ALLOCATED(temp1)) allocate (temp1(nx,my))
+          if(.not. ALLOCATED(temp2)) allocate (temp2(nx,my))
 
           if(.not. ALLOCATED(wdepths)) ALLOCATE(wdepths(1:lkvl+2)) 
           if(.not. ALLOCATED(wtfn12)) ALLOCATE(wtfn12(nxp,1:lkvl+2,my_max,0:13)) 
@@ -917,69 +916,44 @@
           endif
 
 
+          lncrec=nx*my
           do k=1,lkvl+2
-        
-!           if(myrank.eq.0) call dmsopn(ifilin_sst,"r",istat)
-!           call mpe_broadcast(istat,1,flag,mpe_integer)
-!           if(istat.ne.0)then
-!             if(myrank.eq.0) print *,'dmsopn sst error'
-!               call mpe_finalize
-!               call dmsexit(-1)
-!           endif	  
-        
+            do mm=1,12
+              write(lrec,11) k-1,ggdef,mm
+              if(myrank .eq. 0) print *, 'lrec11=',lrec
+              call dmsread(nx,my,lrec,lncrec,'H',ifilin_ocaf,temp1(:,:),istat)
+              write(lrec,12) k-1,ggdef,mm
+              if(myrank .eq. 0) print *, 'lrec12=',lrec
+              call dmsread(nx,my,lrec,lncrec,'H',ifilin_ocaf,temp2(:,:),istat)
+              if( myrank .eq. 72) then
+                print *,"ocaf: mm=",mm,",wtfn(914,265)=",temp1(914,265)
+                print *,"ocaf: mm=",mm,",wsfn(914,265)=",temp2(914,265)
+              endif
 
-!            write(cdtg,'(i12)') idtg1
-!            read(cdtg,'(i4,i8)')iyyyy,mmddhhmn
-        
-!	       iy=idtg_sst/1000000
-        
-           lncrec=nx*my
-           do mm=1,12
-             write(lrec,11) k-1,ggdef,mm
-             if(myrank .eq. 0) print *, 'lrec11=',lrec
-             call dmsread(nx,my,lrec,lncrec,'H',ifilin_ocaf,temp1(:,mm,:),istat)
-             write(lrec,12) k-1,ggdef,mm
-             if(myrank .eq. 0) print *, 'lrec12=',lrec
-             call dmsread(nx,my,lrec,lncrec,'H',ifilin_ocaf,temp2(:,mm,:),istat)
-             if( myrank .eq. 72) then
-              print *,"ocaf 1: wtfn(914,",mm,",265)=",temp1(914,mm,265)
-              print *,"ocaf 2: wsfn(914,",mm,",265)=",temp2(914,mm,265)
-             endif
-
-!             if( lreduce.eq.1 ) call reducepick (temp1(1,mm,1),nxdef,nx,my) 
-!             if( lreduce.eq.1 ) call reducepick (temp2(1,mm,1),nxdef,nx,my)
-           enddo
-
-
-           do jj=1,jlistnum
-              j=jlist1(jj)
-              nxj=nxdef_2d(j)
-              do mm = 1, 12
+              do jj=1,jlistnum
+                j=jlist1(jj)
+                nxj=nxdef_2d(j)
                 if( lreduce.eq.1 )then
-                  call reducepick (temp1(1,mm,j),nxdef(j),nx,1)
-                  call reducepick (temp2(1,mm,j),nxdef(j),nx,1)
+                  call reducepick (temp1(1,j),nxdef(j),nx,1)
+                  call reducepick (temp2(1,j),nxdef(j),nx,1)
                 endif
                 do ii = 1, nxj
                   i=nxjstart(j)+ii-1
-                  wtfn12(ii,k,jj,mm)=temp1(i,mm,j)
-                  wsfn12(ii,k,jj,mm)=temp2(i,mm,j)
+                  wtfn12(ii,k,jj,mm)=temp1(i,j)
+                  wsfn12(ii,k,jj,mm)=temp2(i,j)
 
                   if(mm .eq. 1) then
-                    wtfn12(ii,k,jj,13)=temp1(i,mm,j)
-                    wsfn12(ii,k,jj,13)=temp2(i,mm,j)
+                    wtfn12(ii,k,jj,13)=temp1(i,j)
+                    wsfn12(ii,k,jj,13)=temp2(i,j)
                   endif
                   if(mm .eq. 12) then
-                    wtfn12(ii,k,jj,0)=temp1(i,mm,j)
-                    wsfn12(ii,k,jj,0)=temp2(i,mm,j)
+                    wtfn12(ii,k,jj,0)=temp1(i,j)
+                    wsfn12(ii,k,jj,0)=temp2(i,j)
                   endif
-
-
                 enddo  !end do ii
-
-              enddo  !end do mm
-            enddo    !end do jj
-
-         enddo !end of k
+              enddo    !end do jj
+            enddo    !end do mm
+          enddo !end of k
 
          deallocate(temp1,temp2)
          call dmscls(ifilin_ocaf,istat)
@@ -1095,7 +1069,7 @@
           INTEGER, PARAMETER :: nrec = 5
           CHARACTER (12) :: cname, cwoa(nrec)
           
-          REAL, ALLOCATABLE, TARGET :: zin(:,:,:,:)
+          REAL, ALLOCATABLE, TARGET :: zin(:,:)
           REAL, ALLOCATABLE, TARGET :: zintemp(:,:)
 !          REAL, POINTER :: gl_woa(:,:,:,:)
           REAL      :: missing_value
@@ -1126,14 +1100,14 @@
           INTEGER ::  io_var_id     ! IO_file_id, IO_dim_id
           LOGICAL flag
           INTEGER :: j,jj,nxj,im,ii
-          INTEGER :: lnc
+          INTEGER :: lnc,zindepth
 !ps
           ! Read world ocean atlas data file
           ! ===============
 
           flag=.false.
-          IF (p_parallel_io) THEN
-            WRITE(nerr,'(/,A,I2)') ' Read GODAS 1.0 '
+          IF (myrank .eq. 0) THEN
+            WRITE(nerr,'(/,A,I2)') 'Read GODAS 1.0 '
             IF(lamip .AND. .NOT. lmlo) THEN
               WRITE(nerr,*) 'This is an AMIP run with lgodas enable (lamip = .true. & lgodas = .true. ).'
               WRITE(nerr,*) 'Read data from NCEP Global Ocean Data Assimilation System (GODAS)'
@@ -1149,7 +1123,6 @@
               WRITE (fn0, '(A,A6,i4)') ifilin_nc(1:lnc),'/godas',ihy0
               WRITE (fn1, '(A,A6,i4)') ifilin_nc(1:lnc),'/godas',ihy1
               WRITE (fn2, '(A,A6,i4)') ifilin_nc(1:lnc),'/godas',ihy2
- 
 !ps              WRITE (fn0, '("godas",i4)') ihy0
 !ps              WRITE (fn1, '("godas",i4)') ihy1
 !ps              WRITE (fn2, '("godas",i4)') ihy2
@@ -1188,8 +1161,8 @@
               END IF
                
             ELSE
-              WRITE(nerr,'(/,A,I2)') ' Read GODAS data from unit ', ngodas
-              WRITE(nerr,'(/,A,I2)') ' (http://www.cpc.ncep.noaa.gov/products/GODAS/) '
+              WRITE(nerr,'(/,A,I2)') 'Read GODAS data from unit ', ngodas
+!              WRITE(nerr,'(/,A,I2)') '(http://www.cpc.ncep.noaa.gov/products/GODAS/) '
           
               WRITE(nerr,*) 'This is no AMIP run (lamip = .false.)'
               INQUIRE (ngodas, exist=lex1)
@@ -1202,16 +1175,13 @@
                 ! has to be fixed...
                 !          CALL IO_read_header(sstnc1)
                 !          CALL IO_info_print(sstnc1)
-                WRITE(nerr,'(/,A,I2)') ' Read GODAS 2.0: open successfully ',woanc1%file_id
+                WRITE(nerr,'(/,A,I2)') 'Read GODAS 2.0: open successfully ',woanc1%file_id
               ELSE
                 WRITE (message_text,*) 'Could not open unit <',ngodas,'>'
-                !WRITE(nerr,*) '',message_text
-                !WRITE(nerr,*) 'read_godas', 'Could not open godas file'
               ENDIF
-          
              
             END IF  !end IF(lamip .AND. .NOT. lmlo)
-            
+
             !WRITE(nerr,'(/,A,I2)') ' Read GODAS 3.0 '
             IF (lex1) THEN
               ! Check resolution
@@ -1221,33 +1191,34 @@
               CALL io_inq_dimlen (woanc1%file_id, io_var_id, io_nlon)
               CALL io_inq_dimid  (woanc1%file_id, 'time', io_var_id)
               CALL io_inq_dimlen (woanc1%file_id, io_var_id, io_ntime)
-              
               !WRITE(nerr,'(/,A,I2)') ' Read GODAS 4.0 '
-              WRITE(nerr,*) 'number of world ocean atlas data = ' &
-			    ,'io_ngl=',io_ngl,',io_nlon=',io_nlon &
-			    ,'io_ntime=',io_ntime
+!              WRITE(nerr,*) 'number of world ocean atlas data = ' &
+!                            ,'io_ngl=',io_ngl,',io_nlon=',io_nlon &
+!                            ,'io_ntime=',io_ntime
 
               IF (io_ngl/=ngl) THEN
                  WRITE(nerr,*) 'read_godas: unexpected resolution ',io_nlon,io_ngl
                  WRITE(nerr,*) 'expected number of latitudes = ',ngl
-                 WRITE(nerr,*) 'number of latitudes of world ocean atlas data = ',io_ngl
+                 WRITE(nerr,*) 'number of latitudes of ocean data = ',io_ngl
                  WRITE(nerr,*)  'read_godas','unexpected resolution'
                  stop
               END IF
               CALL io_inq_dimid  (woanc1%file_id, 'depth', io_var_id)
               CALL io_inq_dimlen (woanc1%file_id, io_var_id, nodepth)
               !WRITE(nerr,'(/,A,I2)') ' Read GODAS 4.1 '
-              WRITE(nerr,'(/,A,I2)') 'number of odepths = ',nodepth
+              !WRITE(nerr,'(/,A,I2)') 'number of odepths = ',nodepth
               flag=.true.
             ELSE
               nodepth=nodepth0
             ENDIF
+
             IF(lamip .AND. .NOT. lmlo) THEN
               IF (lex0) THEN  
                 CALL io_inq_dimid  (woanc0%file_id, 'depth', io_var_id)
                 CALL io_inq_dimlen (woanc0%file_id, io_var_id, io_ndepth)
                 IF (io_ndepth/=nodepth) THEN
-                   WRITE(nerr,*) 'read_godas: inconsistent number of odepths between godas files',io_ndepth
+                   WRITE(nerr,*) 'read_godas: inconsistent number of ' &
+                                 ,'odepths between godas files',io_ndepth
                    WRITE(nerr,*) 'expected number of odepths = ',nodepth
                    WRITE (message_text,*) 'Read nodepth error in file <',fn0,'>'
                    WRITE(nerr,*) '',message_text
@@ -1259,8 +1230,8 @@
                 CALL io_inq_dimid  (woanc2%file_id, 'depth', io_var_id)
                 CALL io_inq_dimlen (woanc2%file_id, io_var_id, io_ndepth)
                 IF (io_ndepth/=nodepth) THEN
-                   WRITE(nerr,*) 'read_godas: inconsistent number of ', &
-                                  'odepths between godas files',io_ndepth
+                   WRITE(nerr,*) 'read_godas: inconsistent number of ' &
+                                 ,'odepths between godas files',io_ndepth
                    WRITE(nerr,*) 'expected number of odepths = ',nodepth
                    WRITE (message_text,*) 'Read nodepth error in file <',fn2,'>'
                    WRITE(nerr,*) '',message_text
@@ -1269,28 +1240,23 @@
                 ENDIF
               ENDIF
             ENDIF
-          END IF  !end IF (p_parallel_io) 
+          END IF  !end IF (myrank .eq. 0) 
           !! RETURN
-!ps          CALL p_bcast (nodepth, p_io)
-!          call mpe_broadcast(nodepth,1,flag,mpe_integer)
           call mpe_bcast(nodepth,1,0,mpe_integer)
           
 !          WRITE(nerr,'(/,A,I2)') ' Read GODAS 5.0, nodepth= ',nodepth
           
           !     Allocate memory for ot12 and os12 per PE
-          
           IF (.NOT. ALLOCATED(odepths)) ALLOCATE (odepths(nodepth))
           IF (.NOT. ALLOCATED(ot12)) ALLOCATE (ot12(nxp, nodepth, my_max, 0:13))
           IF (.NOT. ALLOCATED(os12)) ALLOCATE (os12(nxp, nodepth, my_max, 0:13))
           IF (.NOT. ALLOCATED(ou12)) ALLOCATE (ou12(nxp, nodepth, my_max, 0:13))
           IF (.NOT. ALLOCATED(ov12)) ALLOCATE (ov12(nxp, nodepth, my_max, 0:13))
-          IF(lmixedlayer) THEN
-            IF(.NOT. ALLOCATED(mixedlayer12)) ALLOCATE (mixedlayer12(nxp, my_max,0:13))
-          ENDIF
+          IF (.NOT. ALLOCATED(mixedlayer12)) ALLOCATE (mixedlayer12(nxp, my_max,0:13))
           
           ! Read odepths
           flag=.false.
-          IF (p_parallel_io) THEN
+          IF (myrank .eq. 0) THEN
             IF (lex1) THEN
               !WRITE(nerr,'(/,A,I2)') ' Read GODAS 6.0 '
               CALL io_inq_dimid  (woanc1%file_id, 'depth', io_var_id)
@@ -1301,240 +1267,206 @@
               odepths=odepth0
             endif
           ENDIF
-!ps          CALL p_bcast (odepths(1:nodepth), p_io)
-!          call mpe_broadcast(odepths,nodepth,flag,mpe_double)
           call mpe_bcast(odepths,nodepth,0,mpe_double)
           IF ( lwarning_msg.GE.3 ) THEN       
               WRITE (nerr,*) 'read_godas:: pe=',p_pe,',  odepths=',odepths(1:nodepth)
-!!          print *,'pe=',p_pe,',  odepths=',odepths(1:nodepth)
           ENDIF
           
           ! Codes read from GODAS
-          
           cwoa(1) = 'ot'    ! ocean temperature profile (K)
           cwoa(2) = 'os'    ! ocean salinity profile (0/00)
           cwoa(3) = 'ou'    ! ocean u-component current (m/s)
           cwoa(4) = 'ov'    ! ocean v-component current (m/s)
           cwoa(5) = 'mixedlayer'    ! ocean mixed layer (m)
+          IF (.NOT. ALLOCATED(zin)) ALLOCATE (zin(nlon,ngl))
           DO irec = 1, nrec
-            IF (.NOT. ALLOCATED(zin)) ALLOCATE (zin(nlon,nodepth,ngl,0:13))
-            IF (.NOT. ALLOCATED(zintemp)) ALLOCATE (zintemp(nlon,ngl))
-            IF (p_parallel_io) THEN
-            !WRITE(nerr,'(/,A,I2)') ' Read GODAS 7.0 '
-            !     Allocate memory for godas global fields
-!            IF (.NOT. ALLOCATED(zin)) ALLOCATE (zin(nlon,nodepth,ngl,0:13))
-              zin=xmissing
-              cname = cwoa(irec)
-              ! read world ocean atlas data
-              IF (lex1) THEN
-                status = NF_INQ_VARID (woanc1%file_id, cname, io_var_id)
-                IF (status /= NF_NOERR) THEN
-                  WRITE(nerr,*) 'IO_INQ_VARID :', woanc1%file_id, cname
-                  WRITE(nerr,*) 'IO_INQ_VARID', NF_STRERROR(status)
-                ELSE
-                  IF (irec == 3) lou=.TRUE.
-                  IF (irec == 4) lov=.TRUE.
-                  CALL io_get_att_double (woanc1%file_id, io_var_id, &
-                                            '_FillValue', missing_value)
-!!          WRITE(nerr,*) 'pe=',p_pe,', read GODAS 7.1 _FillValue= ',missing_value
-                  IF(irec .eq. 5) then
-                      jk=1
-                      io_start(:) = (/       1,   1,  1,        1 /)
-                      io_count(:) = (/ io_nlon, ngl,  1, io_ntime /)
-                    ! for depth jk: read io_nlon longitudes, ngl latitudes and 12 months
-                      CALL io_get_vara_double(woanc1%file_id,io_var_id,io_start,io_count, &
-                                         zin(1:io_nlon,jk,:,1:io_ntime))
-                      DO im=1,12
-                        print *,'GODAS: irec=',irec,',jk=',jk, &
-                                   ',zin(212,',jk,',235,',im,')=',zin(212,jk,ngl+1-235,im)
-                      ENDDO
-                  ELSE
-                    DO jk = 1, nodepth
-                      io_start(:) = (/       1,   1, jk,        1 /)
-                      io_count(:) = (/ io_nlon, ngl,  1, io_ntime /)
-                    ! for depth jk: read io_nlon longitudes, ngl latitudes and 12 months
-                      CALL io_get_vara_double(woanc1%file_id,io_var_id,io_start,io_count, &
-                                         zin(1:io_nlon,jk,:,1:io_ntime))
-                      DO im=1,12
-                        print *,'GODAS: irec=',irec,',jk=',jk, &
-                                   ',zin(212,',jk,',235,',im,')=',zin(212,jk,ngl+1-235,im)
-                      ENDDO
-                    END DO
-                    !!          WRITE(nerr,'(/,A,I2)') ' Read GODAS 7.2 '
-                  ENDIF
-                ENDIF
-              ENDIF  !end lex1
-  
-  
-              IF(lamip .AND. .NOT. lmlo) THEN
-                IF (lex0) THEN
-                  status = NF_INQ_VARID (woanc0%file_id, cname, io_var_id)
-                  IF (status /= NF_NOERR) THEN
-                    WRITE(nerr,*) 'IO_INQ_VARID :', woanc0%file_id, cname
-                    WRITE(nerr,*) 'IO_INQ_VARID', NF_STRERROR(status)
-                  ELSE
-                    ! read world ocean atlas data december of last year
-                    CALL io_inq_varid (woanc0%file_id, cname, io_var_id)
-                    IF(irec .eq. 5) then
-                      jk=1
-                      io_start(:) = (/       1,   1,  1, 12 /)
-                      io_count(:) = (/ io_nlon, ngl,  1, 1 /)
-                      ! for depth jk: read io_nlon longitudes, ngl latitudes and 1 months
-                      CALL io_get_vara_double(woanc0%file_id,io_var_id,io_start,io_count, &
-                                             zin(1:io_nlon,jk,:,0))
-                      print *,'GODAS: irec=',irec,',jk=',jk, &
-                                      ',zin(212,',jk,',235,0)=',zin(212,jk,ngl+1-235,0)
-                    ELSE
-                      DO jk = 1, nodepth
-                        io_start(:) = (/       1,   1, jk, 12 /)
-                        io_count(:) = (/ io_nlon, ngl,  1,  1 /)
-                      ! for depth jk: read io_nlon longitudes, ngl latitudes and 1 months
-                        CALL io_get_vara_double(woanc0%file_id,io_var_id,io_start,io_count, &
-                                             zin(1:io_nlon,jk,:,0))
-                        print *,'GODAS: irec=',irec,',jk=',jk, &
-                                      ',zin(212,',jk,',235,0)=',zin(212,jk,ngl+1-235,0)
-                      ENDDO
-                    ENDIF
-                  ENDIF
-                ENDIF  !end lex0
-
-                IF (lex2) THEN
-                  status = NF_INQ_VARID (woanc2%file_id, cname, io_var_id)
-                  IF (status /= NF_NOERR) THEN
-                    WRITE(nerr,*) 'IO_INQ_VARID :', woanc2%file_id, cname
-                    WRITE(nerr,*) 'IO_INQ_VARID', NF_STRERROR(status)
-                  ELSE
-                    ! read world ocean atlas data january of next year
-                    CALL io_inq_varid (woanc2%file_id, cname, io_var_id)
-                    IF(irec .eq. 5) then
-                      jk=1
-                      io_start(:) = (/       1,   1,  1, 1 /)
-                      io_count(:) = (/ io_nlon, ngl,  1, 1 /)
-                      ! for depth jk: read io_nlon longitudes, ngl latitudes and 1 months
-                        CALL io_get_vara_double(woanc2%file_id,io_var_id,io_start,io_count, &
-                                             zin(1:io_nlon,jk,:,13))
-                        print *,'GODAS: irec=',irec,',jk=',jk, &
-                                     ',zin(212,',jk,',235,13)=',zin(212,jk,ngl+1-235,13)
-                    ELSE
-                      DO jk = 1, nodepth
-                        io_start(:) = (/       1,   1, jk,  1 /)
-                        io_count(:) = (/ io_nlon, ngl,  1,  1 /)
-                      ! for depth jk: read io_nlon longitudes, ngl latitudes and 1 months
-                        CALL io_get_vara_double(woanc2%file_id,io_var_id,io_start,io_count, &
-                                             zin(1:io_nlon,jk,:,13))
-                        print *,'GODAS: irec=',irec,',jk=',jk, &
-                                     ',zin(212,',jk,',235,13)=',zin(212,jk,ngl+1-235,13)
-                      ENDDO
-                    ENDIF
-                  ENDIF
-                ENDIF  !end lex2
-              ELSE            
-                ! copy December to month 0
-                zin(:,:,:,0)  = zin(:,:,:,12)
-                ! copy January to month 13
-                zin(:,:,:,13)  = zin(:,:,:,1)
-              ENDIF  !end lamip&not lmlo
-
-!ps                zin=MERGE(zin,xmissing,zin.NE.missing_value)
-              zin=MERGE(zin,xmissing,zin.GT.-8.E+33)
-              IF (lsitstart .AND. (.NOT.lwoa0)) THEN
-                WRITE(nerr,'(/,A,5I5)') &
-                     ' Read GODAS 7.3: CALL fill_missing: ',io_nlon,ngl,nodepth
-!ps                CALL print_cpu_time()
-                DO im = 0, 13
-                  CALL fill_missing2(zin(1:io_nlon,:,:,im),io_nlon,ngl,1,.FALSE.)
-                  DO jk = 1, nodepth
-                  print *,'GODAS after fillmissing: irec=',irec,',jk=',jk, &
-                      ',zin(212,',jk,',235,',im,')=',zin(212,jk,ngl+1-235,im)
-                  ENDDO
-                ENDDO
-                WRITE(nerr,'(/,A,I2)') &
-                      ' Read GODAS 7.4: After CALL fill_missing '
-!ps                CALL print_cpu_time()
-              ENDIF
-            ENDIF  !end p_parallel_io
-              !WRITE(nerr,'(/,A,I2)') ' Read GODAS 8.0 '
-
-          
-!ps            NULLIFY (gl_woa)
-!ps            DO i = 0, 13
-!ps              IF (p_pe == p_io) gl_woa => zin(:,:,:,i:i)
-!ps              IF (irec == 1) THEN
-!ps                CALL scatter_gp(gl_woa, ot12(:,:,:,i:i), gl_dc)
-!ps              ELSE IF (irec == 2) THEN
-!ps                CALL scatter_gp(gl_woa, os12(:,:,:,i:i), gl_dc)
-!ps              ELSE IF (irec == 3) THEN
-!ps                CALL scatter_gp(gl_woa, ou12(:,:,:,i:i), gl_dc)
-!ps              ELSE IF (irec == 4) THEN
-!ps                CALL scatter_gp(gl_woa, ov12(:,:,:,i:i), gl_dc)
-!ps              END IF
-!ps            END DO
-              
-            DO jk = 1, nodepth
-              DO im=0, 13
+           !WRITE(nerr,'(/,A,I2)') ' Read GODAS 7.0 '
+            zindepth=nodepth
+            if(irec .eq. 5) zindepth=1
+            cname = cwoa(irec)
+            DO jk = 1, zindepth
+              DO im=1, io_ntime
                 flag=.false.
-                if(myrank .eq. 0) flag=.true.
-!                call mpe_broadcast(zin(:,jk,:,im),nx*my,flag,mpe_double)
-                call mpe_bcast(zin(:,jk,:,im),nx*my,0,mpe_double)
-                if (myrank .eq. 44) then
-                  print *,'GODAS after broadcast: jk=',jk,',im=',im, & 
-                      ',zin(212,',jk,',235,',im,')=',zin(212,jk,ngl+1-235,im)
-                endif
-!                if( lreduce.eq.1 ) call reducepick(zin(1,jk,1,im),nxdef,nx,my)
-                Do j=1,ngl
-                  if(irec .eq. 5) then
-                    zintemp(:,j)=zin(:,1,ngl-j+1,im)
-                  else
-                    zintemp(:,j)=zin(:,jk,ngl-j+1,im)
-                  endif
-                ENDDO
-    
+                IF (myrank .eq. 0) THEN
+                  IF (.NOT. ALLOCATED(zintemp)) ALLOCATE (zintemp(nlon,ngl))
+                  ! read world ocean atlas data
+                  IF (lex1) THEN
+                    status = NF_INQ_VARID (woanc1%file_id, cname, io_var_id)
+                    IF (status /= NF_NOERR) THEN
+                      WRITE(nerr,*) 'IO_INQ_VARID :', woanc1%file_id, cname
+                      WRITE(nerr,*) 'IO_INQ_VARID', NF_STRERROR(status)
+                    ELSE
+                      IF (irec == 3) lou=.TRUE.
+                      IF (irec == 4) lov=.TRUE.
+                      CALL io_get_att_double (woanc1%file_id, io_var_id, &
+                                            '_FillValue', missing_value)
+                      io_start(:) = (/       1,   1, jk, im /)
+                      io_count(:) = (/ io_nlon, ngl,  1,  1 /)
+                    ! for depth jk: read io_nlon longitudes, ngl latitudes and 12 months
+                      CALL io_get_vara_double(woanc1%file_id,io_var_id,io_start,io_count, &
+                                        zintemp(1:io_nlon,1:ngl))
+                      zintemp=MERGE(zintemp,xmissing,zintemp.NE.missing_value)
+                      Do j=1,ngl
+                        zin(:,j)=zintemp(:,ngl-j+1)
+                      ENDDO
+                    ENDIF
+                  ENDIF !end if(lex1)
+                  flag=.true.
+                ENDIF !end if(myrank.eq.0)
+                call mpe_bcast(zin(:,:),nx*my,0,mpe_double)
+
                 DO jj = 1, jlistnum
                   j=jlist1(jj)
                   nxj=nxdef_2d(j)
-                  if( lreduce.eq.1 )call reducepick(zintemp(1,j),nxdef(j),nx,1)
+                  if( lreduce.eq.1 )call reducepick(zin(1,j),nxdef(j),nx,1)
                   DO ii=1,nxj
                     i=nxjstart(j)+ii-1
                     IF(irec .eq. 1) THEN
-                      ot12(ii,jk,jj,im) = zintemp(i,j)
-!                      if((myrank.eq.44).AND.(i.eq.212).AND.(jj.eq.3).AND.(j.eq.235)) then
-!                        print *,'ot12(',i,',',jk,',',jj,',',im,')=',ot12(i,jk,jj,im) 
-!                      endif
+                      ot12(ii,jk,jj,im) = zin(i,j)
                     ELSE IF(irec .eq. 2) THEN
-                      os12(ii,jk,jj,im) = zintemp(i,j)
+                      os12(ii,jk,jj,im) = zin(i,j)
                     ELSE IF(irec .eq. 3) THEN
-                      ou12(ii,jk,jj,im) = zintemp(i,j)
+                      ou12(ii,jk,jj,im) = zin(i,j)
                     ELSE IF(irec .eq. 4) THEN
-                      ov12(ii,jk,jj,im) = zintemp(i,j)
+                      ov12(ii,jk,jj,im) = zin(i,j)
                     ELSE IF(irec .eq. 5) THEN
-                      mixedlayer12(ii,jj,im) = zintemp(i,j)
+                      mixedlayer12(ii,jj,im) = zin(i,j)
                     ENDIF
                   ENDDO
                 ENDDO
-              ENDDO
-            ENDDO
+              ENDDO  !end im (1-12)
 
+              ! copy December to month 0
+              ! copy January to month 13
+              IF(irec .eq. 1) THEN
+                ot12(:,jk,:,0) = ot12(:,jk,:,12)
+                ot12(:,jk,:,13) = ot12(:,jk,:,1)
+              ELSE IF(irec .eq. 2) THEN
+                os12(:,jk,:,0) = os12(:,jk,:,12)
+                os12(:,jk,:,13) = os12(:,jk,:,1)
+              ELSE IF(irec .eq. 3) THEN
+                ou12(:,jk,:,0) = ou12(:,jk,:,12)
+                ou12(:,jk,:,13) = ou12(:,jk,:,1)
+              ELSE IF(irec .eq. 4) THEN
+                ov12(:,jk,:,0) = ov12(:,jk,:,12)
+                ov12(:,jk,:,13) = ov12(:,jk,:,1)
+              ELSE IF(irec .eq. 5) THEN
+                mixedlayer12(:,:,0) = mixedlayer12(:,:,12)
+                mixedlayer12(:,:,13)= mixedlayer12(:,:,1)
+              ENDIF
+
+  
+              IF(lamip .AND. .NOT. lmlo) THEN
+                flag=.false.
+                IF(myrank .eq. 0) THEN
+                  IF (lex0) THEN
+                    status = NF_INQ_VARID (woanc0%file_id, cname, io_var_id)
+                    IF (status /= NF_NOERR) THEN
+                      WRITE(nerr,*) 'IO_INQ_VARID :', woanc0%file_id, cname
+                      WRITE(nerr,*) 'IO_INQ_VARID', NF_STRERROR(status)
+                    ELSE
+                    ! read world ocean atlas data december of last year
+                      CALL io_inq_varid (woanc0%file_id, cname, io_var_id)
+                      io_start(:) = (/       1,   1, jk, 12 /)
+                      io_count(:) = (/ io_nlon, ngl,  1,  1 /)
+                      ! for depth jk: read io_nlon longitudes, ngl latitudes and 1 months
+                      CALL io_get_vara_double(woanc0%file_id,io_var_id,io_start,io_count, &
+                                              zintemp(1:io_nlon,1:io_ngl))
+                      Do j=1,ngl
+                        zin(:,j)=zintemp(:,ngl-j+1)
+                      ENDDO
+                    ENDIF
+                  ENDIF  !end lex0
+                  flag=.true.
+                ENDIF !end (myrank .eq. 0)
+                call mpe_bcast(zin(:,:),nx*my,0,mpe_double)
+
+                DO jj = 1, jlistnum
+                  j=jlist1(jj)
+                  nxj=nxdef_2d(j)
+                  if( lreduce.eq.1 )call reducepick(zin(1,j),nxdef(j),nx,1)
+                  DO ii=1,nxj
+                    i=nxjstart(j)+ii-1
+                    IF(irec .eq. 1) THEN
+                      ot12(ii,jk,jj,0) = zin(i,j)
+                    ELSE IF(irec .eq. 2) THEN
+                      os12(ii,jk,jj,0) = zin(i,j)
+                    ELSE IF(irec .eq. 3) THEN
+                      ou12(ii,jk,jj,0) = zin(i,j)
+                    ELSE IF(irec .eq. 4) THEN
+                      ov12(ii,jk,jj,0) = zin(i,j)
+                    ELSE IF(irec .eq. 5) THEN
+                      mixedlayer12(ii,jj,0) = zin(i,j)
+                    ENDIF
+                  ENDDO
+                ENDDO
+
+
+                flag=.false.
+                IF (myrank .eq.0 ) THEN
+                  IF (lex2) THEN
+                    status = NF_INQ_VARID (woanc2%file_id, cname, io_var_id)
+                    IF (status /= NF_NOERR) THEN
+                      WRITE(nerr,*) 'IO_INQ_VARID :', woanc2%file_id, cname
+                      WRITE(nerr,*) 'IO_INQ_VARID', NF_STRERROR(status)
+                    ELSE
+                      ! read world ocean atlas data january of next year
+                      CALL io_inq_varid (woanc2%file_id, cname, io_var_id)
+                      io_start(:) = (/       1,   1, jk,  1 /)
+                      io_count(:) = (/ io_nlon, ngl,  1,  1 /)
+                      ! for depth jk: read io_nlon longitudes, ngl latitudes and 1 months
+                      CALL io_get_vara_double(woanc2%file_id,io_var_id,io_start,io_count, &
+                                           zintemp(1:io_nlon,1:io_ngl))
+                      Do j=1,ngl
+                        zin(:,j)=zintemp(:,ngl-j+1)
+                      ENDDO
+                    ENDIF
+                  ENDIF  !end lex2
+                  flag=.true.
+                ENDIF
+                call mpe_bcast(zin(:,:),nx*my,0,mpe_double)
+
+                DO jj = 1, jlistnum
+                  j=jlist1(jj)
+                  nxj=nxdef_2d(j)
+                  if( lreduce.eq.1 ) call reducepick(zin(1,j),nxdef(j),nx,1)
+                  DO ii=1,nxj
+                    i=nxjstart(j)+ii-1
+                    IF(irec .eq. 1) THEN
+                      ot12(ii,jk,jj,13) = zin(i,j)
+                    ELSE IF(irec .eq. 2) THEN
+                      os12(ii,jk,jj,13) = zin(i,j)
+                    ELSE IF(irec .eq. 3) THEN
+                      ou12(ii,jk,jj,13) = zin(i,j)
+                    ELSE IF(irec .eq. 4) THEN
+                      ov12(ii,jk,jj,13) = zin(i,j)
+                    ELSE IF(irec .eq. 5) THEN
+                      mixedlayer12(ii,jj,13) = zin(i,j)
+                    ENDIF
+                  ENDDO
+                ENDDO
+
+              ENDIF  !end if(lamip .AND. .NOT. lmlo)
+              !WRITE(nerr,'(/,A,I2)') ' Read GODAS 8.0 '
+            END DO !end do jk=1,zindepth
           END DO  !end do irec=1, nrec
   
-!ps          CALL p_bcast (lou, p_io)    
-!ps          CALL p_bcast (lov, p_io)    
           IF (lwarning_msg.GE.3) THEN    
             WRITE(nerr,*) 'pe=',p_pe,   &
              ', read GODAS 9.1, os12(212,0,3,0:13)= ',os12(212,0,3,0:13)
           END IF
           
-          IF (p_parallel_io) THEN
+          IF (myrank .eq. 0) THEN
             IF (lex1) CALL io_close (woanc1)
             IF(lamip .AND. .NOT. lmlo) THEN
               IF (lex0) CALL io_close (woanc0)
               IF (lex2) CALL io_close (woanc2)       
             END IF
-!            DEALLOCATE (zin)
+            DEALLOCATE (zintemp)
             WRITE(nerr,*) 'read GODAS'
           END IF
           
           DEALLOCATE (zin)
-          DEALLOCATE (zintemp)
         END SUBROUTINE read_godas
 
 
@@ -1607,22 +1539,15 @@
       INTEGER, PARAMETER :: nrec = 5
       CHARACTER (12) :: cname, cwoa0(nrec)
 
-      REAL, ALLOCATABLE, TARGET :: zin(:,:,:)
+      REAL, ALLOCATABLE, TARGET :: zin(:,:)
       REAL, ALLOCATABLE, TARGET :: zintemp(:,:)
-      REAL, POINTER :: gl_woa0(:,:,:)
       REAL      :: missing_value
 
       INTEGER               :: io_nlon  ! number of longitudes in NetCDF file
       INTEGER               :: io_ngl   ! number of latitudes in NetCDF file
       INTEGER               :: io_ndepth  ! number of odepth0 in NetCDF file
-!!!    INTEGER, DIMENSION(3) :: io_start ! start index for NetCDF-read
-!!!    INTEGER, DIMENSION(3) :: io_count ! number of iterations for
-!NetCDF-read
-!!!    INTEGER, DIMENSION(4) :: io_start ! start index for NetCDF-read
-!!!    INTEGER, DIMENSION(4) :: io_count ! number of iterations for
-!NetCDF-read
-      INTEGER, ALLOCATABLE, TARGET :: io_start(:) ! start index for NetCDF-read
-      INTEGER, ALLOCATABLE, TARGET :: io_count(:) ! number of iterations for NetCDF-read
+      INTEGER, DIMENSION(4) :: io_start ! start index for NetCDF-read
+      INTEGER, DIMENSION(4) :: io_count ! number of iterations for NetCDF-read
 
       INTEGER               :: jk ,i     ! loop index
       INTEGER               :: irec      ! variable index
@@ -1641,13 +1566,13 @@
       INTEGER :: io_var_id         !,IO_file_id,  IO_dim_id
       LOGICAL flag
       INTEGER :: j,jj,nxj,im,ii
-      INTEGER :: lnc
+      INTEGER :: lnc,istat
+      INTEGER :: zindepth
 !ps
      ! Read world ocean atlas data file
      ! ===============
-!!    WRITE(nerr,'(/,A,I2)') ' Read WOA0 1.0 '
       flag=.false.
-      IF (p_parallel_io) THEN
+      IF (myrank .eq. 0) THEN
         WRITE(nerr,'(/,A,I2)') ' Read WOA0 from unit ', nwoa0
         WRITE(nerr,'(A,I2)') ' Read initial ocean temp. and sal. profiles from'
         WRITE(nerr,'(A,I2)') ' WORLD OCEAN ATLAS 2005 data (http://www.nodc.noaa.gov/OC5/WOA05/pr_woa05.html)'
@@ -1662,7 +1587,6 @@
         !          CALL IO_info_print(sstnc1)
           WRITE(nerr,'(/,A,I2)') ' Read WOA0 2.0: open successfully!',woa0nc1%file_id
         ELSE
-!       CALL finish ('read_WOA0', 'Could not open WOA0 file')
           WRITE (message_text,*) 'Could not open unit<',nwoa0,'>'
           WRITE(nerr,*) '',message_text
           WRITE(nerr,*) 'read_woa0', 'Could not open woa0 file'
@@ -1675,211 +1599,114 @@
         CALL io_inq_dimlen (woa0nc1%file_id, io_var_id, io_ngl)
         CALL io_inq_dimid  (woa0nc1%file_id, 'lon', io_var_id)
         CALL io_inq_dimlen (woa0nc1%file_id, io_var_id, io_nlon)
-!!      WRITE(nerr,'(/,A,I2)') ' Read WOA0 4.0 '
-!!      WRITE(nerr,'(/,A,I2)') 'number of latitudes of world ocean atlas
-!data = ',io_ngl
+!        print *,"read W0A0 4.0"
         IF (io_ngl/=ngl) THEN
           WRITE(nerr,*) 'read_WOA0: unexpected resolution',io_nlon,io_ngl
           WRITE(nerr,*) 'expected number of latitudes = ',ngl
          WRITE(nerr,*) 'number of latitudes of world ocean atlas data =',io_ngl
-!         CALL finish ('read_WOA0','unexpected resolution')
           WRITE(nerr,*) 'read_WOA0','unexpected resolution'
           stop
         END IF
         CALL io_inq_dimid  (woa0nc1%file_id, 'depth', io_var_id)
         CALL io_inq_dimlen (woa0nc1%file_id, io_var_id, nodepth0)
-!!      WRITE(nerr,'(/,A,I2)') ' Read WOA0 4.1 '
-!!      WRITE(nerr,'(/,A,I2)') 'number of odepth0 = ',nodepth0
+
+        print *,"read W0A0 4.0"
+        IF ( lwarning_msg.GE.3 ) THEN
+          WRITE (nerr,*) 'read_WOA0:: pe=',p_pe,',odepth0=',odepth0(1:nodepth0)
+        ENDIF
         flag=.true.
-      END IF
-     !! RETURN
-!ps     CALL p_bcast (nodepth0, p_io)
-!      CALL mpe_broadcast(nodepth0,1,flag,mpe_integer)
+      END IF  !end if(myrank .eq. 0)
+     ! RETURN
       CALL mpe_bcast(nodepth0,1,0,mpe_integer)
-!!    WRITE(nerr,'(/,A,I2)') ' Read WOA0 5.0, nodepth0= ',nodepth0
-
-     !     Allocate memory for ot0, os0, ou0, ov0 per PE
-
+     ! Allocate memory for ot0, os0, ou0, ov0 per PE
       IF (.NOT. ALLOCATED(odepth0)) ALLOCATE (odepth0(nodepth0))
       IF (.NOT. ALLOCATED(ot0)) ALLOCATE (ot0(nxp, nodepth0, my_max))
       IF (.NOT. ALLOCATED(os0)) ALLOCATE (os0(nxp, nodepth0, my_max))
       IF (.NOT. ALLOCATED(ou0)) ALLOCATE (ou0(nxp, nodepth0, my_max))
       IF (.NOT. ALLOCATED(ov0)) ALLOCATE (ov0(nxp, nodepth0, my_max))
       IF (.NOT. ALLOCATED(mixedlayer0)) ALLOCATE (mixedlayer0(nxp, my_max))
+      if(myrank.eq.0) print *,"W0A0, end allocate" 
 
-     ! Read odepth0
-
-      IF (p_parallel_io) THEN
+      flag=.false.
+      IF (myrank .eq. 0) THEN
         CALL io_inq_dimid  (woa0nc1%file_id, 'depth', io_var_id)
         CALL io_get_var_double (woa0nc1%file_id, io_var_id, odepth0)
 !!      WRITE(nerr,'(/,A,I2)') ' Read WOA0 6.0 '
+        flag=.true.
       ENDIF
-!ps      CALL p_bcast (odepth0(1:nodepth0), p_io)
-!      CALL mpe_broadcast(odepth0,nodepth0,flag,mpe_double)
       CALL mpe_bcast(odepth0,nodepth0,0,mpe_double)
 
-      IF ( lwarning_msg.GE.3 ) THEN
-        WRITE (nerr,*) 'read_WOA0:: pe=',p_pe,', odepth0=',odepth0(1:nodepth0)
-!!    print *,'pe=',p_pe,',  odepth0=',odepth0(1:nodepth0)
-      ENDIF
 
      ! Codes read from WORLD OCEAN ATLAS 2005
-
       cwoa0( 1) = 'ot'    ! ocean temperature profile (K)
       cwoa0( 2) = 'os'    ! ocean salinity profile (0/00)
       cwoa0( 3) = 'ou'    ! ocean u-component current (m/s)
       cwoa0( 4) = 'ov'    ! ocean v-component current (m/s)
       cwoa0( 5) = 'mixedlayer'    ! ocean mixed layer (m)
+      IF (.NOT. ALLOCATED(zin)) ALLOCATE (zin(nlon,ngl))
+
       DO irec = 1, nrec
-        IF (.NOT. ALLOCATED(zin)) ALLOCATE (zin(nlon,nodepth0,ngl))
-        IF (.NOT. ALLOCATED(zintemp)) ALLOCATE (zintemp(nlon,ngl))
-      IF (p_parallel_io) THEN
-!!      WRITE(nerr,'(/,A,I2)') ' Read WOA0 7.0 '
-      !     Allocate memory for WOA0 global fields
-!ps        IF (.NOT. ALLOCATED(zin)) ALLOCATE (zin(nlon,nodepth0,ngl))
         cname = cwoa0(irec)
-        ! read world ocean atlas data
-!!!
-!!!        CALL io_inq_varid (woa0nc1%file_id, cname, io_var_id)
-!!!
-        status = NF_INQ_VARID (woa0nc1%file_id, cname, io_var_id)
-        IF (status /= NF_NOERR) THEN
-          WRITE(nerr,*) 'IO_INQ_VARID :', woa0nc1%file_id, cname
-!ps          CALL message ('IO_INQ_VARID', NF_STRERROR(status))
-          WRITE(nerr,*) 'IO_INQ_VARID', NF_STRERROR(status)
-          zin=xmissing
-        ELSE
-          IF (irec == 3) lou=.TRUE.
-          IF (irec == 4) lov=.TRUE.
-          IF (irec == 5) lmixedlayer=.TRUE.
-          CALL io_get_att_double (woa0nc1%file_id, io_var_id,'_FillValue', missing_value)
-!!          WRITE(nerr,*) 'pe=',p_pe,', read WOA0 7.1 _FillValue=
-!',missing_value
-          status = NF_INQ_VARNDIMS (woa0nc1%file_id, io_var_id, ndims)
-          IF (status /= NF_NOERR) THEN
-            WRITE(nerr,*) 'NF_INQ_VARNDIMS :', woa0nc1%file_id, nwoa0,cname
-!            CALL message ('NF_INQ_VARNDIMS', NF_STRERROR(status))
-            WRITE(nerr,*) 'NF_INQ_VARNDIMS', NF_STRERROR(status)
-!            CALL finish  ('NF_INQ_VARNDIMS', 'Run terminated.')
-            stop
-          ELSE
-            IF ((ndims.GE.3).AND.(ndims.LE.4)) THEN
-              IF (.NOT. ALLOCATED(io_start)) ALLOCATE (io_start(ndims))
-              IF (.NOT. ALLOCATED(io_count)) ALLOCATE (io_count(ndims))
-            ELSE
-              WRITE(nerr,*) 'NF_INQ_VARNDIMS :', woa0nc1%file_id, nwoa0,cname
-              WRITE(nerr,*) 'ndims=', ndims
-              WRITE(nerr,*) 'ndims should be within 3 -4'
-!              CALL finish  ('NF_INQ_VARNDIMS', 'Run terminated.')
-              stop
-            ENDIF
-          ENDIF
-
-          DO jk = 1, nodepth0
-            IF (ndims  == 3) THEN
-              io_start(:) = (/       1,   1, jk /)
-              io_count(:) = (/ io_nlon, ngl,  1 /)
-            ELSEIF (ndims  == 4) THEN
-              io_start(:) = (/       1,  1, jk, 1 /)
-              io_count(:) = (/ io_nlon, ngl ,  1, 1 /)
-            ELSE
-            ENDIF
-            ! for depth jk: read io_nlon longitudes, ngl latitudes and
-            ! 12 months
-            IF(irec .EQ. 5) then
-             IF(jk .EQ. 1)then
-              CALL io_get_vara_double(woa0nc1%file_id,io_var_id,io_start,io_count,&
-                 &                  zin(1:io_nlon,jk,:))
-             ENDIF
-            ELSE
-              CALL io_get_vara_double(woa0nc1%file_id,io_var_id,io_start,io_count,&
-                 &                  zin(1:io_nlon,jk,:))
-            ENDIF
-            print *,"woa0: irec=",irec,"zin:(768,",jk,",277)=",zin(768,jk,ngl+1-277)
-          END DO
-!!          WRITE(nerr,'(/,A,I2)') ' Read WOA0 7.2 '
-          zin(1:io_nlon,:,:)=MERGE(zin(1:io_nlon,:,:),xmissing,zin(1:io_nlon,:,:).NE.missing_value)
-
-          IF (lsitstart) THEN
-            IF (lwarning_msg.GE.2) THEN
-               WRITE(nerr,'(/,A,5I5)') &
-                 ' Read WOA0 7.3: CALL fill_missing: ',io_nlon,ngl,nodepth0
-            ENDIF
-            !!! CALL print_cpu_time()
-            CALL fill_missing2(zin(1:io_nlon,1:nodepth0,:),io_nlon,ngl,nodepth0,.TRUE.)
-            IF (lwarning_msg.GE.2) THEN
-              WRITE(nerr,'(/,A,5I5)') &
-                 ' Read WOA0 7.4: After CALL fill_missing '
-            ENDIF
-            !!! CALL print_cpu_time()
-          ENDIF
-          DEALLOCATE (io_start)
-          DEALLOCATE (io_count)
-        END IF
-      ENDIF
-!!      WRITE(nerr,'(/,A,I2)') ' Read WOA0 8.0 '
-
-!ps      NULLIFY (gl_woa0)
-!ps      IF (p_pe == p_io) gl_woa0 => zin(:,:,:)
-!ps      IF (irec == 1) THEN
-!ps        CALL scatter_gp(gl_woa0, ot0(:,:,:), gl_dc)
-!ps      ELSE IF (irec == 2) THEN
-!ps        CALL scatter_gp(gl_woa0, os0(:,:,:), gl_dc)
-!ps      ELSE IF (irec == 3) THEN
-!ps        CALL scatter_gp(gl_woa0, ou0(:,:,:), gl_dc)
-!ps      ELSE IF (irec == 4) THEN
-!ps        CALL scatter_gp(gl_woa0, ov0(:,:,:), gl_dc)
-!ps      END IF
-        DO jk = 1, nodepth0
+        zindepth=nodepth0
+        if(irec .eq. 5) zindepth=1
+        DO jk = 1, zindepth
           flag=.false.
-          if(myrank .eq. 0) flag=.true.
-          call mpe_bcast(zin(:,jk,:),nx*my,0,mpe_double)
-          DO j=1,ngl
-            if(irec .eq. 5) then
-              zintemp(:,j)=zin(:,1,ngl-j+1)
-            else
-              zintemp(:,j)=zin(:,jk,ngl-j+1)
-            endif
-          ENDDO
+          IF (myrank .eq. 0) THEN
+            IF (.NOT. ALLOCATED(zintemp)) ALLOCATE (zintemp(nlon,ngl))
+            ! read world ocean atlas data
+            status = NF_INQ_VARID (woa0nc1%file_id, cname, io_var_id)
+            IF (status /= NF_NOERR) THEN
+              WRITE(nerr,*) 'IO_INQ_VARID :', woa0nc1%file_id, cname
+              WRITE(nerr,*) 'IO_INQ_VARID', NF_STRERROR(status)
+            ELSE
+              CALL io_get_att_double (woa0nc1%file_id, io_var_id, &
+                                  '_FillValue', missing_value)
 
+              io_start(:) = (/       1,  1, jk, 1 /)
+              io_count(:) = (/ io_nlon, io_ngl ,  1, 1 /)
+              ! for depth jk: read io_nlon longitudes, ngl latitudes and
+              ! 12 months
+              CALL io_get_vara_double(woa0nc1%file_id,io_var_id,io_start,io_count,&
+                                      zintemp(1:io_nlon,1:io_ngl))
+              print *,"woa0: irec=",irec,",jk=",jk,"zintemp:(768,277)=",zintemp(768,ngl+1-277)
+            ENDIF
+            zintemp(1:io_nlon,:)=MERGE(zintemp(1:io_nlon,:),xmissing,zintemp(1:io_nlon,:).NE.missing_value)
+            Do j=1,ngl
+              zin(:,j)=zintemp(:,ngl-j+1)
+            ENDDO
+            flag=.true.
+          ENDIF
+
+          call mpe_bcast(zin(:,:),nx*my,0,mpe_double)
           DO jj = 1, jlistnum
             j=jlist1(jj)
             nxj=nxdef_2d(j)
-            if( lreduce.eq.1 )call reducepick (zintemp(1,j),nxdef(j),nx,1)
+            if( lreduce.eq.1 )call reducepick (zin(1,j),nxdef(j),nx,1)
             DO ii=1,nxj
               i=nxjstart(j)+ii-1
               IF (irec .eq. 1) THEN
-                ot0(ii,jk,jj)=zintemp(i,j)
+                ot0(ii,jk,jj)=zin(i,j)
               ELSE IF(irec .eq. 2) THEN
-                os0(ii,jk,jj)=zintemp(i,j)
+                os0(ii,jk,jj)=zin(i,j)
               ELSE IF(irec .eq. 3) THEN
-                ou0(ii,jk,jj)=zintemp(i,j)
+                ou0(ii,jk,jj)=zin(i,j)
               ELSE IF(irec .eq. 4) THEN
-                ov0(ii,jk,jj)=zintemp(i,j)
+                ov0(ii,jk,jj)=zin(i,j)
               ELSE IF(irec .eq. 5) THEN
-                mixedlayer0(ii,jj)=zintemp(i,j)
+                mixedlayer0(ii,jj)=zin(i,j)
               ENDIF
             ENDDO
           ENDDO
-        ENDDO             
 
-               
-
+        ENDDO  !end do jk
       END DO  !end do irec=1, nrec
-      IF (lwarning_msg.GE.3) THEN
-!ps        CALL p_barrier(p_all_comm)
-!ps      IF (p_parallel_io) WRITE(nerr,*) 'pe=',p_pe,', read WOA0 9.1, os0(1,:,1)= ',os0(1,:,1)
-        IF (p_parallel_io) THEN
 
-        END IF
-      END IF
-!ps      CALL p_bcast (lou, p_io)
-!ps      CALL p_bcast (lov, p_io)
-      IF (p_parallel_io) THEN
+      IF (myrank .eq. 0) THEN
         CALL io_close (woa0nc1)
-        DEALLOCATE (zin)
-        WRITE(nerr,*) 'read WOA0'
+        WRITE(nerr,*) 'end read WOA0'
+        DEALLOCATE (zintemp)
       END IF
+      DEALLOCATE (zin)
 
       END SUBROUTINE read_woa0
 
@@ -1944,7 +1771,7 @@
        ydate=float(yr*10000+mo*100+dy)+float(hr)/24.+tauleft/3600./24.
        if(myrank .eq. 0) print *,"read_dailygodas,ydate=",ydate 
        
-       IF (p_parallel_io) THEN
+       IF (myrank .eq. 0) THEN
 !ps         CALL set_years(ihy0, ihy1, ihy2)
          ihy1=idtg_temp/100000000
          ihy0=ihy1-1
@@ -1957,9 +1784,9 @@
 !ps         WRITE (fn(2), '("dailygodas",i4)') ihy1
 !ps         WRITE (fn(3), '("dailygodas",i4)') ihy2
 !ps         WRITE (nerr, '(/)')
-         WRITE(nerr,*) 'dailygodas ydate: ', ydate
-         WRITE(nerr,*) 'dailygodas ydate: fn(1): ' &
-           , TRIM(fn(1)),' fn(2): ', TRIM(fn(2)),' fn(3): ', TRIM(fn(3))
+!ps         WRITE(nerr,*) 'dailygodas ydate: ', ydate
+!ps         WRITE(nerr,*) 'dailygodas ydate: fn(1): ' &
+!ps           , TRIM(fn(1)),' fn(2): ', TRIM(fn(2)),' fn(3): ', TRIM(fn(3))
        ENDIF
 
 !       IF (lresume .OR. lstart) THEN
@@ -2020,7 +1847,7 @@
 
        istat=0
        flag=.false.
-       IF (p_parallel_io) THEN
+       IF (myrank .eq. 0) THEN
          INQUIRE (file=fn(2), exist=lex1)
          IF ( .NOT. lex1 ) THEN
            WRITE (message_text,*) 'Could not open file <',fn(2),'>'
@@ -2060,7 +1887,7 @@
            ENDIF
          ENDIF
          flag=.true.
-       ENDIF  !end if (p_parallel_io)
+       ENDIF  !end if (myrank .eq. 0)
 
 !       CALL mpe_broadcast (istat, 1, flag, mpe_integer)
        CALL mpe_bcast (istat, 1, 0, mpe_integer)
@@ -2086,7 +1913,7 @@
        
        ! Read odepths
        flag=.false.
-       IF (p_parallel_io) THEN
+       IF (myrank .eq. 0) THEN
          IF (lex1) THEN
            !!      WRITE(nerr,'(/,A,I2)') ' Read Pentad GODAS 6.0 '
            CALL io_inq_dimid  (gpnc1%file_id, 'depth', io_var_id)
@@ -2108,13 +1935,12 @@
        !     Read dailygodas-file
        istat=0
        flag=.false.
-       IF (p_parallel_io) THEN
+       IF (myrank .eq. 0) THEN
          CALL IO_INQ_DIMID (gpnc1%file_id, 'time', ndimid)
          CALL IO_INQ_DIMLEN (gpnc1%file_id, ndimid, nts1)
          CALL IO_INQ_VARID (gpnc1%file_id, 'time', io_var_id)
        
          IF ( nts1 .lt. 1 ) then
-!ps           CALL finish('read_dailygodas', 'To few time steps < 1')
            WRITE(nerr,*) 'read_godas_3days', 'To few time steps < 1'
            istat=-1
          ELSE
@@ -2129,8 +1955,6 @@
              INQUIRE (file=fn(3), exist=lex2)
              IF ( .NOT. lex2 ) THEN
                WRITE (message_text,*) 'Could not open file <',fn(3),'>'
-!ps             CALL message('',message_text)
-!ps             CALL finish ('read_dailygodas', 'run terminated.')
                WRITE(nerr,*) message_text
                WRITE(nerr,*) 'read_godas_3days fn3 ', 'run terminated.'
                istat=-1
@@ -2140,8 +1964,6 @@
                CALL IO_INQ_DIMLEN (gpnc2%file_id, ndimid2, nts2)
                IF ( nts2 .lt. 1 ) THEN
                  WRITE (message_text,*) 'File <',fn(3),'>'
-!ps             CALL message('',message_text)
-!ps             CALL finish('read_dailygodas:', 'To few time steps < 1')
                  WRITE (nerr,*) message_text
                  WRITE (nerr,*) 'read_dailygodas:','To few time steps<1'
                  istat=-1
@@ -2154,7 +1976,6 @@
                    tsID=tsID+1
                  ENDDO
                  IF ( tsID .gt. nts2 ) THEN
-!ps             CALL finish('read_dailygodas', 'Date not found')
                    WRITE(nerr,*) 'read_dailygodas', 'Date not found'
                    istat=-1
                  ELSE
@@ -2202,324 +2023,160 @@
     !-----------------------------------
 
        SUBROUTINE read_godas_dayp1(dayID)
+
+       ! number of codes read from godas file
+       INTEGER, PARAMETER :: nrec = 5
+
        INTEGER, INTENT(in):: dayID               ! dayID = DAY_MINUS1, THE_DAY_MINUS1, or DAY_PLUS1
-       REAL, ALLOCATABLE, TARGET :: zot(:,:,:)
-       REAL, ALLOCATABLE, TARGET :: zos(:,:,:)
-       REAL, ALLOCATABLE, TARGET :: zou(:,:,:)
-       REAL, ALLOCATABLE, TARGET :: zov(:,:,:)
-       REAL, ALLOCATABLE, TARGET :: zmixedlayer(:,:)
-!!!       REAL(dp), ALLOCATABLE, TARGET :: zow(:,:,:)
-!ps       REAL, POINTER :: gl_ot(:,:,:)
-!ps       REAL, POINTER :: gl_os(:,:,:)
-!ps       REAL, POINTER :: gl_ou(:,:,:)
-!ps       REAL, POINTER :: gl_ov(:,:,:)
-!!!       REAL(dp), POINTER :: gl_ow(:,:,:)
-!ps
-       REAL, ALLOCATABLE:: ottemp(:,:)
-       REAL, ALLOCATABLE:: ostemp(:,:)
-       REAL, ALLOCATABLE:: outemp(:,:)
-       REAL, ALLOCATABLE:: ovtemp(:,:)
+       REAL, ALLOCATABLE, TARGET :: zin(:,:)
+       REAL, ALLOCATABLE, TARGET :: zintemp(:,:)
 
        INTEGER jk,jj,j,nxj,i,ii
        INTEGER istat
 
-
-       IF(.NOT. ALLOCATED(zot)) ALLOCATE (zot(nx,nodepth,my))
-       IF(.NOT. ALLOCATED(zos)) ALLOCATE (zos(nx,nodepth,my))
-       IF(.NOT. ALLOCATED(zou)) ALLOCATE (zou(nx,nodepth,my))
-       IF(.NOT. ALLOCATED(zov)) ALLOCATE (zov(nx,nodepth,my))
-       IF(.NOT. ALLOCATED(zmixedlayer)) ALLOCATE (zmixedlayer(nx,my))
-       IF(.NOT. ALLOCATED(ottemp)) ALLOCATE (ottemp(nx,my))
-       IF(.NOT. ALLOCATED(ostemp)) ALLOCATE (ostemp(nx,my))
-       IF(.NOT. ALLOCATED(outemp)) ALLOCATE (outemp(nx,my))
-       IF(.NOT. ALLOCATED(ovtemp)) ALLOCATE (ovtemp(nx,my))
-
-       flag=.false.     
-       IF (p_parallel_io) THEN
-!ps         IF(.NOT. ALLOCATED(zot)) ALLOCATE (zot(nx,nodepth,my))
-!ps         IF(.NOT. ALLOCATED(zos)) ALLOCATE (zos(nx,nodepth,my))
-!ps         IF(.NOT. ALLOCATED(zou)) ALLOCATE (zou(nx,nodepth,my))
-!ps         IF(.NOT. ALLOCATED(zov)) ALLOCATE (zov(nx,nodepth,my))
-!ps         IF(.NOT. ALLOCATED(zmixedlayer)) ALLOCATE (zmixedlayer(nx,my))
-         IF (dayID .EQ. DAY_PLUS1) THEN
-         ! read Day+1 data
-           IF (tsID_godas(2).EQ.nts_godas(2)) THEN
-             files_godas(3)=files_godas(2)+1
-             tsID_godas(3)=1                   !first record of file 3
-           ELSE
-             files_godas(3)=files_godas(2)
-             tsID_godas(3)=tsID_godas(2)+1
-           ENDIF
-         ELSEIF (dayID .EQ. DAY_MINUS1) THEN
-         ! read Day-1 data
-           IF (tsID_godas(2).EQ.1) THEN
-             files_godas(1)=files_godas(2)-1
-             tsID_godas(1)=LAST_RECORD                !last record of file 1 !!!????? NEED to CODE
-           ELSE
-             files_godas(1)=files_godas(2)
-             tsID_godas(1)=tsID_godas(2)-1
-           ENDIF
-!!!         ELSEIF (dayID .EQ. THE_DATE) THEN
-!!!         ! read Day+0 data
-!!!           IF (tsID_godas(2).EQ.1) THEN
-!!!             files_godas(2)=files_godas(2)-1
-!!!             tsID_godas(2)=LAST_RECORD                !last record of file 1 !!!????? NEED to CODE
-!!!           ELSE
-!!!             files_godas(2)=files_godas(2)
-!!!             tsID_godas(2)=tsID_godas(2)-1
-!!!           ENDIF
-         ENDIF
-         CALL read_godas_1record (fn(files_godas(dayID)),nx,nodepth,my,tsID_godas(dayID), &
-           nts_godas(dayID),timevals_godas(dayID),zot(:,:,:),zos(:,:,:),zou(:,:,:),zov(:,:,:),zmixedlayer(:,:),istat)
-         print*,'end_read_godas_1record,dayID=',dayID,",",timevals_godas(dayID)
-         flag=.true.
-       ENDIF   !end if (p_parallel_io)
-
-!       CALL mpe_broadcast (istat, 1, flag, mpe_integer)
-       CALL mpe_bcast (istat, 1, 0, mpe_integer)
-       if(istat .ne. 0)then
-        if(myrank.eq.0) print *,'read_dailygodas', 'run terminated.'
-        stop
-        call mpe_finalize
-        call dmsexit(-1)
-       endif
-
-!       CALL mpe_broadcast(timevals_godas,3,flag,mpe_double)
-!       CALL mpe_broadcast(tsID_godas,3,flag,mpe_integer)
-!       CALL mpe_broadcast(files_godas,3,flag,mpe_integer)
-!       CALL mpe_broadcast(nts_godas,3,flag,mpe_integer)
-       CALL mpe_bcast(timevals_godas,3,0,mpe_double)
-       CALL mpe_bcast(tsID_godas,3,0,mpe_integer)
-       CALL mpe_bcast(files_godas,3,0,mpe_integer)
-       CALL mpe_bcast(nts_godas,3,0,mpe_integer)
-       
-!ps       NULLIFY (gl_ot)
-!ps       NULLIFY (gl_os)
-!ps       NULLIFY (gl_ou)
-!ps       NULLIFY (gl_ov)
-!!!       NULLIFY (gl_ow)
-       !WRITE(nerr,*) 'read_dailygodas before scatter_gp nodepth=',nodepth,' p_pe=',p_pe,' p_io=',p_io
-!ps       IF (p_pe == p_io) gl_ot => zot(:,:,:)
-!ps       CALL scatter_gp (gl_ot, ot12(:,:,:,dayID), global_decomposition)
-!ps       IF (p_pe == p_io) gl_os => zos(:,:,:)
-!ps       CALL scatter_gp (gl_os, os12(:,:,:,dayID), global_decomposition)
-!ps       IF (p_pe == p_io) gl_ou => zou(:,:,:)
-!ps       CALL scatter_gp (gl_ou, ou12(:,:,:,dayID), global_decomposition)
-!ps       IF (p_pe == p_io) gl_ov => zov(:,:,:)
-!ps       CALL scatter_gp (gl_ov, ov12(:,:,:,dayID), global_decomposition)
-!!!       IF (p_pe == p_io) gl_ow => zow(:,:,:)
-!!!       CALL scatter_gp (gl_ow, ow12(:,:,:,dayID), global_decomposition)
-       !WRITE(nerr,*) 'ot12(15,1:40,15,1)=',ot12(15,1:40,15,1)
-
-       DO jk = 1, nodepth
-         flag=.false.
-         if(myrank .eq. 0) flag=.true.
-!         call mpe_broadcast(zot(:,jk,:),nx*my,flag,mpe_double)
-!         call mpe_broadcast(zos(:,jk,:),nx*my,flag,mpe_double)
-!         call mpe_broadcast(zou(:,jk,:),nx*my,flag,mpe_double)
-!         call mpe_broadcast(zov(:,jk,:),nx*my,flag,mpe_double)
-         call mpe_bcast(zot(:,jk,:),nx*my,0,mpe_double)
-         call mpe_bcast(zos(:,jk,:),nx*my,0,mpe_double)
-         call mpe_bcast(zou(:,jk,:),nx*my,0,mpe_double)
-         call mpe_bcast(zov(:,jk,:),nx*my,0,mpe_double)
-         if(jk .eq. 1) then
-!           call mpe_broadcast(zmixedlayer(:,:),nx*my,flag,mpe_double)
-           call mpe_bcast(zmixedlayer(:,:),nx*my,0,mpe_double)
-         endif
-         ottemp(:,:)=zot(:,jk,:)
-         ostemp(:,:)=zos(:,jk,:)
-         outemp(:,:)=zou(:,jk,:)
-         ovtemp(:,:)=zov(:,jk,:)
-         
-!         if( lreduce.eq.1 ) then
-!           call reducepick(zot(1,jk,1),nxdef,nx,my)
-!           call reducepick(zos(1,jk,1),nxdef,nx,my)
-!           call reducepick(zou(1,jk,1),nxdef,nx,my)
-!           call reducepick(zov(1,jk,1),nxdef,nx,my)
-!           if(jk .eq. 1) then
-!             call reducepick(zmixedlayer(1,1),nxdef,nx,my)
-!           endif
-!         endif
-         DO jj = 1, jlistnum
-           j=jlist1(jj)
-           nxj=nxdef_2d(j)
-           if( lreduce.eq.1 ) then
-             call reducepick(ottemp(1,j),nxdef(j),nx,1)
-             call reducepick(ostemp(1,j),nxdef(j),nx,1)
-             call reducepick(outemp(1,j),nxdef(j),nx,1)
-             call reducepick(ovtemp(1,j),nxdef(j),nx,1)
-             if(jk .eq. 1) then
-               call reducepick(zmixedlayer(1,j),nxdef(j),nx,1)
-             endif
-           endif
-           DO ii=1,nxj
-             i=nxjstart(j)+ii-1
-             ot12(ii,jk,jj,dayID) = ottemp(i,j)
-             os12(ii,jk,jj,dayID) = ostemp(i,j)
-             ou12(ii,jk,jj,dayID) = outemp(i,j)
-             ov12(ii,jk,jj,dayID) = ovtemp(i,j)
-             if(jk .eq. 1) then
-               mixedlayer12(ii,jj,dayID) = zmixedlayer(i,j)
-             endif
-           ENDDO
-         ENDDO
-       ENDDO
-
-
-         DEALLOCATE (zot)
-         DEALLOCATE (zos)
-         DEALLOCATE (zou)
-         DEALLOCATE (zov)
-         DEALLOCATE (zmixedlayer)
-         DEALLOCATE (ottemp)
-         DEALLOCATE (ostemp)
-         DEALLOCATE (outemp)
-         DEALLOCATE (ovtemp)
-!!!         DEALLOCATE (zow)
-!ps       ENDIF
-       END SUBROUTINE read_godas_dayp1
-    !-----------------------------------
-
-       SUBROUTINE read_godas_1record(fname,nlon,nodepth,nlat,tsID,nts,recdate,zot,zos,zou,zov,zmixedlayer,istat)
-     
-!ps       CHARACTER (14), INTENT(in):: fname
-       CHARACTER (*), INTENT(in):: fname
-       INTEGER, INTENT(in):: nlon, nodepth, nlat
-       INTEGER, INTENT(in out):: tsID
-       INTEGER, INTENT(out):: nts
-       INTEGER, INTENT(out):: istat
-       REAL, INTENT(out):: recdate    ! record data in absolute time foremat, e.g., 20130911.1350
-       REAL, DIMENSION(nlon,nodepth,nlat), INTENT(in out):: zot, zos, zou, zov
-       REAL, DIMENSION(nlon,nlat), INTENT(in out):: zmixedlayer
-     
-       REAL      :: missing_value
-       INTEGER               :: io_ntime  ! number of timesteps in NetCDF file
+       LOGICAL lex2
+       INTEGER irec
+       CHARACTER(12) :: cname, cgodas(nrec)
+       INTEGER ndimid2,varid2
+       REAL, ALLOCATABLE:: timevals2(:)
+       REAL:: missing_value
+       INTEGER zindepth
        INTEGER, DIMENSION(4) :: io_start ! start index for NetCDF-read
        INTEGER, DIMENSION(4) :: io_count ! number of iterations for NetCDF-read
-       INTEGER, DIMENSION(4) :: imixed_start ! start index for NetCDF-read
-       INTEGER, DIMENSION(4) :: imixed_count ! number of iterations for NetCDF-read
-     
-       INTEGER       :: i, jk, k, j, m
-       LOGICAL       :: lex2
-       !!! INTEGER       :: start(4), COUNT(4), nvarid, ndimid, nts, tsID
-       INTEGER       :: otid2,osid2,ouid2,ovid2,ndimid2,mixedid2
-       REAL, ALLOCATABLE :: timevals2(:)
-       REAL, ALLOCATABLE :: ottemp(:,:),ostemp(:,:)
-       REAL, ALLOCATABLE :: outemp(:,:),ovtemp(:,:)
-       REAL, ALLOCATABLE :: mixlayertemp(:,:)
-     
-        
-       ! read one-record godas data
-       istat=0
-       IF (.NOT.p_parallel_io) RETURN    !!! Only for p_parallel_io, else return
-       INQUIRE (file=fname, exist=lex2)
+
+
+       IF (dayID .EQ. DAY_PLUS1) THEN
+       ! read Day+1 data
+         IF (tsID_godas(2).EQ.nts_godas(2)) THEN
+           files_godas(3)=files_godas(2)+1
+           tsID_godas(3)=1                   !first record of file 3
+         ELSE
+           files_godas(3)=files_godas(2)
+           tsID_godas(3)=tsID_godas(2)+1
+         ENDIF
+       ELSEIF (dayID .EQ. DAY_MINUS1) THEN
+       ! read Day-1 data
+         IF (tsID_godas(2).EQ.1) THEN
+           files_godas(1)=files_godas(2)-1
+           tsID_godas(1)=LAST_RECORD                !last record of file 1 !!!????? NEED to CODE
+         ELSE
+           files_godas(1)=files_godas(2)
+           tsID_godas(1)=tsID_godas(2)-1
+         ENDIF
+       ENDIF
+
+       flag=.false.
+       istat=-1
+       IF (myrank .eq. 0) THEN
+       INQUIRE (file=fn(files_godas(dayID)), exist=lex2)
        IF ( .NOT. lex2 ) THEN
-         WRITE (message_text,*) 'Could not open file <',fname,'>'
-!ps         CALL message('',message_text)
-!ps         CALL finish ('read_dailygodas', 'run terminated.')
+         WRITE (message_text,*) 'Could not open file<',files_godas(dayID),'>'
          WRITE (nerr,*) message_text
          WRITE (nerr,*) 'read_dailygodas', 'run terminated.'
          istat=-1
        ELSE
-         CALL IO_open (fname, gpnc2, IO_READ)
+         CALL IO_open (fn(files_godas(dayID)), gpnc2, IO_READ)
          CALL IO_INQ_DIMID (gpnc2%file_id, 'time', ndimid2)
-         CALL IO_INQ_DIMLEN (gpnc2%file_id, ndimid2, nts)
-         WRITE (nerr,*) 'read_godas_1record:1. nts=',nts
-         IF ( nts .lt. 1 ) THEN
-           WRITE (message_text,*) 'File <',fname,'>'
-!ps         CALL message('',message_text)
-!ps         CALL finish('read_godas_1record:', 'To few time steps < 1')
+         CALL IO_INQ_DIMLEN (gpnc2%file_id, ndimid2, nts_godas(dayID))
+         IF ( nts_godas(dayID) .lt. 1 ) THEN
+           WRITE (message_text,*) 'File <',fn(files_godas(dayID)),'>'
            WRITE(nerr,*) message_text
-           WRITE(nerr,*) 'read_godas_1record:', 'To few time steps < 1'
+           WRITE(nerr,*) 'read_godas_dayp1:', 'To few time steps < 1'
            istat=-1
          ELSE
-           IF(.NOT. ALLOCATED(timevals2)) ALLOCATE (timevals2(nts))
-           IF(.NOT. ALLOCATED(ottemp)) ALLOCATE (ottemp(nlon,nlat))
-           IF(.NOT. ALLOCATED(ostemp)) ALLOCATE (ostemp(nlon,nlat))
-           IF(.NOT. ALLOCATED(outemp)) ALLOCATE (outemp(nlon,nlat))
-           IF(.NOT. ALLOCATED(ovtemp)) ALLOCATE (ovtemp(nlon,nlat))
-           IF(.NOT. ALLOCATED(mixlayertemp)) ALLOCATE (mixlayertemp(nlon,nlat))
-
+           IF(.NOT. ALLOCATED(timevals2)) ALLOCATE(timevals2(nts_godas(dayID)))
            CALL IO_INQ_VARID (gpnc2%file_id, 'time', io_var_id)
            CALL IO_GET_VAR_DOUBLE(gpnc2%file_id, io_var_id, timevals2)
-           IF (tsID.EQ.LAST_RECORD) tsID=nts     !!! modify tsID for LAST_RECORD
-
-           recdate=timevals2(tsID)
-           
-           WRITE (nerr,*) 'read_godas_1record: nlon=',nlon &
-                        ,',nlat=',nlat,',nts=',nts &
-                        ,',tsID=',tsID   &
-                        ,',timevals(tsID)=',timevals2(tsID)
-           IF(tsID .lt. nts) THEN
-             print *, 'read_godas_1record: timevals(tsID+1)=',timevals2(tsID+1)
+           !!! modify tsID for LAST_RECORD
+           IF (tsID_godas(dayID).EQ.LAST_RECORD) tsID_godas(dayID)=nts_godas(dayID)
+           timevals_godas(dayID)=timevals2(tsID_godas(dayID))
+           !!! data out range, set to be missing value
+           IF (tsID_godas(dayID) .gt. nts_godas(dayID)) THEN
+             WRITE (nerr,*) 'read_dailygodas,date=',timevals_godas(dayID) &
+                           ,'DATA out of range!!! Set to MISSING DATA!'
+             istat=-1
+           ELSE
+             istat=0
            ENDIF
            DEALLOCATE (timevals2)
-
-           IF (tsID.EQ.LAST_RECORD) tsID=nts     !!! modify tsID for LAST_RECORD
-           IF (tsID .gt. nts) THEN
-         !!! data out range, set to be missing value
-             zot(:,:,:)=xmissing
-             zos(:,:,:)=xmissing
-             zou(:,:,:)=xmissing
-             zov(:,:,:)=xmissing
-             zmixedlayer(:,:)=xmissing
-             WRITE (nerr,*) 'read_dailygodas, date=',recdate &
-                           ,'DATA out of range!!! Set to MISSING DATA!'
-           ELSE
-
-           CALL IO_INQ_VARID (gpnc2%file_id, 'ot', otid2)
-           CALL IO_INQ_VARID (gpnc2%file_id, 'os', osid2)
-           CALL IO_INQ_VARID (gpnc2%file_id, 'ou', ouid2)
-           CALL IO_INQ_VARID (gpnc2%file_id, 'ov', ovid2)
-           CALL IO_INQ_VARID (gpnc2%file_id, 'mixedlayer', mixedid2)
-!!!       CALL IO_INQ_VARID (gpnc2%file_id, 'ow', owid2)
-           CALL io_get_att_double (gpnc2%file_id, otid2, '_FillValue', missing_value)
-
-             DO jk=1, nodepth
-               io_start(:) = (/ 1, 1, jk, tsID /)
-               io_count(:) = (/ nlon, nlat, 1, 1 /)
-               CALL IO_GET_VARA_DOUBLE (gpnc2%file_id,otid2,io_start,io_count, ottemp(1:nlon,1:nlat))
-               CALL IO_GET_VARA_DOUBLE (gpnc2%file_id,osid2,io_start,io_count, ostemp(1:nlon,1:nlat))
-               CALL IO_GET_VARA_DOUBLE (gpnc2%file_id,ouid2,io_start,io_count, outemp(1:nlon,1:nlat))
-               CALL IO_GET_VARA_DOUBLE (gpnc2%file_id,ovid2,io_start,io_count, ovtemp(1:nlon,1:nlat))
-               imixed_start(:) = (/ 1, 1, 1, tsID /)
-               imixed_count(:) = (/ nlon, nlat, 1, 1 /)
-               if(jk .eq. 1) then
-                 CALL IO_GET_VARA_DOUBLE (gpnc2%file_id,mixedid2,imixed_start,imixed_count, mixlayertemp(1:nlon,1:nlat))
-               endif
-               DO j=1,nlat
-                 zot(:,jk,j)=ottemp(:,nlat-j+1)
-                 zos(:,jk,j)=ostemp(:,nlat-j+1)
-                 zou(:,jk,j)=outemp(:,nlat-j+1)
-                 zov(:,jk,j)=ovtemp(:,nlat-j+1)
-                 if(jk .eq. 1) then
-                   zmixedlayer(:,j)=mixlayertemp(:,nlat-j+1)
-                 endif
-               ENDDO
-             ENDDO
-             zot(:,:,:)=MERGE(zot(:,:,:),xmissing,zot(:,:,:).NE.missing_value)
-             zos(:,:,:)=MERGE(zos(:,:,:),xmissing,zos(:,:,:).NE.missing_value)
-             zou(:,:,:)=MERGE(zou(:,:,:),xmissing,zou(:,:,:).NE.missing_value)
-             zov(:,:,:)=MERGE(zov(:,:,:),xmissing,zov(:,:,:).NE.missing_value)
-             zmixedlayer(:,:)=MERGE(zmixedlayer(:,:),xmissing,zmixedlayer(:,:).NE.missing_value)
-!!!         zow(:,:,:,3)=MERGE(zow(:,:,:,3),xmissing,zow(:,:,:).NE.missing_value)
-
-             if(ALLOCATED(ottemp)) DEALLOCATE(ottemp)
-             if(ALLOCATED(ostemp)) DEALLOCATE(ostemp)
-             if(ALLOCATED(outemp)) DEALLOCATE(outemp)
-             if(ALLOCATED(ovtemp)) DEALLOCATE(ovtemp)
-             if(ALLOCATED(mixlayertemp)) DEALLOCATE(mixlayertemp)
-
-           ENDIF
-         ENDIF
-         CALL IO_close(gpnc2)
-         IF ( lwarning_msg.GE.2 ) THEN
-            WRITE (nerr,*) 'read_dailygodas, date=',recdate &
-                          ,'ot(777,1,256)=',zot(777,1,256)
          ENDIF
        ENDIF
+       flag=.true.
+       ENDIF   !!endif (myrank.eq.0)
 
-       END SUBROUTINE read_godas_1record
+!       CALL mpe_broadcast (istat, 1, flag, mpe_integer)
+       CALL mpe_bcast (istat, 1, 0, mpe_integer)
+       if(istat .ne. 0)then
+         if(myrank.eq.0) print *,'read_dailygodas', 'run terminated.'
+         stop
+         call mpe_finalize
+         call dmsexit(-1)
+       endif
+
+       CALL mpe_bcast(timevals_godas,3,0,mpe_double)
+       CALL mpe_bcast(tsID_godas,3,0,mpe_integer)
+       CALL mpe_bcast(files_godas,3,0,mpe_integer)
+       CALL mpe_bcast(nts_godas,3,0,mpe_integer)
+
+       IF(.NOT. ALLOCATED(zin)) ALLOCATE (zin(nx,my))
+       ! Codes read from GODAS
+       cgodas(1) = 'ot'    ! ocean temperature profile (K)
+       cgodas(2) = 'os'    ! ocean salinity profile (0/00)
+       cgodas(3) = 'ou'    ! ocean u-component current (m/s)
+       cgodas(4) = 'ov'    ! ocean v-component current (m/s)
+       cgodas(5) = 'mixedlayer'    ! ocean mixed layer (m)
+       DO irec= 1, nrec
+         cname=cgodas(irec)
+         zindepth=nodepth
+         if(irec.eq.5) zindepth=1
+         DO jk=1, zindepth
+           flag=.false.
+           IF(myrank .eq. 0) then
+             IF(.NOT. ALLOCATED(zintemp)) ALLOCATE (zintemp(nx,my))
+             CALL IO_INQ_VARID (gpnc2%file_id, cname, varid2)
+             CALL io_get_att_double (gpnc2%file_id,varid2,'_FillValue', missing_value)
+             io_start(:) = (/ 1, 1, jk, tsID_godas(dayID) /)
+             io_count(:) = (/ nlon, nlat, 1, 1 /)
+             CALL IO_GET_VARA_DOUBLE(gpnc2%file_id,varid2,io_start,io_count,zintemp(1:nlon,1:nlat))
+             zintemp(1:nlon,:)=MERGE(zintemp(1:nlon,:),xmissing,zintemp(1:nlon,:).NE.missing_value)
+             Do j=1,nlat
+               zin(:,j)=zintemp(:,nlat-j+1)
+             ENDDO
+             flag=.true.
+           ENDIF   !end if (myrank .eq. 0)
+           call mpe_bcast(zin(:,:),nx*my,0,mpe_double)
+
+           DO jj = 1, jlistnum
+             j=jlist1(jj)
+             nxj=nxdef_2d(j)
+             if( lreduce.eq.1 ) call reducepick(zin(1,j),nxdef(j),nx,1)
+             DO ii=1,nxj
+               i=nxjstart(j)+ii-1
+               if(irec .eq. 1) then
+                 ot12(ii,jk,jj,dayID) = zin(i,j)
+               else if(irec .eq. 2) then
+                 os12(ii,jk,jj,dayID) = zin(i,j)
+               else if(irec .eq. 3) then
+                 ou12(ii,jk,jj,dayID) = zin(i,j)
+               else if(irec .eq. 4) then
+                 ov12(ii,jk,jj,dayID) = zin(i,j)
+               else if(irec .eq. 5) then
+                 mixedlayer12(ii,jj,dayID) = zin(i,j)
+               endif
+             ENDDO
+           ENDDO  !!end jj
+         ENDDO  !!end jk
+       ENDDO   !!end irec
+
+       IF(myrank .eq. 0) THEN
+         CALL IO_close(gpnc2)
+         DEALLOCATE (zintemp)
+       ENDIF
+
+       DEALLOCATE (zin)
+
+       END SUBROUTINE read_godas_dayp1
+
       END SUBROUTINE read_dailygodas
 ! ----------------------------------------------------------------------
 
@@ -2605,11 +2262,11 @@
           ENDIF
         ENDDO
       ENDDO
-      IF ( lwarning_msg.GE.2 ) then 
-        WRITE(nerr,'(/,A,I5,A,I9,A,I9,A)') ' fill_missing: k=',k,&
-             ',   ',nmissing,' missing value grids, where ',nfilled,&
-             ' grids filled.'
-      ENDIF
+!      IF ( lwarning_msg.GE.2 ) then 
+!        WRITE(nerr,'(/,A,I5,A,I9,A,I9,A)') ' fill_missing: k=',k,&
+!             ',   ',nmissing,' missing value grids, where ',nfilled,&
+!             ' grids filled.'
+!      ENDIF
     ENDDO
   END SUBROUTINE fill_missing2
 !
