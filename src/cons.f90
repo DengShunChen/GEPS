@@ -39,7 +39,8 @@
                    sppt_sigtop1, sppt_sigtop2, sppt_sigbot1, sppt_sigbot2, &
                    sppt_sfclimit, sppt_logit, &
                    shum, shum_seed, shum_decort, shum_lscale, &
-                   shum_sigefold
+                   shum_sigefold, &
+                   ssst, ssst_seed, ssst_decort, ssst_lscale
 
       implicit  none
 
@@ -101,7 +102,8 @@
                    sppt_sigtop1, sppt_sigtop2, sppt_sigbot1, sppt_sigbot2, &
                    sppt_sfclimit, sppt_logit, &
                    shum, shum_seed, shum_decort, shum_lscale, &
-                   shum_sigefold
+                   shum_sigefold, &
+                   ssst, ssst_seed, ssst_decort, ssst_lscale
 
 ! for ECHAM4 Tiedtke cumulus scheme
       call cuparam
