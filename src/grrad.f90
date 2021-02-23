@@ -958,7 +958,7 @@
       real (kind=kind_phys), intent(in) :: solcon, dtlw, dtsw, solhr,   &
              tracer(ix,lm,ntrac)
 
-      real (kind=kind_phys), intent(in) :: cldcov0(ix,lm)  ! GFDL MP
+      real (kind=kind_phys), intent(in) :: cldcov0(ix,lm)
 
 !  ---  outputs: (horizontal dimensioned by ix)
       real (kind=kind_phys), dimension(ix,lm),intent(out):: htrsw,htrlw,&
@@ -1022,7 +1022,7 @@
       real (kind=kind_phys), dimension(im,       nf_albd) :: sfcalb
 !     real (kind=kind_phys), dimension(im,       nspc1)   :: aerodp      ! optn for aod output
       real (kind=kind_phys), dimension(im,lm+ltp,ntrac)   :: tracer1
-      real (kind=kind_phys), dimension(im,lm+ltp,ntrac)   :: ccnd    ! GFDLMP
+!      real (kind=kind_phys), dimension(im,lm+ltp,ntrac)   :: ccnd    ! GFDLMP
 
       real (kind=kind_phys), dimension(im,lm+ltp,nbdsw,nf_aesw)::faersw
       real (kind=kind_phys), dimension(im,lm+ltp,nbdlw,nf_aelw)::faerlw
@@ -1048,7 +1048,7 @@
       integer :: i, j, k, k1, lv, itop, ibtc, nday, idxday(im),         &
              mbota(im,3), mtopa(im,3), lp1, nb, lmk, lmp, kd, lla, llb, &
              lya, lyb, kt, kb
-!
+!effective radius for liquid, ice, snow, rain
       real (kind=kind_phys), dimension(ix,lm+ltp,5)   :: phy_f3d
       logical uni_cloud,lmfshal,lmfdeep2
 
@@ -1670,7 +1670,6 @@
            print *,'### call GFDL cloud ###'
 
          clw = 0.0
-!         ccnd = 0.
          do k = 1, lmk
            do i = 1, im
              do j = 1, ncld
@@ -1678,15 +1677,15 @@
                clw(i,k) = clw(i,k) + tracer1(i,k,lv)  ! cloud condensate amount
              enddo
              if ( clw(i,k) < epsq ) clw(i,k) = 0.0
-!             if ( .not. lgfdlmprad ) then
-!               ccnd(i,j,1) = tracer1(i,j,ntcw) + tracer1(i,j,ntrw)      &
-!                           + tracer1(i,j,ntiw) + tracer1(i,j,ntsw)      &
-!                           + tracer1(i,j,ntgl)
-!               if( ccnd(i,j,1) < epsq ) ccnd(i,j,1) = 0.
-!             else
-!               ccnd(i,j,1) = tracer1(i,j,
            enddo
          enddo
+
+         if (kdt == 1) then
+           phy_f3d(:,:,1) = 10.
+           phy_f3d(:,:,2) = 50.
+           phy_f3d(:,:,3) = 250.
+           phy_f3d(:,:,4) = 1000.
+         endif
          cldcov=cldcov0   ! cloud fraction from microphyscis
 
          if ( .not. lgfdlmprad ) then  ! no consistency between GFDLMP and radiation
@@ -1699,27 +1698,27 @@
                clouds,cldsa,mtopa,mbota                                 &
               ) 
          else
-           
+           if ( uni_cloud ) then
            call progclduni                                              &
 !    ---  inputs:
-!            ( plyr,plvl,tlyr,tvly,cnvw,cnvc,                            &
             ( plyr,plvl,tlyr,tvly,tracer1,ntrac,                        &
               xlat,xlon,slmsk,ix,lmk,lmp,cldcov(:,1:lmk),               &
               phy_f3d(:,:,1),phy_f3d(:,:,2),phy_f3d(:,:,3),             &
               phy_f3d(:,:,4),effr_in,                                   &
-!              effrl,effri,effrs,effrr,effr_in,                          &
 !    ---  outputs:
               clouds,cldsa,mtopa,mbota                                  &
              )
-!           call progcld5o                                               &
-!!    ---  inputs:
-!             ( plyr,plvl,tlyr,qlyr,qstl,rhly,tracer1,                   &
-!               xlat,xlon,slmsk,                                         &
-!               ntrac,ntcw,ntiw,ntrw,ntsw,ntgl,cldcov(:,1:lmk),          &
-!               im,lmk,lmp,                                              &
-!!    ---  outputs:
-!               clouds,cldsa,mtopa,mbota                                 &
-!              ) 
+           else
+           call progcld5o                                               &
+!    ---  inputs:
+             ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,tracer1,              &
+               xlat,xlon,slmsk,                                         &
+               ntrac,ntcw,ntiw,ntrw,ntsw,ntgl,cldcov(:,1:lmk),          &
+               im,lmk,lmp,                                              &
+!    ---  outputs:
+               clouds,cldsa,mtopa,mbota                                 &
+              ) 
+           endif
          endif
 
         endif                            ! end if_icmphys

@@ -335,7 +335,7 @@
 
 ! for GFDL microphysics
       real area(nxp,1)
-      real phy3d(nxp,lev,5)  !effective radius (micron)
+!      real phy3d(nxp,lev,5)  !effective radius (micron)
       real clds0(nxp,lev,my_max) !layer cloud fraction from MP
 
 !#######################################################################
@@ -1011,8 +1011,8 @@
              fuslr(1,1,jj),fdslr(1,1,jj),fuirr(1,1,jj),fdirr(1,1,jj),      &
              asl_clr(1,1,jj),atl_clr(1,1,jj),cosz(1,jj),                   &
              asol_clr(1,jj),olr_clr(1,jj),ss_clr(1,jj),rs_clr(1,jj),       &
-             sld_clr(1,jj),rld_clr(1,jj),sfalb(1,jj),sfemis(1,jj),         &
-             phy3d ) 
+             sld_clr(1,jj),rld_clr(1,jj),sfalb(1,jj),sfemis(1,jj) )!,         &
+!             phy3d ) 
 !      if (myrank .eq. 0) then
 !          print *,'### rrtmg ok !!'
 !      endif
@@ -1815,6 +1815,7 @@
       enddo
       do i = 1, nxj
         area(i,1) = tem1*tem2  !area of grid box
+!        area(i,1) = tem1*tem2*1.e+6  !area of grid box
       enddo
 
       call mp_scheme                                                   &
@@ -1830,6 +1831,7 @@
              rlsp(1,jj),sr(1,jj) )
 !    
       endif
+
 !
       if ( dodry ) then
          do k=1,lev

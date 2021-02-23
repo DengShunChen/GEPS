@@ -22,8 +22,7 @@
              fuslr,fdslr,fuirr,fdirr,                               &
              htrsw0,htrlw0,cosz,                                    &
              asol_clr,olr_clr,ss_clr,rs_clr,                        &
-             sld_clr,rld_clr,sfalb_g,semis_g,                       &
-             phy3d ) 
+             sld_clr,rld_clr,sfalb_g,semis_g )
 ! -------------------------------------------------------------------
 ! --- for RRTMG scheme :
 !
@@ -107,9 +106,11 @@
 !      real    dtrad(nx,lev)
       real    ctot(nx),chig(nx),cmid(nx),clow(nx),csbl(nx)
 
-      real    cldcov0(nx,lev)  ! input  layer cloud fraction (of last time step from microphysics)
+! for GFDL MP
+      real    cldcov0(nx,lev)  ! input  layer cloud fraction
       real    cldcov(nx,lev)   ! output layer cloud fraction
-      real    dummy3(nx,lev)
+      real    dummy0(nx,lev)   ! dummy0(i,kc)=cldcov0(i,k)
+      real    dummy3(nx,lev)   ! cldcov(i,kc)=dummy3(i,k)
       
 
 !
@@ -158,6 +159,7 @@
          tgrs(i,kc)=tt(i,k)
          qgrs(i,kc)=qt(i,k)
          vvl(i,kc)=sd(i,k)*0.1                !cb/sec
+         dummy0(i,kc)=cldcov0(i,k)  ! GFDLMP
       enddo
       enddo
 
@@ -212,7 +214,7 @@
           enddo
         enddo
       endif
-           
+
       if ( nmmiph.eq.2 ) then
         nclds=1
         phy3d=0.
@@ -449,7 +451,7 @@
              nx,nxj,lev,me,lprnt,ipt,kdt,myrank,                     &
              ntiw,ntrw,ntsw,ntgl,uni_cloud,lmfshal,lmfdeep2,         &
              deltaq,sup,cnvw,cnvc,phy3d,                             &
-             cldcov0,                                                &
+             dummy0,                                                 &
 !  ---  outputs:
              dummy1,sfalb,coszen,coszdg,                             &
              dummy2,tsflw,semis,dummy3,                              &

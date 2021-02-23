@@ -170,6 +170,7 @@
 
 !     real (kind=kind_phys), parameter :: climit = 0.01
       real (kind=kind_phys), parameter :: climit = 0.001, climit2=0.05
+!      real (kind=kind_phys), parameter :: climit = 1.e-5, climit2=1.e-5
       real (kind=kind_phys), parameter :: ovcst  = 1.0 - 1.0e-8
 
 !  ---  set default quantities as parameters (for prognostic cloud)
@@ -2036,7 +2037,7 @@
           rew   (i,k) = reliq_def            ! default liq radius to 10 micron
           rei   (i,k) = reice_def            ! default ice radius to 50 micron
           rer   (i,k) = rrain_def            ! default rain radius to 1000 micron
-          res   (i,k) = rsnow_def           ! default snow radius to 250 micron
+          res   (i,k) = rsnow_def            ! default snow radius to 250 micron
           tem2d (i,k) = min( 1.0, max( 0.0, (con_ttp-tlyr(i,k))*0.05 ) )
           clwf(i,k)   = 0.0
         enddo

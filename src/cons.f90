@@ -495,10 +495,9 @@
 !  for cloud microphysics initialization
 !-----------------------------------------------------------------------
       if ( nmmiph .eq. 11 ) then
-        ntrac_req = 6   ! six species of hydrometeors for GFDL MP
+        ntrac_req = 6   ! only six species of hydrometeors for GFDL MP
       else
         ntrac_req = nmmiph
-        ! not sure about Thompson
       endif
       if ( ntoz .gt. 0 ) then
         ntrac_req = ntrac_req + 1

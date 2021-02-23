@@ -64,7 +64,7 @@
       use module_mp_gfdl,      only: gfdl_cloud_microphys_driver,       &
                                      cloud_diagnosis
       use physcons,            only: con_rd,con_fvirt,con_g
-      use physpara,            only: effr_in,lgfdlmprad
+      use physpara,            only: effr_in
 
       implicit none
 
@@ -76,11 +76,11 @@
       real,     intent(in)    :: plt(nx,lev),pst(nx),dsigma(lev,2),    &
                                  phii(nx,lev+1),q0(nx,lev*ncld),       &
                                  prsi(nx,lev+1)
-      real,     intent(in)    :: area(nx,1)
+      real,     intent(in)    :: area(nx,1)  ! area of grid box (m^2)
       real,     intent(in)    :: sd(nx,lev)
 !  ---  inputs/outputs:
       real,     intent(inout) :: tt(nx,lev),qt(nx,lev*ncld)
-      real,     intent(inout) :: qa(nx,lev)
+      real,     intent(inout) :: qa(nx,lev)  ! only changed in GFDL MP
       real,     intent(inout) :: ut(nx,lev),vt(nx,lev)
 !  ---  outputs:
       real,     intent(inout)   :: re_cloud(nx,lev),re_ice(nx,lev),    &
@@ -96,18 +96,15 @@
       real      icem
       logical   lradar
 ! GFDLMP
-      real, parameter :: rainmin=1.0e-10  !(mm?)
-      real      dot(nx,lev),rho(nx,lev),re_graupel(nx,lev)
-      real      qv1(nx,1,lev),ql1(nx,1,lev),qr1(nx,1,lev),qi1(nx,1,lev),&
-                qs1(nx,1,lev),qg1(nx,1,lev),qa1(nx,1,lev),qn1(nx,1,lev),&
-                pt(nx,1,lev),w(nx,1,lev),uin(nx,1,lev),vin(nx,1,lev),   &
-                delp(nx,1,lev), dz(nx,1,lev)
-      real      qv_dt(nx,1,lev),ql_dt(nx,1,lev),qr_dt(nx,1,lev),        &
-                qi_dt(nx,1,lev),qs_dt(nx,1,lev),qg_dt(nx,1,lev),        &
-                qa_dt(nx,1,lev),                                        &
-                udt(nx,1,lev),vdt(nx,1,lev),pt_dt(nx,1,lev)
-      real      frland(nx,1),rain0(nx,1),snow0(nx,1),                   &
-                ice0(nx,1),graupel0(nx,1)
+      real, parameter ::                                                &
+                rainmin=1.0e-10  !(mm?)
+      real, dimension(:,:), allocatable ::                              &
+                dot,rho,re_graupel,rew,rei,rer,res,reg
+      real, dimension(:,:), allocatable ::                              &
+                frland,rain0,snow0,ice0,graupel0
+      real, dimension(:,:,:), allocatable ::                            &
+                qv1,ql1,qr1,qi1,qs1,qg1,qa1,qn1,pt,w,uin,vin,delp,dz,   &
+                qv_dt,ql_dt,qr_dt,qi_dt,qs_dt,qg_dt,qa_dt,udt,vdt,pt_dt
 !      real      tem
       logical   hydrostatic,phys_hydrostatic 
 !
@@ -123,22 +120,36 @@
       qtgl  = 0.
       ntnc  = 0.
       refl10= 0.
-! GFDLMP
-      frland = 0.
-      qv_dt = 0.
-      ql_dt = 0.
-      qr_dt = 0.
-      qi_dt = 0.
-      qs_dt = 0.
-      qg_dt = 0.
-      qa_dt = 0.
-      pt_dt = 0.
-      udt   = 0.
-      vdt   = 0.
-      rain0 = 0.
-      snow0 = 0.
-      ice0  = 0.
-      graupel0 = 0.
+
+      if ( nmmiph .eq. 11 ) then
+        allocate                                                        &
+         ( dot(nx,lev),rho(nx,lev),re_graupel(nx,lev),rew(nx,lev),      &
+           rei(nx,lev),rer(nx,lev),res(nx,lev),reg(nx,lev),             &
+           frland(nx,1),rain0(nx,1),snow0(nx,1),ice0(nx,1),             &
+           graupel0(nx,1),                                              &
+           qv1(nx,1,lev),ql1(nx,1,lev),qr1(nx,1,lev),qi1(nx,1,lev),     &
+           qs1(nx,1,lev),qg1(nx,1,lev),qa1(nx,1,lev),qn1(nx,1,lev),     &
+           pt(nx,1,lev),w(nx,1,lev),uin(nx,1,lev),vin(nx,1,lev),        &
+           delp(nx,1,lev),dz(nx,1,lev),                                 &
+           qv_dt(nx,1,lev),ql_dt(nx,1,lev),qr_dt(nx,1,lev),             &
+           qi_dt(nx,1,lev),qs_dt(nx,1,lev),qg_dt(nx,1,lev),             &
+           qa_dt(nx,1,lev),udt(nx,1,lev),vdt(nx,1,lev),pt_dt(nx,1,lev) )
+        frland = 0.
+        qv_dt = 0.
+        ql_dt = 0.
+        qr_dt = 0.
+        qi_dt = 0.
+        qs_dt = 0.
+        qg_dt = 0.
+        qa_dt = 0.
+        pt_dt = 0.
+        udt   = 0.
+        vdt   = 0.
+        rain0 = 0.
+        snow0 = 0.
+        ice0  = 0.
+        graupel0 = 0.
+      endif
 
 !
       lradar= .false.
@@ -218,7 +229,7 @@
          
         do k = 1, lev - 1
           do i = 1, nxj
-            dot(i,k) = 0.5*(sd(i,k)+sd(i,k+1))*100. !vertical velocity (Pa/s)
+            dot(i,k) = 0.5*(sd(i,k)+sd(i,k+1))*100. !vertical velocity (from mb/s to Pa/s)
           enddo
         enddo
         do i = 1, nxj
@@ -228,7 +239,7 @@
         do k = 1, lev
           kc = lev - k + 1
           do i = 1, nxj
-            prsl(i,k)   = 100.0 * plt(i,k)        !layer mean pressure (Pa)
+            prsl(i,k)   = 100.0 * plt(i,k)        !layer mean pressure (from mb to Pa)
 
             qv1(i,1,k)  = qt(i,             k)
             ql1(i,1,k)  = qt(i,(ntcw-1)*lev+k)
@@ -236,15 +247,16 @@
             qi1(i,1,k)  = qt(i,(ntiw-1)*lev+k)
             qs1(i,1,k)  = qt(i,(ntsw-1)*lev+k)
             qg1(i,1,k)  = qt(i,(ntgl-1)*lev+k)
-            qn1(i,1,k)  = 0.                      ! =0. for prog_ccn=.false.
-            qa1(i,1,k)  = qa(i,k)                 !layer cloud fraction from radiation
+            qn1(i,1,k)  = 0.                      ! =0. for prog_ccn=.false. (cm^-3)
+            qa1(i,1,k)  = qa(i,k)                 !layer cloud fraction
             pt(i,1,k)   = tt(i,k)                 !temperature
-            w(i,1,k)    = -dot(i,k)*(1+con_fvirt*qt(i,k))*tt(i,k)       &
+            w(i,1,k)    = -dot(i,k)*(1.+con_fvirt*qt(i,k))*tt(i,k)      &
                           /prsl(i,k)*con_rd/con_g !vertical velocity (m/s)
             uin(i,1,k)  = ut(i,k)                 !zonal wind (m/s)
             vin(i,1,k)  = vt(i,k)                 !meridional wind (m/s)
             delp(i,1,k) = prsi(i,k+1)-prsi(i,k)   !differences of interface pressure (Pa)
-            dz(i,1,k)   = (phii(i,kc)-phii(i,kc+1))/con_g !depth (m)
+!            dz(i,1,k)   = (phii(i,kc+1)-phii(i,kc))/con_g !depth (m)
+            dz(i,1,k)   = (phii(i,kc)-phii(i,kc+1))/con_g !differences of height (m), dz<0 (why???)
           enddo
         enddo
 
@@ -258,7 +270,6 @@
                   1, nx, 1, 1, 1, lev, 1, lev )
 
         do k = 1, lev
-!          kc = lev - k + 1
           do i = 1, nxj
             qtc(i,k)  = qv1(i,1,k) + qv_dt(i,1,k) * dta
             qtr(i,k)  = ql1(i,1,k) + ql_dt(i,1,k) * dta
@@ -266,9 +277,7 @@
             qti(i,k)  = qi1(i,1,k) + qi_dt(i,1,k) * dta
             qtsw(i,k) = qs1(i,1,k) + qs_dt(i,1,k) * dta
             qtgl(i,k) = qg1(i,1,k) + qg_dt(i,1,k) * dta
-            if ( lgfdlmprad ) then 
-              qa(i,k) = qa1(i,1,k) + qa_dt(i,1,k) * dta
-            endif
+            qa(i,k)   = qa1(i,1,k) + qa_dt(i,1,k) * dta
             qt(i,             k) = qtc(i,k)
             qt(i,(ntcw-1)*lev+k) = qtr(i,k)
             qt(i,(ntrw-1)*lev+k) = qtrw(i,k)
@@ -280,15 +289,26 @@
             vt(i,k)  = vin(i,1,k) + vdt(i,1,k)   * dta
             if ( effr_in ) then
               rho(i,k) = 0.622*prsl(i,k)                                &
-                         /( con_rd*tt(i,k)*(qt(i,k)+0.622) )
+                         /( con_rd*tt(i,k)*(qt(i,k)+0.622) ) !air density (kg/m^3)
             endif
           enddo
         enddo
 
-        if ( effr_in )                                                  &
+        if ( effr_in ) then
           call cloud_diagnosis                                          &
                ( 1, nx, 1, lev, rho, qtr, qti, qtrw, qtsw, qtgl, tt,    &
-                 re_cloud, re_ice, re_rain, re_snow, re_graupel )
+                 rew, rei, rer, res, reg )
+          do k = 1, lev
+            kc = lev - k + 1
+            do i = 1, nxj
+              re_cloud(i,k)   = rew(i,kc)   !(micron)
+              re_ice(i,k)     = rer(i,kc)   !(micron)
+              re_rain(i,k)    = rer(i,kc)   !(micron)
+              re_snow(i,k)    = res(i,kc)   !(micron)
+              re_graupel(i,k) = reg(i,kc)
+            enddo
+          enddo
+        endif
 !
 !        tem = dta * con_p001 / con_day
         do i = 1, nxj
@@ -304,6 +324,12 @@
             sr(i) = 0.0
           endif
         enddo
+
+        deallocate                                                      &
+          ( dot,rho,re_graupel,rew,rei,rer,res,reg,                     &
+            frland,rain0,snow0,ice0,graupel0,                           &
+            qv1,ql1,qr1,qi1,qs1,qg1,qa1,qn1,pt,w,uin,vin,delp,dz,       &
+            qv_dt,ql_dt,qr_dt,qi_dt,qs_dt,qg_dt,qa_dt,udt,vdt,pt_dt )
 
       endif  ! end of nmmiph.eq.11
 
