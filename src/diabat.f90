@@ -316,7 +316,8 @@
       real :: vt_save_sppt(nxp,lev,my_max)        
       real :: tt_save_sppt(nxp,lev,my_max)        
       real :: qt_save_sppt(nxp,lev*ncld,my_max)
-      real :: qt_save_shum(nxp,lev*ncld,my_max)
+     !real :: qt_save_shum(nxp,lev*ncld,my_max)
+      real :: tg_save_ssst(nxp,1,my_max)
 #ifdef VERBOSE
       real :: ut_update(nxp,lev,my_max)     
       real :: vt_update(nxp,lev,my_max)        
@@ -2023,22 +2024,14 @@
         enddo
       endif
 
-      ! SHUM process
+      ! SHUM process 
       if (doshum) then
-        ! there's no need to add perturbation for cloud & ozone tracer. 
-        ! modified by PangYen Liu
-        nk = 1  ! 1: specific humidity
-                ! 2: specific humidity + cloud water
-                ! 3: specific humidity + cloud water + ozone
-        do n=1,nk
           do k=1,lev
-            kk = (n-1)*lev+k
             do i=1,nxj
               ru=shum3d(i,k,jj)
-              qt(i,kk,jj)=qt(i,kk,jj)*(1.+ru)
+              qt(i,k,jj) = qt(i,k,jj)*(1.+ru)
             enddo
           enddo
-        enddo
       endif 
 
 #ifdef VERBOSE
