@@ -12,7 +12,6 @@
              uni_cloud,lmfshal,lmfdeep2,                            &
              deltaq,sup,cnvw,cnvc,                                  &
              ftp,ftp1,fqp,fqp1,nmmiph,                              &
-             cldcov0,                                               &
 !    -  outputs:
              asol,olr,ss,rs,sld,rld,tsflwr,                         &
              ctot,chig,cmid,clow,                                   &
@@ -107,10 +106,8 @@
       real    ctot(nx),chig(nx),cmid(nx),clow(nx),csbl(nx)
 
 ! for GFDL MP
-      real    cldcov0(nx,lev)  ! input  layer cloud fraction
-      real    cldcov(nx,lev)   ! output layer cloud fraction
-      real    dummy0(nx,lev)   ! dummy0(i,kc)=cldcov0(i,k)
-      real    dummy3(nx,lev)   ! cldcov(i,kc)=dummy3(i,k)
+      real    cldcov(nx,lev)   ! input/output layer cloud fraction
+      real    dummy3(nx,lev)
       
 
 !
@@ -159,7 +156,7 @@
          tgrs(i,kc)=tt(i,k)
          qgrs(i,kc)=qt(i,k)
          vvl(i,kc)=sd(i,k)*0.1                !cb/sec
-         dummy0(i,kc)=cldcov0(i,k)  ! GFDLMP
+         dummy3(i,kc)=cldcov(i,k)
       enddo
       enddo
 
@@ -451,12 +448,11 @@
              nx,nxj,lev,me,lprnt,ipt,kdt,myrank,                     &
              ntiw,ntrw,ntsw,ntgl,uni_cloud,lmfshal,lmfdeep2,         &
              deltaq,sup,cnvw,cnvc,phy3d,                             &
-             dummy0,                                                 &
 !  ---  outputs:
              dummy1,sfalb,coszen,coszdg,                             &
-             dummy2,tsflw,semis,dummy3,                              &
+             dummy2,tsflw,semis,                                     &
 !  ---  input/output:
-             fluxr,                                                  &
+             dummy3,fluxr,                                           &
 !  ---  optional outputs:
              dummy4,dummy5,                                          &
              work1,work2,work3,work4,                                &

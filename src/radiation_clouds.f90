@@ -170,7 +170,6 @@
 
 !     real (kind=kind_phys), parameter :: climit = 0.01
       real (kind=kind_phys), parameter :: climit = 0.001, climit2=0.05
-!      real (kind=kind_phys), parameter :: climit = 1.e-5, climit2=1.e-5
       real (kind=kind_phys), parameter :: ovcst  = 1.0 - 1.0e-8
 
 !  ---  set default quantities as parameters (for prognostic cloud)
@@ -2206,6 +2205,7 @@
      &     ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,clw,                    &
      &       xlat,xlon,slmsk,                                           &
      &       ntrac,ntcw,ntiw,ntrw,ntsw,ntgl,cldcov,                     &
+     &       effr_cw,effr_iw,effr_rw,effr_sw,effr_in,                   &
      &       IX, NLAY, NLP1,                                            &
 !  ---  outputs:
      &       clouds,clds,mtop,mbot                                      &
@@ -2255,6 +2255,10 @@
 !   ntsw            : index for snow water
 !   ntgl            : index for graupel
 !   cldcov(IX,NLAY) : total cloud fraction
+!   effr_cw(IX,NLAY): effective radius of liquid water (mm)             !
+!   effr_iw(IX,NLAY): effective radius of ice water (mm)                !
+!   effr_rw(IX,NLAY): effective radius of rain water (mm)               !
+!   effr_sw(IX,NLAY): effective radius of snow water (mm)               !
 !   IX              : horizontal dimention                              !
 !   NLAY,NLP1       : vertical layer/level dimensions                   !
 !                                                                       !
@@ -2302,6 +2306,11 @@
       real (kind=kind_phys), dimension(:),   intent(in) :: xlat, xlon,  &
      &       slmsk
 
+      real (kind=kind_phys), dimension(:,:), intent(in) :: effr_cw,     &
+     &       effr_iw, effr_rw, effr_sw
+
+      logical, intent(in) :: effr_in
+
 !  ---  outputs
       real (kind=kind_phys), dimension(:,:,:), intent(out) :: clouds
 
@@ -2340,10 +2349,17 @@
           cip   (i,k) = 0.0
           crp   (i,k) = 0.0
           csp   (i,k) = 0.0
-          rew   (i,k) = reliq_def            ! default liq radius to 10 micron
-          rei   (i,k) = reice_def            ! default ice radius to 50 micron
-          rer   (i,k) = rrain_def            ! default rain radius to 1000 micron
-          res   (i,k) = rsnow_def            ! default snow radius to 250 micron
+          if ( effr_in ) then
+            rew (i,k) = effr_cw (i,k)
+            rei (i,k) = effr_iw (i,k)
+            rer (i,k) = effr_rw (i,k)
+            res (i,k) = effr_sw (i,k)
+          else
+            rew (i,k) = reliq_def            ! default liq radius to 10 micron
+            rei (i,k) = reice_def            ! default ice radius to 50 micron
+            rer (i,k) = rrain_def            ! default rain radius to 1000 micron
+            res (i,k) = rsnow_def            ! default snow radius to 250 micron
+          endif
           tem2d (i,k) = min( 1.0, max( 0.0, (con_ttp-tlyr(i,k))*0.05 ) )
           cldtot(i,k) = cldcov(i,k)
         enddo

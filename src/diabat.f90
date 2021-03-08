@@ -335,8 +335,6 @@
 
 ! for GFDL microphysics
       real area(nxp,1)
-!      real phy3d(nxp,lev,5)  !effective radius (micron)
-      real clds0(nxp,lev,my_max) !layer cloud fraction from MP
 
 !#######################################################################
 !
@@ -488,8 +486,6 @@
       uni_cloud=.false. !if using SHOC scheme, it should be .true.
       lmfshal=( nmshl .eq. 2 .or. nmshl .eq. 3 ) ! .true. if using mass-flux shallow convection
       lmfdeep2=( nmcup .eq. 6 ) ! .true. if using scale-aware deep con
-! GFDLMP
-      clds0=clds
 
 
 !     define local constants
@@ -1001,7 +997,6 @@
              uni_cloud,lmfshal,lmfdeep2,                                   &
              deltaq(1,1,jj),sup,cnvwr(1,1,jj),cnvcr(1,1,jj),               &
              ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),fqp1(1,1,jj),nmmiph,     &
-             clds0(1,1,jj),                                                &
 !  ---  outputs:
              asol(1,jj),olr(1,jj),ss(1,jj),rs(1,jj),                       &
              sld(1,jj),rld(1,jj),tsflw(1,jj),                              &
@@ -1012,7 +1007,6 @@
              asl_clr(1,1,jj),atl_clr(1,1,jj),cosz(1,jj),                   &
              asol_clr(1,jj),olr_clr(1,jj),ss_clr(1,jj),rs_clr(1,jj),       &
              sld_clr(1,jj),rld_clr(1,jj),sfalb(1,jj),sfemis(1,jj) )!,         &
-!             phy3d ) 
 !      if (myrank .eq. 0) then
 !          print *,'### rrtmg ok !!'
 !      endif

@@ -91,7 +91,7 @@ module module_mp_gfdl
     real, parameter :: zvir = rvgas / rdgas - 1. !< 0.6077338443
     
     real, parameter :: t_ice = 273.16 !< freezing temperature
-    real, parameter :: table_ice = 273.16 !< freezing point for qs table
+    real(kind=4), parameter :: table_ice = 273.16 !< freezing point for qs table
     
     ! real, parameter :: e00 = 610.71 ! gfdl: saturation vapor pressure at 0 deg c
     real, parameter :: e00 = 611.21 !< ifs: saturation vapor pressure at 0 deg c
@@ -145,7 +145,7 @@ module module_mp_gfdl
     logical :: do_sedi_w = .false. !< transport of vertical motion in sedimentation
     logical :: do_sedi_heat = .true. !< transport of heat in sedimentation
     logical :: prog_ccn = .false. !< do prognostic ccn (yi ming's method)
-    logical :: do_qa = .true. !< do inline cloud fraction
+    logical :: do_qa = .false. !< do inline cloud fraction
     logical :: rad_snow = .true. !< consider snow in cloud fraciton calculation
     logical :: rad_graupel = .true. !< consider graupel in cloud fraction calculation
     logical :: rad_rain = .true. !< consider rain in cloud fraction calculation
@@ -346,7 +346,7 @@ subroutine gfdl_cloud_microphys_driver                                    &
     integer, intent (in) :: iis, iie, jjs, jje !< physics window
     integer, intent (in) :: kks, kke !< vertical dimension
     integer, intent (in) :: ktop, kbot !< vertical compute domain
-!    integer, intent (in) :: seconds
+!xb141    integer, intent (in) :: seconds
     
     real, intent (in) :: dt_in !< physics time step
     
@@ -2225,7 +2225,7 @@ subroutine subgrid_z_proc (ktop, kbot, p1, den, denfac, dts, rh_adj, tz, qv, &
             tz (k) = tz (k) + pgsub * (lhl (k) + lhi (k)) / cvm (k)
         endif
         
-!#ifdef USE_MIN_EVAP
+!xb141  #ifdef USE_MIN_EVAP
         ! -----------------------------------------------------------------------
         ! update capacity heat and latend heat coefficient
         ! -----------------------------------------------------------------------
@@ -2246,7 +2246,7 @@ subroutine subgrid_z_proc (ktop, kbot, p1, den, denfac, dts, rh_adj, tz, qv, &
             cvm (k) = c_air + qv (k) * c_vap + q_liq (k) * c_liq + q_sol (k) * c_ice
             tz (k) = tz (k) - sink * lhl (k) / cvm (k)
         endif
-!#endif
+!xb141  #endif
         
         ! -----------------------------------------------------------------------
         ! update capacity heat and latend heat coefficient
@@ -2330,7 +2330,6 @@ subroutine subgrid_z_proc (ktop, kbot, p1, den, denfac, dts, rh_adj, tz, qv, &
                 ! qa (k) = sqrt (qa (k) + (q_plus - qstar) / (dq + dq))
             endif
         endif
-        
     enddo
     
 end subroutine subgrid_z_proc
@@ -4219,7 +4218,7 @@ subroutine qs_table3 (n)
     integer, intent (in) :: n
     
     real :: delt = 0.1
-    real :: esbasw, tbasw, esbasi, tmin, tem, aa, b, c, d, e
+    real(kind=4) :: esbasw, tbasw, esbasi, tmin, tem, aa, b, c, d, e
     real :: tem0, tem1
     
     integer :: i, i0, i1

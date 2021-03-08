@@ -163,8 +163,8 @@
       logical, save :: lnoprec =.false. ! precip effect on radiation flag (ferrier microphysics)
       logical, save :: lsashal =.false. ! shallow convection flag
 
-      logical, save :: lgfdlmprad =.false.  ! GFDL MP and radiation consistency flag
-      logical, save :: effr_in =.true. ! flag for using effective radii of hydrometeors in radiation process
+      logical, save :: lgfdlmprad =.true.  ! GFDL MP and radiation consistency flag
+      logical, save :: effr_in =.true. ! flag for using effective radii of hydrometeors in radiation process (GFDLMP)
 
 ! ............................................. !
 !  -2.5- for module radiation_surface           !

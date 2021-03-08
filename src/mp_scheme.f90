@@ -220,8 +220,8 @@
 
 !     GFDLMP
       if ( nmmiph .eq. 11 ) then
-        hydrostatic = .false.
-        phys_hydrostatic = .true.
+        hydrostatic = .false.       !flag for hydrostatic solver
+        phys_hydrostatic = .true.   !flag for hydrostatic heating from physics 
 
         do i = 1, nxj
           if( islimsk(i) == 1 ) frland(i,1) = 1.  !land fraction
@@ -248,7 +248,8 @@
             qs1(i,1,k)  = qt(i,(ntsw-1)*lev+k)
             qg1(i,1,k)  = qt(i,(ntgl-1)*lev+k)
             qn1(i,1,k)  = 0.                      ! =0. for prog_ccn=.false. (cm^-3)
-            qa1(i,1,k)  = qa(i,k)                 !layer cloud fraction
+!            qa1(i,1,k)  = qa(i,k)                 !layer cloud fraction
+            qa1(i,1,k)  = 0                       !layer cloud fraction (should set to zero for do_qa=.false.)
             pt(i,1,k)   = tt(i,k)                 !temperature
             w(i,1,k)    = -dot(i,k)*(1.+con_fvirt*qt(i,k))*tt(i,k)      &
                           /prsl(i,k)*con_rd/con_g !vertical velocity (m/s)

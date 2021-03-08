@@ -650,12 +650,11 @@
              ix,im,lm,me,lprnt,ipt,kdt,myrank,                          &
              ntiw,ntrw,ntsw,ntgl,uni_cloud,lmfshal,lmfdeep2,            &
              deltaq,sup,cnvw,cnvc,phy_f3d,                              &
-             cldcov0,                                                   &
 !  ---  outputs:
              htrsw,sfalb,coszen,coszdg,                                 &
-             htrlw,tsflw,semis,cldcov,                                  &
+             htrlw,tsflw,semis,                                         &
 !  ---  input/output:
-             fluxr,                                                     &
+             cldcov,fluxr,                                              &
 !! ---  optional outputs:
              htrsw0,htrlw0,                                             &
              fusl,fdsl,fuir,fdir,                                       &
@@ -958,11 +957,9 @@
       real (kind=kind_phys), intent(in) :: solcon, dtlw, dtsw, solhr,   &
              tracer(ix,lm,ntrac)
 
-      real (kind=kind_phys), intent(in) :: cldcov0(ix,lm)
-
 !  ---  outputs: (horizontal dimensioned by ix)
-      real (kind=kind_phys), dimension(ix,lm),intent(out):: htrsw,htrlw,&
-             cldcov
+      real (kind=kind_phys), dimension(ix,lm),intent(out):: htrsw,htrlw!,&
+!             cldcov
 
       real (kind=kind_phys), dimension(im),   intent(out):: tsflw,      &
              sfalb, semis, coszen, coszdg
@@ -987,6 +984,7 @@
 ! --- cmy
 
 !  ---  variables are for both input and output:
+      real (kind=kind_phys), intent(out) :: cldcov(ix,lm)
       real (kind=kind_phys), intent(out) :: fluxr(ix,nfxr)
 
 !! ---  optional outputs:
@@ -1650,7 +1648,6 @@
            phy_f3d(:,:,2) = 50.
            phy_f3d(:,:,3) = 250.
          endif
-         cldcov=cldcov0   ! cloud fraction from microphyscis
 !
          call progcld4                               &
 !  --- inputs
@@ -1686,7 +1683,6 @@
            phy_f3d(:,:,3) = 250.
            phy_f3d(:,:,4) = 1000.
          endif
-         cldcov=cldcov0   ! cloud fraction from microphyscis
 
          if ( .not. lgfdlmprad ) then  ! no consistency between GFDLMP and radiation
            call progcld5                                                &
@@ -1714,6 +1710,9 @@
              ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,tracer1,              &
                xlat,xlon,slmsk,                                         &
                ntrac,ntcw,ntiw,ntrw,ntsw,ntgl,cldcov(:,1:lmk),          &
+               phy_f3d(:,:,1),phy_f3d(:,:,2),phy_f3d(:,:,3),            &
+!               phy_f3d(:,:,4),effr_in,                                  &
+               phy_f3d(:,:,4),.false.,                                  &
                im,lmk,lmp,                                              &
 !    ---  outputs:
                clouds,cldsa,mtopa,mbota                                 &
