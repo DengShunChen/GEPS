@@ -49,7 +49,8 @@
         PUBLIC :: ANAsstT0,dailyClmANAsst,dailyClmFCTsst
         PUBLIC :: deallocate_dailyFCT_array
         PUBLIC :: outtseadiffFCT24
-        PUBLIC :: tseap,tseat,tsean
+        PUBLIC :: obswtbold,obswtbnow,obswtbnew
+        PUBLIC :: tseaold,tseanow,tseanew,dtseadt
 
 
         INCLUDE 'netcdf.inc'
@@ -121,14 +122,15 @@
         REAL, ALLOCATABLE :: dFCTsstdt(:,:)         ! d(dailyFCTsst)/dt (K/s)
         REAL, ALLOCATABLE :: dFCTcicedt(:,:)        ! d(dailyFCTcice)/dt (K/s)
         REAL, ALLOCATABLE :: dFCTsndepthdt(:,:)     ! d(dailyFCTsndepth)/dt (K/s)
-        REAL, ALLOCATABLE :: obswtbp(:,:)           ! calculated obs. sst per (n-1) timestep
-        REAL, ALLOCATABLE :: obswtbt(:,:)           ! calculated obs. sst now (n) timestep 
-        REAL, ALLOCATABLE :: obswtbn(:,:)           ! calculated obs. sst next (n+1) timestep 
+        REAL, ALLOCATABLE :: obswtbold(:,:)           ! calculated obs. sst per (n-1) timestep
+        REAL, ALLOCATABLE :: obswtbnow(:,:)           ! calculated obs. sst now (n) timestep 
+        REAL, ALLOCATABLE :: obswtbnew(:,:)           ! calculated obs. sst next (n+1) timestep 
         REAL, ALLOCATABLE :: tseadiffFCT(:,:)       ! the change of tg from dta*dFCTsstdt 
         REAL, ALLOCATABLE :: tseadiffFCT24(:,:)     ! the average change of tg from dta*dFCTsstdt 
-        REAL, ALLOCATABLE :: tseap(:,:)             ! sst at pre. timestep (n-1)
-        REAL, ALLOCATABLE :: tseat(:,:)             ! sst at now timestep (n) 
-        REAL, ALLOCATABLE :: tsean(:,:)             ! sst at next timestep (n+1)
+        REAL, ALLOCATABLE :: dtseadt(:,:)           ! the change rate of tg from FCTsst and SIT
+        REAL, ALLOCATABLE :: tseaold(:,:)             ! sst at pre. timestep (n-1)
+        REAL, ALLOCATABLE :: tseanow(:,:)             ! sst at now timestep (n) 
+        REAL, ALLOCATABLE :: tseanew(:,:)             ! sst at next timestep (n+1)
 
 
 !for opgsst
@@ -268,8 +270,8 @@
 
         subroutine deallocate_dailyFCT_array
 
-           deallocate (obswtbp,obswtbt,obswtbn)
-           deallocate (tseap,tseat,tsean)
+           deallocate (obswtbold,obswtbnow,obswtbnew)
+           deallocate (tseaold,tseanow,tseanew,dtseadt)
            deallocate (tseadiffFCT,tseadiffFCT24)
            deallocate (dailyFCTsst,dFCTsstdt)
            if(ldailyFCTicesndpt) then
@@ -337,20 +339,24 @@
 
           IF (.NOT. ALLOCATED(dailyFCTsst)) ALLOCATE (dailyFCTsst(nxp,my_max,2))
           IF (.NOT. ALLOCATED(dFCTsstdt)) ALLOCATE (dFCTsstdt(nxp,my_max))
-          IF (.NOT. ALLOCATED(obswtbp)) ALLOCATE (obswtbp(nxp,my_max))
-          IF (.NOT. ALLOCATED(obswtbt)) ALLOCATE (obswtbt(nxp,my_max))
-          IF (.NOT. ALLOCATED(obswtbn)) ALLOCATE (obswtbn(nxp,my_max))
-          IF (.NOT. ALLOCATED(tseap)) ALLOCATE (tseap(nxp,my_max))
-          IF (.NOT. ALLOCATED(tseat)) ALLOCATE (tseat(nxp,my_max))
-          IF (.NOT. ALLOCATED(tsean)) ALLOCATE (tsean(nxp,my_max))
+          IF (.NOT. ALLOCATED(obswtbold)) ALLOCATE (obswtbold(nxp,my_max))
+          IF (.NOT. ALLOCATED(obswtbnow)) ALLOCATE (obswtbnow(nxp,my_max))
+          IF (.NOT. ALLOCATED(obswtbnew)) ALLOCATE (obswtbnew(nxp,my_max))
+          IF (.NOT. ALLOCATED(tseaold)) ALLOCATE (tseaold(nxp,my_max))
+          IF (.NOT. ALLOCATED(tseanow)) ALLOCATE (tseanow(nxp,my_max))
+          IF (.NOT. ALLOCATED(tseanew)) ALLOCATE (tseanew(nxp,my_max))
+          IF (.NOT. ALLOCATED(dtseadt)) then 
+            ALLOCATE (dtseadt(nxp,my_max))
+            dtseadt=0.
+          ENDIF
           IF (.NOT. ALLOCATED(tseadiffFCT)) then
             ALLOCATE (tseadiffFCT(nxp,my_max))
             tseadiffFCT=0.
-          endif
+          ENDIF
           IF (.NOT. ALLOCATED(tseadiffFCT24)) then
             ALLOCATE (tseadiffFCT24(nxp,my_max))
             tseadiffFCT24=0.
-          endif
+          ENDIF
 
           IF(ldailyFCTicesndpt) THEN
             IF (.NOT. ALLOCATED(dailyFCTcice)) ALLOCATE (dailyFCTcice(nxp,my_max,2))
@@ -371,10 +377,10 @@
      !!! warm/cold start
             timevals_dailyFCT(1)=ydate
             dailyFCTsst(:,:,1)=tg1(:,:)
-            obswtbp(:,:)=tg1(:,:)
-            obswtbt(:,:)=tg1(:,:)
-            tseap(:,:)=tg1(:,:)
-            tseat(:,:)=tg1(:,:)
+            obswtbold(:,:)=tg1(:,:)
+            obswtbnow(:,:)=tg1(:,:)
+            tseaold(:,:)=tg1(:,:)
+            tseanow(:,:)=tg1(:,:)
             if(dailyClm_option .ge. 1) ANAsstT0(:,:)=tg1(:,:)
             if(ldailyFCTicesndpt) then
               dailyFCTcice(:,:,1)=cice1(:,:)
