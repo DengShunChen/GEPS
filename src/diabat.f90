@@ -168,15 +168,20 @@
       use index
       use const,                 ONLY:do_sit,ldailyFCTsst,dailyClm_option,      &
                                       pdfcloud,cmbk,cgwd, fsit, dosppt, doshum, &
-                                      use_zmtnblck
+                                      use_zmtnblck,ldailyFCTsst,ldailyFCTicesndpt, &
+                                      ldailyFCTsst,ldailyFCTicesndpt,           &
+                                      dailyClm_option,dSITdt_intv,weightSIT
       use mod_sitgrid
       USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
       USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt &
-                                     ,timebl_option,timebl_start,fsitchg
+                                     ,timebl_option,timebl_start
       USE mod_eos_ocean,         ONLY:AirVaporPressure,CalcSm
       USE mod_sst,               ONLY:time_weights,now1,now2,wgto1,wgto2 &
                                      ,obswtbnmw1,obswtbnmw2,obswtbwgt1   &
-                                     ,obswtbwgt2,dailyFCTsst,obswtbt
+                                     ,obswtbwgt2,obswtbold,obswtbnow     &
+                                     ,obswtbnew,dFCTsstdt                &
+                                     ,tseadiffFCT,tseadiffFCT24,dtseadt  &
+                                     ,tseanow,tseaold
       USE mo_netcdf,             ONLY:lkvl
 !-----------------------------------------------------------------------
       use radn
@@ -1782,7 +1787,7 @@
             snrfsit(ii,jj)=snrfsit(ii,jj)+snr(ii,jj)*dtsit
             zicefsit(ii,jj)=zicefsit(ii,jj)+zice(ii,jj)*dtsit
             xticefsit(ii,jj)=xticefsit(ii,jj)+xtice(ii,jj)*dtsit
-            obswtbfsit(ii,jj)=obswtbfsit(ii,jj)+obswtbt(ii,jj)*dtsit
+            obswtbfsit(ii,jj)=obswtbfsit(ii,jj)+obswtbnow(ii,jj)*dtsit
             tgfsit(ii,jj)=tgfsit(ii,jj)+tg(ii,jj)*dtsit
           endif
 
@@ -1843,7 +1848,7 @@
               snrtm(ii)=snr(ii,jj)
               zicetm(ii)=zice(ii,jj)
               xticetm(ii)=xtice(ii,jj)
-              obswtbtm(ii)=obswtbt(ii,jj)
+              obswtbtm(ii)=obswtbnow(ii,jj)
               tgtm(ii)=tg(ii,jj)
               dtfsit=dtsit
             endif
@@ -1939,38 +1944,101 @@
              oldsitws(:,jj,0:lkvl+1,0:1),oldsitwtke(:,jj,0:lkvl+1,0:1),&
               dtswdt(:,jj), sftobswt(:,jj,0:lkvl+1) )
         
-        if(jj .eq. 1) then
-          dtsittau=dtsittau+dtfsit
-          dtsitmon=dtsitmon+dtfsit
-          dtsit24=dtsit24+dtfsit
+          if(jj .eq. 1) then
+            dtsittau=dtsittau+dtfsit
+            dtsitmon=dtsitmon+dtfsit
+            dtsit24=dtsit24+dtfsit
+          endif
+          call storesittau(nxjp(j),jj,nxp,my_max,lkvl,sitwt,sitws,sitwu,sitwv,dtfsit)
+          call storesit24(nxjp(j),jj,nxp,my_max,lkvl,sitwt,sitws,sitwu,sitwv,dtfsit)
+
+        endif  !end lrun_sitvdiff
+
+        deallocate(sstm)
+        deallocate(rstm)
+        deallocate(hfluxtm)
+        deallocate(qfluxtm)
+        deallocate(u10tm)
+        deallocate(v10tm)
+        deallocate(rlsptm)
+        deallocate(rcuptm)
+        deallocate(ustartm)
+        deallocate(t2tm)
+        deallocate(rh2tm)
+        deallocate(psttm)
+        deallocate(cicetm)
+        deallocate(snrtm)
+        deallocate(zicetm)
+        deallocate(xticetm)
+        deallocate(obswtbtm)
+        deallocate(tgtm)
+        if(jj .eq. jlistnum) then
+          if (lrun_sitvdiff) dtfsit=0.
         endif
-        call storesittau(nxjp(j),jj,nxp,my_max,lkvl,sitwt,sitws,sitwu,sitwv,dtfsit)
-        call storesit24(nxjp(j),jj,nxp,my_max,lkvl,sitwt,sitws,sitwu,sitwv,dtfsit)
 
-       endif  !end lrun_sitvdiff
-
-       deallocate(sstm)
-       deallocate(rstm)
-       deallocate(hfluxtm)
-       deallocate(qfluxtm)
-       deallocate(u10tm)
-       deallocate(v10tm)
-       deallocate(rlsptm)
-       deallocate(rcuptm)
-       deallocate(ustartm)
-       deallocate(t2tm)
-       deallocate(rh2tm)
-       deallocate(psttm)
-       deallocate(cicetm)
-       deallocate(snrtm)
-       deallocate(zicetm)
-       deallocate(xticetm)
-       deallocate(obswtbtm)
-       deallocate(tgtm)
-       if(jj .eq. jlistnum) then
-         if (lrun_sitvdiff) dtfsit=0.
-       endif
       endif  !end do_sit
+
+
+!=======================================================================
+! Cal. SST tendency (dtsea/dt)
+!=======================================================================
+      dtx_tau=dt/3600.
+      if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. dailyClm_option.ge.1) then
+        if(fwd) then
+          do ii = 1,nxj
+            i=nxjstart(j)+ii-1
+            dtseadt(ii,jj)=0.
+            dFCTsstdt(ii,jj)=0. 
+            obswtbnow(ii,jj)=dta*dFCTsstdt(ii,jj)+obswtbold(ii,jj)
+            if(ocean(ii,jj))then
+              tseadiffFCT(ii,jj)=dta*dFCTsstdt(ii,jj)
+              tseanow(ii,jj)=dta*dFCTsstdt(ii,jj)+ tseaold(ii,jj)
+            endif
+          end do
+        endif
+        if((tau .ge. 24.)) then
+          do ii = 1,nxj
+            i=nxjstart(j)+ii-1
+            dtseadt(ii,jj)=0.
+            tseadiffFCT(ii,jj)=0.
+            if(ocean(ii,jj))then
+              obswtbnew(ii,jj)=dta*dFCTsstdt(ii,jj)+obswtbold(ii,jj)
+              obswtbold(ii,jj)=obswtbnow(ii,jj)
+              obswtbnow(ii,jj)=obswtbnew(ii,jj)
+
+              dtseadt(ii,jj)=dFCTsstdt(ii,jj)
+              tseadiffFCT(ii,jj)=dta*dFCTsstdt(ii,jj)
+              if(do_sit) then
+              if(sitmask(ii,jj) .EQ. 1.) then
+                if(lrun_sitvdiff .AND. ltrigsit )then
+                  tseadiffSIT(ii,jj)=0.
+                  sumdSITdt(ii,jj)=sumdSITdt(ii,jj)+dtswdt(ii,jj)
+                  countdSITdt(ii,jj)=countdSITdt(ii,jj)+1.
+                endif
+
+                dtaup= mod(tau+0.001, dSITdt_intv)
+                if( (dSITdt_intv .lt. 0.) .OR. (dtaup .lt. dtx_tau) )then
+                  if(countdSITdt(ii,jj) .ge. 1.) then
+                    tseadiffFCT(ii,jj)=dta*(1.-weightSIT*ratioSIT(ii,jj))&
+                                        *dFCTsstdt(ii,jj)
+                    tseadiffSIT(ii,jj)=dta*weightSIT*ratioSIT(ii,jj)  &
+                                       *(sumdSITdt(ii,jj)/countdSITdt(ii,jj))
+                  endif
+                  sumdSITdt(ii,jj)=0.
+                  countdSITdt(ii,jj)=0.
+                  tseadiffSIT24(ii,jj)=tseadiffSIT24(ii,jj)+tseadiffSIT(ii,jj)/dta*dt
+                  dtseadt(ii,jj)=(1.-weightSIT*ratioSIT(ii,jj))*dFCTsstdt(ii,jj) &
+                             +weightSIT*ratioSIT(ii,jj) &
+                             *(sumdSITdt(ii,jj)/countdSITdt(ii,jj))
+                endif
+              endif
+              endif
+              tseadiffFCT24(ii,jj)=tseadiffFCT24(ii,jj)+tseadiffFCT(ii,jj)/dta*dt
+
+            endif !end if(ocean)
+          end do
+        endif  !end if(tau .ge. 24.)
+      endif !end if(ldailyFCTsst....)
 
 
 !=======================================================================
