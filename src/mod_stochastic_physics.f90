@@ -3,7 +3,7 @@ module mod_stochastic_physics
   use rank, only : myrank
   use index
   use param
-  use const, only : aki, bki, dosppt, doshum
+  use const, only : aki, bki, dosppt, doshum, dossst
   use mersenne_twister, only: random_setseed,random_gauss,random_stat
   implicit none
   private 
@@ -32,7 +32,7 @@ module mod_stochastic_physics
   real,allocatable :: sl(:)
 
   type(random_pattern), public, save, allocatable, dimension(:) :: &
-       rpattern_sppt, rpattern_shum
+       rpattern_sppt, rpattern_shum, rpattern_ssst
 
   ! SPPT
   integer :: nsppt
@@ -136,7 +136,7 @@ contains
     if (dossst) then
       call get_random_pattern_run(rpattern_ssst,nssst)
       call get_stochy_physics(rpattern_ssst,nssst,1  ,vfact_ssst,ssst3d)
-      if (ssst_logit) ssst3d(:,1,:) = (2./(1.+exp(ssst3d(:,1,:))))-1.
+      if (sppt_logit) ssst3d(:,1,:) = (2./(1.+exp(ssst3d(:,1,:))))-1.
     endif
 
   end subroutine run_stochastic_physics
@@ -286,10 +286,10 @@ contains
       rpattern_ssst(n)%lenscale = ssst_lscale(n)
       rpattern_ssst(n)%seed = int(ssst_seed(n))
       if (myrank .eq. 0 ) then
-        write(6,*)'mod_stochastic_physics : sppt : stdev  ',ssst(n)
-        write(6,*)'mod_stochastic_physics : sppt : decort ',ssst_decort(n)
-        write(6,*)'mod_stochastic_physics : sppt : lscale ',ssst_lscale(n)
-        write(6,*)'mod_stochastic_physics : sppt : seed   ',ssst_seed(n)
+        write(6,*)'mod_stochastic_physics : ssst : stdev  ',ssst(n)
+        write(6,*)'mod_stochastic_physics : ssst : decort ',ssst_decort(n)
+        write(6,*)'mod_stochastic_physics : ssst : lscale ',ssst_lscale(n)
+        write(6,*)'mod_stochastic_physics : ssst : seed   ',ssst_seed(n)
       endif
     enddo
 
