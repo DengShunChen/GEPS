@@ -19,8 +19,6 @@
  # SIT initial data
  GODASgfsDIR="/nwpr/gfs/xb80/data2/IC_SIT"
 
- export OCNDMS=${OCNDMS:-"OCNDMS@ncepec"}
-
  rm -rf $GFSWRK
  mkdir -p $GFSWRK
 
@@ -48,7 +46,7 @@
  odmstail="${DMSFLAG}MG"
  odmsdb=${idmsdb}
 
-#-- executable
+ #-- executable
  EXEC='MTCo639L72_'${machine}
 
 #---------------------------------------------------------#
@@ -58,32 +56,48 @@
  ${DMSPATH}/rdmsdbcrt -p ufs $idmsdb
  ${DMSPATH}/rdmscrt $idmsfile
 
-  export LNCP='ln -fs'
+ export LNCP='ln -fs'
 
-  # maybe no need to change
-#  export source="/data/common/gfs/dms_data/TCo639L72_S2TY.ufs/T_exp20${dtg}"           # TCo IC data path
-  export source="/nwpr/gfs/xb126/data2/Tool/Nemsio2Dms_v2/OUTPUT/ncep_ana.ufs/TCo${JCAP}l72_${dtg}"           # TCo IC data path
+ # TCo Initial condition 
+ # export source="/data/common/gfs/dms_data/TCo639L72_S2TY.ufs/T_exp20${dtg}"           # TCo IC data path
+ export source="/nwpr/gfs/xb126/data2/Tool/Nemsio2Dms_v2/OUTPUT/ncep_ana.ufs/TCo${JCAP}l72_${dtg}"        
+ export target="${dmsdb_home}/${idmsdb}.ufs"
+ echo ${LNCP} ${source}/*${dtg}*    ${target}/${idmshead}${idmsbody}${idmstail}
+      ${LNCP} ${source}/*${dtg}*    ${target}/${idmshead}${idmsbody}${idmstail}
+ echo ${LNCP} ${source}/*${fgdtg}*  ${target}/${idmshead}${idmsbody}${idmstail}
+      ${LNCP} ${source}/*${fgdtg}*  ${target}/${idmshead}${idmsbody}${idmstail}
 
-  # link/copy DMS files
-  export target="${dmsdb_home}/${idmsdb}.ufs"
+ # Bundary condition
+ BCKOPSFN="BCK_TCo${JCAP}_${DMSFLAG}30S"
+ export BCKOPS=${BCKOPSFN}@${idmsdb}
+ ${DMSPATH}/rdmscrt -l34 ${BCKOPS}
+ source="/data/common/gfs/dms_data/bckdms.ufs"
+ target="${dmsdb_home}/${idmsdb}.ufs" 
+ if [ ! -e ${target}/${BCKOPSFN}/* ] ; then
+   ${LNCP} ${source}/${BCKOPSFN}/* ${target}/${BCKOPSFN}/
+ fi
 
-  # analysis
-  echo ${LNCP} ${source}/*${dtg}* ${target}/${idmshead}${idmsbody}${idmstail}
-       ${LNCP} ${source}/*${dtg}* ${target}/${idmshead}${idmsbody}${idmstail}
-  echo ${LNCP} ${source}/*${fgdtg}* ${target}/${idmshead}${idmsbody}${idmstail}
-       ${LNCP} ${source}/*${fgdtg}* ${target}/${idmshead}${idmsbody}${idmstail}
+  # get oceanic climatology
+ OCNCLMFN="OCNCLM"
+ export OCNCLM=${OCNCLMFN}@${idmsdb}
+ ${DMSPATH}/rdmscrt -l34  ${OCNCLM}
+ source="/nwpr/gfs/xb99/data2/dmsdb/OISST_clim.ufs"
+ target="${dmsdb_home}/${idmsdb}.ufs" 
+ if [ ! -e ${target}/${OCNCLMFN}/*  ] ; then
+   ${LNCP} ${source}/CLMdaily_TCo383_2010_2019/* ${target}/${OCNCLMFN}/
+ fi
 
-  ${DMSPATH}/rdmsdbcrt -p ufs bckdms
-  ${DMSPATH}/rdmscrt BCK_TCo${JCAP}_${DMSFLAG}30S@bckdms
- 
-  # Bundary condition
-  export source="/data/common/gfs/dms_data/bckdms.ufs"
-  export target="${dmsdb_home}/bckdms.ufs"
-  
-  if [ ! -e ${target}/BCK_TCo${JCAP}_${DMSFLAG}30S ] ; then
-    ${LNCP} ${source}/BCK_TCo${JCAP}_${DMSFLAG}30S/* ${target}/BCK_TCo${JCAP}_${DMSFLAG}30S
-  fi
- 
+ # get MOM SST
+ OCNDMSFN="OCNDMS"
+ export OCNDMS=${OCNDMSFN}@${idmsdb}
+ ${DMSPATH}/rdmscrt -l34 ${OCNDMS}
+ export source="/nwpr/gfs/xb80/data2/dmsdb/ncepec.ufs"
+ export target="${dmsdb_home}/${idmsdb}.ufs" 
+ if [ ! -e ${target}/${OCNDMSFN}/* ] ; then
+   ${LNCP} ${source}/${OCNDMSFN}/* ${target}/${OCNDMSFN}/
+ fi
+
+
   # Oceanic initial and bundary condition 
   dtg_yy=`echo $dtg10 | cut -c1-4`
   dtg_yymmdd=`echo $dtg10 | cut -c1-8`
@@ -153,33 +167,24 @@
    fi
  fi
 
-  yyyy_now=`echo $dtg10 | cut -c1-4`
-  yyyymmdd=`echo $dtg10 | cut -c1-8`
-  yyyy_m1=$(($yyyy_now-1))
-  yyyy_p1=$(($yyyy_now+1))
-  yyyy_p2=$(($yyyy_now+2))
- 
-  echo godas_base=${godas_base}
+ yyyy_now=`echo $dtg10 | cut -c1-4`
+ yyyymmdd=`echo $dtg10 | cut -c1-8`
+ yyyy_m1=$(($yyyy_now-1))
+ yyyy_p1=$(($yyyy_now+1))
+ yyyy_p2=$(($yyyy_now+2))
 
-  LNCP="ln -fs" 
-  rm -f ${GFSWRK}/dailygodas${yyyy_m1}
-  ${LNCP} ${GODASgfsDIR}/godas.P.${yyyy_m1}.TCo383.a.nc           ${GFSWRK}/dailygodas${yyyy_m1}
-  rm -f ${GFSWRK}/dailygodas${yyyy_now}
-  ${LNCP} ${GODASgfsDIR}/godas.P.${godas_base}.pano.TCo383.a.nc   ${GFSWRK}/dailygodas${yyyy_now}
-  rm -f ${GFSWRK}/dailygodas${yyyy_p1}
-  ${LNCP} ${GODASgfsDIR}/godas.P.${godas_base}.pano.TCo383.a.nc   ${GFSWRK}/dailygodas${yyyy_p1}
-  rm -f ${GFSWRK}/dailygodas${yyyy_p2}
-  ${LNCP} ${GODASgfsDIR}/godas.P.${yyyy_p2}.TCo383.a.nc           ${GFSWRK}/dailygodas${yyyy_p2}
-  rm -f ${GFSWRK}/unit.97
-  ${LNCP} ${GODASgfsDIR}/TCo383_${godas_base}pano_${yyyymmdd}.nc  ${GFSWRK}/unit.97
+ echo godas_base=${godas_base}
 
-  # get oceanic climatology
-  OCNCLMFN="OCNCLM"
-  ocnclm_source="/nwpr/gfs/xb99/data2/dmsdb/OISST_clim.ufs"
-  if [ ! -e ${dmsdb_home}/${idmsdb}.ufs/${OCNCLMFN}/*  ] ; then
-    ${DMSPATH}/rdmscrt -l34  ${OCNCLMFN}@${idmsdb}
-    ln -fs ${ocnclm_source}/CLMdaily_TCo383_2010_2019/* ${dmsdb_home}/${idmsdb}.ufs/${OCNCLMFN}/
-  fi
+ rm -f ${GFSWRK}/dailygodas${yyyy_m1}
+ ${LNCP} ${GODASgfsDIR}/godas.P.${yyyy_m1}.TCo383.a.nc           ${GFSWRK}/dailygodas${yyyy_m1}
+ rm -f ${GFSWRK}/dailygodas${yyyy_now}
+ ${LNCP} ${GODASgfsDIR}/godas.P.${godas_base}.pano.TCo383.a.nc   ${GFSWRK}/dailygodas${yyyy_now}
+ rm -f ${GFSWRK}/dailygodas${yyyy_p1}
+ ${LNCP} ${GODASgfsDIR}/godas.P.${godas_base}.pano.TCo383.a.nc   ${GFSWRK}/dailygodas${yyyy_p1}
+ rm -f ${GFSWRK}/dailygodas${yyyy_p2}
+ ${LNCP} ${GODASgfsDIR}/godas.P.${yyyy_p2}.TCo383.a.nc           ${GFSWRK}/dailygodas${yyyy_p2}
+ rm -f ${GFSWRK}/unit.97
+ ${LNCP} ${GODASgfsDIR}/TCo383_${godas_base}pano_${yyyymmdd}.nc  ${GFSWRK}/unit.97
 
 #----------------------------------------------------------------#
 
@@ -212,7 +217,6 @@ export FIXDIR=${GFSFIX}
 
 export ANADMS=${idmsfile}
 export FCSTDMS=${odmsfile}
-export BCKOPS=BCK_TCo${JCAP}_${DMSFLAG}30S@bckdms
 
 ${DMSPATH}/rdmspurge -f FCSTDMS
 ${DMSPATH}/rdmscrt -l34 FCSTDMS
@@ -244,7 +248,7 @@ elif [ $JCAP = 383  ] ; then
   MODEL_BASIC='nco=384,'
 fi
 
- export MODLST_SIT="do_sit=false, fsit=-99., ldailyFCTsst=true, ldailyFCTicesndpt=f, dailyClm_option=1, dSITdt_intv=12., weightSIT=1.0,"
+ export MODLST_SIT="do_sit=true, fsit=-99., ldailyFCTsst=true, ldailyFCTicesndpt=f, dailyClm_option=1, dSITdt_intv=12., weightSIT=1.0,"
 
  export SIT_NML=" lpre6hr_sit=f, loutsit24=t, outsitmean=6.,
  sit_domain_w= 0., sit_domain_e= 360., sit_domain_s= -30., sit_domain_n= 30., sit_domain_extgrd= 10.,
