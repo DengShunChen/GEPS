@@ -150,7 +150,7 @@
       LOGICAL, SAVE :: lwave_breaking=.TRUE.      !
   
   !   3.3 other variables  
-      INTEGER, SAVE :: sit_ice_option  = 2  !   ice option in sit (i.e., calc. of snow/ice) (=0, off; >=1, on) 
+      INTEGER, SAVE :: sit_ice_option  = 0  !   ice option in sit (i.e., calc. of snow/ice) (=0, off; >=1, on) 
                                             !   0: for coupling with vdiff semi-implicitly for tsi calculation (default)
                                             !   1: explcity coupling with strong security number
                                             !   2: original SIT output, no security. It can be crashed in few time steps

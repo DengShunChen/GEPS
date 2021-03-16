@@ -58,7 +58,7 @@
                 cc(nx+2,levp,1,my_max),ww3(nx,my_max)
 !byl                wss3(levp,2,3,jtrun,jtmax),cc3(nx+2,levp,3,my_max)
 
-      character lrec*26,rfile*55,ctau*6,topostd*4,topohgt*4
+      character lrec*26,rfile*55,ctau*6,topostd*4,topohgt*4,key*34
 !
 ! restart  : read(7) work array
 !
@@ -463,8 +463,11 @@
           enddo
           if( myrank .eq. 0 ) &
              print*,"get ncep's sea ice analysis, at dtg=",idtg
-          if ( ncepicthk ) then
-            call syslbl('w00092',idtg,0,ggdef,lrec)
+!
+          call syslbl('w00092',idtg,0,ggdef,lrec)
+          write(key,'(a26,a1,i7.7)') lrec,'H',lncrec
+          call dmschkr (ifilin,key//char(0),istat)
+          if ( istat .eq. 0 ) then
             call dmsread(nx,my,lrec,nxmy,'H',ifilin,ww1,istat)
 !byl          if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
             do jj=1,jlistnum
@@ -478,7 +481,12 @@
               enddo
             enddo
             if( myrank .eq. 0 ) &
-               print*,"get ncep's sea ice thickness analysis, at dtg=",idtg
+               print*,"get sea ice thickness from ncep analysis,",     &
+               " at dtg=",idtg
+          else
+            if( myrank .eq. 0 ) &
+               print*,"get sea ice thickness from model 6hr forecast,",&
+               " initial at dtg=",idtg2
           endif
 !
 ! reset albedo and tgclim at seaice grids                 

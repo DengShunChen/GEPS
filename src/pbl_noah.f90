@@ -678,7 +678,7 @@
          nmpbl=2
        endif
        if(nmpbl .eq. 2)then
-       call mixpbl_n( nx,nxj,lev,ntrac,u1,v1,t1,q1,pk2(1,lev),rb,fm,fh   &
+       call mixpbl_n( nx,nxj,lev,ntrac,u1,v1,t1,q1,pk2(1,lev),rb,fm,fh  &
                  , tg,heat,evap,stress,sfcw,kpbl                        &
                  , prsi,del,prsl,prslk,phii,phil,rcl,dt                 &
                  , hpbl,ice,g,cp,hltm,r,jj)
@@ -694,7 +694,7 @@
          hlw(i,kc)=atl(i,k)/86400.
        enddo
        enddo
-       call mixpbl_new( nx,nxj,lev,ntrac,u1,v1,t1,q1,swh,hlw,xmu         &
+       call mixpbl_new( nx,nxj,lev,ntrac,ntcw,u1,v1,t1,q1,swh,hlw,xmu   &
                  , pk2(1,lev),rb,fm,fh                                  &
                  , tg,heat,evap,stress,sfcw,kpbl                        &
                  , prsi,del,prsl,prslk,phii,phil,rcl,dt                 &
