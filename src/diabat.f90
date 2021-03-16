@@ -2021,22 +2021,23 @@
                     if(countdSITdt(ii,jj) .ge. 1.) then
                       tseadiffFCT(ii,jj)=dta * (1.-weightSIT*ratioSIT(ii,jj)) * dFCTsstdt(ii,jj)
                       tseadiffSIT(ii,jj)=dta * weightSIT*ratioSIT(ii,jj) * (sumdSITdt(ii,jj)/countdSITdt(ii,jj))
+                      tseadiffSIT24(ii,jj)=tseadiffSIT24(ii,jj)+tseadiffSIT(ii,jj)/dta*dt
+                      ! sea surface temperature tendency
+                      dtseadt(ii,jj)=(1.-weightSIT*ratioSIT(ii,jj)) * dFCTsstdt(ii,jj) &
+                                  + weightSIT * ratioSIT(ii,jj) * (sumdSITdt(ii,jj)/countdSITdt(ii,jj))
+                      sumdSITdt(ii,jj)=0.
+                      countdSITdt(ii,jj)=0.
                     endif
-                    sumdSITdt(ii,jj)=0.
-                    countdSITdt(ii,jj)=0.
-                    tseadiffSIT24(ii,jj)=tseadiffSIT24(ii,jj)+tseadiffSIT(ii,jj)/dta*dt
-                    ! sea surface temperature tendency 
-                    dtseadt(ii,jj)=(1.-weightSIT*ratioSIT(ii,jj)) * dFCTsstdt(ii,jj) &
-                               + weightSIT * ratioSIT(ii,jj) * (sumdSITdt(ii,jj)/countdSITdt(ii,jj))
                   endif
                 endif ! end if sitmask(ii,jj) .EQ. 1
               endif ! end if do_sit
+
               if (dossst) then 
                 dtseadt(ii,jj) = dtseadt(ii,jj) * (ssst3d(ii,1,jj) + 1.)
               endif 
               tseadiffFCT24(ii,jj)=tseadiffFCT24(ii,jj)+tseadiffFCT(ii,jj)/dta*dt
             endif !end if(ocean)
-          end do
+          end do  !end ii
         endif  !end if(tau .ge. 24.)
       endif !end if(ldailyFCTsst....)
 

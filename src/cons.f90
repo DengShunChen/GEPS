@@ -167,6 +167,13 @@
           print *, 'chlee debug...'
           print sit_nml
         endif
+        if(.NOT. ldailyFCTsst)then
+          print *,'do_sit=.true., auto set: ldailyFCTsst=.true.' &
+              ,',dailyClm_option=1, check ifilin_sst & ifilin_ClmANA'&
+              ,'is in filelist.'
+          ldailyFCTsst=.true.
+          dailyClm_option=1
+        endif
   130 continue
       endif
 
