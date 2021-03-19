@@ -19,7 +19,7 @@
  cstar=f,
  update=t,
  lsimpl=t,
- spl1=10.,
+ spl1=5.,
  spl2=100.,
  hfilt=1.,
  ksgeo=2,
@@ -53,6 +53,7 @@
  nmshl=3,
  nmgwor=2,
  nmgwcv=2,
+ nmmiph=2,
  ktcup=20,
  cgw=2.6e-5,
  mtnvar=14,
@@ -68,10 +69,13 @@
  ndsladvh2=f,
  isot=1,
  ivegsrc=1,
+ cgwd=1.20,
+ cmbk=1.00,
+ af=0.1,
  &end
 
  &typ
  write_mem=0,
- trk_intv=6,
- min_trk_pres=1002.,
+ trk_intv=3,
+ write_tau=6,
 &end
