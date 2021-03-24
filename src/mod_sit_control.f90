@@ -135,8 +135,8 @@
                                         ! the number of layers or pressure levels, does not include ghost zone)
       LOGICAL, SAVE :: lssst      = .TRUE.  ! .true. for turnon thermocline skin layer, .false. for turnoff thermocline skin layer
       LOGICAL, SAVE :: lgodas     = .TRUE. ! .true. for reading world ocean atlas (woa) data for sit model
-      LOGICAL, SAVE :: lamip      = .FALSE. ! .false. for reading climatology world ocean atlas (woa) data for sit model
-      LOGICAL, SAVE :: lwoa0      = .FALSE. ! .true. for reading initial ocean profile (unit: 97)
+      LOGICAL, SAVE :: lamip      = .TRUE. ! .false. for reading climatology world ocean atlas (woa) data for sit model
+      LOGICAL, SAVE :: lwoa0      = .TRUE. ! .true. for reading initial ocean profile (unit: 97)
       INTEGER, SAVE :: lwarning_msg = 0     !  or printing warsning message
                                             !   =0, no message
                                             !   =1, basic message
@@ -304,7 +304,7 @@
       LOGICAL           :: l_orbvsop87 = .TRUE.  ! .TRUE. : orbit routine from vsop87
 
 !ps
-      LOGICAL, SAVE :: ldailysst = .FALSE. !   .true. for using daily SST and SIC
+      LOGICAL, SAVE :: ldailysst = .TRUE. !   .true. for using daily SST and SIC
 
       LOGICAL, SAVE :: loutsit24    = .FALSE. !write wt,wu,wv,ws daily mean
       LOGICAL, SAVE :: lpre6hr_sit   = .FALSE. ! use lead 6 hours data of pre 6hr
