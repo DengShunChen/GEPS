@@ -72,7 +72,7 @@
                       , otgreen,out_hp,dosppt,dospptout, doshum, dossst  &
                       , ndsladvh2                                       &
                       , ldailyFCTsst,ldailyFCTicesndpt,lFCTweight       &
-                      , dailyClm_option,lopgsst,do_sit,fsit,pdfcloud    &
+                      , dailyClm_option,lopgsst,do_sit,fsit,pdfcloud,updatetg    &
                       , cmbk,cgwd,ncepicthk,nmmiph,spl1,spl2            &
                       , weightSIT,dSITdt_intv
 !
