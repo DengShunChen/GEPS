@@ -24,6 +24,7 @@
 !-----------------------------------------------------------------
 !
       use index
+      use namelist_soilveg
 !
       implicit  none
 
@@ -362,6 +363,16 @@
             ii=ii+1
          enddo
       enddo
+! the value of z0 is followed from new veg.type, read in lookup table.
+       if (ivegsrc .eq. 1)then
+       do jj=1,jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          do i=1,nxj
+             z0(i,jj)=z0_data(ivegtyp(i,jj))
+          enddo
+       enddo
+       endif
 !-- annual mean Tg
       write(lrec,22)ggdef,blnk
 !byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,soltcl(1,1,2),istat)
