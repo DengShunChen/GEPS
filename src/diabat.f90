@@ -167,7 +167,7 @@
       use rank
       use index
       use const,                 ONLY:do_sit,ldailyFCTsst,dailyClm_option,      &
-                                      pdfcloud,cmbk,cgwd, fsit, dosppt, doshum, &
+                                      pdfcloud,cmbk,cgwd, fsit, dosppt, doshum, dossst, &
                                       use_zmtnblck,ldailyFCTsst,ldailyFCTicesndpt, &
                                       ldailyFCTsst,ldailyFCTicesndpt,           &
                                       dailyClm_option,dSITdt_intv,weightSIT
@@ -190,7 +190,7 @@
       use physcons, only :con_rd,con_fvirt,con_rerth,con_rv
 ! for land_noah_new
       use namelist_soilveg, only :MAX_SLOPETYP,MAX_SOILTYP,MAX_VEGTYP
-      use mod_stochastic_physics, only : sppt3d, shum3d
+      use mod_stochastic_physics, only : sppt3d, shum3d, ssst3d
 !-----------------------------------------------------------------------
       implicit  none
 !-----------------------------------------------------------------------
@@ -321,7 +321,8 @@
       real :: vt_save_sppt(nxp,lev,my_max)        
       real :: tt_save_sppt(nxp,lev,my_max)        
       real :: qt_save_sppt(nxp,lev*ncld,my_max)
-      real :: qt_save_shum(nxp,lev*ncld,my_max)
+     !real :: qt_save_shum(nxp,lev*ncld,my_max)
+      real :: tg_save_ssst(nxp,1,my_max)
 #ifdef VERBOSE
       real :: ut_update(nxp,lev,my_max)     
       real :: vt_update(nxp,lev,my_max)        
@@ -2004,38 +2005,39 @@
               obswtbnew(ii,jj)=dta*dFCTsstdt(ii,jj)+obswtbold(ii,jj)
               obswtbold(ii,jj)=obswtbnow(ii,jj)
               obswtbnow(ii,jj)=obswtbnew(ii,jj)
-
+              ! sea surface temperature tendency 
               dtseadt(ii,jj)=dFCTsstdt(ii,jj)
               tseadiffFCT(ii,jj)=dta*dFCTsstdt(ii,jj)
               if(do_sit) then
-              if(sitmask(ii,jj) .EQ. 1.) then
-                if(lrun_sitvdiff .AND. ltrigsit )then
-                  tseadiffSIT(ii,jj)=0.
-                  sumdSITdt(ii,jj)=sumdSITdt(ii,jj)+dtswdt(ii,jj)
-                  countdSITdt(ii,jj)=countdSITdt(ii,jj)+1.
-                endif
-
-                dtaup= mod(tau+0.001, dSITdt_intv)
-                if( (dSITdt_intv .lt. 0.) .OR. (dtaup .lt. dtx_tau) )then
-                  if(countdSITdt(ii,jj) .ge. 1.) then
-                    tseadiffFCT(ii,jj)=dta*(1.-weightSIT*ratioSIT(ii,jj))&
-                                        *dFCTsstdt(ii,jj)
-                    tseadiffSIT(ii,jj)=dta*weightSIT*ratioSIT(ii,jj)  &
-                                       *(sumdSITdt(ii,jj)/countdSITdt(ii,jj))
+                if(sitmask(ii,jj) .EQ. 1.) then
+                  if(lrun_sitvdiff .AND. ltrigsit )then
+                    tseadiffSIT(ii,jj)=0.
+                    sumdSITdt(ii,jj)=sumdSITdt(ii,jj)+dtswdt(ii,jj)
+                    countdSITdt(ii,jj)=countdSITdt(ii,jj)+1.
                   endif
-                  sumdSITdt(ii,jj)=0.
-                  countdSITdt(ii,jj)=0.
-                  tseadiffSIT24(ii,jj)=tseadiffSIT24(ii,jj)+tseadiffSIT(ii,jj)/dta*dt
-                  dtseadt(ii,jj)=(1.-weightSIT*ratioSIT(ii,jj))*dFCTsstdt(ii,jj) &
-                             +weightSIT*ratioSIT(ii,jj) &
-                             *(sumdSITdt(ii,jj)/countdSITdt(ii,jj))
-                endif
-              endif
-              endif
-              tseadiffFCT24(ii,jj)=tseadiffFCT24(ii,jj)+tseadiffFCT(ii,jj)/dta*dt
+                 
+                  dtaup = mod(tau+0.001, dSITdt_intv)
+                  if( (dSITdt_intv .lt. 0.) .OR. (dtaup .lt. dtx_tau) )then
+                    if(countdSITdt(ii,jj) .ge. 1.) then
+                      tseadiffFCT(ii,jj)=dta * (1.-weightSIT*ratioSIT(ii,jj)) * dFCTsstdt(ii,jj)
+                      tseadiffSIT(ii,jj)=dta * weightSIT*ratioSIT(ii,jj) * (sumdSITdt(ii,jj)/countdSITdt(ii,jj))
+                      tseadiffSIT24(ii,jj)=tseadiffSIT24(ii,jj)+tseadiffSIT(ii,jj)/dta*dt
+                      ! sea surface temperature tendency
+                      dtseadt(ii,jj)=(1.-weightSIT*ratioSIT(ii,jj)) * dFCTsstdt(ii,jj) &
+                                  + weightSIT * ratioSIT(ii,jj) * (sumdSITdt(ii,jj)/countdSITdt(ii,jj))
+                      sumdSITdt(ii,jj)=0.
+                      countdSITdt(ii,jj)=0.
+                    endif
+                  endif
+                endif ! end if sitmask(ii,jj) .EQ. 1
+              endif ! end if do_sit
 
+              if (dossst) then 
+                dtseadt(ii,jj) = dtseadt(ii,jj) * (ssst3d(ii,1,jj) + 1.)
+              endif 
+              tseadiffFCT24(ii,jj)=tseadiffFCT24(ii,jj)+tseadiffFCT(ii,jj)/dta*dt
             endif !end if(ocean)
-          end do
+          end do  !end ii
         endif  !end if(tau .ge. 24.)
       endif !end if(ldailyFCTsst....)
 
@@ -2091,22 +2093,14 @@
         enddo
       endif
 
-      ! SHUM process
+      ! SHUM process 
       if (doshum) then
-        ! there's no need to add perturbation for cloud & ozone tracer. 
-        ! modified by PangYen Liu
-        nk = 1  ! 1: specific humidity
-                ! 2: specific humidity + cloud water
-                ! 3: specific humidity + cloud water + ozone
-        do n=1,nk
           do k=1,lev
-            kk = (n-1)*lev+k
             do i=1,nxj
               ru=shum3d(i,k,jj)
-              qt(i,kk,jj)=qt(i,kk,jj)*(1.+ru)
+              qt(i,k,jj) = qt(i,k,jj)*(1.+ru)
             enddo
           enddo
-        enddo
       endif 
 
 #ifdef VERBOSE
@@ -2403,14 +2397,10 @@
   370    continue
   360 continue
 !
-      call mpe_global_maxloc(xkmkk, 2,ixkmkk,jxkmkk,idummy,idummy &
-                            ,mpe_double)
-      call mpe_global_maxloc(xkmk1, 2,ixkmk1,jxkmk1,idummy,idummy &
-                            ,mpe_double)
-      call mpe_global_maxloc(dtcupg,2,idcupx,jdcupx,idummy,idummy &
-                            ,mpe_double)
-      call mpe_global_maxloc(utx,   2,ikutx, jutx  ,idummy,idummy &
-                            ,mpe_double)
+      call mpe_global_maxloc(xkmkk, 2,ixkmkk,jxkmkk,idummy,idummy,mpe_double)
+      call mpe_global_maxloc(xkmk1, 2,ixkmk1,jxkmk1,idummy,idummy,mpe_double)
+      call mpe_global_maxloc(dtcupg,2,idcupx,jdcupx,idummy,idummy,mpe_double)
+      call mpe_global_maxloc(utx,   2,ikutx, jutx  ,idummy,idummy,mpe_double)
 !
       call maxpp2_2d( pst,pstx,ipstx,jpstx )
       call minpp2_2d( pst,pstn,ipstn,jpstn )
@@ -2451,8 +2441,7 @@
 
       end do
 !
-      call mpe_global_maxloc(dtradg,4,isign,idradx,jdradx,kdradx &
-                            ,mpe_double)
+      call mpe_global_maxloc(dtradg,4,isign,idradx,jdradx,kdradx,mpe_double)
 !
       dtradg = dtradg*isign
 !

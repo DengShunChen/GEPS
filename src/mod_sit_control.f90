@@ -130,14 +130,14 @@
       INTEGER, SAVE :: zocn_option = 99   !  =1, 1 m appart in top 10 m, 10 m apart within 100-225 m, but coarse (~200 m) in deep-water formation depths (>500 m).
                                           !  =2 conventioanl godas z cord, fine in thermocline, 10 m apart within 100-225 m, but coarse (~200 m) in deep-water formation depths (>500 m).
                                           !  =others, conventional diecast coord.
-      real, SAVE :: ocn_tlz=5800.    ! depth of bottom z-level (m) of ocean model (v9.8992, 2013/10/3) (=5000. prior to v9.8992)
-      INTEGER, SAVE :: ocn_k1=40            ! vertical dimension parameter (number of layer interfaces, equal
+      real, SAVE :: ocn_tlz=200.    ! depth of bottom z-level (m) of ocean model (5800. after v9.8992, 2013/10/3) (=5000. prior to v9.8992)
+      INTEGER, SAVE :: ocn_k1=20            ! vertical dimension parameter (40 after v9.8992, in number of layer interfaces, equal
                                         ! the number of layers or pressure levels, does not include ghost zone)
       LOGICAL, SAVE :: lssst      = .TRUE.  ! .true. for turnon thermocline skin layer, .false. for turnoff thermocline skin layer
-      LOGICAL, SAVE :: lgodas     = .FALSE. ! .true. for reading world ocean atlas (woa) data for sit model
-      LOGICAL, SAVE :: lamip      = .FALSE. ! .false. for reading climatology world ocean atlas (woa) data for sit model
-      LOGICAL, SAVE :: lwoa0      = .FALSE. ! .true. for reading initial ocean profile (unit: 97)
-      INTEGER, SAVE :: lwarning_msg = 1     !  or printing warsning message
+      LOGICAL, SAVE :: lgodas     = .TRUE. ! .true. for reading world ocean atlas (woa) data for sit model
+      LOGICAL, SAVE :: lamip      = .TRUE. ! .false. for reading climatology world ocean atlas (woa) data for sit model
+      LOGICAL, SAVE :: lwoa0      = .TRUE. ! .true. for reading initial ocean profile (unit: 97)
+      INTEGER, SAVE :: lwarning_msg = 0     !  or printing warsning message
                                             !   =0, no message
                                             !   =1, basic message
                                             !   =2, medium message
@@ -159,17 +159,17 @@
                                             !   2: Ocean
                                             !   3: Ocean within 30N-30S
                                             !   4: all the grid                                       
-      real:: ssit_restore_time =xmissing    ! surface (0 <= ~ <10 m) sit grids restore time scale (s) (default: no nudging)
-      real:: usit_restore_time =86400.      ! upper ocean (10 <= ~ <100 m) sit grids restore time scale (s) (default: no nudging)
-      real:: dsit_restore_time =86400.      ! deep (>=100 m) restore time scale (s)  (default: no nudging)
+      real:: ssit_restore_time =-99.    ! surface (0 <= ~ <10 m) sit grids restore time scale (s) (default: no nudging)
+      real:: usit_restore_time =604800.      ! upper ocean (10 <= ~ <100 m) sit grids restore time scale (s) (default: no nudging)
+      real:: dsit_restore_time =0.      ! deep (>=100 m) restore time scale (s)  (default: no nudging)
 
-      real:: ssits_restore_time =xmissing    ! surface (0 <= ~ <10 m) sit grids restore time scale for salinity (s) (default: no nudging)
-      real:: usits_restore_time =86400.      ! upper ocean (10 <= ~ <100 m) sit grids restore time scale for salinity (s) (default: no nudging)
-      real:: dsits_restore_time =86400.      ! deep (>=100 m) restore time scale (s) for salinity (default: no nudging)
+      real:: ssits_restore_time =-99.    ! surface (0 <= ~ <10 m) sit grids restore time scale for salinity (s) (default: no nudging)
+      real:: usits_restore_time =604800.      ! upper ocean (10 <= ~ <100 m) sit grids restore time scale for salinity (s) (default: no nudging)
+      real:: dsits_restore_time =0.      ! deep (>=100 m) restore time scale (s) for salinity (default: no nudging)
 
-      real:: ssituv_restore_time =xmissing    ! surface (0 <= ~ <10 m) sit grids restore time scale for u, v (s) (default: no nudging)
-      real:: usituv_restore_time =86400.      ! upper ocean (10 <= ~ <100 m) sit grids restore time scale for u, v(s) (default: no nudging)
-      real:: dsituv_restore_time =86400.      ! deep (>=100 m) restore time scale (s) for u, v (default: no nudging)
+      real:: ssituv_restore_time =-99.    ! surface (0 <= ~ <10 m) sit grids restore time scale for u, v (s) (default: no nudging)
+      real:: usituv_restore_time =604800.      ! upper ocean (10 <= ~ <100 m) sit grids restore time scale for u, v(s) (default: no nudging)
+      real:: dsituv_restore_time =0.      ! deep (>=100 m) restore time scale (s) for u, v (default: no nudging)
 
       INTEGER :: nsit_nudg= 0                  ! number of nudg squares in ocean grids (default = 0, maximun=6)
       real:: sitbox_nudg_w(6)= -999.              ! west coords (lon) of nudging boxes [-180., 360.](deg). There are 6 boxes.
@@ -304,9 +304,9 @@
       LOGICAL           :: l_orbvsop87 = .TRUE.  ! .TRUE. : orbit routine from vsop87
 
 !ps
-      LOGICAL, SAVE :: ldailysst = .FALSE. !   .true. for using daily SST and SIC
+      LOGICAL, SAVE :: ldailysst = .TRUE. !   .true. for using daily SST and SIC
 
-      LOGICAL, SAVE :: loutsit24    = .TRUE. !write wt,wu,wv,ws daily mean
+      LOGICAL, SAVE :: loutsit24    = .FALSE. !write wt,wu,wv,ws daily mean
       LOGICAL, SAVE :: lpre6hr_sit   = .FALSE. ! use lead 6 hours data of pre 6hr
       REAL :: outsitmean = -99.                 !write wt,wu,wv,ws every tau hours mean
       real:: sit_domain_w  = 0.             ! west coords (lon) of sit domain [0., 360.](deg).
@@ -315,14 +315,14 @@
       real:: sit_domain_n  = 30.            ! north coords (lat) of sit domain [-90., 90.](deg).
       real:: sit_domain_extgrd  = 10.       ! extend degree of sit dimain deg).
       real:: ftrigsit= 0.                   ! start trigsit (return sst to atmospheric model) time (hr)
-      LOGICAL,SAVE:: ltimeblending=.FALSE.  ! if true=start time blending for nudging
+      LOGICAL,SAVE:: ltimeblending=.TRUE.  ! if true=start time blending for nudging
       INTEGER,SAVE:: timebl_option= 1       ! 0: nudging='0d' before timebl_start, gradually increase to nudging='nn' until timebl_allsit
                                             ! 1: nudging='0d' before timebl_start, after that, use sin to control nudging
-      real:: timebl_start=5.                ! start time of time blending for nudging (day)
-      real:: timebl_allsit=23.              ! always use sit restore_time for nudging after timebl_alsit (day)
+      real:: timebl_start=0.                ! start time of time blending for nudging (day)
+      real:: timebl_allsit=10.              ! always use sit restore_time for nudging after timebl_alsit (day)
       LOGICAL,SAVE:: lmixedlayer=.FALSE.    ! if lmixedlayer=t, read mixed layer depth data (read mixed_layer)
       real:: bathydepth=-200.               !
-      LOGICAL,SAVE:: lsftobswt=.FALSE.      ! logical of shift SWT below 10m (10m=obswtb, delete difference
+      LOGICAL,SAVE:: lsftobswt=.TRUE.      ! logical of shift SWT below 10m (10m=obswtb, delete difference
                                             !             between godas and obswtb data)
       integer:: outsitlev= 20               ! output sit level from 0 to outsitlev+1
 !ps

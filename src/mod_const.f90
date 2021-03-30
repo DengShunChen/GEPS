@@ -63,6 +63,7 @@
     logical :: dosppt       =.false.
     logical :: dospptout    =.false.
     logical :: doshum       =.false.
+    logical :: dossst       =.false.
     logical :: use_zmtnblck =.false.
          
     logical :: out_green,out_hp

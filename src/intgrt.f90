@@ -40,8 +40,7 @@
                                  ,opgsst,deallocate_opgsst_array                &
                                  ,obswtbnmw1,obswtbnmw2,obswtbwgt1,obswtbwgt2   &
                                  ,tseaold,tseanow,tseanew,dtseadt               &
-                                 ,tseadiffFCT,tseadiffFCT24           &
-                                 ,outtseadiffFCT24
+                                 ,tseadiffFCT,tseadiffFCT24,outtseadiffFCT24
       USE mo_netcdf,           ONLY:lkvl,cleanup_netcdf
 !-----------------------------------------------------------------------
       use raddiag
