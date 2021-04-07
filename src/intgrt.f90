@@ -556,16 +556,17 @@
 !
       n_stable=0
       n_unstable=0
+      hfiltx=hfilt
       if(nco.eq.180)then
 !!        dt_chg=1800.
         nc_stable=1
-        sptendmax2=0.4005
-        sptendmax1=0.3505
+        sptendmax2=0.3305
+        sptendmax1=0.2805
       else if(nco.eq.384)then
 !!        dt_chg=720.
         nc_stable=2
-        sptendmax2=0.4105
-        sptendmax1=0.3605
+        sptendmax2=0.3705
+        sptendmax1=0.3205
       else if(nco.eq.640) then
 !!        dt_chg=450.
         nc_stable=4
@@ -658,7 +659,7 @@
 !!      else if(tau.gt.48. .and. tau.le.72.)then
 !!         hfiltx=hfilt*2.
 !!      else
-           hfiltx=hfilt
+
 
 !!      endif
 !
@@ -1408,22 +1409,19 @@
                                  ,n_unstable
         if( mod(tau+0.001, 1.) .lt. dtx_tau)then
           if(n_stable .gt. nc_stable)then
-            hfilt=0.5
+            hfiltx=0.5*hfilt
             alpha=0.7
-            spl1=5.
-            if(myrank .eq. 0)print *,'** stable change hfilt=',hfilt,  &
+            if(myrank .eq. 0)print *,'** stable change hfilt=',hfiltx,  &
                              ' and keep alpha=',alpha
           else if(n_unstable .gt. nc_stable)then
-            hfilt=2.
+            hfiltx=2.*hfilt
             alpha=0.75
-            spl1=5.
-            if(myrank .eq. 0)print *,'** unstable change hfilt=',hfilt,&
+            if(myrank .eq. 0)print *,'** unstable change hfilt=',hfiltx,&
                              ' and alpha=',alpha
           else
-            hfilt=1.
+            hfiltx=hfilt
             alpha=0.7
-            spl1=5.
-            if(myrank .eq. 0)print *,'** keep hfilt=',hfilt,           &
+            if(myrank .eq. 0)print *,'** keep hfilt=',hfiltx,           &
                              ' and alpha=',alpha
           endif
           n_unstable=0
