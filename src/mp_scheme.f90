@@ -110,8 +110,8 @@
 !
 !          WSM6
            if ( nmmiph .eq. 6 )                                        &
-           call wsm6(ttc,phii,qtc,qtr,qtrw,qti,qtsw,qtgl,prsl,del,     &
-                     dta,rainncv,sr,islimsk,re_cloud,re_ice,re_snow,   &
+           call wsm6(ttc,phii,qtc,qtr,qtrw,qti,qtsw,qtgl,prsl,del,dta, &
+                     rainncv,sr,islimsk,re_cloud,re_ice,re_snow,       &
                      1,nx,1,lev,1,nxj,1,lev,snowncv,graupelncv)
 !          Thompson
            if ( nmmiph .eq. 8 )then

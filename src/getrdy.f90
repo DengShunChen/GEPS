@@ -709,7 +709,7 @@
 !ch     call transr1(jtrun,jtmax,nx,my,my_max,poly,spgeo,sgeo,nsize)
 !ch     call mpe_unify_1(ww1,sgeo,nx,my,2,mpe_double)
 
-        call mpe2d_unify_nx(ww3,sgeo) !2dMPI
+        call mpe2d_unify_nx(ww3,sgeo)
         call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww3,spgeo,nsizey)
         call transr1(jtrun,jtmax,nx,my,my_max,poly,spgeo,sgeo,nsizey)
         call mpe2d_unify(ww1,sgeo)

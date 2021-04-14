@@ -153,7 +153,7 @@
          prslk(i,kc)=(plt(i,k)/1000.)**xkapa
          tgrs(i,kc)=tt(i,k)
          qgrs(i,kc)=qt(i,k)
-         vvl(i,kc)=sd(i,k)*0.1                !cb/sec
+         vvl(i,k)=sd(i,k)*0.1                !cb/sec
       enddo
       enddo
 

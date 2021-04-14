@@ -27,7 +27,7 @@
                     , alvsf,alvwf,alnsf,alnwf,facsf,facwf                      &
                     , idtg,doo3l,nfxr,sfalb,sfemis,isot,ivegsrc                &
 ! sit
-                    , lrun_sitvdiff,ic_sit             &
+                    , itimestep,lrun_sitvdiff,ic_sit                           &
 !xb110>
                     , flash,tsflw)
 !xb110<
@@ -316,6 +316,7 @@
       real      asol_clr(nxp,my_max),olr_clr(nxp,my_max),ss_clr(nxp,my_max), &
                 rs_clr(nxp,my_max),asr_clr(lev,my),alr_clr(lev,my),           &
                 ctot(nxp,my_max),chig(nxp,my_max),cmid(nxp,my_max),clow(nxp,my_max)
+
       ! for sppt
       real :: ut_save_sppt(nxp,lev,my_max)     
       real :: vt_save_sppt(nxp,lev,my_max)        
@@ -348,7 +349,7 @@
       integer :: zmtnblck(nxp)
       real :: ru,vru,upert,vpert,tpert,qpert,qnew,dtdtr
 
-      integer ii
+      integer itimestep,ii
 
       ! for MP WSM6 & Thompson
       logical uni_cloud,lmfshal,lmfdeep2
@@ -357,7 +358,8 @@
 !byl      real      avgdrag_u(my,lev),avgdrag_v(my,lev),drag_u(lev),drag_v(lev)
       real      drag_u(lev),drag_v(lev)
       real      fnor
-      data      fnor/0.5/
+      logical   donor,upnor
+      data      donor/.true./,fnor/0.5/
 
 !#######################################################################
 !
@@ -416,7 +418,7 @@
                 islimsk(nxp)
       real      sl(lev),delcup(lev),slimsk(nxp)
       real      dotc(nxp,lev),phil(nxp,lev),utc(nxp,lev),vtc(nxp,lev)
-      real      cldwrk(nxp,my_max),sd(nxp,lev,my_max),xkt2(nx)
+      real      cldwrk(nxp,my_max),sd(nxp,lev+1,my_max),xkt2(nx)
 ! for new shlcon
       real      rcup2(nxp)
 ! for scale-aware convection
@@ -455,7 +457,7 @@
 !xb110>
 !for new precpd & nTDK
       real      u0(nxp,lev),v0(nxp,lev),t0(nxp,lev),q0(nxp,lev*ncld)
-      real      upp(nxp,lev),vpp(nxp,lev)
+      real      upp(nxp,lev),vpp(nxp,lev),ttpp(nxp,lev)
 !for lightning
       real      flash(nxp,my_max)        !flash density (unit in flashes km^-2 day^-1)
       real      ztenh(nxp,lev),zqenh(nxp,lev),rho(nxp,lev)              &
@@ -482,8 +484,7 @@
                                        obswtbtm, tgtm
       character*12 cdtg
       integer yr, mo, dy, hr, mn
-      real tauhr,randdt
-      real dtx_tau,dtaup 
+      real tauhr,dtx_tau,dtaup
       INTEGER, PARAMETER :: nerr = 6
 !xb110>
       ztenh = 0.
@@ -558,14 +559,12 @@
 !     define local control variables
 !
       fluxcl = .true.
-      if (fwd) then
-         dta    = dt
-         rainfc = 1.0
+      dta    = dt
+      rainfc = 1.0
+      if (itimestep .le. 1) then
          doozon = .true.
          kdt    = 1
       else
-         dta    = 2.0*dt
-         rainfc = 0.5
          doozon = .false.
          kdt    = 0
       endif
@@ -590,6 +589,9 @@
 ! for nonorographic gravity wave drag
 !
       icnor = fnor*3600.0/dt + 0.0001
+      upnor = .false.
+      if ( (mod(iter,icnor).eq.0) .or. (iter.eq.1) )  upnor = .true.
+      upnor  = upnor  .and. donor
 !
       if (.not. dopbl)  then
         do jj = 1, jlistnum
@@ -863,7 +865,7 @@
           upp(i,k)    = up(i,k,jj)*xx
           vpp(i,k)    = vp(i,k,jj)*xx
           tt(i,k,jj)  = tt(i,k,jj)*pk(i,k,jj) / (1.0+0.608*qt(i,k,jj))
-          ttp(i,k,jj) = ttp(i,k,jj) / (1.0+0.608*qp(i,k,jj))
+          ttpp(i,k) = ttp(i,k,jj) / (1.0+0.608*qp(i,k,jj))
         enddo
       enddo
       !-----------------------------------------------------------------------------
@@ -955,16 +957,20 @@
           enddo
         endif
 !    
-        do k=1,lev-1
-          kc=lev-k+1
+!
+        do k=1,lev
           do i = 1, nxj
-            dotc(i,kc)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
-            dotc(i,kc)=dotc(i,kc)
+            dotc(i,k)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
           enddo
         enddo
-        do i = 1,nxj
-          dotc(i,1)=0.5*sd(i,lev,jj)
-        enddo
+
+!      if (myrank .eq. 0) then
+!          print *,'### use RRTMG scheme'
+!          print *,'### before rrtmg : iter =',iter
+!          print *,'### before rrtmg : tau   =',tau
+!          print *,'### before rrtmg : solhr =',solhr
+!          print *,'### before rrtmg : solcon=',solcon
+!      endif
 !--------------------------------------------------------------------------------
        call rrtmg                                                           &
           !  ---  inputs:
@@ -1034,7 +1040,7 @@
          call pbltke ( nxjp(j),nxp,lev,ktpbl,dta,grav,rgas,cp,xkapa,hltm,ptop &
                      , tice,hice,tg(1,jj),z0(1,jj),land(1,jj)                 &
                      , sgeo(1,jj),phi,pst(1,jj),upp,vpp                       &
-                     , ttp(1,1,jj),qp(1,1,jj),ut(1,1,jj),vt(1,1,jj)           &
+                     , ttpp,qp(1,1,jj),ut(1,1,jj),vt(1,1,jj)                  &
                      , tt(1,1,jj),qt(1,1,jj),pk(1,1,jj),pk2(1,1,jj)           &
                      , ustar(1,jj),tstar(1,jj),qstar(1,jj),e(1,1,jj)          &
                      , eps(1,1,jj),hflux(1,jj),qflux(1,jj),fwd                &
@@ -1052,7 +1058,7 @@
          call pbltke_n ( nxjp(j),nxp,lev,ktpbl,dta,grav,rgas,cp,xkapa,hltm,ptop &
                      , tice,hice,tg(1,jj),z0(1,jj),land(1,jj)                 &
                      , sgeo(1,jj),phi,pst(1,jj),upp,vpp                       &
-                     , ttp(1,1,jj),qp(1,1,jj),ut(1,1,jj),vt(1,1,jj)           &
+                     , ttpp,qp(1,1,jj),ut(1,1,jj),vt(1,1,jj)                  &
                      , tt(1,1,jj),qt(1,1,jj),pk(1,1,jj),pk2(1,1,jj)           &
                      , ustar(1,jj),tstar(1,jj),qstar(1,jj),e(1,1,jj)          &
                      , eps(1,1,jj),hflux(1,jj),qflux(1,jj),fwd                &
@@ -1069,7 +1075,7 @@
        call pbl_noah ( nxjp(j),nxp,lev,ktpbl,dta,grav,rgas,cp,xkapa,hltm,ptop &
                      , tice,hice,tg(1,jj),z0(1,jj),land(1,jj)                 &
                       , sgeo(1,jj),phi,pst(1,jj),upp,vpp                      &
-                     , ttp(1,1,jj),qp(1,1,jj),ut(1,1,jj),vt(1,1,jj)           &
+                     , ttpp,qp(1,1,jj),ut(1,1,jj),vt(1,1,jj)                  &
                      , tt(1,1,jj),qt(1,1,jj),pk(1,1,jj),pk2(1,1,jj)           &
                      , ustar(1,jj),tstar(1,jj),qstar(1,jj),e(1,1,jj)          &
                      , eps(1,1,jj),hflux(1,jj),qflux(1,jj),fwd                &
@@ -1231,17 +1237,15 @@
     !cyea---->
     !c 20120926 for Tiedtke cumulus
       if ( docup .and. (nmcup .eq. 4 .and. ncld .ge. 2) ) then
-        do k=1,lev-1
+        do k=1,lev
+          kc=lev-k+1
           do i = 1, nxj
-            dotc(i,k)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
+            dotc(i,kc)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
           enddo
-        enddo
-        do i = 1,nxj
-          dotc(i,lev)=0.5*sd(i,lev,jj)
         enddo
         call cumastr_driv(nxjp(j),nxp,lev,dt,grav,rgas,cp,hltm,ptop &
                        , land(1,jj),sgeo(1,jj),phi,upp              &
-                       , vpp,ttp(1,1,jj),qp(1,1,jj)                 &
+                       , vpp,ttpp,qp(1,1,jj)                        &
                        , ut(1,1,jj),vt(1,1,jj),tt(1,1,jj)           &
                        , qt(1,1,jj),rcup(1,jj),pk(1,1,jj)           &
                        , pk2(1,1,jj),dotc,qflux(1,jj)               &
@@ -1271,13 +1275,11 @@
         do i=1,nxj
           garea(i)  = tem1*tem2
         enddo
-        do k=1,lev-1
+        do k=1,lev
+          kc=lev-k+1
           do i = 1, nxj
-            dotc(i,k)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
+            dotc(i,kc)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
           enddo
-        enddo
-        do i = 1,nxj
-          dotc(i,lev)=0.5*sd(i,lev,jj)
         enddo
 
         call cumastr_driv_n                                               &
@@ -1326,15 +1328,11 @@
           psfc(i)  = pst(i,jj)*0.1        ! change to cb
           garea(i)  = tem1*tem2
         enddo
-        do k=1,lev-1
-          kc=lev-k+1
+        do k=1,lev
           do i = 1, nxj
-            dotc(i,kc)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
-            dotc(i,kc)=dotc(i,kc)*0.1
+            dotc(i,k)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
+            dotc(i,k)=dotc(i,k)*0.1
           enddo
-        enddo
-        do i = 1,nxj
-          dotc(i,1)=0.5*sd(i,lev,jj)*0.1
         enddo
         do k=1,lev
           kc=lev-k+1
@@ -1440,7 +1438,7 @@
 !=======================================================================
 ! convective gravity wave drag
 !=======================================================================
-      if( docgrav .and. (nmgwcv .eq. 1) )then
+      if( docgrav .and. upnor .and. (nmgwcv .eq. 1) )then
         call nor_gwdp (j,nxjp(j),nxp,lev,                         &
                   ut(1,1,jj),vt(1,1,jj),tt(1,1,jj),qt(1,1,jj),    &
                   plt(1,1,jj),pk(1,1,jj),pk2(1,1,jj),phi,dta,&
@@ -1511,17 +1509,12 @@
       ! psfc(1:nxj)  = pst(1:nxj,jj)*0.1 ! change to cb
       ! garea(1:nxj) = tem1*tem2
 
-        do k=1,lev-1
-          kc=lev-k+1
+        do k=1,lev
           do i = 1, nxj
-            dotc(i,kc)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
-            dotc(i,kc)=dotc(i,kc)*0.1
+            dotc(i,k)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
+            dotc(i,k)=dotc(i,kc)*0.1
           enddo
         enddo
-        do i = 1,nxj
-          dotc(i,1) = 0.5*sd(i,lev,jj)*0.1
-        enddo
-       !dotc(1:nxj,1) = 0.5*sd(1:nxj,lev,jj)*0.1
 
         do k=1,lev
           kc=lev-k+1
@@ -1613,9 +1606,10 @@
         endif
 
         lprnt=.false.
-        do i=1,nxj
-          psfc(i)  = pst(i,jj)*0.1        ! change to cb
-        enddo
+        psfc(:)  = pst(:,jj)*0.1        ! change to cb
+        psautco(:)  = 4.0e-4
+!byl            psautco(i)  = 8.0e-4 * work1(i) + 5.0e-4 * work2(i)
+
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
@@ -1626,9 +1620,8 @@
 !
 !!!            rhc(i,kc)=0.999-0.08*cos(d2r*arg)**2    !a3
 !byl            rhc(i,kc)=0.95-0.07*cos(d2r*xlat(j))    !v2
-            rhc(i,kc)=0.98-0.05*cos(d2r*arg)**2.0    !v3
-!byl            psautco(i)  = 8.0e-4 * work1(i) + 5.0e-4 * work2(i)
-            psautco(i)  = 5.0e-4
+            rhc(i,kc)=0.98-0.07*cos(d2r*xlat(j))**2.0    !v3
+!            rhc(i,kc)=0.98-0.07*cos(d2r*arg)**2.0    !wsm6
 !            tem   = (max(min(plt(i,k,jj),900.)-700.,0.01) / 200.)
 !            rhc(i,kc)=tem*rhc(i,kc)+(1.-tem)*0.7
 !!!!             rhc(i,kc)=(1.-coefrhc)*(0.7+0.15*cos(d2r*xlat(j))**2)  &
@@ -1645,6 +1638,12 @@
 !            rhc(i,kc)=rhc(i,kc)*tem
 !
 !!            if(rhc(i,kc).ge.0.98)rhc(i,kc)=0.98
+          enddo
+        enddo
+!
+        do k=1,lev
+          kc=lev-k+1
+          do i=1,nxj
             prsl(i,kc) = plt(i,k,jj)*0.1 ! change to cb
 !            phil(i,kc) = phi(i,k)-sgeo(i,jj)
             del(i,kc) = (dsigma(k,1)*pst(i,jj)+dsigma(k,2))*0.1  ! change to cb

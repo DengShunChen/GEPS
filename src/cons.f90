@@ -57,7 +57,7 @@
       real      pnm(jtrun+1,jtrun+1)
 
 !
-      namelist /modlst/ ksgeo,ptop,ptmean,tfilt,dt,taui,taue            &
+      namelist /modlst/ ksgeo,ptop,ptmean,dt,taui,taue                  &
                       , tauo,frad,ktpbl,ktshl,ktcup,njump,evaprh,lsimpl &
                       , yesdia,dopbl,docup,dorad,dolsp,dograv           &
                       , doshl,dodry,donnmi,idg,jdg,ldiag,nnmiit,nnmivm  &
@@ -74,7 +74,7 @@
                       , ldailyFCTsst,ldailyFCTicesndpt,lFCTweight       &
                       , dailyClm_option,lopgsst,do_sit,fsit,pdfcloud    &
                       , cmbk,cgwd,nmmiph,spl1,spl2                      &
-                      , weightSIT,dSITdt_intv
+                      , weightSIT,dSITdt_intv,af
 !
       real    si(lev+1)
       logical flag
@@ -328,8 +328,10 @@
 !  horizontal diffusion settings for sponge layer
       do k = 1, lev
         prslp=sigma(k,2)+sigma(k,1)*1000.+ptop
-        if ( prslp .le. spl1 ) hdk1=k
-        if ( prslp .le. spl2 ) hdk2=k
+        if ( prslp .le. spl1  ) hdk1=k
+        if ( prslp .le. spl2  ) hdk2(1)=k
+        if ( prslp .le. 200.  ) hdk2(2)=k
+        if ( prslp .le. 300.  ) hdk2(3)=k
       enddo
 !
 !

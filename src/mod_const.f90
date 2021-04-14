@@ -35,7 +35,7 @@
  
     real ::                                                &
          capa,cp,rad,radsq,grav,omega,rgas,stbo,s0,hltm,   &
-         ptop,ptmean,tfilt,dt,tau,taui,taue,tauo,          &
+         ptop,ptmean,dt,tau,taui,taue,tauo,                &
          hours,frad,evaprh,qgini,                          &
          tice,hice,cutfreq,taup,hfilt,ptmeans,             &
          taureg,cgw,domfc,otgreen,cgwd,cmbk,spl1,spl2
@@ -49,7 +49,7 @@
  
     common/constR/                                         &
          capa,cp,rad,radsq,grav,omega,rgas,stbo,s0,hltm,   &
-         ptop,ptmean,tfilt,dt,tau,taui,taue,tauo,          &
+         ptop,ptmean,dt,tau,taui,taue,tauo,                &
          hours,frad,evaprh,qgini,                          &
          tice,hice,cutfreq,taup,hfilt,ptmeans,             &
          taureg,cgw,fsit,domfc,otgreen,spl1,spl2,           &
@@ -72,7 +72,7 @@
     logical :: ndsladvh2
 
     !for horizontal diffusion
-    integer :: hdk1,hdk2
+    integer :: hdk1,hdk2(3)
 
     !for pdf cloud
     logical :: pdfcloud
