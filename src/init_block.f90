@@ -94,8 +94,6 @@
       out_hp=.false.
 ! pdf cloud
       pdfcloud=.false.
-! ncep ice thickness
-      ncepicthk=.false.
 ! stochastic physics
       dosppt=.false.
       dospptout=.false.
