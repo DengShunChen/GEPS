@@ -168,7 +168,7 @@
       use index
       use const,                 ONLY:do_sit,ldailyFCTsst,dailyClm_option,      &
                                       pdfcloud,cmbk,cgwd, fsit, dosppt, doshum, &
-                                      use_zmtnblck
+                                      use_zmtnblck,bckfile,ggdef
       use mod_sitgrid
       USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
       USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt &
@@ -421,6 +421,9 @@
       real      phii(nxp,lev+1)
       real      qti(nxp,lev),qtrw(nxp,lev),qtsw(nxp,lev),qtgl(nxp,lev)
       real      icem,ntnc(nxp,lev,2) !1:ice, 2:liquid
+! for updating low boundary condition
+      real      dummy(nxp,my_max),ls(nxp,my_max),z0ocn(nxp,my_max)
+      logical   doclxu,iceold(nxp,my_max)
 
 !CWB 2007-09-27 for random number seed >>>
       real*8    rtc,rsecond
@@ -552,6 +555,7 @@
 !     define local control variables
 !
       fluxcl = .true.
+      doclxu = .false.
       if (fwd) then
          dta    = dt
          rainfc = 1.0
@@ -566,13 +570,13 @@
 !------------------------------------------------------------------------------
 !     set hours, iter, icrad, julian, uprad, doozon
 !------------------------------------------------------------------------------
-
       hours = hours + dt/3600.0
       if ( hours .gt. 24.0 )  then
          hours = mod ( hours,24.0 )
          julian= julian + 1
          if ( julian .gt. 365 ) julian = julian - 365
          doozon = .true.
+         doclxu = .true.
       endif
       icrad = frad*3600.0/dt + 0.0001 ! frad =1.0 set in block.f
       iter  = tau*3600.0/dt + 0.0001
@@ -580,6 +584,65 @@
       if ( (mod(iter,icrad).eq.0) .or. (iter.eq.1) )  uprad = .true.
       doozon = doozon .and. dorad
       uprad  = uprad  .and. dorad
+!
+! update low boundary condition
+! 
+      if ( doclxu ) then
+      iceold=ice
+      z0ocn=z0
+!     read climate data
+        call readclx( nx,my,my_max,julian,land,ocean,ice,tgclim,gwclim  &
+                   ,z0,alb,dummy,bckfile,sigmaf,istyp,ivegtyp,ls        &
+                   ,shdmax,shdmin,slopetyp,snoalb,ggdef,isot,ivegsrc )
+!
+!     read new albedo
+!
+        if (irad .eq. 2) then
+          call readalb(bckfile,nx,my,my_max,julian,ggdef,         &
+                     alvsf,alvwf,alnsf,alnwf,facsf,facwf)
+          if (myrank.eq.0) print *, 'irad=2, readalb ok!!'
+          do jj=1,jlistnum
+            j=jlist1(jj)
+            nxj=nxdef_2d(j)
+            do i=1,nxj
+              alvsf(i,jj)=alvsf(i,jj)*0.01
+              alvwf(i,jj)=alvwf(i,jj)*0.01
+              alnsf(i,jj)=alnsf(i,jj)*0.01
+              alnwf(i,jj)=alnwf(i,jj)*0.01
+              facsf(i,jj)=facsf(i,jj)*0.01
+              facwf(i,jj)=facwf(i,jj)*0.01
+            enddo
+          enddo
+        endif
+!
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+        do i=1,nxj
+          if(ls(i,jj).eq.0) then
+!---------------------------------------------------------------------
+! (1)  set ice thickness => not for couple
+!---------------------------------------------------------------------
+            if(iceold(i,jj)       .and. .not. ice(i,jj)) then
+              zice(i,jj)=0.
+              cice(i,jj)=0.   
+              z0(i,jj)=0.0002 ! set new ocean point to 0.0002
+            endif
+            if(.not. iceold(i,jj) .and. ice(i,jj)) then
+              xtice(i,jj)=tg(i,jj)
+              zice(i,jj)=0.1 ! from himin in sfc_sice 
+              cice(i,jj)=0.15 ! from cimin in sfc_sice 
+              z0(i,jj)=0.00001 ! set new ice point to 0.00001
+            endif
+!---------------------------------------------------------------------
+! (2)  retain surface roughness over ocean
+!---------------------------------------------------------------------
+            if(ocean(i,jj)) z0(i,jj)=z0ocn(i,jj)
+          endif ! if(ls(i,jj).eq.0) then
+        enddo
+        enddo
+
+      endif ! doclxu
 !
 ! for nonorographic gravity wave drag
 !
