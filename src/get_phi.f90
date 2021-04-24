@@ -1,4 +1,5 @@
-       subroutine get_phi(nxj,nx,lev,ptop,cp,r,g,sgeo,pk,pk2,tt,qt,phii)
+       subroutine get_phi(nxj,nx,lev,ptop,cp,r,g,sgeo,pk,pk2,tt,qt,  &
+                          phii,phi)
 
         integer nxj,nx,lev,i,k,kc
         real    ptop,cp,r,g,pk(nx,lev),pk2(nx,lev),         &
