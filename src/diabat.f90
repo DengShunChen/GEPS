@@ -826,6 +826,7 @@
         work1(i)    = (log(cosl(j) / (nxdef(j)*my)) - dxmin) * dxinv
         work1(i)    = max(0.0, min(1.0,work1(i)))
         work2(i)    = 1.0 - work1(i)
+        garea(i)    = tem1*tem2
         if(land(i,jj))slimsk(i)=1
         if(ocean(i,jj))slimsk(i)=0
         if(ice(i,jj))slimsk(i)=2
@@ -1272,9 +1273,6 @@
       endif    !(end if nmcup=4)
 
       if ( docup .and. (nmcup .eq. 5 .and. ncld .ge. 2) ) then
-        do i=1,nxj
-          garea(i)  = tem1*tem2
-        enddo
         do k=1,lev
           kc=lev-k+1
           do i = 1, nxj
@@ -1326,7 +1324,6 @@
         jcap = 240
         do i=1,nxj
           psfc(i)  = pst(i,jj)*0.1        ! change to cb
-          garea(i)  = tem1*tem2
         enddo
         do k=1,lev
           do i = 1, nxj
@@ -1504,10 +1501,8 @@
       if( doshl .and. (nmshl.eq.2 .or. nmshl.eq.3) ) then
         do i=1,nxj
           psfc(i)  = pst(i,jj)*0.1        ! change to cb
-          garea(i) = tem1*tem2
         enddo
       ! psfc(1:nxj)  = pst(1:nxj,jj)*0.1 ! change to cb
-      ! garea(1:nxj) = tem1*tem2
 
         do k=1,lev
           do i = 1, nxj

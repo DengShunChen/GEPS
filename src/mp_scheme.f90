@@ -143,13 +143,13 @@
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
-            qt(i,      k) = qtc(i,kc)
+            qt(i,             k) = qtc(i,kc)
             qt(i,(ntcw-1)*lev+k) = qtr(i,kc)
             qt(i,(ntrw-1)*lev+k) = qtrw(i,kc)
             qt(i,(ntiw-1)*lev+k) = qti(i,kc)
             qt(i,(ntsw-1)*lev+k) = qtsw(i,kc)
             qt(i,(ntgl-1)*lev+k) = qtgl(i,kc)
-            tt(i,      k) = ttc(i,kc)
+            tt(i,             k) = ttc(i,kc)
           enddo
         enddo
 
