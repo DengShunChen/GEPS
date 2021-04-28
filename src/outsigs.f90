@@ -476,7 +476,6 @@
 !
       use index
       use mpe
-      use const, only : ncepicthk
 !
       implicit  none
       integer   nx,my,itau,my_max
@@ -534,7 +533,6 @@
       enddo
       enddo
 !
-      if ( .not. ncepicthk ) then
       call syslbl ('w00092',idtg,itau,ggdef,ihdg)
       call dmsread(nx,my,ihdg,lenc,'H',ifilout,work,istat)
 !byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
@@ -548,7 +546,6 @@
          ii=ii+1
       enddo
       enddo
-      endif
 !
       return
       end

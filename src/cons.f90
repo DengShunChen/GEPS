@@ -73,7 +73,7 @@
                       , ndsladvh2                                       &
                       , ldailyFCTsst,ldailyFCTicesndpt,lFCTweight       &
                       , dailyClm_option,lopgsst,do_sit,fsit,pdfcloud,updatetg    &
-                      , cmbk,cgwd,ncepicthk,nmmiph,spl1,spl2            &
+                      , cmbk,cgwd,nmmiph,spl1,spl2            &
                       , weightSIT,dSITdt_intv
 !
       real    si(lev+1)
