@@ -41,9 +41,9 @@
  idmstail=''
  idmsdb="TCo${JCAP}L72"
 
- odmshead='STOC'
- odmsbody=${dtg}
- odmstail="${DMSFLAG}MG"
+ odmshead='SIT'
+ odmsbody=''
+ odmstail=''
  odmsdb=${idmsdb}
 
  #-- executable
@@ -320,7 +320,7 @@ cat > ${GFSWRK}/namlsts << EOF
   donnmi=true, 
   dosppt=true,  dospptout=false,
   doshum=false, 
-  dossst=true,
+  dossst=false,
   cutfreq=3, nnmivm=3,doincr=f,
   hdiff=t, frad=1.0, ldiag=0,
   idg=40, jdg=108,
