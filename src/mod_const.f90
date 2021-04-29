@@ -57,7 +57,7 @@
     logical :: lsimpl,lzadv, yesdia,dopbl, docup, dorad,      &
             dolsp, dograv,doshl, dodry, donnmi,ozon,       &
             restrt,hdiff, cstar, update,doincr,hybrid,     &
-            doo3l, docgrav
+            doo3l, docgrav,doclx
 
     ! for stochastic physics
     logical :: dosppt       =.false.

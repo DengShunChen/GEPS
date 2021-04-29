@@ -98,6 +98,8 @@
       dosppt=.false.
       dospptout=.false.
       doshum=.false.
+! update low boundary condition
+      doclx=.false.
 !---------------------------------------------------------------------------
 !
 ! specify the default option for cup and pbl

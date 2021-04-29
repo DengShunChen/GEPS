@@ -168,7 +168,7 @@
       use index
       use const,                 ONLY:do_sit,ldailyFCTsst,dailyClm_option,      &
                                       pdfcloud,cmbk,cgwd, fsit, dosppt, doshum, &
-                                      use_zmtnblck,bckfile,ggdef
+                                      use_zmtnblck,bckfile,ggdef,doclx
       use mod_sitgrid
       USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
       USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt &
@@ -587,9 +587,11 @@
 !
 ! update low boundary condition
 ! 
-      if ( doclxu ) then
-      iceold=ice
-      z0ocn=z0
+      if ( doclxu .and. doclx ) then
+        if (myrank.eq.0) print *,'update low boundary condition at      &
+                                   tau= ',tau
+        iceold=ice
+        z0ocn=z0
 !     read climate data
         call readclx( nx,my,my_max,julian,land,ocean,ice,tgclim,gwclim  &
                    ,z0,alb,dummy,bckfile,sigmaf,istyp,ivegtyp,ls        &
@@ -600,7 +602,7 @@
         if (irad .eq. 2) then
           call readalb(bckfile,nx,my,my_max,julian,ggdef,         &
                      alvsf,alvwf,alnsf,alnwf,facsf,facwf)
-          if (myrank.eq.0) print *, 'irad=2, readalb ok!!'
+
           do jj=1,jlistnum
             j=jlist1(jj)
             nxj=nxdef_2d(j)
@@ -1680,7 +1682,7 @@
 !byl            rhc(i,kc)=0.95-0.07*cos(d2r*xlat(j))    !v2
             rhc(i,kc)=0.98-0.05*cos(d2r*arg)**2.0    !v3
 !byl            psautco(i)  = 8.0e-4 * work1(i) + 5.0e-4 * work2(i)
-            psautco(i)  = 5.0e-4
+            psautco(i)  = 4.0e-4
 !            tem   = (max(min(plt(i,k,jj),900.)-700.,0.01) / 200.)
 !            rhc(i,kc)=tem*rhc(i,kc)+(1.-tem)*0.7
 !!!!             rhc(i,kc)=(1.-coefrhc)*(0.7+0.15*cos(d2r*xlat(j))**2)  &
