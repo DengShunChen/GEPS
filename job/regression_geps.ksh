@@ -241,60 +241,14 @@ cp $NWPETC/ocards $GFSWRK/ocards
 cp $NWPETC/namlsts $GFSWRK/namlsts
 
 if [ $JCAP = 639  ] ; then
-  MODLST_RES='dt=225., tfilt=0.040, hfilt=1., cgw=4.2e-5,'
+  MODLST_RES='dt=450., hfilt=1., cgw=4.2e-5, af=0.1'
   MODEL_BASIC='nco=640,'
 elif [ $JCAP = 383  ] ; then
-  MODLST_RES='dt=360., tfilt=0.050, hfilt=1, cgw=2.6e-5,'
+  MODLST_RES='dt=720., hfilt=1., cgw=2.6e-5, af=0.1'
   MODEL_BASIC='nco=384,'
 fi
 
- export MODLST_SIT="do_sit=true, fsit=-99., ldailyFCTsst=true, ldailyFCTicesndpt=f, dailyClm_option=1, dSITdt_intv=12., weightSIT=1.0,"
-
- export SIT_NML=" lpre6hr_sit=f, loutsit24=t, outsitmean=6.,
- sit_domain_w= 0., sit_domain_e= 360., sit_domain_s= -30., sit_domain_n= 30., sit_domain_extgrd= 10.,
- ltimeblending= T,
- timebl_option=0, timebl_start= 5., timebl_allsit= 15.,
- lobs_ocn_rerun= F,
- TRIGSIT%COUNTER= 1, TRIGSIT%UNIT= steps, TRIGSIT%ADJUSTMENT= exact, TRIGSIT%OFFSET= 0,
- lsit_ice= T, lsit_salt= T,
- zocn_option= 99,
- ocn_tlz= 200., ocn_k1= 20,
- lssst= T, sit_ice_option= 0,
- maskid= 1, lgodas= T, ldailysst=T, lmixedlayer=F, lamip= T, lwoa0= T, lsftobswt= T, lwarning_msg= 2, lsice_nudg= F, lsit_lw= F,
- ssit_restore_time= -99.,
- usit_restore_time= 604800.,
- dsit_restore_time= 0.,
- ssits_restore_time= -99.,
- usits_restore_time= 604800.,
- dsits_restore_time= 0.,
- ssituv_restore_time= -99.,
- usituv_restore_time= 604800.,
- dsituv_restore_time= 0.,
- nsit_nudg= 0,
- sitbox_nudg_w(1)=  40., sitbox_nudg_e(1)= 180., sitbox_nudg_s(1)= -15., sitbox_nudg_n(1)=  15.,
- sitbox_st_restore_time(1)= -99.,
- sitbox_ut_restore_time(1)= -99.,
- sitbox_dt_restore_time(1)= 0.,
- sitbox_ss_restore_time(1)= -99.,
- sitbox_us_restore_time(1)= -99.,
- sitbox_ds_restore_time(1)= 0.,
- sitbox_suv_restore_time(1)= -99.,
- sitbox_uuv_restore_time(1)= 0.,
- sitbox_duv_restore_time(1)= 0.,
- locaf= F,locn= F,lopen_bound= F,lall_straits= T,lstrict_channel= T,etopo_nres= 1,
- ocn_domain_w= 0.,ocn_domain_e= 360.,ocn_domain_s= -80.,ocn_domain_n= 80.,
- ratio_dt_o2a= 1.,ocn_couple_option= 0,high_current_killer= 4,
- locn_msg= F,ocn_lon_factor= 1,ocn_lat_factor= 1,
- TRIGOCN%COUNTER= 1, TRIGOCN%UNIT= steps, TRIGOCN%ADJUSTMENT= exact, TRIGOCN%OFFSET= 0,
- socn_restore_time= -9.000000000000000E+033,
- uocn_restore_time= -9.000000000000000E+033,
- docn_restore_time= -9.000000000000000E+033,
- nobox_nudg= 0,
- obox_restore_time= -9.000000000000000E+033, obox_nudg_flag= 0, obox_nudg_w= 6*-999.000000000000, obox_nudg_e= 6*-999.000000000000, obox_nudg_s= 6*-999.000000000000, obox_nudg_n= 6*-999.000000000000,
- kocn_dm0z= 1., ncarpet= 1, kcsmag= 1.,kalbw= 1.,ck=0.1,ce=0.7,Prw= 1.,d0= 0.03,csl= -27.,
- por_min= 0.1,csiced= 0.,lasia= F,lsteady_TKE=F,
-"
-
+ export MODLST_SIT="do_sit=true, dossst=false, fsit=-99., ldailyFCTsst=true, ldailyFCTicesndpt=f, dailyClm_option=1, dSITdt_intv=12., weightSIT=1.0,"
 
 cat > ${GFSWRK}/namlsts << EOF
  &model_param
@@ -313,7 +267,6 @@ cat > ${GFSWRK}/namlsts << EOF
   taui=0.0, taue=120.0, tauo=1.0, taup=6.0, taureg=6.,
   dt=225.0,
   cstar=f, update=t, lsimpl=t,
-  tfilt=0.04, hfilt=1.,
   ksgeo=2, yesdia=t,
   dopbl=t, docup=t, dorad=t, dolsp=t, doshl=t, dodry=f, 
   dograv=true, docgrav=true,
@@ -371,7 +324,7 @@ cat > ${GFSWRK}/namlsts << EOF
  /
 
  &sit_nml
-  ${SIT_NML}
+   lamip= true, lwoa0= true, ldailysst= true,
  /
 
 
