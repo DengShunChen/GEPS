@@ -422,7 +422,7 @@
       real      qti(nxp,lev),qtrw(nxp,lev),qtsw(nxp,lev),qtgl(nxp,lev)
       real      icem,ntnc(nxp,lev,2) !1:ice, 2:liquid
 ! for updating low boundary condition
-      real      dummy(nxp,my_max),ls(nxp,my_max),z0ocn(nxp,my_max)
+      real      sstc(nxp,my_max),ls(nxp,my_max),z0ocn(nxp,my_max)
       logical   doclxu,iceold(nxp,my_max)
 
 !CWB 2007-09-27 for random number seed >>>
@@ -594,7 +594,7 @@
         z0ocn=z0
 !     read climate data
         call readclx( nx,my,my_max,julian,land,ocean,ice,tgclim,gwclim  &
-                   ,z0,alb,dummy,bckfile,sigmaf,istyp,ivegtyp,ls        &
+                   ,z0,alb,sstc,bckfile,sigmaf,istyp,ivegtyp,ls         &
                    ,shdmax,shdmin,slopetyp,snoalb,ggdef,isot,ivegsrc )
 !
 !     read new albedo
@@ -640,6 +640,10 @@
 ! (2)  retain surface roughness over ocean
 !---------------------------------------------------------------------
             if(ocean(i,jj)) z0(i,jj)=z0ocn(i,jj)
+!---------------------------------------------------------------------
+! (3)  tg replaced by climate sea surface temperature
+!---------------------------------------------------------------------
+            if(ocean(i,jj)) tg(i,jj)=sstc(i,jj)
           endif ! if(ls(i,jj).eq.0) then
         enddo
         enddo
