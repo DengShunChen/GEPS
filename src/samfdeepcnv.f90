@@ -191,7 +191,8 @@
       parameter(g=grav,asolfac=0.958)
 !byl      parameter(g=grav)
       parameter(elocp=hvap/cp,el2orc=hvap*hvap/(rv*cp))
-      parameter(c0s=.002,c1=.002,d0=.01)
+!      parameter(c0s=.002,c1=.002,d0=.01)
+      parameter(c0s=.002,c1=.002,d0=.001) !for GFDL_MP
 !byl      parameter(d0=.01)
 !     parameter(c0l=c0s*asolfac)
 !
@@ -374,7 +375,8 @@
       edtmaxl = .3
       edtmaxs = .3
       clam    = .1
-      aafac   = .1
+!      aafac   = .1 
+      aafac   = .05  !for GFDL_MP
 !     betal   = .15
 !     betas   = .15
       betal   = .05
@@ -386,7 +388,7 @@
       crtlamu = 1.0e-4
       crtlamd = 1.0e-4
 !
-      cxlamu  = 1.0e-3
+!      cxlamu  = 1.0e-3
       cxlamd  = 1.0e-4
       xlamde  = 1.0e-4
       xlamdd  = 1.0e-4
@@ -441,7 +443,8 @@
         do i=1,im
           zi(i,k) = 0.5*(zo(i,k)+zo(i,k+1))
           xlamue(i,k) = clam / zi(i,k)
-!         xlamue(i,k) = max(xlamue(i,k), crtlamu)
+!         xlamue(i,k) = max(xlamue(i,k), crtlamu) 
+          xlamue(i,k) = max(xlamue(i,k), crtlamu) !for GFDL_MP
         enddo
       enddo
 !
@@ -486,6 +489,7 @@
           endif
         enddo
       enddo
+!FV3 initialize tracer variables
 !>  - Calculate saturation specific humidity and enforce minimum moisture values.
       do k = 1, km
         do i=1,im
@@ -723,8 +727,8 @@
             (k > kbcon(i) .and. k < kmax(i))) then
               tem = cxlamu * frh(i,k) * fent2(i,k)
               xlamue(i,k) = xlamue(i,k)*fent1(i,k) + tem
-!             tem1 = cxlamd * frh(i,k)
-!             xlamud(i,k) = xlamud(i,k) + tem1
+              tem1 = cxlamd * frh(i,k)          !for GFDL_MP
+              xlamud(i,k) = xlamud(i,k) + tem1  !for GFDL_MP
           endif
         enddo
       enddo

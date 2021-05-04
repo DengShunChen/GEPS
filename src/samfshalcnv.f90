@@ -151,7 +151,8 @@
 !byl      parameter(g=grav)
       parameter(elocp=hvap/cp, &
                 el2orc=hvap*hvap/(rv*cp))
-      parameter(c0s=0.002,c1=5.e-4,d0=.01)
+!      parameter(c0s=0.002,c1=5.e-4,d0=.01)
+      parameter(c0s=0.002,c1=5.e-4,d0=.001) !for GFDL_MP
 !byl      parameter(d0=.01)
 !     parameter(c0l=c0s*asolfac)
 !
@@ -292,7 +293,8 @@
 !
 !  model tunable parameters are all here
       clam    = .3
-      aafac   = .1
+!      aafac   = .1 
+      aafac   = .05  !for GFDL_MP
 !     evef    = 0.07
       evfact  = 0.3
       evfactl = 0.3
