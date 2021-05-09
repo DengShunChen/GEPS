@@ -422,7 +422,8 @@
       real      qti(nxp,lev),qtrw(nxp,lev),qtsw(nxp,lev),qtgl(nxp,lev)
       real      icem,ntnc(nxp,lev,2) !1:ice, 2:liquid
 ! for updating low boundary condition
-      real      sstc(nxp,my_max),ls(nxp,my_max),z0ocn(nxp,my_max)
+      integer   ls(nxp,my_max)
+      real      sstc(nxp,my_max),z0ocn(nxp,my_max)
       logical   doclxu,iceold(nxp,my_max)
 
 !CWB 2007-09-27 for random number seed >>>
@@ -623,7 +624,15 @@
         do i=1,nxj
           if(ls(i,jj).eq.0) then
 !---------------------------------------------------------------------
-! (1)  set ice thickness => not for couple
+! (1)  retain surface roughness over ocean
+!---------------------------------------------------------------------
+            z0(i,jj)=z0ocn(i,jj)
+!---------------------------------------------------------------------
+! (2)  tg replaced by climate sea surface temperature
+!---------------------------------------------------------------------
+            if (ocean(i,jj)) tg(i,jj)=sstc(i,jj)
+!---------------------------------------------------------------------
+! (3)  set ice thickness => not for couple
 !---------------------------------------------------------------------
             if(iceold(i,jj)       .and. .not. ice(i,jj)) then
               zice(i,jj)=0.
@@ -636,14 +645,6 @@
               cice(i,jj)=0.15 ! from cimin in sfc_sice 
               z0(i,jj)=0.00001 ! set new ice point to 0.00001
             endif
-!---------------------------------------------------------------------
-! (2)  retain surface roughness over ocean
-!---------------------------------------------------------------------
-            if(ocean(i,jj)) z0(i,jj)=z0ocn(i,jj)
-!---------------------------------------------------------------------
-! (3)  tg replaced by climate sea surface temperature
-!---------------------------------------------------------------------
-            if(ocean(i,jj)) tg(i,jj)=sstc(i,jj)
           endif ! if(ls(i,jj).eq.0) then
         enddo
         enddo
