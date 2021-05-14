@@ -1,1 +1,1 @@
-regression_geps_exp.ksh
+regression_geps.ksh

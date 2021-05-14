@@ -1,5 +1,10 @@
 #!/bin/ksh
 
+ export exp=${exp:-'TCo'}
+ export DO_SSST=${DO_SSST:-'true'}
+ export DO_SIT=${DO_SIT:-'true'}
+ export FCTSST=${FCTSST:-'true'} 
+
 #-- enviornment
  user=`whoami`
  datamv='login11'
@@ -8,6 +13,7 @@
  GFSDIR="$MDIR"
  GFSFIX="$MDIR/fix"
  GFSWRK="${GFSDIR}/work_${machine}"
+ NWPTRK="$MDIR/${exp}"
  Caldtg="/nwpr/gfs/xb80/bin/Caldtg.ksh"
 
  # GODAS data source
@@ -21,6 +27,7 @@
 
  rm -rf $GFSWRK
  mkdir -p $GFSWRK
+ mkdir -p ${NWPTRK}
 
 #-- dms data
  JCAP=${JCAP:-639}
@@ -41,13 +48,18 @@
  idmstail=''
  idmsdb="TCo${JCAP}L72"
 
- odmshead='SIT'
+ odmshead=${exp}
  odmsbody=''
  odmstail=''
  odmsdb=${idmsdb}
 
- #-- executable
+#-- executable
  EXEC='MTCo639L72_'${machine}
+
+#-- create gfsctl
+sfcst=0    # start fcst time
+efcst=360  # end fcst time 
+interv=12  # fcst interval
 
 #---------------------------------------------------------#
  idmsfile=${idmshead}${idmsbody}${idmstail}@${idmsdb}
@@ -96,7 +108,6 @@
  if [ ! -e ${target}/${OCNDMSFN}/* ] ; then
    ${LNCP} ${source}/${OCNDMSFN}/* ${target}/${OCNDMSFN}/
  fi
-
 
   # Oceanic initial and bundary condition 
   dtg_yy=`echo $dtg10 | cut -c1-4`
@@ -176,7 +187,7 @@
  echo godas_base=${godas_base}
 
  rm -f ${GFSWRK}/dailygodas${yyyy_m1}
- ${LNCP} ${GODASgfsDIR}/godas.P.${yyyy_m1}.TCo383.a.nc           ${GFSWRK}/dailygodas${yyyy_m1}
+ ${LNCP} ${GODASgfsDIR}/godas.P.${godas_base}.pano.TCo383.a.nc   ${GFSWRK}/dailygodas${yyyy_m1}
  rm -f ${GFSWRK}/dailygodas${yyyy_now}
  ${LNCP} ${GODASgfsDIR}/godas.P.${godas_base}.pano.TCo383.a.nc   ${GFSWRK}/dailygodas${yyyy_now}
  rm -f ${GFSWRK}/dailygodas${yyyy_p1}
@@ -187,6 +198,23 @@
  ${LNCP} ${GODASgfsDIR}/TCo383_${godas_base}pano_${yyyymmdd}.nc  ${GFSWRK}/unit.97
 
 #----------------------------------------------------------------#
+export GFSDIR DMSPATH
+export NWPETC=${GFSDIR}/etc
+export NWPETCGLB=${GFSWRK}
+export GLB_TYPHINI="/nwp/npcagfs/TYP/M00/dtg/ty"
+export FIXDIR=${GFSFIX}
+
+export ANADMS=${idmsfile}
+export FCSTDMS=${odmsfile}
+
+${DMSPATH}/rdmspurge -f FCSTDMS
+${DMSPATH}/rdmscrt -l34 FCSTDMS
+
+export FLIB_CNTL_BARRIER_ERR=FALSE
+export O3FORC=${O3FORC:-${FIXDIR}/global_o3prdlos.f77}
+export O3CLIM=${O3CLIM:-${FIXDIR}/global_o3clim.txt}
+export AEROSOL_FILE=${AEROSOL_FILE:-${FIXDIR}/global_climaeropac_global.txt}
+export EMMISSIVITY_FILE=${EMMISSIVITY_FILE:-${FIXDIR}/global_sfc_emissivity_idx.txt}
 
 #-- write out running date tag
  echo $dtg > ${GFSWRK}/crdate
@@ -209,27 +237,9 @@ cat > ${GFSWRK}/filist << EOF
  &end
 EOF
 
-export GFSDIR DMSPATH
-export NWPETC=${GFSDIR}/etc
-export NWPETCGLB=${GFSWRK}
-export GLB_TYPHINI="/nwp/npcagfs/TYP/M00/dtg/ty"
-export FIXDIR=${GFSFIX}
-
-export ANADMS=${idmsfile}
-export FCSTDMS=${odmsfile}
-
-${DMSPATH}/rdmspurge -f FCSTDMS
-${DMSPATH}/rdmscrt -l34 FCSTDMS
-
-export FLIB_CNTL_BARRIER_ERR=FALSE
-export O3FORC=${O3FORC:-${FIXDIR}/global_o3prdlos.f77}
-export O3CLIM=${O3CLIM:-${FIXDIR}/global_o3clim.txt}
-export AEROSOL_FILE=${AEROSOL_FILE:-${FIXDIR}/global_climaeropac_global.txt}
-export EMMISSIVITY_FILE=${EMMISSIVITY_FILE:-${FIXDIR}/global_sfc_emissivity_idx.txt}
-
-
-cd $GFSWRK
 #====================================================================
+cd $GFSWRK
+# setup prefix files
 ln -fs $O3FORC fort.28
 ln -fs $O3CLIM fort.48
 ln -fs $AEROSOL_FILE  aerosol.dat
@@ -240,6 +250,16 @@ cp $NWPETC/gfsctl $GFSWRK/gfsctl
 cp $NWPETC/ocards $GFSWRK/ocards
 cp $NWPETC/namlsts $GFSWRK/namlsts
 
+fcst=$(printf %03i ${sfcst})
+echo ${fcst} > ${GFSWRK}/gfsctl
+((ifcst=sfcst+interv))
+while [ ${ifcst} -le ${efcst} ] ;  do 
+  fcst=$(printf %03i ${ifcst})
+  echo ${fcst} >>  ${GFSWRK}/gfsctl
+  ((ifcst=ifcst+interv))
+done
+
+# create namelist
 if [ $JCAP = 639  ] ; then
   MODLST_RES='dt=225., tfilt=0.040, hfilt=1., cgw=4.2e-5,'
   MODEL_BASIC='nco=640,'
@@ -248,7 +268,7 @@ elif [ $JCAP = 383  ] ; then
   MODEL_BASIC='nco=384,'
 fi
 
-export MODLST_SIT="do_sit=true, updatetg=12, fsit=-99., ldailyFCTsst=true, 
+export MODLST_SIT="do_sit=${DO_SIT}, updatetg=12, fsit=-99., ldailyFCTsst=${FCTSST}, 
                    ldailyFCTicesndpt=false, dailyClm_option=1, dSITdt_intv=12., weightSIT=1.0,"
 
 cat > ${GFSWRK}/namlsts << EOF
@@ -275,7 +295,7 @@ cat > ${GFSWRK}/namlsts << EOF
   donnmi=true, 
   dosppt=true,  dospptout=false,
   doshum=false, 
-  dossst=false,
+  dossst=${DO_SSST},
   cutfreq=3, nnmivm=3,doincr=f,
   hdiff=t, frad=1.0, ldiag=0,
   idg=40, jdg=108,
@@ -311,7 +331,7 @@ cat > ${GFSWRK}/namlsts << EOF
   sppt_sigbot1 = 0.975,
   sppt_sigbot2 = 0.9,
   sppt = 0.80,0.4,0.10,0.08,0.04
-  sppt_seed = -999,-999,-999,-999,-999
+  sppt_seed = 123456,789012,345678,9012345,678901
   sppt_decort = 2.16E4,2.592E5,2.592E6,7.776E6,3.1536E7 
   sppt_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
   shum = 0.04,-999,-999,-999,-999
@@ -320,7 +340,7 @@ cat > ${GFSWRK}/namlsts << EOF
   shum_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
   shum_sigefold = 0.2,
   ssst = 0.80,0.4,0.10,0.08,0.04
-  ssst_seed = -999,-999,-999,-999,-999
+  ssst_seed = 234567,890123,456789,123456,7890123
   ssst_decort = 2.16E4,2.592E5,2.592E6,7.776E6,3.1536E7 
   ssst_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
  /
@@ -332,11 +352,15 @@ cat > ${GFSWRK}/namlsts << EOF
 
 EOF
 
-
  FCT_MODEL=$MDIR/src/$EXEC
  /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} 
 
  if [ $? != 0 ] ; then
-  echo "error occured: fct model fail !!"
+   echo "error occured: fct model fail !!"
+ else
+  if [ -e ${GFSWRK}/trk${dtg}.dat ] ; then
+    cp ${GFSWRK}/trk${dtg}.dat ${NWPTRK}/trk${dtg}.dat
+    cp ${GFSWRK}/ten${dtg}.dat ${NWPTRK}/ten${dtg}.dat
+  fi
  fi
 
