@@ -2205,7 +2205,7 @@
      &     ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,clw,                    &
      &       xlat,xlon,slmsk,                                           &
      &       ntrac,ntcw,ntiw,ntrw,ntsw,ntgl,cldcov,                     &
-     &       effr_cw,effr_iw,effr_rw,effr_sw,effr_in,                   &
+     &       effr_cw,effr_iw,effr_sw,effr_rw,effr_in,                   &
      &       IX, NLAY, NLP1,                                            &
 !  ---  outputs:
      &       clouds,clds,mtop,mbot                                      &
@@ -2408,6 +2408,7 @@
 
 !  ---  effective liquid cloud droplet radius over land
 
+      if ( .not. effr_in ) then
       do i = 1, IX
         if (nint(slmsk(i)) == 1) then
           do k = 1, NLAY
@@ -2415,10 +2416,12 @@
           enddo
         endif
       enddo
+      endif
 
       do k = 1, NLAY
         do i = 1, IX
           if (cldtot(i,k) < climit) then
+            cldtot(i,k) = 0.0     !test
             cwp(i,k)    = 0.0
             cip(i,k)    = 0.0
             crp(i,k)    = 0.0
@@ -2443,6 +2446,7 @@
 
 !  ---  effective ice cloud droplet radius
 
+      if ( .not. effr_in ) then
       do k = 1, NLAY
         do i = 1, IX
           tem2 = tlyr(i,k) - con_ttp
@@ -2466,6 +2470,7 @@
           endif
         enddo
       enddo
+      endif
 
 !
       do k = 1, NLAY
@@ -2478,7 +2483,8 @@
           clouds(i,k,6) = crp(i,k) 
           clouds(i,k,7) = rer(i,k)
           clouds(i,k,8) = csp(i,k)
-          clouds(i,k,9) = rei(i,k)
+!          clouds(i,k,9) = rei(i,k)
+          clouds(i,k,9) = res(i,k)  !test
         enddo
       enddo
 

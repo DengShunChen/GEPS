@@ -1809,7 +1809,6 @@
       enddo
       do i = 1, nxj
         area(i,1) = tem1*tem2  !area of grid box
-!        area(i,1) = tem1*tem2*1.e+6  !area of grid box
       enddo
 
       call mp_scheme                                                   &

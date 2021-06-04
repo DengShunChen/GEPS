@@ -318,7 +318,7 @@
           if ( snow0(i,1)    < rainmin ) snow0(i,1)    = 0.0
           if ( graupel0(i,1) < rainmin ) graupel0(i,1) = 0.0
 
-          rlsp(i) = rain0(i,1)+snow0(i,1)+ice0(i,1)+graupel0(i,1)  !total prcipitation (mm)
+          rlsp(i) = rain0(i,1)+snow0(i,1)+ice0(i,1)+graupel0(i,1)  !total large scale prcipitation (mm)
           if ( rlsp(i) > rainmin ) then                         
             sr(i) = (snow0(i,1)+ice0(i,1)+graupel0(i,1))/rlsp(i)   !snow ratio
           else

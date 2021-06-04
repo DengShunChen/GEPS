@@ -1020,7 +1020,6 @@
       real (kind=kind_phys), dimension(im,       nf_albd) :: sfcalb
 !     real (kind=kind_phys), dimension(im,       nspc1)   :: aerodp      ! optn for aod output
       real (kind=kind_phys), dimension(im,lm+ltp,ntrac)   :: tracer1
-!      real (kind=kind_phys), dimension(im,lm+ltp,ntrac)   :: ccnd    ! GFDLMP
 
       real (kind=kind_phys), dimension(im,lm+ltp,nbdsw,nf_aesw)::faersw
       real (kind=kind_phys), dimension(im,lm+ltp,nbdlw,nf_aelw)::faerlw
@@ -1667,6 +1666,7 @@
            print *,'### call GFDL cloud ###'
 
          clw = 0.0
+         if ( .not. lgfdlmprad ) then
          do k = 1, lmk
            do i = 1, im
              do j = 1, ncld
@@ -1676,6 +1676,7 @@
              if ( clw(i,k) < epsq ) clw(i,k) = 0.0
            enddo
          enddo
+         endif
 
          if (kdt == 1) then
            phy_f3d(:,:,1) = 10.
@@ -1694,30 +1695,29 @@
                clouds,cldsa,mtopa,mbota                                 &
               ) 
          else
-           if ( uni_cloud ) then
-           call progclduni                                              &
+!           if ( uni_cloud ) then
+!           call progclduni                                              &
 !    ---  inputs:
-            ( plyr,plvl,tlyr,tvly,tracer1,ntrac,                        &
-              xlat,xlon,slmsk,ix,lmk,lmp,cldcov(:,1:lmk),               &
-              phy_f3d(:,:,1),phy_f3d(:,:,2),phy_f3d(:,:,3),             &
-              phy_f3d(:,:,4),effr_in,                                   &
+!            ( plyr,plvl,tlyr,tvly,tracer1,ntrac,                        &
+!              xlat,xlon,slmsk,ix,lmk,lmp,cldcov(:,1:lmk),               &
+!              phy_f3d(:,:,1),phy_f3d(:,:,2),phy_f3d(:,:,3),             &
+!              phy_f3d(:,:,4),effr_in,                                   &
 !    ---  outputs:
-              clouds,cldsa,mtopa,mbota                                  &
-             )
-           else
+!              clouds,cldsa,mtopa,mbota                                  &
+!             )
+!           else
            call progcld5o                                               &
 !    ---  inputs:
              ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,tracer1,              &
                xlat,xlon,slmsk,                                         &
                ntrac,ntcw,ntiw,ntrw,ntsw,ntgl,cldcov(:,1:lmk),          &
                phy_f3d(:,:,1),phy_f3d(:,:,2),phy_f3d(:,:,3),            &
-!               phy_f3d(:,:,4),effr_in,                                  &
-               phy_f3d(:,:,4),.false.,                                  &
+               phy_f3d(:,:,4),effr_in,                                  &
                im,lmk,lmp,                                              &
 !    ---  outputs:
                clouds,cldsa,mtopa,mbota                                 &
               ) 
-           endif
+!           endif
          endif
 
         endif                            ! end if_icmphys
