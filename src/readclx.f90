@@ -104,7 +104,7 @@
 !source 3(19-soil, 20-veg)
   29  format('S00WST','gbck',a4,11x,a1)      ! for new soil from MODIS
   32  format('S00WVT','gbck',a4,11x,a1)      ! for new soil from MODIS
-  33  format('S00WVF','gbck',a4,11x,a1)      ! for new soil from MODIS
+  33  format('S00WVF','gbck',a4,4x,i2.2,6x)      ! for new soil from MODIS
 !
 !  to interpolat linearly based on julian day
 !
