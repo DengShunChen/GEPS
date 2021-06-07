@@ -4,7 +4,7 @@
       implicit none
 
 !     integer, intent(in) :: isot,ivet,nlunit
-      integer, intent(in) :: isot,ivet
+      integer, intent(inout) :: isot,ivet
       integer me
 !my begin locals
 !for 20 igbp veg type and 19 stasgo soil type
