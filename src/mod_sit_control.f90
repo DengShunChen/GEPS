@@ -150,7 +150,7 @@
       LOGICAL, SAVE :: lwave_breaking=.TRUE.      !
   
   !   3.3 other variables  
-      INTEGER, SAVE :: sit_ice_option  = 2  !   ice option in sit (i.e., calc. of snow/ice) (=0, off; >=1, on) 
+      INTEGER, SAVE :: sit_ice_option  = 0  !   ice option in sit (i.e., calc. of snow/ice) (=0, off; >=1, on) 
                                             !   0: for coupling with vdiff semi-implicitly for tsi calculation (default)
                                             !   1: explcity coupling with strong security number
                                             !   2: original SIT output, no security. It can be crashed in few time steps
@@ -324,6 +324,8 @@
       real:: bathydepth=-200.               !
       LOGICAL,SAVE:: lsftobswt=.FALSE.      ! logical of shift SWT below 10m (10m=obswtb, delete difference
                                             !             between godas and obswtb data)
+      real:: fsitchg = 0.5                  ! if fsitchg>=0., tseadiffSIT<=abs(fsitchg)
+      integer:: outsitlev= 20               ! output sit level from 0 to outsitlev+1
 !ps
 
 
@@ -331,6 +333,7 @@
     loutsit24,                 &! write wt,wu,wv,ws daily mean
     lpre6hr_sit,               &! use lead 6 hours data of pre 6 hr
     outsitmean,                &! write wt,wu,wv,ws every tau hours mean
+    outsitlev,                 &! output sit level from 0 to outsitlev+1
     sit_domain_w,              &! west coords (lon) of sit domain [-180., 360.](deg).
     sit_domain_e,              &! east coords (lon) of sit domain [-180., 360.](deg).
     sit_domain_s,              &! south coords (lat) of sit domain [-90., 90.](deg).
@@ -340,9 +343,10 @@
     ltimeblending,             &! if true=start time blending for nudging
     timebl_option,             &! time blending option for nudging
     timebl_start,              &! start time blending for nudging
-    timebl_allsit,              &! always sit restore_time for nudging
+    timebl_allsit,             &! always sit restore_time for nudging
     lmixedlayer,               &! if lmixedlayer=t, read mixed layer depth data (read mixed_layer)
     ldailysst,                 &! .true. for using daily SST and SIC
+    fsitchg,                   &! default = 0.5 degree
 !ps    lrere,                     &! true for IC (Initial Condition) run, false for BC (Boundary Condition) run.
     lobs_ocn_rerun,            &! .TRUE. read rerun file but modified with obs. ocean/atm/land data
     !!! lsit,                      &! switch sit (i.e., calc. of vertical ocean temp. profile) on/off

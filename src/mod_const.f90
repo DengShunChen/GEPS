@@ -42,6 +42,9 @@
     !sit
     real :: fsit         !fsit>0., turn on sit_vdiff when mod(tau/fsit)<0.001
                          !default fsit<=0., turn on sit_vdiff every tau
+    real dSITdt_intv    !interval of returning ave. dSITdt to dSST/dt
+    real weightSIT      !the weighting of SIT tendency
+    real updatetg       !the time interval to update tg 
           
  
     common/constR/                                         &
@@ -49,15 +52,19 @@
          ptop,ptmean,tfilt,dt,tau,taui,taue,tauo,          &
          hours,frad,evaprh,qgini,                          &
          tice,hice,cutfreq,taup,hfilt,ptmeans,             &
-         taureg,cgw,fsit,domfc,otgreen,spl1,spl2
-    ! sppt parameters
-    real  :: de_corretime_500,de_corretime_1000,de_corretime_2000, &
-             facsppt500,facsppt1000,facsppt2000
-               
+         taureg,cgw,fsit,domfc,otgreen,spl1,spl2,           &
+         dSITdt_intv,weightSIT,updatetg
     logical :: lsimpl,lzadv, yesdia,dopbl, docup, dorad,      &
             dolsp, dograv,doshl, dodry, donnmi,ozon,       &
             restrt,hdiff, cstar, update,doincr,hybrid,     &
-            doo3l, dosppt, dospptout,   docgrav
+            doo3l, docgrav
+
+    ! for stochastic physics
+    logical :: dosppt       =.false.
+    logical :: dospptout    =.false.
+    logical :: doshum       =.false.
+    logical :: use_zmtnblck =.false.
+         
     logical :: out_green,out_hp
 
     !for Semi-Lagrangain
@@ -68,9 +75,6 @@
 
     !for pdf cloud
     logical :: pdfcloud
-
-    !for ncep ice thickness
-    logical :: ncepicthk
 
     !for 2dMPI
     logical :: idg_jdg_owner

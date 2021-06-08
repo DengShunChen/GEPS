@@ -1,6 +1,4 @@
-      subroutine read_mtnvar(nx,my,mtnv,hprime_b)
-
-!
+   subroutine read_mtnvar(nx,my,mtnv,hprime_b)
       use index
       use param ,only : jtrun,my_max
 !
@@ -34,12 +32,12 @@
 !
 !!       do v =1,mtnv
 !         read(22,rec=v) hprime_a
-         read(22) hprime_a
-       do v =1,mtnv
-         do j = 1, my
-           jt = my - j + 1
-           hprime_a8(:,j)=hprime_a(:,jt,v)
-         enddo   
+      read(22) hprime_a
+      do v =1,mtnv
+        do j = 1, my
+          jt = my - j + 1
+          hprime_a8(:,j)=hprime_a(:,jt,v)
+        enddo   
 !      if( myrank .eq. 0 ) &
 !      print*,' in read_mtnvar hprime_a = ',(hprime_a(1500,155,i),i=1,mtnv)
 
@@ -49,8 +47,7 @@
           j=jlist1(jj)
           ii=nxjstart(j)
           nxj=nxdef_2d(j)
-          if( lreduce.eq.1 ) &
-             call reducepick(hprime_a8(1,j),nxdef(j),nx,1)        
+          if( lreduce.eq.1 )call reducepick(hprime_a8(1,j),nxdef(j),nx,1)        
           do i = 1, nxj
             hprime_b(i,v,jj) = hprime_a8(ii,j)
             ii=ii+1
@@ -64,5 +61,6 @@
 !      if( myrank .eq. 0 ) &
 !      print*,'in read_mtnvar hprime_aa = ',(hprime_aa(1500,my-155+1,i),i=1,mtnv)
 !
-      return
-      end
+      close(22)
+    
+    end subroutine read_mtnvar

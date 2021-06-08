@@ -6,7 +6,7 @@
 #PJM --no-stging
 #PJM --mpi "proc=1536"
 #PJM -j
-#PJM -N JTCo639L72
+#PJM -N JTCo383L72
 
 set -x
 
@@ -14,7 +14,7 @@ MDIR=$(cd ..; pwd)
 echo "MDIR=${MDIR}"
 
 machine=fx100
-JCAP=639
+JCAP=383
 
 MPI=1536
 OMP=1

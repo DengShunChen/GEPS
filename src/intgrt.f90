@@ -1,7 +1,3 @@
-#define myrank_check 55
-#define ii_check 1
-#define jj_check 4
-
        subroutine intgrt
 !
 !***********************************************************************
@@ -30,10 +26,10 @@
       use namelist_soilveg
 !-----------------------------------------------------------------------
       USE mod_sitgrid
-      USE mod_sit_vdiff,       ONLY:sit_vdiff_end
+      USE mod_sit_vdiff,       ONLY:sit_vdiff_end,cal_ratioBlending
       USE mod_sit_control,     ONLY:xmissing,lgodas,locaf,lwoa0   &
                                     ,loutsit24,outsitmean,lsitstart   &
-                                    ,ldailysst
+                                    ,ldailysst,ltrigsit,fsitchg
       USE mod_sst,             ONLY:deallocate_ocaf_array,deallocate_woa0_array &
                                  ,deallocate_godas_array,read_dailygodas        &
                                  ,time_weights,nmw1,nmw2,wgt1,wgt2              &
@@ -43,15 +39,19 @@
                                  ,allocate_opgsst_array,read_opgsst             &
                                  ,opgsst,deallocate_opgsst_array                &
                                  ,obswtbnmw1,obswtbnmw2,obswtbwgt1,obswtbwgt2   &
-                                 ,sit_zdepth
+                                 ,obswtbp,obswtbt,obswtbn,tseap,tseat,tsean     &
+                                 ,dFCTsstdt,tseadiffFCT,tseadiffFCT24           &
+                                 ,outtseadiffFCT24
       USE mo_netcdf,           ONLY:lkvl,cleanup_netcdf
 !-----------------------------------------------------------------------
       use raddiag
       use radn
       use albn
 !-----------------------------------------------------------------------
-
-!
+      use mod_stochastic_physics, only : spptout, & 
+                  init_stochastic_physics, &
+                  run_stochastic_physics, & 
+                  destroy_stochastic_physics
 !-----------------------------------------------------------------------
 
       implicit  none
@@ -141,17 +141,8 @@
               cosw,tengi,dt24,tg2,dtx_tau,hfiltx,sqhaf,     &
               dummy,dt1,sptend,wmax,xx,facw,dtaup!!,          &
 !!              sptendmax2,sptendmax1,dt_chg
-! sppt variables
-!            by John Tseng 2017/12/13 
-!            modified by PangYen Liu for 2D-MPI 2019/02/20
-!      real sppt2d(nx,my)
-!      real rold500(mlmax_c,2),rold1000(mlmax_c,2),rold2000(mlmax_c,2)
-!      real rold500(jtrun_c,jtmax_c,2),rold1000(jtrun_c,jtmax_c,2),  &
-!           rold2000(jtrun_c,jtmax_c,2)
-      real sppt3d(nxp,lev,my_max)
-      real sppt2d500(nxp,my_max),sppt2d1000(nxp,my_max)   &
-          ,sppt2d2000(nxp,my_max)
-      integer itimestep,recn
+
+      integer itimestep
 
 ! for io quilting
       character*34 keydoit,keydone
@@ -161,11 +152,11 @@
 !for sst_restore_tau>0., update sst(W00100), seaice(W00091), snowdepth(B00650)
       integer*8 idtg_sst,idtg1_sst,idtg_temp
       integer icurrenttau,yyyymmdd,hhii
-      logical lsstrestore,iceold(nxp,my),oceanold(nxp,my)
+      logical lsstrestore,iceold(nxp,my_max),oceanold(nxp,my_max)
       character lrec*26
       character*12 cdtg
       real    ssttemp,cicetemp,snrtemp
-      real    sst(nx,my),ssttau,tautemp
+      real    sst(nxp,my_max),ssttau,tautemp
       integer yr, mo, dy, hr, mn
 
 !for opgsst sst
@@ -181,8 +172,13 @@
       logical lnewyymm
       integer ic_sit,nc_sit
       logical turn_sit,lrun_sitvdiff
-      real wweight
-      integer kkk
+      integer lenc,itautest
+!pscheckdata
+      real mout(nx,my)
+      character*26 ihdg2
+      integer nc
+
+      
 !
 !xb110>
 !byl      real rmr(nxp,lev,my_max),smr(nxp,lev,my_max)
@@ -197,8 +193,7 @@
       tm_1=mpi_wtime()
       tm_2=mpi_wtime()
 #endif
-!      fsit=-99.             !fsit>0., turn on sit_vdiff when
-!      mod(tau/fsit)<0.001
+!      fsit=-99.             !fsit>0., turn on sit_vdiff when mod(tau/fsit)<0.001
                              !default fsit<=0., turn on sit_vdiff every tau
       ic_sit=-99             !if fsit>0., store now tau is the ic_sit times when sit_vidff is turn on
       nc_sit=1               !if fsit>0., when mod(tau/fsit)<0.001, turn on sit_vdiff for "nc_sit" timesteps
@@ -351,7 +346,6 @@
       gfx=0.
       rld=0.
       sld=0.
-      recn=1
 !
 ! read mountant variables for topographic gravity wave drag
 !
@@ -531,9 +525,10 @@
 !***********************************************************************
 !     start time integration iterations
 !***********************************************************************
-!
-! sppt
-      itimestep=1
+  itimestep=1
+
+  ! stochastic_physics
+  call init_stochastic_physics(dta)   
 !
 !!      n_stable=0
 !!      n_unstable=0
@@ -559,29 +554,27 @@
 !      else
 !        dt_trk=tauo
 !      endif
-! store first idtg to idtg_sst
+      ! store first idtg to idtg_sst
       icurrenttau=int(tau)
       call dtgfix12(idtg,idtg_sst,icurrenttau)
       if(myrank .eq. 0) print*,'idtg_sst=',idtg_sst
 
-! read opgsst data
+      ! read opgsst data
       if(lopgsst) then
         call allocate_opgsst_array
-
         if(myrank .eq. 0) print *,'myrank=',myrank,'idtg_sst=',idtg_sst
           call read_opgsst(idtg_sst,ggdef,ocean,ice)
           icurrentyear=idtg_sst/100000000
-
       endif   !end lopgsst
 !
  10   continue
-!
+
       dtx_tau=dtx/3600.
-!
+
       if(myrank .eq. 0) then 
          print *,'forcast begin tau=',itaui,' to tau=',itaue
 
-! for io quilting
+      ! for io quilting
       if(io_quilting)then
          ntag=ntag+1
          call mpe_send_key(keydoit,ntag,istat)
@@ -847,15 +840,8 @@
         enddo
       enddo
 
-!  prepare randome numbers for sppt3d
-!
-      if (dosppt) then
-      call gensppt3dv5(nx,my,my_max,lev,sppt3d                &
-        ,sppt2d500,sppt2d1000,sppt2d2000                      &
-        ,facsppt500,facsppt1000,facsppt2000                   &
-        ,de_corretime_500,de_corretime_1000,de_corretime_2000 &
-        ,dta,itimestep )
-      endif ! dosppt
+      !  stochastic_physics
+      call run_stochastic_physics()
 !
       do m = 1, mlistnum
         mf=mlist(m)
@@ -900,7 +886,7 @@
                       , ss_clr,rs_clr,asol_clr,olr_clr,sld_clr,rld_clr          &
                       , alvsf,alvwf,alnsf,alnwf,facsf,facwf                     &
                       , idtg,doo3l,nfxr,sfalb,sfemis,isot,ivegsrc               &
-                      , dosppt,sppt3d,itimestep,lrun_sitvdiff,ic_sit            &
+                      , lrun_sitvdiff,ic_sit            &
 !xb110>
 !byl                      , rmr,smr,flash)
                       , flash,tsflw)
@@ -911,7 +897,7 @@
 !
           call rayleifr(nx,my,my_max,lev,rad,cosl,dt,ut,vt)
         endif    ! end of (yesdia)
-        itimestep=itimestep+1   ! for sppt time evolution)
+        itimestep=itimestep+1 
 !
 !  after phyical parameterization,transform grid point u,v,t,q to
 !  spectrum
@@ -1013,11 +999,30 @@
           enddo
         enddo
 
+         
 !
       if (hdiff) call hdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld       &
                              , hfiltx,rad,cosl,up,vp,vornow,divnow,temnow  &
                              , eps4,trefs)
 !
+! update tsea, dSST/dt (W00100)
+!
+        if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. dailyClm_option.ge.1) then
+          do jj = 1, jlistnum
+            j=jlist1(jj)
+            nxj=nxdef_2d(j)
+            do ii = 1,nxj
+              dFCTsstdt(ii,jj)=0.
+              obswtbt(ii,jj)=dta*dFCTsstdt(ii,jj)+obswtbp(ii,jj)
+              if(ocean(ii,jj))then
+                tseadiffFCT(ii,jj)=dta*dFCTsstdt(ii,jj)
+                tseat(ii,jj)=dta*dFCTsstdt(ii,jj)+ tseap(ii,jj)
+              endif
+            end do
+          end do
+        endif  
+
+
         forward=.false.
         dta= 2.0*dtx
         lsitstart=.false.
@@ -1050,6 +1055,71 @@
         if (hdiff) call hdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld       &
                                , hfiltx,rad,cosl,up,vp,vorten,divten,temten  &
                                , eps4,trefs)
+
+!
+! update tg, dSST/dt (W00100)
+!
+        if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. dailyClm_option.ge.1) then
+          if(tau .ge. 24.) then
+          do jj = 1, jlistnum
+            j=jlist1(jj)
+            nxj=nxdef_2d(j)
+            do ii = 1,nxj
+              i=nxjstart(j)+ii-1
+              tseadiffFCT(ii,jj)=0.
+              obswtbn(ii,jj)=dta*dFCTsstdt(ii,jj)+obswtbp(ii,jj)
+              obswtbp(ii,jj)=obswtbt(ii,jj)
+              obswtbt(ii,jj)=obswtbn(ii,jj)
+
+              if(ocean(ii,jj))then
+                tseadiffFCT(ii,jj)=dta*dFCTsstdt(ii,jj)
+                tsean(ii,jj)=tseadiffFCT(ii,jj)+tseap(ii,jj)
+                if(do_sit) then
+                if( sitmask(ii,jj) .EQ. 1. ) then
+                  if(lrun_sitvdiff .AND. ltrigsit )then
+                    tseadiffSIT(ii,jj)=0.
+                    sumdSITdt(ii,jj)=sumdSITdt(ii,jj)+dtswdt(ii,jj)
+                    countdSITdt(ii,jj)=countdSITdt(ii,jj)+1.
+                  endif
+                
+                  dtaup= mod(tau+0.001, dSITdt_intv)
+                  if( (dSITdt_intv .lt. 0.) .OR. (dtaup .lt. dtx_tau) )then
+                    if(countdSITdt(ii,jj) .ge. 1.) then
+                      tseadiffFCT(ii,jj)=dta*(1.-weightSIT*ratioSIT(ii,jj))&
+                                        *dFCTsstdt(ii,jj)
+                      tseadiffSIT(ii,jj)=dta*weightSIT*ratioSIT(ii,jj)          &
+                                       *(sumdSITdt(ii,jj)/countdSITdt(ii,jj))
+                      if(fsitchg .gt. 0.)then
+                        tseadiffSIT(ii,jj)=min(max(tseadiffSIT(ii,jj),-abs(fsitchg)) &
+                                          ,abs(fsitchg))
+                      endif
+                    endif
+                    sumdSITdt(ii,jj)=0.
+                    countdSITdt(ii,jj)=0.
+                    tseadiffSIT24(ii,jj)=tseadiffSIT24(ii,jj)+tseadiffSIT(ii,jj)/dta*dtx
+                    tsean(ii,jj)=tseadiffFCT(ii,jj)+tseadiffSIT(ii,jj)  &
+                                 +tseap(ii,jj)
+                  endif
+                endif
+                endif
+                tseadiffFCT24(ii,jj)=tseadiffFCT24(ii,jj)+tseadiffFCT(ii,jj)/dta*dtx
+
+                tseap(ii,jj)=tseat(ii,jj) + tfilt*(tseap(ii,jj)     &
+                              -2.0*tseat(ii,jj)+tsean(ii,jj) )
+                tseat(ii,jj)=tsean(ii,jj)
+
+                dtaup=mod(tau+0.001,updatetg)
+                if(dtaup .lt. dtx_tau)then
+                  tg(ii,jj)=tseat(ii,jj)
+                endif
+
+              endif
+
+            end do
+          end do
+          endif  !end if(tau .ge. 24.)
+          CALL read_dailyFCT(idtg,tau,dt,tg,cice,sndepth,xlon,xlat,ocean)
+        endif
 !
 ! accumulate some flux every time step to output point (24 hour)
 ! 1994 11 11
@@ -1195,7 +1265,7 @@
         if( dtaup .lt. dtx_tau ) then
           ntau=tau+0.001
           if(myrank .eq. 0) print *,'outsitmean at tau=',tau
-          call writesitmean(nx,my,lkvl,ifilout,ntau,idtg,ggdef)
+          call writesitmean(nx,my,my_max,lkvl,ifilout,ntau,idtg,ggdef)
         endif
       endif
 !
@@ -1216,9 +1286,16 @@
         call out24(nx,my,my_max,hf24,qf24,ss24,rs24,asol24,olr24,rain24,dt24 &
                   ,ifilout,glob,ntau,idtg,ggdef,flash24)
 #endif
+        if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. (dailyClm_option.ge.1)) then
+          call outtseadiffFCT24(nx,my,my_max,dt24,ifilout,ntau,idtg,ggdef)
+        endif
+
         if(do_sit)then
+          if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. (dailyClm_option.ge.1)) then
+            call outtseadiffSIT24(nx,my,my_max,ratioSIT,dtsit24,ifilout,ntau,idtg,ggdef)
+          endif
           if(loutsit24)then
-            call outsit24(nx,my,lkvl,ifilout,ntau,idtg,ggdef)
+            call outsit24(nx,my,my_max,lkvl,ifilout,ntau,idtg,ggdef)
           endif
           call dtgfix12(idtg,idtg_temp,ntau-1)
           ibeforeyymm=idtg_temp/1000000
@@ -1230,7 +1307,7 @@
                    ,'lnewyymm=',lnewyymm
           endif
           if( lnewyymm ) then
-            call outsitmon(nx,my,lkvl,ifilout,ntau,idtg,ggdef)
+            call outsitmon(nx,my,my_max,lkvl,ifilout,ntau,idtg,ggdef)
           endif
        endif
 !
@@ -1621,158 +1698,13 @@
         endif
 !      endif
 !
-      if (dospptout .and.  (mod(tau+0.001, 1.) .lt. 0.01)) then
-         call spptout(nx,my,my_max,lev,sppt2d500,sppt2d1000,sppt2d2000 &
-                     ,ttp,recn,tau)
+      if (dosppt .and.  dospptout .and.  (mod(tau+0.001, 1.) .lt. 0.01)) then
+         call spptout(tau)
       endif
-!
-!for update sst(W00100), seaice(W00091), snowdepth(B00650)
-!
-      if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. (dailyClm_option.ge.1)) then
-!        CALL read_dailyFCT(idtg,tau,dtx,tg,cice,sndepth)
-!        icurrenttau=int(tau)
-!        tauleft=float(int((tau-int(tau)+0.001)*3600./dtx))*dtx
-        tautemp=tau+dtx/3600.
-        CALL read_dailyFCT(idtg,tautemp,dtx,tg,cice,sndepth)
-        icurrenttau=int(tautemp)
-        tauleft=float(int((tautemp-int(tautemp)+0.001)*3600./dtx))*dtx
 
-        if(myrank .eq. 0) then
-          print *,'icurrenttau=',icurrenttau, &
-                  ',tauleft=',tauleft
-        endif
-        if(tauleft .eq. 3600.) then
-          icurrenttau=icurrenttau+1
-          tauleft=0.
-        endif
-        call dtgfix12(idtg_sst,idtg_temp,icurrenttau)
-        call time_weights(idtg_temp,tauleft)
-        write(cdtg,'(i12)')idtg_temp
-        read(cdtg,'(i4,i2,i2,i2,i2)')yr,mo,dy,hr,mn
-!        ssttau = mod(tau+0.001, 24.)
-        tautemp=float(hr)+tauleft/3600.
-        ssttau = mod(tautemp+0.001, 24.)
-
-        if( lopgsst .AND. (ssttau .lt. dtx_tau) ) then
-!  read opgsst data
-          if(myrank .eq. 0) then
-            print *,'ready opgsst_weights,icurrenttau=',icurrenttau, &
-                    ',tauleft=',tauleft
-          endif
-          do jj=1,jlistnum
-            j=jlist1(jj)
-            nxj=nxdef_2d(j)
-            do ii = 1, nxj
-              sst(ii,jj)=wgt1*opgsst(ii,jj,nmw1)+wgt2*opgsst(ii,jj,nmw2)
-              if((myrank .eq.2).AND.(jj.EQ.4).AND.(i.EQ.670)) then
-                print *,'myrank=',myrank,'tauleft=',tauleft &
-                       ,'icurrenttau=',icurrenttau &
-                       ,'tautemp=',tautemp,'ssttau=',ssttau &
-                       ,'idtg1_sst=',idtg1_sst,'wgt1=',wgt1,'wgt2=',wgt2 &
-                       ,'nmw1=',nmw1,'nmw2=',nmw2,'tg=',tg(ii,jj) &
-                       ,'opgsst(ii,jj,nmw1)=',opgsst(ii,jj,nmw1) &
-                       ,'opgsst(ii,jj,nmw2)=',opgsst(ii,jj,nmw2)
-              endif
-            enddo
-          enddo
-!          call mpe_unify(sst,nx,my,2,mpe_double)
-
-        endif
-
-        if(lFCTweight .OR. ssttau .lt. dtx_tau) then
-        do jj = 1, jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
-          do ii=1,nxj
-            if(dailyClm_option .eq. 1 )then       !persistent anomaly sst
-             ssttemp=ANAsstT0(ii,jj)-dailyClmANAsst(ii,jj,0) &
-                     +obswtbwgt1*dailyClmANAsst(ii,jj,obswtbnmw1) &
-                     +obswtbwgt2*dailyClmANAsst(ii,jj,obswtbnmw2)
-            elseif(dailyClm_option .eq. 2 )then   !idea from Yuejian Zhu(2018 JGR)
-              wweight=min(tautemp/24./35.,1.)
-              ssttemp=(1.-wweight)*(ANAsstT0(ii,jj)-dailyClmANAsst(ii,jj,0) &
-                     +dailyClmANAsst(ii,jj,1) ) +wweight*(dailyFCTsst(ii,jj,1) &
-                     -(dailyClmFCTsst(ii,jj,1)-dailyClmANAsst(ii,jj,1)))
-            else
-              ssttemp=obswtbwgt1*dailyFCTsst(ii,jj,obswtbnmw1) &
-                      +obswtbwgt2*dailyFCTsst(ii,jj,obswtbnmw2)
-            endif
-            sst(ii,jj)=merge(ssttemp,tg(ii,jj),(ssttemp.GE.271. .AND. ssttemp.LT.400.))
-            if(ldailyFCTicesndpt)then
-                snrtemp=obswtbwgt1*dailyFCTsndepth(ii,jj,1)+obswtbwgt2*dailyFCTsndepth(ii,jj,2)
-                cicetemp=obswtbwgt1*dailyFCTcice(ii,jj,1)+obswtbwgt2*dailyFCTcice(ii,jj,2)
-                snr(ii,jj)=max(0.,snrtemp)
-                sndepth(ii,jj)=max(0.,snrtemp)*8.   !same as getrdy.f90
-                sncover(ii,jj)=min(1.,max(0.,snrtemp)/400.)   !same as getrdy.f90
-                cice(ii,jj)=max(0.,cicetemp)
-                oceanold(ii,jj)=ocean(ii,jj)
-                iceold(ii,jj)=ice(ii,jj)
-                if( ocean(ii,jj) .or. ice(ii,jj) )then
-!                  alb(i,j)=0.09
-                  ocean(ii,jj)=.true.
-                  ice(ii,jj)= .false.
-                  if( cice(ii,jj) .ge. 0.5) then
-                    ice(ii,jj)=.true.
-                    ocean(ii,jj)=.false.
-                    if(.not. iceold(ii,jj))then
-                      alb(ii,jj)=0.55
-                      tgclim(ii,jj)=271.2
-                      xtice(ii,jj)=max(271.2,sst(ii,j))
-                      cice(ii,jj)=max(0.5,cice(ii,jj))
-                      if( myrank .eq. 0 ) print *, "ocean to ice(",ii,",",jj,"),sst=",sst(ii,jj)
-                    else
-                      if(.not. oceanold(i,jj))then
-                        alb(ii,jj)=0.09
-                      endif
-                    endif
-                  endif
-                endif
-            endif
-            if(ocean(ii,jj)) then
-              if(do_sit .and. (sitmask(ii,jj) .eq. 1.)) then
-                obswtb(ii,jj)=max(271.,sst(ii,jj))
-!                  tg(i,jj)=max(271.,sst(i,j))
-!                  tgold(i,jj)=max(271.,sst(i,j))
-!                  tsw(i,jj)=max(271.,sst(i,j))
-              else
-                  tg(ii,jj)=max(271.,sst(ii,jj))
-              endif
-            endif
-            if(myrank .eq. myrank_check .AND. jj .eq. jj_check .AND. ii .eq. ii_check) then
-              print *,"ssttau=",ssttau,",dtx_tau=",dtx_tau   &
-               ,",obswtbwgt1=",obswtbwgt1,",obswtbwgt2=",obswtbwgt2 &
-               ,",tautemp=",tautemp,",ssttau=",ssttau &
-               ,",tg=",tg(ii,jj)
-              if(ldailyFCTsst) then
-                print *,",dailyFCTsst1=",dailyFCTsst(ii,jj,1)   &
-                       ,",dailyFCTsst2=",dailyFCTsst(ii,jj,2)
-              endif
-              if(dailyClm_option .ge. 1) then
-                print *,",ANAsstT0=",ANAsstT0(ii,jj)   &
-                 ,",dailyClmANAsst0=",dailyClmANAsst(ii,jj,0) &
-                 ,",dailyClmANAsst1=",dailyClmANAsst(ii,jj,1)
-                if (dailyClm_option .eq. 2) then
-                  print *,",dailyClmFCTsst0=",dailyClmFCTsst(ii,jj,0) &
-                    ,",dailyClmFCTsst1=",dailyClmFCTsst(ii,jj,1)
-                endif
-              endif
-              if(do_sit) print *,"obswtb=",obswtb(ii,jj)
-            endif
-          end do
-        end do
-        endif !end if(lFCTweight .OR. ssttau .lt. dtx_tau) then
-
-      endif   !end ldailyFCT
-
-!      inexttau = int(tau+dtx/3600.+0.001)
-!      call dtgfix12(idtg,idtg_temp,inexttau)
-!      inextyymmdd=idtg_temp/10000
-!      lnewday=icurrentyymmdd/=inextyymmdd
-!      if(lnewday)then
-        if(do_sit .AND. lgodas .AND. ldailysst) then
-          CALL read_dailygodas(idtg,tau,dtx)
-        endif
-!      endif
+      if(do_sit .AND. lgodas .AND. ldailysst) then
+        CALL read_dailygodas(idtg,tau,dtx)
+      endif
 !
 !
 ! new year, read obs sst
@@ -1809,7 +1741,7 @@
         if(myrank .eq. 0) then
            print *,' finished integration '
 
-! for io quilting
+      ! for io quilting
       if(io_quilting)then
          ntag=ntag+1
          call mpe_send_key(keydoit,ntag,istat)
@@ -1862,5 +1794,7 @@
 !
       go to 10
 !
-      return
-      end
+      ! finilize stochastic_physics
+      call destroy_stochastic_physics()
+
+      end subroutine intgrt

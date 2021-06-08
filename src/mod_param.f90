@@ -11,11 +11,11 @@
 !  t320: nx=960, 
 !  t512: nx=1536,
 
-!     integer, parameter :: nx=1536 
-!     integer, parameter :: my=nx/2
-!     integer, parameter :: lev=60
-!     integer, parameter :: jtrun= 2*((1+(nx-1)/3)/2)
-!     integer, parameter :: mlmax= jtrun*(jtrun+1)/2
+! integer, parameter :: nx=1536 
+! integer, parameter :: my=nx/2
+! integer, parameter :: lev=60
+! integer, parameter :: jtrun= 2*((1+(nx-1)/3)/2)
+! integer, parameter :: mlmax= jtrun*(jtrun+1)/2
 
       integer  nco,nx,my,lev,jtrun,mlmax
       logical  octahedral

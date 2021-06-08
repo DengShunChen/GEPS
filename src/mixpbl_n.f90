@@ -494,6 +494,7 @@
 !        a2(i,1) = q1(i,1,1)-betaq(i)*
 !    &           (max(q1(i,1,1),qmin)-max(qss(i),qmin))
       enddo
+!byl      if(ntrac.eq.2) then
       if(ntrac.ge.2) then
         do k = 2, ntrac
           is = (k-1) * km
@@ -534,6 +535,7 @@
           a1(i,k+1) = t1(i,k+1)-dtodsu*dsdzt
         enddo
       enddo
+!byl      if(ntrac.eq.2) then
       if(ntrac.ge.2) then
         do kk = 2, ntrac
           is = (kk-1) * km
@@ -561,6 +563,7 @@
             dqsfc(i)   = dqsfc(i)+conq*del(i,k)*qtend
          enddo
       enddo
+!byl      if(ntrac.eq.2) then
       if(ntrac.ge.2) then
         do kk = 2, ntrac
           is = (kk-1) * km
@@ -580,6 +583,7 @@
          enddo
       enddo
 !
+!byl       if(ntrac.eq.2)then
        if(ntrac.ge.2)then
         do kk = 2, ntrac
           is = (kk-1) * km

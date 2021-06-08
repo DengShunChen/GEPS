@@ -105,7 +105,6 @@
       real, dimension(:,:,:), allocatable ::                            &
                 qv1,ql1,qr1,qi1,qs1,qg1,qa1,qn1,pt,w,uin,vin,delp,dz,   &
                 qv_dt,ql_dt,qr_dt,qi_dt,qs_dt,qg_dt,qa_dt,udt,vdt,pt_dt
-!      real      tem
       logical   hydrostatic,phys_hydrostatic 
 !
 ! reset all value to zero
@@ -206,13 +205,13 @@
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
-            qt(i,      k) = qtc(i,kc)
+            qt(i,             k) = qtc(i,kc)
             qt(i,(ntcw-1)*lev+k) = qtr(i,kc)
             qt(i,(ntrw-1)*lev+k) = qtrw(i,kc)
             qt(i,(ntiw-1)*lev+k) = qti(i,kc)
             qt(i,(ntsw-1)*lev+k) = qtsw(i,kc)
             qt(i,(ntgl-1)*lev+k) = qtgl(i,kc)
-            tt(i,      k) = ttc(i,kc)
+            tt(i,             k) = ttc(i,kc)
           enddo
         enddo
 
@@ -257,7 +256,7 @@
             vin(i,1,k)  = vt(i,k)                 !meridional wind (m/s)
             delp(i,1,k) = prsi(i,k+1)-prsi(i,k)   !differences of interface pressure (Pa)
 !            dz(i,1,k)   = (phii(i,kc+1)-phii(i,kc))/con_g !depth (m)
-            dz(i,1,k)   = (phii(i,kc)-phii(i,kc+1))/con_g !differences of height (m), dz<0 (why???)
+            dz(i,1,k)   = (phii(i,kc)-phii(i,kc+1))/con_g !differences of height (m), dz<0
           enddo
         enddo
 
@@ -311,14 +310,13 @@
           enddo
         endif
 !
-!        tem = dta * con_p001 / con_day
         do i = 1, nxj
           if ( rain0(i,1)    < rainmin ) rain0(i,1)    = 0.0 
           if ( ice0(i,1)     < rainmin ) ice0(i,1)     = 0.0
           if ( snow0(i,1)    < rainmin ) snow0(i,1)    = 0.0
           if ( graupel0(i,1) < rainmin ) graupel0(i,1) = 0.0
 
-          rlsp(i) = rain0(i,1)+snow0(i,1)+ice0(i,1)+graupel0(i,1)  !total large scale prcipitation (mm)
+          rlsp(i) = rain0(i,1)+snow0(i,1)+ice0(i,1)+graupel0(i,1)  !total large scale precipitation (mm)
           if ( rlsp(i) > rainmin ) then                         
             sr(i) = (snow0(i,1)+ice0(i,1)+graupel0(i,1))/rlsp(i)   !snow ratio
           else
