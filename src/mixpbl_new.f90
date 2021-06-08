@@ -1,4 +1,4 @@
-      subroutine mixpbl_new(ix,im,km,ntrac,                             &
+      subroutine mixpbl_new(ix,im,km,ntrac,ntcw,                        &
            uo,vo,t1,q1,swh,hlw,xmu,                                     &
            psk,rbsoil,fm,fh,tsea,heat,evap,stress,spd1,kpbl,            &
            prsi,del,prsl,prslk,phii,phil,rcs,deltim,                    &
@@ -14,7 +14,7 @@
 !
 !     arguments
 !
-      integer ix, im, km, ntrac, kpbl(im), kpblx(im)
+      integer ix, im, km, ntrac, kpbl(im), kpblx(im),ntcw
       integer j,io,jo
 !
       real                 deltim
@@ -266,7 +266,8 @@
       do k = 1,km
         do i = 1,im
           theta(i,k) = t1(i,k) * psk(i) / prslk(i,k)
-          qlx(i,k)   = max(q1(i,k,ntrac),qlmin)
+!byl          qlx(i,k)   = max(q1(i,k,ntrac),qlmin)
+          qlx(i,k)   = max(q1(i,k,ntcw),qlmin)
           qtx(i,k)   = max(q1(i,k,1),qmin)+qlx(i,k)
           ptem       = qlx(i,k)
           ptem1      = hvap*max(q1(i,k,1),qmin)/(cp*t1(i,k))
@@ -767,6 +768,7 @@
          a1(i,1) = t1(i,1)   + beta(i) * heat(i)
          a2(i,1) = q1(i,1,1) + beta(i) * evap(i)
       enddo
+!byl      if(ntrac.eq.2) then
       if(ntrac.ge.2) then
         do k = 2, ntrac
           is = (k-1) * km
@@ -808,6 +810,7 @@
           a1(i,k+1) = t1(i,k+1)-dtodsu*dsdzt
         enddo
       enddo
+!byl      if(ntrac.eq.2) then
       if(ntrac.ge.2) then
         do kk = 2, ntrac
           is = (kk-1) * km
@@ -845,6 +848,7 @@
 !     enddo
 !     endif
 !
+!byl      if(ntrac.eq.2) then
       if(ntrac.ge.2) then
         do kk = 2, ntrac
           is = (kk-1) * km
@@ -864,6 +868,7 @@
             q1(i,k,1)    = a2(i,k)
          enddo
        enddo
+!byl       if(ntrac.eq.2)then
        if(ntrac.ge.2)then
         do kk = 2, ntrac
           is = (kk-1) * km

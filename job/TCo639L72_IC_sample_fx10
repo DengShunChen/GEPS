@@ -13,14 +13,22 @@ set -x
 MDIR=$(cd ..; pwd)
 echo "MDIR=${MDIR}"
 
+machine=fx10
+JCAP=383
+
 MPI=768
 OMP=1
-NPEX=2
-NPEY=384
-machine=fx10
 
+if [ $JCAP = 639 ] ; then
+  NPEX=2
+  NPEY=384
+elif [ $JCAP = 383 ] ; then
+  NPEX=4
+  NPEY=192
+fi
 source /users/xa09/sample/setup_mpi+omp.${machine} $OMP
 
 #==============================================================================================================#
 
 . ${MDIR}/job/regression.ksh
+#. ${MDIR}/job/regression_stochy_physics.ksh

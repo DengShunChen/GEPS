@@ -41,7 +41,9 @@
           call mpe_send_key(key,ntag,istat)
           ntag=ntag+1
           call mpe_send_data(z,nx*my,ntag,istat)
+#ifdef VERBOSE
           print *,'dmsput key=',key,' ok'
+#endif
         endif
 
       else
@@ -59,7 +61,9 @@
          call mpe_finalize
          call dmsexit(-1)
        else
+#ifdef VERBOSE
          if(myrank .eq. 0) print *,'dmsput key=',key,' ok'
+#endif
        endif
 
        endif
@@ -120,7 +124,10 @@
          call mpe_finalize
          call dmsexit(-1)
        else
+
+#ifdef VERBOSE
          if(myrank .eq. 0) print *,'dmsput key=',key,' ok'
+#endif
        endif
 
 !
@@ -181,7 +188,9 @@
          call dmsexit(-1)
        else
 !!         if(col_rank .eq. 0) print *,'dmsput key=',key,' ok'
+#ifdef VERBOSE
          print *,'dmsput key=',key,' ok'
+#endif
        endif
 
 !
