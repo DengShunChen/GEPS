@@ -389,6 +389,7 @@
       crtlamd = 1.0e-4
 !
 !      cxlamu  = 1.0e-3
+      cxlamu  = 1.0e-4  !for GFDL_MP
       cxlamd  = 1.0e-4
       xlamde  = 1.0e-4
       xlamdd  = 1.0e-4
@@ -489,7 +490,6 @@
           endif
         enddo
       enddo
-!FV3 initialize tracer variables
 !>  - Calculate saturation specific humidity and enforce minimum moisture values.
       do k = 1, km
         do i=1,im
@@ -682,14 +682,16 @@
           xlamx(i) = xlamue(i,kbcon(i))
         endif
       enddo
-      do k = 2, km1
-        do i=1,im
-          if(cnvflg(i).and. &
-            (k > kbcon(i) .and. k < kmax(i))) then
-              xlamue(i,k) = xlamx(i)
-          endif
-        enddo
-      enddo
+! >>>>> marked for GFDL_MP
+!      do k = 2, km1
+!        do i=1,im
+!          if(cnvflg(i).and. &
+!            (k > kbcon(i) .and. k < kmax(i))) then
+!              xlamue(i,k) = xlamx(i)
+!          endif
+!        enddo
+!      enddo
+! <<<<< marked for GFDL_MP
 !
 !  specify detrainment rate for the updrafts
 !
