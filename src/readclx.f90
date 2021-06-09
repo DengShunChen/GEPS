@@ -374,7 +374,7 @@
          enddo
       enddo
 ! the value of z0 is followed from new veg.type, read in lookup table.
-       if (ivegsrc .eq. 1)then
+       if (ivegsrc .ge. 1)then
        do jj=1,jlistnum
           j=jlist1(jj)
           nxj=nxdef_2d(j)
