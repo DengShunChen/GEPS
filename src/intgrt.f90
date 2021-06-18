@@ -894,8 +894,8 @@
 !!        enddo
 !!      enddo !jj = 1,jlistnum
 
-      call ndslfv_monoadvv_fgnl(vdzonlrp,vdmerdrp,ddtemp,pdot,ptm &
-                          ,nxjp,ndsldta,2)
+!!gv      call ndslfv_monoadvv_fgnl(vdzonlrp,vdmerdrp,ddtemp,pdot,ptm &
+!!gv                          ,nxjp,ndsldta,2)
 !
       do jj = 1, jlistnum
         j=jlist1(jj)
@@ -919,10 +919,6 @@
                    ,onocos,poly,dpoly,vormid,divmid,nsizey)
 
 !
-      call whdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld       &
-                   ,hfiltx,rad,cosl,up,vp,vormid,divmid,temmid   &
-                   ,plmid,eps4,trefs)
-!
         do m = 1, mlistnum
           mf=mlist(m)
           do n = mf, jtrun
@@ -934,6 +930,11 @@
             enddo
           enddo
         enddo
+!
+      call whdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld       &
+                   ,hfiltx,rad,cosl,up,vp,vormid,divmid          &
+                   ,plmid,eps4,trefs)
+!
 !
 !     update all new wind field at mid-point
 !

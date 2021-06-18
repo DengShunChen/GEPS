@@ -277,7 +277,7 @@
 !
 !--------------------------------------------------------------------
       subroutine whdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld,amp   &
-                        , rad,cosl,ut,vt,vornow,divnow,temnow,plnow    &
+                        , rad,cosl,ut,vt,vornow,divnow,plnow           &
                         , eps4,trefs) 
       use index
       use mpe
@@ -309,6 +309,7 @@
       data      windmax1/80./, windmax2/100./, windmax3/130./
 !!      data      windmax1/70./, windmax2/100./, windmax3/130./
 !
+      temnow = 0.0
       wmax(1:lev)= 0.0
 !
       do jj =1,jlistnum
@@ -346,7 +347,7 @@
 
         KL=Llist(k)
 !
-        kfac = 1.0 + 2.*min(max(float(hdk2(2)-KL),0.),20.)
+        kfac = 1.0 + 1.*min(max(float(hdk2(2)-KL),0.),15.)
 !!        facd = 1. * (kfac + 2.*max(float(hdk1-KL),0.))
 !!        facv = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
 !!        fact = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
@@ -363,10 +364,11 @@
           mf=mlist(m)
           do n=mf,jtrun
 
-            c1=1.+dta*facv*hfilt6*eps4(n,m)**3.
-!!            c1=1.+dta*facv*hfilt4*eps4(n,m)**2.
+!!            c1=1.+dta*facv*hfilt6*eps4(n,m)**3.
+            c1=1.+dta*facv*hfilt4*eps4(n,m)**2.
 !!            c2=1.+dta*facd*hfilt6*eps4(n,m)**3.
 !!            c2=1.+dta*facd*hfilt2*eps4(n,m)
+
             if ( KL .le. hdk1 ) then
               c2=1.+dta*facd*hfilt2*eps4(n,m)
             else
@@ -374,6 +376,8 @@
             endif
 
 !!            c3=1.+dta*fact*hfilt6*eps4(n,m)**3.
+            c3=1.+dta*fact*hfilt4*eps4(n,m)**2.
+
 
             vornow(k,1,n,m)=vornow(k,1,n,m)/c1
             vornow(k,2,n,m)=vornow(k,2,n,m)/c1
@@ -385,15 +389,15 @@
         enddo
  100  continue
 !!
-      fact = 1.0
-      do m=1,mlistnum
-          mf=mlist(m)
-          do n=mf,jtrun
-             c4=1.+dta*fact*hfilt4*eps4(n,m)**2.
-             plnow(n,m,1)=plnow(n,m,1)/c4
-             plnow(n,m,2)=plnow(n,m,2)/c4
-          enddo
-      enddo
+!      fact = 1.0
+!      do m=1,mlistnum
+!          mf=mlist(m)
+!          do n=mf,jtrun
+!             c4=1.+dta*fact*hfilt4*eps4(n,m)**2.
+!             plnow(n,m,1)=plnow(n,m,1)/c4
+!             plnow(n,m,2)=plnow(n,m,2)/c4
+!          enddo
+!      enddo
 !
       windchk=.false.
       do k=1,8
