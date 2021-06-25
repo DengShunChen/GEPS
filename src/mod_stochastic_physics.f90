@@ -3,7 +3,7 @@ module mod_stochastic_physics
   use rank, only : myrank
   use index
   use param
-  use const, only : aki, bki, dosppt, doshum, dossst
+  use const, only : aki, bki, dosppt, doshum, dossst, poly
   use mersenne_twister, only: random_setseed,random_gauss,random_stat
   implicit none
   private 
@@ -11,7 +11,7 @@ module mod_stochastic_physics
   type random_pattern
     real, allocatable :: n2d(:,:)
     real, allocatable :: spec(:,:)
-    real, allocatable :: poly(:,:)
+    real, allocatable :: specp(:,:,:)
     real, allocatable :: varspec(:)
     real :: stdev ! stochastic physics tendency amplitude
     real :: decortau ! time scales
@@ -340,15 +340,12 @@ contains
 
       allocate(rpattern(n)%n2d(nxp,my_max))
       allocate(rpattern(n)%spec(rpattern(n)%mlmax,2))
-      allocate(rpattern(n)%poly(rpattern(n)%mlmax,my/2))
+      allocate(rpattern(n)%specp(jtrun,jtmax,2))
       allocate(rpattern(n)%varspec(rpattern(n)%mlmax))
       allocate(rpattern(n)%msort(rpattern(n)%mlmax))
       allocate(rpattern(n)%lsort(rpattern(n)%mlmax))
       allocate(rpattern(n)%mlsort(rpattern(n)%jtrun,rpattern(n)%jtrun))
       allocate(noise(rpattern(n)%mlmax,2))
-
-      ! get legendre polynomials 
-      call get_legendre_poly(rpattern(n)%mlmax,rpattern(n)%jtrun,rpattern(n)%poly)
 
       ! Real random seeds
       if (myrank.eq.0) then     
@@ -452,7 +449,7 @@ contains
     do n=1,nscale
       deallocate(rpattern(n)%n2d)
       deallocate(rpattern(n)%spec)
-      deallocate(rpattern(n)%poly)
+      deallocate(rpattern(n)%specp)
       deallocate(rpattern(n)%varspec)
       deallocate(rpattern(n)%msort)
       deallocate(rpattern(n)%lsort)
@@ -466,26 +463,11 @@ contains
     integer :: nscale
     integer :: n, ii, i, jj, j, k, nxj
     type(random_pattern), intent(inout) :: rpattern(nscale)
-    real :: rpattern2d(nx,my) 
 
     do n=1,nscale
-      if (myrank .eq. 0 ) then
-        call gen_random_pattern_2d(rpattern2d,rpattern(n))
-      endif
-      call mpe_bcast(rpattern2d,nx*my,0,mpe_double)
-      do jj=1,jlistnum
-        j=jlist1(jj)
-        if( lreduce.eq.1 ) then
-          call reducepick (rpattern2d(1,j),nxdef(j),nx,1)
-        endif
-        ii=nxjstart(j)
-        nxj=nxdef_2d(j)
-        do i=1,nxj
-          rpattern(n)%n2d(i,jj)=rpattern2d(ii,j)
-          ii=ii+1
-        enddo
-      enddo
+      call gen_random_pattern_2d(rpattern(n)%n2d,rpattern(n))
     enddo
+
   end subroutine get_random_pattern_run
 
   subroutine get_stochy_physics(rpattern,nscale,nlev,vfact,n3d)
@@ -544,24 +526,37 @@ contains
   subroutine gen_random_pattern_2d(sppt2d,rpattern)
     implicit none
     type(random_pattern), intent(inout) :: rpattern
-    real, intent(out) :: sppt2d(nx,my)
+    real, intent(out) :: sppt2d(nxp,my_max)
     integer :: ml, ns, ms
-    real, allocatable :: noise(:,:)
+    real, allocatable :: noise(:,:),bufr2d(:,:,:)
 
-    ! get noise
-    allocate(noise(rpattern%mlmax,2)) 
-    call get_noise(rpattern,noise) 
+    allocate(bufr2d(jtrun,jtmax*nsizey,2)) 
 
-    !  radom pattern advance with first order AR
-    rpattern%spec(:,1) = rpattern%phi*rpattern%spec(:,1) + & 
-          sqrt(1.-rpattern%phi**2.)*rpattern%stdev*rpattern%varspec*noise(:,1)
-    rpattern%spec(:,2) = rpattern%phi*rpattern%spec(:,2) + & 
-          sqrt(1.-rpattern%phi**2.)*rpattern%stdev*rpattern%varspec*noise(:,2)
+    if ( col_rank .eq. 0 ) then
+      ! get noise
+      allocate(noise(rpattern%mlmax,2)) 
+      call get_noise(rpattern,noise) 
+ 
+      !  radom pattern advance with first order AR
+      rpattern%spec(:,1) = rpattern%phi*rpattern%spec(:,1) + & 
+            sqrt(1.-rpattern%phi**2.)*rpattern%stdev*rpattern%varspec*noise(:,1)
+      rpattern%spec(:,2) = rpattern%phi*rpattern%spec(:,2) + & 
+            sqrt(1.-rpattern%phi**2.)*rpattern%stdev*rpattern%varspec*noise(:,2)
+
+      ! ready for mpi_scatter random pattern
+      call spectrun_inp2d(rpattern%jtrun,jtrun,jtmax         &
+                         ,rpattern%mlsort,nsizey             &
+                         ,rpattern%spec,bufr2d)
+
+      deallocate(noise)
+    endif
+
+    !  mpi_scatter random pattern from root
+    call mpe_scatter_sppt(bufr2d,rpattern%specp,2*jtrun*jtmax,nsizey)
+    deallocate(bufr2d)
 
     ! transform spectral to physical space 
-    call transr_sppt(rpattern%jtrun,rpattern%mlmax,nx,my,1,rpattern%poly,rpattern%spec,sppt2d)
-
-    deallocate(noise)
+    call transr1(jtrun,jtmax,nx,my,my_max,poly,rpattern%specp,sppt2d,nsizey)
 
   end subroutine gen_random_pattern_2d
 
@@ -1058,5 +1053,67 @@ contains
 
     deallocate(mlat,prsl)
   end subroutine spptctl
+!
+  subroutine spectrun_inp2d(jcap1,jtr,jtm,mlsort,ns,speci,speco)
+!
+! use spectral truncation to change resoltuion
+!
+      implicit none
+      integer lev,jtr,jcap1,jtm,ns,ml
+      real speci(jcap1*(jcap1+1)/2,2)
+      real speco(jtr,jtm*ns*2)
+      integer i,j,k,jj,jp,jr,j1,j2
+      integer mlsort(jcap1,jcap1)
+!
+      speco(:,:) = 0.0
+      if( jcap1.gt.jtr ) then
+          do j=1,jcap1
+            if( j.le.jtr ) then
+              jj=nlist(j)
+              jp=(jj-1)/jtm
+              jr=mod(jj-1,jtm)+1
+              j1=jp*jtm*2+jr
+              j2=j1+jtm
+            endif
+            do i=j,jcap1
+              ml=mlsort(j,i)
+              if( i.le.jtr ) then
+                speco(i,j1) = speci(ml,1)
+                speco(i,j2) = speci(ml,2)
+              endif
+            enddo
+          enddo
+      else if( jcap1.lt.jtr ) then
+          do j=1,jtr
+            jj=nlist(j)
+            jp=(jj-1)/jtm
+            jr=mod(jj-1,jtm)+1
+            j1=jp*jtm*2+jr
+            j2=j1+jtm
+            do i=j,jtr
+              if( i.le.jcap1 ) then
+                ml=mlsort(j,i)
+                speco(i,j1) = speci(ml,1)
+                speco(i,j2) = speci(ml,2)
+              endif
+            enddo
+          enddo
+      else      ! jcap1=jtr
+          do j=1,jtr
+            jj=nlist(j)
+            jp=(jj-1)/jtm
+            jr=mod(jj-1,jtm)+1
+            j1=jp*jtm*2+jr
+            j2=j1+jtm
+            do i=j,jtr
+              ml=mlsort(j,i)
+              speco(i,j1) = speci(ml,1)
+              speco(i,j2) = speci(ml,2)
+            enddo
+          enddo
+      endif
+
+      return
+  end subroutine spectrun_inp2d
 
 end module mod_stochastic_physics
