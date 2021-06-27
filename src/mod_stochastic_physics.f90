@@ -11,7 +11,6 @@ module mod_stochastic_physics
   type random_pattern
     real, allocatable :: n2d(:,:)
     real, allocatable :: spec(:,:)
-    real, allocatable :: specp(:,:,:)
     real, allocatable :: varspec(:)
     real :: stdev ! stochastic physics tendency amplitude
     real :: decortau ! time scales
@@ -340,7 +339,6 @@ contains
 
       allocate(rpattern(n)%n2d(nxp,my_max))
       allocate(rpattern(n)%spec(rpattern(n)%mlmax,2))
-      allocate(rpattern(n)%specp(jtrun,jtmax,2))
       allocate(rpattern(n)%varspec(rpattern(n)%mlmax))
       allocate(rpattern(n)%msort(rpattern(n)%mlmax))
       allocate(rpattern(n)%lsort(rpattern(n)%mlmax))
@@ -449,7 +447,6 @@ contains
     do n=1,nscale
       deallocate(rpattern(n)%n2d)
       deallocate(rpattern(n)%spec)
-      deallocate(rpattern(n)%specp)
       deallocate(rpattern(n)%varspec)
       deallocate(rpattern(n)%msort)
       deallocate(rpattern(n)%lsort)
@@ -528,9 +525,10 @@ contains
     type(random_pattern), intent(inout) :: rpattern
     real, intent(out) :: sppt2d(nxp,my_max)
     integer :: ml, ns, ms
-    real, allocatable :: noise(:,:),bufr2d(:,:,:)
+    real, allocatable :: noise(:,:),bufr2d(:,:,:),specp(:,:,:)
 
     allocate(bufr2d(jtrun,jtmax*nsizey,2)) 
+    allocate(specp(jtrun,jtmax,2)) 
 
     if ( col_rank .eq. 0 ) then
       ! get noise
@@ -552,11 +550,13 @@ contains
     endif
 
     !  mpi_scatter random pattern from root
-    call mpe_scatter_sppt(bufr2d,rpattern%specp,2*jtrun*jtmax,nsizey)
-    deallocate(bufr2d)
+    call mpe_scatter_sppt(bufr2d,specp,2*jtrun*jtmax,nsizey)
 
     ! transform spectral to physical space 
-    call transr1(jtrun,jtmax,nx,my,my_max,poly,rpattern%specp,sppt2d,nsizey)
+    call transr1(jtrun,jtmax,nx,my,my_max,poly,specp,sppt2d,nsizey)
+
+    deallocate(bufr2d)
+    deallocate(specp)
 
   end subroutine gen_random_pattern_2d
 
