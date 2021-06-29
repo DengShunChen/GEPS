@@ -41,7 +41,7 @@
                                ,lsftobswt
       use mod_eos_ocean,     only: tmelts,api
       use mod_sst,           only:read_woa0,read_godas,read_dailygodas &
-                                ,read_dailyFCT,obswtbp,obswtbt         &
+                                ,read_dailyFCT                         &
                                 ,ifilin_ocaf,read_ocaf,read_ocaf0      &
                                 ,wtfn12,wsfn12,time_weights,mask1st
       USE mo_netcdf,         ONLY:lkvl,set_ocndepth

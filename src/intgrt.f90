@@ -29,7 +29,7 @@
       USE mod_sit_vdiff,       ONLY:sit_vdiff_end,cal_ratioBlending
       USE mod_sit_control,     ONLY:xmissing,lgodas,locaf,lwoa0   &
                                     ,loutsit24,outsitmean,lsitstart   &
-                                    ,ldailysst,ltrigsit,fsitchg
+                                    ,ldailysst,ltrigsit
       USE mod_sst,             ONLY:deallocate_ocaf_array,deallocate_woa0_array &
                                  ,deallocate_godas_array,read_dailygodas        &
                                  ,time_weights,nmw1,nmw2,wgt1,wgt2              &
@@ -39,9 +39,8 @@
                                  ,allocate_opgsst_array,read_opgsst             &
                                  ,opgsst,deallocate_opgsst_array                &
                                  ,obswtbnmw1,obswtbnmw2,obswtbwgt1,obswtbwgt2   &
-                                 ,obswtbp,obswtbt,obswtbn,tseap,tseat,tsean     &
-                                 ,dFCTsstdt,tseadiffFCT,tseadiffFCT24           &
-                                 ,outtseadiffFCT24
+                                 ,tseaold,tseanow,tseanew,dtseadt               &
+                                 ,tseadiffFCT,tseadiffFCT24,outtseadiffFCT24
       USE mo_netcdf,           ONLY:lkvl,cleanup_netcdf
 !-----------------------------------------------------------------------
       use raddiag
@@ -176,8 +175,8 @@
       logical lnewyymm
       integer ic_sit,nc_sit
       logical turn_sit,lrun_sitvdiff
-      integer lenc,itautest
 !pscheckdata
+      integer lenc,itautest
       real mout(nx,my)
       character*26 ihdg2
       integer nc
@@ -1274,68 +1273,30 @@
         endif  
 
 !
-! update tg, dSST/dt (W00100)
+! update tg, dtsea/dt (W00100)
 !
         if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. dailyClm_option.ge.1) then
           if(tau .ge. 24.) then
-          do jj = 1, jlistnum
-            j=jlist1(jj)
-            nxj=nxdef_2d(j)
-            do ii = 1,nxj
-              i=nxjstart(j)+ii-1
-              tseadiffFCT(ii,jj)=0.
-              obswtbn(ii,jj)=dta*dFCTsstdt(ii,jj)+obswtbp(ii,jj)
-              obswtbp(ii,jj)=obswtbt(ii,jj)
-              obswtbt(ii,jj)=obswtbn(ii,jj)
-
-              if(ocean(ii,jj))then
-                tseadiffFCT(ii,jj)=dta*dFCTsstdt(ii,jj)
-                tsean(ii,jj)=tseadiffFCT(ii,jj)+tseap(ii,jj)
-                if(do_sit) then
-                if( sitmask(ii,jj) .EQ. 1. ) then
-                  if(lrun_sitvdiff .AND. ltrigsit )then
-                    tseadiffSIT(ii,jj)=0.
-                    sumdSITdt(ii,jj)=sumdSITdt(ii,jj)+dtswdt(ii,jj)
-                    countdSITdt(ii,jj)=countdSITdt(ii,jj)+1.
+            do jj = 1, jlistnum
+              j=jlist1(jj)
+              nxj=nxdef_2d(j)
+              do ii = 1,nxj
+                i=nxjstart(j)+ii-1
+                if(ocean(ii,jj))then
+                  tseanew(ii,jj)=dta*dtseadt(ii,jj)+tseaold(ii,jj)
+                  tseaold(ii,jj)=tseanow(ii,jj) + tfilt*(tseaold(ii,jj)     &
+                                 -2.0*tseanow(ii,jj)+tseanew(ii,jj) )
+                  tseanow(ii,jj)=tseanew(ii,jj)
+ 
+                  dtaup=mod(tau+0.001,updatetg)
+                  if(dtaup .lt. dtx_tau)then
+                    tg(ii,jj)=tseanow(ii,jj)
                   endif
-                
-                  dtaup= mod(tau+0.001, dSITdt_intv)
-                  if( (dSITdt_intv .lt. 0.) .OR. (dtaup .lt. dtx_tau) )then
-                    if(countdSITdt(ii,jj) .ge. 1.) then
-                      tseadiffFCT(ii,jj)=dta*(1.-weightSIT*ratioSIT(ii,jj))&
-                                        *dFCTsstdt(ii,jj)
-                      tseadiffSIT(ii,jj)=dta*weightSIT*ratioSIT(ii,jj)          &
-                                       *(sumdSITdt(ii,jj)/countdSITdt(ii,jj))
-                      if(fsitchg .gt. 0.)then
-                        tseadiffSIT(ii,jj)=min(max(tseadiffSIT(ii,jj),-abs(fsitchg)) &
-                                          ,abs(fsitchg))
-                      endif
-                    endif
-                    sumdSITdt(ii,jj)=0.
-                    countdSITdt(ii,jj)=0.
-                    tseadiffSIT24(ii,jj)=tseadiffSIT24(ii,jj)+tseadiffSIT(ii,jj)/dta*dtx
-                    tsean(ii,jj)=tseadiffFCT(ii,jj)+tseadiffSIT(ii,jj)  &
-                                 +tseap(ii,jj)
-                  endif
-                endif
-                endif
-                tseadiffFCT24(ii,jj)=tseadiffFCT24(ii,jj)+tseadiffFCT(ii,jj)/dta*dtx
 
-!!                tseap(ii,jj)=tseat(ii,jj) + tfilt*(tseap(ii,jj)     &
-!!                              -2.0*tseat(ii,jj)+tsean(ii,jj) )
-                tseap(ii,jj)=tseat(ii,jj)
-                tseat(ii,jj)=tsean(ii,jj)
-
-                dtaup=mod(tau+0.001,updatetg)
-                if(dtaup .lt. dtx_tau)then
-                  tg(ii,jj)=tseat(ii,jj)
-                endif
-
-              endif
-
-            end do
-          end do
-          endif  !end if(tau .ge. 24.)
+                endif !end if(ocean)
+              enddo
+            enddo
+          endif
           CALL read_dailyFCT(idtg,tau,dt,tg,cice,sndepth,xlon,xlat,ocean)
         endif
 !
