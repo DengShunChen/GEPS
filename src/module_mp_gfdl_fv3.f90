@@ -245,10 +245,8 @@ module module_mp_gfdl
     real :: qi0_max = 1.0e-4 !< max cloud ice value (by other sources)
     
     real :: qi0_crt = 1.0e-4 !< cloud ice to snow autoconversion threshold (was 1.e-4)
-!v4au1    real :: qi0_crt = 0.8e-4 !< cloud ice to snow autoconversion threshold (was 1.e-4)
-!v4au2    real :: qi0_crt = 0.6e-4 !< cloud ice to snow autoconversion threshold (was 1.e-4)
-!v4au3    real :: qi0_crt = 0.4e-4 !< cloud ice to snow autoconversion threshold (was 1.e-4)
-!v4au4    real :: qi0_crt = 0.2e-4 !< cloud ice to snow autoconversion threshold (was 1.e-4)
+!    real :: qi0_crt = 0.8e-4 !< cloud ice to snow autoconversion threshold (was 1.e-4)
+!    real :: qi0_crt = 0.6e-4 !< cloud ice to snow autoconversion threshold (was 1.e-4)
                              !! qi0_crt is highly dependent on horizontal resolution
     real :: qr0_crt = 1.0e-4 !< rain to snow or graupel / hail threshold
                              !! lfo used * mixing ratio * = 1.e-4 (hail in lfo)
@@ -256,8 +254,7 @@ module module_mp_gfdl
     
     real :: c_paut = 0.55 !< autoconversion cloud water to rain (use 0.5 to reduce autoconversion)
     real :: c_psaci = 0.02 !< accretion: cloud ice to snow (was 0.1 in zetac)
-!v4ac1    real :: c_psaci = 0.1 !< accretion: cloud ice to snow (was 0.1 in zetac)
-!v4ac2    real :: c_psaci = 0.2 !< accretion: cloud ice to snow (was 0.1 in zetac)
+!    real :: c_psaci = 0.1 !< accretion: cloud ice to snow (was 0.1 in zetac)
     real :: c_piacr = 5.0 !< accretion: rain to ice:
     real :: c_cracw = 0.9 !< rain accretion efficiency
     real :: c_pgacs = 2.0e-3 !< snow to graupel "accretion" eff. (was 0.1 in zetac)
@@ -295,7 +292,7 @@ module module_mp_gfdl
     logical :: z_slope_ice = .false. !< use linear mono slope for autocconversions
     logical :: use_ccn = .false. !< must be true when prog_ccn is false
     logical :: use_ppm = .false. !< use piecewise parabolic method (PPM) for the falling condensates
-!v4p    logical :: use_ppm = .true. !< use piecewise parabolic method (PPM) for the falling condensates
+!    logical :: use_ppm = .true. !< use piecewise parabolic method (PPM) for the falling condensates
     logical :: mono_prof = .true. !< perform terminal fall with mono ppm scheme
     logical :: mp_print = .false. !< cloud microphysics debugging printout
     

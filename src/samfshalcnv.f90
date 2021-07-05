@@ -588,7 +588,8 @@
 !> - The updraft detrainment rate is set constant and equal to the entrainment rate at cloud base.
       do i = 1, im
         if(cnvflg(i)) then
-          xlamud(i) = xlamue(i,kbcon(i))
+!          xlamud(i) = xlamue(i,kbcon(i))
+          xlamud(i) = 0.001 * clam  !for GFDL_MP new
 !         xlamud(i) = crtlamd
         endif
       enddo
@@ -811,6 +812,7 @@
           k = kbcon(i)
           dp = 1000. * del(i,k)
           xmbmax(i) = dp / (g * dt2)
+!          xmbmax(i) = dp / (2. * g * dt2)  !for GFDL_MP
 !
 !         tem = dp / (g * dt2)
 !         xmbmax(i) = min(tem, xmbmax(i))

@@ -255,7 +255,6 @@
             uin(i,1,k)  = ut(i,k)                 !zonal wind (m/s)
             vin(i,1,k)  = vt(i,k)                 !meridional wind (m/s)
             delp(i,1,k) = prsi(i,k+1)-prsi(i,k)   !differences of interface pressure (Pa)
-!            dz(i,1,k)   = (phii(i,kc+1)-phii(i,kc))/con_g !depth (m)
             dz(i,1,k)   = (phii(i,kc)-phii(i,kc+1))/con_g !differences of height (m), dz<0
           enddo
         enddo
