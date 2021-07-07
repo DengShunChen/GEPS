@@ -485,6 +485,7 @@
       character*12 cdtg
       integer yr, mo, dy, hr, mn
       real tauhr
+      real dtx_tau,dtaup
       INTEGER, PARAMETER :: nerr = 6
 !xb110>
       ztenh = 0.
