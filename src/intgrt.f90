@@ -1266,8 +1266,11 @@
               do ii = 1,nxj
                 i=nxjstart(j)+ii-1
                 if(ocean(ii,jj))then
-                  tseanow(ii,jj)=dta*dtseadt(ii,jj)+tseaold(ii,jj)
-                  tseaold(ii,jj)=tseanow(ii,jj)
+                  tseanew(ii,jj)=dta*dtseadt(ii,jj)+tseaold(ii,jj)
+!                  tseaold(ii,jj)=tseanow(ii,jj) + tfilt*(tseaold(ii,jj)     &
+!                                 -2.0*tseanow(ii,jj)+tseanew(ii,jj) )
+                  tseaold(ii,jj)=tseanow(ii,jj) 
+                  tseanow(ii,jj)=tseanew(ii,jj)
  
                   dtaup=mod(tau+0.001,updatetg)
                   if(dtaup .lt. dtx_tau)then
