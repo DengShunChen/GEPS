@@ -502,7 +502,8 @@
       islimsk=0
       kpbl=1
 
-!CWB2016 
+!CWB2016
+      lssav=.false.
       icsdsw=0
       icsdlw=0
       rld_adj=0.

@@ -72,8 +72,8 @@
                       , otgreen,out_hp,dosppt,dospptout, doshum, dossst  &
                       , ndsladvh2                                       &
                       , ldailyFCTsst,ldailyFCTicesndpt,lFCTweight       &
-                      , dailyClm_option,lopgsst,do_sit,fsit,pdfcloud    &
-                      , cmbk,cgwd,nmmiph,spl1,spl2                      &
+                      , dailyClm_option,lopgsst,do_sit,fsit,pdfcloud,updatetg    &
+                      , cmbk,cgwd,nmmiph,spl1,spl2            &
                       , weightSIT,dSITdt_intv,af
 !
       real    si(lev+1)
