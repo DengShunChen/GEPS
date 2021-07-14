@@ -1255,23 +1255,6 @@
 !ttl      endif     ! end of (forward)
 !        if ( mod(itimestep,2) .eq. 0 ) xy = -1 * xy
         xy = -1 * xy
-! update tsea, dSST/dt (W00100)
-!
-        if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. dailyClm_option.ge.1) then
-          do jj = 1, jlistnum
-            j=jlist1(jj)
-            nxj=nxdef_2d(j)
-            do ii = 1,nxj
-              dFCTsstdt(ii,jj)=0.
-              obswtbt(ii,jj)=dta*dFCTsstdt(ii,jj)+obswtbp(ii,jj)
-              if(ocean(ii,jj))then
-                tseadiffFCT(ii,jj)=dta*dFCTsstdt(ii,jj)
-                tseat(ii,jj)=dta*dFCTsstdt(ii,jj)+ tseap(ii,jj)
-              endif
-            end do
-          end do
-        endif  
-
 !
 ! update tg, dtsea/dt (W00100)
 !
@@ -1284,8 +1267,9 @@
                 i=nxjstart(j)+ii-1
                 if(ocean(ii,jj))then
                   tseanew(ii,jj)=dta*dtseadt(ii,jj)+tseaold(ii,jj)
-                  tseaold(ii,jj)=tseanow(ii,jj) + tfilt*(tseaold(ii,jj)     &
-                                 -2.0*tseanow(ii,jj)+tseanew(ii,jj) )
+!                  tseaold(ii,jj)=tseanow(ii,jj) + tfilt*(tseaold(ii,jj)     &
+!                                 -2.0*tseanow(ii,jj)+tseanew(ii,jj) )
+                  tseaold(ii,jj)=tseanow(ii,jj) 
                   tseanow(ii,jj)=tseanew(ii,jj)
  
                   dtaup=mod(tau+0.001,updatetg)
