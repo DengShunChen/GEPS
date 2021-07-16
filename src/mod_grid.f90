@@ -27,7 +27,7 @@
 
       integer, allocatable :: lonstr(:),lonlen(:)
       integer, allocatable :: latstr(:),latlen(:)
-      real, allocatable :: gslati(:),gglati(:)
+      real, allocatable :: gslati(:),gglati(:),gglat(:)
 
       contains 
 
@@ -58,7 +58,7 @@
 !!                 ttm_sl(nx,levp,my_max),      &
 !!                  qm_sl(nx,levp,ncld,my_max), &
 !!                pt_sl(nx,my_max),           &
-!!               ptp_sl(nx,my_max),           &
+!!                  ptp_sl(nx,my_max),           &
                  stat=ierr)
 
            if (ierr/= 0) then
@@ -76,8 +76,8 @@
                stop
            end if
 
-           allocate (gslati(my*2+1),gglati(my*2+1),     &
-                     lonstr(npe),lonlen(npe),           &
+           allocate (gslati(my*2+1),gglati(my*2+1),gglat(my*2),     &
+                     lonstr(npe),lonlen(npe),                       &
                      latstr(npe),latlen(npe), stat=ierr)
 
            if (ierr/= 0) then
@@ -109,7 +109,7 @@
            deallocate ( pt,dlpl,dtpl,sgeo,pdiff, &
                ptend,t1000,tsave,std,ptp)
 ! for Semi-Lagrangian
-           deallocate (gslati,gglati,lonstr,lonlen,latstr,latlen)
+           deallocate (gslati,gglati,gglat,lonstr,lonlen,latstr,latlen)
            deallocate (dlphi,dtphi)
 !!         deallocate (ut_sl,vt_sl,uum_sl,vvm_sl,ttm_sl,qm_sl,pt_sl,ptp_sl)
            deallocate (ut_sl,vt_sl)
