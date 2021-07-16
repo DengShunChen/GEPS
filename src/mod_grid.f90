@@ -28,8 +28,8 @@
 
       integer, allocatable :: lonstr(:),lonlen(:)
       integer, allocatable :: latstr(:),latlen(:)
-      real, allocatable :: gslati(:),gglati(:),gglat(:)
-
+      real, allocatable :: gslati(:),gglati(:)
+      real, allocatable :: fa1(:),fa2(:),fa3(:),fa4(:)
       contains 
 
          subroutine allocate_grid_array
@@ -77,7 +77,7 @@
                stop
            end if
 
-           allocate (gslati(my*2+1),gglati(my*2+1),gglat(my*2),     &
+           allocate (gslati(my*2+1),gglati(my*2+1),                 &
                      lonstr(npe),lonlen(npe),                       &
                      latstr(npe),latlen(npe), stat=ierr)
 
@@ -95,11 +95,22 @@
                stop
            end if
 
+           allocate (fa1(my*2),fa2(my*2),fa3(my*2),fa4(my*2), stat=ierr)
+
+           if (ierr/= 0) then
+               write(6,*) 'mod_grid for ndsl : allocate fail 5'
+               stop
+           end if
+
 !CWB2015
            ptend=0.
 
 !CWB2018
            sd=0.
+           fa1=0.
+           fa2=0.
+           fa3=0.
+           fa4=0.
 
            return
 
@@ -112,7 +123,8 @@
                ptend,t1000,tsave,std,ptp)
 ! for Semi-Lagrangian
            deallocate (qm)
-           deallocate (gslati,gglati,gglat,lonstr,lonlen,latstr,latlen)
+           deallocate (gslati,gglati,lonstr,lonlen,latstr,latlen)
+           deallocate (fa1,fa2,fa3,fa4)
            deallocate (dlphi,dtphi)
 !!         deallocate (ut_sl,vt_sl,uum_sl,vvm_sl,ttm_sl,qm_sl,pt_sl,ptp_sl)
            deallocate (ut_sl,vt_sl)
