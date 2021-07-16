@@ -26,7 +26,7 @@
       character t1*14, t2*12
 
       real       xmin,xmax
-      integer    imin,jmin,imax,jmax,j,nxj,i
+      integer    imin,jmin,imax,jmax,j,i
 !
       xmin= 1.0e25
       xmax= -1.0e25
@@ -36,8 +36,7 @@
       jmax=1
 !
       do 10 j=j1,jm
-      nxj=nxdef(j)
-      do 10 i=i1,nxj
+      do 10 i=i1,im
       if (fld(i,k1,j).le.xmin) then
       xmin= fld(i,k1,j)
       jmin= j
