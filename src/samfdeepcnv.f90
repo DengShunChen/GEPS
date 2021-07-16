@@ -173,7 +173,8 @@
                            rntot(im),   vshear(im), xaa0(im), &
                            xk(im),      xlamd(im),  cina(im), &
                            xmb(im),     xmbmax(im), xpwav(im), &
-                           xpwev(im), &!  xlamx(im), &
+                           xpwev(im),   &
+!                           xlamx(im), & !marked for GFDL_MP e new
                            delubar(im),delvbar(im)
 !
       real(kind=kind_phys) c0(im)
@@ -192,7 +193,7 @@
 !byl      parameter(g=grav)
       parameter(elocp=hvap/cp,el2orc=hvap*hvap/(rv*cp))
 !      parameter(c0s=.002,c1=.002,d0=.01)
-      parameter(c0s=.002,c1=.002,d0=.001) !for GFDL_MP
+      parameter(c0s=.002,c1=.002,d0=.001) !for GFDL_MP c
 !byl      parameter(d0=.01)
 !     parameter(c0l=c0s*asolfac)
 !
@@ -376,7 +377,7 @@
       edtmaxs = .3
       clam    = .1
 !      aafac   = .1 
-      aafac   = .05  !for GFDL_MP
+      aafac   = .05  !for GFDL_MP o
 !     betal   = .15
 !     betas   = .15
       betal   = .05
@@ -444,7 +445,7 @@
         do i=1,im
           zi(i,k) = 0.5*(zo(i,k)+zo(i,k+1))
           xlamue(i,k) = clam / zi(i,k)
-          xlamue(i,k) = max(xlamue(i,k), crtlamu) !for GFDL_MP
+          xlamue(i,k) = max(xlamue(i,k), crtlamu) !for GFDL_MP e
         enddo
       enddo
 !
@@ -676,7 +677,7 @@
 !!  \epsilon = \epsilon_0F_0 + d_1\left(1-RH\right)F_1
 !!  \f]
 !!  where \f$\epsilon_0\f$ is the cloud base entrainment rate, \f$d_1\f$ is a tunable constant, and \f$F_0=\left(\frac{q_s}{q_{s,b}}\right)^2\f$ and \f$F_1=\left(\frac{q_s}{q_{s,b}}\right)^3\f$ where \f$q_s\f$ and \f$q_{s,b}\f$ are the saturation specific
-! >>>>> marked for GFDL_MP new
+! >>>>> marked for GFDL_MP e new
 !      do i=1,im
 !        if(cnvflg(i)) then
 !          xlamx(i) = xlamue(i,kbcon(i))
@@ -690,7 +691,7 @@
 !          endif
 !        enddo
 !      enddo
-! <<<<< marked for GFDL_MP new
+! <<<<< marked for GFDL_MP e new
 !
 !  specify detrainment rate for the updrafts
 !
@@ -699,7 +700,7 @@
         do i=1,im
           if(cnvflg(i) .and. k < kmax(i)) then
 !            xlamud(i,k) = xlamx(i)
-            xlamud(i,k) = 0.001 * clam  !for GFDL_MP new
+            xlamud(i,k) = 0.001 * clam  !for GFDL_MP d new
 !           xlamud(i,k) = crtlamd
           endif
         enddo
@@ -729,8 +730,8 @@
             (k > kbcon(i) .and. k < kmax(i))) then
               tem = cxlamu * frh(i,k) * fent2(i,k)
               xlamue(i,k) = xlamue(i,k)*fent1(i,k) + tem
-              tem1 = cxlamd * frh(i,k)          !for GFDL_MP
-              xlamud(i,k) = xlamud(i,k) + tem1  !for GFDL_MP
+              tem1 = cxlamd * frh(i,k)          !for GFDL_MP d
+              xlamud(i,k) = xlamud(i,k) + tem1  !for GFDL_MP d
           endif
         enddo
       enddo
@@ -1006,7 +1007,7 @@
           k = kbcon(i)
           dp = 1000. * del(i,k)
           xmbmax(i) = dp / (g * dt2)
-!          xmbmax(i) = dp / (2. * g * dt2)  !for GFDL_MP
+!          xmbmax(i) = dp / (2. * g * dt2)  !for GFDL_MP x
 !
 !         mbdt(i) = 0.1 * dp / g
 !
@@ -2170,7 +2171,7 @@
       do i = 1, im
         if(cnvflg(i)) then
 !          tem = min(max(xlamx(i), 7.e-5), 3.e-4)
-          tem = min(max(xlamue(i,kbcon(i)), 7.e-5), 3.e-4)  !for GFDL_MP new
+          tem = min(max(xlamue(i,kbcon(i)), 7.e-5), 3.e-4)  !for GFDL_MP e new
           tem = 0.2 / tem
           tem1 = 3.14 * tem * tem
           sigmagfm(i) = tem1 / garea(i)

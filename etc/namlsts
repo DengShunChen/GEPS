@@ -15,11 +15,10 @@
  tauo=1.0,
  taup=6.0,
  taureg=6.,
- dt=225.0,
+ dt=450.0,
  cstar=f,
  update=t,
  lsimpl=t,
- tfilt=0.04,
  spl1=5.,
  spl2=100.,
  hfilt=1.,
@@ -72,6 +71,7 @@
  ivegsrc=1,
  cgwd=1.20,
  cmbk=1.00,
+ af=0.1,
  &end
 
  &typ

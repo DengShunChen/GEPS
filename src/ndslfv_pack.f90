@@ -269,6 +269,106 @@
       end subroutine cyclic_cell_massadvx
 !
 !
+! -------------------------------------------------------------------------------
+      subroutine cyclic_cell_massadvxl(im,imf,levs,nvars,delt,uc,qq,mass)
+!
+! compute local positive advection with mass conservation
+! qq is advected by uc from past to next position
+!
+! author: hann-ming henry juang 2008
+!
+!      use grid
+!      use gfs_dyn_layout1
+!
+      implicit none
+!
+      integer	im,imf,levs,nvars,mass
+      real	delt,pi
+      real	uc(imf,levs)
+      real	qq(imf,levs,nvars)
+!
+      real	past(im,nvars),next(im,nvars),da(im,nvars)
+      real	dxfact(im)
+      real	xreg(im+1),xpast(im+1),xnext(im+1)
+      real	uint(im+1)
+      real 	dist(im+1),sc,ds(im+1),step(10),dist_step
+      real, parameter :: fa1 = 9./16.
+      real, parameter :: fa2 = 1./16.
+
+      integer  	i,k,n,nn,nf,nv,nst,nstep
+
+!     sc = ggloni(im+1)-ggloni(1)
+      pi = 4.0 * atan(1.0)
+      sc = 2.0 * pi
+      do i=1,im+1
+        ds(i) = sc / float(im)
+      enddo
+      do i=1,im+1
+        xreg(i) = (i-1.5)*ds(i)
+      enddo
+      nv = nvars
+!
+      do k=1,levs
+!
+! 4th order interpolation from mid point to cell interfaces
+!
+        do i=3,im-1
+          uint(i)=fa1*(uc(i,k)+uc(i-1,k))-fa2*(uc(i+1,k)+uc(i-2,k))
+        enddo
+        uint(2)=fa1*(uc(2,k)+uc(1 ,k))-fa2*(uc(3,k)+uc(im  ,k))
+        uint(1)=fa1*(uc(1,k)+uc(im,k))-fa2*(uc(2,k)+uc(im-1,k))
+        uint(im+1)=uint(1)
+        uint(im  )=fa1*(uc(im,k)+uc(im-1,k))                            & 
+                       -fa2*(uc(1,k)+uc(im-2,k))
+
+!
+! compute past and next positions of cell interfaces
+!
+        do i=1,im+1
+          dist(i)  = uint(i) * delt
+        enddo
+!cflx   call def_cfl_max (im+1,dist,ds,nstep)
+        call def_cfl_step(im+1,dist,ds,step,nstep,levs+1-k,'advx')
+!
+!  mass positive advection
+!
+       do nst = 1, nstep
+!
+        do i=1,im+1
+          dist_step = dist(i)*step(nst)
+          xpast(i) = xreg(i) - dist_step
+          xnext(i) = xreg(i) + dist_step
+        enddo
+        if( mass.eq.1 ) then
+         do i=1,im
+          dxfact(i) = (xpast(i+1)-xpast(i)) / (xnext(i+1)-xnext(i))
+         enddo
+        endif
+!
+        do n=1,nv
+          past(1:im,n) = qq(1:im,k,n)
+        enddo
+!        call cyclic_cell_ppm_intp(xreg,past,xpast,da,im,nv,im,im,sc)
+        call cyclic_cell_plm_intp(xreg,past,xpast,da,im,nv,im,im,sc)
+        if( mass.eq.1) then
+          do n=1,nv
+            da(1:im,n) = da(1:im,n) * dxfact(1:im)
+          enddo
+        endif
+!        call cyclic_cell_ppm_intp(xnext,da,xreg,next,im,nv,im,im,sc)
+        call cyclic_cell_plm_intp(xnext,da,xreg,next,im,nv,im,im,sc)
+        do n=1,nv
+          qq(1:im,k,n) = next(1:im,n)
+        enddo
+!
+       enddo
+!
+      enddo
+
+      return
+      end subroutine cyclic_cell_massadvxl
+!
+!
 !-------------------------------------------------------------------
       subroutine cyclic_cell_massadvy(jm,lev,nvars,delt,vc,qq,mass)
 !
@@ -365,6 +465,103 @@
 
       return
       end subroutine cyclic_cell_massadvy
+!
+!-------------------------------------------------------------------
+      subroutine cyclic_cell_massadvyl(jm,lev,nvars,delt,vc,qq,mass)
+!
+! compute local positive advection with mass conserving
+! qq will be advect by vc from past to next location with 2*delt
+!
+! author: hann-ming henry juang 2007
+!
+!
+      use grid     , only : gglati
+!
+      implicit none
+!
+      integer   jm,lev,nvars,mass
+      real      delt
+      real      vc(jm,lev)
+      real      qq(jm,lev,nvars)
+!
+      real      var(jm)
+      real      past(jm,nvars),da(jm,nvars),next(jm,nvars)
+      real      dyfact(jm)
+      real      ypast(jm+1),ynext(jm+1)
+      real      dist (jm+1), ds(jm), step(10), dist_step
+      real      sc
+      real, parameter :: fa1 = 9./16.
+      real, parameter :: fa2 = 1./16.
+
+      integer   n,k,j,jmh,nv,nst,nstep
+!
+! preparations ---------------------------
+!
+      jmh  = jm / 2
+      sc = gglati(jm+1)-gglati(1)
+      do j=1,jm
+        ds(j) = gglati(j+1) - gglati(j)
+      enddo
+      nv   = nvars
+!
+      do k=1,lev
+!
+        do j=1,jmh
+          var(j)     =  vc(j    ,k) * delt
+          var(j+jmh) = -vc(j+jmh,k) * delt
+        enddo
+
+        do j=3,jm-1
+          dist(j)=fa1*(var(j)+var(j-1))-fa2*(var(j+1)+var(j-2))
+        enddo
+! over pole
+        dist(2)=fa1*(var(2)+var(1 ))-fa2*(var(3)+var(jm  ))
+        dist(1)=fa1*(var(1)+var(jm))-fa2*(var(2)+var(jm-1))
+        dist(jm+1)=dist(1)
+        dist(jm  )=fa1*(var(jm)+var(jm-1))-fa2*(var(1)+var(jm-2))
+!cflx   call def_cfl_max (jm+1,dist,ds,nstep)
+        call def_cfl_step(jm+1,dist,ds,step,nstep,lev+1-k,'advy')
+
+!
+! advection all in y
+!
+       do nst = 1, nstep
+!
+        do j=1,jm+1
+          dist_step = dist(j)*step(nst)
+          ypast(j) = gglati(j) - dist_step
+          ynext(j) = gglati(j) + dist_step
+        enddo
+        if( mass.eq.1 ) then
+         do j=1,jm
+          dyfact(j) = (ypast(j+1)-ypast(j)) / (ynext(j+1)-ynext(j))
+         enddo
+        endif
+
+        do n=1,nv
+          past(1:jm,n) = qq(1:jm,k,n)
+        enddo
+!        call cyclic_cell_ppm_intp(gglati,past,ypast,da,jm,nv,jm,jm,sc)
+        call cyclic_cell_plm_intp(gglati,past,ypast,da,jm,nv,jm,jm,sc)
+
+        if( mass.eq.1 ) then
+          do n=1,nv
+            da(1:jm,n) = da(1:jm,n) * dyfact(1:jm)
+          enddo
+        endif
+!        call cyclic_cell_ppm_intp(ynext,da,gglati,next,jm,nv,jm,jm,sc)
+        call cyclic_cell_plm_intp(ynext,da,gglati,next,jm,nv,jm,jm,sc)
+
+        do n=1,nv
+          qq(1:jm,k,n) = next(1:jm,n)
+        enddo
+!
+       enddo
+!
+      enddo
+
+      return
+      end subroutine cyclic_cell_massadvyl
 !
 !-------------------------------------------------------------------
       subroutine fixend_cell_massadvy(jm,jmh,levs,nvars,delt,vc,qq,mass)
@@ -547,6 +744,61 @@
 
       return
       end subroutine cyclic_cell_intpx
+!
+!-------------------------------------------------------------------------------
+      subroutine cyclic_cell_intpxl(levs,imp,imf,qq)
+!
+! do  mass conserving interpolation from different grid at given latitude
+!
+! author: hann-ming henry juang 2008
+!
+      use grid      , only : lonfull
+!      use gfs_dyn_layout1
+      implicit none
+!
+      integer	 levs, imp, imf
+      real	 qq(lonfull,levs)
+!
+      real	old(lonfull,levs),new(lonfull,levs)
+      real	xpast(lonfull+1),xnext(lonfull+1)
+      real	two_pi,dxp,dxf,hfdxp,hfdxf,sc,pi
+!
+      integer  	i,k,im
+!
+      im = lonfull
+
+! ..................................
+      if( imp.ne.imf ) then
+! ..................................
+        pi  = 4.0 * atan(1.0)
+        two_pi = 2.0 * pi
+        dxp = two_pi / imp
+        dxf = two_pi / imf
+        hfdxp = 0.5 * dxp
+        hfdxf = 0.5 * dxf
+
+        do i=1,imp+1
+          xpast(i) = (i-1) * dxp - hfdxp
+        enddo
+
+        do i=1,imf+1
+          xnext(i) = (i-1) * dxf - hfdxf
+        enddo
+
+        sc=two_pi
+
+        old(1:imp,1:levs)=qq(1:imp,1:levs)
+!        call cyclic_cell_ppm_intp(xpast,old,xnext,new,im,levs,imp,imf,sc)
+        call cyclic_cell_plm_intp(xpast,old,xnext,new,im,levs,imp,imf,sc)
+      
+        qq(1:imf,1:levs)=new(1:imf,1:levs)
+
+! .................
+      endif
+! .................
+
+      return
+      end subroutine cyclic_cell_intpxl
 !
 ! -------------------------------------------------------------------------
       subroutine cyclic_cell_plm_intp(pp,qq,pn,qn,lons,nv,lonp,lonn,sc)
@@ -1543,10 +1795,12 @@
 !
         do k=1,lev
          do i=1,lons_lat
-           vdzonl(i,k,lan) = (vdzonlr(i,k,lan)-dlphi(i,k,lan)/radsq) &
-                             * dt2 + vdzonl(i,k,lan)
-           vdmerd(i,k,lan) = (vdmerdr(i,k,lan)-dtphi(i,k,lan)/radsq  &
-                             / onocos(lat))*dt2 + vdmerd(i,k,lan)
+!ttl           vdzonl(i,k,lan) = (vdzonlr(i,k,lan)-dlphi(i,k,lan)/radsq) &
+!ttl                             * dt2 + vdzonl(i,k,lan)
+!ttl           vdmerd(i,k,lan) = (vdmerdr(i,k,lan)-dtphi(i,k,lan)/radsq  &
+!ttl                             / onocos(lat))*dt2 + vdmerd(i,k,lan)
+           vdzonl(i,k,lan) = vdzonlr(i,k,lan) * dt2 + vdzonl(i,k,lan)
+           vdmerd(i,k,lan) = vdmerdr(i,k,lan) * dt2 + vdmerd(i,k,lan)
          enddo
         enddo
       enddo

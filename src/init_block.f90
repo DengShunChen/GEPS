@@ -27,12 +27,10 @@
 !!      grav=9.80616
 
       dt=900.0
-!  sponge layer
-      spl1=5.
+!  sponge layer 
+      spl1=10.
       spl2=100.
-
-      tfilt=0.04
-
+!
       frad=1.0
       ptop=1.0
       ptmean=1000.0
@@ -118,8 +116,8 @@
 !--for SIT
       do_sit=.false.
       fsit=-99.
-      dSITdt_intv=6.
-      weightSIT=0.5
+      dSITdt_intv=-99.
+      weightSIT=1.
       updatetg=24.
 !
 ! specify the default option for orographic and convective gwd
@@ -221,11 +219,20 @@
            1.0000000 /)
       endif
 !
-      tmeans=300.
+!      tmeans=300.
+      tmeans=350.
 
 !-- for hybrid coordinates, ptmeans reset for numerical stability
 !      ptmeans=800.
       ptmeans=600.
+!
+! for forward weighting Semi-Implicit
+!
+      alpha=0.7
+!
+! for two time level coefficient of merging PGF
+!
+      af=0.1
 !
       ifilin ='ifilin'
       ifilout='ifilout'

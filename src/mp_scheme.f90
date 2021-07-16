@@ -172,8 +172,8 @@
 !
 !          WSM6
            if ( nmmiph .eq. 6 )                                        &
-           call wsm6(ttc,phii,qtc,qtr,qtrw,qti,qtsw,qtgl,prsl,del,     &
-                     dta,rainncv,sr,islimsk,re_cloud,re_ice,re_snow,   &
+           call wsm6(ttc,phii,qtc,qtr,qtrw,qti,qtsw,qtgl,prsl,del,dta, &
+                     rainncv,sr,islimsk,re_cloud,re_ice,re_snow,       &
                      1,nx,1,lev,1,nxj,1,lev,snowncv,graupelncv)
 !          Thompson
            if ( nmmiph .eq. 8 )then
@@ -301,7 +301,7 @@
             kc = lev - k + 1
             do i = 1, nxj
               re_cloud(i,k)   = rew(i,kc)   !(micron)
-              re_ice(i,k)     = rer(i,kc)   !(micron)
+              re_ice(i,k)     = rei(i,kc)   !(micron)
               re_rain(i,k)    = rer(i,kc)   !(micron)
               re_snow(i,k)    = res(i,kc)   !(micron)
               re_graupel(i,k) = reg(i,kc)

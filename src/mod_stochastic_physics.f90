@@ -3,7 +3,7 @@ module mod_stochastic_physics
   use rank, only : myrank
   use index
   use param
-  use const, only : aki, bki, dosppt, doshum
+  use const, only : aki, bki, dosppt, doshum, dossst, poly
   use mersenne_twister, only: random_setseed,random_gauss,random_stat
   implicit none
   private 
@@ -11,7 +11,6 @@ module mod_stochastic_physics
   type random_pattern
     real, allocatable :: n2d(:,:)
     real, allocatable :: spec(:,:)
-    real, allocatable :: poly(:,:)
     real, allocatable :: varspec(:)
     real :: stdev ! stochastic physics tendency amplitude
     real :: decortau ! time scales
@@ -29,9 +28,10 @@ module mod_stochastic_physics
   integer :: recn=1
   real ::  dt
   logical, public :: ncep_seeds=.false.
+  real,allocatable :: sl(:)
 
   type(random_pattern), public, save, allocatable, dimension(:) :: &
-       rpattern_sppt, rpattern_shum
+       rpattern_sppt, rpattern_shum, rpattern_ssst
 
   ! SPPT
   integer :: nsppt
@@ -58,10 +58,29 @@ module mod_stochastic_physics
   real, allocatable, dimension(:) :: vfact_shum
   real, public :: shum_sigefold = 0.2
 
+  ! SKEB
+  integer :: nskeb
+  real, allocatable, save :: skeb3d(:,:,:)
+  real :: skeb(5) = -999.             ! amplitude(0.~1.)
+  real :: skeb_seed(5) = -999.         ! random seeds
+  real :: skeb_decort(5) = -999.      ! time scales(seconds)
+  real :: skeb_lscale(5) = -999.      ! length scales(meters)
+  real, allocatable, dimension(:) :: vfact_skeb
+
+  ! SSST
+  integer :: nssst
+  real, allocatable, save :: ssst3d(:,:,:)
+  real :: ssst(5) = -999.             ! amplitude(0.~1.)
+  real :: ssst_seed(5) = -999.         ! random seeds
+  real :: ssst_decort(5) = -999.      ! time scales(seconds)
+  real :: ssst_lscale(5) = -999.      ! length scales(meters)
+  real, allocatable, dimension(:) :: vfact_ssst
+
   public random_pattern
 
   public nsppt, sppt, sppt_seed, sppt_decort, sppt_lscale, sppt3d
   public nshum, shum, shum_seed, shum_decort, shum_lscale, shum3d
+  public nssst, ssst, ssst_seed, ssst_decort, ssst_lscale, ssst3d
 
   public  init_stochastic_physics, &
            run_stochastic_physics, &
@@ -75,70 +94,141 @@ contains
   subroutine init_stochastic_physics(dtau)
     implicit none
     integer :: n, k 
-    real :: sl(lev)
     real :: dtau
 
+    allocate(sl(lev))
     ! calculation sigma values
     do k=1,lev
       sl(k)=0.5*(aki(k)/1013.0+bki(k)+aki(k+1)/1013.0+bki(k+1))
     enddo
  
     if (dosppt) then
-      do n=1,size(sppt)
-        if (sppt(n) > 0) then
-          nsppt=nsppt+1
-        else
-          exit
-        endif
-      enddo
-
-      allocate(rpattern_sppt(nsppt))
-      do n=1,nsppt
-        rpattern_sppt(n)%stdev = sppt(n)
-        rpattern_sppt(n)%decortau = sppt_decort(n)
-        rpattern_sppt(n)%lenscale = sppt_lscale(n)
-        rpattern_sppt(n)%seed = int(sppt_seed(n))
-        if (myrank .eq. 0 ) then
-          write(6,*)'mod_stochastic_physics : sppt : stdev  ',sppt(n)
-          write(6,*)'mod_stochastic_physics : sppt : decort ',sppt_decort(n)
-          write(6,*)'mod_stochastic_physics : sppt : lscale ',sppt_lscale(n)
-          write(6,*)'mod_stochastic_physics : sppt : seed   ',sppt_seed(n)
-        endif
-      enddo
-
-      allocate(sppt3d(nxp,lev,my_max))       
-      call get_random_pattern_init(rpattern_sppt,nsppt,dtau)
-
-      ! set up vfact_sppt
-      allocate(vfact_sppt(lev))
-      do k=1,lev
-        if (sl(k) .lt. sppt_sigtop1 .and. sl(k) .gt. sppt_sigtop2) then
-           vfact_sppt(k) = (sl(k)-sppt_sigtop2)/(sppt_sigtop1-sppt_sigtop2)
-        else if (sl(k) .lt. sppt_sigtop2) then
-            vfact_sppt(k) = 0.0
-        else
-            vfact_sppt(k) = 1.0
-        endif
-      enddo
-
-      if (sppt_sfclimit) then
-      ! vfact_sppt(lev-1)=vfact_sppt(lev-2)*0.5
-      ! vfact_sppt(lev)=0.0
-        do k=1,lev
-          if (sl(k) .lt. sppt_sigbot1 .and. sl(k) .gt. sppt_sigbot2) then
-             vfact_sppt(k) = 1. - (sl(k)-sppt_sigbot2)/(sppt_sigbot1-sppt_sigbot2)
-          else if (sl(k) .gt. sppt_sigbot1) then
-              vfact_sppt(k) = 0.0
-          endif
-        enddo
-      endif
-
-      do k=1,lev
-        if (myrank == 0) print *,'mod_stochastic_physics : k,sl,vfact_sppt',k,sl(k),vfact_sppt(k)
-      enddo
+      call init_sppt(dtau)
     endif
 
     if (doshum) then
+      call init_shum(dtau)
+    endif
+
+    if (dossst) then
+      call init_ssst(dtau)
+    endif
+
+  end subroutine init_stochastic_physics
+
+  subroutine run_stochastic_physics()
+    implicit none
+    integer :: k 
+    real  :: glob(nx,my),temp(nxp,my_max)
+    real :: aves,vars,stds
+
+    if (dosppt) then
+      call get_random_pattern_run(rpattern_sppt,nsppt)
+      call get_stochy_physics(rpattern_sppt,nsppt,lev,vfact_sppt,sppt3d)
+      if (sppt_logit) sppt3d(:,:,:) = (2./(1.+exp(sppt3d(:,:,:))))-1.
+    endif
+    if (doshum) then
+      call get_random_pattern_run(rpattern_shum,nshum)
+      call get_stochy_physics(rpattern_shum,nshum,lev,vfact_shum,shum3d)
+      if (sppt_logit) shum3d(:,:,:) = (2./(1.+exp(shum3d(:,:,:))))-1.
+    endif
+    if (dossst) then
+      call get_random_pattern_run(rpattern_ssst,nssst)
+      call get_stochy_physics(rpattern_ssst,nssst,1  ,vfact_ssst,ssst3d)
+      if (sppt_logit) ssst3d(:,1,:) = (2./(1.+exp(ssst3d(:,1,:))))-1.
+    endif
+
+  end subroutine run_stochastic_physics
+
+  subroutine destroy_stochastic_physics()
+    implicit none
+    deallocate(sl)
+
+    if (dosppt) then
+      call get_random_pattern_destroy(rpattern_sppt,nsppt)
+      deallocate(sppt3d)
+      deallocate(rpattern_sppt)
+      deallocate(vfact_sppt)
+    endif
+    if (doshum) then
+      call get_random_pattern_destroy(rpattern_shum,nshum)
+      deallocate(shum3d)
+      deallocate(rpattern_shum)
+      deallocate(vfact_shum)
+    endif
+    if (dossst) then
+      call get_random_pattern_destroy(rpattern_ssst,nssst)
+      deallocate(ssst3d)
+      deallocate(rpattern_ssst)
+      deallocate(vfact_ssst)
+    endif
+
+  end subroutine destroy_stochastic_physics
+
+  subroutine init_sppt(dtau)
+    implicit none
+    real :: dtau
+    integer :: n, k 
+                      
+    do n=1,size(sppt)
+      if (sppt(n) > 0) then
+        nsppt=nsppt+1
+      else
+        exit
+      endif
+    enddo
+
+    allocate(rpattern_sppt(nsppt))
+    do n=1,nsppt
+      rpattern_sppt(n)%stdev = sppt(n)
+      rpattern_sppt(n)%decortau = sppt_decort(n)
+      rpattern_sppt(n)%lenscale = sppt_lscale(n)
+      rpattern_sppt(n)%seed = int(sppt_seed(n))
+      if (myrank .eq. 0 ) then
+        write(6,*)'mod_stochastic_physics : sppt : stdev  ',sppt(n)
+        write(6,*)'mod_stochastic_physics : sppt : decort ',sppt_decort(n)
+        write(6,*)'mod_stochastic_physics : sppt : lscale ',sppt_lscale(n)
+        write(6,*)'mod_stochastic_physics : sppt : seed   ',sppt_seed(n)
+      endif
+    enddo
+
+    allocate(sppt3d(nxp,lev,my_max))       
+    call get_random_pattern_init(rpattern_sppt,nsppt,dtau)
+
+    ! set up vfact_sppt
+    allocate(vfact_sppt(lev))
+    do k=1,lev
+      if (sl(k) .lt. sppt_sigtop1 .and. sl(k) .gt. sppt_sigtop2) then
+         vfact_sppt(k) = (sl(k)-sppt_sigtop2)/(sppt_sigtop1-sppt_sigtop2)
+      else if (sl(k) .lt. sppt_sigtop2) then
+          vfact_sppt(k) = 0.0
+      else
+          vfact_sppt(k) = 1.0
+      endif
+    enddo
+
+    if (sppt_sfclimit) then
+    ! vfact_sppt(lev-1)=vfact_sppt(lev-2)*0.5
+    ! vfact_sppt(lev)=0.0
+      do k=1,lev
+        if (sl(k) .lt. sppt_sigbot1 .and. sl(k) .gt. sppt_sigbot2) then
+           vfact_sppt(k) = 1. - (sl(k)-sppt_sigbot2)/(sppt_sigbot1-sppt_sigbot2)
+        else if (sl(k) .gt. sppt_sigbot1) then
+            vfact_sppt(k) = 0.0
+        endif
+      enddo
+    endif
+
+    do k=1,lev
+      if (myrank == 0) print *,'mod_stochastic_physics : k,sl,vfact_sppt',k,sl(k),vfact_sppt(k)
+    enddo
+
+  end subroutine init_sppt
+
+  subroutine init_shum(dtau)
+    implicit none
+    real :: dtau
+    integer :: n, k 
       do n=1,size(shum)
         if (shum(n) > 0) then
           nshum=nshum + 1
@@ -173,46 +263,42 @@ contains
          endif
         if (myrank == 0) print *,'mod_stochastic_physics : k,sl,vfact_shum',k,sl(k),vfact_shum(k)
       enddo
-    endif
+  end subroutine init_shum
 
-  end subroutine init_stochastic_physics
-
-  subroutine run_stochastic_physics()
+  subroutine init_ssst(dtau)
     implicit none
-    integer :: k 
-    real  :: glob(nx,my),temp(nxp,my_max)
-    real :: aves,vars,stds
+    real :: dtau
+    integer :: n, k 
+                      
+    do n=1,size(ssst)
+      if (ssst(n) > 0) then
+        nssst=nssst+1
+      else
+        exit
+      endif
+    enddo
 
-    if (dosppt) then
-      call get_random_pattern_run(rpattern_sppt,nsppt)
-      call get_stochy_physics(rpattern_sppt,nsppt,vfact_sppt,s  ppt3d)
-      if (sppt_logit) sppt3d(:,:,:) = (2./(1.+exp(sppt3d(:,:,:))))-1.
-    endif
-    if (doshum) then
-      call get_random_pattern_run(rpattern_shum,nshum)
-      call get_stochy_physics(rpattern_shum,nshum,vfact_shum,shum3d)
-      if (sppt_logit) shum3d(:,:,:) = (2./(1.+exp(shum3d(:,:,:))))-1.
-    endif
+    allocate(rpattern_ssst(nssst))
+    do n=1,nssst
+      rpattern_ssst(n)%stdev    = ssst(n)
+      rpattern_ssst(n)%decortau = ssst_decort(n)
+      rpattern_ssst(n)%lenscale = ssst_lscale(n)
+      rpattern_ssst(n)%seed = int(ssst_seed(n))
+      if (myrank .eq. 0 ) then
+        write(6,*)'mod_stochastic_physics : ssst : stdev  ',ssst(n)
+        write(6,*)'mod_stochastic_physics : ssst : decort ',ssst_decort(n)
+        write(6,*)'mod_stochastic_physics : ssst : lscale ',ssst_lscale(n)
+        write(6,*)'mod_stochastic_physics : ssst : seed   ',ssst_seed(n)
+      endif
+    enddo
 
-  end subroutine run_stochastic_physics
+    allocate(ssst3d(nxp,1,my_max))       
+    call get_random_pattern_init(rpattern_ssst,nssst,dtau)
 
-  subroutine destroy_stochastic_physics()
-    implicit none
+    allocate(vfact_ssst(1))
+    vfact_ssst = 1.
 
-    if (dosppt) then
-      call get_random_pattern_destroy(rpattern_sppt,nsppt)
-      deallocate(sppt3d)
-      deallocate(rpattern_sppt)
-      deallocate(vfact_sppt)
-    endif
-    if (doshum) then
-      call get_random_pattern_destroy(rpattern_shum,nshum)
-      deallocate(shum3d)
-      deallocate(rpattern_shum)
-      deallocate(vfact_shum)
-    endif
-
-  end subroutine destroy_stochastic_physics
+  end subroutine init_ssst
 
   subroutine get_random_pattern_init(rpattern,nscale,dt)
 !---- documentation block 
@@ -253,15 +339,11 @@ contains
 
       allocate(rpattern(n)%n2d(nxp,my_max))
       allocate(rpattern(n)%spec(rpattern(n)%mlmax,2))
-      allocate(rpattern(n)%poly(rpattern(n)%mlmax,my/2))
       allocate(rpattern(n)%varspec(rpattern(n)%mlmax))
       allocate(rpattern(n)%msort(rpattern(n)%mlmax))
       allocate(rpattern(n)%lsort(rpattern(n)%mlmax))
       allocate(rpattern(n)%mlsort(rpattern(n)%jtrun,rpattern(n)%jtrun))
       allocate(noise(rpattern(n)%mlmax,2))
-
-      ! get legendre polynomials 
-      call get_legendre_poly(rpattern(n)%mlmax,rpattern(n)%jtrun,rpattern(n)%poly)
 
       ! Real random seeds
       if (myrank.eq.0) then     
@@ -365,7 +447,6 @@ contains
     do n=1,nscale
       deallocate(rpattern(n)%n2d)
       deallocate(rpattern(n)%spec)
-      deallocate(rpattern(n)%poly)
       deallocate(rpattern(n)%varspec)
       deallocate(rpattern(n)%msort)
       deallocate(rpattern(n)%lsort)
@@ -379,45 +460,30 @@ contains
     integer :: nscale
     integer :: n, ii, i, jj, j, k, nxj
     type(random_pattern), intent(inout) :: rpattern(nscale)
-    real :: rpattern2d(nx,my) 
 
     do n=1,nscale
-      if (myrank .eq. 0 ) then
-        call gen_random_pattern_2d(rpattern2d,rpattern(n))
-      endif
-      call mpe_bcast(rpattern2d,nx*my,0,mpe_double)
-      do jj=1,jlistnum
-        j=jlist1(jj)
-        if( lreduce.eq.1 ) then
-          call reducepick (rpattern2d(1,j),nxdef(j),nx,1)
-        endif
-        ii=nxjstart(j)
-        nxj=nxdef_2d(j)
-        do i=1,nxj
-          rpattern(n)%n2d(i,jj)=rpattern2d(ii,j)
-          ii=ii+1
-        enddo
-      enddo
+      call gen_random_pattern_2d(rpattern(n)%n2d,rpattern(n))
     enddo
+
   end subroutine get_random_pattern_run
 
-  subroutine get_stochy_physics(rpattern,nscale,vfact,n3d)
+  subroutine get_stochy_physics(rpattern,nscale,nlev,vfact,n3d)
 !------------------------------------------------------------------------! 
 !  purpose: To generate 3D SPPT strucutre
 !  output: n3d
 !------------------------------------------------------------------------! 
     implicit none
-    integer :: n, ii, i, jj, j, k, nxj
+    integer :: n, ii, i, jj, j, k, nxj, nlev
     integer, intent(in) :: nscale
-    real, intent(in) :: vfact(lev) 
+    real, intent(in) :: vfact(nlev) 
     type(random_pattern), intent(inout) :: rpattern(nscale)
-    real, intent(  out) :: n3d(nxp,lev,my_max) 
+    real, intent(  out) :: n3d(nxp,nlev,my_max) 
  
     n3d = 0.
     do n=1,nscale
       do jj=1,jlistnum
         j=jlist1(jj)
-        do k=1,lev
+        do k=1,nlev
           nxj=nxdef_2d(j)
           do i=1,nxj
             n3d(i,k,jj)=n3d(i,k,jj)+rpattern(n)%n2d(i,jj)*vfact(k)
@@ -457,24 +523,40 @@ contains
   subroutine gen_random_pattern_2d(sppt2d,rpattern)
     implicit none
     type(random_pattern), intent(inout) :: rpattern
-    real, intent(out) :: sppt2d(nx,my)
+    real, intent(out) :: sppt2d(nxp,my_max)
     integer :: ml, ns, ms
-    real, allocatable :: noise(:,:)
+    real, allocatable :: noise(:,:),bufr2d(:,:,:),specp(:,:,:)
 
-    ! get noise
-    allocate(noise(rpattern%mlmax,2)) 
-    call get_noise(rpattern,noise) 
+    allocate(bufr2d(jtrun,jtmax*nsizey,2)) 
+    allocate(specp(jtrun,jtmax,2)) 
 
-    !  radom pattern advance with first order AR
-    rpattern%spec(:,1) = rpattern%phi*rpattern%spec(:,1) + & 
-          sqrt(1.-rpattern%phi**2.)*rpattern%stdev*rpattern%varspec*noise(:,1)
-    rpattern%spec(:,2) = rpattern%phi*rpattern%spec(:,2) + & 
-          sqrt(1.-rpattern%phi**2.)*rpattern%stdev*rpattern%varspec*noise(:,2)
+    if ( col_rank .eq. 0 ) then
+      ! get noise
+      allocate(noise(rpattern%mlmax,2)) 
+      call get_noise(rpattern,noise) 
+ 
+      !  radom pattern advance with first order AR
+      rpattern%spec(:,1) = rpattern%phi*rpattern%spec(:,1) + & 
+            sqrt(1.-rpattern%phi**2.)*rpattern%stdev*rpattern%varspec*noise(:,1)
+      rpattern%spec(:,2) = rpattern%phi*rpattern%spec(:,2) + & 
+            sqrt(1.-rpattern%phi**2.)*rpattern%stdev*rpattern%varspec*noise(:,2)
+
+      ! ready for mpi_scatter random pattern
+      call spectrun_inp2d(rpattern%jtrun,jtrun,jtmax         &
+                         ,rpattern%mlsort,nsizey             &
+                         ,rpattern%spec,bufr2d)
+
+      deallocate(noise)
+    endif
+
+    !  mpi_scatter random pattern from root
+    call mpe_scatter_sppt(bufr2d,specp,2*jtrun*jtmax,nsizey)
 
     ! transform spectral to physical space 
-    call transr_sppt(rpattern%jtrun,rpattern%mlmax,nx,my,1,rpattern%poly,rpattern%spec,sppt2d)
+    call transr1(jtrun,jtmax,nx,my,my_max,poly,specp,sppt2d,nsizey)
 
-    deallocate(noise)
+    deallocate(bufr2d)
+    deallocate(specp)
 
   end subroutine gen_random_pattern_2d
 
@@ -534,90 +616,6 @@ contains
 
   end subroutine get_legendre_poly  
 
-! FUNCTION fun_gasdev(idum)result(gasdev)
-!     INTEGER :: idum
-!     REAL :: gasdev
-!     INTEGER,save :: iset=0
-!     REAL :: fac,rsq,v1,v2,ran1
-!     real, save :: gset
-
-!     if (iset.eq.0) then
-!  11   v1=2.*fun_ran1(idum)-1.
-!       v2=2.*fun_ran1(idum)-1.
-!       rsq=v1**2+v2**2
-!       if(rsq.ge.1..or.rsq.eq.0.)goto 11
-!       fac=sqrt(-2.*log(rsq)/rsq)
-!       gset=v1*fac
-!       gasdev=v2*fac
-!       iset=1
-!     else
-!       gasdev=gset
-!       iset=0
-!     endif
-! END FUNCTION fun_gasdev
-
-! FUNCTION fun_ran1(idum)result(ran1)
-!     INTEGER idum,IA,IM,IQ,IR,NTAB,NDIV
-!     REAL ran1,AM,EPS,RNMX
-!     PARAMETER (IA=16807,IM=2147483647,AM=1./IM,IQ=127773,IR=2836, &
-!     NTAB=32,NDIV=1+(IM-1)/NTAB,EPS=1.2e-7,RNMX=1.-EPS)
-!     INTEGER j,k,iv(NTAB),iy
-!     SAVE iv,iy
-!     DATA iv /NTAB*0/, iy /0/
-!     if (idum.le.0.or.iy.eq.0) then
-!       idum=max(-idum,1)
-!       do j=NTAB+8,1,-1
-!         k=idum/IQ
-!         idum=IA*(idum-k*IQ)-IR*k
-!         if (idum.lt.0) idum=idum+IM
-!         if (j.le.NTAB) iv(j)=idum
-!       enddo
-!       iy=iv(1)
-!     endif
-!     k=idum/IQ
-!     idum=IA*(idum-k*IQ)-IR*k
-!     if (idum.lt.0) idum=idum+IM
-!     j=1+iy/NDIV
-!     iy=iv(j)
-!     iv(j)=idum
-!     ran1=min(AM*iy,RNMX)
-!     return
-! END FUNCTION fun_ran1
-
-! FUNCTION fun_ran2(idum)result(ran2)
-!     INTEGER idum,IM1,IM2,IMM1,IA1,IA2,IQ1,IQ2,IR1,IR2,NTAB,NDIV
-!     REAL ran2,AM,EPS,RNMX
-!     PARAMETER (IM1=2147483563,IM2=2147483399,AM=1./IM1,IMM1=IM1-1, &
-!     IA1=40014,IA2=40692,IQ1=53668,IQ2=52774,IR1=12211,IR2=3791,    &
-!     NTAB=32,NDIV=1+IMM1/NTAB,EPS=1.2e-7,RNMX=1.-EPS)
-!     INTEGER idum2,j,k,iv(NTAB),iy
-!     SAVE iv,iy,idum2
-!     DATA idum2/123456789/, iv/NTAB*0/, iy/0/
-!     if (idum.le.0) then
-!       idum=max(-idum,1)
-!       idum2=idum
-!       do j=NTAB+8,1,-1
-!         k=idum/IQ1
-!         idum=IA1*(idum-k*IQ1)-k*IR1
-!         if (idum.lt.0) idum=idum+IM1
-!         if (j.le.NTAB) iv(j)=idum
-!       enddo
-!       iy=iv(1)
-!     endif
-!     k=idum/IQ1
-!     idum=IA1*(idum-k*IQ1)-k*IR1
-!     if (idum.lt.0) idum=idum+IM1
-!     k=idum2/IQ2
-!     idum2=IA2*(idum2-k*IQ2)-k*IR2
-!     if (idum2.lt.0) idum2=idum2+IM2
-!     j=1+iy/NDIV
-!     iy=iv(j)-idum2
-!     iv(j)=idum
-!     if(iy.lt.1)iy=iy+IMM1
-!     ran2=min(AM*iy,RNMX)
-! END FUNCTION fun_ran2
-
-
   SUBROUTINE avevar_sppt(data,n,ave,var,std)
       INTEGER n
       REAL ave,var,data(n)
@@ -673,159 +671,160 @@ contains
   end SUBROUTINE avevar_sppt2d
 
   subroutine removegt2std(scaleval,nx,my,aves,stds)
-      integer i,j,nx,my
-      real scaleval(nx,my),aves,stds
-      real vcheck2p,vcheck2n
-!c
-      vcheck2p=2.0*stds
-      vcheck2n=-2.0*stds
-      do j=1,my
-      do i=1,nx
-        if ((scaleval(i,j)-aves).gt.vcheck2p) scaleval(i,j)=vcheck2p
-        if ((scaleval(i,j)-aves).lt.vcheck2n) scaleval(i,j)=vcheck2n 
-      enddo
-      enddo
-  end subroutine removegt2std
-  subroutine removegt3std(scaleval,nx,my,aves,stds)
-      integer i,j,nx,my
-      real scaleval(nx,my),aves,stds
-      real vcheck3p,vcheck3n
-!c
-      vcheck3p=3.0*stds
-      vcheck3n=-3.0*stds
+    integer i,j,nx,my
+    real scaleval(nx,my),aves,stds
+    real vcheck2p,vcheck2n
 
-      do j=1,my
-      do i=1,nx
-        if ((scaleval(i,j)-aves).gt.vcheck3p) scaleval(i,j)=vcheck3p
-        if ((scaleval(i,j)-aves).lt.vcheck3n) scaleval(i,j)=vcheck3n 
-      enddo
-      enddo
-!    
+    vcheck2p=2.0*stds
+    vcheck2n=-2.0*stds
+    do j=1,my
+    do i=1,nx
+      if ((scaleval(i,j)-aves).gt.vcheck2p) scaleval(i,j)=vcheck2p
+      if ((scaleval(i,j)-aves).lt.vcheck2n) scaleval(i,j)=vcheck2n 
+    enddo
+    enddo
+  end subroutine removegt2std
+
+  subroutine removegt3std(scaleval,nx,my,aves,stds)
+    integer i,j,nx,my
+    real scaleval(nx,my),aves,stds
+    real vcheck3p,vcheck3n
+
+    vcheck3p=3.0*stds
+    vcheck3n=-3.0*stds
+
+    do j=1,my
+    do i=1,nx
+      if ((scaleval(i,j)-aves).gt.vcheck3p) scaleval(i,j)=vcheck3p
+      if ((scaleval(i,j)-aves).lt.vcheck3n) scaleval(i,j)=vcheck3n 
+    enddo
+    enddo    
   end subroutine removegt3std
+
   subroutine lgndr_sppt(my2,jtrun,mlmax,mlsort,sinl,poly,dpoly)
-!c
-!c  generate legendre polynomials and their derivatives on the
-!c  gaussian latitudes
-!c
-!c ***input***
-!c
-!c  my2:  number of gaussian latitudes from south pole and equator
-!c  jtrun:  zonal wavenumber truncation limit
-!c  mlmax: total number of triangular truncation spherical harmonics
-!c  mlsort: pointer array of 1-d indexs at functions of zonal and
-!c          total wavenumbers
-!c  sinl: sin of gaussian latitudes
-!c
-!c  ***output***
-!c
-!c  poly: associated legendre coefficients
-!c  dpoly: d(poly)/d(sinl)
-!c
-!c ******************************************************************
-!c
-!c ref= belousov, s. l., 1962= tables of normalized associated
-!c        legendre polynomials. pergamon press, new york
-!c
+! 
+!   generate legendre polynomials and their derivatives on the
+!   gaussian latitudes
+! 
+!  ***input***
+! 
+!   my2:  number of gaussian latitudes from south pole and equator
+!   jtrun:  zonal wavenumber truncation limit
+!   mlmax: total number of triangular truncation spherical harmonics
+!   mlsort: pointer array of 1-d indexs at functions of zonal and
+!           total wavenumbers
+!   sinl: sin of gaussian latitudes
+! 
+!   ***output***
+! 
+!   poly: associated legendre coefficients
+!   dpoly: d(poly)/d(sinl)
+! 
+!  ******************************************************************
+! 
+!  ref= belousov, s. l., 1962= tables of normalized associated
+!         legendre polynomials. pergamon press, new york
+! 
       integer :: j, n, np, kp, k, mp, m, nps, l, ml, m1, mk
       integer :: my2, jtrun, mlmax, jtrunp
       real :: poly(mlmax,my2),dpoly(mlmax,my2),sinl(my2)
       integer :: mlsort(jtrun,jtrun)
-!c
-!c      parameter (jtrunx= 100)
+! 
+!       parameter (jtrunx= 100)
       real :: pnm(jtrun+1,jtrun+1),dpnm(jtrun+1,jtrun+1)
       real :: xx, sn, sn2i, rt2, c1, fn, fn2, fn2s, c3, s1, s2, c4, c5, c6, cf
       real :: a, b, fk, fm, fm1, fm2, fm3, c7, c8, c, d, e, fms, fnp, fnp2
       real :: theta, ang
-!c
-!c sinl is sin(latitude) = cos(colatitude)
-!c pnm(np,mp) is legendre polynomial p(n,m) with np=n+1, mp=m+1
-!c pnm(mp,np+1) is x derivative of p(n,m) with np=n+1, mp=m+1
-!c
+! 
+!  sinl is sin(latitude) = cos(colatitude)
+!  pnm(np,mp) is legendre polynomial p(n,m) with np=n+1, mp=m+1
+!  pnm(mp,np+1) is x derivative of p(n,m) with np=n+1, mp=m+1
+! 
       jtrunp= jtrun+1
       do 1001 j=1,my2
       xx= sinl(j)
       sn= sqrt(1.0-xx*xx)
-	sn2i = 1.0/(1.0 - xx*xx)
+  sn2i = 1.0/(1.0 - xx*xx)
       rt2= sqrt(2.0)
-	c1 = rt2
-!c
-	pnm(1,1) = 1.0/rt2
+  c1 = rt2
+! 
+  pnm(1,1) = 1.0/rt2
       theta=-atan(xx/sqrt(1.0-xx*xx))+2.0*atan(1.0)
-!c
+! 
       do 20 n=1,jtrun
-	np = n + 1
+  np = n + 1
       fn=n
-	fn2 = fn + fn
-	fn2s = fn2*fn2
-!c eq 22
+  fn2 = fn + fn
+  fn2s = fn2*fn2
+!  eq 22
       c1= c1*sqrt(1.0-1.0/fn2s)
       c3= c1/sqrt(fn*(fn+1.0))
-	ang = fn*theta
-	s1 = 0.0
-	s2 = 0.0
-	c4 = 1.0
-	c5 = fn
-	a = -1.0
-	b = 0.0
-!c
+  ang = fn*theta
+  s1 = 0.0
+  s2 = 0.0
+  c4 = 1.0
+  c5 = fn
+  a = -1.0
+  b = 0.0
+! 
       do 27 kp=1,np,2
-	k = kp - 1
+  k = kp - 1
       s2= s2+c5*sin(ang)*c4
       if (k.eq.n) c4 = 0.5*c4
       s1= s1+c4*cos(ang)
-	a = a + 2.0
-	b = b + 1.0
+  a = a + 2.0
+  b = b + 1.0
       fk=k
-	ang = theta*(fn - fk - 2.0)
-	c4 = (a*(fn - b + 1.0)/(b*(fn2 - a)))*c4
-	c5 = c5 - 2.0
+  ang = theta*(fn - fk - 2.0)
+  c4 = (a*(fn - b + 1.0)/(b*(fn2 - a)))*c4
+  c5 = c5 - 2.0
    27 continue
-!c eq 19
-	pnm(np,1) = s1*c1
-!c eq 21
-	pnm(np,2) = s2*c3
+!  eq 19
+  pnm(np,1) = s1*c1
+!  eq 21
+  pnm(np,2) = s2*c3
    20 continue
-!c
+! 
       do 4 mp=3,jtrunp
-	m = mp - 1
+  m = mp - 1
       fm= m
-	fm1 = fm - 1.0
-	fm2 = fm - 2.0
-	fm3 = fm - 3.0
+  fm1 = fm - 1.0
+  fm2 = fm - 2.0
+  fm3 = fm - 3.0
       c6= sqrt(1.0+1.0/(fm+fm))
-!c eq 23
-	pnm(mp,mp) = c6*sn*pnm(m,m)
+!  eq 23
+  pnm(mp,mp) = c6*sn*pnm(m,m)
       if (mp - jtrunp) 3,4,4
     3 continue
-	nps = mp + 1
-!c
+  nps = mp + 1
+! 
       do 41 np=nps,jtrunp
-	n = np - 1
+  n = np - 1
       fn= n
-	fn2 = fn + fn
-	c7 = (fn2 + 1.0)/(fn2 - 1.0)
-	c8 = (fm1 + fn)/((fm + fn)*(fm2 + fn))
+  fn2 = fn + fn
+  c7 = (fn2 + 1.0)/(fn2 - 1.0)
+  c8 = (fm1 + fn)/((fm + fn)*(fm2 + fn))
       c= sqrt((fn2+1.0)*c8*(fm3+fn)/(fn2-3.0))
       d= -sqrt(c7*c8*(fn-fm1))
       e= sqrt(c7*(fn-fm)/(fn+fm))
-!c eq 17
-	pnm(np,mp) = c*pnm(np-2,mp-2) &
+!  eq 17
+  pnm(np,mp) = c*pnm(np-2,mp-2) &
                  + xx*(d*pnm(np-1,mp-2) + e*pnm(np - 1,mp))
    41 continue
     4 continue
-!c
+! 
       do 50 mp=1,jtrun
       fm= mp-1.0
-	fms = fm*fm
+  fms = fm*fm
       do 50 np=mp,jtrun
       fnp= np
-	fnp2 = fnp + fnp
-	cf = (fnp*fnp - fms)*(fnp2 - 1.0)/(fnp2 + 1.0)
+  fnp2 = fnp + fnp
+  cf = (fnp*fnp - fms)*(fnp2 - 1.0)/(fnp2 + 1.0)
       cf= sqrt(cf)
-!c der
+!  der
       dpnm(np,mp)   = -sn2i*(cf*pnm(np+1,mp) - fnp*xx*pnm(np,mp))
    50 continue
-!c
+! 
       do 71 m=1,jtrun
       do 71 l=m,jtrun
       ml= mlsort(m,l)
@@ -1054,5 +1053,67 @@ contains
 
     deallocate(mlat,prsl)
   end subroutine spptctl
+!
+  subroutine spectrun_inp2d(jcap1,jtr,jtm,mlsort,ns,speci,speco)
+!
+! use spectral truncation to change resoltuion
+!
+      implicit none
+      integer lev,jtr,jcap1,jtm,ns,ml
+      real speci(jcap1*(jcap1+1)/2,2)
+      real speco(jtr,jtm*ns*2)
+      integer i,j,k,jj,jp,jr,j1,j2
+      integer mlsort(jcap1,jcap1)
+!
+      speco(:,:) = 0.0
+      if( jcap1.gt.jtr ) then
+          do j=1,jcap1
+            if( j.le.jtr ) then
+              jj=nlist(j)
+              jp=(jj-1)/jtm
+              jr=mod(jj-1,jtm)+1
+              j1=jp*jtm*2+jr
+              j2=j1+jtm
+            endif
+            do i=j,jcap1
+              ml=mlsort(j,i)
+              if( i.le.jtr ) then
+                speco(i,j1) = speci(ml,1)
+                speco(i,j2) = speci(ml,2)
+              endif
+            enddo
+          enddo
+      else if( jcap1.lt.jtr ) then
+          do j=1,jtr
+            jj=nlist(j)
+            jp=(jj-1)/jtm
+            jr=mod(jj-1,jtm)+1
+            j1=jp*jtm*2+jr
+            j2=j1+jtm
+            do i=j,jtr
+              if( i.le.jcap1 ) then
+                ml=mlsort(j,i)
+                speco(i,j1) = speci(ml,1)
+                speco(i,j2) = speci(ml,2)
+              endif
+            enddo
+          enddo
+      else      ! jcap1=jtr
+          do j=1,jtr
+            jj=nlist(j)
+            jp=(jj-1)/jtm
+            jr=mod(jj-1,jtm)+1
+            j1=jp*jtm*2+jr
+            j2=j1+jtm
+            do i=j,jtr
+              ml=mlsort(j,i)
+              speco(i,j1) = speci(ml,1)
+              speco(i,j2) = speci(ml,2)
+            enddo
+          enddo
+      endif
+
+      return
+  end subroutine spectrun_inp2d
 
 end module mod_stochastic_physics

@@ -121,10 +121,10 @@ cp $NWPETC/ocards $GFSWRK/ocards
 cp $NWPETC/namlsts $GFSWRK/namlsts
 
 if [ $JCAP = 639  ] ; then
-  MODLST_RES='dt=225., tfilt=0.040, hfilt=1., cgw=4.2e-5,'
+  MODLST_RES='dt=450., hfilt=1., cgw=4.2e-5,'
   MODEL_BASIC='nco=640,'
 elif [ $JCAP = 383  ] ; then
-  MODLST_RES='dt=360., tfilt=0.050, hfilt=1, cgw=2.6e-5,'
+  MODLST_RES='dt=720., hfilt=1, cgw=2.6e-5,'
   MODEL_BASIC='nco=384,'
 fi
 
@@ -143,9 +143,9 @@ cat > ${GFSWRK}/namlsts << EOF
 
  &modlst
   taui=0.0, taue=120.0, tauo=1.0, taup=6.0, taureg=6.,
-  dt=225.0,
+  dt=450.0,
   cstar=f, update=t, lsimpl=t,
-  tfilt=0.04, hfilt=1.,
+  hfilt=1.,
   ksgeo=2, yesdia=t,
   dopbl=t, docup=t, dorad=t, dolsp=t, doshl=t, dodry=f, 
   dograv=true, docgrav=true,
@@ -158,8 +158,8 @@ cat > ${GFSWRK}/namlsts << EOF
   idg=40, jdg=108,
   itypbl=0, numreduce=5, ptmeans=800., ptop=0.1,
   irad=2, nmland=2,
-  nmcup=6, nmshl=3, nmpbl=4, nmmiph=2,  
-  nmgwor=2, nmgwcv=2,
+  nmcup=6, nmshl=3, nmpbl=4,
+  nmgwor=2, nmgwcv=2, nmmiph=2,
   ktcup=20, cgw=4.2e-5,
   mtnvar=14, doo3l=t,
   ioutsigr=1,
@@ -167,7 +167,7 @@ cat > ${GFSWRK}/namlsts << EOF
   domfc=384., out_green=t, otgreen=3., out_hp=false,
   ndsladvh2=false,
   isot=1, ivegsrc=1, cgwd=1.20, cmbk=1.00,
-  spl1=5.,
+  spl1=5., spl2=100., af=0.1,
   ${MODLST_RES}
  &end
 
@@ -187,14 +187,18 @@ cat > ${GFSWRK}/namlsts << EOF
   sppt_sigbot1 = 0.975,
   sppt_sigbot2 = 0.9,
   sppt = 0.80,0.4,0.10,0.08,0.04
-  sppt_seed = 1878981022, 1046881385, 1551676790, 2041328465, 1442149336
+  sppt_seed = -999,-999,-999,-999,-999
   sppt_decort = 2.16E4,2.592E5,2.592E6,7.776E6,3.1536E7 
   sppt_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
   shum = 0.04,-999,-999,-999,-999
-  shum_seed = 2140313855,-999,-999,-999,-999
+  shum_seed = -999,-999,-999,-999,-999
   shum_decort = 2.16E4,1.728E5,2.592E6,7.776E6,3.1536E7
   shum_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
   shum_sigefold = 0.2,
+  ssst = 0.80,-999,-999,-999,-999
+  ssst_seed = -999,-999,-999,-999,-999
+  ssst_decort = 2.16E4,2.592E5,2.592E6,7.776E6,3.1536E7 
+  ssst_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
  /
 
 EOF
