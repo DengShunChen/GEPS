@@ -423,6 +423,9 @@
       else
         dta = 2*dtx
       endif
+      itter=1
+      ndsldta = 0.5*dta
+      ndsldtah= ndsldta/float(itter)
 !
 !  compute initial moisture and potential temperature
 !
@@ -695,10 +698,6 @@
        ddtempr=0.
        pten=0.
 !
-       itter=1
-       ndsldta = 0.5*dta
-       ndsldtah= ndsldta/float(itter)
-
 !ch>
 ! transpose partial to full: ut -> ut_sl, vt -> vt_sl, up -> uum_sl, vp -> vvm_sl, ttp -> ttm_sl, qm -> qm_sl
 
