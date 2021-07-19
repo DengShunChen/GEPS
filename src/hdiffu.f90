@@ -347,11 +347,7 @@
 
         KL=Llist(k)
 !
-<<<<<<< HEAD
-        kfac = 1.0 + 1.*min(max(float(hdk2(2)-KL),0.),15.)
-=======
         kfac = 1.0 + 1.*min(max(float(hdk2(3)-KL),0.),20.)
->>>>>>> TCottl_v3
 !!        facd = 1. * (kfac + 2.*max(float(hdk1-KL),0.))
 !!        facv = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
 !!        fact = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
