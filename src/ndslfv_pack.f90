@@ -26,7 +26,7 @@
       integer,intent(in)::  lonf, latg, ntrac
 !
       integer	jm2,jm,jmh,i,j
-      real 	pi,hfpi,twopi
+      real 	pi,hfpi,twopi,ft,fb
       real, dimension(:), allocatable ::  gglat,ggfact
 
 !      logical   lprint
@@ -51,13 +51,13 @@
 !
 ! --------------------- for parallel --------------------
 !      allocate ( gslati(jm2+1) )
-      allocate ( gglat(jm2), ggfact(jm2) )
+      allocate ( gglat(jm2),ggfact(jm2) )
 !
       do j=1,jmh
-        gglat(      j) =         acos(coslat(j))
-        gglat(jm +1-j) =    pi - acos(coslat(j))
-        gglat(jm +  j) =    pi + acos(coslat(j))
-        gglat(jm2+1-j) = twopi - acos(coslat(j))
+        gglat(      j) = 0.5*pi - acos(coslat(j))
+        gglat(jm +1-j) = 0.5*pi + acos(coslat(j))
+        gglat(jm +  j) = 1.5*pi - acos(coslat(j))
+        gglat(jm2+1-j) = 1.5*pi + acos(coslat(j))
       enddo
 !
       gslati(    1)=0.0
@@ -69,6 +69,7 @@
         gslati(jm +j+1) = gslati(jm +j  ) + wgt(j)
         gslati(jm2-j+1) = gslati(jm2-j+2) - wgt(j)
       enddo
+
 !
 ! real latitude values first at edge, use temporary ggfact
       gglati(1) = hfpi
@@ -87,6 +88,54 @@
         gglati(jm +j+1) = gglati(jm +j  ) + ggfact(j)
         gglati(jm2-j+1) = gglati(jm2-j+2) - ggfact(j)
       enddo
+
+!
+! coefficient of Gaussian latitude interpolation
+      do j=3,jm2-1
+        ft=(gglati(j)-gglat(j-1))*(gglati(j)-gglat(j))*(gglati(j)-gglat(j+1))
+        fb=(gglat(j-2)-gglat(j-1))*(gglat(j-2)-gglat(j))*(gglat(j-2)-gglat(j+1))
+        fa1(j)=ft/fb
+        ft=(gglati(j)-gglat(j-2))*(gglati(j)-gglat(j))*(gglati(j)-gglat(j+1))
+        fb=(gglat(j-1)-gglat(j-2))*(gglat(j-1)-gglat(j))*(gglat(j-1)-gglat(j+1))
+        fa2(j)=ft/fb
+        ft=(gglati(j)-gglat(j-2))*(gglati(j)-gglat(j-1))*(gglati(j)-gglat(j+1))
+        fb=(gglat(j)-gglat(j-2))*(gglat(j)-gglat(j-1))*(gglat(j)-gglat(j+1))
+        fa3(j)=ft/fb
+        ft=(gglati(j)-gglat(j-2))*(gglati(j)-gglat(j-1))*(gglati(j)-gglat(j))
+        fb=(gglat(j+1)-gglat(j-2))*(gglat(j+1)-gglat(j-1))*(gglat(j+1)-gglat(j))
+        fa4(j)=ft/fb
+      enddo
+      ! over pole
+      ft=(gglati(2)-gglat(1))*(gglati(2)-gglat(2))*(gglati(2)-gglat(3))
+      fb=(-1.*gglat(1)-gglat(1))*(-1.*gglat(1)-gglat(2))*(-1.*gglat(1)-gglat(3))
+      fa1(2)=ft/fb
+      fa4(jm2)=fa1(2)
+      ft=(gglati(2)+gglat(1))*(gglati(2)-gglat(2))*(gglati(2)-gglat(3))
+      fb=(gglat(1)+gglat(1))*(gglat(1)-gglat(2))*(gglat(1)-gglat(3))
+      fa2(2)=ft/fb
+      fa3(jm2)=fa2(2)
+      ft=(gglati(2)+gglat(1))*(gglati(2)-gglat(1))*(gglati(2)-gglat(3))
+      fb=(gglat(2)+gglat(1))*(gglat(2)-gglat(1))*(gglat(2)-gglat(3))
+      fa3(2)=ft/fb
+      fa2(jm2)=fa3(2)
+      ft=(gglati(2)+gglat(1))*(gglati(2)-gglat(1))*(gglati(2)-gglat(2))
+      fb=(gglat(3)+gglat(1))*(gglat(3)-gglat(1))*(gglat(3)-gglat(2))
+      fa4(2)=ft/fb
+      fa1(jm2)=fa4(2)
+
+      ft=(gglati(1)+gglat(1))*(gglati(1)-gglat(1))*(gglati(1)-gglat(2))
+      fb=(gglat(jm2-1)-gglat(jm2))*(-1.*gglat(2)-gglat(1))*(-1.*gglat(2)-gglat(2))
+      fa1(1)=ft/fb
+      ft=(gglati(1)+gglat(2))*(gglati(1)-gglat(1))*(gglati(1)-gglat(2))
+      fb=(gglat(jm2)-gglat(jm2-1))*(-1.*gglat(1)-gglat(1))*(-1.*gglat(1)-gglat(2))
+      fa2(1)=ft/fb
+      ft=(gglati(1)+gglat(2))*(gglati(1)+gglat(1))*(gglati(1)-gglat(2))
+      fb=(gglat(1)+gglat(2))*(gglat(1)+gglat(1))*(gglat(1)-gglat(2))
+      fa3(1)=ft/fb
+      ft=(gglati(1)+gglat(2))*(gglati(1)+gglat(1))*(gglati(1)-gglat(1))
+      fb=(gglat(2)+gglat(2))*(gglat(2)+gglat(1))*(gglat(2)-gglat(1))
+      fa4(1)=ft/fb
+
       deallocate(gglat,ggfact)
 !
 !      allocate( lonstr(nsize), lonlen(nsize) )
@@ -378,7 +427,7 @@
 ! author: hann-ming henry juang 2007
 !
 !
-      use grid     , only : gglati
+      use grid     , only : gglati,fa1,fa2,fa3,fa4
 !
       implicit none
 !
@@ -393,8 +442,6 @@
       real      ypast(jm+1),ynext(jm+1)
       real      dist (jm+1), ds(jm), step(10), dist_step
       real      sc
-      real, parameter :: fa1 = 9./16.
-      real, parameter :: fa2 = 1./16.
 
       integer   n,k,j,jmh,nv,nst,nstep
 !
@@ -413,15 +460,25 @@
           var(j)     =  vc(j    ,k) * delt
           var(j+jmh) = -vc(j+jmh,k) * delt
         enddo
-
+! for Gaussian latitude
         do j=3,jm-1
-          dist(j)=fa1*(var(j)+var(j-1))-fa2*(var(j+1)+var(j-2))
+          dist(j)=fa1(j)*var(j-2)+fa2(j)*var(j-1)+fa3(j)*var(j)+fa4(j)*var(j+1)
         enddo
-! over pole
-        dist(2)=fa1*(var(2)+var(1 ))-fa2*(var(3)+var(jm  ))
-        dist(1)=fa1*(var(1)+var(jm))-fa2*(var(2)+var(jm-1))
+        ! over pole
+        dist(2)=fa1(2)*var(jm)+fa2(2)*var(1)+fa3(2)*var(2)+fa4(2)*var(3)
+        dist(jm)=fa1(jm)*var(jm-2)+fa2(jm)*var(jm-1)+fa3(jm)*var(jm)+fa4(jm)*var(1)
+
+        dist(1)=fa1(1)*var(jm-1)+fa2(1)*var(jm)+fa3(1)*var(1)+fa4(1)*var(2)
         dist(jm+1)=dist(1)
-        dist(jm  )=fa1*(var(jm)+var(jm-1))-fa2*(var(1)+var(jm-2))
+! for reguler grid
+!        do j=3,jm-1
+!          dist(j)=fa1*(var(j)+var(j-1))-fa2*(var(j+1)+var(j-2))
+!        enddo
+!        ! over pole
+!        dist(2)=fa1*(var(2)+var(1 ))-fa2*(var(3)+var(jm  ))
+!        dist(1)=fa1*(var(1)+var(jm))-fa2*(var(2)+var(jm-1))
+!        dist(jm+1)=dist(1)
+!        dist(jm  )=fa1*(var(jm)+var(jm-1))-fa2*(var(1)+var(jm-2))
 !cflx   call def_cfl_max (jm+1,dist,ds,nstep)
         call def_cfl_step(jm+1,dist,ds,step,nstep,lev+1-k,'advy')
 
@@ -475,7 +532,7 @@
 ! author: hann-ming henry juang 2007
 !
 !
-      use grid     , only : gglati
+      use grid     , only : gglati,fa1,fa2,fa3,fa4
 !
       implicit none
 !
@@ -490,8 +547,6 @@
       real      ypast(jm+1),ynext(jm+1)
       real      dist (jm+1), ds(jm), step(10), dist_step
       real      sc
-      real, parameter :: fa1 = 9./16.
-      real, parameter :: fa2 = 1./16.
 
       integer   n,k,j,jmh,nv,nst,nstep
 !
@@ -510,15 +565,25 @@
           var(j)     =  vc(j    ,k) * delt
           var(j+jmh) = -vc(j+jmh,k) * delt
         enddo
-
+! for Gaussian latitude
         do j=3,jm-1
-          dist(j)=fa1*(var(j)+var(j-1))-fa2*(var(j+1)+var(j-2))
+          dist(j)=fa1(j)*var(j-2)+fa2(j)*var(j-1)+fa3(j)*var(j)+fa4(j)*var(j+1)
         enddo
-! over pole
-        dist(2)=fa1*(var(2)+var(1 ))-fa2*(var(3)+var(jm  ))
-        dist(1)=fa1*(var(1)+var(jm))-fa2*(var(2)+var(jm-1))
+        ! over pole
+        dist(2)=fa1(2)*var(jm)+fa2(2)*var(1)+fa3(2)*var(2)+fa4(2)*var(3)
+        dist(jm)=fa1(jm)*var(jm-2)+fa2(jm)*var(jm-1)+fa3(jm)*var(jm)+fa4(jm)*var(1)
+
+        dist(1)=fa1(1)*var(jm-1)+fa2(1)*var(jm)+fa3(1)*var(1)+fa4(1)*var(2)
         dist(jm+1)=dist(1)
-        dist(jm  )=fa1*(var(jm)+var(jm-1))-fa2*(var(1)+var(jm-2))
+! for equal latitude
+!        do j=3,jm-1
+!          dist(j)=fa1*(var(j)+var(j-1))-fa2*(var(j+1)+var(j-2))
+!        enddo
+! over pole
+!        dist(2)=fa1*(var(2)+var(1 ))-fa2*(var(3)+var(jm  ))
+!        dist(1)=fa1*(var(1)+var(jm))-fa2*(var(2)+var(jm-1))
+!        dist(jm+1)=dist(1)
+!        dist(jm  )=fa1*(var(jm)+var(jm-1))-fa2*(var(1)+var(jm-2))
 !cflx   call def_cfl_max (jm+1,dist,ds,nstep)
         call def_cfl_step(jm+1,dist,ds,step,nstep,lev+1-k,'advy')
 

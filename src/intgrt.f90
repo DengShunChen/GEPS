@@ -432,7 +432,9 @@
 !!      else
 !!        dta = 2*dtx
 !!      endif
-
+      itter=1
+      ndsldta = 0.5*dta
+      ndsldtah= ndsldta/float(itter)
 !
 !  compute initial moisture and potential temperature
 !
@@ -760,11 +762,6 @@
        pten=0.
 
        deldm=0.
-
-!
-       itter=1
-       ndsldta = 0.5*dta
-       ndsldtah= ndsldta/float(itter)
 !
 !
 !     advet grid non-linear forcing from t-dt/2 to t+dt/2 via NDSL advection
@@ -781,10 +778,10 @@
 !!      call mpe2d_transpose_ndsl_p2f(tm,ttm_sl,    &
 !!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !
-      do itt = 1,itter
+!      do itt = 1,itter
         call ndslfv_monoadvh_fgnl(uum_sl,vvm_sl,ttm_sl     &
                              ,nxdef,ndsldtah,xy,levp,2)
-      enddo
+!      enddo
 !
       call mpe2d_transpose_ndsl_f2p(uum_sl,vdzonl, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
