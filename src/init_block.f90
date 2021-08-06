@@ -30,6 +30,8 @@
 !  sponge layer 
       spl1=10.
       spl2=100.
+!  order of horozontal diffusion
+      hord=4
 !
       frad=1.0
       ptop=1.0

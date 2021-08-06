@@ -4,8 +4,8 @@
       use index
       use mpe
       use rank
-      use const, only : hdk1,hdk2,radsq
-      use param, only : octahedral
+      use const, only : hdk1,hdk2,radsq,hord
+      use param, only : octahedral,af
 
       implicit  none
 
@@ -23,8 +23,8 @@
       real      windmax1,windmax2,windmax3
 
       integer   jj,j,nxj,k,i,m,n,mf,nc,kk,KL
-      real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu
-      real      hfilt,hfilt2,nf,kfac,dec,coefu,factop
+      real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu,finc
+      real      hfilt,hfilt2,nf,kfacd,kfacv,dec,coefu,factop,powd,kfac
       real      c1,c2,c3
       logical   windchk
 
@@ -57,16 +57,18 @@
 !!      enddo
 !
 !
-      hfilt = (radsq/(nf*(nf+1)))**2.
+      finc = 4.+5.*max(af,0.001)
+      powd = float(hord) / 2.
+      hfilt  = (radsq/(nf*(nf+1)))**powd
       hfilt2 = radsq/(nf*(nf+1))
       factop = 1.5
       coefu = factop/float(hdk2(3)-hdk2(2))
       if ( octahedral ) then
-        hfilt = hfilt/(6.*dta)
-        hfilt2= hfilt2/(6.*dta)
+        hfilt  = hfilt/(6.*dta)
+        hfilt2 = hfilt2/(6.*dta)
       else
-        hfilt = 16.*hfilt/dta
-        hfilt2= 16.*hfilt2/dta
+        hfilt  = 16.*hfilt/dta
+        hfilt2 = 16.*hfilt2/dta
       endif
 
       do 100 k=1,levp  ! levp -> lev
@@ -75,13 +77,15 @@
 !
         KL=Llist(k)
 !
-        kfac = 1.0 + 1. * min(max(float(hdk2(1)-KL),0.),25.)
+        kfac  = min(finc*max(float(hdk2(1)-KL),0.),60.)
+        kfacd = 1.0 + kfac
+        kfacv = 1.0 + kfac
 !!        facd = 1. * amp * (kfac + 2.*max(float(hdk1-KL),0.))
 !!        facv = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
 !!        fact = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
-        facd = amp * kfac
-        facv = amp * kfac
-        fact = amp * kfac
+        facd = kfacd * amp
+        facv = kfacv * min(amp,1.)
+        fact = kfacv * min(amp,1.)
 !
 !  difuse vorticity and divergence fields
 !  diffuse moisture and temperature fields
@@ -90,13 +94,13 @@
           mf=mlist(m)
           do n=mf,jtrun
 
-            c1=1.+dta*facv*hfilt*eps4(n,m)**2
-            c3=1.+dta*fact*hfilt*eps4(n,m)**2
+            c1=1.+dta*facv*hfilt*eps4(n,m)**powd
+            c3=1.+dta*fact*hfilt*eps4(n,m)**powd
 
             if ( KL .le. hdk1 ) then
               c2=1.+dta*facd*hfilt2*eps4(n,m)
             else
-              c2=1.+dta*facd*hfilt*eps4(n,m)**2
+              c2=1.+dta*facd*hfilt*eps4(n,m)**powd
             endif
 
             vornow(k,1,n,m)=vornow(k,1,n,m)/c1
@@ -210,9 +214,9 @@
          fact= 1.0 + max(float(hdk2(1)-KL),0.)
          if ( KL .le. hdk1 ) facd=facd*(1.+float(hdk1-KL))
 !
-          facd = facd*amp
-          facv = facv*amp
-          fact = fact*amp
+          facd = amp * facd
+          facv = amp * facv
+          fact = amp * fact
 !
 
         if ( KL .le. hdk1 ) then
@@ -283,7 +287,7 @@
       use mpe
       use rank
       use const, only : hdk1,hdk2,radsq
-      use param, only : octahedral
+      use param, only : octahedral,af
 
       implicit  none
 
@@ -302,7 +306,7 @@
 
       integer   jj,j,nxj,k,i,m,n,mf,nc,kk,KL
       real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu
-      real      hfilt2,hfilt4,hfilt6,nf,kfac,dec,coefu,factop
+      real      hfilt2,hfilt4,hfilt6,nf,kfacd,kfacv,kfac
       real      c1,c2,c3,c4
       logical   windchk
 
@@ -347,13 +351,12 @@
 
         KL=Llist(k)
 !
-        kfac = 1.0 + 1.*min(max(float(hdk2(3)-KL),0.),20.)
-!!        facd = 1. * (kfac + 2.*max(float(hdk1-KL),0.))
-!!        facv = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
-!!        fact = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
-        facd = 60. * amp * kfac 
-        facv = amp * kfac
-        fact = amp * kfac
+        kfac  = min(5.*max(float(hdk2(2)-KL),0.),60.)
+        kfacd = 1.0 + kfac
+        kfacv = 1.0 + kfac
+        facd =  60. * kfacd * amp
+        facv = kfacv * min(amp,1.)
+!!        fact = amp * kfacv 
 !          endif
 
 !
@@ -376,7 +379,7 @@
             endif
 
 !!            c3=1.+dta*fact*hfilt6*eps4(n,m)**3.
-            c3=1.+dta*fact*hfilt4*eps4(n,m)**2.
+!!            c3=1.+dta*fact*hfilt4*eps4(n,m)**2.
 
 
             vornow(k,1,n,m)=vornow(k,1,n,m)/c1
@@ -409,59 +412,6 @@
 !--------------------------------------------------------------------
       return
       end
-!
-!--------------------------------------------------------------------
-      subroutine phdiffu ( dta,my,my_max,nx,jtrun,jtmax,amp,plnow,eps4) 
-      use index
-      use mpe
-      use rank
-      use const, only : radsq
-      use param, only : octahedral
-
-      implicit  none
-
-      integer   my,my_max,nx,jtrun,jtmax
-      real      dta
-
-      real      eps4(jtrun,jtmax),plnow(jtrun,jtmax,2)
-!
-!     parameter ( ktop=4, ktop2=ktop/2 ) ! top "ktop" levels are inhenced
-!
-      integer   jj,j,nxj,k,i,m,n,mf
-      real      xx,facp,amp
-      real      hfilt2,hfilt4,hfilt6,nf
-      real      c4
-!
-      nf=jtrun-1
-!
-      hfilt6 = (radsq/(nf*(nf+1)))**3.
-      hfilt4 = (radsq/(nf*(nf+1)))**2.
-      hfilt2 = radsq/(nf*(nf+1))
-      if ( octahedral ) then
-        hfilt6 = hfilt6/(6.*dta)
-        hfilt4 = hfilt4/(6.*dta)
-        hfilt2 = hfilt2/(6.*dta)
-      else
-        hfilt6 = 16.*hfilt6/dta
-        hfilt4 = 16.*hfilt4/dta
-        hfilt2 = 16.*hfilt2/dta
-      endif
-
-!!
-      facp = 1.0 * amp
-      do m=1,mlistnum
-          mf=mlist(m)
-          do n=mf,jtrun
-             c4=1.+dta*facp*hfilt4*eps4(n,m)**2.
-             plnow(n,m,1)=plnow(n,m,1)/c4
-             plnow(n,m,2)=plnow(n,m,2)/c4
-          enddo
-      enddo
-!
-!--------------------------------------------------------------------
-      return
-      end
-!
 !
 !--------------------------------------------------------------------
       subroutine filter_top(jtrun,jtmax,lev,ncld,temnow     &

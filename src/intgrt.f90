@@ -561,18 +561,18 @@
       if(nco.eq.180)then
 !!        dt_chg=1800.
         nc_stable=1
-        sptendmax2=0.3305
-        sptendmax1=0.2805
+        sptendmax2=0.3405
+        sptendmax1=0.3005
       else if(nco.eq.384)then
 !!        dt_chg=720.
         nc_stable=2
-        sptendmax2=0.3705
-        sptendmax1=0.3205
+        sptendmax2=0.4005
+        sptendmax1=0.3505
       else if(nco.eq.640) then
 !!        dt_chg=450.
         nc_stable=4
-        sptendmax2=0.4205
-        sptendmax1=0.3705
+        sptendmax2=0.4305
+        sptendmax1=0.3805
       endif
 
   ! stochastic_physics
@@ -1357,7 +1357,7 @@
             if(myrank .eq. 0)print *,'** stable change hfilt=',hfiltx,  &
                              ' and keep alpha=',alpha
           else if(n_unstable .gt. nc_stable)then
-            hfiltx=2.*hfilt
+            hfiltx=hfilt
             alpha=0.75
             if(myrank .eq. 0)print *,'** unstable change hfilt=',hfiltx,&
                              ' and alpha=',alpha

@@ -70,7 +70,7 @@
                       , sashal,crick_proof,ccnorm,norad_precip,me,doo3l &
                       , ioutsigr,domfc,out_green,isot,ivegsrc           &
                       , otgreen,out_hp,dosppt,dospptout, doshum, dossst  &
-                      , ndsladvh2                                       &
+                      , ndsladvh2,hord                                  &
                       , ldailyFCTsst,ldailyFCTicesndpt,lFCTweight       &
                       , dailyClm_option,lopgsst,do_sit,fsit,pdfcloud,updatetg    &
                       , cmbk,cgwd,nmmiph,spl1,spl2            &
