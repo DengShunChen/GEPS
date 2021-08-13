@@ -98,6 +98,14 @@
       dosppt=.false.
       dospptout=.false.
       doshum=.false.
+! output data for RSM (Also, RSM compiling flag is necessary)
+      outrsm=.false.
+      rsmoutinv=6
+      rlon1=100.
+      rlon2=150.
+      rlat1=5.
+      rlat2=40.
+      rgrdsz=0.25
 !---------------------------------------------------------------------------
 !
 ! specify the default option for cup and pbl
