@@ -32,14 +32,20 @@
 
     implicit none
 
-    integer i,ierr,iworld,igfs,iio,mini,m,n
+    integer i,ierr,istat,iworld,igfs,iio,mini,m,n
 
     integer,dimension(:),allocatable :: ranks_gfs,ranks_io
 
+#if defined(RSM) && defined(CWB_MPMD)
+    !for MPMD mode
+      call mpmd_init(nsize_all,  myrank_all , MPI_COMM_gfs_all, root_rsm, istat)
+      if(istat.ne.0)stop'mpmd_init fail !'
+#else
     ! the whole group, (gfs + io)
     call MPI_INIT( ierr )
     call MPI_COMM_RANK( MPI_COMM_WORLD, myrank_all, ierr )
     call MPI_COMM_SIZE( MPI_COMM_WORLD, nsize_all,  ierr )
+#endif
 #ifdef W3TAG
       if (myrank_all==0) call w3tagb('TCoGFS',2021,1721,067,'GFS')
 #endif
@@ -64,14 +70,25 @@
          ranks_io(i)=(i-1)+Ngfs
       enddo
 
+#if defined(RSM) && defined(CWB_MPMD)
+      call MPI_COMM_GROUP( MPI_COMM_gfs_all, iworld, ierr )
+#else
       call MPI_COMM_GROUP( MPI_COMM_WORLD, iworld, ierr )
+#endif
       call MPI_GROUP_excl( iworld, Nio,  ranks_io,  igfs, ierr )
       call MPI_GROUP_excl( iworld, Ngfs ,ranks_gfs, iio, ierr )
 
+#if defined(RSM) && defined(CWB_MPMD)
+      ! create the sub_group(gfs)
+      call MPI_COMM_create( MPI_COMM_gfs_all,igfs,MPI_COMM_gfs,ierr )
+      ! create the sub_group(io)
+      call MPI_COMM_create( MPI_COMM_gfs_all,iio, MPI_COMM_io,ierr )
+#else
       ! create the sub_group(gfs)
       call MPI_COMM_create( MPI_COMM_WORLD,igfs,MPI_COMM_gfs,ierr )
       ! create the sub_group(io)
       call MPI_COMM_create( MPI_COMM_WORLD,iio, MPI_COMM_io,ierr )
+#endif
 
       if(myrank_all .le. Ngfs-1)then
         ! gfs group goes here
@@ -188,7 +205,11 @@
     else ! non io_quilting
       nsize=nsize_all
       myrank=myrank_all
+#if defined(RSM) && defined(CWB_MPMD)
+      MPI_COMM_gfs=MPI_COMM_gfs_all
+#else
       MPI_COMM_gfs=MPI_COMM_WORLD
+#endif
 
       npe=nsize
       if(npex .eq. -1 .or. npey .eq. -1 ) then
@@ -220,8 +241,8 @@
 
       mrow = myrank/nsizex
       ncol = mod(myrank, nsizex)
-      call MPI_Comm_split(MPI_COMM_WORLD, mrow, ncol, row_comm, ierr)
-      call MPI_Comm_split(MPI_COMM_WORLD, ncol, mrow, col_comm, ierr)
+      call MPI_Comm_split(MPI_COMM_gfs  , mrow, ncol, row_comm, ierr)
+      call MPI_Comm_split(MPI_COMM_gfs  , ncol, mrow, col_comm, ierr)
 
       call MPI_Comm_rank(row_comm, row_rank, ierr)
       call MPI_Comm_rank(col_comm, col_rank, ierr)
