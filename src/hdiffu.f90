@@ -57,7 +57,7 @@
 !!      enddo
 !
 !
-      finc = 4.+5.*max(af,0.001)
+      finc = 10.*max(af,0.001)
       powd = float(hord) / 2.
       hfilt  = (radsq/(nf*(nf+1)))**powd
       hfilt2 = radsq/(nf*(nf+1))
@@ -77,7 +77,7 @@
 !
         KL=Llist(k)
 !
-        kfac  = min(finc*max(float(hdk2(1)-KL),0.),60.)
+        kfac  = min((4.+finc)*max(float(hdk2(1)-KL),0.),60.+5.*finc)
         kfacd = 1.0 + kfac
         kfacv = 1.0 + kfac
 !!        facd = 1. * amp * (kfac + 2.*max(float(hdk1-KL),0.))
@@ -281,8 +281,7 @@
 !
 !--------------------------------------------------------------------
       subroutine whdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld,amp   &
-                        , rad,cosl,ut,vt,vornow,divnow,plnow           &
-                        , eps4,trefs) 
+                        , rad,cosl,ut,vt,vornow,divnow,eps4,trefs) 
       use index
       use mpe
       use rank
@@ -297,7 +296,7 @@
       real      cosl(my),ut(nxp,lev,my_max),vt(nxp,lev,my_max),  &
                 vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),   &
                 temnow(levp,2,jtrun,jtmax),eps4(jtrun,jtmax),            &
-                trefs(levp,2,jtrun,jtmax),plnow(jtrun,jtmax,2)
+                trefs(levp,2,jtrun,jtmax)
 !
 !     parameter ( ktop=4, ktop2=ktop/2 ) ! top "ktop" levels are inhenced
 !
@@ -306,7 +305,7 @@
 
       integer   jj,j,nxj,k,i,m,n,mf,nc,kk,KL
       real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu
-      real      hfilt2,hfilt4,hfilt6,nf,kfacd,kfacv,kfac
+      real      hfilt2,hfilt4,hfilt6,nf,kfacd,kfacv,kfac,finc
       real      c1,c2,c3,c4
       logical   windchk
 
@@ -331,6 +330,7 @@
 !
       nf=jtrun-1
 !
+      finc = 10.*max(af,0.001)
       hfilt6 = (radsq/(nf*(nf+1)))**3.
       hfilt4 = (radsq/(nf*(nf+1)))**2.
       hfilt2 = radsq/(nf*(nf+1))
@@ -351,10 +351,10 @@
 
         KL=Llist(k)
 !
-        kfac  = min(5.*max(float(hdk2(2)-KL),0.),60.)
-        kfacd = 1.0 + kfac
-        kfacv = 1.0 + kfac
-        facd =  60. * kfacd * amp
+        kfac  = min((5.+finc)*max(float(hdk2(2)-KL),0.),60.+5.*finc)
+        kfacd = (1.0+kfac)*min(max(float(hdk2(3)-KL),1.),6.)
+        kfacv = (1.0+kfac)*min(max(float(hdk2(3)-KL),1.),6.)
+        facd =  10. * kfacd * amp
         facv = kfacv * min(amp,1.)
 !!        fact = amp * kfacv 
 !          endif
@@ -392,15 +392,6 @@
         enddo
  100  continue
 !!
-!      fact = 1.0
-!      do m=1,mlistnum
-!          mf=mlist(m)
-!          do n=mf,jtrun
-!             c4=1.+dta*fact*hfilt4*eps4(n,m)**2.
-!             plnow(n,m,1)=plnow(n,m,1)/c4
-!             plnow(n,m,2)=plnow(n,m,2)/c4
-!          enddo
-!      enddo
 !
       windchk=.false.
       do k=1,8
