@@ -70,12 +70,11 @@
     !for Semi-Lagrangain
     logical :: ndsladvh2
 
-#ifdef RSM
+! output data for RSM (Also, RSM compiling flag is necessary)
     !for RSM output
     logical :: outrsm
     integer :: rsmoutinv
     real    :: rlon1, rlon2, rlat1, rlat2, rgrdsz
-#endif
 
     !for horizontal diffusion
     integer :: hdk1,hdk2
