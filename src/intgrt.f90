@@ -636,7 +636,7 @@
           ic_sit=-99
           turn_sit=.true.
         else
-          if(.NOT. forward) then
+          if(.NOT. lsitstart) then
             turn_sit= mod(tau+0.001, fsit) .lt. dtx_tau
             if( turn_sit ) ic_sit=0
             if( turn_sit .or. (ic_sit .ge. 0 .AND. ic_sit .lt. nc_sit)) then

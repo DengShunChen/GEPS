@@ -1980,7 +1980,7 @@
 !=======================================================================
       dtx_tau=dt/3600.
       if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. dailyClm_option.ge.1) then
-        if(fwd) then
+        if(tau .lt. 24.) then
           do ii = 1,nxj
             i=nxjstart(j)+ii-1
             dtseadt(ii,jj)=0.
