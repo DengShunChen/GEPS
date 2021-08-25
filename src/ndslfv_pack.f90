@@ -26,7 +26,7 @@
       integer,intent(in)::  lonf, latg, ntrac
 !
       integer	jm2,jm,jmh,i,j
-      real 	pi,hfpi,twopi,ft,fb
+      real 	pi,hfpi,twopi
       real, dimension(:), allocatable ::  gglat,ggfact
 
 !      logical   lprint
@@ -92,49 +92,52 @@
 !
 ! coefficient of Gaussian latitude interpolation
       do j=3,jm2-1
-        ft=(gglati(j)-gglat(j-1))*(gglati(j)-gglat(j))*(gglati(j)-gglat(j+1))
-        fb=(gglat(j-2)-gglat(j-1))*(gglat(j-2)-gglat(j))*(gglat(j-2)-gglat(j+1))
-        fa1(j)=ft/fb
-        ft=(gglati(j)-gglat(j-2))*(gglati(j)-gglat(j))*(gglati(j)-gglat(j+1))
-        fb=(gglat(j-1)-gglat(j-2))*(gglat(j-1)-gglat(j))*(gglat(j-1)-gglat(j+1))
-        fa2(j)=ft/fb
-        ft=(gglati(j)-gglat(j-2))*(gglati(j)-gglat(j-1))*(gglati(j)-gglat(j+1))
-        fb=(gglat(j)-gglat(j-2))*(gglat(j)-gglat(j-1))*(gglat(j)-gglat(j+1))
-        fa3(j)=ft/fb
-        ft=(gglati(j)-gglat(j-2))*(gglati(j)-gglat(j-1))*(gglati(j)-gglat(j))
-        fb=(gglat(j+1)-gglat(j-2))*(gglat(j+1)-gglat(j-1))*(gglat(j+1)-gglat(j))
-        fa4(j)=ft/fb
+        fa1(j)=((gglati(j)-gglat(j-1))*(gglati(j)-gglat(j))       & 
+              *(gglati(j)-gglat(j+1)))/((gglat(j-2)-gglat(j-1))   &
+              *(gglat(j-2)-gglat(j))*(gglat(j-2)-gglat(j+1)))
+        fa2(j)=((gglati(j)-gglat(j-2))*(gglati(j)-gglat(j))       &
+              *(gglati(j)-gglat(j+1)))/((gglat(j-1)-gglat(j-2))   &
+              *(gglat(j-1)-gglat(j))*(gglat(j-1)-gglat(j+1)))
+        fa3(j)=((gglati(j)-gglat(j-2))*(gglati(j)-gglat(j-1))     &
+              *(gglati(j)-gglat(j+1)))/((gglat(j)-gglat(j-2))     &
+              *(gglat(j)-gglat(j-1))*(gglat(j)-gglat(j+1)))
+        fa4(j)=((gglati(j)-gglat(j-2))*(gglati(j)-gglat(j-1))     &
+              *(gglati(j)-gglat(j)))/((gglat(j+1)-gglat(j-2))     &
+              *(gglat(j+1)-gglat(j-1))*(gglat(j+1)-gglat(j)))
       enddo
       ! over pole
-      ft=(gglati(2)-gglat(1))*(gglati(2)-gglat(2))*(gglati(2)-gglat(3))
-      fb=(-1.*gglat(1)-gglat(1))*(-1.*gglat(1)-gglat(2))*(-1.*gglat(1)-gglat(3))
-      fa1(2)=ft/fb
+      fa1(2)=((gglati(2)-gglat(1))*(gglati(2)-gglat(2))           &
+            *(gglati(2)-gglat(3)))/((-1.*gglat(1)-gglat(1))       &
+            *(-1.*gglat(1)-gglat(2))*(-1.*gglat(1)-gglat(3)))
       fa4(jm2)=fa1(2)
-      ft=(gglati(2)+gglat(1))*(gglati(2)-gglat(2))*(gglati(2)-gglat(3))
-      fb=(gglat(1)+gglat(1))*(gglat(1)-gglat(2))*(gglat(1)-gglat(3))
-      fa2(2)=ft/fb
+
+      fa2(2)=((gglati(2)+gglat(1))*(gglati(2)-gglat(2))           &
+            *(gglati(2)-gglat(3)))/((gglat(1)+gglat(1))           &
+            *(gglat(1)-gglat(2))*(gglat(1)-gglat(3)))
       fa3(jm2)=fa2(2)
-      ft=(gglati(2)+gglat(1))*(gglati(2)-gglat(1))*(gglati(2)-gglat(3))
-      fb=(gglat(2)+gglat(1))*(gglat(2)-gglat(1))*(gglat(2)-gglat(3))
-      fa3(2)=ft/fb
+
+      fa3(2)=((gglati(2)+gglat(1))*(gglati(2)-gglat(1))           &
+            *(gglati(2)-gglat(3)))/((gglat(2)+gglat(1))           &
+            *(gglat(2)-gglat(1))*(gglat(2)-gglat(3)))
       fa2(jm2)=fa3(2)
-      ft=(gglati(2)+gglat(1))*(gglati(2)-gglat(1))*(gglati(2)-gglat(2))
-      fb=(gglat(3)+gglat(1))*(gglat(3)-gglat(1))*(gglat(3)-gglat(2))
-      fa4(2)=ft/fb
+
+      fa4(2)=((gglati(2)+gglat(1))*(gglati(2)-gglat(1))           &
+            *(gglati(2)-gglat(2)))/((gglat(3)+gglat(1))           &
+            *(gglat(3)-gglat(1))*(gglat(3)-gglat(2)))
       fa1(jm2)=fa4(2)
 
-      ft=(gglati(1)+gglat(1))*(gglati(1)-gglat(1))*(gglati(1)-gglat(2))
-      fb=(gglat(jm2-1)-gglat(jm2))*(-1.*gglat(2)-gglat(1))*(-1.*gglat(2)-gglat(2))
-      fa1(1)=ft/fb
-      ft=(gglati(1)+gglat(2))*(gglati(1)-gglat(1))*(gglati(1)-gglat(2))
-      fb=(gglat(jm2)-gglat(jm2-1))*(-1.*gglat(1)-gglat(1))*(-1.*gglat(1)-gglat(2))
-      fa2(1)=ft/fb
-      ft=(gglati(1)+gglat(2))*(gglati(1)+gglat(1))*(gglati(1)-gglat(2))
-      fb=(gglat(1)+gglat(2))*(gglat(1)+gglat(1))*(gglat(1)-gglat(2))
-      fa3(1)=ft/fb
-      ft=(gglati(1)+gglat(2))*(gglati(1)+gglat(1))*(gglati(1)-gglat(1))
-      fb=(gglat(2)+gglat(2))*(gglat(2)+gglat(1))*(gglat(2)-gglat(1))
-      fa4(1)=ft/fb
+      fa1(1)=((gglati(1)+gglat(1))*(gglati(1)-gglat(1))           &
+            *(gglati(1)-gglat(2)))/((gglat(jm2-1)-gglat(jm2))     &
+            *(-1.*gglat(2)-gglat(1))*(-1.*gglat(2)-gglat(2)))
+      fa2(1)=((gglati(1)+gglat(2))*(gglati(1)-gglat(1))           &
+            *(gglati(1)-gglat(2)))/((gglat(jm2)-gglat(jm2-1))     &
+            *(-1.*gglat(1)-gglat(1))*(-1.*gglat(1)-gglat(2)))
+      fa3(1)=((gglati(1)+gglat(2))*(gglati(1)+gglat(1))           &
+            *(gglati(1)-gglat(2)))/((gglat(1)+gglat(2))           &
+            *(gglat(1)+gglat(1))*(gglat(1)-gglat(2)))
+      fa4(1)=((gglati(1)+gglat(2))*(gglati(1)+gglat(1))           &
+            *(gglati(1)-gglat(1)))/((gglat(2)+gglat(2))           &
+            *(gglat(2)+gglat(1))*(gglat(2)-gglat(1)))
 
       deallocate(gglat,ggfact)
 !
