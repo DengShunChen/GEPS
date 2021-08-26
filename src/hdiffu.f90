@@ -78,8 +78,8 @@
         KL=Llist(k)
 !
         kfac  = min((4.+finc)*max(float(hdk2(1)-KL),0.),60.+5.*finc)
-        kfacd = 1.0 + kfac
-        kfacv = 1.0 + kfac
+        kfacd = 0.5 + kfac
+        kfacv = 0.5 + kfac
 !!        facd = 1. * amp * (kfac + 2.*max(float(hdk1-KL),0.))
 !!        facv = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
 !!        fact = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
@@ -352,8 +352,8 @@
         KL=Llist(k)
 !
         kfac  = min((5.+finc)*max(float(hdk2(2)-KL),0.),60.+5.*finc)
-        kfacd = (1.0+kfac)*min(max(float(hdk2(3)-KL),1.),6.)
-        kfacv = (1.0+kfac)*min(max(float(hdk2(3)-KL),1.),6.)
+        kfacd = (1.0+kfac)*min(max(float(hdk2(3)-KL),1.),1.)
+        kfacv = (1.0+kfac)
         facd =  10. * kfacd * amp
         facv = kfacv * min(amp,1.)
 !!        fact = amp * kfacv 
