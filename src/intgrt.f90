@@ -425,13 +425,10 @@
       itaup=taup+0.1
       tau=taui
       dtx=dt
+      itter=1
 !
       forward = itaui .eq. 0
-!!      if (forward)  then
       dta = dtx
-!!      else
-!!        dta = 2*dtx
-!!      endif
       itter=1
       ndsldta = 0.5*dta
       ndsldtah= ndsldta/float(itter)
@@ -1636,6 +1633,19 @@
                     , km_soil,smc,slc,stc,canopy,ggdef,typtrk                  &
 !xb110                    , ctot,chig,cmid,clow,hpbl,histim,flash,do_sit)
                     , ctot,chig,cmid,clow,hpbl,histim,do_sit)
+#endif
+!
+#ifdef RSM
+! RSM: output base field ncep-format data for RSM
+      if(outrsm .and. mod(float(itau)+0.00001, float(rsmoutinv) ) .lt. 0.01)then
+        if(myrank.eq.0)print*,' call rsmout for rsm output at tau=',itau
+        call rsmout(idtg,itau,nx,my,my_max,lev,ncld   &
+                , ptop,cp,rgas,grav,sgeo,pdiff        &
+                , t1000,pt,plt,pk,pk2,phi,ut,vt       &
+                , tt,qt,tg,snr,cosl                   &
+                , km_soil,smc,stc                     &
+                , ice,land,ocean)
+      endif
 #endif
 !
 !        if(typhoon .and. ltrack)then

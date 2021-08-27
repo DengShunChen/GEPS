@@ -73,6 +73,9 @@
                       , ndsladvh2,hord                                  &
                       , ldailyFCTsst,ldailyFCTicesndpt,lFCTweight       &
                       , dailyClm_option,lopgsst,do_sit,fsit,pdfcloud,updatetg    &
+! output data for RSM (Also, RSM compiling flag is necessary)
+                      , outrsm,rsmoutinv,rlon1,rlon2,rlat1,rlat2,rgrdsz &
+!
                       , cmbk,cgwd,nmmiph,spl1,spl2            &
                       , weightSIT,dSITdt_intv,af
 !

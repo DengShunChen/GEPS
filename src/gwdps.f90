@@ -514,7 +514,7 @@
                        max( 2. - 1. / r, 0. ) * sigma(j) *              &
                        max(cos(ang(i,k)), gamma(j)*sin(ang(i,k))) *     &
                        zlen / hprime(j) 
-                db(i,k) =  dbtmp * uds(i,k)    
+                db(i,k) =  dbtmp * uds(i,k) * ro(i,k) 
 !
 !               if(lprnt .and. i .eq. npr) then 
 !                 print *,' in gwdps_lmi.f 10 npt=',npt,i,j,idxzb(i)
