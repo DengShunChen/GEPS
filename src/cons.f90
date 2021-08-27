@@ -39,7 +39,8 @@
                    sppt_sigtop1, sppt_sigtop2, sppt_sigbot1, sppt_sigbot2, &
                    sppt_sfclimit, sppt_logit, &
                    shum, shum_seed, shum_decort, shum_lscale, &
-                   shum_sigefold
+                   shum_sigefold, &
+                   ssst, ssst_seed, ssst_decort, ssst_lscale
 
       implicit  none
 
@@ -68,11 +69,14 @@
                       , ntoz,iovr_sw,iovr_lw,isubc_sw,isubc_lw          &
                       , sashal,crick_proof,ccnorm,norad_precip,me,doo3l &
                       , ioutsigr,domfc,out_green,isot,ivegsrc           &
-                      , otgreen,out_hp,dosppt,dospptout, doshum          &
-                      , ndsladvh2                                       &
+                      , otgreen,out_hp,dosppt,dospptout, doshum, dossst  &
+                      , ndsladvh2,hord                                  &
                       , ldailyFCTsst,ldailyFCTicesndpt,lFCTweight       &
-                      , dailyClm_option,lopgsst,do_sit,fsit,pdfcloud    &
-                      , cmbk,cgwd,nmmiph,spl1,spl2                      &
+                      , dailyClm_option,lopgsst,do_sit,fsit,pdfcloud,updatetg    &
+! output data for RSM (Also, RSM compiling flag is necessary)
+                      , outrsm,rsmoutinv,rlon1,rlon2,rlat1,rlat2,rgrdsz &
+!
+                      , cmbk,cgwd,nmmiph,spl1,spl2            &
                       , weightSIT,dSITdt_intv,af
 !
       real    si(lev+1)
@@ -101,7 +105,8 @@
                    sppt_sigtop1, sppt_sigtop2, sppt_sigbot1, sppt_sigbot2, &
                    sppt_sfclimit, sppt_logit, &
                    shum, shum_seed, shum_decort, shum_lscale, &
-                   shum_sigefold
+                   shum_sigefold, &
+                   ssst, ssst_seed, ssst_decort, ssst_lscale
 
 ! for ECHAM4 Tiedtke cumulus scheme
       call cuparam
@@ -164,6 +169,13 @@
         if(myrank .eq. 0) then
           print *, 'chlee debug...'
           print sit_nml
+        endif
+        if(.NOT. ldailyFCTsst)then
+          print *,'do_sit=.true., auto set: ldailyFCTsst=.true.' &
+              ,',dailyClm_option=1, check ifilin_sst & ifilin_ClmANA'&
+              ,'is in filelist.'
+          ldailyFCTsst=.true.
+          dailyClm_option=1
         endif
   130 continue
       endif
@@ -322,7 +334,7 @@
         if ( prslp .le. spl1  ) hdk1=k
         if ( prslp .le. spl2  ) hdk2(1)=k
         if ( prslp .le. 200.  ) hdk2(2)=k
-        if ( prslp .le. 300.  ) hdk2(3)=k
+        if ( prslp .le. 400.  ) hdk2(3)=k
       enddo
 !
 !

@@ -41,7 +41,7 @@
                                ,lsftobswt
       use mod_eos_ocean,     only: tmelts,api
       use mod_sst,           only:read_woa0,read_godas,read_dailygodas &
-                                ,read_dailyFCT,obswtbp,obswtbt         &
+                                ,read_dailyFCT                         &
                                 ,ifilin_ocaf,read_ocaf,read_ocaf0      &
                                 ,wtfn12,wsfn12,time_weights,mask1st
       USE mo_netcdf,         ONLY:lkvl,set_ocndepth
@@ -59,6 +59,10 @@
 !byl                wss3(levp,2,3,jtrun,jtmax),cc3(nx+2,levp,3,my_max)
 
       character lrec*26,rfile*55,ctau*6,topostd*4,topohgt*4,key*34
+#ifdef RSM
+      character*12 dtgrsm
+      integer idtgrsm
+#endif
 !
 ! restart  : read(7) work array
 !
@@ -1316,6 +1320,25 @@
               , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6       &
               , ggdef)
       endif
+!
+#ifdef RSM
+      if (outrsm) then
+        if(myrank.eq.0)print*,' output: rsm date',idtg
+        write(dtgrsm,'(I12)') idtg
+        read(dtgrsm,'(I10,I2)')idtgrsm,ii   ! ii is dummy integer
+#ifdef CWB_MPMD
+        call send_idate(idtgrsm)
+#else
+        call wrte_idate(idtgrsm)
+#endif
+        call rsmout(idtg,0,nx,my,my_max,lev,ncld      &
+                , ptop,cp,rgas,grav,sgeo,pdiff        &
+                , t1000,pt,plt,pk,pk2,phi,ut,vt       &
+                , tt,qt,tg,snr,cosl                   &
+                , km_soil,smc,stc                     &
+                , ice,land,ocean)
+      endif
+#endif
 !
 !
         if(typhoon)then

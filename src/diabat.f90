@@ -167,16 +167,21 @@
       use rank
       use index
       use const,                 ONLY:do_sit,ldailyFCTsst,dailyClm_option,      &
-                                      pdfcloud,cmbk,cgwd, fsit, dosppt, doshum, &
-                                      use_zmtnblck
+                                      pdfcloud,cmbk,cgwd, fsit, dosppt, doshum, dossst, &
+                                      use_zmtnblck,ldailyFCTsst,ldailyFCTicesndpt, &
+                                      ldailyFCTsst,ldailyFCTicesndpt,           &
+                                      dailyClm_option,dSITdt_intv,weightSIT
       use mod_sitgrid
       USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
       USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt &
-                                     ,timebl_option,timebl_start,fsitchg
+                                     ,timebl_option,timebl_start
       USE mod_eos_ocean,         ONLY:AirVaporPressure,CalcSm
       USE mod_sst,               ONLY:time_weights,now1,now2,wgto1,wgto2 &
                                      ,obswtbnmw1,obswtbnmw2,obswtbwgt1   &
-                                     ,obswtbwgt2,dailyFCTsst,obswtbt
+                                     ,obswtbwgt2,obswtbold,obswtbnow     &
+                                     ,obswtbnew,dFCTsstdt                &
+                                     ,tseadiffFCT,tseadiffFCT24,dtseadt  &
+                                     ,tseanow,tseaold
       USE mo_netcdf,             ONLY:lkvl
 !-----------------------------------------------------------------------
       use radn
@@ -185,7 +190,7 @@
       use physcons, only :con_rd,con_fvirt,con_rerth,con_rv
 ! for land_noah_new
       use namelist_soilveg, only :MAX_SLOPETYP,MAX_SOILTYP,MAX_VEGTYP
-      use mod_stochastic_physics, only : sppt3d, shum3d
+      use mod_stochastic_physics, only : sppt3d, shum3d, ssst3d
 !-----------------------------------------------------------------------
       implicit  none
 !-----------------------------------------------------------------------
@@ -317,7 +322,8 @@
       real :: vt_save_sppt(nxp,lev,my_max)        
       real :: tt_save_sppt(nxp,lev,my_max)        
       real :: qt_save_sppt(nxp,lev*ncld,my_max)
-      real :: qt_save_shum(nxp,lev*ncld,my_max)
+     !real :: qt_save_shum(nxp,lev*ncld,my_max)
+      real :: tg_save_ssst(nxp,1,my_max)
 #ifdef VERBOSE
       real :: ut_update(nxp,lev,my_max)     
       real :: vt_update(nxp,lev,my_max)        
@@ -479,6 +485,7 @@
       character*12 cdtg
       integer yr, mo, dy, hr, mn
       real tauhr
+      real dtx_tau,dtaup
       INTEGER, PARAMETER :: nerr = 6
 !xb110>
       ztenh = 0.
@@ -1776,7 +1783,7 @@
             snrfsit(ii,jj)=snrfsit(ii,jj)+snr(ii,jj)*dtsit
             zicefsit(ii,jj)=zicefsit(ii,jj)+zice(ii,jj)*dtsit
             xticefsit(ii,jj)=xticefsit(ii,jj)+xtice(ii,jj)*dtsit
-            obswtbfsit(ii,jj)=obswtbfsit(ii,jj)+obswtbt(ii,jj)*dtsit
+            obswtbfsit(ii,jj)=obswtbfsit(ii,jj)+obswtbnow(ii,jj)*dtsit
             tgfsit(ii,jj)=tgfsit(ii,jj)+tg(ii,jj)*dtsit
           endif
 
@@ -1837,7 +1844,7 @@
               snrtm(ii)=snr(ii,jj)
               zicetm(ii)=zice(ii,jj)
               xticetm(ii)=xtice(ii,jj)
-              obswtbtm(ii)=obswtbt(ii,jj)
+              obswtbtm(ii)=obswtbnow(ii,jj)
               tgtm(ii)=tg(ii,jj)
               dtfsit=dtsit
             endif
@@ -1933,38 +1940,102 @@
              oldsitws(:,jj,0:lkvl+1,0:1),oldsitwtke(:,jj,0:lkvl+1,0:1),&
               dtswdt(:,jj), sftobswt(:,jj,0:lkvl+1) )
         
-        if(jj .eq. 1) then
-          dtsittau=dtsittau+dtfsit
-          dtsitmon=dtsitmon+dtfsit
-          dtsit24=dtsit24+dtfsit
+          if(jj .eq. 1) then
+            dtsittau=dtsittau+dtfsit
+            dtsitmon=dtsitmon+dtfsit
+            dtsit24=dtsit24+dtfsit
+          endif
+          call storesittau(nxjp(j),jj,nxp,my_max,lkvl,sitwt,sitws,sitwu,sitwv,dtfsit)
+          call storesit24(nxjp(j),jj,nxp,my_max,lkvl,sitwt,sitws,sitwu,sitwv,dtfsit)
+
+        endif  !end lrun_sitvdiff
+
+        deallocate(sstm)
+        deallocate(rstm)
+        deallocate(hfluxtm)
+        deallocate(qfluxtm)
+        deallocate(u10tm)
+        deallocate(v10tm)
+        deallocate(rlsptm)
+        deallocate(rcuptm)
+        deallocate(ustartm)
+        deallocate(t2tm)
+        deallocate(rh2tm)
+        deallocate(psttm)
+        deallocate(cicetm)
+        deallocate(snrtm)
+        deallocate(zicetm)
+        deallocate(xticetm)
+        deallocate(obswtbtm)
+        deallocate(tgtm)
+        if(jj .eq. jlistnum) then
+          if (lrun_sitvdiff) dtfsit=0.
         endif
-        call storesittau(nxjp(j),jj,nxp,my_max,lkvl,sitwt,sitws,sitwu,sitwv,dtfsit)
-        call storesit24(nxjp(j),jj,nxp,my_max,lkvl,sitwt,sitws,sitwu,sitwv,dtfsit)
 
-       endif  !end lrun_sitvdiff
-
-       deallocate(sstm)
-       deallocate(rstm)
-       deallocate(hfluxtm)
-       deallocate(qfluxtm)
-       deallocate(u10tm)
-       deallocate(v10tm)
-       deallocate(rlsptm)
-       deallocate(rcuptm)
-       deallocate(ustartm)
-       deallocate(t2tm)
-       deallocate(rh2tm)
-       deallocate(psttm)
-       deallocate(cicetm)
-       deallocate(snrtm)
-       deallocate(zicetm)
-       deallocate(xticetm)
-       deallocate(obswtbtm)
-       deallocate(tgtm)
-       if(jj .eq. jlistnum) then
-         if (lrun_sitvdiff) dtfsit=0.
-       endif
       endif  !end do_sit
+
+
+!=======================================================================
+! Cal. SST tendency (dtsea/dt)
+!=======================================================================
+      dtx_tau=dt/3600.
+      if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. dailyClm_option.ge.1) then
+        if(fwd) then
+          do ii = 1,nxj
+            i=nxjstart(j)+ii-1
+            dtseadt(ii,jj)=0.
+            dFCTsstdt(ii,jj)=0. 
+            obswtbnow(ii,jj)=dta*dFCTsstdt(ii,jj)+obswtbold(ii,jj)
+            if(ocean(ii,jj))then
+              tseadiffFCT(ii,jj)=dta*dFCTsstdt(ii,jj)
+              tseanow(ii,jj)=dta*dFCTsstdt(ii,jj)+ tseaold(ii,jj)
+            endif
+          end do
+        endif
+        if((tau .ge. 24.)) then
+          do ii = 1,nxj
+            i=nxjstart(j)+ii-1
+            dtseadt(ii,jj)=0.
+            tseadiffFCT(ii,jj)=0.
+            if(ocean(ii,jj))then
+              obswtbnew(ii,jj)=dta*dFCTsstdt(ii,jj)+obswtbold(ii,jj)
+              obswtbold(ii,jj)=obswtbnow(ii,jj)
+              obswtbnow(ii,jj)=obswtbnew(ii,jj)
+              ! sea surface temperature tendency 
+              dtseadt(ii,jj)=dFCTsstdt(ii,jj)
+              tseadiffFCT(ii,jj)=dta*dFCTsstdt(ii,jj)
+              if(do_sit) then
+                if(sitmask(ii,jj) .EQ. 1.) then
+                  if(lrun_sitvdiff .AND. ltrigsit )then
+                    tseadiffSIT(ii,jj)=0.
+                    sumdSITdt(ii,jj)=sumdSITdt(ii,jj)+dtswdt(ii,jj)
+                    countdSITdt(ii,jj)=countdSITdt(ii,jj)+1.
+                  endif
+                 
+                  dtaup = mod(tau+0.001, dSITdt_intv)
+                  if( (dSITdt_intv .lt. 0.) .OR. (dtaup .lt. dtx_tau) )then
+                    if(countdSITdt(ii,jj) .ge. 1.) then
+                      tseadiffFCT(ii,jj)=dta * (1.-weightSIT*ratioSIT(ii,jj)) * dFCTsstdt(ii,jj)
+                      tseadiffSIT(ii,jj)=dta * weightSIT*ratioSIT(ii,jj) * (sumdSITdt(ii,jj)/countdSITdt(ii,jj))
+                      tseadiffSIT24(ii,jj)=tseadiffSIT24(ii,jj)+tseadiffSIT(ii,jj)/dta*dt
+                      ! sea surface temperature tendency
+                      dtseadt(ii,jj)=(1.-weightSIT*ratioSIT(ii,jj)) * dFCTsstdt(ii,jj) &
+                                  + weightSIT * ratioSIT(ii,jj) * (sumdSITdt(ii,jj)/countdSITdt(ii,jj))
+                      sumdSITdt(ii,jj)=0.
+                      countdSITdt(ii,jj)=0.
+                    endif
+                  endif
+                endif ! end if sitmask(ii,jj) .EQ. 1
+              endif ! end if do_sit
+
+              if (dossst) then 
+                dtseadt(ii,jj) = dtseadt(ii,jj) * (ssst3d(ii,1,jj) + 1.)
+              endif 
+              tseadiffFCT24(ii,jj)=tseadiffFCT24(ii,jj)+tseadiffFCT(ii,jj)/dta*dt
+            endif !end if(ocean)
+          end do  !end ii
+        endif  !end if(tau .ge. 24.)
+      endif !end if(ldailyFCTsst....)
 
 
 !=======================================================================
@@ -2018,22 +2089,14 @@
         enddo
       endif
 
-      ! SHUM process
+      ! SHUM process 
       if (doshum) then
-        ! there's no need to add perturbation for cloud & ozone tracer. 
-        ! modified by PangYen Liu
-        nk = 1  ! 1: specific humidity
-                ! 2: specific humidity + cloud water
-                ! 3: specific humidity + cloud water + ozone
-        do n=1,nk
           do k=1,lev
-            kk = (n-1)*lev+k
             do i=1,nxj
               ru=shum3d(i,k,jj)
-              qt(i,kk,jj)=qt(i,kk,jj)*(1.+ru)
+              qt(i,k,jj) = qt(i,k,jj)*(1.+ru)
             enddo
           enddo
-        enddo
       endif 
 
 #ifdef VERBOSE
@@ -2330,14 +2393,10 @@
   370    continue
   360 continue
 !
-      call mpe_global_maxloc(xkmkk, 2,ixkmkk,jxkmkk,idummy,idummy &
-                            ,mpe_double)
-      call mpe_global_maxloc(xkmk1, 2,ixkmk1,jxkmk1,idummy,idummy &
-                            ,mpe_double)
-      call mpe_global_maxloc(dtcupg,2,idcupx,jdcupx,idummy,idummy &
-                            ,mpe_double)
-      call mpe_global_maxloc(utx,   2,ikutx, jutx  ,idummy,idummy &
-                            ,mpe_double)
+      call mpe_global_maxloc(xkmkk, 2,ixkmkk,jxkmkk,idummy,idummy,mpe_double)
+      call mpe_global_maxloc(xkmk1, 2,ixkmk1,jxkmk1,idummy,idummy,mpe_double)
+      call mpe_global_maxloc(dtcupg,2,idcupx,jdcupx,idummy,idummy,mpe_double)
+      call mpe_global_maxloc(utx,   2,ikutx, jutx  ,idummy,idummy,mpe_double)
 !
       call maxpp2_2d( pst,pstx,ipstx,jpstx )
       call minpp2_2d( pst,pstn,ipstn,jpstn )
@@ -2378,8 +2437,7 @@
 
       end do
 !
-      call mpe_global_maxloc(dtradg,4,isign,idradx,jdradx,kdradx &
-                            ,mpe_double)
+      call mpe_global_maxloc(dtradg,4,isign,idradx,jdradx,kdradx,mpe_double)
 !
       dtradg = dtradg*isign
 !

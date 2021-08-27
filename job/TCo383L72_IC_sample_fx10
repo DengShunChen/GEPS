@@ -32,5 +32,4 @@ source /users/xa09/sample/setup_mpi+omp.${machine} $OMP
 
 #==============================================================================================================#
 
-#. ${MDIR}/job/regression.ksh
-. ${MDIR}/job/regression_stochy_physics.ksh
+. ${MDIR}/job/regression.ksh
