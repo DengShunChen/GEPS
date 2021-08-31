@@ -562,17 +562,17 @@
 !!        dt_chg=1800.
         nc_stable=1
         sptendmax2=0.3405
-        sptendmax1=0.2705
+        sptendmax1=0.2405
       else if(nco.eq.384)then
 !!        dt_chg=720.
         nc_stable=2
         sptendmax2=0.4005
-        sptendmax1=0.3305
+        sptendmax1=0.3005
       else if(nco.eq.640) then
 !!        dt_chg=450.
         nc_stable=4
         sptendmax2=0.4305
-        sptendmax1=0.3605
+        sptendmax1=0.3305
       endif
 
   ! stochastic_physics
