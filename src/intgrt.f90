@@ -653,13 +653,16 @@
       endif
 
 !
-!!      if(tau.lt.24.)then
-!!         hfiltx=hfilt*4.
-!!      else if(tau.ge.24. .and. tau.le.48.)then
-!!         hfiltx=hfilt*3.
-!!      else if(tau.gt.48. .and. tau.le.72.)then
-!!         hfiltx=hfilt*2.
-!!      else
+      if(tau.lt.6.)then
+         hfiltx=hfilt*2.
+         alpha = 0.75
+      else if(tau.ge.6. .and. tau.le.9.)then
+         hfiltx=hfilt*3.
+         alpha = 0.75
+      else if(tau.gt.9. .and. tau.le.12.)then
+         hfiltx=hfilt*2.
+         alpha = 0.75
+      endif
 
 
 !!      endif
