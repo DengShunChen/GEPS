@@ -354,7 +354,7 @@
         kfac  = min((5.+finc)*max(float(hdk2(2)-KL),0.),60.+5.*finc)
         kfacd = (1.0+kfac)*min(max(float(hdk2(3)-KL),1.),1.)
         kfacv = (1.0+kfac)
-        facd =  10. * kfacd * amp
+        facd =  15. * kfacd * amp
         facv = kfacv * min(amp,1.)
 !!        fact = amp * kfacv 
 !          endif
