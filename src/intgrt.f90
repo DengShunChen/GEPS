@@ -425,13 +425,10 @@
       itaup=taup+0.1
       tau=taui
       dtx=dt
+      itter=1
 !
       forward = itaui .eq. 0
-!!      if (forward)  then
       dta = dtx
-!!      else
-!!        dta = 2*dtx
-!!      endif
       itter=1
       ndsldta = 0.5*dta
       ndsldtah= ndsldta/float(itter)
@@ -561,18 +558,18 @@
       if(nco.eq.180)then
 !!        dt_chg=1800.
         nc_stable=1
-        sptendmax2=0.3305
-        sptendmax1=0.2805
+        sptendmax2=0.3405
+        sptendmax1=0.2705
       else if(nco.eq.384)then
 !!        dt_chg=720.
         nc_stable=2
-        sptendmax2=0.3705
-        sptendmax1=0.3205
+        sptendmax2=0.4005
+        sptendmax1=0.3305
       else if(nco.eq.640) then
 !!        dt_chg=450.
         nc_stable=4
-        sptendmax2=0.4205
-        sptendmax1=0.3705
+        sptendmax2=0.4305
+        sptendmax1=0.3605
       endif
 
   ! stochastic_physics
@@ -689,10 +686,6 @@
           do n = mf, jtrun
             do i = 1, 2
             do k = 1, levp
-!!              vormid(k,i,n,m)= facm(1,itt) * vornow(k,i,n,m)   &
-!!                             + facm(2,itt) * vorold(k,i,n,m)
-!!              divmid(k,i,n,m)= facm(1,itt) * divnow(k,i,n,m)   &
-!!                             + facm(2,itt) * divold(k,i,n,m)
               temmid(k,i,n,m)= facm(1,itt) * temnow(k,i,n,m)    &
                              + facm(2,itt) * temold(k,i,n,m)
               vorold(k,i,n,m)= vornow(k,i,n,m) 
@@ -738,16 +731,19 @@
           enddo
         enddo
         do i = 1,nxj
-          ptm(i,jj)= facm(1,itt) * pt(i,jj) &
-                   + facm(2,itt) * ptp(i,jj)
           ptp(i,jj)= pt(i,jj)
         enddo
       enddo
 !
 ! Transfer Spectral to Gridpoint for u,v,t,q,ps at n-1
 !
-!!      call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,plmid      &
-!!                 ,dlpl,dtpl,nsizey)
+      call transr1(jtrun,jtmax,nx,my,my_max,poly,plmid,ptm,nsizey)
+!      call tranuv(jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac    &
+!                 ,poly,dpoly,vormid,divmid,um,vm,nsizey)
+!      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divmid,cc,1,nsizey)
+!      call ujoinsr(cc,rdivm,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+!      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temmid,cc,1,nsizey)
+!      call ujoinsr(cc,tm,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
 !
 ! for Semi-Lagrangian advection
 !
@@ -775,7 +771,7 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f(vp,vvm_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-!!      call mpe2d_transpose_ndsl_p2f(tm,ttm_sl,    &
+!!      call mpe2d_transpose_ndsl_p2f(tt,ttm_sl,    &
 !!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !
 !      do itt = 1,itter
@@ -829,10 +825,6 @@
 !
 !     advet grid pressure gradient force from t to t+dt via NDSL advection
 !
-!!      call mpe2d_transpose_ndsl_p2f(um,ut_sl,    &
-!!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-!!      call mpe2d_transpose_ndsl_p2f(vm,vt_sl,    &
-!!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f(vdzonlr,uum_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f(vdmerdr,vvm_sl,    &
@@ -873,26 +865,6 @@
 !
       enddo !jj = 1,jlistnum
 !
-!!      call joinrs(cc,diveng,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-!!      call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc       &
-!!                 ,hldten,1,nsizey)
-!!      call trngra3(jtrun,jtmax,nx,levp,my,my_max,cim,poly,dpoly      &
-!!                 ,hldten,dlphi,dtphi,nsizey)
-!
-!!      do jj = 1, jlistnum
-!!        j=jlist1(jj)
-!!        nxj=nxdef_2d(j)
-!!        do k=1,lev
-!!          do i=1,nxj
-!!            vdmerdg(i,k,jj) = vdmerdg(i,k,jj)-dtphi(i,k,jj)/radsq/onocos(j)
-!!            vdzonlg(i,k,jj) = vdzonlg(i,k,jj)-dlphi(i,k,jj)/radsq 
-!!          enddo
-!!        enddo
-!!      enddo !jj = 1,jlistnum
-
-!!gv      call ndslfv_monoadvv_fgnl(vdzonlrp,vdmerdrp,ddtemp,pdot,ptm &
-!!gv                          ,nxjp,ndsldta,2)
-!
       do jj = 1, jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
@@ -900,8 +872,6 @@
           do i=1,nxj
             vdmerdrp(i,k,jj) = 0.5*(vdmerdr(i,k,jj)+vdmerdrp(i,k,jj))
             vdzonlrp(i,k,jj) = 0.5*(vdzonlr(i,k,jj)+vdzonlrp(i,k,jj))
-!!            vdmerdrp(i,k,jj) = 0.9*vdmerdrp(i,k,jj)+(1.-0.9)*vdmerdg(i,k,jj)
-!!            vdzonlrp(i,k,jj) = 0.9*vdzonlrp(i,k,jj)+(1.-0.9)*vdzonlg(i,k,jj)
           enddo
         enddo
       enddo !jj = 1,jlistnum
@@ -929,7 +899,7 @@
 !
       call whdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld       &
                    ,hfiltx,rad,cosl,up,vp,vormid,divmid          &
-                   ,plmid,eps4,trefs)
+                   ,eps4,trefs)
 !
 !
 !     update all new wind field at mid-point
@@ -938,9 +908,6 @@
                  ,poly,dpoly,vormid,divmid,um,vm,nsizey)
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divmid,cc,1,nsizey)
       call ujoinsr(cc,rdivm,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-      call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,plmid      &
-                 ,dlpl,dtpl,nsizey)
-      call transr1(jtrun,jtmax,nx,my,my_max,poly,plmid,ptm,nsizey)
 
 !
 !  the gaussian quadrature loop for spectral tendencies.  subroutine
@@ -1044,7 +1011,6 @@
       call mpe2d_transpose_ndsl_f2p(qm_sl,qt,   &
                                     nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 #endif
-
 !
 !     estimat grid non-linear forcing at t+dt/2 by averaging grid non-linear forcing at t and t+dt
 !
@@ -1356,7 +1322,7 @@
             if(myrank .eq. 0)print *,'** stable change hfilt=',hfiltx,  &
                              ' and keep alpha=',alpha
           else if(n_unstable .gt. nc_stable)then
-            hfiltx=2.*hfilt
+            hfiltx=hfilt
             alpha=0.75
             if(myrank .eq. 0)print *,'** unstable change hfilt=',hfiltx,&
                              ' and alpha=',alpha
@@ -1666,6 +1632,19 @@
                     , km_soil,smc,slc,stc,canopy,ggdef,typtrk                  &
 !xb110                    , ctot,chig,cmid,clow,hpbl,histim,flash,do_sit)
                     , ctot,chig,cmid,clow,hpbl,histim,do_sit)
+#endif
+!
+#ifdef RSM
+! RSM: output base field ncep-format data for RSM
+      if(outrsm .and. mod(float(itau)+0.00001, float(rsmoutinv) ) .lt. 0.01)then
+        if(myrank.eq.0)print*,' call rsmout for rsm output at tau=',itau
+        call rsmout(idtg,itau,nx,my,my_max,lev,ncld   &
+                , ptop,cp,rgas,grav,sgeo,pdiff        &
+                , t1000,pt,plt,pk,pk2,phi,ut,vt       &
+                , tt,qt,tg,snr,cosl                   &
+                , km_soil,smc,stc                     &
+                , ice,land,ocean)
+      endif
 #endif
 !
 !        if(typhoon .and. ltrack)then
