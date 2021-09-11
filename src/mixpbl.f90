@@ -1,6 +1,6 @@
       subroutine mixpbl( nxj,mn,kk,ktpbl                               &
                        , dt,g,hgt,u,v,t,q,ut,vt,tt,qt,e,eps            &
-                       , xkm,xkh,zl,fwd,sfcw,ustar,tstar,qstar,itypbl  &
+                       , xkm,xkh,zl,sfcw,ustar,tstar,qstar,itypbl      &
                        ,dhgt,ro2,dhgtz)
 !
 !##################################################################
@@ -36,17 +36,12 @@
 !    xkh : eddy mixing coef for t, q (mn,kk) at current t lvl   (m2/s2)
 !     zl : height(kk) over monin-obukhov scale height.
 !          a stability indicator.                   (mn)
-!    fwd : logical variable; .true. for forward, =.false. for leapfrog
 !   sfcw : surface wind speed        (mn)                      (m/s)
 !   ustar: friction velocity         (mn)                      (m/s)
 !   tstar: potential temp scale      (mn)                      (k)
 !   qstar: moisture scale            (mn)                      (kg/kg)
 ! itypbl : index for surface layer update, =0 stress b,c., =1 direct
 !
-!  * note: for fwd=.false., u, v, t and q are updated from (t-1) to
-!          (t+1) by leapfrog or backward scheme.  in this case, we
-!          should use 1/2 dt for e and eps since they are update
-!          from (t) to (t+1).
 !
 ! 4. local work arrays
 !
@@ -61,7 +56,7 @@
 ! 6. usage
 !
 !     call mixpbl( mn,kk,ktpbl,dt,g,hgt,u,v,t,q,ut,vt,tt,qt,e,eps
-!    1           , xkm,xkh,zl,fwd,sfcw,ustar,tstar,qstar,itypbl )
+!    1           , xkm,xkh,zl,sfcw,ustar,tstar,qstar,itypbl )
 !
 ! 7. modules called
 !
@@ -105,7 +100,6 @@
                 eps(mn,kk),xkm(mn,kk),xkh(mn,kk),zl(mn),         &
                 sfcw(mn),ustar(mn),tstar(mn),qstar(mn),          &
                 dhgt(mn,kk),ro2(mn,kk),dhgtz(mn,kk)
-      logical   fwd
 !
 !  local work arrays
 !
@@ -292,7 +286,6 @@
 !     update e, eps from current time level to future time level
 !
       dth = dt
-      if ( .not. fwd ) dth = 0.5*dt
 !  -- limit time step for e eps prediction to be less than 150 sec
 !
       nee = 1.0 + (dth-1.0)/150.0
