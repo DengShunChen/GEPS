@@ -243,6 +243,7 @@ SRCS_f90  = \
   rozphys.f90 \
   rqkir.f90 \
   rrtmg.f90 \
+  rsmout.f90 \
   rstrandz.f90 \
   rstrantq.f90 \
   samfdeepcnv.f90 \
@@ -251,6 +252,8 @@ SRCS_f90  = \
   sascnv_n.f90 \
   sascnv_sa.f90 \
   scatter_spec.f90 \
+  send_data.f90 \
+  send_idate.f90 \
   set_soilveg.f90 \
   setupv.f90 \
   sfc_diag.f90 \
@@ -309,6 +312,9 @@ SRCS_f90  = \
   w3fs26.f90 \
   whtrec.f90 \
   whttau.f90 \
+  wrte_data.f90 \
+  wrte_idate.f90 \
+  xyintpo.f90 \
   zilch.f90 \
   zimadv.f90 \
   zx.f90 
@@ -374,7 +380,7 @@ INSTALL = /usr/bin/install
 # If it's using fx-100 compiler(new version), you probably can get -Kparallel flag back.
 #--------------------------------------------------------------------------------------------
 LDFLAGS = ${OMP_COM} ${LDFLAGS_COM}
-LIBS	= ${NETCDF_LIB} ${W3NCO_LIBd} ${DMS_LIB} ${OPERLIB_LIB} ${FFTW_LIB} ${LIBS_COM}
+LIBS	= ${NETCDF_LIB} ${W3NCO_LIBd} ${DMS_LIB} ${OPERLIB_LIB} ${FFTW_LIB} ${LIBS_COM} ${MPMD_LIB}
 
 .SUFFIXES: .o .mod .f90 .c
 all defalut:	depend $(CMD)
