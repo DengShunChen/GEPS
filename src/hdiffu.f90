@@ -144,6 +144,7 @@
       use mpe
       use rank
       use const, only : hdk1,hdk2,radsq
+      use param, only : octahedral,af
 
       implicit  none
 
@@ -162,7 +163,7 @@
 
       integer   jj,j,nxj,k,i,m,n,mf,nc,kk,KL
       real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu
-      real      hfilt,hfilt2,nf,ncut,ncor
+      real      hfilt,hfilt2,nf,ncut,ncor,kfac,finc,kfacd,kfacv
       real      c1,c2,c3
       logical   windchk
 
@@ -171,6 +172,7 @@
 !
 
 !
+      finc = 10.*max(af,0.001)
       nf=jtrun-1
       ncut=0.5*jtrun
       wmax(1:lev)= 0.0
@@ -197,9 +199,9 @@
 !
 !
       hfilt = (radsq/(nf*(nf+1)))**2.
-      hfilt = hfilt/(nf*dta)
+      hfilt = hfilt/(6.*dta)
       hfilt2 = radsq/(nf*(nf+1))
-      hfilt2 = hfilt2/(nf*dta)
+      hfilt2 = hfilt2/(6.*dta)
 
 
       do 100 k=1,levp  ! levp -> lev
@@ -209,24 +211,23 @@
 
          KL=Llist(k)
 !
-         facd= 1.0 + max(float(hdk2(1)-KL),0.)
-         facv= 1.0 + max(float(hdk2(1)-KL),0.)
-         fact= 1.0 + max(float(hdk2(1)-KL),0.)
-         if ( KL .le. hdk1 ) facd=facd*(1.+float(hdk1-KL))
-!
-          facd = amp * facd
-          facv = amp * facv
-          fact = amp * fact
-!
+         kfac  = min((5.+finc)*max(float(hdk2(1)-KL),0.),60.+5.*finc)
+         kfacd = 1. + kfac
+         kfacv = 1. + kfac
+         facd = kfacd * amp
+         facv = kfacv * amp
+         fact = kfacv * amp
+!         facd= 1.0 + max(float(hdk2(1)-KL),0.)
+!         facv= 1.0 + max(float(hdk2(1)-KL),0.)
+!         fact= 1.0 + max(float(hdk2(1)-KL),0.)
 
-        if ( KL .le. hdk1 ) then
-          ddiffu =facd*hfilt2
-        else
-          ddiffu =facd*hfilt
-        endif
+!         if ( KL .le. hdk1 ) facd=facd*(1.+float(hdk1-KL))
+!
+!          facd = amp * facd
+!          facv = amp * facv
+!          fact = amp * fact
+!
           
-        tdiffu =fact*hfilt
-        vdiffu =facv*hfilt
 !
 !  difuse vorticity and divergence fields
 !  diffuse moisture and temperature fields
@@ -235,18 +236,22 @@
           mf=mlist(m)
           do n=mf,jtrun
             ncor=1.
-            if ( n .gt. ncut .and. n .lt. jtrun ) then
+            if ( n .gt. ncut ) then
               ncor=exp(-0.5*( (n-jtrun)**2. / (n-ncut)**2. ))
             else
               ncor=0.
             endif
-            c1=1.+dta*vdiffu*ncor*eps4(n,m)**2
+            c3=1.+dta*fact*hfilt*ncor*eps4(n,m)**2
+
+            ncor=min(ncor+0.2*max(float(hdk2(1)-KL),0.),1.)
+            c1=1.+dta*facv*hfilt*ncor*eps4(n,m)**2
             if ( KL .le. hdk1 ) then
-              c2=1.+dta*ddiffu*ncor*eps4(n,m)
+!              c2=1.+dta*facd*hfilt2*ncor*eps4(n,m)
+              c2=1.+dta*facd*hfilt2*eps4(n,m)
             else
-              c2=1.+dta*ddiffu*ncor*eps4(n,m)**2
+              c2=1.+dta*facd*hfilt*ncor*eps4(n,m)**2
             endif
-            c3=1.+dta*tdiffu*ncor*eps4(n,m)**2
+
             vornow(k,1,n,m)=vornow(k,1,n,m)/c1
             vornow(k,2,n,m)=vornow(k,2,n,m)/c1
             divnow(k,1,n,m)=divnow(k,1,n,m)/c2

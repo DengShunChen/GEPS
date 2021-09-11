@@ -102,7 +102,7 @@
       real      fac(ktop), wkj(my,4), wkmf(jtrun), windmax3
       data      windmax3/130./
 !
-      logical   forward, histim, tchange, flag
+      logical   histim, tchange, flag
 !
       logical   wrestrt
       data      wrestrt/.false./
@@ -426,12 +426,7 @@
       tau=taui
       dtx=dt
 !
-      forward = itaui .eq. 0
-!!      if (forward)  then
       dta = dtx
-!!      else
-!!        dta = 2*dtx
-!!      endif
       itter=1
       ndsldta = 0.5*dta
       ndsldtah= ndsldta/float(itter)
@@ -575,8 +570,8 @@
         sptendmax1=0.3305
       endif
 
-  ! stochastic_physics
-  call init_stochastic_physics(dta)   
+      ! stochastic_physics
+      call init_stochastic_physics(dta)   
 !
 !
 !      if(typhoon)then
@@ -636,7 +631,7 @@
           ic_sit=-99
           turn_sit=.true.
         else
-          if(.NOT. forward) then
+          if(itimestep .gt. 1) then
             turn_sit= mod(tau+0.001, fsit) .lt. dtx_tau
             if( turn_sit ) ic_sit=0
             if( turn_sit .or. (ic_sit .ge. 0 .AND. ic_sit .lt. nc_sit)) then
@@ -1064,7 +1059,7 @@
 !
         if (yesdia)  then
 !
-          call diabat ( forward,docup,dodry,dolsp,dopbl,dorad,doshl,dograv      &
+          call diabat ( docup,dodry,dolsp,dopbl,dorad,doshl,dograv              &
                       , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw      &
                       , idg,jdg,ldiag,dtx,tau,hours,julian                      &
                       , frad,ozon,njump,itypbl,ktcup,ktpbl,ktshl,grav           &
@@ -1185,8 +1180,6 @@
 !
 !  take a time step
 !
-!ttl      if (forward)  then
-!
         do m = 1, mlistnum
           mf=mlist(m)
           do n = mf, jtrun
@@ -1217,11 +1210,8 @@
                              , hfiltx,rad,cosl,um,vm,vornow,divnow,temnow  &
                              , eps4,trefs)
 !
-!        forward=.false.
-!        dta= 2.0*dtx
         lsitstart=.false.
 !
-!ttl      endif     ! end of (forward)
 !        if ( mod(itimestep,2) .eq. 0 ) xy = -1 * xy
         xy = -1 * xy
 !
