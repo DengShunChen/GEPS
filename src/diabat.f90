@@ -1,4 +1,4 @@
-      subroutine diabat ( fwd,docup,dodry,dolsp,dopbl,dorad,doshl,dograv       &
+      subroutine diabat ( docup,dodry,dolsp,dopbl,dorad,doshl,dograv           &
                     , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw       &
                     , idg,jdg,ldiag,dt,tau,hours,julian                        &
                     , frad,ozon,njump,itypbl,ktcup,ktpbl,ktshl,grav            &
@@ -39,7 +39,6 @@
 !
 !     parameters
 !
-!     fwd    : logical variable for forward time step or not
 !     docup  : logical variable for including cumulus parameterization
 !     dodry  : logical variable for including dry convection
 !     dolsp  : logical variable for including large scale precipitation
@@ -205,7 +204,7 @@
                 jdg,ldiag,julian,njump,itypbl,ktcup,ktpbl,ktshl,     &
                 km_soil
 
-      logical   fwd,docup,dodry,dolsp,dopbl,dorad,doshl,dograv,ozon, &
+      logical   docup,dodry,dolsp,dopbl,dorad,doshl,dograv,ozon,     &
                 land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max),  &
                 docgrav
 
@@ -273,7 +272,6 @@
 !for gravity wave drag ====== #
       integer nmgwor,nmgwcv,mtnvar
       real hprime_b(nxp,mtnvar,my_max)
-!byl      real pltn(nxp,lev,my_max),pkn(nxp,lev,my_max),pk2n(nxp,lev,my_max),  &
       real tt_bfcnv(nxp,lev)
       real prsi(nxp,lev+1)
       real utgwc(nxp,lev),vtgwc(nxp,lev),                                  &
@@ -282,10 +280,8 @@
       real oc(nxp),theta(nxp),gamma(nxp),sigmaog(nxp),elvmax(nxp),hprime(nxp),    &
            dlength(nxp),cldf(nxp),cumabs(nxp),work3(nxp),tauctx(nxp),taucty(nxp), &
            facg(lev)
-!byl           dvsfcg(nxp),dusfcg(nxp),facg(lev)
       real oa4(nxp,4),clx(nxp,4),cgwf(2),cdmbgwd(2)
       real ograv
-!byl      integer kpbl(nxp,my_max), kpblc(nxp,my_max)
       integer kpbl(nxp,my_max)
       integer latg
 
@@ -355,7 +351,6 @@
       logical uni_cloud,lmfshal,lmfdeep2
       real    sr(nxp,my_max)
 !---------------------------------------------------------------------------
-!byl      real      avgdrag_u(my,lev),avgdrag_v(my,lev),drag_u(lev),drag_v(lev)
       real      drag_u(lev),drag_v(lev)
       real      fnor
       logical   donor,upnor
@@ -389,7 +384,6 @@
       real      adtrad(nxp,lev),work_pr1(9),work_pr2(lev,9)
 !--------
 ! for ncld=2
-!byl      real,     parameter :: dxmax=-8.8818363, dxmin=-5.2574954, &
       real,     parameter :: dxmax=-16.118095651,dxmin=-9.800790154, &
 !      real,     parameter :: dxmax=-17.261145789,dxmin=-12.465355243,&
                              dxinv=1.0/(dxmax-dxmin)
@@ -435,7 +429,6 @@
       integer   isize(2)
 ! CWB <<<
 
-!byl      real      wk1(nx,my),wk2(nx,my)
 
       integer   i,     j,      k,      jj,     nxj,    nxmy,   nxlev, levmy, &
                 icrad, iter,   icnor,  njump1, njump2, njump3, nny,   jcap,  &
@@ -628,7 +621,6 @@
        rlsp(i,jj)  = 0.0
 !       cldwrk(i,k) = 0.0
        cldwrk(i,jj) = 0.0
-!byl       rainp(i,jj) = 0.0
 !      cosz(i,jj)  = 0.0
        xmu(i,jj)  = 0.0
 ! for wsm6
@@ -1046,7 +1038,7 @@
                      , ttpp,qp(1,1,jj),ut(1,1,jj),vt(1,1,jj)                  &
                      , tt(1,1,jj),qt(1,1,jj),pk(1,1,jj),pk2(1,1,jj)           &
                      , ustar(1,jj),tstar(1,jj),qstar(1,jj),e(1,1,jj)          &
-                     , eps(1,1,jj),hflux(1,jj),qflux(1,jj),fwd                &
+                     , eps(1,1,jj),hflux(1,jj),qflux(1,jj)                    &
                      , gwclim(1,jj),tgclim(1,jj),ocean(1,jj),ice(1,jj)        &
 !                     , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),albx(1,jj)      &
                      , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),sfalb(1,jj)      &
@@ -1064,7 +1056,7 @@
                      , ttpp,qp(1,1,jj),ut(1,1,jj),vt(1,1,jj)                  &
                      , tt(1,1,jj),qt(1,1,jj),pk(1,1,jj),pk2(1,1,jj)           &
                      , ustar(1,jj),tstar(1,jj),qstar(1,jj),e(1,1,jj)          &
-                     , eps(1,1,jj),hflux(1,jj),qflux(1,jj),fwd                &
+                     , eps(1,1,jj),hflux(1,jj),qflux(1,jj)                    &
                      , gwclim(1,jj),tgclim(1,jj),ocean(1,jj),ice(1,jj)        &
 !                     , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),albx(1,jj)      &
                      , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),sfalb(1,jj)      &
@@ -1081,7 +1073,7 @@
                      , ttpp,qp(1,1,jj),ut(1,1,jj),vt(1,1,jj)                  &
                      , tt(1,1,jj),qt(1,1,jj),pk(1,1,jj),pk2(1,1,jj)           &
                      , ustar(1,jj),tstar(1,jj),qstar(1,jj),e(1,1,jj)          &
-                     , eps(1,1,jj),hflux(1,jj),qflux(1,jj),fwd                &
+                     , eps(1,1,jj),hflux(1,jj),qflux(1,jj),itimestep          &
                      , gwclim(1,jj),tgclim(1,jj),ocean(1,jj),ice(1,jj)        &
 !                     , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),albx(1,jj)      &
                      , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),sfalb(1,jj)      &
@@ -1252,7 +1244,7 @@
                        , ut(1,1,jj),vt(1,1,jj),tt(1,1,jj)           &
                        , qt(1,1,jj),rcup(1,jj),pk(1,1,jj)           &
                        , pk2(1,1,jj),dotc,qflux(1,jj)               &
-                       , kbot(1,jj),ktop(1,jj),fwd,ncld,sigma       &
+                       , kbot(1,jj),ktop(1,jj),ncld,sigma           &
                        , plt(1,1,jj),pst(1,jj),j,kuo(1,jj) )
 
     ! for rad input of convection cloud information
@@ -1288,12 +1280,11 @@
                 sgeo(1,jj) ,phi       ,u0         ,v0        ,t0         ,&
                 q0         ,ut(1,1,jj),vt(1,1,jj) ,tt(1,1,jj),qt(1,1,jj) ,&
                 rcup(1,jj) ,pk(1,1,jj),pk2(1,1,jj),dotc      ,qflux(1,jj),&
-                kbot(1,jj) ,ktop(1,jj),fwd        ,ncld      ,sigma      ,&
+                kbot(1,jj) ,ktop(1,jj),ncld      ,sigma      ,            &
                 plt(1,1,jj),pst(1,jj) ,j          ,islimsk   ,hflux(1,jj),&
                 garea      ,kuo(1,jj) ,flash(1,jj))
 
         do i=1,nxj
-    !byl         if(kbot(i,jj).eq.lev-1 .and. ktop(i,jj).eq.lev-1)then
          if((kbot(i,jj).eq.-1) .and. (ktop(i,jj).eq.-1))then
           plcl(i,jj)=0.
           cumtop(i,jj)=0.
@@ -1605,7 +1596,7 @@
         lprnt=.false.
         psfc(:)  = pst(:,jj)*0.1        ! change to cb
         psautco(:)  = 4.0e-4
-!byl            psautco(i)  = 8.0e-4 * work1(i) + 5.0e-4 * work2(i)
+!            psautco(i)  = 8.0e-4 * work1(i) + 5.0e-4 * work2(i)
 
         do k=1,lev
           kc=lev-k+1
@@ -1616,7 +1607,6 @@
 !            rhc(i,kc) = 0.999 * work1(i) + 0.85 * work2(i)
 !
 !!!            rhc(i,kc)=0.999-0.08*cos(d2r*arg)**2    !a3
-!byl            rhc(i,kc)=0.95-0.07*cos(d2r*xlat(j))    !v2
             rhc(i,kc)=0.98-0.07*cos(d2r*xlat(j))**2.0    !v3
 !            rhc(i,kc)=0.98-0.07*cos(d2r*arg)**2.0    !wsm6
 !            tem   = (max(min(plt(i,k,jj),900.)-700.,0.01) / 200.)
@@ -1980,7 +1970,7 @@
 !=======================================================================
       dtx_tau=dt/3600.
       if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. dailyClm_option.ge.1) then
-        if(tau .lt. 24.) then
+        if(itimestep .le. 1) then
           do ii = 1,nxj
             i=nxjstart(j)+ii-1
             dtseadt(ii,jj)=0.

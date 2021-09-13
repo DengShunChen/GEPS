@@ -102,7 +102,7 @@
       real      fac(ktop), wkj(my,4), wkmf(jtrun), windmax3
       data      windmax3/130./
 !
-      logical   forward, histim, tchange, flag
+      logical   histim, tchange, flag
 !
       logical   wrestrt
       data      wrestrt/.false./
@@ -427,7 +427,6 @@
       dtx=dt
       itter=1
 !
-      forward = itaui .eq. 0
       dta = dtx
       itter=1
       ndsldta = 0.5*dta
@@ -559,21 +558,21 @@
 !!        dt_chg=1800.
         nc_stable=1
         sptendmax2=0.3405
-        sptendmax1=0.2705
+        sptendmax1=0.2405
       else if(nco.eq.384)then
 !!        dt_chg=720.
         nc_stable=2
         sptendmax2=0.4005
-        sptendmax1=0.3305
+        sptendmax1=0.3005
       else if(nco.eq.640) then
 !!        dt_chg=450.
         nc_stable=4
         sptendmax2=0.4305
-        sptendmax1=0.3605
+        sptendmax1=0.3305
       endif
 
-  ! stochastic_physics
-  call init_stochastic_physics(dta)   
+      ! stochastic_physics
+      call init_stochastic_physics(dta)   
 !
 !
 !      if(typhoon)then
@@ -628,12 +627,13 @@
 #endif
 !
       if(do_sit) then
+        lsitstart=(itimestep .le. 1)
         if(fsit .le. 0) then
           lrun_sitvdiff=.true.
           ic_sit=-99
           turn_sit=.true.
         else
-          if(.NOT. lsitstart) then
+          if(itimestep .gt. 1) then
             turn_sit= mod(tau+0.001, fsit) .lt. dtx_tau
             if( turn_sit ) ic_sit=0
             if( turn_sit .or. (ic_sit .ge. 0 .AND. ic_sit .lt. nc_sit)) then
@@ -650,13 +650,16 @@
       endif
 
 !
-!!      if(tau.lt.24.)then
-!!         hfiltx=hfilt*4.
-!!      else if(tau.ge.24. .and. tau.le.48.)then
-!!         hfiltx=hfilt*3.
-!!      else if(tau.gt.48. .and. tau.le.72.)then
-!!         hfiltx=hfilt*2.
-!!      else
+      if(tau.lt.12.)then
+         hfiltx=hfilt*2.
+         alpha = 0.75
+!      else if(tau.ge.6. .and. tau.le.9.)then
+!         hfiltx=hfilt*2.
+!         alpha = 0.75
+!      else if(tau.gt.9. .and. tau.le.12.)then
+!         hfiltx=hfilt*2.
+!         alpha = 0.75
+      endif
 
 
 !!      endif
@@ -1058,7 +1061,7 @@
 !
         if (yesdia)  then
 !
-          call diabat ( forward,docup,dodry,dolsp,dopbl,dorad,doshl,dograv      &
+          call diabat ( docup,dodry,dolsp,dopbl,dorad,doshl,dograv              &
                       , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw      &
                       , idg,jdg,ldiag,dtx,tau,hours,julian                      &
                       , frad,ozon,njump,itypbl,ktcup,ktpbl,ktshl,grav           &
@@ -1179,8 +1182,6 @@
 !
 !  take a time step
 !
-!ttl      if (forward)  then
-!
         do m = 1, mlistnum
           mf=mlist(m)
           do n = mf, jtrun
@@ -1211,11 +1212,7 @@
                              , hfiltx,rad,cosl,um,vm,vornow,divnow,temnow  &
                              , eps4,trefs)
 !
-!        forward=.false.
-!        dta= 2.0*dtx
-        lsitstart=.false.
 !
-!ttl      endif     ! end of (forward)
 !        if ( mod(itimestep,2) .eq. 0 ) xy = -1 * xy
         xy = -1 * xy
 !
