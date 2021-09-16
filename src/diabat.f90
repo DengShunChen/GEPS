@@ -637,13 +637,13 @@
             if(iceold(i,jj)       .and. .not. ice(i,jj)) then
               zice(i,jj)=0.
               cice(i,jj)=0.   
-              z0(i,jj)=0.0002 ! set new ocean point to 0.0002
+              z0(i,jj)=ustar(i,jj)*ustar(i,jj)*0.014/grav
             endif
             if(.not. iceold(i,jj) .and. ice(i,jj)) then
               xtice(i,jj)=tg(i,jj)
               zice(i,jj)=0.1 ! from himin in sfc_sice 
               cice(i,jj)=0.15 ! from cimin in sfc_sice 
-              z0(i,jj)=0.00001 ! set new ice point to 0.00001
+              z0(i,jj)=0.0002 ! set new ice point to 0.0002
             endif
           endif ! if(ls(i,jj).eq.0) then
         enddo
