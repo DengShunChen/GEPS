@@ -77,7 +77,7 @@
                       , outrsm,rsmoutinv,rlon1,rlon2,rlat1,rlat2,rgrdsz &
 !
                       , cmbk,cgwd,nmmiph,spl1,spl2            &
-                      , weightSIT,dSITdt_intv,af
+                      , weightSIT,dSITdt_intv,af,doclx
 !
       real    si(lev+1)
       logical flag
