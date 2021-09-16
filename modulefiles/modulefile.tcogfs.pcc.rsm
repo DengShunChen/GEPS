@@ -1,0 +1,53 @@
+#%Module######################################################################
+##                                                           dschen@cwb.gov.tw
+##                                                           Fujitsu
+## TCoGFS
+#-------------
+# add feature:                                         CHEN,YING-JU 2021.07.30
+#   RSM-IO and MPMD-with-RSM                           yingju@cwb.gov.tw
+#   at DEFINE_FLAGS:
+#   (1) "-DRSM": output RSM initial/basefield data (default)
+#   (2) "-DRSM" and "-DCWB_MPMD": run with RSM via MPMD,
+#        and setenv MPMD_LIB is necessary (use TCo/CWBSUM project with
+#        TCo/TCo639L72 as submodules)
+##____________________________________________________________________________
+proc ModulesHelp { } {
+puts stderr "Set environment veriables for TCoGFS"
+puts stderr "This module initializes the environment "
+}
+module-whatis " TCoGFS whatis description"
+
+set ver v1.0.0
+set machine pcc
+
+setenv COMP ifort
+setenv COMP_MP mpiifort
+setenv COMP_MPI mpiifort
+
+setenv C_COMP icc
+setenv C_COMP_MP mpiicc
+
+# Known conflicts
+
+setenv NETCDF_LIB "-L/home/xa09/pkg/netcdf-3.6.3/lib -lnetcdf"
+setenv NETCDF_INC "/home/xa09/pkg/netcdf-3.6.3/include"
+setenv FFTW_LIB "-L/home/xa09/pkg/fftw-3.3.7/lib -lfftw3_threads -lfftw3"
+setenv FFTW_INC "/home/xa09/pkg/fftw-3.3.7/include"
+setenv DMS_LIB "-L/home/xa09/pkg/dms/lib -lrdms -lgdbm -lnwp"
+setenv DMS_INC ""
+setenv OPERLIB_LIB ""
+setenv OPERLIB_INC ""
+# set MPMD library connecting RSM
+#setenv MPMD_LIB "-L../../rsm/lib/cwb_mpmd -lmpmd"
+
+setenv FFLAGS_COM "-c -O3 -Free -r8 -fpp -convert big_endian -ftz -ip -fp-model precise -align all -fno-alias -FR -xHost -fp-model fast=2 -no-heap-arrays -no-prec-div -no-prec-sqrt -fno-common -xCORE-AVX2 -auto"
+setenv FFLAGS_COM_GWDPS "-c -O3 -Free -r8 -fpp -convert big_endian -ftz -ip -fp-model precise -align all -fno-alias -FR -fp-model fast=2 -no-heap-arrays -no-prec-div -no-prec-sqrt -fno-common -auto"
+setenv DEFINE_FLAGS "-DTIMING -DUSE_FFTW -DRSM"
+setenv MSG_COM ""
+setenv LIBS_COM "-mkl=cluster -static-intel -qopt-matmul"
+setenv LDFLAGS_COM "-qopt-report"
+setenv OMP_COM "-parallel"
+setenv CFLAGS_COM "-c"
+
+# Loading modules
+module add intel/18.0.3

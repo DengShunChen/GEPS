@@ -185,7 +185,7 @@ contains
 
     if (dosppt) then
       call get_random_pattern_run(rpattern_sppt,nsppt)
-      call get_stochy_physics(rpattern_sppt,nsppt,vfact_sppt,s  ppt3d)
+      call get_stochy_physics(rpattern_sppt,nsppt,vfact_sppt,sppt3d)
       if (sppt_logit) sppt3d(:,:,:) = (2./(1.+exp(sppt3d(:,:,:))))-1.
     endif
     if (doshum) then

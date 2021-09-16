@@ -1,0 +1,86 @@
+#%Module####################################################
+##                                   dschen@cwb.gov.tw
+##                                   Fujitsu
+## TCoGFS
+#
+#-------------
+# add feature:                       CHEN,YING-JU 2021.07.30
+#   RSM-IO and MPMD-with-RSM         yingju@cwb.gov.tw
+#   at DEFINE_FLAGS:
+#   (1) "-DRSM": output RSM initial/basefield data (default)
+#   (2) "-DRSM" and "-DCWB_MPMD": run with RSM via MPMD,
+#        and setenv MPMD_LIB is necessary (use TCo/CWBSUM 
+#        project with TCo/TCo639L72 as submodules)
+##__________________________________________________________
+proc ModulesHelp { } {
+puts stderr "Set environment veriables for TCoGFS"
+puts stderr "This module initializes the environment "
+}
+module-whatis " TCoGFS whatis description"
+
+set ver v1.0.0
+set machine fx100
+
+set LANG_HOME /opt/FJSVmxlang
+setenv COMP $LANG_HOME/bin/frtpx
+setenv COMP_MP $LANG_HOME/bin/mpifrtpx
+setenv COMP_MPI $LANG_HOME/bin/mpifrtpx
+
+setenv C_COMP $LANG_HOME/bin/fccpx
+setenv C_COMP_MP $LANG_HOME/bin/mpifccpx
+#============================================================
+# select one of the followings :
+#  1. mpi single precision for transpose and unify
+#  2. mpi single precision for unify only
+#  3. mpi double precision 
+# 
+#  1. mpi single precision for transpose and unify
+# FFLAGS  = -c -X9 -Free -CcdRR8 -DMPISP -Cpp \
+#           -Kfast,parallel,openmp,ocl \
+#           -Ksimd=1 -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE)
+#
+#  2. mpi single precision for unify only
+# FFLAGS  = -c -X9 -Free -CcdRR8 -DMPISP -DUNIFY_ONLY -Cpp \
+#           -Kfast,parallel,openmp,ocl \
+#           -Ksimd=1 -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE)
+#
+#  3. mpi double precision 
+# FFLAGS  = -c -X9 -Free -CcdRR8 -Cpp \
+#           -Kfast,parallel,openmp,ocl \
+#           -Ksimd=1 -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE)
+#
+#  use CWB current fft
+#  FFLAGS  = -c -X9 -Free -CcdRR8 -Cpp -DTIMING -DMULTIPLE \
+#            -Kfast,parallel,openmp,ocl,autoobjstack \
+#            -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE)
+#
+#  use FFTW fft
+#  FFLAGS  = -c -X9 -Free -CcdRR8 -Cpp -DTIMING -DMULTIPLE -DUSE_FFTW -DW3TAG \
+#            -Kfast,parallel,openmp,ocl,autoobjstack \
+#                 -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE) 
+#============================================================
+setenv FFLAGS_COM "-c -X9 -Free -CcdRR8 -Cpp -Kfast,ocl,autoobjstack -x- -fw"
+setenv DEFINE_FLAGS "-DTIMING -DUSE_FFTW -DW3TAG -DRSM"
+setenv MSG_COM "-Ec -Qa,d,i,p,t,x -Koptmsg=2"
+setenv LIBS_COM "-SSL2BLAMP"
+setenv OMP_COM "-Kopenmp,parallel"
+setenv CFLAGS_COM "-c -Xg"
+
+# Known conflicts
+
+# Loading nceplibs modules
+module use  /nwpr/gfs/xb80/modulefiles/nceplibs/$machine
+module load w3nco/v2.0.6
+module unuse  /nwpr/gfs/xb80/modulefiles/nceplibs/$machine
+
+# Loading gfs modules 
+module use  /nwpr/gfs/xb80/modulefiles/$machine
+module load netcdf/3.6.3
+module load fftw/3.3.7
+module load dms/v4
+module load operlib
+module unuse  /nwpr/gfs/xb80/modulefiles/$machine
+
+# set MPMD library connecting RSM
+#setenv MPMD_LIB "-L../../rsm/lib/cwb_mpmd -lmpmd"   #MPMD with RSM
+
