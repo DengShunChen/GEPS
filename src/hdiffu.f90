@@ -24,7 +24,7 @@
 
       integer   jj,j,nxj,k,i,m,n,mf,nc,kk,KL
       real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu,finc
-      real      hfilt,hfilt2,nf,kfacd,kfacv,dec,coefu,factop,powd,kfac
+      real      hfilt,hfilt2,nf,dec,coefu,factop,powd,kfac
       real      c1,c2,c3
       logical   windchk
 
@@ -77,15 +77,13 @@
 !
         KL=Llist(k)
 !
-        kfac  = min((4.+finc)*max(float(hdk2(1)-KL),0.),60.+5.*finc)
-        kfacd = 1. + kfac
-        kfacv = 1. + kfac
+        kfac  = (5.+finc)*max(float(hdk2(1)-KL),0.)
+        facd = max(amp,kfac)
+        facv = max(min(amp,1.),kfac)
+        fact = max(min(amp,1.),kfac)
 !!        facd = 1. * amp * (kfac + 2.*max(float(hdk1-KL),0.))
 !!        facv = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
 !!        fact = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
-        facd = kfacd * amp
-        facv = kfacv * min(amp,1.)
-        fact = kfacv * min(amp,1.)
 !
 !  difuse vorticity and divergence fields
 !  diffuse moisture and temperature fields
@@ -163,7 +161,7 @@
 
       integer   jj,j,nxj,k,i,m,n,mf,nc,kk,KL
       real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu
-      real      hfilt,hfilt2,nf,ncut,ncor,kfac,finc,kfacd,kfacv
+      real      hfilt,hfilt2,nf,ncut,ncor,kfac,finc
       real      c1,c2,c3
       logical   windchk
 
@@ -212,11 +210,9 @@
          KL=Llist(k)
 !
          kfac  = min((5.+finc)*max(float(hdk2(1)-KL),0.),60.+5.*finc)
-         kfacd = 1. + kfac
-         kfacv = 1. + kfac
-         facd = kfacd * amp
-         facv = kfacv * amp
-         fact = kfacv * amp
+         facd = amp + kfac
+         facv = amp + kfac
+         fact = amp + kfac
 !         facd= 1.0 + max(float(hdk2(1)-KL),0.)
 !         facv= 1.0 + max(float(hdk2(1)-KL),0.)
 !         fact= 1.0 + max(float(hdk2(1)-KL),0.)
@@ -310,7 +306,7 @@
 
       integer   jj,j,nxj,k,i,m,n,mf,nc,kk,KL
       real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu
-      real      hfilt2,hfilt4,hfilt6,nf,kfacd,kfacv,kfac,finc
+      real      hfilt2,hfilt4,hfilt6,nf,kfac,finc
       real      c1,c2,c3,c4
       logical   windchk
 
@@ -356,11 +352,9 @@
 
         KL=Llist(k)
 !
-        kfac  = min((5.+finc)*max(float(hdk2(2)-KL),0.),60.+5.*finc)
-        kfacd = (1.0+kfac)*min(max(float(hdk2(3)-KL),1.),1.)
-        kfacv = (1.0+kfac)
-        facd =  15. * kfacd * amp
-        facv = kfacv * min(amp,1.)
+        kfac = (5.+finc)*max(float(hdk2(2)-KL),0.)
+        facd = 10. * max(amp,kfac)
+        facv = max(min(amp,1.),kfac)
 !!        fact = amp * kfacv 
 !          endif
 

@@ -98,6 +98,8 @@
       dosppt=.false.
       dospptout=.false.
       doshum=.false.
+! update low boundary condition
+      doclx=.false.
 ! output data for RSM (Also, RSM compiling flag is necessary)
       outrsm=.false.
       rsmoutinv=6
