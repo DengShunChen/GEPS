@@ -651,7 +651,7 @@
 
 !
       if(tau.lt.12.)then
-         hfiltx=hfilt*2.
+!         hfiltx=hfilt
          alpha = 0.75
 !      else if(tau.ge.6. .and. tau.le.9.)then
 !         hfiltx=hfilt*2.
