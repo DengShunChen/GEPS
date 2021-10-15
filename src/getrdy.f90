@@ -465,12 +465,15 @@
               ii=ii+1
             enddo
           enddo
-          if( myrank .eq. 0 ) &
-             print*,"get ncep's sea ice analysis, at dtg=",idtg
 !
-          call syslbl('w00092',idtg,0,ggdef,lrec)
-          write(key,'(a26,a1,i7.7)') lrec,'H',lncrec
-          call dmschkr (ifilin,key//char(0),istat)
+          if( myrank .eq. 0 ) then
+             print*,"get ncep's sea ice analysis, at dtg=",idtg
+             call syslbl('w00092',idtg,0,ggdef,lrec)
+             write(key,'(a26,a1,i7.7)') lrec,'H',nxmy
+             call dmschkr (ifilin,key//char(0),istat)
+          endif
+          call mpe_bcast(istat,1,0,mpe_integer)
+!
           if ( istat .eq. 0 ) then
             call dmsread(nx,my,lrec,nxmy,'H',ifilin,ww1,istat)
 !byl          if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
