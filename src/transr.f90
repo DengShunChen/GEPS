@@ -1,5 +1,5 @@
       subroutine transr (jtrun,jtmax,nx,my,my_max,lev,poly,wss  &
-                        ,cc,num,nsize)
+                        ,cc_r8,num,nsize)
 !
 !  subroutine to transform a spectral coefficient field to
 !  grid point form
@@ -18,10 +18,11 @@
 !
 ! *** output ***
 !
-!  cc: 3-d output grid point fields
+!  cc_r8: 3-d output grid point fields
 !
 !  **************************************
 !
+      use const, only : RTYPE
       use index
 !     use paramt
       use fftcom
@@ -34,16 +35,17 @@
       integer   kk,ll,jj,jx,j2,ii,i,jtrunj,mchk,mm,mp,mlst
       integer   mm1,mp1,mlst1,mm2,mp2,mlst2,mm3,mp3,mlst3,nxj
 
-      real      sa00,sa10,sb00,sb10
+      real(kind=RTYPE)      sa00,sa10,sb00,sb10
 
       real      poly(jtrun,my/2,jtmax)
-      real      cc(nx+2,lev,num,my_max),wss(lev,2,num,jtrun,jtmax)
+      real                  cc_r8(nx+2,lev,num,my_max),wss(lev,2,num,jtrun,jtmax)
+      real(kind=RTYPE)      cc(nx+2,lev,num,my_max)
 !
-      real      gwk1(nx+2,lev,num,my_max)
+      real(kind=RTYPE)      gwk1(nx+2,lev,num,my_max)
 !
-      real      wcc_fk (lev,2,num,jtmax,my_max*nsize)
-      real      twcc_fk(lev,2,num,jtmax*nsize,my_max)
-      real      tcc(lev,2,num,my/2),tc2(lev,2,num,my/2)
+      real(kind=RTYPE)      wcc_fk (lev,2,num,jtmax,my_max*nsize)
+      real(kind=RTYPE)      twcc_fk(lev,2,num,jtmax*nsize,my_max)
+      real(kind=RTYPE)      tcc(lev,2,num,my/2),tc2(lev,2,num,my/2)
       real      ws2(lev,2,num,jtrun)
 
       real      fj_poly(jtrun,my/2)
@@ -53,8 +55,6 @@
       real      fj_wss(lev*2*num,jtrun)
       integer   jlist_fj(my/2)
 
-
-!
 !CWBinit
       wcc_fk=0.
 
@@ -192,8 +192,11 @@
 
       enddo
 
-!     call mpe_transpose_sr(wcc_fk,twcc_fk,lev*2*num,jtmax,my_max,nsize)
+#ifdef SP
+      call mpe_transpose_sr_sp(wcc_fk,twcc_fk,lev*2*num,jtmax,my_max,nsize,col_comm)
+#else
       call mpe_transpose_sr(wcc_fk,twcc_fk,lev*2*num,jtmax,my_max,nsize,col_comm)
+#endif
 
       do jj =1,jlistnum
 
@@ -252,7 +255,12 @@
 
 !
       if( length_fft .eq. 0 .and. lreduce.eq.0 )then
-      call rfftmlt(cc,gwk1,trigs,ifax,1,nx+2,nx,lev*jlistnum*num,1)
+#ifdef SP
+      call rfftmlt_sp(cc,gwk1,trigs,ifax,1,nx+2,nx,lev*jlistnum*num,1)
+#else
+      cc_r8=cc
+      call rfftmlt(cc_r8,gwk1,trigs,ifax,1,nx+2,nx,lev*jlistnum*num,1)
+#endif
       else
 !$omp  parallel do default(none)                                &
 !$omp  private(jj,j,nxj,gwk1)                                   &
@@ -261,13 +269,21 @@
          do jj = 1, jlistnum
             j= jlist1(jj)
             nxj=nxdef(j)
-            call rfftmlt(cc(1,1,1,jj),gwk1(1,1,1,jj),trigsj(1,j),ifaxj(1,j), &
+#ifdef SP
+            call rfftmlt_sp(cc(1,1,1,jj),gwk1(1,1,1,jj),trigsj(1,j),ifaxj(1,j), &
+#else
+            cc_r8=cc
+            call rfftmlt(cc_r8(1,1,1,jj),gwk1(1,1,1,jj),trigsj(1,j),ifaxj(1,j), &
+#endif
                  1,nx+2,nxj,lev*num,1)
          end do
 !$omp end parallel do
       end if
 !
    20 continue
+
+!CWB2021
+      cc_r8=cc
 
       return
       end

@@ -19,6 +19,7 @@
 !
 !  **************************************
 !
+      use const, only : RTYPE
       use index
 !     use paramt
       use fftcom
@@ -30,25 +31,24 @@
       integer   mlx,myhalf,m,mf,l,jlistnum_fj,j,l_fj,j_fj
       integer   llistnum_fj,jj,i,jtrunj,mm,mp,mlst,nxj
 
-      real      s(jtrun,jtmax,2),r(nxp,my_max)
+      real                  s(jtrun,jtmax,2),r(nxp,my_max)
 !
-!      real      gwk1(nx+2,1,6,my_max)
-      real      gwk1(nx+2,my_max)
+      real(kind=RTYPE)      gwk1(nx+2,my_max)
 !
-      real      wcc_fk(my_max*nsize,jtmax,2), twcc_fk(my_max,jtmax*nsize,2)
-      real      wss(jtrun,2)
+      real(kind=RTYPE)      wcc_fk(my_max*nsize,jtmax,2), twcc_fk(my_max,jtmax*nsize,2)
+      real                  wss(jtrun,2)
 
-      real      poly(jtrun,my/2,jtmax)
-      real      cc(nx+2,my_max)
-      real      tcc(my,2)
+      real                  poly(jtrun,my/2,jtmax)
+      real(kind=RTYPE)      cc(nx+2,my_max)
+      real                  tcc(my,2)
 !
-      real      ws2(jtrun,2)
+      real                  ws2(jtrun,2)
 !
       integer   jlist_fj(my/2)
-      real      fj_poly(jtrun,my/2)
-      real      fj_tcc(2,my)
-      real      fj_wss(2,jtrun)
-      real      fj_ws2(2,jtrun)
+      real                  fj_poly(jtrun,my/2)
+      real                  fj_tcc(2,my)
+      real                  fj_wss(2,jtrun)
+      real                  fj_ws2(2,jtrun)
 
       mlx= (jtrun/2)*((jtrun+1)/2)
       myhalf=my/2
@@ -145,8 +145,11 @@
 
 !*** r1 start ***
 
-!     call mpe_transpose_rs1(wcc_fk,twcc_fk,my_max,jtmax,2,nsize)
+#ifdef SP
+      call mpe_transpose_rs1_sp(wcc_fk,twcc_fk,my_max,jtmax,2,nsize,col_comm)
+#else
       call mpe_transpose_rs1(wcc_fk,twcc_fk,my_max,jtmax,2,nsize,col_comm)
+#endif
 
       do jj =1,jlistnum
       do i=1,nx+2
@@ -157,7 +160,7 @@
       do jj =1,jlistnum
         j= jlist1(jj)
         jtrunj = mtrundef(j)
-!ocl repeat(jtr)
+!!ocl repeat(jtr)
       do m=1,jtrunj
          mm= 2*m-1
          mp= mm+1
@@ -166,19 +169,24 @@
          cc(mp,jj)=twcc_fk(jj,mlst,2)
       enddo
       enddo
+
 !
       if( lreduce.eq.0 ) then
-      call rfftmlt(cc,gwk1,trigs,ifax,1,nx+2,nx,jlistnum,1)
+!ch   call rfftmlt(cc,gwk1,trigs,ifax,1,nx+2,nx,jlistnum,1)
+      call rfftmlt_sp(cc,gwk1,trigs,ifax,1,nx+2,nx,jlistnum,1)
       else
 !$omp  parallel do default(none)                            &
 !$omp  private(jj,j,nxj,gwk1)                               &
-!!$omp  shared(jlistnum,jlist1,nxdef,cc,trigsj,ifaxj,nx,lev) 
 !$omp  shared(jlistnum,jlist1,nxdef,cc,trigsj,ifaxj,nx    ) &
 !$omp  schedule(dynamic)
       do jj=1,jlistnum
         j= jlist1(jj)
         nxj=nxdef(j)
+#ifdef SP
+        call rfftmlt_sp(cc(1,jj),gwk1(1,jj),trigsj(1,j),ifaxj(1,j),  &
+#else
         call rfftmlt(cc(1,jj),gwk1(1,jj),trigsj(1,j),ifaxj(1,j),  &
+#endif
                      1,nx+2,nxj,1,1)
       enddo
 !$omp end parallel do

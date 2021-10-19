@@ -2,6 +2,7 @@
 !
 ! modify to f90 by C-H Lee and sort by River Chen in 2015
 !
+      use const, only : RTYPE
       use param
       use index
 
@@ -24,7 +25,8 @@
 !byl      real,dimension(:,:,:),  allocatable,save :: plnow,plold,dsqgeo,spgeo,plten
       real,dimension(:,:,:),  allocatable,save :: plnow,plmid,plold,plten,spgeo
 
-      real,dimension(:,:),  allocatable,save :: plnowL,ploldL,pltenL   !  for 2dMPI, allocated in cons.f90
+!ch   real,dimension(:,:),  allocatable,save :: plnowL,ploldL,pltenL   !  for 2dMPI, allocated in cons.f90
+      real(kind=RTYPE),dimension(:,:),  allocatable,save :: plnowL,ploldL,pltenL   !  for 2dMPI, allocated in cons.f90
 
 
       contains 

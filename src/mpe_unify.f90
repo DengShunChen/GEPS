@@ -16,6 +16,9 @@
       else if(idcmp .eq. 2) then
         if(type .eq. mpe_integer) then
           call mpe_unify2_i(a,n,m,my_max,nsize)
+!CWB2021
+        else if(type .eq. mpe_single) then
+          call mpe_unify2_r_sp(a,n,m,my_max,nsize)
         else if(type .eq. mpe_double) then
           call mpe_unify2_r(a,n,m,my_max,nsize)
         else if(type .eq. mpe_logical) then
@@ -164,6 +167,40 @@
       return
       end
 !-------------------------------------------------------------------------
+!CWB2021 for single precision test
+      subroutine mpe_unify2_r_sp(a,n,m,mx,nsize)
+ 
+      use rank, only : MPI_COMM_gfs
+      use index
+      use mpi
+
+      real*4 a(n,m),b1(nxp,mx),b2(nxp,mx*nsize)
+
+      do jj=1,jlistnum
+         j=jlist1(jj)
+      do i=1,nxjlen(j)
+         b1(i,jj)=a(i,j)
+      enddo
+      enddo
+
+      call MPI_ALLGATHER( B1,nxp*mx,   MPI_REAL4,    &
+                          B2,nxp*mx,   MPI_REAL4,    &
+                          MPI_COMM_gfs,  IERR )
+ 
+      do j=1,m
+         ii=1
+      do i=1,nsizex
+         jf=jlist2_2d(i,j)
+         nn=nxjlen_all(i,j)
+         a(ii:ii+nn-1,j)=b2(1:nn,jf)
+         ii=ii+nn
+      enddo
+      enddo
+
+      return
+      end
+!-------------------------------------------------------------------------
+!-------------------------------------------------------------------------
       subroutine mpe_unify2_l(a,n,m,mx,nsize)
  
       use rank, only : MPI_COMM_gfs
@@ -218,7 +255,6 @@
       call MPI_ALLGATHER( B1,N*jx,   MPI_DOUBLE_PRECISION, &
                           B2,N*jx,   MPI_DOUBLE_PRECISION, &
                           col_comm, IERR )
-!ch                       MPI_COMM_gfs,   IERR )
  
       do j=1,m
         jf=nlist(j)

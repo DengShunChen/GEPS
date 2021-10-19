@@ -54,7 +54,7 @@
       jym2=levp1-2
 !
 !$omp parallel do                                                      &
-!$omp private(j,jj,i,ii,pkk,f,pjy,ipt,tp1,fxx,fyy,k,nxj,mn,pout) &
+!$omp private(j,i,ii,pkk,f,pjy,ipt,tp1,fxx,fyy,k,nxj,mn,pout) &
 !$omp schedule(dynamic)
 !
       do 200 jj =1, jlistnum

@@ -413,7 +413,11 @@
                 islimsk(nxp)
       real      sl(lev),delcup(lev),slimsk(nxp)
       real      dotc(nxp,lev),phil(nxp,lev),utc(nxp,lev),vtc(nxp,lev)
-      real      cldwrk(nxp,my_max),sd(nxp,lev+1,my_max),xkt2(nx)
+
+!ch   real      cldwrk(nxp,my_max),sd(nxp,lev+1,my_max),xkt2(nx)
+      real      cldwrk(nxp,my_max),                     xkt2(nx)
+      real*4                       sd(nxp,lev+1,my_max)
+
 ! for new shlcon
       real      rcup2(nxp)
 ! for scale-aware convection
@@ -589,8 +593,7 @@
 ! update low boundary condition
 ! 
       if ( doclxu .and. doclx ) then
-        if (myrank.eq.0) print *,'update low boundary condition at      &
-                                   tau= ',tau
+        if (myrank.eq.0) print *,'update low boundary condition at tau= ',tau
         iceold=ice
         z0ocn=z0
 !     read climate data

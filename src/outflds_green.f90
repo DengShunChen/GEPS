@@ -243,13 +243,6 @@
 !byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 !=======================================================================
-!output 1hr prec. at tau=0
-      if (itau .eq. 0) then
-        call syslbl ('b00621',idtg,itau,ggdef,ihdg)
-        glob=0.
-        call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      endif
 !output 6hr prec.
       if (mod(float(itau)+0.00001, 6. ) .lt. 0.01) then
 !byl      call mpe2d_unify(glob,raincu6)

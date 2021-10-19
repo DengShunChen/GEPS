@@ -1,4 +1,4 @@
-      subroutine trngra3 (jtrun,jtmax,nx,lev,my,my_max,cim,poly,dpoly,s &
+      subroutine trngra3 (jtrun,jtmax,nx,lev,my,my_max,cim,poly,dpoly,s & 
                        ,dlpl,dtpl,nsize)
 !
 !  subroutine to transform spectral terrain pressure to grid point
@@ -32,22 +32,25 @@
 !
       integer jtrun,jtmax,nx,lev,my,my_max,nsize
       real poly(jtrun,my/2,jtmax),dpoly(jtrun,my/2,jtmax)
-      real s(lev,2,jtrun,jtmax),dlpl(nxp,levF,my_max),dtpl(nxp,levF,my_max)
+      real s(lev,2,jtrun,jtmax)
       real cim(jtmax)
+
+      real*4 dlpl(nxp,levF,my_max),dtpl(nxp,levF,my_max)
 !
       integer myhalf,k,m,mf,l,j,jj,i,jtrunj,mm,mp,mlst,nxj
-      real cc(nx+2,lev,2,my_max)
+      real*4 cc(nx+2,lev,2,my_max)
 !
-      real gwk1(nx+2,lev,2,my_max)
+      real*4 gwk1(nx+2,lev,2,my_max)
 !
-      real twcc_fk(my_max,jtmax*nsize,lev,2)
-      real twdd_fk(my_max,jtmax*nsize,lev,2)
+      real*4 twcc_fk(my_max,jtmax*nsize,lev,2)
+      real*4 twdd_fk(my_max,jtmax*nsize,lev,2)
 
-      real wcu_fk(my_max*nsize,jtmax,lev,2),wcv_fk(my_max*nsize,jtmax,lev,2)
+      real*4 wcu_fk(my_max*nsize,jtmax,lev,2),wcv_fk(my_max*nsize,jtmax,lev,2)
       real wcu_t(lev,2,my),wcv_t(lev,2,my)
 
       real ws3(lev,2,2,jtrun)
-      real ws4(lev,2,2,jtrun),dummy
+      real ws4(lev,2,2,jtrun)
+      real*4 dummy
 
 !
       myhalf=my/2
@@ -132,10 +135,8 @@
 
       enddo
 
-!      call mpe_transpose_rs1(wcu_fk,twcc_fk,my_max,jtmax,lev*2,nsize)
-!      call mpe_transpose_rs1(wcv_fk,twdd_fk,my_max,jtmax,lev*2,nsize)
-       call mpe_transpose_rs1(wcu_fk,twcc_fk,my_max,jtmax,lev*2,nsize,col_comm)
-       call mpe_transpose_rs1(wcv_fk,twdd_fk,my_max,jtmax,lev*2,nsize,col_comm)
+       call mpe_transpose_rs1_sp(wcu_fk,twcc_fk,my_max,jtmax,lev*2,nsize,col_comm)
+       call mpe_transpose_rs1_sp(wcv_fk,twdd_fk,my_max,jtmax,lev*2,nsize,col_comm)
 
       do jj=1,jlistnum
       do k=1,lev
@@ -163,7 +164,7 @@
       enddo
 
       if( lreduce.eq.0 ) then
-      call rfftmlt(cc,gwk1,trigs,ifax,1,nx+2,nx,jlistnum*lev*2,1)
+      call rfftmlt_sp(cc,gwk1,trigs,ifax,1,nx+2,nx,jlistnum*lev*2,1)
       else
 !$omp  parallel do default(none)                                &
 !$omp  private(jj,j,nxj,gwk1)                                   &
@@ -172,7 +173,7 @@
       do jj=1,jlistnum
         j= jlist1(jj)
         nxj=nxdef(j)
-        call rfftmlt(cc(1,1,1,jj),gwk1(1,1,1,jj),trigsj(1,j),ifaxj(1,j),1,nx+2,nxj,lev*2,1)
+        call rfftmlt_sp(cc(1,1,1,jj),gwk1(1,1,1,jj),trigsj(1,j),ifaxj(1,j),1,nx+2,nxj,lev*2,1)
       enddo
 !$omp end parallel do
       endif
@@ -187,7 +188,7 @@
 !  22 continue
 
 !ch
-      call ujoinsr(cc,dlpl,dtpl,dummy,dummy,nx,my_max,levF,jlistnum,2,1)
+      call ujoinsr_sp(cc,dlpl,dtpl,dummy,dummy,nx,my_max,levF,jlistnum,2,1)
       dlpl= -dlpl
       dtpl= -dtpl
 

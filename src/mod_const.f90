@@ -1,6 +1,17 @@
   module const
 ! modify to f90 by C-H Lee and sort by River Chen in 2015
     use param
+    use mpi,   only : MPI_REAL4, MPI_REAL8
+
+!CWB2021 for single precison test
+#ifdef SP
+      integer, parameter ::     RTYPE=4
+      integer, parameter :: MPI_RTYPE=MPI_REAL4
+#else
+      integer, parameter ::     RTYPE=8
+      integer, parameter :: MPI_RTYPE=MPI_REAL8
+#endif
+
     implicit none
  
     public

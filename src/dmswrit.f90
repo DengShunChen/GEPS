@@ -1,4 +1,7 @@
       subroutine dmswrit(nx,my,lrec,lenc,kflag,ifile,z,istat)
+
+!CWB2021 single precision test, writing dms output in 32 bits float format
+
 !
 !  subroutine to read data in pressure level fields
 !
@@ -23,6 +26,8 @@
       integer   nx,my,lenc,istat
       logical   t_flg
       real      z(nx,my)
+!CWB2021
+      real*4    z4(nx,my)
       character lrec*26,ifile*80,kflag*1
 !
 ! working array
@@ -49,11 +54,17 @@
       else
 
        if(myrank .eq. 0) then
-       call dmsput(ifile,key//char(0),z,istat)
+!CWB2021
+       if(key(27:27).eq.'H')then
+          key(27:27)='R'
+          z4=z
+          call dmsput(ifile,key//char(0),z4,istat)
+       else
+          call dmsput(ifile,key//char(0),z,istat)
+       endif
        t_flg=.true.
        endif
  
-!ch    call mpe_broadcast(istat,1,t_flg,mpe_integer)
        call mpe_bcast(istat,1,0,mpe_integer)
 !
        if(istat.ne.0)then
@@ -100,6 +111,8 @@
       integer   nx,my,lenc,istat
       logical   t_flg
       real      z(nx,my)
+!CWB2021
+      real*4    z4(nx,my)
       character lrec*26,ifile*80,kflag*1
 !
 ! working array
@@ -112,11 +125,17 @@
       t_flg=.false.
 
        if(myrank .eq. 0) then
-       call dmsput(ifile,key//char(0),z,istat)
+!CWB2021
+       if(key(27:27).eq.'H')then
+          key(27:27)='R'
+          z4=z
+          call dmsput(ifile,key//char(0),z4,istat)
+       else
+          call dmsput(ifile,key//char(0),z,istat)
+       endif
        t_flg=.true.
        endif
  
-!ch    call mpe_broadcast(istat,1,t_flg,mpe_integer)
        call mpe_bcast(istat,1,0,mpe_integer)
 !
        if(istat.ne.0)then
@@ -162,6 +181,8 @@
       integer   nx,my,lenc,istat
       logical   t_flg
       real      z(nx,my)
+!CWB2021
+      real*4    z4(nx,my)
       character lrec*26,ifile*80,kflag*1
 !
 ! working array
@@ -174,11 +195,17 @@
       t_flg=.false.
 
 !       if(myrank .eq. iroot) then
-       call dmsput(ifile,key//char(0),z,istat)
+!CWB2021
+       if(key(27:27).eq.'H')then
+          key(27:27)='R'
+          z4=z
+          call dmsput(ifile,key//char(0),z4,istat)
+       else
+          call dmsput(ifile,key//char(0),z,istat)
+       endif
        t_flg=.true.
 !       endif
  
-!ch    call mpe_broadcast(istat,1,t_flg,mpe_integer)
 !       call mpe_bcast_col(istat,1,0,mpe_integer)
 !
        if(istat.ne.0)then

@@ -42,7 +42,10 @@
         sc=two_pi
 
         old(1:imp)=a(1:imp,j)
-        call cyclic_cell_ppm_intp(xpast,old,xnext,new,lonf,1,imp,lonf,sc)
+!CWB2021 for ndsl single precision test
+!       call cyclic_cell_ppm_intp(xpast,old,xnext,new,lonf,1,imp,lonf,sc)
+        call cyclic_cell_ppm_intp_dp(xpast,old,xnext,new,lonf,1,imp,lonf,sc)
+
 !        call cyclic_cell_plm_intp(xpast,old,xnext,new,lonf,1,imp,lonf,sc)
 
         a(1:lonf,j)=new(1:lonf)

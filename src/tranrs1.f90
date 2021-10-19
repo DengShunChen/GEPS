@@ -20,6 +20,7 @@
 !
 !  **********************************
 !
+      use const, only : RTYPE
       use index
       use paramt
       use fftcom
@@ -30,20 +31,20 @@
       integer mlx,myhalf,jj,j,nxj,i,jtrunj,m,mm,mp,mlst,mf
       integer l,i1,i2,i3,j1,j2
 
-      real    poly(jtrun,my/2,jtmax),w(my)
-      real    r(nx,my_max),s(jtrun,jtmax,2)
+      real                poly(jtrun,my/2,jtmax),w(my)
+      real                r(nx,my_max),s(jtrun,jtmax,2)
 !
-!      real    gwk1(nx+2,1,6,my_max)
-      real    gwk1(nx+2,my_max)
+!      real(kind=RTYPE)    gwk1(nx+2,1,6,my_max)
+      real(kind=RTYPE)    gwk1(nx+2,my_max)
 !
-      real    wcc_fk(jtmax,my_max*nsize,2)
-      real    twcc_fk(jtmax*nsize,my_max,2)
-      real    wss(jtrun,2)
-      real    cc(nx+2,my_max)
+      real(kind=RTYPE)    wcc_fk(jtmax,my_max*nsize,2)
+      real(kind=RTYPE)    twcc_fk(jtmax*nsize,my_max,2)
+      real(kind=RTYPE)    wss(jtrun,2)
+      real(kind=RTYPE)    cc(nx+2,my_max)
 !
-      real    wccSUM(my,2)
-      real    wccDIF(my,2)
-      real    fj_polyw(my/2,jtrun)
+      real(kind=RTYPE)    wccSUM(my,2)
+      real(kind=RTYPE)    wccDIF(my,2)
+      real(kind=RTYPE)    fj_polyw(my/2,jtrun)
       logical wfirst
       data wfirst/.true./
       save wfirst
@@ -72,7 +73,8 @@
 !  fft for each guassian latitude of 2-d field
 !
       if( lreduce.eq.0 ) then
-      call rfftmlt(cc,gwk1,trigs,ifax,1,nx+2,nx,jlistnum,-1)
+!ch   call rfftmlt(cc,gwk1,trigs,ifax,1,nx+2,nx,jlistnum,-1)
+      call rfftmlt_sp(cc,gwk1,trigs,ifax,1,nx+2,nx,jlistnum,-1)
       else
 !$omp  parallel do default(none)                         &
 !$omp  private(jj,j,nxj,gwk1)                            &
@@ -81,7 +83,8 @@
       do jj=1,jlistnum
         j= jlist1(jj)
         nxj=nxdef(j)
-        call rfftmlt(cc(1,jj),gwk1(1,jj),trigsj(1,j),ifaxj(1,j), &
+!ch     call rfftmlt(cc(1,jj),gwk1(1,jj),trigsj(1,j),ifaxj(1,j), &
+        call rfftmlt_sp(cc(1,jj),gwk1(1,jj),trigsj(1,j),ifaxj(1,j), &
                      1,nx+2,nxj,1,-1)
       enddo
 !$omp end parallel do
@@ -100,8 +103,8 @@
       enddo
       enddo
 
-!      call mpe_transpose_rs1(twcc_fk,wcc_fk,jtmax,my_max,2,nsize)
-       call mpe_transpose_rs1(twcc_fk,wcc_fk,jtmax,my_max,2,nsize,col_comm)
+!ch    call mpe_transpose_rs1(twcc_fk,wcc_fk,jtmax,my_max,2,nsize,col_comm)
+       call mpe_transpose_rs1_sp(twcc_fk,wcc_fk,jtmax,my_max,2,nsize,col_comm)
 
 !*** r1  end  ***
 !ibm---beg
