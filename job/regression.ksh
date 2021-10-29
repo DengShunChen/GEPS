@@ -25,9 +25,6 @@
  odmstail='GJMG'
  odmsdb=${idmsdb}
 
-#-- executable
- EXEC='MTCo639L72_'${machine}
-
 #---------------------------------------------------------#
  idmsfile=${idmshead}${idmsbody}${idmstail}@${idmsdb}
  odmsfile=${odmshead}${odmsbody}${odmstail}@${odmsdb}
@@ -154,7 +151,8 @@ cat > ${GFSWRK}/namlsts << EOF
 EOF
 
 
- FCT_MODEL=$MDIR/src/$EXEC
+ FCT_MODEL=$MDIR/build/tcogfs.x
+
  /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} 
 
  if [ $? != 0 ] ; then
