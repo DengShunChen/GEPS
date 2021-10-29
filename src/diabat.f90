@@ -506,6 +506,7 @@
 
 !CWB2016
       lssav=.false.
+      doclxu=.false.
       icsdsw=0
       icsdlw=0
       rld_adj=0.

@@ -240,7 +240,7 @@
 !
 ! for forward weighting Semi-Implicit
 !
-      alpha=0.7
+      alpha=0.75
 !
 ! for two time level coefficient of merging PGF
 !
