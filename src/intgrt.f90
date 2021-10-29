@@ -651,16 +651,16 @@
       endif
 
 !
-      if(tau.lt.12.)then
+!      if(tau.lt.12.)then
 !         hfiltx=hfilt
-         alpha = 0.75
+!         alpha = 0.75
 !      else if(tau.ge.6. .and. tau.le.9.)then
 !         hfiltx=hfilt*2.
 !         alpha = 0.75
 !      else if(tau.gt.9. .and. tau.le.12.)then
 !         hfiltx=hfilt*2.
 !         alpha = 0.75
-      endif
+!      endif
 
 
 !!      endif
@@ -883,7 +883,10 @@
 !
       call trandv ( jtrun,jtmax,nx,my,my_max,lev,vdzonl,vdmerd,weight,cim &
                    ,onocos,poly,dpoly,vormid,divmid,nsizey)
-
+!
+      call whdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld       &
+                   ,hfiltx,rad,cosl,ut,vt,vormid,divmid          &
+                   ,eps4,trefs)
 !
         do m = 1, mlistnum
           mf=mlist(m)
@@ -897,9 +900,9 @@
           enddo
         enddo
 !
-      call whdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld       &
-                   ,hfiltx,rad,cosl,ut,vt,vormid,divmid          &
-                   ,eps4,trefs)
+!      call whdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld       &
+!                   ,hfiltx,rad,cosl,ut,vt,vormid,divmid          &
+!                   ,eps4,trefs)
 !
 !
 !     update all new wind field at mid-point
@@ -1044,8 +1047,8 @@
       do m = 1, mlistnum
         mf=mlist(m)
         do n = mf, jtrun
-          pltemp(n,m,1)= dta*plten(n,m,1)+plold(n,m,1)
-          pltemp(n,m,2)= dta*plten(n,m,2)+plold(n,m,2)
+          pltemp(n,m,1)= dta*plten(n,m,1)+plnow(n,m,1)
+          pltemp(n,m,2)= dta*plten(n,m,2)+plnow(n,m,2)
         enddo
       enddo
 
@@ -1328,7 +1331,7 @@
         if( mod(tau+0.001, 1.) .lt. dtx_tau)then
           if(n_stable .gt. nc_stable)then
             hfiltx=0.5*hfilt
-            alpha=0.7
+            alpha=0.75
             if(myrank .eq. 0)print *,'** stable change hfilt=',hfiltx,  &
                              ' and keep alpha=',alpha
           else if(n_unstable .gt. nc_stable)then
@@ -1338,7 +1341,7 @@
                              ' and alpha=',alpha
           else
             hfiltx=hfilt
-            alpha=0.7
+            alpha=0.75
             if(myrank .eq. 0)print *,'** keep hfilt=',hfiltx,           &
                              ' and alpha=',alpha
           endif
