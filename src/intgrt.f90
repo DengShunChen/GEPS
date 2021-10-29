@@ -650,16 +650,16 @@
       endif
 
 !
-      if(tau.lt.12.)then
+!      if(tau.lt.12.)then
 !         hfiltx=hfilt
-         alpha = 0.75
+!         alpha = 0.75
 !      else if(tau.ge.6. .and. tau.le.9.)then
 !         hfiltx=hfilt*2.
 !         alpha = 0.75
 !      else if(tau.gt.9. .and. tau.le.12.)then
 !         hfiltx=hfilt*2.
 !         alpha = 0.75
-      endif
+!      endif
 
 
 !!      endif
@@ -1332,7 +1332,7 @@
         if( mod(tau+0.001, 1.) .lt. dtx_tau)then
           if(n_stable .gt. nc_stable)then
             hfiltx=0.5*hfilt
-            alpha=0.7
+            alpha=0.75
             if(myrank .eq. 0)print *,'** stable change hfilt=',hfiltx,  &
                              ' and keep alpha=',alpha
           else if(n_unstable .gt. nc_stable)then
@@ -1342,7 +1342,7 @@
                              ' and alpha=',alpha
           else
             hfiltx=hfilt
-            alpha=0.7
+            alpha=0.75
             if(myrank .eq. 0)print *,'** keep hfilt=',hfiltx,           &
                              ' and alpha=',alpha
           endif
