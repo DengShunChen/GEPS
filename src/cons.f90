@@ -29,12 +29,17 @@
       use radn
       use noah
 !-----------------------------------------------------------------------
-!
-
-! for ECHAM4 Tiedtke cumulus scheme
+      ! for ECHAM4 Tiedtke cumulus scheme
       USE mo_cumulus_flux, only : cuparam
       USE mo_constants,    only : inicon
       USE mo_convect_tables, only : set_lookup_tables
+      ! for stochastic_physics
+      use mod_stochastic_physics, only : ncep_seeds, &
+                   sppt, sppt_seed, sppt_decort, sppt_lscale, &
+                   sppt_sigtop1, sppt_sigtop2, sppt_sigbot1, sppt_sigbot2, &
+                   sppt_sfclimit, sppt_logit, &
+                   shum, shum_seed, shum_decort, shum_lscale, &
+                   shum_sigefold
 
       implicit  none
 
@@ -63,13 +68,12 @@
                       , ntoz,iovr_sw,iovr_lw,isubc_sw,isubc_lw          &
                       , sashal,crick_proof,ccnorm,norad_precip,me,doo3l &
                       , ioutsigr,domfc,out_green,isot,ivegsrc           &
-                      , otgreen,out_hp,dosppt,dospptout                 &
-                      , de_corretime_500,de_corretime_1000              &
-                      , de_corretime_2000                               &
-                      , facsppt500,facsppt1000,facsppt2000,ndsladvh2    &
+                      , otgreen,out_hp,dosppt,dospptout, doshum          &
+                      , ndsladvh2                                       &
                       , ldailyFCTsst,ldailyFCTicesndpt,lFCTweight       &
                       , dailyClm_option,lopgsst,do_sit,fsit,pdfcloud    &
-                      , cmbk,cgwd,ncepicthk,nmmiph,spl1,spl2
+                      , cmbk,cgwd,nmmiph,spl1,spl2                      &
+                      , weightSIT,dSITdt_intv
 !
       real    si(lev+1)
       logical flag
@@ -78,29 +82,38 @@
       character cdtg*12
       character*80 pathname,logicname,truefile
       character*64 type_r,type_w,argument
+      integer istat4,istat5,istat6,istat7
+
+      data pathname/'NWPETCGLB'/
+      data logicname/'filist'/
+
+
       namelist /filst/ ifilin,cwbout,bckfile,namlsts &
                      , ifilout,crdate,ocards,phyout,cntrl &
                      , ifilin_ncep, ifilin_sst, ifilin_nc &
                      , ifilin_ClmANA,ifilin_ClmFCT
 
       namelist /typ/ write_tau, write_mem, trk_intv, min_trk_pres
-      integer istat4,istat5,istat6,istat7
 
-      data pathname/'NWPETCGLB'/
-      data logicname/'filist'/
-!
+      namelist /stochy_physics/ ncep_seeds, & 
+                   use_zmtnblck, & 
+                   sppt, sppt_seed, sppt_decort, sppt_lscale, &
+                   sppt_sigtop1, sppt_sigtop2, sppt_sigbot1, sppt_sigbot2, &
+                   sppt_sfclimit, sppt_logit, &
+                   shum, shum_seed, shum_decort, shum_lscale, &
+                   shum_sigefold
 
 ! for ECHAM4 Tiedtke cumulus scheme
       call cuparam
       call inicon
       call set_lookup_tables
 
-      do 100 k = 2, lev
-      dsig(k-1)= sig(k) - sig(k-1)
-  100 continue
-!
+      do k = 2, lev
+        dsig(k-1)= sig(k) - sig(k-1)
+      enddo
+
       dsig(lev)= 1.0 - sig(lev)
-!
+
       capa= 1.0/3.5
       rgas= capa*cp
       pi  = 4.0*atan(1.0)
@@ -138,6 +151,9 @@
   120 continue
       read (1,typ,end=121)
   121 continue
+      ! read stochastic_physics
+      read (1,stochy_physics,end=122)
+  122 continue
       close(1)
 !
       close(1)
@@ -151,6 +167,7 @@
         endif
   130 continue
       endif
+
 !
       open (unit=2,file=trim(crdate),form='formatted')
 !
@@ -217,6 +234,7 @@
 !
       if(myrank .eq. 0) print modlst
       if(myrank .eq. 0) print typ
+      if(myrank .eq. 0) print stochy_physics
 !
       if (taui .ge. taue)  then
         if(myrank .eq. 0)  &

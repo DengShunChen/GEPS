@@ -85,9 +85,9 @@
 #define GDCHK0 (mpp_pe().EQ.2)
 #define GDCHK1 (1 .eq. 0).AND.(mpp_pe().EQ.44).AND.(jrow.EQ.3)
 !#define GDCHK2 (1 .eq. 0).AND.(mpp_pe().EQ.44).AND.(jrow.EQ.3).AND.(jl.EQ.212)
-#define GDCHK2 (1 .eq. 0).AND.(mpp_pe().EQ.21).AND.(jrow.EQ.4).AND.(jl.EQ.319)
+#define GDCHK2 (1 .eq. 0).AND.(mpp_pe().EQ.254).AND.(jrow.EQ.3).AND.(jl.EQ.1)
 !#define GDCHK3 (1 .eq. 1).AND.(mpp_pe().EQ.49).AND.(jrow.EQ.3).AND.(jl.EQ.212)
-#define GDCHK3 (1 .eq. 1).AND.(mpp_pe().EQ.46).AND.(jrow.EQ.11).AND.(jl.EQ.206)
+#define GDCHK3 (1 .eq. 1).AND.(mpp_pe().EQ.209).AND.(jrow.EQ.5).AND.(jl.EQ.12)
 !#define GDCHK3 (1 .eq. 1).AND.(mpp_pe().EQ.21).AND.(jrow.EQ.4).AND.(jl.EQ.319)
 !#define GDCHK3 (1 .eq. 1).AND.(mpp_pe().EQ.24).AND.(jrow.EQ.3).AND.(jl.EQ.188)
 !#define GDCHK3 (mpp_pe().EQ.35).AND.(jrow.EQ.4).AND.(jl.EQ.495) 
@@ -98,7 +98,9 @@
 !#define GDCHK1 (mpp_pe().EQ.741)
 !#define GDCHK2 (mpp_pe().EQ.741)
 
-#define DBLE REAL   ! EVERYTHING IN REAL
+!#define DBLE REAL   ! EVERYTHING IN REAL
+! EVERYTHING IN REAL
+#define DBLE(x) REAL(x)
 
 MODULE mod_sit_vdiff
 
@@ -267,7 +269,7 @@ MODULE mod_sit_vdiff
                                omegas,wcri,lou,lov  &
                               ,nodepth,odepths,ot12,os12,ou12,ov12,mixedlayer12   &
                               ,nodepth0,odepth0,ot0,os0,ou0,ov0,mixedlayer0  &
-                              ,nwdepth,wdepths,wtfn12, wsfn12 &
+                              ,nwdepth,wdepths,wtfn12, wsfn12,mask1st &
                               ,wgt1,wgt2,nmw1,nmw2,obswtbwgt1,obswtbwgt2,obswtbnmw1,obswtbnmw2 &
                               ,now1,now2,wgto1,wgto2   
 !ps							   ,wlvlref,dpthmx
@@ -434,7 +436,7 @@ MODULE mod_sit_vdiff
 !          ,lwoa0,nodepth0,odepth0,ot0,os0,ou0,ov0,lwarning_msg    &
 !          ,sit_domain_w,sit_domain_e,sit_domain_s,sit_domain_n,sit_domain_extgrd,lamip
             
-  
+  PUBLIC :: cal_ratioBlending
  
 
   !!! real, PARAMETER::tol=1.E-14_dp  ! tol: very small numerical value to prevent numerical error
@@ -512,7 +514,7 @@ SUBROUTINE sit_vdiff_init ( kproma, kbdim, jrow, istep,               &
        ! 1-input only, original ATM/SIT variabels
        !
                   plat,       plon,                                   &
-                  psitmask,   psitmask2,  pbathy,     pwlvl,          &
+                  psitmask,   pbathy,     pwlvl,          &
                   pocnmask,   obox_mask,                              &
                   psni,       psiced,     ptsi,                       &
                   pobsseaice, pobswtb,    pobswsb,                    &
@@ -569,7 +571,6 @@ SUBROUTINE sit_vdiff_init ( kproma, kbdim, jrow, istep,               &
 !  pobswtb     : observed bulk sea surface temperature (K)                         I
 !  pobswsb    : observed salinity (PSU, 0/00)                                      I
 !  psitmask : mask for sit(1=.TRUE., 0=.FALSE.)                                    I
-!  psitmask2 : mask for sit(1=.TRUE., 0=.FALSE.)                                    I
 !  pbathy  : bathymeter (topography or orography) of ocean (m)                     I
 !  pctfreez2 : ref water freezing temperature (K)                                  I
 !  pwlvl  : current water level (ice/water interface) a water body grid            I/O
@@ -676,7 +677,6 @@ SUBROUTINE sit_vdiff_init ( kproma, kbdim, jrow, istep,               &
   real, INTENT(in out):: pobswtb(kbdim),      pobswsb(kbdim)
 ! 2-d SIT vars                                                
   real, INTENT(in)::   psitmask(kbdim)         ! grid mask for lsit (1 or 0)      
-  real, INTENT(in)::   psitmask2(kbdim)         ! grid mask for lsit (1 or 0)      
   real, INTENT(in out) ::   pbathy(kbdim)
   real, INTENT(in out) :: pctfreez2(kbdim)
   real, INTENT(in out) :: pwlvl(kbdim)
@@ -1760,7 +1760,7 @@ SUBROUTINE sit_vdiff_init ( kproma, kbdim, jrow, istep,               &
          .AND. pobswt10m .NE. xmissing)then
 
         if(jk .le. 1)then
-           pobswt(jl,jk)=MAX(pctfreez2(jl), psftobswt(jl,jk)+ttt+ &
+           pobswt(jl,jk)=MAX(pctfreez2(jl), ttt+ &
             (depth-odepths(kkk))/(odepths(kkk+1)-odepths(kkk))* (ttt1-ttt) )
           if(GDCHK3)then
             print*,"int_godas0:jk=",jk,",pobswtb=",pobswtb(jl),",pobswt_jk=",pobswt(jl,jk)
@@ -2013,7 +2013,7 @@ END SUBROUTINE sit_vdiff_init
    SUBROUTINE sit_vdiff ( kproma, kbdim, jrow, istep,  delta_time,    & 
                   plat,       plon, tau, tauhr,                       &
                   pcoriol,    pslm,       plclass,                    &
-                  psitmask,   psitmask2,  pbathy,     pwlvl,          &
+                  psitmask,   pbathy,     pwlvl,          &
                   pocnmask,   obox_mask,                              &
 ! - same as lake and ml_ocean
                   pfluxw,     pdfluxs,    psoflw,                     &
@@ -2127,7 +2127,6 @@ END SUBROUTINE sit_vdiff_init
 !  pobswtb     : observed bulk sea surface temperature (K)                         I
 !  pobswsb    : observed salinity (PSU, 0/00)                                      I
 !  psitmask : mask for sit(1=.TRUE., 0=.FALSE.)                                    I
-!  psitmask2 : mask for sit(1=.TRUE., 0=.FALSE.)                                    I
 !  pbathy  : bathymeter (topography or orography) of ocean (m)                     I
 !  pctfreez2 : ref water freezing temperature (K)                                  I
 !  pwlvl  : current water level (ice/water interface) a water body grid            I/O
@@ -2304,8 +2303,7 @@ END SUBROUTINE sit_vdiff_init
   real, INTENT(in):: tau,  tauhr             ! current forecast time (tau:in hours, tauhr: 00-24z)
   real, INTENT(in):: pcoriol(kbdim)
   real, INTENT(in):: pslm(kbdim), plclass(kbdim)
-  real, INTENT(in):: psitmask(kbdim)         ! grid mask for lsit (1 or 0)      
-  real, INTENT(in out):: psitmask2(kbdim)         ! grid mask for lsit (1 or 0)      
+  real, INTENT(in out):: psitmask(kbdim)         ! grid mask for lsit (1 or 0)      
   real, INTENT(in out):: pbathy(kbdim)
   real, INTENT(in out):: pwlvl(kbdim)
   real, INTENT(in):: pocnmask(kbdim)         ! (fractional) grid mask for 3-D ocean (DIECAST)
@@ -2882,18 +2880,18 @@ CONTAINS
 
 #if defined(LCWBGFS)
     Do jk=nls,nle+1
-!       pwt(jl,jk)=0.2*pwt(jl,jk)+0.3*poldsitwt(jl,jk,1)+0.5*poldsitwt(jl,jk,0)
-!       pwu(jl,jk)=0.2*pwu(jl,jk)+0.3*poldsitwu(jl,jk,1)+0.5*poldsitwu(jl,jk,0)
-!       pwv(jl,jk)=0.2*pwv(jl,jk)+0.3*poldsitwv(jl,jk,1)+0.5*poldsitwv(jl,jk,0)
-!       pww(jl,jk)=0.2*pww(jl,jk)+0.3*poldsitww(jl,jk,1)+0.5*poldsitww(jl,jk,0)
-!       pws(jl,jk)=0.2*pws(jl,jk)+0.3*poldsitws(jl,jk,1)+0.5*poldsitws(jl,jk,0)
-!       pwtke(jl,jk)=0.2*pwtke(jl,jk)+0.3*poldwtke(jl,jk,1)+0.5*poldwtke(jl,jk,0)
-       pwt(jl,jk)=1.*pwt(jl,jk)+0.*poldsitwt(jl,jk,1)+0.*poldsitwt(jl,jk,0)
-       pwu(jl,jk)=1.*pwu(jl,jk)+0.*poldsitwu(jl,jk,1)+0.*poldsitwu(jl,jk,0)
-       pwv(jl,jk)=1.*pwv(jl,jk)+0.*poldsitwv(jl,jk,1)+0.*poldsitwv(jl,jk,0)
-       pww(jl,jk)=1.*pww(jl,jk)+0.*poldsitww(jl,jk,1)+0.*poldsitww(jl,jk,0)
-       pws(jl,jk)=1.*pws(jl,jk)+0.*poldsitws(jl,jk,1)+0.*poldsitws(jl,jk,0)
-       pwtke(jl,jk)=1.*pwtke(jl,jk)+0.*poldwtke(jl,jk,1)+0.*poldwtke(jl,jk,0)
+       pwt(jl,jk)=0.2*pwt(jl,jk)+0.3*poldsitwt(jl,jk,1)+0.5*poldsitwt(jl,jk,0)
+       pwu(jl,jk)=0.2*pwu(jl,jk)+0.3*poldsitwu(jl,jk,1)+0.5*poldsitwu(jl,jk,0)
+       pwv(jl,jk)=0.2*pwv(jl,jk)+0.3*poldsitwv(jl,jk,1)+0.5*poldsitwv(jl,jk,0)
+       pww(jl,jk)=0.2*pww(jl,jk)+0.3*poldsitww(jl,jk,1)+0.5*poldsitww(jl,jk,0)
+       pws(jl,jk)=0.2*pws(jl,jk)+0.3*poldsitws(jl,jk,1)+0.5*poldsitws(jl,jk,0)
+       pwtke(jl,jk)=0.2*pwtke(jl,jk)+0.3*poldwtke(jl,jk,1)+0.5*poldwtke(jl,jk,0)
+!       pwt(jl,jk)=1.*pwt(jl,jk)+0.*poldsitwt(jl,jk,1)+0.*poldsitwt(jl,jk,0)
+!       pwu(jl,jk)=1.*pwu(jl,jk)+0.*poldsitwu(jl,jk,1)+0.*poldsitwu(jl,jk,0)
+!       pwv(jl,jk)=1.*pwv(jl,jk)+0.*poldsitwv(jl,jk,1)+0.*poldsitwv(jl,jk,0)
+!       pww(jl,jk)=1.*pww(jl,jk)+0.*poldsitww(jl,jk,1)+0.*poldsitww(jl,jk,0)
+!       pws(jl,jk)=1.*pws(jl,jk)+0.*poldsitws(jl,jk,1)+0.*poldsitws(jl,jk,0)
+!       pwtke(jl,jk)=1.*pwtke(jl,jk)+0.*poldwtke(jl,jk,1)+0.*poldwtke(jl,jk,0)
     ENDDO
       if(GDCHK3) print *,"final,jk=0,oldwt(0)=",poldsitwt(jl,0,0),",oldwt(1)=",poldsitwt(jl,0,1)
       if(GDCHK3) print *,"final,jk=1,oldwt(0)=",poldsitwt(jl,1,0),",oldwt(1)=",poldsitwt(jl,1,1)
@@ -3034,8 +3032,10 @@ CONTAINS
 !!! location blending
     IF(ptsw(jl) .lt. pctfreez2(jl) .or. ptsw(jl) .gt. 350.) then
       ptsw(jl)=pobswtb(jl)
-      pdtswdt(jl)=(ptsw(jl)-poldtsw(jl))/(n_sit_step*zdtime)
-      psitmask2(jl)=0.
+!      pdtswdt(jl)=(ptsw(jl)-poldtsw(jl))/(n_sit_step*zdtime)
+!      pdtswdt(jl)=(pwt(jl,0)-poldsitwt(jl,0,0))/(2.*n_sit_step*zdtime)
+      pdtswdt(jl)=(pwt(jl,0)-poldsitwt(jl,0,1))/(n_sit_step*zdtime)
+      psitmask(jl)=0.
     ELSE 
       IF( plon(jl).GT.sit_domain_e) THEN
         rre=min(sit_domain_e+sit_domain_extgrd,360.)
@@ -3044,8 +3044,8 @@ CONTAINS
         rre=max(sit_domain_w-sit_domain_extgrd,0.)
         rrw=sit_domain_w
       ELSE
-        rre=0.
-        rrw=0.
+        rre=1.
+        rrw=1.
       ENDIF
 
       IF( plat(jl).GT.sit_domain_n) THEN
@@ -3055,37 +3055,37 @@ CONTAINS
         rrn=max(sit_domain_s-sit_domain_extgrd,-90.)
         rrs=sit_domain_s
       ELSE
-        rrn=0.
-        rrs=0.
+        rrn=1.
+        rrs=1.
       ENDIF
     
-      IF(rrw .EQ. 0.) THEN
+      IF(rrw .EQ. 1.) THEN
         rr_we=1.
       ELSE
-        rr_we=ABS((plon(jl)-rrw)/(rre-rrw))
+        rr_we=1.-ABS((plon(jl)-rrw)/(rre-rrw))
       ENDIF
-      IF(rrs .EQ. 0.) THEN
+      IF(rrs .EQ. 1.) THEN
         rr_sn=1.
       ELSE
-        rr_sn=ABS((plat(jl)-rrs)/(rrn-rrs))
+        rr_sn=1.-ABS((plat(jl)-rrs)/(rrn-rrs))
       ENDIF
 
 !      rrtmp=sqrt(rr_sn**2.0+rr_we**2.0)
       rrtmp=0.5*(rr_sn+rr_we)
 
       IF(rrtmp .EQ. 1.) THEN
-        IF((rrw .EQ. 0.).AND.(rrs.EQ.0.))THEN
-          wtr=0.
-        ELSE
-          wtr=1.
-        ENDIF
+        wtr=1.
+      ELSE if(rrtmp .eq. 0.) then
+        wtr=0.
       ELSE
         wtr=exp(-rf/rrtmp*exp(1./(rrtmp-1.))) 
       ENDIF
 
-      ptsw(jl)= (1.-wtr)*ptsw(jl)+(wtr)*pobswtb(jl)
-      pwt(jl,0)=ptsw(jl)
-      pdtswdt(jl)=(ptsw(jl)-poldtsw(jl))/(n_sit_step*zdtime)
+      ptsw(jl)= wtr*ptsw(jl)+(1.-wtr)*pobswtb(jl)
+!      pwt(jl,0)=ptsw(jl)
+!      pdtswdt(jl)=(ptsw(jl)-poldtsw(jl))/(n_sit_step*zdtime)
+!      pdtswdt(jl)=(pwt(jl,0)-poldsitwt(jl,0,0))/(2.*n_sit_step*zdtime)
+      pdtswdt(jl)=(pwt(jl,0)-poldsitwt(jl,0,1))/(n_sit_step*zdtime)
     ENDIF
 !!!end location blending
 
@@ -3093,11 +3093,13 @@ CONTAINS
 !ps  
   ELSE
     ptsw(jl)=pobswtb(jl)
-    pwt(jl,0)=ptsw(jl)
-    pdtswdt(jl)=(ptsw(jl)-poldtsw(jl))/delta_time
+!    pwt(jl,0)=ptsw(jl)
+!    pdtswdt(jl)=(ptsw(jl)-poldtsw(jl))/(n_sit_step*zdtime)
+    pdtswdt(jl)=(pwt(jl,0)-poldsitwt(jl,0,1))/(n_sit_step*zdtime)
   ENDIF   !ENDIF ltrigsit
     IF(GDCHK3) then
-      print *,"sitvdiff:ltrigsit=",ltrigsit,",ptsw(jl)=",ptsw(jl) &
+      print *,"sitvdiff:ltrigsit=",ltrigsit,",poldtsw(jl)="       &
+             ,poldtsw(jl),",ptsw(jl)=",ptsw(jl) &
              ,",pdtswdt=",pdtswdt(jl),",ltrigsit=",ltrigsit       &
              ,",rrs=",rrs,",rrn=",rrn,",rrw=",rrw,",rre=",rre     &
              ,",rr_sn=",rr_sn,",rr_we=",rr_we,",wtr=",wtr
@@ -3340,6 +3342,7 @@ SUBROUTINE thermocline(jl,jrow)
 !
       pfluxwm=pfluxw(jl)
       if(locaf0) then
+!ps        pfluxw2=pfluxw(jl)
         pfluxw2=pfluxw(jl)-(pawtfl0(jl,0)+ocaf0_add)
       else
         pfluxw2=pfluxw(jl)
@@ -3959,7 +3962,7 @@ SUBROUTINE thermocline(jl,jrow)
             +zdtime*(                                                               &
               zsoflw*( FFN(zlk(nls+jk)-pwlvl(jl))-FFN(zlk(nls+jk+1)-pwlvl(jl)) )    &
                 /rhoh2o/clw/hw(nls+jk)                                              &
-              +pawtfl(jl,nls+jk)                        &
+              +pawtfl(jl,nls+jk)                     &
               )
 
           AA(4+jk,1)=-beta*X(4+jk)-hew/hw(nls+jk)
@@ -6424,7 +6427,8 @@ END SUBROUTINE thermocline
     WRITE(nerr,*) "l_no_expolation_ws=",l_no_expolation_ws
     WRITE(nerr,*) "l_no_expolation_wu=",l_no_expolation_wu
     WRITE(nerr,*) "l_no_expolation_wv=",l_no_expolation_wv
-    WRITE(nerr,*) "godas2: nmw1=",nmw1,"nmw2=",nmw2,"wgt1=",wgt1,"wgt2=",wgt2
+    WRITE(nerr,*) "godas2: nmw1=",nmw1,",nmw2=",nmw2,",wgt1=",wgt1,",wgt2=",wgt2 &
+                          ,",now1=",now1,",now2=",now2,",wgto1=",wgto1,",wgto2=",wgto2
     WRITE(nerr,2300) "pe,","jl,","row,","lat,","lon,","step,","k,","z,", "ot1,", "ot2", "os1,", "os2"
     WRITE(nerr,2300) "pe,","jl,","row,","lat,","lon,","step,","k,","z,", "obswt,", "obsws", "obswu", "obswv"
     DO jk = 0, nle+1
@@ -6554,6 +6558,16 @@ END SUBROUTINE thermocline
     l_upperdata=.FALSE.
     ttt=pobswtb(jl)
     ttt1=pobswtb(jl)    
+    IF(GDCHK2) then
+      print *,"lgodas=",lgodas,",ttt=",ttt,",kkk=",kkk          &
+             ,",ot12(jl,kkk,jrow,now1)=",ot12(jl,kkk,jrow,now1) &
+             ,",ot12(jl,kkk,jrow,now2)=",ot12(jl,kkk,jrow,now2) &
+             ,",ot12(jl,kkk+1,jrow,now1)=",ot12(jl,kkk+1,jrow,now1) &
+             ,",ot12(jl,kkk+1,jrow,now2)=",ot12(jl,kkk+1,jrow,now2) &
+             ,",depth=",depth,",nodepth=",nodepth                   &
+             ,",odepths(nodepth)=",odepths(nodepth)
+
+    ENDIF
     IF ( lgodas .AND.                                    &
          (ot12(jl,kkk,jrow,now1).NE.xmissing)      .AND. &
          (ot12(jl,kkk,jrow,now2).NE.xmissing)      .AND. &
@@ -6882,7 +6896,7 @@ END SUBROUTINE thermocline
   USE mod_sst,       ONLY: nmw1, nmw2, wgt1, wgt2
   USE mod_sit_control,       ONLY: locaf0
 !!!  USE mo_mpi,           ONLY: p_parallel_io, p_bcast, p_io, p_pe
-  USE mod_sst,           ONLY: nwdepth, wdepths, wtfn1st, wsfn1st
+  USE mod_sst,           ONLY: nwdepth, wdepths, wtfn1st, mask1st
 
 
   IMPLICIT NONE
@@ -6994,11 +7008,15 @@ END SUBROUTINE thermocline
 
     IF ((pobswtb(jl).NE.xmissing).AND.(st_restore_time.GT.0.)) THEN
       restore_temp=(pobswtb(jl)-pwt(jl,jk))*(1.-0.5**(zdtime/st_restore_time))
-      IF(ltimeblending .AND. timebl_option .EQ. 1 ) THEN
-        restore_temp=(pobswtb(jl)-pwt(jl,jk))*(1.-fratio)
-      ENDIF
       IF(lgodas .AND. ltimeblending .AND. timebl_option .EQ. 1 ) THEN
-        restore_temp=(pobswt(jl,jk)-pwt(jl,jk))*(1.-fratio)
+!        restore_temp=(pobswt(jl,jk)-pwt(jl,jk))*(1.-fratio)
+        restore_temp=(pobswt(jl,jk)-pwt(jl,jk))*(1.-0.5**(zdtime/st_restore_time))
+        restore_temp=(pobswt(jl,jk)-pwt(jl,jk))*(1.-fratio)+restore_temp*fratio
+      ELSE
+        IF(ltimeblending .AND. timebl_option .EQ. 1 ) THEN
+!        restore_temp=(pobswtb(jl)-pwt(jl,jk))*(1.-fratio)
+          restore_temp=(pobswtb(jl)-pwt(jl,jk))*(1.-fratio)+restore_temp*fratio
+        ENDIF
       ENDIF
     ELSEIF ((pobswtb(jl).NE.xmissing).AND.(st_restore_time.EQ.0.)) THEN
       restore_temp=(pobswtb(jl)-pwt(jl,jk))
@@ -7018,7 +7036,8 @@ END SUBROUTINE thermocline
     IF ((pobswsb(jl).NE.xmissing).AND.(ss_restore_time.GT.0.)) THEN
       restore_salt=(pobswsb(jl)-pws(jl,jk))*(1.-0.5**(zdtime/ss_restore_time))
       IF(ltimeblending .AND. timebl_option .EQ. 1) THEN
-        restore_salt=(pobswsb(jl)-pws(jl,jk))*(1.-fratio)
+!        restore_salt=(pobswsb(jl)-pws(jl,jk))*(1.-fratio)
+        restore_salt=(pobswsb(jl)-pws(jl,jk))*(1.-fratio)+restore_salt*fratio
       ENDIF
     ELSEIF ((pobswsb(jl).NE.xmissing).AND.(ss_restore_time.EQ.0.)) THEN
       restore_salt=(pobswsb(jl)-pws(jl,jk))
@@ -7038,7 +7057,8 @@ END SUBROUTINE thermocline
     IF ((pobswu(jl,jk).NE.xmissing).AND.(suv_restore_time.GT.0.)) THEN
        restore_u=(pobswu(jl,jk)-pwu(jl,jk))*(1.-0.5**(zdtime/suv_restore_time))
        IF(ltimeblending .AND. timebl_option .EQ. 1) THEN
-         restore_u=(pobswu(jl,jk)-pwu(jl,jk))*(1.-fratio)
+!         restore_u=(pobswu(jl,jk)-pwu(jl,jk))*(1.-fratio)
+         restore_u=(pobswu(jl,jk)-pwu(jl,jk))*(1.-fratio)+restore_u*fratio
        ENDIF
     ELSEIF ((pobswu(jl,jk).NE.xmissing).AND.(suv_restore_time.EQ.0.)) THEN
        restore_u=(pobswu(jl,jk)-pwu(jl,jk))
@@ -7058,7 +7078,8 @@ END SUBROUTINE thermocline
     IF ((pobswv(jl,jk).NE.xmissing).AND.(suv_restore_time.GT.0.)) THEN
        restore_v=(pobswv(jl,jk)-pwv(jl,jk))*(1.-0.5**(zdtime/suv_restore_time))
        IF(ltimeblending .AND. timebl_option .EQ. 1) THEN
-         restore_v=(pobswv(jl,jk)-pwv(jl,jk))*(1.-fratio)
+!         restore_v=(pobswv(jl,jk)-pwv(jl,jk))*(1.-fratio)
+         restore_v=(pobswv(jl,jk)-pwv(jl,jk))*(1.-fratio)+restore_v*fratio
        ENDIF
     ELSEIF ((pobswv(jl,jk).NE.xmissing).AND.(suv_restore_time.EQ.0.)) THEN
        restore_v=(pobswv(jl,jk)-pwv(jl,jk))
@@ -7102,7 +7123,8 @@ END SUBROUTINE thermocline
       IF ((pobswtb(jl).NE.xmissing).AND.(st_restore_time_all.GT.0.)) THEN
          restore_temp2=(pobswtb(jl)-pwt(jl,jk))*(1.-0.5**(zdtime/st_restore_time_all))
          IF(ltimeblending .AND. timebl_option .EQ. 1) THEN
-           restore_temp2=(pobswtb(jl)-pwt(jl,jk))*(1.-fratio)
+!           restore_temp2=(pobswtb(jl)-pwt(jl,jk))*(1.-fratio)
+           restore_temp2=(pobswtb(jl)-pwt(jl,jk))*(1.-fratio)+restore_temp2*fratio
          ENDIF
       ELSEIF ((pobswtb(jl).NE.xmissing).AND.(st_restore_time_all.EQ.0.)) THEN
          restore_temp2=(pobswtb(jl)-pwt(jl,jk))
@@ -7121,7 +7143,8 @@ END SUBROUTINE thermocline
       IF ((pobswsb(jl).NE.xmissing).AND.(ss_restore_time_all.GT.0.)) THEN
         restore_salt2=(pobswsb(jl)-pws(jl,jk))*(1.-0.5**(zdtime/ss_restore_time_all))
         IF(ltimeblending .AND. timebl_option .EQ. 1) THEN
-          restore_salt2=(pobswsb(jl)-pws(jl,jk))*(1.-fratio)
+!          restore_salt2=(pobswsb(jl)-pws(jl,jk))*(1.-fratio)
+          restore_salt2=(pobswsb(jl)-pws(jl,jk))*(1.-fratio)+restore_salt2*fratio
         ENDIF
       ELSEIF ((pobswsb(jl).NE.xmissing).AND.(ss_restore_time_all.EQ.0.)) THEN
         restore_salt2=(pobswsb(jl)-pws(jl,jk))
@@ -7140,7 +7163,8 @@ END SUBROUTINE thermocline
       IF ((pobswu(jl,jk).NE.xmissing).AND.(suv_restore_time_all.GT.0.)) THEN
          restore_u2=(pobswu(jl,jk)-pwu(jl,jk))*(1.-0.5**(zdtime/suv_restore_time_all))
          IF(ltimeblending .AND. timebl_option .EQ. 1) THEN
-           restore_u2=(pobswu(jl,jk)-pwu(jl,jk))*(1.-fratio)
+!           restore_u2=(pobswu(jl,jk)-pwu(jl,jk))*(1.-fratio)
+           restore_u2=(pobswu(jl,jk)-pwu(jl,jk))*(1.-fratio)+restore_u2*fratio
          ENDIF
       ELSEIF ((pobswu(jl,jk).NE.xmissing).AND.(suv_restore_time_all.EQ.0.)) THEN
          restore_u2=(pobswu(jl,jk)-pwu(jl,jk))
@@ -7159,7 +7183,8 @@ END SUBROUTINE thermocline
       IF ((pobswv(jl,jk).NE.xmissing).AND.(suv_restore_time_all.GT.0.)) THEN
          restore_v2=(pobswv(jl,jk)-pwv(jl,jk))*(1.-0.5**(zdtime/suv_restore_time_all))
          IF(ltimeblending .AND. timebl_option .EQ. 1) THEN
-           restore_v2=(pobswv(jl,jk)-pwv(jl,jk))*(1.-fratio)
+!           restore_v2=(pobswv(jl,jk)-pwv(jl,jk))*(1.-fratio)
+           restore_v2=(pobswv(jl,jk)-pwv(jl,jk))*(1.-fratio)+restore_v2*fratio
          ENDIF
       ELSEIF ((pobswv(jl,jk).NE.xmissing).AND.(suv_restore_time_all.EQ.0.)) THEN
          restore_v2=(pobswv(jl,jk)-pwv(jl,jk))
@@ -7322,6 +7347,11 @@ END SUBROUTINE thermocline
           fratio=(sin((tauhr-6.)/12.*api)+1.)*0.5
         ENDIF
       ENDIF
+      IF(fratio .eq. 0.) then
+        ltrigsit=.false.
+      else
+        ltrigsit=.true.
+      endif
       IF(GDCHK3) then
        WRITE(nerr,*) "ltimeblending=",ltimeblending  &
                   ,",timebl_start=",timebl_start,",timebl_allsit=",timebl_allsit  &
@@ -7500,14 +7530,14 @@ END SUBROUTINE thermocline
         ENDIF
 
 
-        IF(GDCHK3 .AND. jk.EQ.1) print *,"ltimeblending=",ltimeblending, &
-                       ",fratio=",fratio,",jk=",jk, &
-                       ",st_restore_time=",st_restore_time, &
-                       ",ss_restore_time=",ss_restore_time, &
-                       ",suv_restore_time=",suv_restore_time, &
-                       ",st_restore_time_all=",st_restore_time_all, &
-                       ",ss_restore_time_all=",ss_restore_time_all, &
-                       ",suv_restore_time_all=",suv_restore_time_all
+!        IF(GDCHK3 .AND. jk.EQ.1) print *,"ltimeblending=",ltimeblending, &
+!                       ",fratio=",fratio,",jk=",jk, &
+!                       ",st_restore_time=",st_restore_time, &
+!                       ",ss_restore_time=",ss_restore_time, &
+!                       ",suv_restore_time=",suv_restore_time, &
+!                       ",st_restore_time_all=",st_restore_time_all, &
+!                       ",ss_restore_time_all=",ss_restore_time_all, &
+!                       ",suv_restore_time_all=",suv_restore_time_all
       ENDIF
 
 !      
@@ -7621,10 +7651,10 @@ END SUBROUTINE thermocline
       pwv(jl,jk)= pwv(jl,jk)+restore_v
 
 !ps      IF(GDCHK3) WRITE(nerr,*) "before random:pwu(",jl,",",jk,")=",pwu(jl,jk),",pwv=",pwv(jl,jk)
-      call random_number(urand)
-      urand=0.01*(urand*2.-1.)      !-0.05<=urand<0.05
-      pwu(jl,jk)=pwu(jl,jk)*(1.+urand)
-      pwv(jl,jk)=pwv(jl,jk)*(1.+urand)
+!ps      call random_number(urand)
+!ps      urand=0.01*(urand*2.-1.)      !-0.05<=urand<0.05
+!ps      pwu(jl,jk)=pwu(jl,jk)*(1.+urand)
+!ps      pwv(jl,jk)=pwv(jl,jk)*(1.+urand)
 !ps      IF(GDCHK3) then
 !ps        WRITE(nerr,*) "after random: urand=",urand,",pwu(",jl,",",jk,")=",pwu(jl,jk),",pwv=",pwv(jl,jk)
 !ps      ENDIF
@@ -8389,8 +8419,103 @@ END FUNCTION SICEDFN
   END SUBROUTINE pzcord
 ! **********************************************************************
 
+  SUBROUTINE cal_ratioBlending(pmyrank,pii,pjj,plat,inlon,outratio)
+
+      use mod_sit_control,  only: sit_domain_w,sit_domain_e &
+                               ,sit_domain_s,sit_domain_n &
+                               ,sit_domain_extgrd
+! location blending
+      real:: plat,inlon
+      real:: plon
+      real:: outratio
+      real:: rrn,rrs,rre,rrw,rr_sn,rr_we,rrtmp
+!    real, PARAMETER:: rf=10._dp
+      real, PARAMETER:: rf=5.
+      integer:: pmyrank,pii,pjj
 
 
+      IF(inlon .LT. 0.) THEN
+        plon=inlon + 360.
+      else
+        plon=inlon
+      ENDIF
+
+      IF((plon .GE. sit_domain_w) .AND. &
+         (plon .LE. sit_domain_e) ) then      
+        rre=1.
+        rrw=1.
+      ELSEIF( (plon .GT. sit_domain_e) .AND. &
+              (plon .LE. sit_domain_e+sit_domain_extgrd) ) THEN
+        rre=min(sit_domain_e+sit_domain_extgrd,360.)
+        rrw=sit_domain_e
+      ELSEIF( (plon .GT. sit_domain_w-sit_domain_extgrd) .AND. &
+              (plon .LE. sit_domain_w) ) THEN
+        rre=max(sit_domain_w-sit_domain_extgrd,0.)
+        rrw=sit_domain_w
+      ELSE
+        rre=0.
+        rrw=0.
+      ENDIF
+
+      IF((plat .GE. sit_domain_s) .AND. &
+         (plat .LE. sit_domain_n) ) then      
+        rrn=1.
+        rrs=1.
+      ELSEIF( (plat .GT. sit_domain_n) .AND. &
+              (plat .LE. sit_domain_n+sit_domain_extgrd)  ) THEN
+        rrn=min(sit_domain_n+sit_domain_extgrd,90.)
+        rrs=sit_domain_n
+      ELSEIF( (plat .GE. sit_domain_s-sit_domain_extgrd) .AND. &
+              (plat .LT. sit_domain_s) ) THEN
+        rrn=max(sit_domain_s-sit_domain_extgrd,-90.)
+        rrs=sit_domain_s
+      ELSE
+        rrn=0.
+        rrs=0.
+      ENDIF
+
+      IF(rrw .EQ. 1.) THEN
+        rr_we=1.
+      ELSEIF(rrw .EQ. 0.) THEN
+        rr_we=0.
+      ELSE
+        rr_we=1.-ABS((plon-rrw)/(rre-rrw))
+      ENDIF
+
+      IF(rrs .EQ. 1.) THEN
+        rr_sn=1.
+      ELSEIF(rrs .EQ. 0.) THEN
+        rr_sn=0.
+      ELSE
+        rr_sn=1.-ABS((plat-rrs)/(rrn-rrs))
+      ENDIF
+
+      if(rr_sn .eq. 1.) then
+        rrtmp=rr_we
+      elseif(rr_we .eq. 1.)then
+        rrtmp=rr_sn
+      else
+        rrtmp=0.5*(rr_sn+rr_we)
+      endif
+
+      IF(rrtmp .EQ. 1.) THEN
+        outratio=1.
+      ELSE if(rrtmp .eq. 0.) then
+        outratio=0.
+      ELSE
+        outratio=exp(-rf/rrtmp*exp(1./(rrtmp-1.)))
+      ENDIF
+
+      if(pmyrank.eq.6 .AND. pii.eq.1 .AND. pjj.eq.12) then
+        print *,'in ratio: myrank=',pmyrank,',ii=',pii &
+               ,',jj=',pjj,',rre=',rre,',rrw=',rrw    &
+               ,',rr_we=',rr_we,',rrn=',rrn,',rrs=',rrs &
+               ,',rr_sn=',rr_sn,',rrtmp=',rrtmp      &
+               ,',outratio=',outratio
+      endif
+
+
+  END SUBROUTINE cal_ratioBlending 
 
 END MODULE mod_sit_vdiff
 

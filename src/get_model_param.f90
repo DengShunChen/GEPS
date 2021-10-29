@@ -4,7 +4,9 @@
       use param
 
       use const, only : ifilin,cwbout,bckfile,namlsts,   &
-                        ifilout,crdate,ocards,phyout,cntrl
+                        ifilout,crdate,ocards,phyout,cntrl, &
+                        ifilin_ncep,ifilin_sst,ifilin_nc,&
+                        ifilin_ClmANA,ifilin_ClmFCT
 
       use paramt
 
@@ -20,7 +22,9 @@
       character*80 filist
       character*80 pathname,logicname,truefile
       namelist /filst/ ifilin,cwbout,bckfile,namlsts &
-                     , ifilout,crdate,ocards,phyout,cntrl
+                     , ifilout,crdate,ocards,phyout,cntrl &
+                     , ifilin_ncep,ifilin_sst,ifilin_nc &
+                     , ifilin_ClmANA,ifilin_ClmFCT
       data pathname/'NWPETCGLB'/
       data logicname/'filist'/
 !

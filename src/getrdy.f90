@@ -1,3 +1,4 @@
+
       subroutine getrdy
 !
 !***********************************************************************
@@ -30,6 +31,22 @@
       use radn
       use albn
 !-----------------------------------------------------------------------
+      use mod_sitgrid
+      use mod_sit_vdiff,     only:sit_vdiff_init,sit_vdiff,SICEDFN &
+                               ,maskid,ctfreez,cal_ratioBlending
+      use mod_sit_control,   only:xmissing,sit_nml,lgodas,ldailysst &
+                               ,locaf,locaf0,lwoa0,lsitstart,sit_domain_w &
+                               ,sit_domain_e,sit_domain_s,sit_domain_n &
+                               ,sit_domain_extgrd,lpre6hr_sit,bathydepth&
+                               ,lsftobswt
+      use mod_eos_ocean,     only: tmelts,api
+      use mod_sst,           only:read_woa0,read_godas,read_dailygodas &
+                                ,read_dailyFCT,obswtbp,obswtbt         &
+                                ,ifilin_ocaf,read_ocaf,read_ocaf0      &
+                                ,wtfn12,wsfn12,time_weights,mask1st
+      USE mo_netcdf,         ONLY:lkvl,set_ocndepth
+!-----------------------------------------------------------------------
+
 
       implicit   none
 
@@ -41,7 +58,7 @@
                 cc(nx+2,levp,1,my_max),ww3(nx,my_max)
 !byl                wss3(levp,2,3,jtrun,jtmax),cc3(nx+2,levp,3,my_max)
 
-      character lrec*26,rfile*55,ctau*6,topostd*4,topohgt*4
+      character lrec*26,rfile*55,ctau*6,topostd*4,topohgt*4,key*34
 !
 ! restart  : read(7) work array
 !
@@ -78,6 +95,13 @@
 !xb110>
 !      real    flash(nxp,my_max)
 !xb110<
+
+      real  t_surf
+      real  sitlat(nxp)
+      real  sitlon(nxp,my_max)
+      real, parameter:: specified_ice_thickness  = 2.0
+      real lontest(nxp,my_max)
+      integer nxjpart      
 
       lmax=26
 !
@@ -322,6 +346,7 @@
           j=jlist1(jj)
           ii=nxjstart(j)
           nxj=nxdef_2d(j)
+
         if( lreduce.eq.1 ) call reducepick (ww1(1,j),nxdef(j),nx,1)
           do i=1,nxj
             sst(i,jj)=ww1(ii,j)
@@ -438,8 +463,11 @@
           enddo
           if( myrank .eq. 0 ) &
              print*,"get ncep's sea ice analysis, at dtg=",idtg
-          if ( ncepicthk ) then
-            call syslbl('w00092',idtg,0,ggdef,lrec)
+!
+          call syslbl('w00092',idtg,0,ggdef,lrec)
+          write(key,'(a26,a1,i7.7)') lrec,'H',lncrec
+          call dmschkr (ifilin,key//char(0),istat)
+          if ( istat .eq. 0 ) then
             call dmsread(nx,my,lrec,nxmy,'H',ifilin,ww1,istat)
 !byl          if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
             do jj=1,jlistnum
@@ -453,7 +481,12 @@
               enddo
             enddo
             if( myrank .eq. 0 ) &
-               print*,"get ncep's sea ice thickness analysis, at dtg=",idtg
+               print*,"get sea ice thickness from ncep analysis,",     &
+               " at dtg=",idtg
+          else
+            if( myrank .eq. 0 ) &
+               print*,"get sea ice thickness from model 6hr forecast,",&
+               " initial at dtg=",idtg2
           endif
 !
 ! reset albedo and tgclim at seaice grids                 
@@ -492,10 +525,10 @@
 !
           call mpe_global_sum(icwarn,1,mpe_integer)
           if ( myrank .eq. 0 .and. icwarn .gt. 0 ) then
-          print*,"==================   Warnig!!!   ==================="
-          print*,"=  ice thickness not consistent with sea ice mask  ="
-          print*,"=  set the thickness to 1 meter for first guess    ="
-          print*,"================================= =================="
+          print*,achar(27)//"[1;31m==================   Warnig!!!   ==================="//achar(27)//'[1;m'
+          print*,achar(27)//"[1;31m=  ice thickness not consistent with sea ice mask  ="//achar(27)//'[1;m'
+          print*,achar(27)//"[1;31m=  set the thickness to 1 meter for first guess    ="//achar(27)//'[1;m'
+          print*,achar(27)//"[1;31m===================================================="//achar(27)//'[1;m'
           endif 
 ! 
         endif     !end of (ncepice)
@@ -976,6 +1009,11 @@
       print *, "  from getrdy: njump= ",njump,njump1,njump2,njump3
       endif
 !
+      pi = 4.0*atan(1.0)
+      do 520 j = 1, my
+        xlat(j) = asin(sinl(j))*180./pi
+ 520  continue
+
       do jj = 1, jlistnum
         j=jlist1(jj)
         nxj=nxdef(j)
@@ -989,11 +1027,198 @@
           endif
         enddo
       enddo
-!
-      pi = 4.0*atan(1.0)
-      do 520 j = 1, my
-        xlat(j) = asin(sinl(j))*180./pi
- 520  continue
+
+
+!---------------------------------
+! read forecast sst
+!---------------------------------
+      IF(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. dailyClm_option .ge.1 ) THEN
+        CALL read_dailyFCT(idtg,taui,dt,tg,cice,sndepth,xlon,xlat,ocean)
+      ENDIF
+
+!---------------------------------
+!0.0 initial_sit
+!---------------------------------
+      if(do_sit) then
+        CALL set_ocndepth()
+        if(myrank .eq. 0) print *,'end set_ocndepth'
+        CALL allocate_sitgrid_array(nxp,my_max)
+        if(myrank .eq. 0) print *,'end allocate_sitgrid_array'
+        if(lwoa0) CALL read_woa0
+        if(myrank .eq. 0) print *,'end read_woa0'
+        IF (lgodas) then
+          IF(ldailysst)then
+            CALL read_dailygodas(idtg,taui,dt)
+            if(myrank .eq. 0) print *,'end read_dailygodas'
+          ELSE
+            CALL read_godas(idtg)
+            if(myrank .eq. 0) print *,'end read_godas'
+          ENDIF
+        ENDIF
+        if(locaf0) then
+          if(myrank.eq.0) then
+            print *,'ready in call ifilin_ocaf'
+          endif
+          call read_ocaf0(nx,my,lkvl,ggdef,idtg)
+        endif
+
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          do ii=1,nxj
+            i=nxjstart(j)+ii-1
+            sitmask(ii,jj)=0.
+!    !  1.0 set geological data
+            sitcor(ii,jj)   = 2*(7.292e-5)*sin(xlat(j)*api/180.)
+            sitlat(ii)      = xlat(j)
+            IF(xlon(i,jj) .LT. 0.) then
+              sitlon(ii,jj)=xlon(i,jj)+360.
+            ELSE
+              sitlon(ii,jj)=xlon(i,jj)
+            ENDIF
+            call cal_ratioBlending(myrank,ii,jj,sitlat(ii),sitlon(ii,jj),ratioSIT(ii,jj))
+
+
+!    !  2.0 set sst, sss and sic
+            obswtb(ii,jj)   = tg(ii,jj)
+            obsseaice(ii,jj)= cice(ii,jj)
+            seaice(ii,jj)   = cice(ii,jj)
+            t_surf         = obswtb(ii,jj)
+            if ( obsseaice(ii,jj) > 0.5 ) then
+              thickness(ii,jj) = specified_ice_thickness
+!              ice_mask (ii,jj) = .true.
+              t_surf          = MIN( t_surf, ctfreez )
+            else
+              thickness(ii,jj) = 0.0
+!              ice_mask (ii,jj) = .false.
+              t_surf          = MAX( t_surf, ctfreez )
+            endif
+            tsi(ii,jj)= MIN( t_surf, ctfreez )
+
+!    !  4. set additional SIT input variables
+            if(land(ii,jj) ) then
+              sitlclass(ii,jj)= 1.                   ! land landclass
+              bathy(ii,jj)    = 0.                   ! 0 m for the first guess, need to read terrain data later
+              wlvl(ii,jj)     = bathy(ii,jj)-1.       ! set water level at 1 m below the bathy for land grids
+              ocnmask(ii,jj)  = xmissing             ! not coupled to 3-D ocn model
+              obox_mask(ii,jj)= xmissing             ! not coupled to 3-D ocn model
+              sni(ii,jj)      = 0.                   ! assuming initially no snow over seaice (m swe)
+              slm(ii,jj)      = 1.                   ! land fraction
+              obswsb(ii,jj)   = 0.                   ! set observed SSS at 0 PSU over land water
+              tsl(ii,jj)      = tg(ii,jj)
+              tslm(ii,jj)     = tg(ii,jj)
+              tslm1(ii,jj)    = tg(ii,jj)
+            endif
+            if(ice(ii,jj) ) then                     ! sea ice
+              sitlclass(ii,jj)= 2.                   ! water landclass
+              bathy(ii,jj)    = bathydepth                ! 0 m for the first guess, need to read terrain data later
+              wlvl(ii,jj)     = 0.                   ! set water level at 1 m below the bathy for land grids
+              ocnmask(ii,jj)  = xmissing             ! not coupled to 3-D ocn model
+              obox_mask(ii,jj)= xmissing             ! not coupled to 3-D ocn model
+              sni(ii,jj)      = 0.                   ! assuming initially no snow over seaice (m swe)
+              slm(ii,jj)      = 0.                   ! land fraction
+              obswsb(ii,jj)   = 36.3                 ! set observed SSS at 0 PSU over land water
+              tsl(ii,jj)      = (1-cice(ii,jj))*tg(ii,jj)+cice(ii,jj)*tsi(ii,jj)
+              tslm(ii,jj)     = tsl(ii,jj)
+              tslm1(ii,jj)    = tsl(ii,jj)
+            endif
+            if(ocean(ii,jj) )then
+              sitlclass(ii,jj)= 2.                   ! water landclass
+              bathy(ii,jj)    = bathydepth                ! 200 m depth for the first guess, need to read terrain data later)
+              wlvl(ii,jj)     = 0.                   ! set water level at 0 m
+              ocnmask(ii,jj)  = xmissing             ! not coupled to 3-D ocn model
+              obox_mask(ii,jj)= xmissing             ! not coupled to 3-D ocn model
+              sni(ii,jj)      = 0.                   ! assuming no snow over seaice (m swe). It can be read from NCEP data.
+              slm(ii,jj)      = 0.                   ! land fraction
+              obswsb(ii,jj)   = 36.3                 ! set observed SSS at 36.3 PSU
+              tsl(ii,jj)      = tg(ii,jj)
+              tslm(ii,jj)     = tg(ii,jj)
+              tslm1(ii,jj)    = tg(ii,jj)
+!!Ocea n within 40N-40S
+             if( (sitlat(ii).GE.(sit_domain_s-sit_domain_extgrd)) &
+               .AND. (sitlat(ii).LE.(sit_domain_n+sit_domain_extgrd)) ) then
+               if ((sitlon(ii,jj).GE.(sit_domain_w-sit_domain_extgrd))&
+               .AND. (sitlon(ii,jj).LE.(sit_domain_e+sit_domain_extgrd)))then
+
+                 sitmask(ii,jj)=1.
+                 if(locaf0 .and. mask1st(ii,jj) .eq. 0.) sitmask(ii,jj)=0.
+               endif
+             endif
+            endif
+
+            ctfreez2(ii,jj) = tmelts(obswsb(ii,jj))
+            tsw(ii,jj)      = tg(ii,jj)
+
+          enddo
+
+
+
+!      ! 5.0 set additional SIT ocn profle t,s,u,v and tke
+         call time_weights(idtg,0.)
+         lsitstart=.true.
+          call sit_vdiff_init ( nxjp(j), nxp, jj, j,                   &
+!       ! 0-INPUT only, original ATM/SIT variabels
+             sitlat, sitlon(:,jj),                                     &
+             sitmask(:,jj), bathy(:,jj), wlvl(:,jj),                   &
+             ocnmask(:,jj), obox_mask(:,jj),                           &
+             sni(:,jj), thickness(:,jj), tsi(:,jj),                    &
+             obsseaice(:,jj), obswtb(:,jj), obswsb(:,jj),              &
+             ctfreez2(:,jj),                                           &
+!       ! 2-d SIT vars
+             sitwtb(:,jj), sitwub(:,jj), sitwvb(:,jj),                 &
+             sitwsb(:,jj),                                             &
+             subfluxw(:,jj), wsubsal(:,jj),                            &
+             sitcc(:,jj), sithc(:,jj), engwac(:,jj),                   &
+             sc(:,jj), saltwac(:,jj),                                  &
+             wtfns(:,jj), wsfns(:,jj),                                 &
+!       ! 3-d SIT vars: snow/ice
+             zsi(:,jj,0:1), silw(:,jj,0:1), tsnic(:,jj,0:3),           &
+!       ! 3-d SIT vars: water column
+             obswt(:,jj,0:lkvl+1), obsws(:,jj,0:lkvl+1), obswu(:,jj,0:lkvl+1), &
+             obswv(:,jj,0:lkvl+1),                                     &
+             sitwt(:,jj,0:lkvl+1), sitwu(:,jj,0:lkvl+1), sitwv(:,jj,0:lkvl+1), &
+             sitww(:,jj,0:lkvl+1), sitws(:,jj,0:lkvl+1),               &
+             sitwtke(:,jj,0:lkvl+1), wlmx(:,jj,0:lkvl+1),   &
+             wldisp(:,jj,0:lkvl+1), wkm(:,jj,0:lkvl+1), wkh(:,jj,0:lkvl+1), &
+             wrho1000(:,jj,0:lkvl+1),                                  &
+             wtfn(:,jj,0:lkvl+1), wsfn(:,jj,0:lkvl+1),                 &
+             wtfn0(:,jj,0:lkvl+1), wsfn0(:,jj,0:lkvl+1),               &
+             awufl(:,jj,0:lkvl+1), awvfl(:,jj,0:lkvl+1), awtfl(:,jj,0:lkvl+1), &
+             awsfl(:,jj,0:lkvl+1), awtfl0(:,jj,0:lkvl+1),awsfl0(:,jj,0:lkvl+1),&
+             awtkefl(:,jj,0:lkvl+1),             &
+!       ! 4- OUTPUT only, original ATM variabels
+             seaice(:,jj),                                             &
+             grndcapc(:,jj), grndhflx(:,jj), grndflux(:,jj),           &
+             sftobswt(:,jj,0:lkvl+1) )
+
+        enddo
+
+
+        if(locaf) then
+          if(myrank.eq.0) then
+            print *,'ready in call ifilin_ocaf'
+          endif
+          call read_ocaf(nx,my,lkvl,ggdef)
+        endif
+
+
+        if(restrt) then
+          call readrerun_sitgrid1(itaui)
+          call readrerun_sitgrid2(itaui)
+          call readrerun_sitgrid3(itaui)
+          restrt= .false.
+        endif
+
+        if(lpre6hr_sit) then
+          call readpre6hr_sit(nx,my,itaup,ifilin,idtg,ggdef)
+        endif
+
+
+      endif   !end of(do_sit)
+
+!------------------------------
+! end do_sit
+!------------------------------
 !----
 ! for u10 v10 t2 being output at tau=0 (6/20/2003)
 !

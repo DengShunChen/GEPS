@@ -17,10 +17,10 @@
 !      inputs:                                                          !
 !          ( solhr,slag,sdec,cdec,sinlat,coslat,                        !
 !            xlon,coszen,tsea,tf,tsflw,                                 !
-!            sfcdsw,sfcnsw,sfcdlw,swh,hlw,                              !
+!            sfcdsw,sfcnsw,sfcdlw,swh,hlw,swhc,hlwc,                    !
 !            ix, im, levs,                                              !
 !      input/output:                                                    !
-!            dtrad,                                                      !
+!            dtrad,dtradc,                                              !
 !      outputs:                                                         !
 !            adjsfcdsw,adjsfcnsw,adjsfcdlw,adjsfculw,xmu,xcosz)         !
 !                                                                       !
@@ -64,18 +64,22 @@
 !     sfcdlw (im)  - real, total sky sfc downward lw flux ( w/m**2 )    !
 !     swh(ix,levs) - real, total sky sw heating rates ( k/s )           !
 !     hlw(ix,levs) - real, total sky lw heating rates ( k/s )           !
+!     swhc(ix,levs)- real, clear sky sw heating rates ( k/s )           !
+!     hlwc(ix,levs)- real, clear sky lw heating rates ( k/s )           !
 !     ix, im       - integer, horiz. dimention and num of used points   !
 !     levs         - integer, vertical layer dimension                  !
 !                                                                       !
 !  input/output:                                                        !
-!     dtrad(im,levs)- real, model time step adjusted total radiation     !
+!     dtrad(im,levs)- real, model time step adjusted total radiation    !
+!                          heating rates ( k/s )                        !
+!     dtradc(im,levs)-real, model time step adjusted clear sky radiation!
 !                          heating rates ( k/s )                        !
 !                                                                       !
 !  outputs:                                                             !
 !     adjsfcdsw(im)- real, time step adjusted sfc dn sw flux (w/m**2)   !
 !     adjsfcnsw(im)- real, time step adj sfc net sw into ground (w/m**2)!
 !     adjsfcdlw(im)- real, time step adjusted sfc dn lw flux (w/m**2)   !
-!     adjsfculw(im)- real, sfc upward lw flux at current time (w/m**2)  !
+!     adjsfcnlw(im)- real, time step adj sfc net lw into atmospher (w/m**2)!
 !     xmu   (im)   - real, time step zenith angle adjust factor for sw  !
 !     xcosz (im)   - real, cosine of zenith angle at current time step  !
 !                                                                       !
@@ -88,11 +92,11 @@
           ( solhr,slag,sdec,cdec,sinlat,coslat,                        &
             xlon,coszen,tsea,tf,tsflw,                                 &
             sfcdsw,sfcnsw,sfcdlw,swh,hlw,                              &
-            ix, im, levs,                                              &
+            swhc,hlwc,ix, im, levs,                                    &
 !  ---  output:
-            dtrad,                                                     &
+            dtrad,dtradc,                                              &
 !  ---  outputs:
-            adjsfcdsw,adjsfcnsw,adjsfcdlw,xmu                          &
+            adjsfcdsw,adjsfcnsw,adjsfcdlw,adjsfcnlw,xmu                &
           )
 !
       use machine,         only : kind_phys
@@ -116,18 +120,22 @@
            sfcdsw, sfcnsw
 
       real(kind=kind_phys), dimension(ix,levs), intent(in) :: swh, hlw
+      real(kind=kind_phys), dimension(ix,levs), intent(in) :: swhc, hlwc
 
 !  ---  input/output:
-      real(kind=kind_phys), dimension(ix,levs), intent(inout) :: dtrad
+      real(kind=kind_phys), dimension(ix,levs), intent(inout) :: dtrad &
+                                                                ,dtradc
 
 !  ---  outputs:
       real(kind=kind_phys), dimension(ix), intent(out) ::              &
-           adjsfcdsw, adjsfcnsw, adjsfcdlw,xmu
+           adjsfcdsw, adjsfcnsw, adjsfcdlw, adjsfcnlw, xmu
 
 !  ---  locals:
       integer :: i, k
       real(kind=kind_phys) :: cns, ss, cc, ch, tem1, tem2, xlw(im)
 !
+!     adjsfculw(im)- real, sfc upward lw flux at current time (w/m**2)  !
+      real(kind=kind_phys), dimension(ix) :: adjsfculw
 !===> ...  begin here
 !
 !  --- ...  compute cosine of solar zenith angle for both hemispheres.
@@ -165,8 +173,10 @@
 
 !  --- ...  compute sfc upward lw flux from current temp,
 !      note: sfc emiss effect is not appied at this time
-!        tem1         = tsea(i) * tsea(i)
-!        adjsfculw(i) =  con_sbc * tem1 * tem1
+        tem1         = tsea(i) * tsea(i)
+        adjsfculw(i) =  con_sbc * tem1 * tem1
+
+        adjsfcnlw(i) = adjsfculw(i)-adjsfcdlw(i)
 
 !  --- ...  adjust sfc net and downward sw fluxes for zenith angle changes
         adjsfcnsw(i) = sfcnsw(i) * xmu(i)
@@ -179,6 +189,7 @@
       do k = 1, levs
         do i = 1, im
           dtrad(i,k) = swh(i,k)*xmu(i) + hlw(i,k)
+          dtradc(i,k) = swhc(i,k)*xmu(i) + hlwc(i,k)
         enddo
       enddo
 !

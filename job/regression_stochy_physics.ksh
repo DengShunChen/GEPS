@@ -28,10 +28,13 @@
  idmstail=''
  idmsdb="TCo${JCAP}L72"
 
- odmshead='UnitTest'
+ odmshead='STOC'
  odmsbody=${dtg}
  odmstail="${DMSFLAG}MG"
  odmsdb=${idmsdb}
+
+#-- executable
+ EXEC='MTCo639L72_'${machine}
 
 #---------------------------------------------------------#
  idmsfile=${idmshead}${idmsbody}${idmstail}@${idmsdb}
@@ -121,7 +124,7 @@ if [ $JCAP = 639  ] ; then
   MODLST_RES='dt=225., tfilt=0.040, hfilt=1., cgw=4.2e-5,'
   MODEL_BASIC='nco=640,'
 elif [ $JCAP = 383  ] ; then
-  MODLST_RES='dt=360., tfilt=0.050, hfilt=1., cgw=2.6e-5,'
+  MODLST_RES='dt=360., tfilt=0.050, hfilt=1, cgw=2.6e-5,'
   MODEL_BASIC='nco=384,'
 fi
 
@@ -130,9 +133,9 @@ cat > ${GFSWRK}/namlsts << EOF
   nco=640,
   lev=72,
   ncld=3,
-  octahedral=t,
+  octahedral=true,
   nout=9000,
-  io_quilting=f,
+  io_quilting=false,
   npex=${NPEX},
   npey=${NPEY},
   ${MODEL_BASIC}
@@ -144,25 +147,27 @@ cat > ${GFSWRK}/namlsts << EOF
   cstar=f, update=t, lsimpl=t,
   tfilt=0.04, hfilt=1.,
   ksgeo=2, yesdia=t,
-  dopbl=t, docup=t, dorad=t, dolsp=t, doshl=t, dodry=f, dograv=t, docgrav=t,
-  donnmi=t, 
-  dosppt=false, dospptout=false, doshum=false,
+  dopbl=t, docup=t, dorad=t, dolsp=t, doshl=t, dodry=f, 
+  dograv=true, docgrav=true,
+  donnmi=true, 
+  dosppt=true, dospptout=false, 
+  doshum=false,
   cutfreq=3, nnmivm=3,
   doincr=f,
-  hdiff=t, frad=1.0,
-  ldiag=0,
+  hdiff=t, frad=1.0, ldiag=0,
   idg=40, jdg=108,
   itypbl=0, numreduce=5, ptmeans=800., ptop=0.1,
-  nmcup=6, nmpbl=4, nmland=2, nmshl=3,
+  irad=2, nmland=2,
+  nmcup=6, nmshl=3, nmpbl=4, nmmiph=2,  
   nmgwor=2, nmgwcv=2,
   ktcup=20, cgw=4.2e-5,
   mtnvar=14, doo3l=t,
-  irad=2, ioutsigr=1,
+  ioutsigr=1,
   ggdef='${DMSFLAG}0G', gmdef='${DMSFLAG}MG',
-  domfc=384., out_green=t, otgreen=3., out_hp=f,
-  ndsladvh2=f,
+  domfc=384., out_green=t, otgreen=3., out_hp=false,
+  ndsladvh2=false,
   isot=1, ivegsrc=1, cgwd=1.20, cmbk=1.00,
-  spl1=50.,
+  spl1=5.,
   ${MODLST_RES}
  &end
 
@@ -173,19 +178,29 @@ cat > ${GFSWRK}/namlsts << EOF
  &end
  
  &stochy_physics
-  ncep_seeds = false,
-  sppt = 0.8,0.4,0.2,0.08,0.04
+  ncep_seeds = true,
+  use_zmtnblck = true,
+  sppt_logit = true,
+  sppt_sigtop1 = 0.1,
+  sppt_sigtop2 = 0.025, 
+  sppt_sfclimit = true,
+  sppt_sigbot1 = 0.975,
+  sppt_sigbot2 = 0.9,
+  sppt = 0.80,0.4,0.10,0.08,0.04
+  sppt_seed = 1878981022, 1046881385, 1551676790, 2041328465, 1442149336
   sppt_decort = 2.16E4,2.592E5,2.592E6,7.776E6,3.1536E7 
   sppt_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
-  shum = 0.8,-999,-999,-999,-999
+  shum = 0.04,-999,-999,-999,-999
+  shum_seed = 2140313855,-999,-999,-999,-999
   shum_decort = 2.16E4,1.728E5,2.592E6,7.776E6,3.1536E7
   shum_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
+  shum_sigefold = 0.2,
  /
+
 EOF
 
 
- FCT_MODEL=$MDIR/build/tcogfs.x
-
+ FCT_MODEL=$MDIR/src/$EXEC
  /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} 
 
  if [ $? != 0 ] ; then
