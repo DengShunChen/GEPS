@@ -336,17 +336,18 @@ cwb_fftw.c
 set(EXEC "tcogfs.x")
 
 add_executable(${EXEC} ${TCO_SRC})
-set_target_properties(${EXEC} PROPERTIES LINKER_LANGUAGE Fortran)
+set_target_properties(${EXEC} 
+    PROPERTIES 
+    LINKER_LANGUAGE Fortran
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)
 
 add_custom_command(TARGET ${EXEC}
     POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E echo "copy ${EXEC} to ${CMAKE_BINARY_DIR} ..."
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${EXEC}> ${CMAKE_BINARY_DIR}
-)
-
-add_custom_target(run
-    COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_SOURCE_DIR}/job ./runcwbgfs_tco383
-    DEPENDS ${EXEC}
+    COMMAND ${CMAKE_COMMAND} -E echo "copy ${EXEC} to ${TCO_OUTPUT_PATH} ..."
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${EXEC}> ${TCO_OUTPUT_PATH}
 )
 
 install(TARGETS ${EXEC} DESTINATION ${CMAKE_INSTALL_PREFIX})

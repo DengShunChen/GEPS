@@ -34,10 +34,16 @@ set(CMAKE_C_COMPILER mpifccpx)
 option(USE_ACC   "enable OpenACC" OFF)
 option(USE_CUDA  "enable CUDA"    OFF)
 option(USE_NVTX  "enable NVTX"    OFF)
-option(USE_OMP   "enable OpenMP"  OFF)
-option(USE_PAR   "enable Auto Parallel"  OFF)
-set(GPU_ARCHS "70" CACHE STRING "GPU architecture(V100=70;A100=80)")
-set(TCO_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/src" CACHE STRING "TCO destination")
+option(USE_OMP   "enable OpenMP"  ON)
+option(USE_PAR   "enable Auto Parallel"  ON)
+#set(GPU_ARCHS "70" CACHE STRING "GPU architecture(V100=70;A100=80)")
+#set(TCO_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/src" CACHE STRING "TCO destination")
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+set(TCO_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin" CACHE STRING "TCO destination")
 
 if(NOT ${USE_ACC} AND ${USE_CUDA})
     message(FATAL_ERROR "Invalid configuration. \
@@ -50,7 +56,7 @@ message(STATUS "USE_CUDA:     ${USE_CUDA}")
 message(STATUS "USE_NVTX:     ${USE_NVTX}")
 message(STATUS "USE_OMP:      ${USE_OMP}")
 message(STATUS "USE_PAR:      ${USE_PAR}")
-message(STATUS "GPU_ARCHS:    ${GPU_ARCHS}")
+#message(STATUS "GPU_ARCHS:    ${GPU_ARCHS}")
 message(STATUS "Output path:  ${TCO_OUTPUT_PATH}")
 message(STATUS "Install path: ${CMAKE_INSTALL_PREFIX}")
 
@@ -69,13 +75,6 @@ if(${USE_NVTX})
     include(NVTX)
 endif()
 
-if(${USE_OMP})
-    add_compile_options(-Kopenmp)
-endif()
-
-if(${USE_PAR})
-    add_compile_options(-Kparallel)
-endif()
 ###########################################################################
 # Compiler Options (-c -D<macro> -flag)
 ###########################################################################
@@ -85,7 +84,12 @@ add_compile_options(-DTIMING -DUSE_FFTW -DW3TAG)
 # Specific flags for Fortran only:
 add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-Kfast,ocl,autoobjstack>")
 add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-X9 -Free -CcdRR8 -Cpp -x- -fw>")
-add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-Kopenmp,parallel>")
+if (${USE_OMP})
+  add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-Kopenmp>")
+endif()
+if (${USE_PAR})
+  add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-Kparallel>")
+endif()
 add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-Ec -Qa,d,i,p,t,x -Koptmsg=2 >")
 add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-SSL2BLAMP >")
 
@@ -125,9 +129,14 @@ link_libraries($ENV{OPERLIB_LIB})
 link_libraries(-SSL2BLAMP)
 
 # Auto-parallel and OpenMP
-link_libraries(-Kparallel,openmp)
-
+if (${USE_OMP})
+  link_libraries(-Kopenmp)
+endif()
+if (${USE_PAR})
+  link_libraries(-Kparallel)
+endif()
 ###########################################################################
 # Build Target, TCO
 ###########################################################################
 add_subdirectory(src)
+add_subdirectory(test)

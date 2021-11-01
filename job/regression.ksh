@@ -184,7 +184,7 @@ cat > ${GFSWRK}/namlsts << EOF
 EOF
 
 
- FCT_MODEL=$MDIR/build/tcogfs.x
+ FCT_MODEL=$MDIR/build/bin/tcogfs.x
 
  /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} 
 
