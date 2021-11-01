@@ -22,6 +22,7 @@ bl_ysu.f90
 ccoszen.f90
 cem1.f90
 check.f90
+check_global_values.f90
 chlen.f90
 coftrix.f90
 cons.f90
@@ -84,7 +85,6 @@ gather_spec.f90
 gathv.f90
 gausl3.f90
 gauslv.f90
-gensppt3dv5.f90
 geostd.f90
 get_model_param.f90
 get_phi.f90
@@ -127,6 +127,7 @@ machine.f90
 make_list.f90
 matrix_hybrid_cwb.f90
 maxp.f90
+mersenne_twister.f90
 mfpbl.f90
 minp.f90
 mixpbl.f90
@@ -159,6 +160,7 @@ mod_sit_vdiff.f90
 mod_spec.f90
 mod_sst.f90
 mod_stochastic.f90
+mod_stochastic_physics.f90
 mod_typhoon.f90
 module_bfmicrophysics.f90
 module_mp_radar.f90
@@ -204,12 +206,10 @@ outflds_hp.f90
 outsigr.f90
 outsigs.f90
 outsit.f90
-#ozne_def.f90
 pbl_noah.f90
 pbltke.f90
 pbltke_n.f90
 physcons.f90
-#physcons_v.f90
 physpara.f90
 pmatrx_hybrid_cwb.f90
 pnmy.f90
@@ -240,7 +240,6 @@ radsw_datatb.f90
 radsw_main.f90
 radsw_param.f90
 radtn99.f90
-random_number.f90
 rayleifr.f90
 rcloud.f90
 rcmpir24c.f90
@@ -288,7 +287,6 @@ smth9.f90
 sortml.f90
 splin1.f90
 splinc.f90
-spptout.f90
 srms.f90
 stemp.f90
 structrn.f90
@@ -352,6 +350,7 @@ add_custom_target(run
 )
 
 install(TARGETS ${EXEC} DESTINATION ${CMAKE_INSTALL_PREFIX})
+target_include_directories( ${EXEC} PUBLIC "$<BUILD_INTERFACE:${TCOGFS_INCLUDE_DIRS}>")
 
 target_link_libraries( ${EXEC} ${NetCDF_Fortran_LIBRARIES}
                                ${DMS_LIBRARIES}

@@ -103,6 +103,15 @@ include_directories(${NetCDF_Fortran_INCLUDE_DIRS})
 find_package( FFTW REQUIRED )
 include_directories(${FFTW_INCLUDE_DIR})
 
+set ( TCOGFS_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src
+                          ${CMAKE_CURRENT_BINARY_DIR}/src
+                          ${CMAKE_Fortran_MODULE_DIRECTORY} )
+
+
+###########################################################################
+# Link Options (-L<path> -l<lib>), for dms, netcdf and Intel librares
+###########################################################################
+
 # DMS
 find_package( DMS REQUIRED )
 
@@ -111,10 +120,6 @@ link_libraries($ENV{W3NCO_LIBd})
 
 # CWB operlib
 link_libraries($ENV{OPERLIB_LIB})
-
-###########################################################################
-# Link Options (-L<path> -l<lib>), for dms, netcdf and Intel librares
-###########################################################################
 
 # Fujitsu scientific and math libraries.
 link_libraries(-SSL2BLAMP)
