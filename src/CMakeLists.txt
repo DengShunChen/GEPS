@@ -344,12 +344,6 @@ set_target_properties(${EXEC}
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
-add_custom_command(TARGET ${EXEC}
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E echo "copy ${EXEC} to ${TCO_OUTPUT_PATH} ..."
-    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${EXEC}> ${TCO_OUTPUT_PATH}
-)
-
 install(TARGETS ${EXEC} DESTINATION ${CMAKE_INSTALL_PREFIX})
 target_include_directories( ${EXEC} PUBLIC "$<BUILD_INTERFACE:${TCOGFS_INCLUDE_DIRS}>")
 
