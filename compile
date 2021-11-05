@@ -19,5 +19,5 @@ mkdir -p build && cd build
 
 cmake ../
 
-make -j${NTHREADS:-16}
+make -j${NTHREADS:-16} 
 

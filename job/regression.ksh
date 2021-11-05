@@ -7,7 +7,7 @@
  DMSPATH=/package/${machine}/dms/dms.v4/bin
  GFSDIR=$MDIR
  GFSFIX=$MDIR/fix
- GFSWRK=${GFSDIR}/work_${machine}
+ GFSWRK=${GFSDIR}/work_${machine}.$$
  rm -rf $GFSWRK
  mkdir -p $GFSWRK
 
@@ -28,7 +28,7 @@
  idmstail=''
  idmsdb="TCo${JCAP}L72"
 
- odmshead='UnitTest'
+ odmshead="J$$_"
  odmsbody=${dtg}
  odmstail="${DMSFLAG}MG"
  odmsdb=${idmsdb}
@@ -43,8 +43,8 @@
   export LNCP='ln -fs'
 
   # maybe no need to change
-#  export source="/data/common/gfs/dms_data/TCo639L72_S2TY.ufs/T_exp20${dtg}"           # TCo IC data path
-  export source="/nwpr/gfs/xb126/data2/Tool/Nemsio2Dms_v2/OUTPUT/ncep_ana.ufs/TCo${JCAP}l72_${dtg}"           # TCo IC data path
+   export source="/data/common/gfs/dms_data/TCo${JCAP}L72_S2TY.ufs/T_exp20${dtg}"           # TCo IC data path
+  #export source="/nwpr/gfs/xb126/data2/Tool/Nemsio2Dms_v2/OUTPUT/ncep_ana.ufs/TCo${JCAP}l72_${dtg}"           # TCo IC data path
 
   # link/copy DMS files
   export target="${dmsdb_home}/${idmsdb}.ufs"
@@ -185,6 +185,7 @@ EOF
 
 
  FCT_MODEL=$MDIR/build/bin/tcogfs.x
+# FCT_MODEL=$MDIR/src/MTCo639L72_fx100
 
  /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} 
 

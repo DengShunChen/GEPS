@@ -23,19 +23,19 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 # Compiler Setting, TCO is built on top of MPI
 ###########################################################################
 
-set(CMAKE_Fortran_COMPILER mpifrtpx)
-set(CMAKE_CXX_COMPILER mpiFCCpx)
-set(CMAKE_C_COMPILER mpifccpx)
+set(CMAKE_Fortran_COMPILER  mpifrtpx)
+set(CMAKE_CXX_COMPILER      mpiFCCpx)
+set(CMAKE_C_COMPILER        mpifccpx)
 
 ###########################################################################
 # Build Options
 ###########################################################################
 
-option(USE_ACC   "enable OpenACC" OFF)
-option(USE_CUDA  "enable CUDA"    OFF)
-option(USE_NVTX  "enable NVTX"    OFF)
-option(USE_OMP   "enable OpenMP"  ON)
-option(USE_PAR   "enable Auto Parallel"  ON)
+#option(USE_ACC   "enable OpenACC"         OFF)
+#option(USE_CUDA  "enable CUDA"            OFF)
+#option(USE_NVTX  "enable NVTX"            OFF)
+option(USE_OMP   "enable OpenMP"          ON)
+option(USE_PAR   "enable Auto Parallel"   ON)
 #set(GPU_ARCHS "70" CACHE STRING "GPU architecture(V100=70;A100=80)")
 #set(TCO_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/src" CACHE STRING "TCO destination")
 
@@ -45,15 +45,15 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 set(TCO_OUTPUT_PATH "${CMAKE_BINARY_DIR}/bin" CACHE STRING "TCO destination")
 
-if(NOT ${USE_ACC} AND ${USE_CUDA})
-    message(FATAL_ERROR "Invalid configuration. \
-        `USE_ACC` must be ON before set `USE_CUDA` to ON")
-endif()
+#if(NOT ${USE_ACC} AND ${USE_CUDA})
+#    message(FATAL_ERROR "Invalid configuration. \
+#        `USE_ACC` must be ON before set `USE_CUDA` to ON")
+#endif()
 
 message(STATUS "Build Summary")
-message(STATUS "USE_ACC:      ${USE_ACC}")
-message(STATUS "USE_CUDA:     ${USE_CUDA}")
-message(STATUS "USE_NVTX:     ${USE_NVTX}")
+#message(STATUS "USE_ACC:      ${USE_ACC}")
+#message(STATUS "USE_CUDA:     ${USE_CUDA}")
+#message(STATUS "USE_NVTX:     ${USE_NVTX}")
 message(STATUS "USE_OMP:      ${USE_OMP}")
 message(STATUS "USE_PAR:      ${USE_PAR}")
 #message(STATUS "GPU_ARCHS:    ${GPU_ARCHS}")
@@ -62,36 +62,36 @@ message(STATUS "Install path: ${CMAKE_INSTALL_PREFIX}")
 
 # include CMake modules in `${PROJECT_SOURCE_DIR}/cmake/Modules`
 
-if(${USE_ACC})
-    include(OpenACC)
-endif()
+#if(${USE_ACC})
+#    include(OpenACC)
+#endif()
 
 #if(NOT ${USE_CUDA})
     # Use FFTW and Intel MKL
     #include(NoCUDA)
 #endif()
 
-if(${USE_NVTX})
-    include(NVTX)
-endif()
+#if(${USE_NVTX})
+#    include(NVTX)
+#endif()
 
 ###########################################################################
 # Compiler Options (-c -D<macro> -flag)
 ###########################################################################
 
-add_compile_options(-DTIMING -DUSE_FFTW -DW3TAG)
+add_definitions(-DTIMING -DUSE_FFTW -DW3TAG)
 
 # Specific flags for Fortran only:
 add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-Kfast,ocl,autoobjstack>")
 add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-X9 -Free -CcdRR8 -Cpp -x- -fw>")
+add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-Ec -Qa,d,i,p,t,x -Koptmsg=2 >")
+add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-SSL2BLAMP >")
 if (${USE_OMP})
   add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-Kopenmp>")
 endif()
 if (${USE_PAR})
   add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-Kparallel>")
 endif()
-add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-Ec -Qa,d,i,p,t,x -Koptmsg=2 >")
-add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-SSL2BLAMP >")
 
 # Specific flags for C only:
 add_compile_options("$<$<COMPILE_LANGUAGE:C>:SHELL:-Xg>")
@@ -135,8 +135,14 @@ endif()
 if (${USE_PAR})
   link_libraries(-Kparallel)
 endif()
+
 ###########################################################################
 # Build Target, TCO
 ###########################################################################
 add_subdirectory(src)
 add_subdirectory(test)
+
+###########################################################################
+# Spectial compile flags
+###########################################################################
+

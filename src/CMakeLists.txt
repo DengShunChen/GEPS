@@ -311,8 +311,6 @@ trngra.f90
 ttstd.f90
 ujoinrs.f90
 ujoinsr.f90
-#unify_grid.f90
-#unify_gridr.f90
 unify_reduceintp.f90
 unify_reducepick.f90
 uzmean.f90
@@ -344,6 +342,14 @@ set_target_properties(${EXEC}
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
 
+set_source_files_properties(fftx.f90        
+  PROPERTIES COMPILE_FLAGS "-Knoparallel" )
+set_source_files_properties(ndslfv_pack.f90 
+  PROPERTIES COMPILE_FLAGS "-Knoparallel" )
+set_source_files_properties(pbl_noah.f90    
+  PROPERTIES COMPILE_FLAGS "-Knosimd" )
+set_source_files_properties(rcloud.f90      
+  PROPERTIES COMPILE_FLAGS "-Knosimd" )
 install(TARGETS ${EXEC} DESTINATION ${CMAKE_INSTALL_PREFIX})
 target_include_directories( ${EXEC} PUBLIC "$<BUILD_INTERFACE:${TCOGFS_INCLUDE_DIRS}>")
 
