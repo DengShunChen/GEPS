@@ -1,5 +1,10 @@
 SHELL = /bin/sh
 
+RANLIB = ranlib
+AR = ar cq
+RM = rm -f
+TIMCOMCPL = TRUE
+
 SRCS_f90  = \
   ancrt.f90 \
   bl_ysu.f90 \
@@ -319,6 +324,10 @@ SRCS_f90  = \
   zimadv.f90 \
   zx.f90 
 
+ifeq ($(strip $(TIMCOMCPL)),TRUE)
+  SRCS_f90 := $(SRCS_f90) mod_gfscpl.f90
+endif
+
 SRCS_c = cwb_fftw.c
 
 DEPEND_FILES = $(SRCS_f) $(SRCS_f90) $(SRCS_F) $(SRCS_F90)
@@ -337,6 +346,11 @@ FC90 =  ${COMP_MPI}
 INCLUDE = -I. -I${FFTW_INC} -I${NETCDF_INC}
 
 CMD  =  MTCo639L72_${MACHINE}
+
+ifeq ($(strip $(TIMCOMCPL)), TRUE)
+  INCLUDE := $(INCLUDE) -I../TIMCOM_cpl/cpl -I/users/xa09/$(MACHINE)/MCT/include
+  CMD = libtco.a
+endif
 
 INSTALL = /usr/bin/install
 # select one of the followings :
@@ -382,13 +396,27 @@ INSTALL = /usr/bin/install
 LDFLAGS = ${OMP_COM} ${LDFLAGS_COM}
 LIBS	= ${NETCDF_LIB} ${W3NCO_LIBd} ${DMS_LIB} ${OPERLIB_LIB} ${FFTW_LIB} ${LIBS_COM} ${MPMD_LIB}
 
+ifeq ($(strip $(TIMCOMCPL)),TRUE)
+  FFLAGS := $(FFLAGS) -DTIMCOMCPL
+  LIBS   := $(LIBS) -L/nwpr/gfs/xb124/tco639l72/TIMCOM_cpl/cpl -lcpl -L/users/xa09/$(MACHINE)/MCT/lib -lmct -lmpeu
+endif
+
 .SUFFIXES: .o .mod .f90 .c
 all defalut:	depend $(CMD)
 
+ifeq ($(strip $(TIMCOMCPL)), TRUE)
+$(CMD): $(OBJS)
+        @echo
+        @echo '==== LINK ===================================================='
+        $(RM) $(@)
+        $(AR) $(@) $(OBJS)
+        $(RANLIB) $(@)
+else
 $(CMD):	$(OBJS)
 	@echo
 	@echo '==== LINK ===================================================='
 	$(FC90) -o $(@)  $(OBJS)  $(LDFLAGS) $(LIBS)
+endif
 
 .f90.o:
 	@echo

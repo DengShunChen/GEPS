@@ -1,4 +1,9 @@
+#ifdef TIMCOMCPL
+       subroutine intgrt(compid)
+       use gfs_cpl
+#else
        subroutine intgrt
+#endif
 !
 !***********************************************************************
 !  this subroutine is the basic time stepping driver.  it does the
@@ -188,7 +193,16 @@
 !for lightning scheme from ECMWF
       real flash(nxp,my_max),flash24(nxp,my_max)
 !xb110<
-
+#ifdef TIMCOMCPL
+      real, dimension(nxp, my_max) :: tocn_cpl, uocn_cpl, vocn_cpl, &
+                            prec_cpl, evap_cpl, taux_cpl, tauy_cpl, &
+                            lath_cpl, senh_cpl, lwnt_cpl, swnt_cpl, &
+                            tgfs_cpl, u10m_cpl, v10m_cpl, t02m_cpl, &
+                            q02m_cpl, pslv_cpl
+      real :: dt_cpl
+      logical :: cpl_send_init
+      integer :: compid
+#endif
 #ifdef TIMING
 ! for timing
       real*8 tm_1,tm_2,tm_use,mpi_wtime
@@ -355,6 +369,25 @@
       sld=0.
       recn=1
       rdivm=0.
+#ifdef TIMCOMCPL
+      tocn_cpl = 0.
+      uocn_cpl = 0.
+      vocn_cpl = 0.
+      prec_cpl = 0.
+      evap_cpl = 0.
+      taux_cpl = 0.
+      tauy_cpl = 0.
+      lath_cpl = 0.
+      senh_cpl = 0.
+      lwnt_cpl = 0.
+      swnt_cpl = 0.
+      u10m_cpl = 0.
+      v10m_cpl = 0.
+      t02m_cpl = 0.
+      q02m_cpl = 0.
+      pslv_cpl = 0.
+      cpl_send_init = .true.
+#endif
 !
 !
 ! read mountant variables for topographic gravity wave drag
@@ -592,6 +625,10 @@
           call read_opgsst(idtg_sst,ggdef,ocean,ice)
           icurrentyear=idtg_sst/100000000
       endif   !end lopgsst
+!
+#ifdef TIMCOMCPL
+      call gfs_cpl_recv4gocn(compid, ocean, tg)
+#endif
 !
  10   continue
 
@@ -1814,6 +1851,74 @@
         endif
       endif   !end lopgsst
 !
+#ifdef TIMCOMCPL
+      u10m_cpl = u10m_cpl + u10*dtx
+      v10m_cpl = v10m_cpl + v10*dtx
+      t02m_cpl = t02m_cpl + t2*dtx
+      q02m_cpl = q02m_cpl + q2*dtx
+      pslv_cpl = pslv_cpl + (pt+pdiff)*dtx
+      taux_cpl = taux_cpl + u10*dtx !ustress*dtx
+      tauy_cpl = tauy_cpl + v10*dtx !vstress*dtx
+      lath_cpl = lath_cpl + qflux*dtx
+      senh_cpl = senh_cpl + hflux*dtx
+      swnt_cpl = swnt_cpl + ss*dtx
+      lwnt_cpl = lwnt_cpl + rld*dtx
+      evap_cpl = evap_cpl - qflux/hltm*dtx
+      prec_cpl = prec_cpl + totalp
+      dt_cpl   = dt_cpl + dtx
+      if(cpl_send_init)then
+        call gfs_cpl_send2gocn(compid,  taux_cpl/dtx, tauy_cpl/dtx, &
+                                        lath_cpl/dtx, senh_cpl/dtx, &
+                                        swnt_cpl/dtx, lwnt_cpl/dtx, &
+                                        evap_cpl/dtx, prec_cpl/dtx, &
+                                        u10m_cpl/dtx, v10m_cpl/dtx, &
+                                        t02m_cpl/dtx, q02m_cpl/dtx, &
+                                        pslv_cpl/dtx, tg)
+        cpl_send_init = .false.
+      endif
+
+      dtaup = mod(tau+0.001, 2.0)
+      if( dtaup .lt. dtx_tau ) then
+        if(myrank .eq. 0) write(*,*) "TCo time to coupler", tau
+
+        call gfs_cpl_recv4gocn(compid, ocean, tg)
+        u10m_cpl = u10m_cpl/dt_cpl
+        v10m_cpl = v10m_cpl/dt_cpl
+        t02m_cpl = t02m_cpl/dt_cpl
+        q02m_cpl = q02m_cpl/dt_cpl
+        pslv_cpl = pslv_cpl/dt_cpl
+        taux_cpl = taux_cpl/dt_cpl
+        tauy_cpl = tauy_cpl/dt_cpl
+        lath_cpl = lath_cpl/dt_cpl
+        senh_cpl = senh_cpl/dt_cpl
+        swnt_cpl = swnt_cpl/dt_cpl
+        lwnt_cpl = lwnt_cpl/dt_cpl
+        evap_cpl = evap_cpl/dt_cpl
+        prec_cpl = prec_cpl/dt_cpl
+        call gfs_cpl_send2gocn(compid, taux_cpl, tauy_cpl, &
+                                       lath_cpl, senh_cpl, &
+                                       swnt_cpl, lwnt_cpl, &
+                                       evap_cpl, prec_cpl, &
+                                       u10m_cpl, v10m_cpl, &
+                                       t02m_cpl, q02m_cpl, &
+                                       pslv_cpl, tg)
+        u10m_cpl = 0.
+        v10m_cpl = 0.
+        t02m_cpl = 0.
+        q02m_cpl = 0.
+        pslv_cpl = 0.
+        taux_cpl = 0.
+        tauy_cpl = 0.
+        lath_cpl = 0.
+        senh_cpl = 0.
+        swnt_cpl = 0.
+        lwnt_cpl = 0.
+        evap_cpl = 0.
+        prec_cpl = 0.
+        dt_cpl   = 0.
+      end if
+#endif
+
       itau=tau+0.001
 #ifdef TIMING
       tm_2=mpi_wtime()

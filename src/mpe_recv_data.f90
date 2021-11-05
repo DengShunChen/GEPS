@@ -3,7 +3,7 @@
 #if defined(RSM) && defined(CWB_MPMD)
       use rank, only : root_gfs,MPI_COMM_gfs_all
 #else
-      use rank, only : root_gfs
+      use rank, only : root_gfs,MPI_COMM_atm
 #endif
       use mpi
       integer n,tag,isrc,ierr,ISTATUS(MPI_STATUS_SIZE)
@@ -14,7 +14,7 @@
                      tag, MPI_COMM_gfs_all, ISTATUS,  IERR )
 #else
       call MPI_RECV( RBUF, n, MPI_DOUBLE_PRECISION, root_gfs, &
-                     tag, MPI_COMM_WORLD, ISTATUS,  IERR )
+                     tag, MPI_COMM_atm, ISTATUS,  IERR )
 #endif
       return
       end

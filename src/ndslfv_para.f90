@@ -63,7 +63,7 @@
 !
 !     call mpi_alltoallv(works,lensend,locsend,MPI_REAL8_r,
 !    &                   workr,lenrecv,locrecv,MPI_REAL8_r,
-!    &                   MPI_COMM_WORLD,ierr)
+!    &                   MPI_COMM_atm,ierr)
       call mpi_alltoallv(works,lensend,locsend,MPI_REAL8, &
                          workr,lenrecv,locrecv,MPI_REAL8, &
 !ch                      MPI_COMM_gfs,ierr)
@@ -162,7 +162,7 @@
       call mpi_barrier (col_comm,ierr)
 !     call mpi_alltoallv(works,lensend,locsend,MPI_REAL8_r,
 !    &                   workr,lenrecv,locrecv,MPI_REAL8_r,
-!    &                   MPI_COMM_WORLD,ierr)
+!    &                   MPI_COMM_atm,ierr)
       call mpi_alltoallv(works,lensend,locsend,MPI_REAL8, &
                          workr,lenrecv,locrecv,MPI_REAL8, &
 !ch                      MPI_COMM_gfs,ierr)

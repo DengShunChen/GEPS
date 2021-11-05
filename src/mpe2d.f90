@@ -254,7 +254,7 @@
       return
       end
 !---------------------------------------------------------------------------------------
-      subroutine mpe2d_unify(work,a)
+      subroutine mpe2d_unify(work,a,opt)
 
 ! unify a(nx_partial,my_partial) into work(nx_full,my_full)
 
@@ -266,6 +266,7 @@
       real work(nx,my)
       real a(nxp,my_max)
       real b(nxp,my_max*nsize)
+      logical, optional :: opt
 
       call MPI_ALLGATHER( a,nxp*my_max, MPI_DOUBLE_PRECISION, &
                           b,nxp*my_max, MPI_DOUBLE_PRECISION, &
@@ -276,6 +277,7 @@
       do i=1,nsizex
          jf=jlist2_2d(i,j)
          nn=nxjlen_all(i,j)
+         if(present(opt)) nn=nxp
          work(ii:ii+nn-1,j)=b(1:nn,jf)
          ii=ii+nn
       enddo

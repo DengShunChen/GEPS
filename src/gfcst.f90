@@ -1,4 +1,9 @@
+#ifndef TIMCOMCPL
       program gfcst
+#else
+      subroutine gfcst(compid, mpi_comm_mct)
+      use gfs_cpl, only:gfs_cpl_init
+#endif
 !
 ! main program of CWBGFS
 ! modify to f90 bt C-H Lee and sort by River Chen in 2015
@@ -9,6 +14,9 @@
       implicit none
 
       integer  no
+#ifdef TIMCOMCPL
+      integer, intent(in) :: compid, mpi_comm_mct
+#endif
 !
 !  logical io units:
 !
@@ -19,12 +27,18 @@
 !  output model history for diabatic variables='phyout'
 !  input file of path/file names='filist'
 !
-
+#ifdef TIMCOMCPL
+      call mpe_init(mpi_comm_mct)
+#else
       call mpe_init
+#endif
 !
 !     get model constants
 !
       call cons
+#ifdef TIMCOMCPL
+      call gfs_cpl_init(compid)
+#endif
 !
 !  read in initial data and prepare for initialization/forecast
 !
@@ -47,10 +61,16 @@
 !
 !  time integration
 !
+#ifdef TIMCOMCPL
+      call intgrt(compid)
+!
+      call mpe_finalize
+#else
       call intgrt
 !
       call mpe_finalize
       call dmsexit(0)
 !
       stop
+#endif
       end

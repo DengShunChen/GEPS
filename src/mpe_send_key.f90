@@ -3,7 +3,7 @@
 #if defined(RSM) && defined(CWB_MPMD)
       use rank, only : root_io,MPI_COMM_gfs_all
 #else
-      use rank, only : root_io
+      use rank, only : root_io,MPI_COMM_atm
 #endif
       use mpi
       character*34 key
@@ -13,7 +13,7 @@
                      MPI_COMM_gfs_all, ist )
 #else
       call MPI_SEND( key, 34, MPI_CHARACTER, root_io, J, &
-                     MPI_COMM_WORLD, ist )
+                     MPI_COMM_atm, ist )
 #endif
       return
       end

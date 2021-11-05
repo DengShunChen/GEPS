@@ -61,8 +61,9 @@
 
       endif
 
-!     call MPI_BARRIER(MPI_COMM_WORLD, IERR )
+!     call MPI_BARRIER(MPI_COMM_atm, IERR )
+#ifndef TIMCOMCPL
       call MPI_FINALIZE(IERR)
-
+#endif
       return
       end
