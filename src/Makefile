@@ -348,7 +348,7 @@ INCLUDE = -I. -I${FFTW_INC} -I${NETCDF_INC}
 CMD  =  MTCo639L72_${MACHINE}
 
 ifeq ($(strip $(TIMCOMCPL)), TRUE)
-  INCLUDE := $(INCLUDE) -I../TIMCOM_cpl/cpl -I/users/xa09/$(MACHINE)/MCT/include
+  INCLUDE := $(INCLUDE) -I../../TIMCOM_cpl/cpl -I/users/xa09/$(MACHINE)/MCT/include
   CMD = libtco.a
 endif
 
@@ -398,7 +398,7 @@ LIBS	= ${NETCDF_LIB} ${W3NCO_LIBd} ${DMS_LIB} ${OPERLIB_LIB} ${FFTW_LIB} ${LIBS_
 
 ifeq ($(strip $(TIMCOMCPL)),TRUE)
   FFLAGS := $(FFLAGS) -DTIMCOMCPL
-  LIBS   := $(LIBS) -L/nwpr/gfs/xb124/tco639l72/TIMCOM_cpl/cpl -lcpl -L/users/xa09/$(MACHINE)/MCT/lib -lmct -lmpeu
+  LIBS   := $(LIBS) -L../../TIMCOM_cpl/cpl -lcpl -L/users/xa09/$(MACHINE)/MCT/lib -lmct -lmpeu
 endif
 
 .SUFFIXES: .o .mod .f90 .c
@@ -406,11 +406,11 @@ all defalut:	depend $(CMD)
 
 ifeq ($(strip $(TIMCOMCPL)), TRUE)
 $(CMD): $(OBJS)
-        @echo
-        @echo '==== LINK ===================================================='
-        $(RM) $(@)
-        $(AR) $(@) $(OBJS)
-        $(RANLIB) $(@)
+	@echo
+	@echo '==== LINK ===================================================='
+	$(RM) $(@)
+	$(AR) $(@) $(OBJS)
+	$(RANLIB) $(@)
 else
 $(CMD):	$(OBJS)
 	@echo
