@@ -14,10 +14,10 @@ module load dms/v4
 module use /nwpr/gfs/xb80/modulefiles/nceplibs/fx100
 module load w3nco/v2.0.6
 
-[[ -d build ]] && $SUDO rm -rf build
-mkdir -p build && cd build
+build_folder="build"
+[[ -d ${build_folder} ]] && $SUDO rm -rf ${build_folder}
+mkdir -p ${build_folder} && cd ${build_folder}
 
-cmake ../
-
+cmake -DBUILD_TYPE=Relase ../
 make -j${NTHREADS:-16} 
 

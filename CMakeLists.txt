@@ -30,6 +30,7 @@ set(CMAKE_C_COMPILER        mpifccpx)
 ###########################################################################
 # Build Options
 ###########################################################################
+set(BUILD_TYPE "Release" CACHE STRING "Build type")
 
 #option(USE_ACC   "enable OpenACC"         OFF)
 #option(USE_CUDA  "enable CUDA"            OFF)
@@ -59,6 +60,7 @@ message(STATUS "USE_PAR:      ${USE_PAR}")
 #message(STATUS "GPU_ARCHS:    ${GPU_ARCHS}")
 message(STATUS "Output path:  ${TCO_OUTPUT_PATH}")
 message(STATUS "Install path: ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "BUILD_TYPE : ${BUILD_TYPE}")
 
 # include CMake modules in `${PROJECT_SOURCE_DIR}/cmake/Modules`
 
@@ -81,8 +83,11 @@ message(STATUS "Install path: ${CMAKE_INSTALL_PREFIX}")
 
 add_definitions(-DTIMING -DUSE_FFTW -DW3TAG)
 
+
 # Specific flags for Fortran only:
-add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-Kfast,ocl,autoobjstack>")
+if(BUILD_TYPE STREQUAL "Release" )
+  add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-Kfast,ocl,autoobjstack>")
+endif()
 add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-X9 -Free -CcdRR8 -Cpp -x- -fw>")
 add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-Ec -Qa,d,i,p,t,x -Koptmsg=2 >")
 add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-SSL2BLAMP >")
@@ -141,8 +146,4 @@ endif()
 ###########################################################################
 add_subdirectory(src)
 add_subdirectory(test)
-
-###########################################################################
-# Spectial compile flags
-###########################################################################
 
