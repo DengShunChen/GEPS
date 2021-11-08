@@ -220,8 +220,9 @@
       lmax  = 16
       nfxr  = 33
 !
-      data facm/1.,0.,1.5,-0.5/
-!      data facm/0.,0.,0.5,0.,0.875,-0.375/
+!      data facm/1.,0.,1.5,-0.5/
+      data facm/ 1.   , 0.  , &
+                 1.5  ,-0.5 /
 
 !
 ! output initialization field
@@ -686,16 +687,16 @@
       endif
 
 !
-      if(tau.lt.12.)then
+!      if(tau.lt.12.)then
 !         hfiltx=hfilt
-         alpha = 0.75
+!         alpha = 0.75
 !      else if(tau.ge.6. .and. tau.le.9.)then
 !         hfiltx=hfilt*2.
 !         alpha = 0.75
 !      else if(tau.gt.9. .and. tau.le.12.)then
 !         hfiltx=hfilt*2.
 !         alpha = 0.75
-      endif
+!      endif
 
 
 !!      endif
@@ -727,9 +728,6 @@
             do k = 1, levp
               temmid(k,i,n,m)= facm(1,itt) * temnow(k,i,n,m)    &
                              + facm(2,itt) * temold(k,i,n,m)
-              vorold(k,i,n,m)= vornow(k,i,n,m) 
-              divold(k,i,n,m)= divnow(k,i,n,m)
-              temold(k,i,n,m)= temnow(k,i,n,m)
             enddo
             enddo
           enddo
@@ -741,7 +739,6 @@
             do n = mf, jtrun
               plmid(n,m,i)= facm(1,itt) * plnow(n,m,i)   &
                           + facm(2,itt) * plold(n,m,i)
-              plold(n,m,i)= plnow(n,m,i)
             enddo
           enddo
         enddo
@@ -755,13 +752,13 @@
                        + facm(2,itt) * up(i,k,jj)
             vm(i,k,jj) = facm(1,itt) * vt(i,k,jj) &
                        + facm(2,itt) * vp(i,k,jj)
-            tm(i,k,jj) = facm(1,itt) * tt(i,k,jj) &
+            tm(i,k,jj) = facm(1,itt) * tt(i,k,jj)  &
                        + facm(2,itt) * ttp(i,k,jj)
             rdivm(i,k,jj)= facm(1,itt) * rdiv(i,k,jj) &
                          + facm(2,itt) * rdivm(i,k,jj)
-            up(i,k,jj) = ut(i,k,jj)
-            vp(i,k,jj) = vt(i,k,jj)
-            ttp(i,k,jj)= tt(i,k,jj)
+!            up(i,k,jj) = ut(i,k,jj)
+!            vp(i,k,jj) = vt(i,k,jj)
+!            ttp(i,k,jj)= tt(i,k,jj)
           enddo
         enddo
         do k = 1, lev*ncld
@@ -806,9 +803,9 @@
       call mpe2d_transpose_ndsl_p2f(vm,vt_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 
-      call mpe2d_transpose_ndsl_p2f(up,uum_sl,    &
+      call mpe2d_transpose_ndsl_p2f(ut,uum_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f(vp,vvm_sl,    &
+      call mpe2d_transpose_ndsl_p2f(vt,vvm_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !!      call mpe2d_transpose_ndsl_p2f(tt,ttm_sl,    &
 !!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
@@ -922,7 +919,10 @@
 !
       call trandv ( jtrun,jtmax,nx,my,my_max,lev,vdzonl,vdmerd,weight,cim &
                    ,onocos,poly,dpoly,vormid,divmid,nsizey)
-
+!
+      call whdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld       &
+                   ,hfiltx,rad,cosl,ut,vt,vormid,divmid          &
+                   ,eps4,trefs)
 !
         do m = 1, mlistnum
           mf=mlist(m)
@@ -936,9 +936,9 @@
           enddo
         enddo
 !
-      call whdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld       &
-                   ,hfiltx,rad,cosl,up,vp,vormid,divmid          &
-                   ,eps4,trefs)
+!      call whdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld       &
+!                   ,hfiltx,rad,cosl,ut,vt,vormid,divmid          &
+!                   ,eps4,trefs)
 !
 !
 !     update all new wind field at mid-point
@@ -997,7 +997,7 @@
 ! transpose partial to full: ut -> ut_sl, vt -> vt_sl, ut -> uum_sl, vt -> vvm_sl, tt -> ttm_sl, qp -> qm_sl
 
 #ifdef MULTIPLE
-      call mpe2d_transpose_ndsl_p2f_multi(um   ,vm   ,up   ,vp   ,tt   ,qp   , &
+      call mpe2d_transpose_ndsl_p2f_multi(um   ,vm   ,ut   ,vt   ,tt   ,qp   , &
                                     ut_sl,vt_sl,uum_sl,vvm_sl,ttm_sl,qm_sl, &
                                     nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm,6)
 #else
@@ -1005,11 +1005,11 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f(vm,vt_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f(up,uum_sl,    &
+      call mpe2d_transpose_ndsl_p2f(ut,uum_sl,   &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f(vp,vvm_sl,    &
+      call mpe2d_transpose_ndsl_p2f(vt,vvm_sl,   &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f(ttp,ttm_sl,  &
+      call mpe2d_transpose_ndsl_p2f(tt,ttm_sl,   &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !!      call mpe2d_transpose_ndsl_p2f(pten,pten_sl, &
 !!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
@@ -1083,8 +1083,8 @@
       do m = 1, mlistnum
         mf=mlist(m)
         do n = mf, jtrun
-          pltemp(n,m,1)= dta*plten(n,m,1)+plold(n,m,1)
-          pltemp(n,m,2)= dta*plten(n,m,2)+plold(n,m,2)
+          pltemp(n,m,1)= dta*plten(n,m,1)+plnow(n,m,1)
+          pltemp(n,m,2)= dta*plten(n,m,2)+plnow(n,m,2)
         enddo
       enddo
 
@@ -1107,7 +1107,7 @@
                       , rainlp,raincu6,rainlp6,raincu3,rainlp3,raincu1,rainlp1  &
                       , hflux,qflux,ustar,tstar,qstar,e                         &
                       , eps,o3l,dtrad,ss,rs,plt,pk,pk2                          &
-                      , ptp,    up,    vp,   ttp,qp                             &
+                      , ptp,    ut,    vt,    tt,qp                             &
                       , pt ,vdzonl,vdmerd,ddtemp,qt                             &
                       , gwclim,tice,hice,qgini,thdai,tengi                      &
                       , acld,std,asol,olr,drag,ugws,vgws                        &
@@ -1148,10 +1148,9 @@
             nxj=nxdef_2d(j)
             do k = 1, lev
               do i = 1,nxj
-                vdzonl(i,k,jj) = ( vdzonl(i,k,jj) - up(i,k,jj) ) / dta
-                vdmerd(i,k,jj) = ( vp(i,k,jj) - vdmerd(i,k,jj) ) / dta
-                ddtemp(i,k,jj) = ( ddtemp(i,k,jj) - ttp(i,k,jj)) / dta
-                rdivm(i,k,jj)  = rdiv(i,k,jj)
+                vdzonl(i,k,jj) = ( vdzonl(i,k,jj) - ut(i,k,jj) ) / dta
+                vdmerd(i,k,jj) = ( vt(i,k,jj) - vdmerd(i,k,jj) ) / dta
+                ddtemp(i,k,jj) = ( ddtemp(i,k,jj) - tt(i,k,jj) ) / dta
               enddo
             enddo
           enddo
@@ -1223,8 +1222,9 @@
           do n = mf, jtrun
             do i = 1, 2
             do k = 1, levp
-!!              vorold(k,i,n,m)= vornow(k,i,n,m) 
-!!              divold(k,i,n,m)= divnow(k,i,n,m)
+              vorold(k,i,n,m)= vornow(k,i,n,m) 
+              divold(k,i,n,m)= divnow(k,i,n,m)
+              temold(k,i,n,m)= temnow(k,i,n,m)
               vornow(k,i,n,m)= dta*vorten(k,i,n,m) + vorold(k,i,n,m)
               divnow(k,i,n,m)= dta*divten(k,i,n,m) + divold(k,i,n,m)
               temnow(k,i,n,m)= dta*temten(k,i,n,m) + temold(k,i,n,m)
@@ -1237,6 +1237,7 @@
           do m = 1, mlistnum
             mf=mlist(m)
             do n = mf, jtrun
+              plold(n,m,i)= plnow(n,m,i)
               plnow(n,m,i)= dta*plten(n,m,i)+plold(n,m,i)
             enddo
           enddo
@@ -1300,6 +1301,19 @@
         enddo
         dt24 = dt24 + dtx
 !
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        do k = 1, lev
+          do i = 1,nxj
+            up(i,k,jj) = ut(i,k,jj)
+            vp(i,k,jj) = vt(i,k,jj)
+            ttp(i,k,jj)= tt(i,k,jj)
+            rdivm(i,k,jj)  = rdiv(i,k,jj)
+          enddo
+        enddo
+       enddo
+!
 !  from updated spectral variables compute corresponding grid
 !  point fields
 !
@@ -1341,6 +1355,8 @@
       call tranuv (jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac &
                   , poly,dpoly,vornow,divnow,ut,vt,nsizey)
 !
+
+!
 !  detact instability occure or not
 !
       if(tau.gt.12.) then
@@ -1353,7 +1369,7 @@
         if( mod(tau+0.001, 1.) .lt. dtx_tau)then
           if(n_stable .gt. nc_stable)then
             hfiltx=0.5*hfilt
-            alpha=0.7
+            alpha=0.75
             if(myrank .eq. 0)print *,'** stable change hfilt=',hfiltx,  &
                              ' and keep alpha=',alpha
           else if(n_unstable .gt. nc_stable)then
@@ -1363,7 +1379,7 @@
                              ' and alpha=',alpha
           else
             hfiltx=hfilt
-            alpha=0.7
+            alpha=0.75
             if(myrank .eq. 0)print *,'** keep hfilt=',hfiltx,           &
                              ' and alpha=',alpha
           endif

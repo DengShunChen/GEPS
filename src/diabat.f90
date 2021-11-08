@@ -418,7 +418,7 @@
       real      rcup2(nxp)
 ! for scale-aware convection
       real      garea(nxp),tpr,tem1,tem2,jup,jdn,tpi
-      real,     parameter :: qmin=1.0e-10
+      real,     parameter :: qmin=1.0e-20
 ! for wsm6 & thompson
       integer   nmmiph
       real      phii(nxp,lev+1)
@@ -503,6 +503,7 @@
 
 !CWB2016
       lssav=.false.
+      doclxu=.false.
       icsdsw=0
       icsdlw=0
       rld_adj=0.
