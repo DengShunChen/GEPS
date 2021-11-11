@@ -8,6 +8,10 @@
 #   ./build.sh [MACHINE]
 #                                                                Deng-Shun Chen
 #                                                                   2020-04-28
+#-------------
+# add feature:                                        
+#   1. for RSM-IO                                                  CHEN,YING-JU
+#      use "modulefile.tcogfs.${MACHINE}.rsm" files                  2021-07-30
 #------------------------------------------------------------------------------
 #
 # MACHINE : fx10, fx100, pcc

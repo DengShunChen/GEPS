@@ -57,7 +57,7 @@
     logical :: lsimpl,lzadv, yesdia,dopbl, docup, dorad,      &
             dolsp, dograv,doshl, dodry, donnmi,ozon,       &
             restrt,hdiff, cstar, update,doincr,hybrid,     &
-            doo3l, docgrav
+            doo3l, docgrav,doclx
 
     ! for stochastic physics
     logical :: dosppt       =.false.
@@ -69,6 +69,12 @@
 
     !for Semi-Lagrangain
     logical :: ndsladvh2
+
+! output data for RSM (Also, RSM compiling flag is necessary)
+    !for RSM output
+    logical :: outrsm
+    integer :: rsmoutinv
+    real    :: rlon1, rlon2, rlat1, rlat2, rgrdsz
 
     !for horizontal diffusion
     integer :: hdk1,hdk2

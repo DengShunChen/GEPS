@@ -59,6 +59,10 @@
 !byl                wss3(levp,2,3,jtrun,jtmax),cc3(nx+2,levp,3,my_max)
 
       character lrec*26,rfile*55,ctau*6,topostd*4,topohgt*4,key*34
+#ifdef RSM
+      character*12 dtgrsm
+      integer idtgrsm
+#endif
 !
 ! restart  : read(7) work array
 !
@@ -461,12 +465,15 @@
               ii=ii+1
             enddo
           enddo
-          if( myrank .eq. 0 ) &
-             print*,"get ncep's sea ice analysis, at dtg=",idtg
 !
-          call syslbl('w00092',idtg,0,ggdef,lrec)
-          write(key,'(a26,a1,i7.7)') lrec,'H',lncrec
-          call dmschkr (ifilin,key//char(0),istat)
+          if( myrank .eq. 0 ) then
+             print*,"get ncep's sea ice analysis, at dtg=",idtg
+             call syslbl('w00092',idtg,0,ggdef,lrec)
+             write(key,'(a26,a1,i7.7)') lrec,'H',nxmy
+             call dmschkr (ifilin,key//char(0),istat)
+          endif
+          call mpe_bcast(istat,1,0,mpe_integer)
+!
           if ( istat .eq. 0 ) then
             call dmsread(nx,my,lrec,nxmy,'H',ifilin,ww1,istat)
 !byl          if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
@@ -1316,6 +1323,25 @@
               , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6       &
               , ggdef)
       endif
+!
+#ifdef RSM
+      if (outrsm) then
+        if(myrank.eq.0)print*,' output: rsm date',idtg
+        write(dtgrsm,'(I12)') idtg
+        read(dtgrsm,'(I10,I2)')idtgrsm,ii   ! ii is dummy integer
+#ifdef CWB_MPMD
+        call send_idate(idtgrsm)
+#else
+        call wrte_idate(idtgrsm)
+#endif
+        call rsmout(idtg,0,nx,my,my_max,lev,ncld      &
+                , ptop,cp,rgas,grav,sgeo,pdiff        &
+                , t1000,pt,plt,pk,pk2,phi,ut,vt       &
+                , tt,qt,tg,snr,cosl                   &
+                , km_soil,smc,stc                     &
+                , ice,land,ocean)
+      endif
+#endif
 !
 !
         if(typhoon)then
