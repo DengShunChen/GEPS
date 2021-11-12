@@ -45,7 +45,7 @@ endif()
 #option(USE_NVTX  "enable NVTX"            OFF)
 option(USE_OMP   "enable OpenMP"                              ON)
 option(USE_PAR   "enable Auto Parallel"                       ON)
-option(USE_RSM   "enable output RSM initial/basefield data"   ON)
+option(USE_RSM   "enable output RSM initial/basefield data"  OFF)
 option(USE_MPMD  "enable output RSM via MPMD "               OFF)
 
 #set(GPU_ARCHS "70" CACHE STRING "GPU architecture(V100=70;A100=80)")
