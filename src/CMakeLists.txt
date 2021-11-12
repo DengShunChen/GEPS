@@ -331,9 +331,26 @@ zx.f90
 cwb_fftw.c
 )
 
-set(EXEC "tcogfs.x")
+list(APPEND RSM_SRC
+rsmout.f90
+send_data.f90
+send_idate.f90
+wrte_data.f90
+wrte_idate.f90
+xyintpo.f90
+)
 
-add_executable(${EXEC} ${TCO_SRC})
+if(NOT ${USE_RSM})
+  set(EXEC "tcogfs.x")
+else()
+  set(EXEC "tcogfs_rsm.x")
+endif()
+
+if(NOT ${USE_RSM})
+  add_executable(${EXEC} ${TCO_SRC})
+else()
+  add_executable(${EXEC} ${TCO_SRC} ${RSM_SRC})
+endif()
 set_target_properties(${EXEC} 
     PROPERTIES 
     LINKER_LANGUAGE Fortran
