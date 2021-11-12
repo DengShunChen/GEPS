@@ -57,7 +57,7 @@ foreach( _lib IN ITEMS fftw3 fftw3_threads )
     DOC "Specify the fttw3 library here."
     NO_DEFAULT_PATH
   )
-  message("FFTW_LIBRARY: ${FFTW_LIBRARY_${_lib}}")
+  message(STATUS "  - FFTW_LIBRARY: ${FFTW_LIBRARY_${_lib}}")
   list( APPEND FFTW_LIBRARIES ${FFTW_LIBRARY_${_lib}} )
 
 endforeach()

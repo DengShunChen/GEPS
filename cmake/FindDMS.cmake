@@ -44,7 +44,7 @@ foreach( _lib IN ITEMS rdms gdbm )
     DOC "Specify the dms library here."
     NO_DEFAULT_PATH
   )
-  message("DMS_LIBRARY: ${DMS_LIBRARY_${_lib}}")
+  message(STATUS "  - DMS_LIBRARY: ${DMS_LIBRARY_${_lib}}")
   list( APPEND DMS_LIBRARIES ${DMS_LIBRARY_${_lib}} )
 
 endforeach()
