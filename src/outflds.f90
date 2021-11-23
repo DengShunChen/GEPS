@@ -20,6 +20,9 @@
       use index
       use mod_outflds
       use radn, only : ntcw,ntiw,ntoz
+!hcwei  write grb2
+      use mod_grb2_param
+      use grib_mod
 
       implicit  none
 
@@ -129,6 +132,21 @@
 !
       call whttau (itau,numout,outdir,ntau,taudir)
       if(ntau.eq.0) return
+
+      !========================
+!hcw !open grb2 data 
+      io_format=2 !will move to init_blocking.f90
+
+      if(io_format==2 .and. lwrite .eqv. .true. .and. myrank==0 )then
+           allocate(cgrib(lcgrib),bmap(nx*my))
+133                   format( A     ,I12.12 ,A  ,I4.4 ,A     )
+           write(grbfile,133 )'GFS_',idtg   ,'_',itau ,'.grb2'
+           print*,'OutFileName= ',trim(grbfile)
+           call baopenw(grbid,trim(grbfile),ierr)
+           call latlong(nx,my)
+           call seclist01(idtg,itau)
+       endif
+
 !
 !  save qt into local arrays
 !
@@ -619,6 +637,13 @@
           call sitout(nx,my,my_max,itau,ifilout,idtg,num,whtlev,ggdef)
         endif
       endif
+
+!hcw  close grb2 file
+      if(io_format==2.and.myrank==0)then
+        call baclose(grbid,ierr)
+        deallocate(cgrib,bmap)
+      endif
+
 !
 !  wk_xy(-,-,1) : temperature at the lowest sigma level
 !  wk_xy(-,-,2) : u wind at the lowest sigma level
@@ -673,15 +698,15 @@
         j=jlist1(jj)
         nxj=nxdef_2d(j)
         do i = 1,nxj
-          soil_xy(i,jj,1) = smc(i,1,jj)
-          soil_xy(i,jj,2) = smc(i,2,jj)
-          soil_xy(i,jj,3) = smc(i,3,jj)
-          soil_xy(i,jj,4) = smc(i,4,jj)
-          soil_xy(i,jj,5) = slc(i,1,jj)
-          soil_xy(i,jj,6) = slc(i,2,jj)
-          soil_xy(i,jj,7) = slc(i,3,jj)
-          soil_xy(i,jj,8) = slc(i,4,jj)
-          soil_xy(i,jj,9) = stc(i,1,jj)
+          soil_xy(i,jj,1 ) = smc(i,1,jj)
+          soil_xy(i,jj,2 ) = smc(i,2,jj)
+          soil_xy(i,jj,3 ) = smc(i,3,jj)
+          soil_xy(i,jj,4 ) = smc(i,4,jj)
+          soil_xy(i,jj,5 ) = slc(i,1,jj)
+          soil_xy(i,jj,6 ) = slc(i,2,jj)
+          soil_xy(i,jj,7 ) = slc(i,3,jj)
+          soil_xy(i,jj,8 ) = slc(i,4,jj)
+          soil_xy(i,jj,9 ) = stc(i,1,jj)
           soil_xy(i,jj,10) = stc(i,2,jj)
           soil_xy(i,jj,11) = stc(i,3,jj)
           soil_xy(i,jj,12) = stc(i,4,jj)
@@ -701,6 +726,18 @@
           wk_xy(i,jj,12) = qt(i,lev,jj)
         enddo
       enddo
+
+! open grb2 for out2d
+      if(io_format==2 .and. lwrite .eqv. .true. .and. myrank==0 )then
+           allocate(cgrib(lcgrib),bmap(nx*my))
+134                   format( A     ,I12.12 ,A  ,I4.4 ,A     )
+           write(grbfile,134 )'GFS_',idtg   ,'_',itau ,'_out2d.grb2'
+           print*,'OutFileName= ',trim(grbfile)
+           call baopenw(grbid,trim(grbfile),ierr)
+           call latlong(nx,my)
+           call seclist01(idtg,itau)
+       endif
+
 !
 ! output some 2-dimension veriable to dmsfile
 !
@@ -712,6 +749,12 @@
                  ,acld,ugws,vgws,t2,q2,rh2,rh10,u10,v10,gfx,rld     &
 !xb110                 ,sld,wk_xy,soil_xy,canopy,ggdef,lwrite,flash)
                  ,sld,wk_xy,soil_xy,canopy,ggdef)
-!
+
+!hcw  close grb2 file
+      if(io_format==2.and.myrank==0)then
+        call baclose(grbid,ierr)
+        deallocate(cgrib,bmap)
+      endif
+
       return
       end

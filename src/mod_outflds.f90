@@ -8,6 +8,7 @@ contains
 !
       use index
       use rank, only : myrank
+      use mod_grb2_param !for write grb2
 
       implicit  none
 
@@ -29,6 +30,7 @@ contains
       integer    k,lpl,lenc,n,num,istat
   
       logical :: lwrite
+      real*4::r4out(nx,my) !for write grb2
 
       do k = 1, lev+1
        tens(k) = 1.0
@@ -54,6 +56,11 @@ contains
       call unify_reduceintp(nx,my,my_max,div(1,1,k),wk1)
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,wk1,istat)
+      if(io_format==2.and.myrank==0)then
+        pcoord=plev(k) 
+        r4out(:,:)=wk1(:,:)
+        call wrt_grb2(itau,0,2,13,6,100,-2,pcoord,r4out)
+      endif
       call qmaxn3(wk1,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if ( myrank .eq. ncnt ) then
         pout=wk1
@@ -63,7 +70,8 @@ contains
       endif
    10 continue
    20 continue
-      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
+      if(lwrite .and. myrank .le. ncnt .and.io_format==1) &
+             call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
       return
   end subroutine divgout
@@ -74,6 +82,7 @@ contains
       use index
       use rank, only : myrank
       use mpe
+      use mod_grb2_param !for write grb2
 
       implicit  none
 
@@ -98,6 +107,7 @@ contains
       integer   k,lpl,lenc,j,nxj,ij,jj,i,n,istat
 
       logical lwrite
+      real*4::r4out(nx,my) !for write grb2
 
       do k = 1, lev+1
        tens(k) = 1.0
@@ -143,6 +153,11 @@ contains
       call unify_reduceintp(nx,my,my_max,drag(1,1,k),wk1)
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,wk1,istat)
+      if(io_format==2.and.myrank==0)then
+        pcoord=plev(k) 
+        r4out(:,:)=wk1(:,:)
+        call wrt_grb2(itau,0,2,196,6,100,-2,pcoord,r4out)
+      endif
       call qmaxn3(wk1,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if ( myrank .eq. ncnt ) then
         pout=wk1
@@ -152,7 +167,8 @@ contains
       endif
    10 continue
    20 continue
-      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
+      if(lwrite .and. myrank .le. ncnt .and.io_format==1) &
+                call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
       return
   end subroutine dragout
@@ -163,6 +179,7 @@ contains
 
       use index
       use rank
+      use mod_grb2_param !for write grb2
 
       implicit  none
 
@@ -186,6 +203,7 @@ contains
       integer      i,k,n,lenc,istat,lpl,jj,j,nxj
 
       logical lwrite
+      real*4::r4out(nx,my) !for write grb2
 
       do k = 1, lev+1
        tens(k) = 1.0
@@ -268,6 +286,11 @@ contains
 !        glob=slp
 !      endif
 !
+      if(io_format==2.and.myrank==0)then
+        pcoord=plev(k) 
+        r4out(:,:)=slp(:,:)
+        call wrt_grb2(itau,0,3,5,0,100,-2,pcoord,r4out)
+      endif
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3(slp,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if ( myrank .eq. ncnt ) then
@@ -279,7 +302,8 @@ contains
       endif
    10 continue
    20 continue
-      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
+      if(lwrite .and. myrank .le. ncnt.and.io_format==1) &
+            call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
       return
   end subroutine geopout
@@ -289,6 +313,7 @@ contains
 !
       use index
       use rank, only : myrank
+      use mod_grb2_param
 
       implicit  none
       integer   nx,my,my_max,lpout,lev,itau,num,ncnt
@@ -308,7 +333,8 @@ contains
       character*4 ggdef
 !
       logical :: lwrite
- 
+      real*4::r4out(nx,my)
+
       do k = 1, lev+1
        tens(k) = 1.0
       end do
@@ -341,6 +367,12 @@ contains
        tmp(i,jj)= min(100.,max(dew(i,jj,k)*100.,0.0))
    20 continue
       call unify_reduceintp(nx,my,my_max,tmp,glob)
+      if(io_format==2.and.myrank==0)then
+        pcoord=plev(k) 
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,1,1,2,100,-2,pcoord,r4out)
+      endif
+
 !!      do 20 i=1,lenc
 !!      glob(i,1)= min(100.,max(dew(i,k)*100.,0.0))
 !!   20 continue
@@ -359,7 +391,8 @@ contains
       endif
    10 continue
    30 continue
-      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
+      if(lwrite .and. myrank .le. ncnt.and.io_format==1) &
+          call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
       return
   end subroutine shumout
@@ -371,6 +404,7 @@ contains
       use rank, only : myrank
       use radn, only : ntoz
       use param, only : ncld
+      use mod_grb2_param
 
       implicit  none
 
@@ -391,6 +425,7 @@ contains
       character*4 ggdef
       character*3 cspec(6)
       logical :: lwrite
+      real*4::r4out(nx,my)
 !
       cspec=(/'500','551','553','552','554','555'/)
 !
@@ -454,6 +489,17 @@ contains
 !!      do 20 i=1,lenc
 !!      glob(i,1)= max(dew(i,k),0.0)
 !!   20 continue
+      if(io_format==2.and.myrank==0)then
+        pcoord=plev(k) 
+        r4out(:,:)=glob(:,:)
+        if(ntrac.eq.1)then
+          call wrt_grb2(itau,0,1,0,6,100,-2,pcoord,r4out)   !Specit Humility
+        else if(ntrac.eq.ncld+1)then
+          call wrt_grb2(itau,0,1,22,8,100,-2,pcoord,r4out)  ! cloud water
+        else if(ntrac.eq.ntoz)then
+          call wrt_grb2(itau,0,14,1,8,100,-2,pcoord,r4out)  !ozone
+        endif
+      endif
 !
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
 !!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
@@ -466,7 +512,8 @@ contains
       endif
    10 continue
    30 continue
-      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
+      if(lwrite .and. myrank .le. ncnt .and. io_format==1) &
+           call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
    40 continue
 
@@ -480,6 +527,7 @@ contains
       use index
       use mpe
       use rank
+      use mod_grb2_param
 !
       implicit  none
       integer   nx,my,my_max,i,j,jj,kk,n,lev,nxj,itau,ntau,num,lenc,istat
@@ -497,6 +545,7 @@ contains
       character*6 label(ntau),labx
    
       logical :: lwrite
+      real*4::r4out(nx,my)
 !
       do jj = 1, jlistnum
         j=jlist1(jj)
@@ -537,8 +586,14 @@ contains
       if(label(kk).eq.'SSL010' .or. label(kk).eq.'ssl010') then
         call unify_reduceintp(nx,my,my_max,slp,glob)
         call syslbl('ssl010',idtg,itau,ggdef,lrec)
-        if(lwrite) call dmswrit(nx,my,lrec,lenc,'H',ifilout,glob,istat)
+        if(io_format==1)then
+          if(lwrite) call dmswrit(nx,my,lrec,lenc,'H',ifilout,glob,istat)
+        elseif(io_format==2.and.myrank==0)then
+          r4out(:,:)=glob(:,:)
+          call wrt_grb2(itau,0,3,0,2,101,0,0.,r4out)
+        endif
         call qmaxn3(glob,lrec(1:14),lrec(15:26),1,1,1,nx,my,1)
+
 !
 !  terrain pressure
 !
@@ -556,7 +611,13 @@ contains
         call syslbl('b00010',idtg,itau,ggdef,lrec)
 !byl        if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
         if(lwrite) call dmswrit(nx,my,lrec,lenc,'H',ifilout,glob,istat)
+        !write grb2 data 
+        if(io_format==2.and.myrank==0)then
+          r4out(:,:)=glob(:,:)
+          call wrt_grb2(itau,0,3,0,2,1,0,0.,r4out)
+        endif
         call qmaxn3(glob,lrec(1:14),lrec(15:26),1,1,1,nx,my,1)
+
 !
 !  terrain pressure tendency
 !
@@ -580,6 +641,7 @@ contains
 !
       use index
       use rank,   only : myrank
+      use mod_grb2_param
 
       implicit  none
 
@@ -601,6 +663,7 @@ contains
       character*4 ggdef
 !
      logical :: lwrite
+     real*4::r4out(nx,my)
 
       do k = 1, lev+1
        tens(k) = 1.0
@@ -644,6 +707,12 @@ contains
 !!        glob=slp
 !
 !!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      if(io_format==2.and.myrank==0)then
+        pcoord=plev(k)
+        r4out(:,:)=slp(:,:)
+        call wrt_grb2(itau,0,0,0,2,100,-2,pcoord,r4out)
+      endif
+
       call qmaxn3(slp,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if ( myrank .eq. ncnt ) then
         pout=slp
@@ -653,7 +722,8 @@ contains
       endif
    10 continue
    30 continue
-      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
+      if(lwrite .and. myrank .le. ncnt .and. io_format==1) &
+          call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
       return
   end subroutine tempout
@@ -663,6 +733,7 @@ contains
 !
       use index
       use rank, only : myrank
+      use mod_grb2_param
 
       implicit  none
 
@@ -685,6 +756,7 @@ contains
       integer   k,lpl,lenc,i,n,istat,jj,j,nxj
 !
       logical :: lwrite
+     real*4::r4out(nx,my)
 
       do k = 1, lev+1
        tens(k) = 1.0
@@ -747,6 +819,11 @@ contains
 !  reduceintp has been done in voterp (2011/5)
 !
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,wk1,istat)
+      if(io_format==2.and.myrank==0)then
+        pcoord=plev(k)
+        r4out(:,:)=wk1(:,:)
+        call wrt_grb2(itau,0,2,12,6,100,-2,pcoord,r4out)
+      endif
       call qmaxn3(wk1,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if ( myrank .eq. ncnt ) then
         pout=wk1
@@ -756,7 +833,8 @@ contains
       endif
    10 continue
    20 continue
-      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
+      if(lwrite .and. myrank .le. ncnt .and.io_format==1) & 
+            call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
       return
   end subroutine vortout
@@ -767,6 +845,7 @@ contains
 !
       use index
       use rank, only : myrank
+      use mod_grb2_param
 
       implicit none
 
@@ -794,6 +873,7 @@ contains
       data rad/6.371e6/
 !
      logical :: lwrite
+     real*4::r4out(nx,my)
 
       do k = 1, lev+1
        tens(k) = 1.0
@@ -865,6 +945,12 @@ contains
 !!      glob(i,j)= wind(i,j,k)*xxx
 !!   50 continue
 !
+      if(io_format==2.and.myrank==0)then
+        pcoord=plev(k)
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,2,2,2,100,-2,pcoord,r4out)
+      endif
+
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
 !
 !  reduceintp has been done in voterp (2011/5)
@@ -879,7 +965,8 @@ contains
       endif
    10 continue
    30 continue
-      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
+      if(lwrite .and. myrank .le. ncnt .and.io_format==1) &
+           call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
 !  now the v components
 !
@@ -934,6 +1021,12 @@ contains
 !!      glob(i,j)= wind(i,j,k)*xxx
 !!   60 continue
 !
+      if(io_format==2.and.myrank==0)then
+        pcoord=plev(k)
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,2,3,2,100,-2,pcoord,r4out)
+      endif
+
       call syslbl(krec(k),idtg,itau,ggdef,ihdg)
 !
 !  reduceintp has been done in voterp (2011/5)
@@ -948,7 +1041,8 @@ contains
       endif
    20 continue
    40 continue
-      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
+      if(lwrite .and. myrank .le. ncnt .and.io_format==1) & 
+          call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
 !  now the w components
 !
@@ -969,6 +1063,12 @@ contains
 !!      enddo
 !!      enddo
 !
+      if(io_format==2.and.myrank==0)then
+        pcoord=plev(k)
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,2,8,6,100,-2,pcoord,r4out)
+      endif
+
       call syslbl(mrec(k),idtg,itau,ggdef,ihdg)
 !
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
@@ -981,7 +1081,8 @@ contains
       endif
    22 continue
    42 continue
-      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
+      if(lwrite .and. myrank .le. ncnt .and.io_format==1) &
+            call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
       return
   end subroutine windout

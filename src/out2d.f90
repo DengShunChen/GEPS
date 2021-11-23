@@ -9,6 +9,9 @@
       use mpe
       use index
       use mod_outflds
+!hcwei  write grb2
+      use mod_grb2_param
+
 !
       implicit  none
 
@@ -54,6 +57,8 @@
 !xb110>
 !      real flash(nxp,my_max)  !flash density (in flashes km^-2 day^-1)
 !xb110<
+!xb119
+      real*4::r4out(nx,my)
 
       num= 0
       nc = 0
@@ -95,7 +100,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,0,10,2,1,0,0.,r4out)
+      endif
       go to 30
       endif
 !
@@ -106,7 +116,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,0,11,2,1,0,0.,r4out)
+      endif
       go to 30
       endif
 !
@@ -117,7 +132,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,0,0,2,1,0,0.,r4out)
+      endif
       go to 30
       endif
 !
@@ -128,7 +148,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,19,1,2,1,0,0.,r4out)
+      endif
       go to 30
       endif
 !
@@ -148,7 +173,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,0,21,2,1,0,0.,r4out)
+      endif
       go to 30
       endif
 !
@@ -159,7 +189,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,0,3,2,1,0,0.,r4out)
+      endif
       go to 30
       endif
 !
@@ -170,7 +205,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,1,60,2,103,0,0.,r4out)
+      endif
       go to 30
       endif
 !
@@ -181,7 +221,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,0,1,2,1,0,0.,r4out)
+      endif
       go to 30
       endif
 !
@@ -197,7 +242,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,1,10,2,1,0,0.,r4out)
+      endif
  
 !byl      glob=glob2
 
@@ -206,7 +256,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,1,9,2,1,0,0.,r4out)
+      endif
 !
       call syslbl ('b00620',idtg,itau,ggdef,ihdg)
 !byl      do 98 j=1,my
@@ -222,7 +277,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,1,7,2,1,0,0.,r4out)
+      endif
 !
       call unify_reduceintp(nx,my,my_max,raintot,glob)
 !byl      call mpe2d_unify(glob,raintot)
@@ -230,7 +290,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,1,8,0,1,0,0.,r4out)
+      endif
       go to 30
       endif
 !
@@ -241,7 +306,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,4,0,2,1,0,0.,r4out)
+      endif
       go to 30
       endif
 !
@@ -252,7 +322,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,5,0,2,1,0,0.,r4out)
+      endif
       go to 30
       endif
 !
@@ -274,7 +349,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,4,2,2,1,0,0.,r4out)
+      endif
       go to 30
       endif
 !
@@ -285,7 +365,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,5,3,2,1,0,0.,r4out)
+      endif
       go to 30
       endif
 !
@@ -296,7 +381,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,4,7,2,1,0,0.,r4out)
+      endif
       go to 30
       endif
 !
@@ -307,7 +397,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,4,1,2,1,0,0.,r4out)
+      endif
       go to 30
       endif
 !
@@ -318,7 +413,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,5,1,2,1,0,0.,r4out)
+      endif
       go to 30
       endif
 !
@@ -329,7 +429,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,0,10,2,1,0,0.,r4out)
+      endif
       go to 30
       endif
 !
@@ -340,7 +445,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,3,16,2,1,0,0.,r4out)
+      endif
       go to 30
       endif
 !
@@ -351,7 +461,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,3,17,2,1,0,0.,r4out)
+      endif
       go to 30
       endif
 !
@@ -360,6 +475,10 @@
       do i=1,lev*my
        acld(i,1)=acld(i,1)*100.
       end do
+      if(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,6,22,2,7,0,0.,r4out)
+      endif
       call syslbl ('x00730',idtg,itau,ggdef,ihdg)
       call dmswrit(lev,my,ihdg,lenc2,'H',ifilout,acld,istat)
       go to 30
@@ -368,11 +487,16 @@
       if(label(kk).eq.'b00100') then
       call unify_reduceintp(nx,my,my_max,wk_xy(1,1,1),glob)
 !byl      call mpe2d_unify(glob,wk_xy(1,1,1))
-      call syslbl ('b00100',idtg,itau,ggdef,ihdg)
+     call syslbl ('b00100',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,0,0,2,103,0,0.,r4out)
+      endif
       go to 30
       endif
 !
@@ -383,7 +507,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,2,2,2,103,0,0.,r4out)
+      endif
       go to 30
       endif
 !
@@ -394,7 +523,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,2,3,2,103,0,0.,r4out)
+      endif
       go to 30
       endif
 !
@@ -405,7 +539,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,1,3,2,7,0,0.,r4out)
+      endif
       go to 30
       endif
 !
@@ -416,7 +555,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,1,1,2,103,0,0.,r4out)
+      endif
       go to 30
       endif
 !
@@ -437,7 +581,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,0,0,2,103,0,2.,r4out)
+      endif
       go to 30
       endif
 !
@@ -448,7 +597,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,1,0,6,103,0,2.,r4out)
+      endif
       go to 30
       endif
 !
@@ -459,7 +613,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,1,1,2,103,0,2.,r4out)
+      endif
       go to 30
       endif
 !
@@ -470,7 +629,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,2,2,2,103,0,10.,r4out)
+      endif
       go to 30
       endif
 !
@@ -481,7 +645,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,2,3,2,103,0,10.,r4out)
+      endif
       go to 30
       endif
 !
@@ -491,7 +660,12 @@
       if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,1,1,2,103,0,10.,r4out)
+      endif
       go to 30
       endif
 !
@@ -502,7 +676,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,0,3,2,1,0,0.,r4out)
+      endif
       go to 30
       endif
 !
@@ -523,7 +702,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,0,3,2,151,0,1.,r4out)
+      endif
       go to 30
       endif
 
@@ -535,7 +719,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,0,3,2,151,0,2.,r4out)
+      endif
       go to 30
       endif
 ! 40-100cm
@@ -546,7 +735,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,0,3,2,151,0,3.,r4out)
+      endif
       go to 30
       endif
 ! 100-200cm
@@ -557,7 +751,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,0,3,2,151,0,4.,r4out)
+      endif
       go to 30
       endif
 !kc >
@@ -569,7 +768,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,0,3,2,151,0,1.,r4out)
+      endif
       go to 30
       endif
 
@@ -598,7 +802,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,0,3,2,151,0,2.,r4out)
+      endif
       go to 30
       endif
 !xb13 <
@@ -610,7 +819,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,0,3,2,151,0,3.,r4out)
+      endif
       go to 30
       endif
 
@@ -622,7 +836,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,0,3,2,151,0,4.,r4out)
+      endif
       go to 30
       endif
 ! 100-200cm
@@ -633,7 +852,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,0,3,2,151,0,5.,r4out)
+      endif
       go to 30
       endif
 !xb13 >
@@ -647,7 +871,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,3,10,2,151,0,1.,r4out)
+      endif
       go to 30
       endif
 ! 10-40cm
@@ -658,7 +887,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,3,10,2,151,0,2.,r4out)
+      endif
       go to 30
       endif
 ! 40-100cm
@@ -669,7 +903,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,3,10,2,151,0,3.,r4out)
+      endif
       go to 30
       endif
 ! 100-200cm
@@ -680,7 +919,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,3,10,2,151,0,4.,r4out)
+      endif
       go to 30
       endif
 !xb13
@@ -692,7 +936,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,3,10,2,151,0,1.,r4out)
+      endif
       go to 30
       endif
 
@@ -718,7 +967,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,3,10,2,151,0,2.,r4out)
+      endif
       go to 30
       endif
 ! 10-40cm
@@ -729,7 +983,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,3,10,2,151,0,3.,r4out)
+      endif
       go to 30
       endif
 ! 40-100cm
@@ -740,7 +999,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,3,10,2,151,0,4.,r4out)
+      endif
       go to 30
       endif
 ! 100-200cm
@@ -751,7 +1015,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,3,10,2,151,0,5.,r4out)
+      endif
       go to 30
       endif
 !<xb13
@@ -765,7 +1034,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,3,18,2,151,0,1.,r4out)
+      endif
       go to 30
       endif
 !10-40cm
@@ -776,7 +1050,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,3,18,2,151,0,2.,r4out)
+      endif
       go to 30
       endif
 ! 40-100cm
@@ -787,7 +1066,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,3,18,2,151,0,3.,r4out)
+      endif
       go to 30
       endif
 ! 100-200cm
@@ -798,7 +1082,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,3,18,2,151,0,4.,r4out)
+      endif
       go to 30
       endif
 !xb13>
@@ -810,7 +1099,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,3,18,2,151,0,1.,r4out)
+      endif
       go to 30
       endif
 ! 10-200cm
@@ -836,7 +1130,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,3,18,2,151,0,2.,r4out)
+      endif
       go to 30
       endif
 ! 10-40cm
@@ -848,7 +1147,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,3,18,2,151,0,3.,r4out)
+      endif
       go to 30
       endif
 ! 40-100cm
@@ -859,7 +1163,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,3,18,2,151,0,4.,r4out)
+      endif
       go to 30
       endif
 ! 100-200cm
@@ -870,7 +1179,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,2,3,18,2,151,0,5.,r4out)
+      endif
       go to 30
       endif
 !< xb13
@@ -883,7 +1197,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,6,1,2,7,0,0.,r4out)
+      endif
       go to 30
       endif
 ! chig_high cloud fraction
@@ -894,7 +1213,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,6,5,2,7,0,0.,r4out)
+      endif
       go to 30
       endif
 ! cmid_middle cloud fraction
@@ -905,7 +1229,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,6,4,2,7,0,0.,r4out)
+      endif
       go to 30
       endif
 ! clow_low cloud fraction
@@ -916,7 +1245,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,6,3,2,7,0,0.,r4out)
+      endif
       go to 30
       endif
 !
@@ -928,7 +1262,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,3,18,1,7,0,0.,r4out)
+      endif
       go to 30
       endif
 !
@@ -940,7 +1279,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,1,0,9,104,0,1.,r4out)
+      endif
       go to 30
       endif
 !
@@ -951,7 +1295,12 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(io_format==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(io_format==2.and.myrank==0)then
+        r4out(:,:)=glob(:,:)
+        call wrt_grb2(itau,0,1,0,3,104,0,72.,r4out)
+      endif
       go to 30
       endif
 !xb110> flash density
@@ -968,6 +1317,7 @@
 !xb110<
 
    30 continue
+      ptp3=100 !pressure level
 !
       if ( myrank .lt. nc )             &
          call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,mout,istat)

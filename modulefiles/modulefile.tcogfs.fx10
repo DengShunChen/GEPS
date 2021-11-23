@@ -56,4 +56,15 @@ setenv FFTW_INC "/users/xa09/${machine}/fftw-3.3.7/include"
 setenv FFTW_LIB "-L/users/xa09/${machine}/fftw-3.3.7/lib -lfftw3_threads -lfftw3"
 setenv DMS_LIB "-L/package/${machine}/dms/lib -lrdms -lgdbm"
 setenv OPERLIB_LIB "-L/package/${machine}/operlib/lib -lnwp"
+####for write grb2 #add by hcwei
+set G2_LIB     "-L/package/${machine}/g2lib-1.4.0/lib    -lg2     "
+setenv G2_INC  "/package/${machine}/g2lib-1.4.0/include     "
+set W3_LIB     "-L/package/${machine}/w3lib-2.0.2/lib    -lw3     "
+set JASPER_LIB "-L/package/${machine}/jasper-1.900.1/lib -ljasper "
+set PNG_LIB    "-L/package/${machine}/libpng-1.2.50/lib  -lpng    "
+set Z_LIB      "-L/users/xa09/${machine}/zlib-1.2.8/lib  -lz      "
+setenv GRB2_LIB "${G2_LIB} ${W3_LIB} ${JASPER_LIB} ${PNG_LIB} ${Z_LIB}"
+#this library test the used compile flags -O3
+#set G2_LIB     "-L/nwpr/gfs/xb119/data/fx10/g2lib-3.1.0/lib -lg2     "
+#setenv G2_INC  "/nwpr/gfs/xb119/data/fx10/g2lib-3.1.0/include     "
 

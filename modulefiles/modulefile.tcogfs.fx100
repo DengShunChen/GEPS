@@ -72,4 +72,13 @@ module load dms/v4
 module load operlib
 module unuse  /nwpr/gfs/xb80/modulefiles/$machine
 
+####for write grb2 #add by hcwei
+set G2_LIB      "-L/package/${machine}/g2lib-1.4.0/lib    -lg2     "
+setenv G2_INC   "/package/${machine}/g2lib-1.4.0/include     "
+set W3_LIB      "-L/package/${machine}/w3lib-2.0.2/lib    -lw3     "
+set JASPER_LIB  "-L/package/${machine}/jasper-1.900.1/lib -ljasper "
+set PNG_LIB     "-L/package/${machine}/libpng-1.2.50/lib  -lpng    "
+set Z_LIB       "-L/users/xa09/${machine}/zlib-1.2.8/lib  -lz      "
+setenv GRB2_LIB "${G2_LIB} ${W3_LIB} ${JASPER_LIB} ${PNG_LIB} ${Z_LIB}"
+
 
