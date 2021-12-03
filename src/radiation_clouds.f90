@@ -2421,7 +2421,7 @@
       do k = 1, NLAY
         do i = 1, IX
           if (cldtot(i,k) < climit) then
-            cldtot(i,k) = 0.0     !test
+            cldtot(i,k) = 0.0 
             cwp(i,k)    = 0.0
             cip(i,k)    = 0.0
             crp(i,k)    = 0.0
@@ -2483,8 +2483,7 @@
           clouds(i,k,6) = crp(i,k) 
           clouds(i,k,7) = rer(i,k)
           clouds(i,k,8) = csp(i,k)
-!          clouds(i,k,9) = rei(i,k)
-          clouds(i,k,9) = res(i,k)  !test
+          clouds(i,k,9) = res(i,k)
         enddo
       enddo
 

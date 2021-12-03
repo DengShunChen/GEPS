@@ -1704,18 +1704,13 @@
       if ( dolsp .and. (nmmiph.eq.6 .or. nmmiph.eq.8 .or. nmmiph.eq.11) ) then
 
 ! for GFDL MP
-      do k = 1, lev + 1
-        do i = 1, nxj
-          prsi(i,k) = 100.*(sigma(k,1)*pst(i,jj)+sigma(k,2)+ptop) !interface pressure (Pa)
-        enddo
-      enddo
       do i = 1, nxj
         area(i,1) = tem1*tem2  !area of grid box
       enddo
 
       call mp_scheme                                                   &
 !  ---  inputs:
-           ( nmmiph,nxp,nxjp(j),lev,ncld,plt(1,1,jj),prsi,             &
+           ( nmmiph,nxp,nxjp(j),lev,ncld,plt(1,1,jj),                  &
              pst(1,jj),dsigma,phii,islimsk,q0,kdt,ntcw,ntrw,ntiw,ntsw, &
              ntgl,ntinc,ntrnc,tpi,me,dta,area,                         &
 !  ---  inputs/outputs:

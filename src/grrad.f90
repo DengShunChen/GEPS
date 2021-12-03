@@ -1669,7 +1669,7 @@
          if ( .not. lgfdlmprad ) then
          do k = 1, lmk
            do i = 1, im
-             do j = 1, ncld
+             do j = 1, ncld - 1
                lv = ntcw + j - 1
                clw(i,k) = clw(i,k) + tracer1(i,k,lv)  ! cloud condensate amount
              enddo

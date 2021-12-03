@@ -19,8 +19,8 @@
 !* If not, see <http://www.gnu.org/licenses/>.
 !***********************************************************************
 
-!>@brief The module 'module_mp_gfdl_fv3' contains the full GFDL cloud
-!! microphysics \cite chen2013seasonal.
+!>@brief The module 'gfdl_cloud_microphys' contains the full GFDL cloud
+!! microphysics (Chen and Lin 2013) \cite chen2013seasonal and (Zhou et al. 2019) \cite zhou2019toward.
 !>@details The module is paired with 'fv_cmp', which performs the "fast"
 !! processes
 !>author Shian-Jiann Lin, Linjiong Zhou
@@ -31,14 +31,11 @@
 ! key elements have been simplified / improved. this code at this stage
 ! bears little to no similarity to the original lin mp in zetac.
 ! therefore, it is best to be called gfdl micro - physics (gfdl mp) .
-! developer: shian-jiann lin, linjiong zhou
+! developer: Shian-Jiann lin, Linjiong Zhou
 ! =======================================================================
 
 module module_mp_gfdl
-    
-    ! use mpp_mod, only: stdlog, mpp_pe, mpp_root_pe, mpp_clock_id, &
-    ! mpp_clock_begin, mpp_clock_end, clock_routine, &
-    ! input_nml_file
+   USE module_mp_radar    
     ! use diag_manager_mod, only: register_diag_field, send_data
     ! use time_manager_mod, only: time_type, get_time
     ! use constants_mod, only: grav, rdgas, rvgas, cp_air, hlv, hlf, pi => pi_8
@@ -62,6 +59,8 @@ module module_mp_gfdl
     
     character (len = 14) :: mod_name = 'module_mp_gfdl'
     
+    real, parameter :: n0r = 8.0e6, n0s = 3.0e6, n0g = 4.0e6
+    real, parameter :: rhos = 0.1e3, rhog = 0.4e3
     real, parameter :: grav = 9.80665 !< gfs: acceleration due to gravity
     real, parameter :: rdgas = 287.05 !< gfs: gas constant for dry air
     real, parameter :: rvgas = 461.50 !< gfs: gas constant for water vapor
@@ -91,7 +90,7 @@ module module_mp_gfdl
     real, parameter :: zvir = rvgas / rdgas - 1. !< 0.6077338443
     
     real, parameter :: t_ice = 273.16 !< freezing temperature
-    real(kind=4), parameter :: table_ice = 273.16 !< freezing point for qs table
+    real, parameter :: table_ice = 273.16 !< freezing point for qs table
     
     ! real, parameter :: e00 = 610.71 ! gfdl: saturation vapor pressure at 0 deg c
     real, parameter :: e00 = 611.21 !< ifs: saturation vapor pressure at 0 deg c
@@ -110,7 +109,7 @@ module module_mp_gfdl
     real, parameter :: d2ice = dc_vap + dc_ice !< - 126, isobaric heating / cooling
     real, parameter :: li2 = lv0 + li00 !< 2.86799816e6, sublimation latent heat coefficient at 0 deg k
     
-    real, parameter :: qrmin = 1.e-8  !< min value for water species large enough to fall
+    real, parameter :: qrmin = 1.e-8 ! min value for ???
     real, parameter :: qvmin = 1.e-20 !< min value for water vapor (treated as zero)
     real, parameter :: qcmin = 1.e-12 !< min value for cloud condensates
     
@@ -141,6 +140,7 @@ module module_mp_gfdl
     integer :: irain_f = 0 !< cloud water to rain auto conversion scheme
     
     logical :: de_ice = .false. !< to prevent excessive build - up of cloud ice from external sources
+!    logical :: de_ice = .true. !< to prevent excessive build - up of cloud ice from external sources
     logical :: sedi_transport = .true. !< transport of momentum in sedimentation
     logical :: do_sedi_w = .false. !< transport of vertical motion in sedimentation
     logical :: do_sedi_heat = .true. !< transport of heat in sedimentation
@@ -153,6 +153,7 @@ module module_mp_gfdl
     logical :: do_setup = .true. !< setup constants and parameters
     logical :: p_nonhydro = .false. !< perform hydrosatic adjustment on air density
     logical :: do_melt = .false. !< terminal fall with melting
+!    logical :: do_melt = .true. !< terminal fall with melting
     
     real, allocatable :: table (:), table2 (:), table3 (:), tablew (:)
     real, allocatable :: des (:), des2 (:), des3 (:), desw (:)
@@ -162,8 +163,6 @@ module module_mp_gfdl
     ! logical :: master
     ! integer :: id_rh, id_vtr, id_vts, id_vtg, id_vti, id_rain, id_snow, id_graupel, &
     ! id_ice, id_prec, id_cond, id_var, id_droplets
-    ! integer :: gfdl_mp_clock ! clock for timing of driver routine
-    
     real, parameter :: dt_fr = 8. !< homogeneous freezing of all cloud water at t_wfr - dt_fr
     ! minimum temperature water can exist (moore & molinero nov. 2011, nature)
     ! dt_fr can be considered as the error bar
@@ -244,9 +243,8 @@ module module_mp_gfdl
     real :: ql0_max = 2.0e-3 !< max cloud water value (auto converted to rain)
     real :: qi0_max = 1.0e-4 !< max cloud ice value (by other sources)
     
-    real :: qi0_crt = 1.0e-4 !< cloud ice to snow autoconversion threshold (was 1.e-4)
-!    real :: qi0_crt = 0.8e-4 !< cloud ice to snow autoconversion threshold (was 1.e-4)
-!    real :: qi0_crt = 0.6e-4 !< cloud ice to snow autoconversion threshold (was 1.e-4)
+!    real :: qi0_crt = 1.0e-4 !< cloud ice to snow autoconversion threshold (was 1.e-4)
+    real :: qi0_crt = 0.3e-4 !< cloud ice to snow autoconversion threshold (was 1.e-4)
                              !! qi0_crt is highly dependent on horizontal resolution
     real :: qr0_crt = 1.0e-4 !< rain to snow or graupel / hail threshold
                              !! lfo used * mixing ratio * = 1.e-4 (hail in lfo)
@@ -254,7 +252,6 @@ module module_mp_gfdl
     
     real :: c_paut = 0.55 !< autoconversion cloud water to rain (use 0.5 to reduce autoconversion)
     real :: c_psaci = 0.02 !< accretion: cloud ice to snow (was 0.1 in zetac)
-!    real :: c_psaci = 0.1 !< accretion: cloud ice to snow (was 0.1 in zetac)
     real :: c_piacr = 5.0 !< accretion: rain to ice:
     real :: c_cracw = 0.9 !< rain accretion efficiency
     real :: c_pgacs = 2.0e-3 !< snow to graupel "accretion" eff. (was 0.1 in zetac)
@@ -273,7 +270,8 @@ module module_mp_gfdl
     
     ! good values:
     
-    real :: vi_fac = 1. !< if const_vi: 1 / 3
+!    real :: vi_fac = 1.   !< if const_vi: 1 / 3
+    real :: vi_fac = 0.9  !FV3 v16
     real :: vs_fac = 1. !< if const_vs: 1.
     real :: vg_fac = 1. !< if const_vg: 2.
     real :: vr_fac = 1. !< if const_vr: 4.
@@ -291,7 +289,7 @@ module module_mp_gfdl
     logical :: z_slope_liq = .true. !< use linear mono slope for autocconversions
     logical :: z_slope_ice = .false. !< use linear mono slope for autocconversions
     logical :: use_ccn = .false. !< must be true when prog_ccn is false
-    logical :: use_ppm = .false. !< use piecewise parabolic method (PPM) for the falling condensates
+    logical :: use_ppm = .false. !< use ppm fall scheme
 !    logical :: use_ppm = .true. !< use piecewise parabolic method (PPM) for the falling condensates
     logical :: mono_prof = .true. !< perform terminal fall with mono ppm scheme
     logical :: mp_print = .false. !< cloud microphysics debugging printout
@@ -299,6 +297,19 @@ module module_mp_gfdl
     ! real :: global_area = - 1.
     
     real :: log_10, tice0, t_wfr
+    
+    integer :: reiflag = 1
+!    integer :: reiflag = 2
+    ! 1: Heymsfield and Mcfarquhar, 1996
+    ! 2: Wyser, 1998
+     
+    logical :: tintqs = .false. !< use temperature in the saturation mixing in PDF 
+
+    real :: rewmin = 5.0, rewmax = 10.0
+    real :: reimin = 10.0, reimax = 150.0
+    real :: rermin = 10.0, rermax = 10000.0
+    real :: resmin = 150.0, resmax = 10000.0
+    real :: regmin = 300.0, regmax = 10000.0
     
     ! -----------------------------------------------------------------------
     ! namelist
@@ -315,7 +326,8 @@ module module_mp_gfdl
         z_slope_liq, z_slope_ice, prog_ccn, c_cracw, alin, clin, tice,        &
         rad_snow, rad_graupel, rad_rain, cld_min, use_ppm, mono_prof,         &
         do_sedi_heat, sedi_transport, do_sedi_w, de_ice, icloud_f, irain_f,   &
-        do_melt, mp_print
+        mp_print, reiflag, rewmin, rewmax, reimin, reimax, rermin, rermax,    &
+        resmin, resmax, regmin, regmax, tintqs, do_melt
     
     public                                                                    &
         mp_time, t_min, t_sub, tau_r2g, tau_smlt, tau_g2r, dw_land, dw_ocean, &
@@ -328,7 +340,8 @@ module module_mp_gfdl
         z_slope_liq, z_slope_ice, prog_ccn, c_cracw, alin, clin, tice,        &
         rad_snow, rad_graupel, rad_rain, cld_min, use_ppm, mono_prof,         &
         do_sedi_heat, sedi_transport, do_sedi_w, de_ice, icloud_f, irain_f,   &
-        do_melt, mp_print
+        mp_print, reiflag, rewmin, rewmax, reimin, reimax, rermin, rermax,    &
+        resmin, resmax, regmin, regmax, tintqs, do_melt
     
 contains
 
@@ -345,15 +358,18 @@ subroutine gfdl_cloud_microphys_driver                                    &
               dz, delp, area, dt_in, land,                                &
               rain, snow, ice, graupel,                                   &
               hydrostatic, phys_hydrostatic,                              & 
-              iis, iie, jjs, jje, kks, kke, ktop, kbot )!, seconds)
+!              iis, iie, jjs, jje, kks, kke, ktop, kbot, seconds,          &  !FV3 v16
+!              p, lradar, refl_10cm, reset )
+              iis, iie, jjs, jje, kks, kke, ktop, kbot )
 
     implicit none
     
     logical, intent (in) :: hydrostatic, phys_hydrostatic
+!    logical, intent (in) :: lradar, reset  !FV3 v16
     integer, intent (in) :: iis, iie, jjs, jje !< physics window
     integer, intent (in) :: kks, kke !< vertical dimension
     integer, intent (in) :: ktop, kbot !< vertical compute domain
-!xb141    integer, intent (in) :: seconds
+!    integer, intent (in) :: seconds
     
     real, intent (in) :: dt_in !< physics time step
     
@@ -361,6 +377,7 @@ subroutine gfdl_cloud_microphys_driver                                    &
     real, intent (in), dimension (:, :) :: land !< land fraction
     
     real, intent (in), dimension (:, :, :) :: delp, dz, uin, vin
+!    real, intent (in), dimension (:, :, :) :: p  !FV3 v16
     real, intent (in), dimension (:, :, :) :: pt, qv, ql, qr, qg, qa, qn
     
     real, intent (inout), dimension (:, :, :) :: qi, qs
@@ -368,8 +385,11 @@ subroutine gfdl_cloud_microphys_driver                                    &
     real, intent (inout), dimension (:, :, :) :: qv_dt, ql_dt, qr_dt
     real, intent (inout), dimension (:, :, :) :: qi_dt, qs_dt, qg_dt
     
+!    real, intent (out), dimension (:, :, :) :: refl_10cm  !FV3 v16
     real, intent (out), dimension (:, :) :: rain, snow, ice, graupel
     
+    logical :: melti = .false.
+    logical :: lradar = .false. , reset = .false. !FV3 v16
     ! logical :: used
     
     real :: mpdt, rdt, dts, convt, tot_prec
@@ -377,15 +397,19 @@ subroutine gfdl_cloud_microphys_driver                                    &
     integer :: i, j, k
     integer :: is, ie, js, je !< physics window
     integer :: ks, ke !< vertical dimension
-    integer :: days, ntimes
+    integer :: days, ntimes, kflip
     
     real, dimension (iie - iis + 1, jje - jjs + 1) :: prec_mp, prec1, cond, w_var, rh0
     
     real, dimension (iie - iis + 1, jje - jjs + 1, kke - kks + 1) :: vt_r, vt_s, vt_g, vt_i, qn2
     
     real, dimension (size (pt, 1), size (pt, 3)) :: m2_rain, m2_sol
-    
+
     real :: allmax
+!+---+-----------------------------------------------------------------+
+!For 3D reflectivity calculations
+  REAL, DIMENSION(ktop:kbot):: qv1d, t1d, p1d, qr1d, qs1d, qg1d, dBZ
+!+---+-----------------------------------------------------------------+
     
     is = 1
     js = 1
@@ -393,7 +417,6 @@ subroutine gfdl_cloud_microphys_driver                                    &
     ie = iie - iis + 1
     je = jje - jjs + 1
     ke = kke - kks + 1
-    
     ! call mpp_clock_begin (gfdl_mp_clock)
     
     ! -----------------------------------------------------------------------
@@ -606,6 +629,35 @@ subroutine gfdl_cloud_microphys_driver                                    &
     ! endif
     
     ! call mpp_clock_end (gfdl_mp_clock)
+
+    if ( lradar ) then
+       ! Only set melti to true at the output times
+       if ( reset ) then
+         melti = .true.
+       else
+         melti = .false.
+       endif
+!       do j = js, je
+!          do i = is, ie
+!             do k = ktop,kbot
+!               kflip = kbot - ktop + 1 - k + 1
+!               t1d(k)  = pt(i,j,kflip)
+!               p1d(k)  = p (i,j,kflip)
+!               qv1d(k) = qv(i,j,kflip)/(1.-qv(i,j,kflip))
+!               qr1d(k) = qr(i,j,kflip)
+!               qs1d(k) = qs(i,j,kflip)
+!               qg1d(k) = qg(i,j,kflip)
+!             enddo
+!             call refl10cm_gfdl (qv1d, qr1d, qs1d, qg1d,                 &
+!                       t1d, p1d, dBZ, ktop, kbot, i,j, melti)
+!             do k = ktop,kbot
+!                kflip = kbot - ktop + 1 - k + 1
+!                refl_10cm(i,j,kflip) = MAX(-35., dBZ(k))
+!             enddo
+!          enddo
+!       enddo
+    endif
+
     
 end subroutine gfdl_cloud_microphys_driver
 
@@ -911,6 +963,10 @@ subroutine mpdrv (hydrostatic, uin, vin, w, delp, pt, qv, ql, qr, qi, qs,     &
             
         enddo
         
+        ! convert units from Pa*kg/kg to kg/m^2/s
+        m2_rain (i, :) = m2_rain (i, :) * rdt * rgrav
+        m2_sol (i, :) = m2_sol (i, :) * rdt * rgrav
+
         ! -----------------------------------------------------------------------
         ! momentum transportation during sedimentation
         ! note: dp1 is dry mass; dp0 is the old moist (total) mass
@@ -1709,7 +1765,7 @@ subroutine icloud (ktop, kbot, tzk, p1, qvk, qlk, qrk, qik, qsk, qgk, dp1, &
                 endif
                 
                 ! -----------------------------------------------------------------------
-                ! psaut: autoconversion: cloud ice -- > snow
+                ! pasut: autoconversion: cloud ice -- > snow
                 ! -----------------------------------------------------------------------
                 
                 ! -----------------------------------------------------------------------
@@ -2338,6 +2394,7 @@ subroutine subgrid_z_proc (ktop, kbot, p1, den, denfac, dts, rh_adj, tz, qv, &
                 ! qa (k) = sqrt (qa (k) + (q_plus - qstar) / (dq + dq))
             endif
         endif
+        
     enddo
     
 end subroutine subgrid_z_proc
@@ -3302,8 +3359,8 @@ subroutine setupm
     
     ! density parameters
     
-    real, parameter :: rhos = 0.1e3 !< lin83 (snow density; 1 / 10 of water)
-    real, parameter :: rhog = 0.4e3 !< rh84 (graupel density)
+!    real, parameter :: rhos = 0.1e3 !< lin83 (snow density; 1 / 10 of water)
+!    real, parameter :: rhog = 0.4e3 !< rh84 (graupel density)
     real, parameter :: acc (3) = (/ 5.0, 2.0, 0.5 /)
     
     real den_rc
@@ -3372,6 +3429,7 @@ subroutine setupm
     csaci = csacw * c_psaci
     
     cgacw = pie * rnzg * gam350 * gcon / (4. * act (6) ** 0.875)
+    ! cgaci = cgacw * 0.1
     
     ! sjl, may 28, 2012
     cgaci = cgacw * 0.05
@@ -3434,11 +3492,12 @@ subroutine gfdl_cloud_microphys_init ()
     implicit none
     
 !    integer, intent (in) :: me
-!    integer, intent (in) :: myrank
+!    integer, intent (in) :: master
 !    integer, intent (in) :: nlunit
+!    integer, intent (in) :: logunit
     
 !    character (len = 64), intent (in) :: fn_nml
-!    character (len = *),  intent (in) :: input_nml_file
+!    character (len = *),  intent (in) :: input_nml_file(:)
     
 !    integer :: ios
 !    logical :: exists
@@ -3458,20 +3517,21 @@ subroutine gfdl_cloud_microphys_init ()
 !#else
 !    inquire (file = trim (fn_nml), exist = exists)
 !    if (.not. exists) then
-!      write (6,*) 'gfdl - mp :: namelist file: ', trim (fn_nml), ' does not exist'
-!      stop
+!        write (6, *) 'gfdl - mp :: namelist file: ', trim (fn_nml), ' does not exist'
+!        stop
 !    else
-!      open (unit = nlunit, file = fn_nml, readonly, status = 'old', iostat = ios)
+!        open (unit = nlunit, file = fn_nml, readonly, status = 'old', iostat = ios)
 !    endif
 !    rewind (nlunit)
 !    read (nlunit, nml = gfdl_cloud_microphysics_nml)
 !    close (nlunit)
 !#endif
     
-!    if ( me==0 .and. myrank==0 ) then
-!        print *, " ================================================================== "
-!        print *, "gfdl_cloud_microphys_mod"
-!        write (*, nml = gfdl_cloud_microphysics_nml)
+    ! write version number and namelist to log file
+!    if (me == master) then
+!        write (logunit, *) " ========================================================= "
+!        write (logunit, *) "gfdl_cloud_microphys_mod"
+!!        write (logunit, nml = gfdl_cloud_microphysics_nml)
 !    endif
     
     if (do_setup) then
@@ -3536,10 +3596,25 @@ subroutine gfdl_cloud_microphys_init ()
     
     ! if (master) write (*, *) 'gfdl_cloud_micrphys diagnostics initialized.'
     
-    ! gfdl_mp_clock = mpp_clock_id ('gfdl_cloud_microphys', grain = clock_routine)
-    
     module_is_initialized = .true.
     
+!+---+-----------------------------------------------------------------+
+!..Set these variables needed for computing radar reflectivity.  These
+!.. get used within radar_init to create other variables used in the
+!.. radar module.
+
+   xam_r = pi*rhor/6.
+   xbm_r = 3.
+   xmu_r = 0.
+   xam_s = pi*rhos/6.
+   xbm_s = 3.
+   xmu_s = 0.
+   xam_g = pi*rhog/6.
+   xbm_g = 3.
+   xmu_g = 0.
+
+   call radar_init
+
 end subroutine gfdl_cloud_microphys_init
 
 ! =======================================================================
@@ -4225,7 +4300,7 @@ subroutine qs_table3 (n)
     integer, intent (in) :: n
     
     real :: delt = 0.1
-    real(kind=4) :: esbasw, tbasw, esbasi, tmin, tem, aa, b, c, d, e
+    real :: esbasw, tbasw, esbasi, tmin, tem, aa, b, c, d, e
     real :: tem0, tem1
     
     integer :: i, i0, i1
@@ -4582,7 +4657,7 @@ subroutine interpolate_z (is, ie, js, je, km, zl, hgt, a3, a2)
     
     integer :: i, j, k
     
-    !$omp parallel do default (none) shared (is, ie, js, je, km, hgt, zl, a2, a3) private (zm,i,k,j)
+    !$omp parallel do default (none) shared (is, ie, js, je, km, hgt, zl, a2, a3) private (zm)
     
     do j = js, je
         do i = is, ie
@@ -4609,137 +4684,320 @@ end subroutine interpolate_z
 ! =======================================================================
 !>@brief The subroutine 'cloud_diagnosis' diagnoses the radius of cloud 
 !! species.
+!>author Linjiong Zhoum, Shian-Jiann Lin
 ! =======================================================================
 
 subroutine cloud_diagnosis                                              &
 !   --- input  :
-        ( is, ie, js, je, den, qw, qi, qr, qs, qg, t,                   &
+        ( is, ie, ks, ke, den, delp, lsm,                               &
+          qmw, qmi, qmr, qms, qmg, t,                                   &
 !   --- output :
           rew, rei, rer, res, reg)
-!         qcw, qci, qcr, qcs, qcg, rew, rei, rer, res, reg)
     
     implicit none
     
-    integer, intent (in) :: is, ie, js, je
+    integer, intent (in) :: is, ie, ks, ke
+    integer, intent (in), dimension (is:ie) :: lsm ! land sea mask, 0: ocean, 1: land, 2: sea ice
     
-    real, intent (in), dimension (is:ie, js:je) :: den, t
-    real, intent (in), dimension (is:ie, js:je) :: qw, qi, qr, qs, qg !< units: kg / kg
+    real, intent (in), dimension (is:ie, ks:ke) :: den, delp, t
+    real, intent (in), dimension (is:ie, ks:ke) :: qmw, qmi, qmr, qms, qmg !< units: kg / kg
     
-!   real, intent (out), dimension (is:ie, js:je) :: qcw, qci, qcr, qcs, qcg !< units: kg / m^3
-    real, dimension (is:ie, js:je) :: qcw, qci, qcr, qcs, qcg !< units: kg / m^3
-    real, intent (out), dimension (is:ie, js:je) :: rew, rei, rer, res, reg !< units: micron
+    real, intent (out), dimension (is:ie, ks:ke) :: rew, rei, rer, res, reg !< units: micron
+
+    real, dimension (is:ie, ks:ke) :: qcw, qci, qcr, qcs, qcg !< units: g / m^2
     
-    integer :: i, j
+    integer :: i, k
     
     real :: lambdar, lambdas, lambdag
+    real :: dpg, rei_fac, mask, ccn, bw
+    real, parameter :: rho_0 = 50.e-3
     
     real :: rhow = 1.0e3, rhor = 1.0e3, rhos = 1.0e2, rhog = 4.0e2
     real :: n0r = 8.0e6, n0s = 3.0e6, n0g = 4.0e6
     real :: alphar = 0.8, alphas = 0.25, alphag = 0.5
     real :: gammar = 17.837789, gammas = 8.2850630, gammag = 11.631769
-!   real :: qmin = 1.0e-5, ccn = 1.0e8, beta = 1.22
-!   real :: qmin = 5.0e-6, ccn = 1.0e8, beta = 1.22
-    real :: qmin = 9.0e-6, ccn = 1.0e8, beta = 1.22
-!   real :: qmin = 1.0e-6, ccn = 1.0e8, beta = 1.22
-!   real :: qmin = 1.0e-8, ccn = 1.0e8, beta = 1.22
-!   real :: qmin = 1.0e-12, ccn = 1.0e8, beta = 1.22
+    real :: qmin = 1.0e-12, beta = 1.22, qmin1 = 9.e-6
     
-    ! real :: rewmin = 1.0, rewmax = 25.0
-    ! real :: reimin = 10.0, reimax = 300.0
-    ! real :: rermin = 25.0, rermax = 225.0
-    ! real :: resmin = 300, resmax = 1000.0
-    ! real :: regmin = 1000.0, regmax = 1.0e5
-    real :: rewmin = 5.0, rewmax = 10.0
-    real :: reimin = 10.0, reimax = 150.0
-!   real :: rermin = 0.0, rermax = 10000.0
-!   real :: resmin = 0.0, resmax = 10000.0
-!   real :: regmin = 0.0, regmax = 10000.0
-    real :: rermin = 50.0, rermax = 10000.0
-    real :: resmin = 100.0, resmax = 10000.0
-    real :: regmin = 300.0, regmax = 10000.0
-    
-    do j = js, je
+    do k = ks, ke
         do i = is, ie
             
+            dpg = abs (delp (i, k)) / grav
+            mask = min (max (real(lsm (i)), 0.0), 2.0)
+
             ! -----------------------------------------------------------------------
-            ! cloud water (martin et al., 1994)
+            ! cloud water (Martin et al., 1994)
             ! -----------------------------------------------------------------------
             
-            if (qw (i, j) .gt. qmin) then
-                qcw (i, j) = den (i, j) * qw (i, j)
-                rew (i, j) = exp (1.0 / 3.0 * log ((3 * qcw (i, j)) / (4 * pi * rhow * ccn))) * 1.0e6
-                rew (i, j) = max (rewmin, min (rewmax, rew (i, j)))
+            ccn = 0.80 * (- 1.15e-3 * (ccn_o ** 2) + 0.963 * ccn_o + 5.30) * abs (mask - 1.0) + &
+                0.67 * (- 2.10e-4 * (ccn_l ** 2) + 0.568 * ccn_l - 27.9) * (1.0 - abs (mask - 1.0))
+
+            if (qmw (i, k) .gt. qmin) then
+                qcw (i, k) = dpg * qmw (i, k) * 1.0e3
+                rew (i, k) = exp (1.0 / 3.0 * log ((3.0 * den (i, k) * qmw (i, k)) / (4.0 * pi * rhow * ccn))) * 1.0e4
+                rew (i, k) = max (rewmin, min (rewmax, rew (i, k)))
             else
-                qcw (i, j) = 0.0
-                rew (i, j) = rewmin
+                qcw (i, k) = 0.0
+                rew (i, k) = rewmin
             endif
             
-            ! -----------------------------------------------------------------------
-            ! cloud ice (heymsfield and mcfarquhar, 1996)
-            ! -----------------------------------------------------------------------
-            
-            if (qi (i, j) .gt. qmin) then
-                qci (i, j) = den (i, j) * qi (i, j)
-                if (t (i, j) - tice .lt. - 50) then
-                    rei (i, j) = beta / 9.917 * exp ((1 - 0.891) * log (1.0e3 * qci (i, j))) * 1.0e3
-                elseif (t (i, j) - tice .lt. - 40) then
-                    rei (i, j) = beta / 9.337 * exp ((1 - 0.920) * log (1.0e3 * qci (i, j))) * 1.0e3
-                elseif (t (i, j) - tice .lt. - 30) then
-                    rei (i, j) = beta / 9.208 * exp ((1 - 0.945) * log (1.0e3 * qci (i, j))) * 1.0e3
+            if (reiflag .eq. 1) then
+                
+                ! -----------------------------------------------------------------------
+                ! cloud ice (Heymsfield and Mcfarquhar, 1996)
+                ! -----------------------------------------------------------------------
+                
+                if (qmi (i, k) .gt. qmin1) then
+                    qci (i, k) = dpg * qmi (i, k) * 1.0e3
+                    rei_fac = log (1.0e3 * qmi (i, k) * den (i, k))
+                    if (t (i, k) - tice .lt. - 50) then
+                        rei (i, k) = beta / 9.917 * exp (0.109 * rei_fac) * 1.0e3
+                    elseif (t (i, k) - tice .lt. - 40) then
+                        rei (i, k) = beta / 9.337 * exp (0.080 * rei_fac) * 1.0e3
+                    elseif (t (i, k) - tice .lt. - 30) then
+                        rei (i, k) = beta / 9.208 * exp (0.055 * rei_fac) * 1.0e3
+                    else
+                        rei (i, k) = beta / 9.387 * exp (0.031 * rei_fac) * 1.0e3
+                    endif
+                    rei (i, k) = max (reimin, min (reimax, rei (i, k)))
                 else
-                    rei (i, j) = beta / 9.387 * exp ((1 - 0.969) * log (1.0e3 * qci (i, j))) * 1.0e3
+                    qci (i, k) = 0.0
+                    rei (i, k) = reimin
                 endif
-                rei (i, j) = max (reimin, min (reimax, rei (i, j)))
+
+            endif
+            
+            if (reiflag .eq. 2) then
+                
+                ! -----------------------------------------------------------------------
+                ! cloud ice (Wyser, 1998)
+                ! -----------------------------------------------------------------------
+                
+                if (qmi (i, k) .gt. qmin1) then
+                    qci (i, k) = dpg * qmi (i, k) * 1.0e3
+                    bw = - 2. + 1.e-3 * log10 (den (i, k) * qmi (i, k) / rho_0) * max (0.0, tice - t (i, k)) ** 1.5
+                    rei (i, k) = 377.4 + bw * (203.3 + bw * (37.91 + 2.3696 * bw))
+                    rei (i, k) = max (reimin, min (reimax, rei (i, k)))
+                else
+                    qci (i, k) = 0.0
+                    rei (i, k) = reimin
+                endif
+
+            endif
+                
+            ! -----------------------------------------------------------------------
+            ! rain (Lin et al., 1983)
+            ! -----------------------------------------------------------------------
+            
+            if (qmr (i, k) .gt. qmin) then
+                qcr (i, k) = dpg * qmr (i, k) * 1.0e3
+                lambdar = exp (0.25 * log (pi * rhor * n0r / qmr (i, k) / den (i, k)))
+                rer (i, k) = 0.5 * exp (log (gammar / 6) / alphar) / lambdar * 1.0e6
+                rer (i, k) = max (rermin, min (rermax, rer (i, k)))
             else
-                qci (i, j) = 0.0
-                rei (i, j) = reimin
+                qcr (i, k) = 0.0
+                rer (i, k) = rermin
             endif
             
             ! -----------------------------------------------------------------------
-            ! rain (lin et al., 1983)
+            ! snow (Lin et al., 1983)
             ! -----------------------------------------------------------------------
             
-            if (qr (i, j) .gt. qmin) then
-                qcr (i, j) = den (i, j) * qr (i, j)
-                lambdar = exp (0.25 * log (pi * rhor * n0r / qcr (i, j)))
-                rer (i, j) = 0.5 * exp (log (gammar / 6) / alphar) / lambdar * 1.0e6
-                rer (i, j) = max (rermin, min (rermax, rer (i, j)))
+            if (qms (i, k) .gt. qmin1) then
+                qcs (i, k) = dpg * qms (i, k) * 1.0e3
+                lambdas = exp (0.25 * log (pi * rhos * n0s / qms (i, k) / den (i, k)))
+                res (i, k) = 0.5 * exp (log (gammas / 6) / alphas) / lambdas * 1.0e6
+                res (i, k) = max (resmin, min (resmax, res (i, k)))
             else
-                qcr (i, j) = 0.0
-                rer (i, j) = rermin
+                qcs (i, k) = 0.0
+                res (i, k) = resmin
             endif
             
             ! -----------------------------------------------------------------------
-            ! snow (lin et al., 1983)
+            ! graupel (Lin et al., 1983)
             ! -----------------------------------------------------------------------
             
-            if (qs (i, j) .gt. qmin) then
-                qcs (i, j) = den (i, j) * qs (i, j)
-                lambdas = exp (0.25 * log (pi * rhos * n0s / qcs (i, j)))
-                res (i, j) = 0.5 * exp (log (gammas / 6) / alphas) / lambdas * 1.0e6
-                res (i, j) = max (resmin, min (resmax, res (i, j)))
+            if (qmg (i, k) .gt. qmin) then
+                qcg (i, k) = dpg * qmg (i, k) * 1.0e3
+                lambdag = exp (0.25 * log (pi * rhog * n0g / qmg (i, k) / den (i, k)))
+                reg (i, k) = 0.5 * exp (log (gammag / 6) / alphag) / lambdag * 1.0e6
+                reg (i, k) = max (regmin, min (regmax, reg (i, k)))
             else
-                qcs (i, j) = 0.0
-                res (i, j) = resmin
-            endif
-            
-            ! -----------------------------------------------------------------------
-            ! graupel (lin et al., 1983)
-            ! -----------------------------------------------------------------------
-            
-            if (qg (i, j) .gt. qmin) then
-                qcg (i, j) = den (i, j) * qg (i, j)
-                lambdag = exp (0.25 * log (pi * rhog * n0g / qcg (i, j)))
-                reg (i, j) = 0.5 * exp (log (gammag / 6) / alphag) / lambdag * 1.0e6
-                reg (i, j) = max (regmin, min (regmax, reg (i, j)))
-            else
-                qcg (i, j) = 0.0
-                reg (i, j) = regmin
+                qcg (i, k) = 0.0
+                reg (i, k) = regmin
             endif
             
         enddo
     enddo
     
 end subroutine cloud_diagnosis
+
+!+---+-----------------------------------------------------------------+
+
+      subroutine refl10cm_gfdl (qv1d, qr1d, qs1d, qg1d,                 &
+                       t1d, p1d, dBZ, kts, kte, ii,jj, melti)
+
+      IMPLICIT NONE
+
+!..Sub arguments
+      INTEGER, INTENT(IN):: kts, kte, ii,jj
+      REAL, DIMENSION(kts:kte), INTENT(IN)::                            &
+                      qv1d, qr1d, qs1d, qg1d, t1d, p1d
+      REAL, DIMENSION(kts:kte), INTENT(INOUT):: dBZ
+
+!..Local variables
+      REAL, DIMENSION(kts:kte):: temp, pres, qv, rho
+      REAL, DIMENSION(kts:kte):: rr, rs, rg
+!      REAL:: temp_C
+
+      DOUBLE PRECISION, DIMENSION(kts:kte):: ilamr, ilams, ilamg
+      DOUBLE PRECISION, DIMENSION(kts:kte):: N0_r, N0_s, N0_g
+      DOUBLE PRECISION:: lamr, lams, lamg
+      LOGICAL, DIMENSION(kts:kte):: L_qr, L_qs, L_qg
+
+      REAL, DIMENSION(kts:kte):: ze_rain, ze_snow, ze_graupel
+      DOUBLE PRECISION:: fmelt_s, fmelt_g
+
+      INTEGER:: i, k, k_0, kbot, n
+      LOGICAL, INTENT(IN):: melti
+      DOUBLE PRECISION:: cback, x, eta, f_d
+!+---+
+
+      do k = kts, kte
+         dBZ(k) = -35.0
+      enddo
+
+!+---+-----------------------------------------------------------------+
+!..Put column of data into local arrays.
+!+---+-----------------------------------------------------------------+
+      do k = kts, kte
+         temp(k) = t1d(k)
+!         temp_C = min(-0.001, temp(K)-273.15)
+         qv(k) = MAX(1.E-10, qv1d(k))
+         pres(k) = p1d(k)
+         rho(k) = 0.622*pres(k)/(rdgas*temp(k)*(qv(k)+0.622))
+
+         if (qr1d(k) .gt. 1.E-9) then
+            rr(k) = qr1d(k)*rho(k)
+            N0_r(k) = n0r
+            lamr = (xam_r*xcrg(3)*N0_r(k)/rr(k))**(1./xcre(1))
+            ilamr(k) = 1./lamr
+            L_qr(k) = .true.
+         else
+            rr(k) = 1.E-12
+            L_qr(k) = .false.
+         endif
+
+         if (qs1d(k) .gt. 1.E-9) then
+            rs(k) = qs1d(k)*rho(k)
+            N0_s(k) = n0s
+            lams = (xam_s*xcsg(3)*N0_s(k)/rs(k))**(1./xcse(1))
+            ilams(k) = 1./lams
+            L_qs(k) = .true.
+         else
+            rs(k) = 1.E-12
+            L_qs(k) = .false.
+         endif
+
+         if (qg1d(k) .gt. 1.E-9) then
+            rg(k) = qg1d(k)*rho(k)
+            N0_g(k) = n0g
+            lamg = (xam_g*xcgg(3)*N0_g(k)/rg(k))**(1./xcge(1))
+            ilamg(k) = 1./lamg
+            L_qg(k) = .true.
+         else
+            rg(k) = 1.E-12
+            L_qg(k) = .false.
+         endif
+      enddo
+
+!+---+-----------------------------------------------------------------+
+!..Locate K-level of start of melting (k_0 is level above).
+!+---+-----------------------------------------------------------------+
+      k_0 = kts
+     K_LOOP:do k = kte-1, kts, -1
+         if ( melti .and. (temp(k).gt.273.15) .and. L_qr(k)          &
+              .and. (L_qs(k+1).or.L_qg(k+1)) ) then
+            k_0 = MAX(k+1, k_0)
+            EXIT K_LOOP 
+         endif
+      enddo K_LOOP
+!+---+-----------------------------------------------------------------+
+!..Assume Rayleigh approximation at 10 cm wavelength. Rain (all temps)
+!.. and non-water-coated snow and graupel when below freezing are
+!.. simple. Integrations of m(D)*m(D)*N(D)*dD.
+!+---+-----------------------------------------------------------------+
+      do k = kts, kte
+         ze_rain(k) = 1.e-22
+         ze_snow(k) = 1.e-22
+         ze_graupel(k) = 1.e-22
+         if (L_qr(k)) ze_rain(k) = N0_r(k)*xcrg(4)*ilamr(k)**xcre(4)
+         if (L_qs(k)) ze_snow(k) = (0.176/0.93) * (6.0/PI)*(6.0/PI)     &
+                                 * (xam_s/900.0)*(xam_s/900.0)          &
+                                 * N0_s(k)*xcsg(4)*ilams(k)**xcse(4)
+         if (L_qg(k)) ze_graupel(k) = (0.176/0.93) * (6.0/PI)*(6.0/PI)  &
+                                    * (xam_g/900.0)*(xam_g/900.0)       &
+                                    * N0_g(k)*xcgg(4)*ilamg(k)**xcge(4)
+      enddo
+
+
+!+---+-----------------------------------------------------------------+
+!..Special case of melting ice (snow/graupel) particles.  Assume the
+!.. ice is surrounded by the liquid water.  Fraction of meltwater is
+!.. extremely simple based on amount found above the melting level.
+!.. Uses code from Uli Blahak (rayleigh_soak_wetgraupel and supporting
+!.. routines).
+!+---+-----------------------------------------------------------------+
+
+      if (melti .and. k_0.ge.kts+1) then
+       do k = k_0-1, kts, -1
+
+!..Reflectivity contributed by melting snow
+          if (L_qs(k) .and. L_qs(k_0) ) then
+           fmelt_s = MAX(0.005d0, MIN(1.0d0-rs(k)/rs(k_0), 0.99d0))
+           eta = 0.d0
+           lams = 1./ilams(k)
+           do n = 1, nrbins
+              x = xam_s * xxDs(n)**xbm_s
+              call rayleigh_soak_wetgraupel (x,DBLE(xocms),DBLE(xobms), &
+                    fmelt_s, melt_outside_s, m_w_0, m_i_0, lamda_radar, &
+                    CBACK, mixingrulestring_s, matrixstring_s,          &
+                    inclusionstring_s, hoststring_s,                    &
+                    hostmatrixstring_s, hostinclusionstring_s)
+              f_d = N0_s(k)*xxDs(n)**xmu_s * DEXP(-lams*xxDs(n))
+              eta = eta + f_d * CBACK * simpson(n) * xdts(n)
+           enddo
+           ze_snow(k) = SNGL(lamda4 / (pi5 * K_w) * eta)
+          endif
+
+
+!..Reflectivity contributed by melting graupel
+
+          if (L_qg(k) .and. L_qg(k_0) ) then
+           fmelt_g = MAX(0.005d0, MIN(1.0d0-rg(k)/rg(k_0), 0.99d0))
+           eta = 0.d0
+           lamg = 1./ilamg(k)
+           do n = 1, nrbins
+              x = xam_g * xxDg(n)**xbm_g
+              call rayleigh_soak_wetgraupel (x,DBLE(xocmg),DBLE(xobmg), &
+                    fmelt_g, melt_outside_g, m_w_0, m_i_0, lamda_radar, &
+                    CBACK, mixingrulestring_g, matrixstring_g,          &
+                    inclusionstring_g, hoststring_g,                    &
+                    hostmatrixstring_g, hostinclusionstring_g)
+              f_d = N0_g(k)*xxDg(n)**xmu_g * DEXP(-lamg*xxDg(n))
+              eta = eta + f_d * CBACK * simpson(n) * xdtg(n)
+           enddo
+           ze_graupel(k) = SNGL(lamda4 / (pi5 * K_w) * eta)
+          endif
+
+       enddo
+      endif
+
+      do k = kte, kts, -1
+         dBZ(k) = 10.*log10((ze_rain(k)+ze_snow(k)+ze_graupel(k))*1.d18)
+      enddo
+
+
+      end subroutine refl10cm_gfdl
+!+---+-----------------------------------------------------------------+
 
 end module module_mp_gfdl

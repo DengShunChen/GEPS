@@ -47,7 +47,7 @@
       subroutine mp_scheme                                             &
 !--------------------------
 !  ---  inputs:
-           ( nmmiph,nx,nxj,lev,ncld,plt,prsi,                          &
+           ( nmmiph,nx,nxj,lev,ncld,plt,&!prsi,                          &
              pst,dsigma,phii,islimsk,q0,kdt,ntcw,ntrw,ntiw,ntsw,       &
              ntgl,ntinc,ntrnc,tpi,me,dta,area,                         &
 !  ---  inputs/outputs:
@@ -74,10 +74,11 @@
       integer,  intent(in)    :: islimsk(nx)
       real,     intent(in)    :: tpi,dta
       real,     intent(in)    :: plt(nx,lev),pst(nx),dsigma(lev,2),    &
-                                 phii(nx,lev+1),q0(nx,lev*ncld),       &
-                                 prsi(nx,lev+1)
+                                 phii(nx,lev+1),q0(nx,lev*ncld)!,       &
+!                                 prsi(nx,lev+1)
       real,     intent(in)    :: area(nx,1)  ! area of grid box (m^2)
-      real,     intent(in)    :: sd(nx,lev)
+!      real,     intent(in)    :: sd(nx,lev+1)
+      real,     intent(inout) :: sd(nx,lev+1)
 !  ---  inputs/outputs:
       real,     intent(inout) :: tt(nx,lev),qt(nx,lev*ncld)
       real,     intent(inout) :: qa(nx,lev)  ! only changed in GFDL MP
@@ -99,13 +100,13 @@
       real, parameter ::                                                &
                 rainmin=1.0e-10  !(mm?)
       real, dimension(:,:), allocatable ::                              &
-                dot,rho,re_graupel,rew,rei,rer,res,reg
+                dot,rho,re_graupel,rew,rei,rer,res,reg,dp
       real, dimension(:,:), allocatable ::                              &
                 frland,rain0,snow0,ice0,graupel0
       real, dimension(:,:,:), allocatable ::                            &
                 qv1,ql1,qr1,qi1,qs1,qg1,qa1,qn1,pt,w,uin,vin,delp,dz,   &
                 qv_dt,ql_dt,qr_dt,qi_dt,qs_dt,qg_dt,qa_dt,udt,vdt,pt_dt
-      logical   hydrostatic,phys_hydrostatic 
+      logical   hydrostatic,phys_hydrostatic,sedi_w 
 !
 ! reset all value to zero
       prsl  = 0.
@@ -122,7 +123,7 @@
 
       if ( nmmiph .eq. 11 ) then
         allocate                                                        &
-         ( dot(nx,lev),rho(nx,lev),re_graupel(nx,lev),rew(nx,lev),      &
+         ( re_graupel(nx,lev),rew(nx,lev),                              &
            rei(nx,lev),rer(nx,lev),res(nx,lev),reg(nx,lev),             &
            frland(nx,1),rain0(nx,1),snow0(nx,1),ice0(nx,1),             &
            graupel0(nx,1),                                              &
@@ -133,6 +134,8 @@
            qv_dt(nx,1,lev),ql_dt(nx,1,lev),qr_dt(nx,1,lev),             &
            qi_dt(nx,1,lev),qs_dt(nx,1,lev),qg_dt(nx,1,lev),             &
            qa_dt(nx,1,lev),udt(nx,1,lev),vdt(nx,1,lev),pt_dt(nx,1,lev) )
+        if ( effr_in ) allocate ( dp(nx,lev),rho(nx,lev) )
+        if ( sedi_w ) allocate ( dot(nx,lev) )
         frland = 0.
         qv_dt = 0.
         ql_dt = 0.
@@ -221,24 +224,23 @@
       if ( nmmiph .eq. 11 ) then
         hydrostatic = .false.       !flag for hydrostatic solver
         phys_hydrostatic = .true.   !flag for hydrostatic heating from physics 
+        sedi_w = .false.
 
         do i = 1, nxj
           if( islimsk(i) == 1 ) frland(i,1) = 1.  !land fraction
         enddo
          
-        do k = 1, lev - 1
-          do i = 1, nxj
-            dot(i,k) = 0.5*(sd(i,k)+sd(i,k+1))*100. !vertical velocity (from mb/s to Pa/s)
-          enddo
-        enddo
-        do i = 1, nxj
-          dot(i,lev) = 0.5*sd(i,lev)*100.
-        enddo
-
         do k = 1, lev
           kc = lev - k + 1
           do i = 1, nxj
-            prsl(i,k)   = 100.0 * plt(i,k)        !layer mean pressure (from mb to Pa)
+            prsl(i,k) = 100.0 * plt(i,k)               !layer mean pressure (from mb to Pa)
+            if ( sedi_w ) then
+              dot(i,k)  = 0.5*(sd(i,k)+sd(i,k+1))*100. !vertical velocity (from mb/s to Pa/s)
+              w(i,1,k)  = -dot(i,k)*(1.+con_fvirt*qt(i,k))*tt(i,k)      &
+                          /prsl(i,k)*con_rd/con_g      !vertical velocity (m/s)
+            else
+              w(i,1,k)  = 0.
+            endif
 
             qv1(i,1,k)  = qt(i,             k)
             ql1(i,1,k)  = qt(i,(ntcw-1)*lev+k)
@@ -247,15 +249,13 @@
             qs1(i,1,k)  = qt(i,(ntsw-1)*lev+k)
             qg1(i,1,k)  = qt(i,(ntgl-1)*lev+k)
             qn1(i,1,k)  = 0.                      ! =0. for prog_ccn=.false. (cm^-3)
-!            qa1(i,1,k)  = qa(i,k)                 !layer cloud fraction
-            qa1(i,1,k)  = 0                       !layer cloud fraction (should set to zero for do_qa=.false.)
+            qa1(i,1,k)  = 0.                      !layer cloud fraction (should set to zero for do_qa=.false.)
             pt(i,1,k)   = tt(i,k)                 !temperature
-            w(i,1,k)    = -dot(i,k)*(1.+con_fvirt*qt(i,k))*tt(i,k)      &
-                          /prsl(i,k)*con_rd/con_g !vertical velocity (m/s)
             uin(i,1,k)  = ut(i,k)                 !zonal wind (m/s)
             vin(i,1,k)  = vt(i,k)                 !meridional wind (m/s)
-            delp(i,1,k) = prsi(i,k+1)-prsi(i,k)   !differences of interface pressure (Pa)
+            delp(i,1,k) = (dsigma(k,1)*pst(i)+dsigma(k,2))*100. !difference of interface pressure (Pa)
             dz(i,1,k)   = (phii(i,kc)-phii(i,kc+1))/con_g !differences of height (m), dz<0
+            if ( effr_in ) dp(i,k) = delp(i,1,k)
           enddo
         enddo
 
@@ -286,6 +286,13 @@
             tt(i,k)  = pt(i,1,k)  + pt_dt(i,1,k) * dta
             ut(i,k)  = uin(i,1,k) + udt(i,1,k)   * dta
             vt(i,k)  = vin(i,1,k) + vdt(i,1,k)   * dta
+
+            if ( sedi_w ) then
+              dot(i,k) = -w(i,1,k)*prsl(i,k)*con_g/con_rd               &
+                          /((1+con_fvirt*qt(i,k))*tt(i,k))
+              sd(i,k+1)= dot(i,k)/100./0.5-sd(i,k)
+            endif
+
             if ( effr_in ) then
               rho(i,k) = 0.622*prsl(i,k)                                &
                          /( con_rd*tt(i,k)*(qt(i,k)+0.622) ) !air density (kg/m^3)
@@ -295,7 +302,10 @@
 
         if ( effr_in ) then
           call cloud_diagnosis                                          &
-               ( 1, nx, 1, lev, rho, qtr, qti, qtrw, qtsw, qtgl, tt,    &
+!               ( 1, nx, 1, lev, rho, qtr, qti, qtrw, qtsw, qtgl, tt,    &  ! module_mp_gfdl_fv3.f90
+!                 rew, rei, rer, res, reg )
+               ( 1, nx, 1, lev, rho, dp, islimsk,                       &  ! module_mp_gfdl_fv3_v16.f90
+                 qtr, qti, qtrw, qtsw, qtgl, tt,                        &
                  rew, rei, rer, res, reg )
           do k = 1, lev
             kc = lev - k + 1
@@ -324,10 +334,12 @@
         enddo
 
         deallocate                                                      &
-          ( dot,rho,re_graupel,rew,rei,rer,res,reg,                     &
+          ( re_graupel,rew,rei,rer,res,reg,                             &
             frland,rain0,snow0,ice0,graupel0,                           &
             qv1,ql1,qr1,qi1,qs1,qg1,qa1,qn1,pt,w,uin,vin,delp,dz,       &
             qv_dt,ql_dt,qr_dt,qi_dt,qs_dt,qg_dt,qa_dt,udt,vdt,pt_dt )
+        if ( effr_in ) deallocate ( dp,rho )
+        if ( sedi_w ) deallocate ( dot )
 
       endif  ! end of nmmiph.eq.11
 
