@@ -1,4 +1,4 @@
-      subroutine diabat ( fwd,docup,dodry,dolsp,dopbl,dorad,doshl,dograv       &
+      subroutine diabat ( docup,dodry,dolsp,dopbl,dorad,doshl,dograv           &
                     , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw       &
                     , idg,jdg,ldiag,dt,tau,hours,julian                        &
                     , frad,ozon,njump,itypbl,ktcup,ktpbl,ktshl,grav            &
@@ -39,7 +39,6 @@
 !
 !     parameters
 !
-!     fwd    : logical variable for forward time step or not
 !     docup  : logical variable for including cumulus parameterization
 !     dodry  : logical variable for including dry convection
 !     dolsp  : logical variable for including large scale precipitation
@@ -170,7 +169,8 @@
                                       pdfcloud,cmbk,cgwd, fsit, dosppt, doshum, dossst, &
                                       use_zmtnblck,ldailyFCTsst,ldailyFCTicesndpt, &
                                       ldailyFCTsst,ldailyFCTicesndpt,           &
-                                      dailyClm_option,dSITdt_intv,weightSIT
+                                      dailyClm_option,dSITdt_intv,weightSIT,    &
+                                      bckfile,ggdef,doclx
       use mod_sitgrid
       USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
       USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt &
@@ -205,7 +205,7 @@
                 jdg,ldiag,julian,njump,itypbl,ktcup,ktpbl,ktshl,     &
                 km_soil
 
-      logical   fwd,docup,dodry,dolsp,dopbl,dorad,doshl,dograv,ozon, &
+      logical   docup,dodry,dolsp,dopbl,dorad,doshl,dograv,ozon,     &
                 land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max),  &
                 docgrav
 
@@ -273,7 +273,6 @@
 !for gravity wave drag ====== #
       integer nmgwor,nmgwcv,mtnvar
       real hprime_b(nxp,mtnvar,my_max)
-!byl      real pltn(nxp,lev,my_max),pkn(nxp,lev,my_max),pk2n(nxp,lev,my_max),  &
       real tt_bfcnv(nxp,lev)
       real prsi(nxp,lev+1)
       real utgwc(nxp,lev),vtgwc(nxp,lev),                                  &
@@ -282,10 +281,8 @@
       real oc(nxp),theta(nxp),gamma(nxp),sigmaog(nxp),elvmax(nxp),hprime(nxp),    &
            dlength(nxp),cldf(nxp),cumabs(nxp),work3(nxp),tauctx(nxp),taucty(nxp), &
            facg(lev)
-!byl           dvsfcg(nxp),dusfcg(nxp),facg(lev)
       real oa4(nxp,4),clx(nxp,4),cgwf(2),cdmbgwd(2)
       real ograv
-!byl      integer kpbl(nxp,my_max), kpblc(nxp,my_max)
       integer kpbl(nxp,my_max)
       integer latg
 
@@ -355,7 +352,6 @@
       logical uni_cloud,lmfshal,lmfdeep2
       real    sr(nxp,my_max)
 !---------------------------------------------------------------------------
-!byl      real      avgdrag_u(my,lev),avgdrag_v(my,lev),drag_u(lev),drag_v(lev)
       real      drag_u(lev),drag_v(lev)
       real      fnor
       logical   donor,upnor
@@ -392,7 +388,6 @@
       real      adtrad(nxp,lev),work_pr1(9),work_pr2(lev,9)
 !--------
 ! for ncld=2
-!byl      real,     parameter :: dxmax=-8.8818363, dxmin=-5.2574954, &
       real,     parameter :: dxmax=-16.118095651,dxmin=-9.800790154, &
 !      real,     parameter :: dxmax=-17.261145789,dxmin=-12.465355243,&
                              dxinv=1.0/(dxmax-dxmin)
@@ -426,19 +421,22 @@
       real      rcup2(nxp)
 ! for scale-aware convection
       real      garea(nxp),tpr,tem1,tem2,jup,jdn,tpi
-      real,     parameter :: qmin=1.0e-10
+      real,     parameter :: qmin=1.0e-20
 ! for wsm6 & thompson
       integer   nmmiph
       real      phii(nxp,lev+1)
       real      qti(nxp,lev),qtrw(nxp,lev),qtsw(nxp,lev),qtgl(nxp,lev)
       real      icem,ntnc(nxp,lev,2) !1:ice, 2:liquid
+! for updating low boundary condition
+      integer   ls(nxp,my_max)
+      real      sstc(nxp,my_max),z0ocn(nxp,my_max)
+      logical   doclxu,iceold(nxp,my_max)
 
 !CWB 2007-09-27 for random number seed >>>
       real*8    rtc,rsecond
       integer   isize(2)
 ! CWB <<<
 
-!byl      real      wk1(nx,my),wk2(nx,my)
 
       integer   i,     j,      k,      jj,     nxj,    nxmy,   nxlev, levmy, &
                 icrad, iter,   icnor,  njump1, njump2, njump3, nny,   jcap,  &
@@ -508,6 +506,7 @@
 
 !CWB2016
       lssav=.false.
+      doclxu=.false.
       icsdsw=0
       icsdlw=0
       rld_adj=0.
@@ -577,13 +576,13 @@
 !------------------------------------------------------------------------------
 !     set hours, iter, icrad, julian, uprad, doozon
 !------------------------------------------------------------------------------
-
       hours = hours + dt/3600.0
       if ( hours .gt. 24.0 )  then
          hours = mod ( hours,24.0 )
          julian= julian + 1
          if ( julian .gt. 365 ) julian = julian - 365
          doozon = .true.
+         doclxu = .true.
       endif
       icrad = frad*3600.0/dt + 0.0001 ! frad =1.0 set in block.f
       iter  = tau*3600.0/dt + 0.0001
@@ -591,6 +590,70 @@
       if ( (mod(iter,icrad).eq.0) .or. (iter.eq.1) )  uprad = .true.
       doozon = doozon .and. dorad
       uprad  = uprad  .and. dorad
+!
+! update low boundary condition
+! 
+      if ( doclxu .and. doclx ) then
+        if (myrank.eq.0) print *,'update low boundary condition at tau= ',tau
+        iceold=ice
+        z0ocn=z0
+!     read climate data
+        call readclx( nx,my,my_max,julian,land,ocean,ice,tgclim,gwclim  &
+                   ,z0,alb,sstc,bckfile,sigmaf,istyp,ivegtyp,ls         &
+                   ,shdmax,shdmin,slopetyp,snoalb,ggdef,isot,ivegsrc )
+!
+!     read new albedo
+!
+        if (irad .eq. 2) then
+          call readalb(bckfile,nx,my,my_max,julian,ggdef,         &
+                     alvsf,alvwf,alnsf,alnwf,facsf,facwf)
+
+          do jj=1,jlistnum
+            j=jlist1(jj)
+            nxj=nxdef_2d(j)
+            do i=1,nxj
+              alvsf(i,jj)=alvsf(i,jj)*0.01
+              alvwf(i,jj)=alvwf(i,jj)*0.01
+              alnsf(i,jj)=alnsf(i,jj)*0.01
+              alnwf(i,jj)=alnwf(i,jj)*0.01
+              facsf(i,jj)=facsf(i,jj)*0.01
+              facwf(i,jj)=facwf(i,jj)*0.01
+            enddo
+          enddo
+        endif
+!
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+        do i=1,nxj
+          if(ls(i,jj).eq.0) then
+!---------------------------------------------------------------------
+! (1)  retain surface roughness over ocean
+!---------------------------------------------------------------------
+            z0(i,jj)=z0ocn(i,jj)
+!---------------------------------------------------------------------
+! (2)  tg replaced by climate sea surface temperature
+!---------------------------------------------------------------------
+            if (ocean(i,jj)) tg(i,jj)=sstc(i,jj)
+!---------------------------------------------------------------------
+! (3)  set ice thickness => not for couple
+!---------------------------------------------------------------------
+            if(iceold(i,jj)       .and. .not. ice(i,jj)) then
+              zice(i,jj)=0.
+              cice(i,jj)=0.   
+              z0(i,jj)=ustar(i,jj)*ustar(i,jj)*0.014/grav
+            endif
+            if(.not. iceold(i,jj) .and. ice(i,jj)) then
+              xtice(i,jj)=tg(i,jj)
+              zice(i,jj)=0.1 ! from himin in sfc_sice 
+              cice(i,jj)=0.15 ! from cimin in sfc_sice 
+              z0(i,jj)=0.0002 ! set new ice point to 0.0002
+            endif
+          endif ! if(ls(i,jj).eq.0) then
+        enddo
+        enddo
+
+      endif ! doclxu
 !
 ! for nonorographic gravity wave drag
 !
@@ -632,7 +695,6 @@
        rlsp(i,jj)  = 0.0
 !       cldwrk(i,k) = 0.0
        cldwrk(i,jj) = 0.0
-!byl       rainp(i,jj) = 0.0
 !      cosz(i,jj)  = 0.0
        xmu(i,jj)  = 0.0
 ! for wsm6
@@ -1053,7 +1115,7 @@
                      , ttpp,qp(1,1,jj),ut(1,1,jj),vt(1,1,jj)                  &
                      , tt(1,1,jj),qt(1,1,jj),pk(1,1,jj),pk2(1,1,jj)           &
                      , ustar(1,jj),tstar(1,jj),qstar(1,jj),e(1,1,jj)          &
-                     , eps(1,1,jj),hflux(1,jj),qflux(1,jj),fwd                &
+                     , eps(1,1,jj),hflux(1,jj),qflux(1,jj)                    &
                      , gwclim(1,jj),tgclim(1,jj),ocean(1,jj),ice(1,jj)        &
 !                     , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),albx(1,jj)      &
                      , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),sfalb(1,jj)      &
@@ -1071,7 +1133,7 @@
                      , ttpp,qp(1,1,jj),ut(1,1,jj),vt(1,1,jj)                  &
                      , tt(1,1,jj),qt(1,1,jj),pk(1,1,jj),pk2(1,1,jj)           &
                      , ustar(1,jj),tstar(1,jj),qstar(1,jj),e(1,1,jj)          &
-                     , eps(1,1,jj),hflux(1,jj),qflux(1,jj),fwd                &
+                     , eps(1,1,jj),hflux(1,jj),qflux(1,jj)                    &
                      , gwclim(1,jj),tgclim(1,jj),ocean(1,jj),ice(1,jj)        &
 !                     , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),albx(1,jj)      &
                      , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),sfalb(1,jj)      &
@@ -1088,7 +1150,7 @@
                      , ttpp,qp(1,1,jj),ut(1,1,jj),vt(1,1,jj)                  &
                      , tt(1,1,jj),qt(1,1,jj),pk(1,1,jj),pk2(1,1,jj)           &
                      , ustar(1,jj),tstar(1,jj),qstar(1,jj),e(1,1,jj)          &
-                     , eps(1,1,jj),hflux(1,jj),qflux(1,jj),fwd                &
+                     , eps(1,1,jj),hflux(1,jj),qflux(1,jj),itimestep          &
                      , gwclim(1,jj),tgclim(1,jj),ocean(1,jj),ice(1,jj)        &
 !                     , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),albx(1,jj)      &
                      , snr(1,jj),totalp(1,jj),ss_adj,rs(1,jj),sfalb(1,jj)      &
@@ -1259,7 +1321,7 @@
                        , ut(1,1,jj),vt(1,1,jj),tt(1,1,jj)           &
                        , qt(1,1,jj),rcup(1,jj),pk(1,1,jj)           &
                        , pk2(1,1,jj),dotc,qflux(1,jj)               &
-                       , kbot(1,jj),ktop(1,jj),fwd,ncld,sigma       &
+                       , kbot(1,jj),ktop(1,jj),ncld,sigma           &
                        , plt(1,1,jj),pst(1,jj),j,kuo(1,jj) )
 
     ! for rad input of convection cloud information
@@ -1295,12 +1357,11 @@
                 sgeo(1,jj) ,phi       ,u0         ,v0        ,t0         ,&
                 q0         ,ut(1,1,jj),vt(1,1,jj) ,tt(1,1,jj),qt(1,1,jj) ,&
                 rcup(1,jj) ,pk(1,1,jj),pk2(1,1,jj),dotc      ,qflux(1,jj),&
-                kbot(1,jj) ,ktop(1,jj),fwd        ,ncld      ,sigma      ,&
+                kbot(1,jj) ,ktop(1,jj),ncld      ,sigma      ,            &
                 plt(1,1,jj),pst(1,jj) ,j          ,islimsk   ,hflux(1,jj),&
                 garea      ,kuo(1,jj) ,flash(1,jj))
 
         do i=1,nxj
-    !byl         if(kbot(i,jj).eq.lev-1 .and. ktop(i,jj).eq.lev-1)then
          if((kbot(i,jj).eq.-1) .and. (ktop(i,jj).eq.-1))then
           plcl(i,jj)=0.
           cumtop(i,jj)=0.
@@ -1516,7 +1577,7 @@
         do k=1,lev
           do i = 1, nxj
             dotc(i,k)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
-            dotc(i,k)=dotc(i,kc)*0.1
+            dotc(i,k)=dotc(i,k)*0.1
           enddo
         enddo
 
@@ -1612,7 +1673,7 @@
         lprnt=.false.
         psfc(:)  = pst(:,jj)*0.1        ! change to cb
         psautco(:)  = 4.0e-4
-!byl            psautco(i)  = 8.0e-4 * work1(i) + 5.0e-4 * work2(i)
+!            psautco(i)  = 8.0e-4 * work1(i) + 5.0e-4 * work2(i)
 
         do k=1,lev
           kc=lev-k+1
@@ -1623,7 +1684,6 @@
 !            rhc(i,kc) = 0.999 * work1(i) + 0.85 * work2(i)
 !
 !!!            rhc(i,kc)=0.999-0.08*cos(d2r*arg)**2    !a3
-!byl            rhc(i,kc)=0.95-0.07*cos(d2r*xlat(j))    !v2
             rhc(i,kc)=0.98-0.07*cos(d2r*xlat(j))**2.0    !v3
 !            rhc(i,kc)=0.98-0.07*cos(d2r*arg)**2.0    !wsm6
 !            tem   = (max(min(plt(i,k,jj),900.)-700.,0.01) / 200.)
@@ -1997,7 +2057,7 @@
 !=======================================================================
       dtx_tau=dt/3600.
       if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. dailyClm_option.ge.1) then
-        if(fwd) then
+        if(itimestep .le. 1) then
           do ii = 1,nxj
             i=nxjstart(j)+ii-1
             dtseadt(ii,jj)=0.

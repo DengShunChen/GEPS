@@ -1,7 +1,7 @@
 !      subroutine cumastr_driv(nx,lev,dt,g,r,cp,hltm,ptop,land,topo     &
       subroutine cumastr_driv(nxj,nx,lev,dt,g,r,cp,hltm,ptop,land,topo     &
                            , phi,u,v,t,q,ut,vt,tt,qt,rcup,pk,pk2,sd   &
-                           , qflux,kcbot,kctop,fwd,ncld,sigma,plt,pt,j&
+                           , qflux,kcbot,kctop,ncld,sigma,plt,pt,j    &
 !xb110>
                            ,kcnv)
 !xb110<
@@ -34,7 +34,6 @@
 !c    pk2 : p**capa on even levels (exner func)
 !c     sd : vertical velocity (nx,lev) mb/s
 !c   qflux: upward surface moisture flux     (nx)               (w/m2)
-!c     fwd: logical variable; .true. for forward, .false. for leapfrog
 !c   ocean: logic for open water      (nx)  (=true for open water)
 !c#####################################################################
 !c
@@ -72,7 +71,7 @@
       real*8 rhoh2o
 !c
       integer klevp1,klevm1,k,i,kc,ncldq
-      logical fwd,land(nx),ldland(nx)
+      logical land(nx),ldland(nx)
 !xb110>
       integer kcnv(nx)
 !xb110<
@@ -161,7 +160,6 @@
       enddo
 !c
       dth = dt
-!      if (.not. fwd) dth = dt*0.5
 !c
       do k=1,lev
 !c     kc=lev-k+1

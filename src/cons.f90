@@ -70,11 +70,14 @@
                       , sashal,crick_proof,ccnorm,norad_precip,me,doo3l &
                       , ioutsigr,domfc,out_green,isot,ivegsrc           &
                       , otgreen,out_hp,dosppt,dospptout, doshum, dossst  &
-                      , ndsladvh2                                       &
+                      , ndsladvh2,hord                                  &
                       , ldailyFCTsst,ldailyFCTicesndpt,lFCTweight       &
                       , dailyClm_option,lopgsst,do_sit,fsit,pdfcloud,updatetg    &
+! output data for RSM (Also, RSM compiling flag is necessary)
+                      , outrsm,rsmoutinv,rlon1,rlon2,rlat1,rlat2,rgrdsz &
+!
                       , cmbk,cgwd,nmmiph,spl1,spl2            &
-                      , weightSIT,dSITdt_intv,af
+                      , weightSIT,dSITdt_intv,af,doclx
 !
       real    si(lev+1)
       logical flag
@@ -331,7 +334,7 @@
         if ( prslp .le. spl1  ) hdk1=k
         if ( prslp .le. spl2  ) hdk2(1)=k
         if ( prslp .le. 200.  ) hdk2(2)=k
-        if ( prslp .le. 300.  ) hdk2(3)=k
+        if ( prslp .le. 400.  ) hdk2(3)=k
       enddo
 !
 !

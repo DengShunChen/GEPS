@@ -30,6 +30,8 @@
 !  sponge layer 
       spl1=10.
       spl2=100.
+!  order of horozontal diffusion
+      hord=4
 !
       frad=1.0
       ptop=1.0
@@ -96,6 +98,16 @@
       dosppt=.false.
       dospptout=.false.
       doshum=.false.
+! update low boundary condition
+      doclx=.false.
+! output data for RSM (Also, RSM compiling flag is necessary)
+      outrsm=.false.
+      rsmoutinv=6
+      rlon1=100.
+      rlon2=150.
+      rlat1=5.
+      rlat2=40.
+      rgrdsz=0.25
 !---------------------------------------------------------------------------
 !
 ! specify the default option for cup and pbl
@@ -228,7 +240,7 @@
 !
 ! for forward weighting Semi-Implicit
 !
-      alpha=0.7
+      alpha=0.75
 !
 ! for two time level coefficient of merging PGF
 !

@@ -2,7 +2,7 @@
                         , ktpbl,dt,g,r,cp,xkapa,hltm,ptop,tice          &
                         , hice,tg,z0,land,topo,phi,pss,u,v,t,q,ut       &
                         , vt,tt,qt,pk,pk2,ustar,tstar,qstar,e,eps,hflux &
-                        , qflux,fwd,gwclim,tgclim,ocean,ice,snr         &
+                        , qflux,gwclim,tgclim,ocean,ice,snr             &
                         , totalp,ss,rs,alb,imx,xkmx,idg,xkmd,itype      &
                         , t2,rh2,u10,v10                                &
                         , rld,stbo                                      &
@@ -59,7 +59,6 @@
 !    eps : tke dissipation           (nx,lev)                  (m2/s2)
 !   hflux: upward surface heat flux         (nx)               (w/m2)
 !   qflux: upward surface moisture flux     (nx)               (w/m2)
-!     fwd: logical variable; .true. for forward, .false. for leapfrog
 !    gwr : soil water amount           (nx)                    (mm)
 !  gwclim: soil water climate          (nx)                    (mm)
 !  tgclim: climate ground temperature  (nx)                    (k)
@@ -136,7 +135,7 @@
 !     call pbltke ( nx,lev,ktpbl,dt,g,r,cp,xkapa,hltm,ptop,tice
 !    1            , hice,tg,z0,gwet,land,topo,phi,pss,u,v,t,q,ut
 !    2            , vt,tt,qt,pk,pk2,ustar,tstar,qstar,e,eps,hflux
-!    3            , qflux,fwd,gwr,gwclim,tgclim,ocean,ice,snr
+!    3            , qflux,gwr,gwclim,tgclim,ocean,ice,snr
 !    4            , totalp,ss,rs,alb,imx,xkmx,idg,xkmd,itype
 !    5            , rld,stbo
 !    6            , km,smc,stc,canopy,runoff,sigmaf,istyp,ivegtyp
@@ -206,7 +205,7 @@
 
       integer  istyp(nx),ivegtyp(nx)
 !
-      logical  fwd,land(nx),ocean(nx),ice(nx)
+      logical  land(nx),ocean(nx),ice(nx)
 !
 !  local work arrays
 !
@@ -296,7 +295,6 @@
 !
 !
       dth = dt
-      if (.not. fwd) dth = dt*0.5
 !
 !                                                                      c
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -385,7 +383,7 @@
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !
       call mixpbl( nxj,nx,lev,ktpbl,dt,g,hgt,u,v,t,q,ut,vt,tt,qt,e,eps  &
-                 , xkm,xkh,zl,fwd,sfcw,ustar,tstar,qstar,itype          &
+                 , xkm,xkh,zl,sfcw,ustar,tstar,qstar,itype              &
                  , dhgt,ro2,dhgtz)
 !
       call maxp ( nxj,xkm(1,lev)  ,xkmx(1),imx(1) )
