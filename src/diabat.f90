@@ -589,8 +589,7 @@
 ! update low boundary condition
 ! 
       if ( doclxu .and. doclx ) then
-        if (myrank.eq.0) print *,'update low boundary condition at      &
-                                   tau= ',tau
+        if (myrank.eq.0) print *,'update low boundary condition at tau= ',tau
         iceold=ice
         z0ocn=z0
 !     read climate data
