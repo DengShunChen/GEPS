@@ -651,14 +651,15 @@
            hld1(i,jj)=sgeo(i,jj)*ograv
          enddo
        enddo  
-       call mpe2d_unify(glob,hld1)
+!       call mpe2d_unify(glob,hld1)
 !!      do j=1,my
 !!       nxj=nxdef(j)
 !!      do i=1,nxj
 !!        glob(i,j)=glob(i,j)*ograv
 !!      enddo
 !!      enddo
-       if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
+!       if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
+       if(lreduce.eq.1) call unify_reduceintp(nx, my, jlen, hld1, glob)
        if(myrank.eq.0) then
        call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
                    ,rsmoutp,0,xr,yr,.true.)
@@ -705,8 +706,9 @@
 !replace out2d
 ! need mpe unify
 ! ***tg***
-      call mpe2d_unify(glob,tg)
-      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
+!      call mpe2d_unify(glob,tg)
+!      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
+      if(lreduce.eq.1) call unify_reduceintp(nx, my, jlen, tg, glob)
       if(myrank.eq.0) then
       call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
                   ,rsmoutp,0,xr,yr,.true.)
@@ -723,8 +725,9 @@
           call qmax2d(tg_gfs(1,1),1,1,nxs,mys)
       endif
 ! ***0-0.1m soil moisture content [fraction]***
-      call mpe2d_unify(glob,soil_xy(1,1,1))
-      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
+!      call mpe2d_unify(glob,soil_xy(1,1,1))
+!      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
+      if(lreduce.eq.1) call unify_reduceintp(nx, my, jlen, soil_xy(:,:,1), glob)
       if(myrank.eq.0) then
       call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
                   ,rsmoutp,0,xr,yr,.true.)
@@ -741,8 +744,9 @@
           call qmax2d(smc_gfs(1,1,1),1,1,nxs,mys)
       endif
 ! ***0.1-0.4m soil moisture content [fraction]***
-      call mpe2d_unify(glob,soil_xy(1,1,2))
-      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
+!      call mpe2d_unify(glob,soil_xy(1,1,2))
+!      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
+      if(lreduce.eq.1) call unify_reduceintp(nx, my, jlen, soil_xy(:,:,2), glob)
       if(myrank.eq.0) then
       call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
                   ,rsmoutp,0,xr,yr,.true.)
@@ -750,8 +754,9 @@
           call qmax2d(smc_gfs(1,1,2),1,1,nxs,mys)
       endif
 ! ***0.4-1m soil moisture content [fraction]***
-      call mpe2d_unify(glob,soil_xy(1,1,3))
-      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
+!      call mpe2d_unify(glob,soil_xy(1,1,3))
+!      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
+      if(lreduce.eq.1) call unify_reduceintp(nx, my, jlen, soil_xy(:,:,3), glob)
       if(myrank.eq.0) then
       call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
                   ,rsmoutp,0,xr,yr,.true.)
@@ -768,8 +773,9 @@
           call qmax2d(smc_gfs(1,1,3),1,1,nxs,mys)
       endif
 ! ***below 1m soil moisture content [fraction]***
-      call mpe2d_unify(glob,soil_xy(1,1,4))
-      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
+!      call mpe2d_unify(glob,soil_xy(1,1,4))
+!      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
+      if(lreduce.eq.1) call unify_reduceintp(nx, my, jlen, soil_xy(:,:,4), glob)
       if(myrank.eq.0) then
       call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
                   ,rsmoutp,0,xr,yr,.true.)
@@ -777,8 +783,9 @@
           call qmax2d(smc_gfs(1,1,4),1,1,nxs,mys)
       endif
 ! ***snr***
-      call mpe2d_unify(glob,snr)
-      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
+!      call mpe2d_unify(glob,snr)
+!      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
+      if(lreduce.eq.1) call unify_reduceintp(nx, my, jlen, snr, glob)
       if(myrank.eq.0) then
       call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
                   ,rsmoutp,0,xr,yr,.true.)
@@ -795,8 +802,9 @@
           call qmax2d(snr_gfs(1,1),1,1,nxs,mys)
       endif
 ! ***0-0.1m soil temperature***
-      call mpe2d_unify(glob,soil_xy(1,1,5))
-      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
+!      call mpe2d_unify(glob,soil_xy(1,1,5))
+!      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
+      if(lreduce.eq.1) call unify_reduceintp(nx, my, jlen, soil_xy(:,:,5), glob)
       if(myrank.eq.0) then
       call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
                   ,rsmoutp,0,xr,yr,.true.)
@@ -813,8 +821,9 @@
           call qmax2d(stc_gfs(1,1,1),1,1,nxs,mys)
       endif
 ! ***0.1-0.4m soil temperature***
-      call mpe2d_unify(glob,soil_xy(1,1,6))
-      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
+!      call mpe2d_unify(glob,soil_xy(1,1,6))
+!      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
+      if(lreduce.eq.1) call unify_reduceintp(nx, my, jlen, soil_xy(:,:,6), glob)
       if(myrank.eq.0) then
       call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
                   ,rsmoutp,0,xr,yr,.true.)
@@ -822,8 +831,9 @@
           call qmax2d(stc_gfs(1,1,2),1,1,nxs,mys)
       endif
 ! ***0.4-1m soil temperature***
-      call mpe2d_unify(glob,soil_xy(1,1,7))
-      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
+!      call mpe2d_unify(glob,soil_xy(1,1,7))
+!      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
+      if(lreduce.eq.1) call unify_reduceintp(nx, my, jlen, soil_xy(:,:,7), glob)
       if(myrank.eq.0) then
       call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
                   ,rsmoutp,0,xr,yr,.true.)
@@ -840,8 +850,9 @@
           call qmax2d(stc_gfs(1,1,3),1,1,nxs,mys)
       endif
 ! ***below 1m soil temperature***
-      call mpe2d_unify(glob,soil_xy(1,1,8))
-      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
+!      call mpe2d_unify(glob,soil_xy(1,1,8))
+!      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
+      if(lreduce.eq.1) call unify_reduceintp(nx, my, jlen, soil_xy(:,:,8), glob)
       if(myrank.eq.0) then
       call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
                   ,rsmoutp,0,xr,yr,.true.)
@@ -859,8 +870,9 @@
          if(ocean(i,jj))slmsk(i,jj)=0.0
        enddo
        enddo
-       call mpe2d_unify(glob,slmsk)
-       if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+!       call mpe2d_unify(glob,slmsk)
+!       if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+       if(lreduce.eq.1) call unify_reduceintp(nx, my, jlen, slmsk, glob)
 !yj2019
        if(myrank.eq.0) then
        call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
@@ -888,8 +900,9 @@
         if(ice(i,jj))slmsk(i,jj)=2.0
       enddo
       enddo
-      call mpe2d_unify(glob,slmsk)
-      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
+!      call mpe2d_unify(glob,slmsk)
+!      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
+      if(lreduce.eq.1) call unify_reduceintp(nx, my, jlen, slmsk, glob)
       if(myrank.eq.0) then
       call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
                   ,rsmoutp,0,xr,yr,.true.)

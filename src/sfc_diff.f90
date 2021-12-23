@@ -4,7 +4,7 @@
                           stress,fm,fh,                   &
                           ustar,wind,ddvel,fm10,fh2,fh10, &
                           sigmaf,vegtype,shdmax,ivegsrc,  &
-                          tsurf,flag_iter,redrag)
+                          tsurf,flag_iter,redrag,ustress,vstress,ssu,ssv)
 !
       use machine , only : kind_phys
 !     use funcphys, only : fpvs
@@ -21,7 +21,7 @@
       ,                                      stress,  fm, fh, ustar        &
       ,                                      wind, ddvel, fm10, fh2,fh10   &
       ,                                      sigmaf, shdmax, tsurf, snwdph &
-      ,                                      ustress, vstress
+      ,                                      ustress, vstress, ssu, ssv
       integer, dimension(im) ::  vegtype, islimsk
 
       logical   flag_iter(im) ! added by s.lu
@@ -70,7 +70,7 @@
 !
       do i=1,imj
         if(flag_iter(i)) then
-          wind(i) = max(sqrt(u1(i)*u1(i) + v1(i)*v1(i)) &
+          wind(i) = max(sqrt((u1(i)-ssu(i))**2 + (v1(i)-ssv(i))**2) &
                       + max(0.0, min(ddvel(i), 30.0)), 1.0)
           tem1    = 1.0 + rvrdm1 * max(q1(i),1.e-8)
           thv1    = t1(i) * prslki(i) * tem1
@@ -291,8 +291,8 @@
           stress(i) = cm(i) * wind(i) * wind(i)
           ustar(i)  = sqrt(stress(i))
 !! jwhwu 20110311
-         ustress(i) = - stress(i) * u1(I) / wind(i)
-         vstress(i) = - stress(i) * v1(I) / wind(i)
+         ustress(i) = - stress(i) * (u1(I)-ssu(I)) / wind(i)
+         vstress(i) = - stress(i) * (v1(I)-ssv(I)) / wind(i)
 !
 !  update z0 over ocean
 !

@@ -29,7 +29,7 @@
 ! sit
                     , itimestep,lrun_sitvdiff,ic_sit                           &
 !xb110>
-                    , flash,tsflw)
+                    , flash,tsflw,ustress, vstress, ssu, ssv)
 !xb110<
 !--------------------------------------------------------------------------------
 !#######################################################################
@@ -241,7 +241,8 @@
                 u10(nxp,my_max),v10(nxp,my_max),hpbl(nxp,my_max),         &
                 raincu6(nxp,my_max),rainlp6(nxp,my_max),                  &
                 raincu3(nxp,my_max),rainlp3(nxp,my_max),                  &
-                raincu1(nxp,my_max),rainlp1(nxp,my_max)
+                raincu1(nxp,my_max),rainlp1(nxp,my_max),                  &
+                ustress(nxp,my_max),vstress(nxp,my_max),ssu(nxp,my_max),ssv(nxp,my_max)
 !soil (2005/01/12)
       integer,  parameter :: ntype=9, ngrid=22
       integer   istyp(nxp,my_max),ivegtyp(nxp,my_max)
@@ -1160,7 +1161,8 @@
                      , shdmax(1,jj),shdmin(1,jj),snoalb(1,jj),albedo2(1,jj)   &
                      , sld_adj,zice(1,jj),cice(1,jj),xtice(1,jj)            &
                      , hpbl(1,jj),asl(1,1,jj),atl(1,1,jj),xmu(1,jj),gfx(1,jj) &
-                     , kpbl(1,jj),nmpbl,nmmiph,j,isot,ivegsrc,sfemis(1,jj) )
+                     , kpbl(1,jj),nmpbl,nmmiph,j,isot,ivegsrc,sfemis(1,jj)    &
+                     , ustress(1,jj),vstress(1,jj),ssu(1,jj),ssv(1,jj))
 
 !
 !     update tt by radiation heating/cooling rate: dtrad (k/day)

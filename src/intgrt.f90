@@ -197,8 +197,7 @@
       real, dimension(nxp, my_max) :: tocn_cpl, uocn_cpl, vocn_cpl, &
                             prec_cpl, evap_cpl, taux_cpl, tauy_cpl, &
                             lath_cpl, senh_cpl, lwnt_cpl, swnt_cpl, &
-                            tgfs_cpl, u10m_cpl, v10m_cpl, t02m_cpl, &
-                            q02m_cpl, pslv_cpl
+                            tgfs_cpl
       real :: dt_cpl
       logical :: cpl_send_init
       integer :: compid
@@ -382,11 +381,6 @@
       senh_cpl = 0.
       lwnt_cpl = 0.
       swnt_cpl = 0.
-      u10m_cpl = 0.
-      v10m_cpl = 0.
-      t02m_cpl = 0.
-      q02m_cpl = 0.
-      pslv_cpl = 0.
       cpl_send_init = .true.
 #endif
 !
@@ -628,7 +622,7 @@
       endif   !end lopgsst
 !
 #ifdef TIMCOMCPL
-      call gfs_cpl_recv4gocn(compid, ocean, tg)
+      call gfs_cpl_recv4gocn(compid, land, tg, ssu, ssv)
 #endif
 !
  10   continue
@@ -752,7 +746,7 @@
                        + facm(2,itt) * up(i,k,jj)
             vm(i,k,jj) = facm(1,itt) * vt(i,k,jj) &
                        + facm(2,itt) * vp(i,k,jj)
-            tm(i,k,jj) = facm(1,itt) * tt(i,k,jj)  &
+            tm(i,k,jj) = facm(1,itt) * tt(i,k,jj) &
                        + facm(2,itt) * ttp(i,k,jj)
             rdivm(i,k,jj)= facm(1,itt) * rdiv(i,k,jj) &
                          + facm(2,itt) * rdivm(i,k,jj)
@@ -1130,7 +1124,7 @@
                       , itimestep,lrun_sitvdiff,ic_sit                          &
 !xb110>
 !byl                      , rmr,smr,flash)
-                      , flash,tsflw)
+                      , flash,tsflw,ustress,vstress,ssu,ssv)
 !xb110<
 !--------------------------------------------------------------------------------
 !
@@ -1868,17 +1862,12 @@
       endif   !end lopgsst
 !
 #ifdef TIMCOMCPL
-      u10m_cpl = u10m_cpl + u10*dtx
-      v10m_cpl = v10m_cpl + v10*dtx
-      t02m_cpl = t02m_cpl + t2*dtx
-      q02m_cpl = q02m_cpl + q2*dtx
-      pslv_cpl = pslv_cpl + (pt+pdiff)*dtx
-      taux_cpl = taux_cpl + u10*dtx !ustress*dtx
-      tauy_cpl = tauy_cpl + v10*dtx !vstress*dtx
+      taux_cpl = taux_cpl + ustress*dtx
+      tauy_cpl = tauy_cpl + vstress*dtx
       lath_cpl = lath_cpl + qflux*dtx
       senh_cpl = senh_cpl + hflux*dtx
       swnt_cpl = swnt_cpl + ss*dtx
-      lwnt_cpl = lwnt_cpl + rld*dtx
+      lwnt_cpl = lwnt_cpl + rs*dtx
       evap_cpl = evap_cpl - qflux/hltm*dtx
       prec_cpl = prec_cpl + totalp
       dt_cpl   = dt_cpl + dtx
@@ -1886,23 +1875,15 @@
         call gfs_cpl_send2gocn(compid,  taux_cpl/dtx, tauy_cpl/dtx, &
                                         lath_cpl/dtx, senh_cpl/dtx, &
                                         swnt_cpl/dtx, lwnt_cpl/dtx, &
-                                        evap_cpl/dtx, prec_cpl/dtx, &
-                                        u10m_cpl/dtx, v10m_cpl/dtx, &
-                                        t02m_cpl/dtx, q02m_cpl/dtx, &
-                                        pslv_cpl/dtx, tg)
+                                        evap_cpl/dtx, prec_cpl/dtx, tg)
         cpl_send_init = .false.
       endif
-
+  
       dtaup = mod(tau+0.001, 2.0)
       if( dtaup .lt. dtx_tau ) then
         if(myrank .eq. 0) write(*,*) "TCo time to coupler", tau
 
-        call gfs_cpl_recv4gocn(compid, ocean, tg)
-        u10m_cpl = u10m_cpl/dt_cpl
-        v10m_cpl = v10m_cpl/dt_cpl
-        t02m_cpl = t02m_cpl/dt_cpl
-        q02m_cpl = q02m_cpl/dt_cpl
-        pslv_cpl = pslv_cpl/dt_cpl
+        call gfs_cpl_recv4gocn(compid, land, tg, ssu, ssv)
         taux_cpl = taux_cpl/dt_cpl
         tauy_cpl = tauy_cpl/dt_cpl
         lath_cpl = lath_cpl/dt_cpl
@@ -1914,15 +1895,7 @@
         call gfs_cpl_send2gocn(compid, taux_cpl, tauy_cpl, &
                                        lath_cpl, senh_cpl, &
                                        swnt_cpl, lwnt_cpl, &
-                                       evap_cpl, prec_cpl, &
-                                       u10m_cpl, v10m_cpl, &
-                                       t02m_cpl, q02m_cpl, &
-                                       pslv_cpl, tg)
-        u10m_cpl = 0.
-        v10m_cpl = 0.
-        t02m_cpl = 0.
-        q02m_cpl = 0.
-        pslv_cpl = 0.
+                                       evap_cpl, prec_cpl, tg)
         taux_cpl = 0.
         tauy_cpl = 0.
         lath_cpl = 0.

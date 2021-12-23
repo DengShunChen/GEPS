@@ -9,7 +9,8 @@
                         , ncld,dsigma,islopetyp,slc,sncover,snwdph       &
                         , shdmax,shdmin,snoalb,albedo2                  &
                         , sld,zice,cice,xtice,hpbl,asl,atl,xmu,gfx      &
-                        , kpbl,nmpbl,nmmiph,jj,isot,ivegsrc,sfemis_g )
+                        , kpbl,nmpbl,nmmiph,jj,isot,ivegsrc,sfemis_g   &
+                        , ustress, vstress, ssu, ssv )
 !
 !#######################################################################
 !                     subroutine description
@@ -174,7 +175,7 @@
                qflux(nx),pk(nx,lev),pk2(nx,lev),gwclim(nx),                &
                tgclim(nx),snr(nx),totalp(nx),                              &
                ss(nx),rs(nx),alb(nx),xkmx(2),xkmd(lev),                    &
-               t2(nx),u10(nx),v10(nx)
+               t2(nx),u10(nx),v10(nx),ustress(nx),vstress(nx),ssu(nx),ssv(nx)
 !soil
       real     smc(nx,km),stc(nx,km),canopy(nx),sigmaf(nx),                &
                rld(nx),runoff(nx)
@@ -466,7 +467,7 @@
                     stress,fm,fh,                                       &
                     ustar,sfcw,ddvel,fm10,fh2,fh10,                   &
                     sigmaf,ivegtyp,shdmax,ivegsrc,                      &
-                    tsurf,flag_iter,redrag)
+                    tsurf,flag_iter,redrag,ustress,vstress,ssu,ssv)
 !
 !     print*,'pblnoah,diff'
          do i=1,nxj
@@ -482,7 +483,7 @@
 !                     flag_iter)
       call sfc_ocean(nxj,nx,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev), &
                      tg,cd,cdq,prsl1,prslki,islmsk,ddvel,flag_iter,      &
-                     qsurf,gfx,qflux,hflux,ep1d)
+                     qsurf,gfx,qflux,hflux,ep1d,ssu,ssv)
 !
 !     print*,'pblnoah,ocean'
 !

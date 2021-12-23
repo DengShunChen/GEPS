@@ -23,13 +23,13 @@
       subroutine recmsg(model,ifrom,ito,istatus)
       character*3 model
       
-      integer tau(512),cnt,ip
+      integer tau(7200),cnt,ip
       save    tau,cnt,ip
 
       istatus=0
       if(ip.eq.0)then
         open(1,file=model//'ctl',form='formatted',status='old')
-        do i=1,512
+        do i=1,7200
            read(1,'(I4)',end=100)tau(i)
            cnt=cnt+1
         enddo

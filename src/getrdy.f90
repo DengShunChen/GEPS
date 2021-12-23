@@ -468,6 +468,7 @@
 !
           if( myrank .eq. 0 ) then
              print*,"get ncep's sea ice analysis, at dtg=",idtg
+!
              call syslbl('w00092',idtg,0,ggdef,lrec)
              write(key,'(a26,a1,i7.7)') lrec,'H',nxmy
              call dmschkr (ifilin,key//char(0),istat)

@@ -6,7 +6,7 @@
              prsl1, prslki, islimsk, ddvel, flag_iter,                  &
 !  ---  outputs:
 !    &       qsurf, cmm, chh, gflux, evap, hflx, ep                     &  
-             qsurf, gflux, evap, hflx, ep                               &
+             qsurf, gflux, evap, hflx, ep, ssu, ssv                     &
            )
 
 ! ===================================================================== !
@@ -80,7 +80,7 @@
       integer, intent(in) :: im, imj
 
       real (kind=kind_phys), dimension(im), intent(in) :: ps, u1, v1,     &
-            t1, q1, tskin, cm, ch, prsl1, prslki, ddvel
+            t1, q1, tskin, cm, ch, prsl1, prslki, ddvel, ssu, ssv
       integer, dimension(im), intent(in):: islimsk
 
       logical, intent(in) :: flag_iter(im)
@@ -110,7 +110,7 @@
 
         if ( flag(i) ) then
 
-          wind     = max(sqrt(u1(i)*u1(i) + v1(i)*v1(i))                  &
+          wind     = max(sqrt((u1(i)-ssu(i))**2 + (v1(i)-ssv(i))**2)                  &
                        + max( 0.0, min( ddvel(i), 30.0 ) ), 1.0)
 
           q0       = max( q1(i), 1.0e-8 )
