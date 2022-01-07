@@ -34,7 +34,7 @@
 
       integer*8 idtg
       character*80 ifilout
-      character typ*6,ihdg*26
+      character typ*6,ihdg*28
       character*4 ggdef,gmdef
 !
       do i = 1, nx*my

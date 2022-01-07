@@ -436,7 +436,7 @@
       if( myrank .eq. 0 ) then
        type_r="RORDER"//char(0)
        type_w="WORDER"//char(0)
-       argument="34"//char(0)
+       argument="38"//char(0)
        call dmscfg(type_r,argument,istat_r)
        call dmscfg(type_w,argument,istat_w)
        istat = abs(istat_r) + abs(istat_w)
@@ -480,6 +480,7 @@
           call dmsopn(ifilin_ncep,"r",istat5)
           istat = istat + abs(istat5)
         endif
+        if(do_sit) then
         if(dailyClm_option .ge. 1) then
           istat6=0
           istat7=0
@@ -488,6 +489,7 @@
             call dmsopn(ifilin_ClmFCT,"r",istat7)
           endif
           istat = istat + abs(istat6)+abs(istat7)
+        endif
         endif
 
       end if

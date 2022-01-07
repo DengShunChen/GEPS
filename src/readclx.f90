@@ -60,7 +60,7 @@
 !soil
       integer   ls(nxp,my_max),icex(nxp,my_max),iglob(nx,my)
 
-      character bckfile*80,lrec*26,blnk*1,ggdef*4
+      character bckfile*80,lrec*28,blnk*1,ggdef*4
       integer   mon(12),mondy(13)
       data mon/15,46,74,105,135,166,196,227,258,288,319,349/
       data mondy/0,31,59,90,120,151,181,212,243,273,304,334,365/
@@ -80,26 +80,26 @@
       if(jul .gt. mondy(k) .and. jul .le. mondy(k+1))monidex=k
       end do
 !
-  11  format('W00100','gbck',a4,4x,i2.2,6x)  ! W10
-  12  format('S9M100','gbck',a4,4x,i2.2,6x)  ! X10
-  14  format('S00030','gbck',a4,4x,i2.2,6x)  ! S35
-  15  format('S00040','gbck',a4,4x,i2.2,6x)  ! S44
-  16  format('S00070','gbck',a4,11x,a1) ! S07
-  17  format('S00090','gbck',a4,4x,i2.2,6x) ! S09
+  11  format('W00100','  gbck',a4,4x,i2.2,6x)  ! W10
+  12  format('S9M100','  gbck',a4,4x,i2.2,6x)  ! X10
+  14  format('S00030','  gbck',a4,4x,i2.2,6x)  ! S35
+  15  format('S00040','  gbck',a4,4x,i2.2,6x)  ! S44
+  16  format('S00070','  gbck',a4,11x,a1) ! S07
+  17  format('S00090','  gbck',a4,4x,i2.2,6x) ! S09
 !soil
-  13  format('S9M5B0','gbck',a4,4x,i2.2,6x)  ! for new soil
-  18  format('S000ST','gbck',a4,11x,a1)      ! for new soil
-  19  format('S000VF','gbck',a4,4x,i2.2,6x)  ! for new soil
-  21  format('S000VT','gbck',a4,11x,a1)      ! for new soil
-  22  format('S9Y100','gbck',a4,11x,a1)      ! for new soil
+  13  format('S9M5B0','  gbck',a4,4x,i2.2,6x)  ! for new soil
+  18  format('S000ST','  gbck',a4,11x,a1)      ! for new soil
+  19  format('S000VF','  gbck',a4,4x,i2.2,6x)  ! for new soil
+  21  format('S000VT','  gbck',a4,11x,a1)      ! for new soil
+  22  format('S9Y100','  gbck',a4,11x,a1)      ! for new soil
 !soil
-  23  format('S000VX','gbck',a4,11x,a1)      ! for new soil
-  24  format('S000VN','gbck',a4,11x,a1)      ! for new soil
-  25  format('S00063','gbck',a4,11x,a1)      ! for new soil
-  26  format('S0003X','gbck',a4,11x,a1)      ! for new soil
+  23  format('S000VX','  gbck',a4,11x,a1)      ! for new soil
+  24  format('S000VN','  gbck',a4,11x,a1)      ! for new soil
+  25  format('S00063','  gbck',a4,11x,a1)      ! for new soil
+  26  format('S0003X','  gbck',a4,11x,a1)      ! for new soil
 !source 2(19-soil, 20-veg)
-  28  format('S00XST','gbck',a4,11x,a1)      ! for new soil
-  31  format('S00XVT','gbck',a4,11x,a1)      ! for new soil
+  28  format('S00XST','  gbck',a4,11x,a1)      ! for new soil
+  31  format('S00XVT','  gbck',a4,11x,a1)      ! for new soil
 !
 !  to interpolat linearly based on julian day
 !

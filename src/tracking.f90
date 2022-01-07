@@ -104,16 +104,16 @@ subroutine tracking(tau,dt_trk,dt,nx,my,                                  &
       character cdtg*10,idtgc*12
       character epsno*4
       character epstype*1
-      character work(datalength)*16,tytrack*9
+      character work(datalength)*16,tytrack*11
       character dmshead*3
-      character dmstail*8
+      character dmstail*10
       integer nstm ! the number of forecasted typhoon
       character domain1*16
-      character dmskeytrack*34
+      character dmskeytrack*38
 !    
-      data tytrack /'TYTRACKGT'/
+      data tytrack /'TYPHTRACKGT'/
       data domain1 /'CWB GFS  T511L60'/
-      data dmstail/'X0025000'/
+      data dmstail/'X002500000'/
       data dmsdb/'test'/
       data epsno/'00'/
 

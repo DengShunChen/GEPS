@@ -23,7 +23,7 @@
       integer    i1,j1,k1,im,jm,lm
       real      fld(im,lm,jm)
 !ch   character*14 t1, t2
-      character t1*14, t2*12
+      character t1*16, t2*12
 
       real       xmin,xmax
       integer    imin,jmin,imax,jmax,j,i
@@ -53,7 +53,7 @@
       if(myrank .eq. 0) print 8995, imax,jmax,xmax,imin,jmin,xmin
 !
 !ch 9000 format (2a14)
- 9000 format (a14,a12)
+ 9000 format (a16,a12)
  8995 format(' imax=',i4,' jmax=',i4,' xlarg=',g20.12  &
       ,' imin=',i4,' jmin=',i4,' xsmal=',g20.12)
 !

@@ -25,7 +25,7 @@
                 zice(nxp,my_max),wrk1(nxp,my_max),mout(nx,my)
       integer*8 idtg
       character*80 ifilout
-      character typ*6,ihdg*26,ihdg2*26
+      character typ*6,ihdg*28,ihdg2*28
       character*4 ggdef,gmdef
 !
       integer   i,lenc,k,jj,j,nxj,istat,kk,iout_b10,ntrac,nclds

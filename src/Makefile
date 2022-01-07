@@ -331,9 +331,15 @@ OBJS_c   = $(SRCS_c:.c=.o)
 
 OBJS = $(OBJS_f) $(OBJS_f90) $(OBJS_F) $(OBJS_F90) $(OBJS_c)
 
+MACHINE=fx100
+
+C_COMP=fccpx100
+COMP_MPI=mpifrtpx100
 CC   =	${C_COMP}
 FC90 =  ${COMP_MPI}
 
+FFTW_INC=/users/xa09/$(MACHINE)/fftw-3.3.7/include
+NETCDF_INC=/package/$(MACHINE)/netcdf-3.6.3/include
 INCLUDE = -I. -I${FFTW_INC} -I${NETCDF_INC}
 
 CMD  =  MTCo639L72_${MACHINE}
@@ -368,7 +374,15 @@ INSTALL = /usr/bin/install
 # use FFTW fft
 # FFLAGS  = -c -X9 -Free -CcdRR8 -Cpp -DTIMING -DMULTIPLE -DUSE_FFTW -DW3TAG \
            -Kfast,parallel,openmp,ocl,autoobjstack \
-	   -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE) 
+	   -SSL2BLAMP -x- -fw $(MSG) $(INCLUDE)
+
+FFLAGS_COM = -c -X9 -Free -CcdRR8 -Cpp -Kfast,ocl,autoobjstack -x- -fw 
+DEFINE_FLAGS = -DTIMING -DUSE_FFTW -DW3TAG
+MSG_COM = -Ec -Qa,d,i,p,t,x -Koptmsg=2
+LIBS_COM  = -SSL2BLAMP
+OMP_COM = -Kopenmp,parallel
+CFLAGS_COM = -c -Xg
+
  FFLAGS       = ${FFLAGS_COM}       ${LIBS_COM} ${OMP_COM} ${DEFINE_FLAGS} ${MSG_COM} $(INCLUDE) 
  FFLAGS_NOPAR = ${FFLAGS_COM}       ${LIBS_COM} ${DEFINE_FLAGS} ${MSG_COM} $(INCLUDE) 
  FFLAGS_GWDPS = ${FFLAGS_COM_GWDPS} ${LIBS_COM} ${OMP_COM} ${DEFINE_FLAGS} ${MSG_COM} $(INCLUDE)
@@ -380,6 +394,12 @@ INSTALL = /usr/bin/install
 # If it's using fx-100 compiler(new version), you probably can get -Kparallel flag back.
 #--------------------------------------------------------------------------------------------
 LDFLAGS = ${OMP_COM} ${LDFLAGS_COM}
+NETCDF_LIB = -L/package/$(MACHINE)/netcdf-3.6.3/lib -lnetcdf
+W3NCO_LIBd = -L/nwpr/gfs/xb80/lib/fx100/lib -lw3nco_v2.0.6_4 -lw3nco_v2.0.6_d
+DMS_LIB = -L/data/datacfs/xb82/dms_new/fx100/lib -lrdms -lgdbm
+OPERLIB_LIB = -L/package/$(MACHINE)/operlib/lib -lnwp
+FFTW_LIB = -L/users/xa09/$(MACHINE)/fftw-3.3.7/lib -lfftw3_threads -lfftw3
+MPMD_LIB = 
 LIBS	= ${NETCDF_LIB} ${W3NCO_LIBd} ${DMS_LIB} ${OPERLIB_LIB} ${FFTW_LIB} ${LIBS_COM} ${MPMD_LIB}
 
 .SUFFIXES: .o .mod .f90 .c

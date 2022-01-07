@@ -23,14 +23,14 @@
       integer   nx,my,lenc,istat
       logical   t_flg
       real      z(nx,my)
-      character lrec*26,ifile*80,kflag*1
+      character lrec*28,ifile*80,kflag*1
 !
 ! working array
 !
-      character key*34
+      character key*38
 !
       write(key,1000)lrec,kflag,lenc
- 1000 format(a26,a1,i7.7)
+ 1000 format(a28,a1,i9.9)
 !
       t_flg=.false.
 
@@ -100,14 +100,14 @@
       integer   nx,my,lenc,istat
       logical   t_flg
       real      z(nx,my)
-      character lrec*26,ifile*80,kflag*1
+      character lrec*28,ifile*80,kflag*1
 !
 ! working array
 !
-      character key*34
+      character key*38
 !
       write(key,1000)lrec,kflag,lenc
- 1000 format(a26,a1,i7.7)
+ 1000 format(a28,a1,i9.9)
 !
       t_flg=.false.
 
@@ -162,14 +162,14 @@
       integer   nx,my,lenc,istat
       logical   t_flg
       real      z(nx,my)
-      character lrec*26,ifile*80,kflag*1
+      character lrec*28,ifile*80,kflag*1
 !
 ! working array
 !
-      character key*34
+      character key*38
 !
       write(key,1000)lrec,kflag,lenc
- 1000 format(a26,a1,i7.7)
+ 1000 format(a28,a1,i9.9)
 !
       t_flg=.false.
 

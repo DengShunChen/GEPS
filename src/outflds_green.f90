@@ -23,7 +23,7 @@
               , ss(nxp,my_max),pk(nxp,my_max),rh0(nxp,my_max)            &
               , tht(nxp,my_max),raincu6(nxp,my_max),rainlp6(nxp,my_max)
 
-      character ifilout*80, ggdef*4, ihdg*26, ihdg2*26
+      character ifilout*80, ggdef*4, ihdg*28, ihdg2*28
       integer*8 idtg
 !
 ! local work arrays
@@ -247,7 +247,7 @@
       if (itau .eq. 0) then
         call syslbl ('b00621',idtg,itau,ggdef,ihdg)
         glob=0.
-        call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+        call qmaxn3 (glob,ihdg(1:16),ihdg(17:28),1,1,1,nx,my,1)
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       endif
 !output 6hr prec.
@@ -258,7 +258,7 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,raincu6,glob)
 !byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call qmaxn3 (glob,ihdg(1:16),ihdg(17:28),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 
 !
@@ -266,7 +266,7 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob1,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,rainlp6,glob)
 !byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call qmaxn3 (glob,ihdg(1:16),ihdg(17:28),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 
 !
@@ -279,7 +279,7 @@
  98   continue
       call unify_reduceintp(nx,my,my_max,wrk,glob)
 !byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call qmaxn3 (glob,ihdg(1:16),ihdg(17:28),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 
       endif
