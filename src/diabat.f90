@@ -285,6 +285,7 @@
       real ograv
       integer kpbl(nxp,my_max)
       integer latg
+      real eng0,eng1
 
 ! --- for random number generator (thread safe mode)
       integer ixseed(nx,my,2)
@@ -343,6 +344,7 @@
       real :: qt_sppt(nxp,lev*ncld,my_max)
 #endif
       real :: dtradc(nxp,lev,my_max)
+      real :: dtradn(nxp,lev)
       integer :: zmtnblck(nxp)
       real :: ru,vru,upert,vpert,tpert,qpert,qnew,dtdtr
 
@@ -455,7 +457,8 @@
 !xb110>
 !for new precpd & nTDK
       real      u0(nxp,lev),v0(nxp,lev),t0(nxp,lev),q0(nxp,lev*ncld)
-      real      upp(nxp,lev),vpp(nxp,lev),ttpp(nxp,lev)
+      real      upp(nxp,lev),vpp(nxp,lev),tpp(nxp,lev),ttpp(nxp,lev)
+      real      pkp(nxp,lev),pk2p(nxp,lev),pltp(nxp,lev)
 !for lightning
       real      flash(nxp,my_max)        !flash density (unit in flashes km^-2 day^-1)
       real      ztenh(nxp,lev),zqenh(nxp,lev),rho(nxp,lev)              &
@@ -481,7 +484,7 @@
                                          cicetm,snrtm, zicetm,xticetm, &
                                        obswtbtm, tgtm
       character*12 cdtg
-      integer yr, mo, dy, hr, mn
+      integer yr, mo, dy, hr, mn, leap, yrd
       real tauhr
       real dtx_tau,dtaup
       INTEGER, PARAMETER :: nerr = 6
@@ -509,6 +512,9 @@
       rld_adj=0.
       sld_adj=0.
       ss_adj =0.
+      dudtc = 0.
+      dvdtc = 0.
+      dtdtc = 0.
 ! for MP WSM6 & Thompson
       uni_cloud=.false. !if using SHOC scheme, it should be .true.
       lmfshal=( nmshl .eq. 2 .or. nmshl .eq. 3 ) ! .true. if using mass-flux shallow convection
@@ -572,25 +578,36 @@
 !------------------------------------------------------------------------------
 !     set hours, iter, icrad, julian, uprad, doozon
 !------------------------------------------------------------------------------
-      hours = hours + dt/3600.0
-      if ( hours .gt. 24.0 )  then
+!      hours = hours + dt/3600.0
+      yr = idtg / 100000000
+      leap = mod ( yr , 4 )
+      yrd = 365
+      if ( leap .eq. 0 ) yrd = 366 
+      if ( hours .ge. 24.0 )  then
          hours = mod ( hours,24.0 )
          julian= julian + 1
-         if ( julian .gt. 365 ) julian = julian - 365
+         if ( julian .gt. yrd ) julian = julian - yrd
          doozon = .true.
          doclxu = .true.
       endif
       icrad = frad*3600.0/dt + 0.0001 ! frad =1.0 set in block.f
-      iter  = tau*3600.0/dt + 0.0001
+      iter  = tau*3600.0/dt - 1. + 0.0001
       uprad = .false.
-      if ( (mod(iter,icrad).eq.0) .or. (iter.eq.1) )  uprad = .true.
+!      if ( (mod(iter,icrad).eq.0) .or. (iter.eq.1) )  uprad = .true.
+      if ( (mod(iter,icrad).eq.0) )  uprad = .true.
+      if ( myrank .eq. 0 ) then
+         print *,'julian day = ',julian,' hours = ',hours
+         print *,'uprad = ',uprad
+         print *,'year = ',yr,' year days = ',yrd
+      endif
       doozon = doozon .and. dorad
       uprad  = uprad  .and. dorad
 !
 ! update low boundary condition
 ! 
       if ( doclxu .and. doclx ) then
-        if (myrank.eq.0) print *,'update low boundary condition at tau= ',tau
+        if (myrank.eq.0)                                                &
+           print *,'update low boundary condition at tau= ',tau
         iceold=ice
         z0ocn=z0
 !     read climate data
@@ -680,6 +697,9 @@
           qtr(i,k)  = 0.
           qtc(i,k)  = 0.
           qti(i,k)  = -999.9
+          dudtc(i,k) = 0.
+          dvdtc(i,k) = 0.
+          dtdtc(i,k) = 0.
         enddo
       enddo
 !
@@ -769,6 +789,7 @@
                     slag,sdec,cdec,solcon,                            &
                     xlonr,ixseed)
 
+      hours = hours + dt/3600.0
 !-------------------------------------------------------------------------
 ! cosz was modified to be an average of the  calling period(1 hour fo
       if ( uprad .and. (irad .eq. 1))  then
@@ -904,6 +925,8 @@
     !  pk= (plt/1000)**capa
       call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pst(1,jj), &
                           pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
+      call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,ps(1,jj),  &
+                          pkp,pk2p,pltp )
 !
 !     hydrostatic equation
       do i = 1, nxj
@@ -930,6 +953,7 @@
           upp(i,k)    = up(i,k,jj)*xx
           vpp(i,k)    = vp(i,k,jj)*xx
           tt(i,k,jj)  = tt(i,k,jj)*pk(i,k,jj) / (1.0+0.608*qt(i,k,jj))
+          tpp(i,k)  = ttp(i,k,jj)*pkp(i,k) / (1.0+0.608*qp(i,k,jj))
           ttpp(i,k) = ttp(i,k,jj) / (1.0+0.608*qp(i,k,jj))
         enddo
       enddo
@@ -978,7 +1002,7 @@
                     , qt(1,1,jj),o3l(1,1,jj)                                    &
                     , plcl(1,jj),cumtop(1,jj),ss(1,jj),rs(1,jj)                 &
                     , asol_clr(1,jj),olr_clr(1,jj),ss_clr(1,jj),rs_clr(1,jj)    &
-                    , dtrad(1,1,jj),asr(1,j),alr(1,j)                           &
+                    , dtradn,asr(1,j),alr(1,j)                                  &
                     , asr_clr(1,j),alr_clr(1,j)                                 &
                     , xsr(1,j),xlr(1,j),acld(1,j),aflxd(1,j),aflxu(1,j)         &
                     , ilx(1,jj),ibx(1,jj),cofx(1,jj),sdpbl(1,jj),ctot(1,jj)     &
@@ -1039,8 +1063,8 @@
 !--------------------------------------------------------------------------------
        call rrtmg                                                           &
           !  ---  inputs:
-           ( sigma,pst(1,jj),plt(1,1,jj),rstd,                             &
-             tt(1,1,jj),qt(1,1,jj),o3l(1,1,jj),dotc,tg(1,jj),              &
+           ( sigma,ps(1,jj),pltp,rstd,                                     &
+             tpp,qp(1,1,jj),o3l(1,1,jj),dotc,tg(1,jj),                     &
              slimsk   ,cice(1,jj),xtice(1,jj),                             &
              snr(1,jj),sncover(1,jj),snoalb(1,jj),z0(1,jj),                &
              alvsf(1,jj),alnsf(1,jj),alvwf(1,jj),                          &
@@ -1069,11 +1093,11 @@
         call dcyc2t3                                                  &
           !  ---  inputs:
           ( solhr,slag,sdec,cdec,sinl(j),cosl(j),                     &
-            xlonr(1,jj),cosz(1,jj),tg(1,jj),tt(1,lev,jj),tsflw(1,jj), &
+            xlonr(1,jj),cosz(1,jj),tg(1,jj),tpp(1,lev),tsflw(1,jj),   &
             sld(1,jj),ss(1,jj),rld(1,jj),asl(1,1,jj),atl(1,1,jj),     &
             asl_clr(1,1,jj),atl_clr(1,1,jj),nxp, nxjp(j), lev,        &
 !  ---  outputs:
-            dtrad(1,1,jj),dtradc(1,1,jj),sld_adj,ss_adj,rld_adj, & 
+            dtradn,dtradc(1,1,jj),sld_adj,ss_adj,rld_adj,             & 
             rs_adj,xmu(1,jj) )
 
         do i = 1, nxj
@@ -1159,23 +1183,17 @@
                      , shdmax(1,jj),shdmin(1,jj),snoalb(1,jj),albedo2(1,jj)   &
                      , sld_adj,zice(1,jj),cice(1,jj),xtice(1,jj)            &
                      , hpbl(1,jj),asl(1,1,jj),atl(1,1,jj),xmu(1,jj),gfx(1,jj) &
-                     , kpbl(1,jj),nmpbl,nmmiph,j,isot,ivegsrc,sfemis(1,jj) )
+                     , kpbl(1,jj),nmpbl,nmmiph,j,isot,ivegsrc,sfemis(1,jj)    &
+                     , dudtc,dvdtc,dtdtc)
 
-!
-!     update tt by radiation heating/cooling rate: dtrad (k/day)
-!
-      do k = 1, lev
-        do i = 1, nxj
-          tt(i,k,jj) = tt(i,k,jj) + dta*dtrad(i,k,jj)/86400.0
-        enddo
-      enddo
+
 !
 !
 !     recompute phi by tt after pbl to ensure consistence of phi & phi2
 !
-      call get_phi(nxjp(j),nxp,lev,ptop,cp,rgas,grav,sgeo(1,jj),      &
-                  pk(1,1,jj),pk2(1,1,jj),tt(1,1,jj),qt(1,1,jj),       &
-                  phii,phi)
+!      call get_phi(nxjp(j),nxp,lev,ptop,cp,rgas,grav,sgeo(1,jj),      &
+!                  pk(1,1,jj),pk2(1,1,jj),tt(1,1,jj),qt(1,1,jj),       &
+!                  phii,phi)
 !
 
 #ifdef VERBOSE
@@ -1228,22 +1246,10 @@
             prslk(i,kc)=(plt(i,k,jj)/1000.)**xkapa
             del(i,kc) = 100.0*( dsigma(k,1)*pst(i,jj)+dsigma(k,2))  !  pa
             phil(i,kc) = phi(i,k)-sgeo(i,jj)
-            !time split forcing
             qtc(i,kc) = qt(i,k,jj)
             ttc(i,kc) = tt(i,k,jj)
             utc(i,kc) = ut(i,k,jj)
             vtc(i,kc) = vt(i,k,jj)
-            dudtc(i,kc) = 0.
-            dvdtc(i,kc) = 0.
-            dtdtc(i,kc) = 0.
-!no time split forcing
-!!            qtc(i,kc) = q0(i,k)
-!!            ttc(i,kc) = t0(i,k)
-!!            utc(i,kc) = u0(i,k)
-!!            vtc(i,kc) = v0(i,k)
-!!            dudtc(i,kc) = ( ut(i,k,jj) - u0(i,k) )/dta
-!!            dvdtc(i,kc) = ( vt(i,k,jj) - v0(i,k) )/dta
-!!            dtdtc(i,kc) = ( tt(i,k,jj) - t0(i,k))/dta
           enddo
         enddo
 !
@@ -1275,6 +1281,16 @@
         enddo
       endif  !(end of topo dograv and nmgwor=2)
 
+!
+!     update tt by radiation heating/cooling rate: dtrad (k/day)
+!
+      do k = 1, lev
+        do i = 1, nxj
+!          tt(i,k,jj) = tt(i,k,jj) + 0.5*dta*(dtrad(i,k,jj)+dtradn(i,k))/86400.0
+          tt(i,k,jj) = tt(i,k,jj) + dta*dtradn(i,k)/86400.0
+          dtrad(i,k,jj) = dtradn(i,k)
+        enddo
+      enddo
 !
 !     recompute phi by tt after pbl to ensure consistence of phi & phi2
 !
@@ -1545,15 +1561,18 @@
         dlength(1:nxj)  = sqrt( tem1*tem1+tem2*tem2 )
         cldf(1:nxj)     = cgwf(1)*work1(1:nxj) + cgwf(2)*work2(1:nxj)
 
-        call gwdc (nxjp(j),nxp,nxp,lev,ut(1,1,jj),vt(1,1,jj),        &
-                     tt(1,1,jj),qt(1,1,jj),prsl,prsi,del,            &
+        call gwdc (nxjp(j),nxp,nxp,lev,u0,v0,                        &
+                     t0,q0,prsl,prsi,del,                            &
                      ktop(1,jj),kbot(1,jj),kuo(1,jj),cldf,cumabs,    &
                      grav,cp,con_rd,con_fvirt,dta,dlength,           &
                      utgwc,vtgwc,tauctx,taucty,j)
         do k=1,lev
           do i=1,nxj
+            eng0 = 0.5*(ut(i,k,jj)*ut(i,k,jj)+vt(i,k,jj)*vt(i,k,jj))
             ut(i,k,jj) = ut(i,k,jj) + utgwc(i,k) * dta
             vt(i,k,jj) = vt(i,k,jj) + vtgwc(i,k) * dta
+            eng1 = 0.5*(ut(i,k,jj)*ut(i,k,jj)+vt(i,k,jj)*vt(i,k,jj))
+            tt(i,k,jj) = tt(i,k,jj) + (eng0-eng1)/(dta*cp)
           enddo
         enddo
       endif  !(end of docgrav and nmgwcv=2)
@@ -1609,11 +1628,6 @@
 
         ! scale-aware shalcon
         if( nmshl.eq.3 ) then
-!!        call shalcnv_sa(nxjp(j),nxp,lev,jcap,dta,del,prsl,psfc,phil,qtr &
-!!          ,qtc,ttc,utc,vtc                         &
-!!          ,rcup2,kbot(1,jj),ktop(1,jj)                                &
-!!          ,kuo(1,jj),slimsk,garea,dotc,ncld,hpbl(1,jj),heat,evap      &
-!!          ,grav,cp,hltm,rgas,tice)
           call samfshalcnv(nxjp(j),nxp,lev,dta,del,prsl,psfc,phil,qtr   &
             ,qti,qtc,ttc,utc,vtc,rcup2,kbot(1,jj),ktop(1,jj),kuo(1,jj)  &
             ,islimsk,garea,dotc,ncld,hpbl(1,jj),cnvw,cnvc)
@@ -1644,7 +1658,7 @@
                      , dsigma,tg(1,jj),pk(1,1,jj),pst(1,jj),sgeo(1,jj),phi     &
                      , plt(1,1,jj),tt(1,1,jj), qt(1,1,jj),nshl(j)              &
                      , rcup(1,jj),ncld )
-!
+
 !=======================================================================
 ! cloud microphysics
 !=======================================================================
