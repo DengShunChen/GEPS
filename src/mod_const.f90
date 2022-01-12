@@ -95,6 +95,10 @@
     ! sit
     logical :: do_sit
 
+    ! output pressure level format
+    ! 1 origin dmskey 2 grib2
+    integer ,save :: out_pres_form=1
+
     common/constL/lsimpl,lzadv,yesdia,dopbl,docup,dorad,   &
             dolsp, dograv,doshl, dodry, donnmi,ozon,       &
             restrt,hdiff, cstar, update,doincr,hybrid,     &

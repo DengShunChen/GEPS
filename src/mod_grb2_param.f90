@@ -21,6 +21,7 @@ module mod_grb2_param
 !* Jia-ying Wu 2017,09
 !*
 !************************************************************************
+      use const ,only:out_pres_form
       implicit none
       public
       integer*4 :: ierr
@@ -49,7 +50,7 @@ module mod_grb2_param
       !integer,parameter :: llst5=5
       !real :: lcoord5(llst5)
 !GRIB2 SECTION 5
-      integer*4 :: idrsnum40,idrsnum0
+      integer*4 :: idrsnum40!,idrsnum0
       integer*4,parameter :: idrstmplen40=7, idrstmplen0=5
                            !Max dimension of idrstmpl()
       integer*4 :: idrstmpl40(idrstmplen40),idrstmpl0(idrstmplen0)
@@ -64,7 +65,7 @@ logical*1,allocatable,save :: bmap(:)
 integer*4  :: Ptp0,Ptp1,Ptp2,Ptp3,Ptp4,grbnxmy
 !grib2 file name
 character::grbfile*255
-integer*4::io_format,grbid=134
+integer*4::grbid=134
 
 !=======================================================================
 !  call baopenw(g2num,g2name,ierr)                                     !
@@ -271,8 +272,8 @@ integer*4::io_format,grbid=134
 !       data lcoord5/0.0,10.0,40.0,100.0,200.0/
 !=======================================================================
 ! Grib2 section 5
-       data idrsnum40/40/
-       data idrsnum0/0/
+       data idrsnum40/0/
+!       data idrsnum0/0/
 !   idrsnum=40   !Data Representation Template Number ( see Code Table 5.0 )
 !   idrsnum=40 : JPEG 2000 Code Stream Format
 
@@ -284,7 +285,8 @@ integer*4::io_format,grbid=134
 ! etc...) may be changed by the data packing algorithms. Use this to
 ! specify
 ! scaling factors and order of spatial differencing, if desired.
-       data idrstmpl40/0,0,2,8,0,0,255/
+       !data idrstmpl40/0,0,2,8,0,0,255/
+       data idrstmpl40/0,0,2,32,0,0,255/
 !   idrstmpl(1)=0  !Reference Value (R)(IEEE 32-bit folating-point value)
 !   idrstmpl(2)=0  !Binary scale factor (E)
 !   idrstmpl(3)=0  !Decimal scale factor (D)
@@ -393,8 +395,7 @@ integer*4::io_format,grbid=134
       ipdstmpl(14)=0!t14
       ipdstmpl(15)=0!t15
 ! Add packing info. (section 5)
-      idrstmpl40(3)=p3  !value order use in  jpeg compress
-                        !result=vulue * 10.**(int(p3))
+      idrstmpl40(3)=p3  !dec fac
 
       !idrstmpl40(5)=0!p5 !Type of original field values(0:folat, 1:int.)
 
@@ -514,5 +515,21 @@ integer*4::io_format,grbid=134
 
       return
       end subroutine
+!=======================================================================
+      subroutine opn_grb2(nx,my,idtg,itau)
+      use grib_mod
+           integer::nx,my,itau
+           integer*8::idtg
+           allocate(cgrib(lcgrib),bmap(nx*my))
+           call baopenw(grbid,trim(grbfile),ierr)
+           call latlong(nx,my)
+           call seclist01(idtg,itau)
+      end subroutine 
+      subroutine cls_grb2
+      use grib_mod
+        call baclose(grbid,ierr)
+        deallocate(cgrib,bmap)
+      end subroutine 
+
 end module mod_grb2_param
 

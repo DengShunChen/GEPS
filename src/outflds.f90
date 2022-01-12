@@ -20,9 +20,7 @@
       use index
       use mod_outflds
       use radn, only : ntcw,ntiw,ntoz
-!hcwei  write grb2
-      use mod_grb2_param
-      use grib_mod
+      use mod_grb2_param  !for write grib2 data
 
       implicit  none
 
@@ -94,6 +92,7 @@
       real      dsigma(lev,2),deodp
 !
       logical :: lwrite,lwritesit
+      integer*8 :: tst, ted, rate      !For CPU Timings
 !xb110>
 !      real      flash(nxp,my_max)         !flash density 
 !xb110<
@@ -133,18 +132,17 @@
       call whttau (itau,numout,outdir,ntau,taudir)
       if(ntau.eq.0) return
 
+      if(myrank==0)call system_clock(tst)
       !========================
 !hcw !open grb2 data 
-      io_format=2 !will move to init_blocking.f90
 
-      if(io_format==2 .and. lwrite .eqv. .true. .and. myrank==0 )then
-           allocate(cgrib(lcgrib),bmap(nx*my))
+      if(out_pres_form==2 .and. myrank==0)then
+      !if( lwrite .eqv. .true. )then
 133                   format( A     ,I12.12 ,A  ,I4.4 ,A     )
            write(grbfile,133 )'GFS_',idtg   ,'_',itau ,'.grb2'
            print*,'OutFileName= ',trim(grbfile)
-           call baopenw(grbid,trim(grbfile),ierr)
-           call latlong(nx,my)
-           call seclist01(idtg,itau)
+           call opn_grb2(nx,my,idtg,itau)
+      !endif
        endif
 
 !
@@ -639,10 +637,7 @@
       endif
 
 !hcw  close grb2 file
-      if(io_format==2.and.myrank==0)then
-        call baclose(grbid,ierr)
-        deallocate(cgrib,bmap)
-      endif
+      if(out_pres_form==2.and.myrank==0)  call cls_grb2
 
 !
 !  wk_xy(-,-,1) : temperature at the lowest sigma level
@@ -727,16 +722,6 @@
         enddo
       enddo
 
-! open grb2 for out2d
-      if(io_format==2 .and. lwrite .eqv. .true. .and. myrank==0 )then
-           allocate(cgrib(lcgrib),bmap(nx*my))
-134                   format( A     ,I12.12 ,A  ,I4.4 ,A     )
-           write(grbfile,134 )'GFS_',idtg   ,'_',itau ,'_out2d.grb2'
-           print*,'OutFileName= ',trim(grbfile)
-           call baopenw(grbid,trim(grbfile),ierr)
-           call latlong(nx,my)
-           call seclist01(idtg,itau)
-       endif
 
 !
 ! output some 2-dimension veriable to dmsfile
@@ -750,10 +735,9 @@
 !xb110                 ,sld,wk_xy,soil_xy,canopy,ggdef,lwrite,flash)
                  ,sld,wk_xy,soil_xy,canopy,ggdef)
 
-!hcw  close grb2 file
-      if(io_format==2.and.myrank==0)then
-        call baclose(grbid,ierr)
-        deallocate(cgrib,bmap)
+      if(myrank==0)then
+        call system_clock(ted,rate)
+        print *, "In Outfld CPU Time: ",dble(ted-tst)/dble(rate)
       endif
 
       return

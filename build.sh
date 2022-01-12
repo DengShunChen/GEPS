@@ -39,8 +39,7 @@ if [ "${MACHINE}" == 'fx10' ] ; then
   fi
 fi
 if [ "${MACHINE}" == 'fx100' ] ; then
-  #hostnames='login11 login12 login15 login16'
-  hostnames='login07 login08 login05 login06'
+  hostnames='login11 login12 login15 login16'
   [[ $hostnames =~ (^|[[:space:]])$HOSTNAME($|[[:space:]]) ]] && known='True' || known='False' 
   if [ "${known}" == 'False' ] ; then
    echo "Fatal Error : Build ${MACHINE} executable, please move to login11/12 for inside HPC, login15/16 for outside HPC !" 

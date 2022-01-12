@@ -56,7 +56,7 @@ contains
       call unify_reduceintp(nx,my,my_max,div(1,1,k),wk1)
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,wk1,istat)
-      if(io_format==2.and.myrank==0)then
+      if(out_pres_form==2.and.myrank==0)then
         pcoord=plev(k) 
         r4out(:,:)=wk1(:,:)
         call wrt_grb2(itau,0,2,13,6,100,-2,pcoord,r4out)
@@ -70,7 +70,7 @@ contains
       endif
    10 continue
    20 continue
-      if(lwrite .and. myrank .le. ncnt .and.io_format==1) &
+      if(lwrite .and. myrank .le. ncnt .and.out_pres_form==1) &
              call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
       return
@@ -153,7 +153,7 @@ contains
       call unify_reduceintp(nx,my,my_max,drag(1,1,k),wk1)
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,wk1,istat)
-      if(io_format==2.and.myrank==0)then
+      if(out_pres_form==2.and.myrank==0)then
         pcoord=plev(k) 
         r4out(:,:)=wk1(:,:)
         call wrt_grb2(itau,0,2,196,6,100,-2,pcoord,r4out)
@@ -167,7 +167,7 @@ contains
       endif
    10 continue
    20 continue
-      if(lwrite .and. myrank .le. ncnt .and.io_format==1) &
+      if(lwrite .and. myrank .le. ncnt .and.out_pres_form==1) &
                 call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
       return
@@ -286,7 +286,7 @@ contains
 !        glob=slp
 !      endif
 !
-      if(io_format==2.and.myrank==0)then
+      if(out_pres_form==2.and.myrank==0)then
         pcoord=plev(k) 
         r4out(:,:)=slp(:,:)
         call wrt_grb2(itau,0,3,5,0,100,-2,pcoord,r4out)
@@ -302,7 +302,7 @@ contains
       endif
    10 continue
    20 continue
-      if(lwrite .and. myrank .le. ncnt.and.io_format==1) &
+      if(lwrite .and. myrank .le. ncnt.and.out_pres_form==1) &
             call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
       return
@@ -367,7 +367,7 @@ contains
        tmp(i,jj)= min(100.,max(dew(i,jj,k)*100.,0.0))
    20 continue
       call unify_reduceintp(nx,my,my_max,tmp,glob)
-      if(io_format==2.and.myrank==0)then
+      if(out_pres_form==2.and.myrank==0)then
         pcoord=plev(k) 
         r4out(:,:)=glob(:,:)
         call wrt_grb2(itau,0,1,1,2,100,-2,pcoord,r4out)
@@ -391,7 +391,7 @@ contains
       endif
    10 continue
    30 continue
-      if(lwrite .and. myrank .le. ncnt.and.io_format==1) &
+      if(lwrite .and. myrank .le. ncnt.and.out_pres_form==1) &
           call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
       return
@@ -445,6 +445,7 @@ contains
        write( lrec(k), '(i3.3,a3)' ) lpl,cspec(ntrac)
       end do
       write( lrec(lpout), '(a3,a3)' ) 'h00',cspec(ntrac)
+      Ptp0=0 ;Ptp1=1 ;Ptp2=0 ;Ptp3=6 !grib code
 !
       else if(ntrac.eq.ntoz)then
 !
@@ -453,6 +454,7 @@ contains
           write( lrec(k), '(i3.3,a3)' ) lpl,'560'   ! ozone
         end do
         lrec(lpout) = 'h00560'
+        Ptp0=0 ;Ptp1=14 ;Ptp2=1 ;Ptp3=8 !grib code
 !
       else if(ntrac.eq.ncld+1)then
 !
@@ -461,6 +463,7 @@ contains
           write( lrec(k), '(i3.3,a3)' ) lpl,'550'   ! combine cloud water and cloud ice together
         end do
         lrec(lpout) = 'h00550'
+        Ptp0=0 ;Ptp1=1 ;Ptp2=22 ;Ptp3=8 !grib code 
       else
         goto 40
       endif
@@ -489,16 +492,10 @@ contains
 !!      do 20 i=1,lenc
 !!      glob(i,1)= max(dew(i,k),0.0)
 !!   20 continue
-      if(io_format==2.and.myrank==0)then
+      if(out_pres_form==2.and.myrank==0)then
         pcoord=plev(k) 
         r4out(:,:)=glob(:,:)
-        if(ntrac.eq.1)then
-          call wrt_grb2(itau,0,1,0,6,100,-2,pcoord,r4out)   !Specit Humility
-        else if(ntrac.eq.ncld+1)then
-          call wrt_grb2(itau,0,1,22,8,100,-2,pcoord,r4out)  ! cloud water
-        else if(ntrac.eq.ntoz)then
-          call wrt_grb2(itau,0,14,1,8,100,-2,pcoord,r4out)  !ozone
-        endif
+          call wrt_grb2(itau,Ptp0,Ptp1,Ptp2,Ptp3,100,-2,pcoord,r4out)   !Specit Humility
       endif
 !
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
@@ -512,7 +509,7 @@ contains
       endif
    10 continue
    30 continue
-      if(lwrite .and. myrank .le. ncnt .and. io_format==1) &
+      if(lwrite .and. myrank .le. ncnt .and. out_pres_form==1) &
            call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
    40 continue
@@ -586,9 +583,9 @@ contains
       if(label(kk).eq.'SSL010' .or. label(kk).eq.'ssl010') then
         call unify_reduceintp(nx,my,my_max,slp,glob)
         call syslbl('ssl010',idtg,itau,ggdef,lrec)
-        if(io_format==1)then
+        if(out_pres_form==1)then
           if(lwrite) call dmswrit(nx,my,lrec,lenc,'H',ifilout,glob,istat)
-        elseif(io_format==2.and.myrank==0)then
+        elseif(out_pres_form==2.and.myrank==0)then
           r4out(:,:)=glob(:,:)
           call wrt_grb2(itau,0,3,0,2,101,0,0.,r4out)
         endif
@@ -612,7 +609,7 @@ contains
 !byl        if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
         if(lwrite) call dmswrit(nx,my,lrec,lenc,'H',ifilout,glob,istat)
         !write grb2 data 
-        if(io_format==2.and.myrank==0)then
+        if(out_pres_form==2.and.myrank==0)then
           r4out(:,:)=glob(:,:)
           call wrt_grb2(itau,0,3,0,2,1,0,0.,r4out)
         endif
@@ -707,7 +704,7 @@ contains
 !!        glob=slp
 !
 !!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      if(io_format==2.and.myrank==0)then
+      if(out_pres_form==2.and.myrank==0)then
         pcoord=plev(k)
         r4out(:,:)=slp(:,:)
         call wrt_grb2(itau,0,0,0,2,100,-2,pcoord,r4out)
@@ -722,7 +719,7 @@ contains
       endif
    10 continue
    30 continue
-      if(lwrite .and. myrank .le. ncnt .and. io_format==1) &
+      if(lwrite .and. myrank .le. ncnt .and. out_pres_form==1) &
           call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
       return
@@ -819,7 +816,7 @@ contains
 !  reduceintp has been done in voterp (2011/5)
 !
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,wk1,istat)
-      if(io_format==2.and.myrank==0)then
+      if(out_pres_form==2.and.myrank==0)then
         pcoord=plev(k)
         r4out(:,:)=wk1(:,:)
         call wrt_grb2(itau,0,2,12,6,100,-2,pcoord,r4out)
@@ -833,7 +830,7 @@ contains
       endif
    10 continue
    20 continue
-      if(lwrite .and. myrank .le. ncnt .and.io_format==1) & 
+      if(lwrite .and. myrank .le. ncnt .and.out_pres_form==1) & 
             call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
       return
@@ -945,7 +942,7 @@ contains
 !!      glob(i,j)= wind(i,j,k)*xxx
 !!   50 continue
 !
-      if(io_format==2.and.myrank==0)then
+      if(out_pres_form==2.and.myrank==0)then
         pcoord=plev(k)
         r4out(:,:)=glob(:,:)
         call wrt_grb2(itau,0,2,2,2,100,-2,pcoord,r4out)
@@ -965,7 +962,7 @@ contains
       endif
    10 continue
    30 continue
-      if(lwrite .and. myrank .le. ncnt .and.io_format==1) &
+      if(lwrite .and. myrank .le. ncnt .and.out_pres_form==1) &
            call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
 !  now the v components
@@ -1021,7 +1018,7 @@ contains
 !!      glob(i,j)= wind(i,j,k)*xxx
 !!   60 continue
 !
-      if(io_format==2.and.myrank==0)then
+      if(out_pres_form==2.and.myrank==0)then
         pcoord=plev(k)
         r4out(:,:)=glob(:,:)
         call wrt_grb2(itau,0,2,3,2,100,-2,pcoord,r4out)
@@ -1041,7 +1038,7 @@ contains
       endif
    20 continue
    40 continue
-      if(lwrite .and. myrank .le. ncnt .and.io_format==1) & 
+      if(lwrite .and. myrank .le. ncnt .and.out_pres_form==1) & 
           call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
 !  now the w components
@@ -1063,7 +1060,7 @@ contains
 !!      enddo
 !!      enddo
 !
-      if(io_format==2.and.myrank==0)then
+      if(out_pres_form==2.and.myrank==0)then
         pcoord=plev(k)
         r4out(:,:)=glob(:,:)
         call wrt_grb2(itau,0,2,8,6,100,-2,pcoord,r4out)
@@ -1081,7 +1078,7 @@ contains
       endif
    22 continue
    42 continue
-      if(lwrite .and. myrank .le. ncnt .and.io_format==1) &
+      if(lwrite .and. myrank .le. ncnt .and.out_pres_form==1) &
             call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
 !
       return

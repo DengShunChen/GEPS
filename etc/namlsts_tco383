@@ -73,6 +73,7 @@
  cgwd=1.20,
  cmbk=1.00,
  af=0.1,
+ out_pres_form=1, 
  &end
 
  &typ
