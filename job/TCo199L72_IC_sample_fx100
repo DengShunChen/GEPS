@@ -1,0 +1,39 @@
+#!/bin/ksh
+#PJM -L "node=25:noncont"
+#PJM -L rscgrp=large-x
+#PJM -L elapse=2:00:00
+#PJM -L node-mem=unlimited
+#PJM --no-stging
+#PJM --mpi "proc=800"
+#PJM -j
+#PJM -N JTCo199L72
+
+set -x
+
+MDIR=$(cd ..; pwd)
+echo "MDIR=${MDIR}"
+
+machine=fx100
+# TERR=GTOPO30
+TERR=GMTED30
+JCAP=199
+
+MPI=800 
+OMP=1
+
+if [ $JCAP = 639 ] ; then
+  NPEX=4
+  NPEY=384
+elif [ $JCAP = 383 ] ; then
+  NPEX=8
+  NPEY=192
+elif [ $JCAP = 199 ] ; then
+  NPEX=4
+  NPEY=200
+fi
+source /users/xa09/sample/setup_mpi+omp.${machine} $OMP
+
+#==============================================================================================================#
+
+. ${MDIR}/job/regression_TCo199.ksh
+#. ${MDIR}/job/regression_stochy_physics.ksh
