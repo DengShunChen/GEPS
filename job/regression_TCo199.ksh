@@ -45,7 +45,7 @@
  idmsdb="/data/datacfs/xb82/data/dmsdb"
 
  odmshead=O${dtg10}
-# odmsbody=''
+ odmsbody='filt'
 # odmstail=''
  odmsdb=${idmsdb}
 
@@ -53,7 +53,7 @@
  EXEC='MTCo639L72_'${machine}
 
 #---------------------------------------------------------#
- idmsfile=${idmshead}_${idmsbody}${idmstail}@${idmsdb}/cwb_ReAna_TCo${JCAP}l72_SSL
+ idmsfile=${idmshead}_${idmsbody}${idmstail}@${idmsdb}/cwb_ReAna_TCo${JCAP}l72_SSL_38key
  odmsfile=${odmshead}${odmsbody}${odmstail}@${odmsdb}/TCo${JCAP}l72
 
 # ${DMSPATH}/rdmsdbcrt -p ufs $idmsdb
@@ -253,7 +253,7 @@ elif [ $JCAP = 383  ] ; then
   MODLST_RES='dt=720., hfilt=1., cgw=2.6e-5,'
   MODEL_BASIC='nco=384,'
 elif [ $JCAP = 199  ] ; then
-  MODLST_RES='dt=1800., hfilt=0.75, cgw=2e-5'
+  MODLST_RES='dt=1800., hfilt=0.75, cgw=1e-5,'
   MODEL_BASIC='nco=200,'
 fi
 

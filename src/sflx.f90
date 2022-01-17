@@ -255,7 +255,7 @@
        endif
       endif
 
-      if(ivegsrc == 1) then
+      if(ivegsrc .ge. 1) then
        if (vegtyp == 15) then
         ice = -1
         shdfac = 0.0
@@ -291,7 +291,7 @@
 !           set shdfac=0.0 for bare soil surfaces
 
       call redprm
-        if(ivegsrc == 1) then
+        if(ivegsrc .ge. 1) then
 !only igbp type has urban
 !urban
          if(vegtyp == 13)then
@@ -497,7 +497,7 @@
 !  ---  outputs: &
              df1                                                        & 
            )
-        if(ivegsrc == 1) then
+        if(ivegsrc .ge. 1) then
 !only igbp type has urban
 !urban
             if ( vegtyp == 13 ) df1=3.24
@@ -1297,7 +1297,7 @@
 !  ---  outputs: &
              df1                                                        & 
            )
-       if(ivegsrc == 1) then
+       if(ivegsrc .ge. 1) then
 !urban
          if ( vegtyp == 13 ) df1=3.24
        endif
@@ -3849,7 +3849,7 @@
 !
         csoil_loc=csoil
 
-       if (ivegsrc == 1)then
+       if (ivegsrc .ge. 1)then
 !urban
         if( vegtyp == 13 ) then
             csoil_loc=3.0e6
@@ -3984,7 +3984,7 @@
              df1n                                                       & 
            )
 !urban
-      if (ivegsrc == 1)then
+      if (ivegsrc .ge. 1)then
        if ( vegtyp == 13 ) df1n = 3.24
       endif
 
@@ -4024,7 +4024,7 @@
              df1n                                                       & 
            )
 !urban
-      if (ivegsrc == 1)then
+      if (ivegsrc .ge. 1)then
        if ( vegtyp == 13 ) df1n = 3.24
       endif
 
@@ -4549,7 +4549,7 @@
 !     real (kind=kind_phys) :: frh2o
 
 !urban
-       if (ivegsrc == 1)then
+       if (ivegsrc .ge. 1)then
             if ( vegtyp == 13 ) df1=3.24
        endif
 !

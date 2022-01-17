@@ -1,5 +1,5 @@
  &model_param
- nco=640,
+ nco=384,
  lev=72,
  ncld=3,
  octahedral=t,
@@ -70,8 +70,8 @@
  ndsladvh2=f,
  isot=1,
  ivegsrc=1,
- cgwd=1.20,
- cmbk=1.00,
+ cgwd=1.60,
+ cmbk=0.30,
  af=0.1,
  &end
 

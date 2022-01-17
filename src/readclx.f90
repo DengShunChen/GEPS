@@ -24,6 +24,7 @@
 !-----------------------------------------------------------------
 !
       use index
+      use namelist_soilveg
 !
       implicit  none
 
@@ -100,6 +101,10 @@
 !source 2(19-soil, 20-veg)
   28  format('S00XST','  gbck',a4,11x,a1)      ! for new soil
   31  format('S00XVT','  gbck',a4,11x,a1)      ! for new soil
+!source 3(19-soil, 20-veg)
+  29  format('S00WST','  gbck',a4,11x,a1)      ! for new soil from MODIS
+  32  format('S00WVT','  gbck',a4,11x,a1)      ! for new soil from MODIS
+  33  format('S00WVF','  gbck',a4,4x,i2.2,6x)      ! for new soil from MODIS
 !
 !  to interpolat linearly based on julian day
 !
@@ -138,7 +143,8 @@
       call unify_reducepick(nx,my,my_max,glob,wetcl(1,1,1))
 
 !soil
-      write(lrec,19)ggdef,mm
+      if(ivegsrc .le. 1)write(lrec,19)ggdef,mm
+      if(ivegsrc .eq. 2)write(lrec,33)ggdef,mm
 !byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,vfrcl(1,1,1),istat)
 !byl      if( lreduce.eq.1 ) call reducepick (vfrcl(1,1,1),nxdef,nx,my)
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
@@ -173,7 +179,8 @@
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,wetcl(1,1,2))
 !soil
-      write(lrec,19)ggdef,mm
+      if(ivegsrc .le. 1)write(lrec,19)ggdef,mm
+      if(ivegsrc .eq. 2)write(lrec,33)ggdef,mm
 !byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,vfrcl(1,1,2),istat)
 !byl      if( lreduce.eq.1 ) call reducepick (vfrcl(1,1,2),nxdef,nx,my)
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
@@ -231,7 +238,8 @@
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,wetcl(1,1,1))
 !soil
-      write(lrec,19)ggdef,k-1
+      if(ivegsrc .le. 1)write(lrec,19)ggdef,k-1
+      if(ivegsrc .eq. 2)write(lrec,33)ggdef,k-1
 !byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,vfrcl(1,1,1),istat)
 !byl      if( lreduce.eq.1 ) call reducepick (vfrcl(1,1,1),nxdef,nx,my)
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
@@ -265,7 +273,8 @@
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,wetcl(1,1,2))
 !soil
-      write(lrec,19)ggdef,k
+      if(ivegsrc .le. 1)write(lrec,19)ggdef,k
+      if(ivegsrc .eq. 2)write(lrec,33)ggdef,k
 !byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,vfrcl(1,1,2),istat)
 !byl      if( lreduce.eq.1 ) call reducepick (vfrcl(1,1,2),nxdef,nx,my)
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
@@ -332,6 +341,7 @@
 !      write(lrec,18)ggdef,blnk
       if(isot .eq. 0)write(lrec,18)ggdef,blnk
       if(isot .eq. 1)write(lrec,28)ggdef,blnk
+      if(isot .eq. 2)write(lrec,29)ggdef,blnk
 !
       call dmsreadi(nx,my,lrec,lncrec,'I',bckfile,iglob,istat)
 !byl      if( lreduce.eq.1 ) call reducepicki(iglob,nxdef,nx,my)
@@ -349,6 +359,7 @@
 !      write(lrec,21)ggdef,blnk
       if(ivegsrc .eq. 0)write(lrec,21)ggdef,blnk
       if(ivegsrc .eq. 1)write(lrec,31)ggdef,blnk
+      if(ivegsrc .eq. 2)write(lrec,32)ggdef,blnk
 !
       call dmsreadi(nx,my,lrec,lncrec,'I',bckfile,iglob,istat)
 !byl      if( lreduce.eq.1 ) call reducepicki(iglob,nxdef,nx,my)
@@ -362,6 +373,16 @@
             ii=ii+1
          enddo
       enddo
+! the value of z0 is followed from new veg.type, read in lookup table.
+       if (ivegsrc .ge. 1)then
+       do jj=1,jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          do i=1,nxj
+             z0(i,jj)=z0_data(ivegtyp(i,jj))
+          enddo
+       enddo
+       endif
 !-- annual mean Tg
       write(lrec,22)ggdef,blnk
 !byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,soltcl(1,1,2),istat)
