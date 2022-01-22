@@ -561,8 +561,8 @@
       if(nco.le.200)then
 !!        dt_chg=1800.
         nc_stable=1
-        sptendmax2=0.3005
-        sptendmax1=0.2205
+        sptendmax2=0.3105
+        sptendmax1=0.2105
       else if(nco.eq.384)then
 !!        dt_chg=720.
         nc_stable=2
@@ -1343,12 +1343,12 @@
                                  ,n_unstable
         if( mod(tau+0.001, 1.) .lt. dtx_tau)then
           if(n_stable .gt. nc_stable)then
-            hfiltx=0.5*hfilt
+            hfiltx=0.75*hfilt
             alpha=0.75
             if(myrank .eq. 0)print *,'** stable change hfilt=',hfiltx,  &
                              ' and keep alpha=',alpha
           else if(n_unstable .gt. nc_stable)then
-            hfiltx=hfilt
+            hfiltx=1.5*hfilt
             alpha=0.75
             if(myrank .eq. 0)print *,'** unstable change hfilt=',hfiltx,&
                              ' and alpha=',alpha
