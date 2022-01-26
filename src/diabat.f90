@@ -1,6 +1,6 @@
       subroutine diabat ( docup,dodry,dolsp,dopbl,dorad,doshl,dograv           &
                     , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw       &
-                    , idg,jdg,ldiag,dt,tau,hours,julian                        &
+                    , idg,jdg,ldiag,dt,tau,hours,julian,year,yrd               &
                     , frad,ozon,njump,itypbl,ktcup,ktpbl,ktshl,grav            &
                     , rgas,cp,stbo,s0,evaprh,hltm,ptop,sigma,dsigma,il,ib,cof  &
                     , xlat,xlon,sgeo,z0,alb,land,ocean,ice,snr                 &
@@ -481,7 +481,7 @@
                                          cicetm,snrtm, zicetm,xticetm, &
                                        obswtbtm, tgtm
       character*12 cdtg
-      integer yr, mo, dy, hr, mn
+      integer yr, mo, dy, hr, mn, leap, yrd, year
       real tauhr
       real dtx_tau,dtaup
       INTEGER, PARAMETER :: nerr = 6
@@ -576,14 +576,18 @@
       if ( hours .gt. 24.0 )  then
          hours = mod ( hours,24.0 )
          julian= julian + 1
-         if ( julian .gt. 365 ) julian = julian - 365
+         if ( julian .gt. yrd ) julian = julian - yrd
          doozon = .true.
          doclxu = .true.
       endif
+      leap = mod ( year , 4 )
+      yrd = 365
+      if ( leap .eq. 0 ) yrd = 366
+!
       icrad = frad*3600.0/dt + 0.0001 ! frad =1.0 set in block.f
-      iter  = tau*3600.0/dt + 0.0001
+      iter  = tau*3600.0/dt - 1. + 0.0001
       uprad = .false.
-      if ( (mod(iter,icrad).eq.0) .or. (iter.eq.1) )  uprad = .true.
+      if ( (mod(iter,icrad).eq.0) )  uprad = .true.
       doozon = doozon .and. dorad
       uprad  = uprad  .and. dorad
 !
@@ -768,7 +772,7 @@
                     idat,jdat,solhr,dtsw,dtlw,lsswr,lslwr,            &
                     slag,sdec,cdec,solcon,                            &
                     xlonr,ixseed)
-
+      year  = jdat(1)
 !-------------------------------------------------------------------------
 ! cosz was modified to be an average of the  calling period(1 hour fo
       if ( uprad .and. (irad .eq. 1))  then

@@ -287,7 +287,7 @@
       use mpe
       use rank
       use const, only : hdk1,hdk2,radsq
-      use param, only : octahedral,af
+      use param, only : octahedral,af,mwhd
 
       implicit  none
 
@@ -353,7 +353,7 @@
         KL=Llist(k)
 !
         kfac = (5.+finc)*max(float(hdk2(2)-KL),0.)
-        facd = 4. * max(amp,kfac)
+        facd = mwhd * max(amp,kfac)
         facv = max(min(amp,1.),kfac)
 !!        fact = amp * kfacv 
 !          endif
