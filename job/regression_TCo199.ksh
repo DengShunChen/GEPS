@@ -45,7 +45,7 @@
  idmsdb="/data/datacfs/xb82/data/dmsdb"
 
  odmshead=O${dtg10}
- odmsbody='filt'
+ odmsbody='nwhd'
 # odmstail=''
  odmsdb=${idmsdb}
 
@@ -253,7 +253,7 @@ elif [ $JCAP = 383  ] ; then
   MODLST_RES='dt=720., hfilt=1., cgw=2.6e-5,'
   MODEL_BASIC='nco=384,'
 elif [ $JCAP = 199  ] ; then
-  MODLST_RES='dt=1800., hfilt=0.75, cgw=1e-5,'
+  MODLST_RES='dt=1200., hfilt=1., cgw=4.2e-5,'
   MODEL_BASIC='nco=200,'
 fi
 
@@ -274,7 +274,7 @@ cat > ${GFSWRK}/namlsts << EOF
  &end
 
  &modlst
-  taui=0.0, taue=120.0, tauo=1.0, taup=6.0, taureg=6.,
+  taui=0.0, taue=720.0, tauo=1.0, taup=6.0, taureg=6.,
   dt=450.0,
   cstar=f, update=t, lsimpl=t,
   hfilt=1.,
@@ -282,9 +282,9 @@ cat > ${GFSWRK}/namlsts << EOF
   dopbl=t, docup=t, dorad=t, dolsp=t, doshl=t, dodry=f,
   dograv=t, docgrav=t,
   donnmi=t, 
-  dosppt=false, dospptout=false,
-  doshum=false,
-  dossst=false,
+  dosppt=f, dospptout=f,
+  doshum=f,
+  dossst=f,
   cutfreq=3, nnmivm=3, doincr=f,
   hdiff=t, frad=1.0, ldiag=0,
   idg=40, jdg=108,
@@ -298,8 +298,8 @@ cat > ${GFSWRK}/namlsts << EOF
   ggdef='${DMSFLAG}0G', gmdef='${DMSFLAG}MG',
   domfc=384., out_green=t, otgreen=3., out_hp=f,
   ndsladvh2=f,
-  isot=1, ivegsrc=1, cgwd=1.60, cmbk=0.30,
-  spl1=5., spl2=100., af=0.1,
+  isot=2, ivegsrc=2, cgwd=1.60, cmbk=0.30,
+  spl1=5., spl2=100., af=0.0, mwhd=8.,
   ${MODLST_RES}
   ${MODLST_SIT}
  &end
