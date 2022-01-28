@@ -241,9 +241,16 @@
 !
       alpha=0.75
 !
-! for two time level coefficient of merging PGF
+! for two time level 
+!
+!    coefficient of merging PGF
 !
       af=0.1
+!
+!    coefficient of horizontal difussion for mid-point wind
+!
+      mwhd=4.
+
 !
       ifilin ='ifilin'
       ifilout='ifilout'
