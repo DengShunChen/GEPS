@@ -111,7 +111,7 @@
             tem2 = tem1 * tem1
             tem1 = 1.0  - tem2
 
-         if( ivegsrc == 1 ) then
+         if( ivegsrc .ge. 1 ) then
 
           if (vegtype(i) == 10) then
             z0max = exp( tem2*log01 + tem1*log07 )

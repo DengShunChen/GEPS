@@ -64,8 +64,8 @@
       factop = 1.5
       coefu = factop/float(hdk2(3)-hdk2(2))
       if ( octahedral ) then
-        hfilt  = hfilt/(6.*dta)
-        hfilt2 = hfilt2/(6.*dta)
+        hfilt  = hfilt/(9.*dta)
+        hfilt2 = hfilt2/(9.*dta)
       else
         hfilt  = 16.*hfilt/dta
         hfilt2 = 16.*hfilt2/dta
@@ -287,7 +287,7 @@
       use mpe
       use rank
       use const, only : hdk1,hdk2,radsq
-      use param, only : octahedral,af
+      use param, only : octahedral,af,mwhd
 
       implicit  none
 
@@ -353,7 +353,7 @@
         KL=Llist(k)
 !
         kfac = (5.+finc)*max(float(hdk2(2)-KL),0.)
-        facd = 10. * max(amp,kfac)
+        facd = mwhd * max(amp,kfac)
         facv = max(min(amp,1.),kfac)
 !!        fact = amp * kfacv 
 !          endif
