@@ -195,7 +195,7 @@
       implicit  none
 !-----------------------------------------------------------------------
       integer nfxr, ntrac, kk, nk, n
-      real    dtlw,dtsw,solhr
+      real    dtlw,dtsw,solhr,rsolhr
 !
 ! for land_noah_new
        real      sfalb(nxp,my_max),sfemis(nxp,my_max)
@@ -578,6 +578,7 @@
 !------------------------------------------------------------------------------
 !     set hours, iter, icrad, julian, uprad, doozon
 !------------------------------------------------------------------------------
+      rsolhr = hours
       hours = hours + dt/3600.0
       if ( hours .gt. 24.0 )  then
          hours = mod ( hours,24.0 )
@@ -1066,7 +1067,7 @@
              sinl(j),cosl(j),xlat(j),xlonr(1,jj),jdat,d2r,xkapa,           &
              ptrad,dtlw,dtsw,lsswr,lslwr,lssav,                            &
              nfxr,j,                                                       &
-             nxp,nxjp(j),lev,ncld,lprnt,ipt,kdt,solhr,                     &
+             nxp,nxjp(j),lev,ncld,lprnt,ipt,kdt,rsolhr,                    &
              uni_cloud,lmfshal,lmfdeep2,                                   &
              deltaq(1,1,jj),sup,cnvwr(1,1,jj),cnvcr(1,1,jj),               &
              ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),nmmiph,                  &
@@ -1080,6 +1081,11 @@
              asl_clr(1,1,jj),atl_clr(1,1,jj),cosz(1,jj),                   &
              asol_clr(1,jj),olr_clr(1,jj),ss_clr(1,jj),rs_clr(1,jj),       &
              sld_clr(1,jj),rld_clr(1,jj),sfalb(1,jj),sfemis(1,jj))
+          do k = 1, lev
+            do i = 1, nxj
+              dtrad(i,k,jj) = asl(i,k,jj) + atl(i,k,jj)
+            enddo
+          enddo
       endif  ! for uprad .and. irad=2
 
       if ( dorad ) then
