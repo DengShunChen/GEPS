@@ -188,6 +188,8 @@
       use physpara
 !
       use physcons, only :con_rd,con_fvirt,con_rerth,con_rv
+! for slavepp
+      use phygrid,  only :dtcup,ducup,dvcup,dtshl,dushl,dvshl,dtlsp
 ! for land_noah_new
       use namelist_soilveg, only :MAX_SLOPETYP,MAX_SOILTYP,MAX_VEGTYP
       use mod_stochastic_physics, only : sppt3d, shum3d, ssst3d
@@ -296,6 +298,8 @@
       logical lsswr,lslwr,lssav
       real    xlonr(nxp,my_max),sld_adj(nxp),rld_adj(nxp),ss_adj(nxp), &
               rs_adj(nxp),tsflw(nxp,my_max),rstd(nxp)
+! --- for slavepp
+      real    dttmp,dutmp,dvtmp
 
 ! --- new variables setting :
       integer(kind=8)  :: idtg
@@ -430,6 +434,7 @@
       integer   ls(nxp,my_max)
       real      sstc(nxp,my_max),z0ocn(nxp,my_max)
       logical   doclxu,iceold(nxp,my_max)
+
 
 !CWB 2007-09-27 for random number seed >>>
       real*8    rtc,rsecond
@@ -1285,8 +1290,8 @@
 !
       do k = 1, lev
         do i = 1, nxj
-!          tt(i,k,jj) = tt(i,k,jj) + 0.5*dta*(dtrad(i,k,jj)+dtradn(i,k))/86400.0
-          tt(i,k,jj) = tt(i,k,jj) + dta*dtradn(i,k)/86400.0
+          tt(i,k,jj) = tt(i,k,jj) + 0.5*dta*(dtrad(i,k,jj)+dtradn(i,k))/86400.0
+!          tt(i,k,jj) = tt(i,k,jj) + dta*dtradn(i,k)/86400.0
           dtrad(i,k,jj) = dtradn(i,k)
         enddo
       enddo
@@ -1478,9 +1483,21 @@
             qt(i,k    ,jj) = max(qtc(i,kc),qmin)
             qt(i,k+lev,jj) = max(qtr(i,kc),qmin)
             if ( nmmiph .gt. 2 ) qt(i,(ntiw-1)*lev+k,jj) = qti(i,kc)
-            tt(i,k    ,jj) = ttc(i,kc)
-            ut(i,k    ,jj) = utc(i,kc)
-            vt(i,k    ,jj) = vtc(i,kc)
+            dttmp = ttc(i,kc)-tt(i,k,jj)
+            dutmp = utc(i,kc)-ut(i,k,jj)
+            dvtmp = vtc(i,kc)-vt(i,k,jj)
+            if ( kdt .eq. 1 ) then
+              tt(i,k,jj) = ttc(i,kc)
+              ut(i,k,jj) = utc(i,kc)
+              vt(i,k,jj) = vtc(i,kc)
+            else
+              tt(i,k,jj) = 0.5*( dttmp + dtcup(i,k,jj) ) + tt(i,k,jj)
+              ut(i,k,jj) = 0.5*( dutmp + ducup(i,k,jj) ) + ut(i,k,jj)
+              vt(i,k,jj) = 0.5*( dvtmp + dvcup(i,k,jj) ) + vt(i,k,jj)
+            endif
+            dtcup(i,k,jj)  = dttmp
+            ducup(i,k,jj)  = dutmp
+            dvcup(i,k,jj)  = dvtmp
             cnvwr(i,kc,jj) = cnvw(i,kc)
             cnvcr(i,kc,jj) = cnvc(i,kc)
             cnvw(i,kc)     = 0.
@@ -1643,9 +1660,21 @@
             qt(i,k    ,jj) = max(qtc(i,kc),qmin)
             qt(i,k+lev,jj) = max(qtr(i,kc),qmin)
             if ( nmmiph .gt. 2 ) qt(i,(ntiw-1)*lev+k,jj) = qti(i,kc)
-            tt(i,k    ,jj) = ttc(i,kc)
-            ut(i,k    ,jj) = utc(i,kc)
-            vt(i,k    ,jj) = vtc(i,kc)
+            dttmp = ttc(i,kc)-tt(i,k,jj)
+            dutmp = utc(i,kc)-ut(i,k,jj)
+            dvtmp = vtc(i,kc)-vt(i,k,jj)
+            if ( kdt .eq. 1 ) then
+              tt(i,k,jj) = ttc(i,kc)
+              ut(i,k,jj) = utc(i,kc)
+              vt(i,k,jj) = vtc(i,kc)
+            else
+              tt(i,k,jj) = 0.5*( dttmp + dtshl(i,k,jj) ) + tt(i,k,jj)
+              ut(i,k,jj) = 0.5*( dutmp + dushl(i,k,jj) ) + ut(i,k,jj)
+              vt(i,k,jj) = 0.5*( dvtmp + dvshl(i,k,jj) ) + vt(i,k,jj)
+            endif
+            dtshl(i,k,jj)  = dttmp
+            dushl(i,k,jj)  = dutmp
+            dvshl(i,k,jj)  = dvtmp
             cnvwr(i,kc,jj) = cnvwr(i,kc,jj) + cnvw(i,kc)
             cnvcr(i,kc,jj) = cnvcr(i,kc,jj) + cnvc(i,kc)
           enddo
@@ -1762,7 +1791,13 @@
           do i=1,nxj
             qt(i,k    ,jj) = max(qtc(i,kc),qmin)
             qt(i,k+lev,jj) = max(qtr(i,kc),qmin)
-            tt(i,k    ,jj) = ttc(i,kc)
+            dttmp = ttc(i,kc)-tt(i,k,jj)
+            if ( kdt .eq. 1 ) then
+              tt(i,k,jj) = ttc(i,kc)
+            else
+              tt(i,k,jj) = 0.5*( dttmp + dtlsp(i,k,jj) )+tt(i,k,jj)
+            endif
+            dtlsp(i,k,jj)  = dttmp
           enddo
         enddo
       endif !( dolsp .and. nmmiph.eq.2 )
@@ -1772,7 +1807,7 @@
           !  ---  inputs:
            ( nmmiph,nxp,nxjp(j),lev,ncld,plt(1,1,jj),pst(1,jj),dsigma, &
              phii,islimsk,q0,kdt,ntcw,ntrw,ntiw,ntsw,ntgl,             &
-             ntinc,ntrnc,tpi,me,dta,                                   &
+             ntinc,ntrnc,tpi,me,dta,jj,                                &
           !  ---  inputs/outputs:
              tt(1,1,jj),qt(1,1,jj),                                    &
           !  ---  outputs:
