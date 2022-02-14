@@ -348,7 +348,7 @@ INCLUDE = -I. -I${FFTW_INC} -I${NETCDF_INC}
 CMD  =  MTCo639L72_${MACHINE}
 
 ifeq ($(strip $(TIMCOMCPL)), TRUE)
-  INCLUDE := $(INCLUDE) -I../../TIMCOM_cpl/cpl -I/users/xa09/$(MACHINE)/MCT/include
+  INCLUDE := $(INCLUDE) -I../../timcomg/cpl -I/users/xa09/$(MACHINE)/MCT/include
   CMD = libtco.a
 endif
 

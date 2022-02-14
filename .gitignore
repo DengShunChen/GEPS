@@ -18,3 +18,4 @@ etc/namlsts_tco383_*
 *.o*
 wrk_sample
 src/depend
+src/libtco.a
