@@ -137,7 +137,11 @@
 !
       do 71 k = 1, levp
         KL=lev-Llist(k)+1
-      write (typ, '("m",i2.2,"100")' ) KL
+      if ( KL .lt. 100 ) then
+        write (typ, '("m",i2.2,"100")' ) KL
+      else
+        write (typ, '("n",i2.2,"100")' ) mod(KL,100)
+      endif
       call syslbl (typ,idtg,itaux,gmdef,lrec)
       call dmsread_split(nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
       do 71 jj = 1, jlistnum
@@ -155,7 +159,11 @@
       hld4=1.0e-20
       do 73 k = 1, levp
         KL=lev-Llist(k)+1
-      write (typ, '("m",i2.2,"500")' ) KL
+      if ( KL .lt. 100 ) then
+        write (typ, '("m",i2.2,"500")' ) KL
+      else
+        write (typ, '("n",i2.2,"500")' ) mod(KL,100)
+      endif
       call syslbl (typ,idtg,itaux,gmdef,lrec)
       call dmsread_split (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
       do 73 jj = 1, jlistnum
@@ -198,7 +206,11 @@
           ntrac=2
           do k = 1, levp
             KL=lev-Llist(k)+1
-            write (typ, '("m",i2.2,"550")' ) KL    ! cloud liquid water content
+            if ( KL .lt. 100 ) then
+              write (typ, '("m",i2.2,"550")' ) KL    ! cloud liquid water content
+            else
+              write (typ, '("n",i2.2,"550")' ) mod(KL,100)
+            endif
             call syslbl (typ,idtg2,itaup,gmdef,lrec)
             call dmsread_split (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
 !
@@ -223,7 +235,11 @@
           do ntrac=2,nclds
             do k = 1, levp
               KL=lev-Llist(k)+1
+            if ( KL .lt. 100 ) then
               write (typ, '("m",i2.2,a3)' ) KL,cspec(ntrac)    ! cloud liquid water content
+            else
+              write (typ, '("n",i2.2,a3)' ) mod(KL,100),cspec(ntrac)    ! cloud liquid water content
+            endif
               call syslbl (typ,idtg2,itaup,gmdef,lrec)
               call dmsread_split (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
 !
@@ -246,7 +262,11 @@
       ntrac=ntoz
       do k = 1, levp
         KL=lev-Llist(k)+1
-        write (typ, '("m",i2.2,"560")' ) KL
+        if ( KL .lt. 100 ) then
+          write (typ, '("m",i2.2,"560")' ) KL
+        else
+          write (typ, '("n",i2.2,"560")' ) mod(KL,100)
+        endif
         call syslbl (typ,idtg,itaux,gmdef,lrec)
         call dmsread_split (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
         do jj = 1, jlistnum
@@ -559,7 +579,11 @@
 !
       do 320 k = 1, levp
         KL=lev-Llist(k)+1
-      write (typ, '("m",i2.2,"200")' ) KL
+        if ( KL .lt. 100 ) then
+          write (typ, '("m",i2.2,"200")' ) KL
+        else
+          write (typ, '("n",i2.2,"200")' ) mod(KL,100)
+        endif
       call syslbl (typ,idtg,itaux,gmdef,lrec)
       call dmsread_split (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
       do 320 jj = 1, jlistnum
@@ -575,7 +599,11 @@
 !
       do 321 k = 1, levp
         KL=lev-Llist(k)+1
-      write (typ, '("m",i2.2,"210")' ) KL
+        if ( KL .lt. 100 ) then
+          write (typ, '("m",i2.2,"210")' ) KL
+        else
+          write (typ, '("n",i2.2,"210")' ) mod(KL,100)
+        endif
       call syslbl (typ,idtg,itaux,gmdef,lrec)
       call dmsread_split (nx,my,lrec,lncrec,'H',ifilin,hld1,istat)
 !byl      if( lreduce.eq.1 ) call reducepick (hld1,nxdef,nx,my)
