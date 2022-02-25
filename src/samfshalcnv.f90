@@ -151,8 +151,7 @@
 !byl      parameter(g=grav)
       parameter(elocp=hvap/cp, &
                 el2orc=hvap*hvap/(rv*cp))
-!      parameter(c0s=0.002,c1=5.e-4,d0=.01)
-      parameter(c0s=0.002,c1=5.e-4,d0=.001) !for GFDL_MP c
+      parameter(c0s=0.002,c1=5.e-4,d0=.01)
 !byl      parameter(d0=.01)
 !     parameter(c0l=c0s*asolfac)
 !
@@ -293,8 +292,7 @@
 !
 !  model tunable parameters are all here
       clam    = .3
-!      aafac   = .1 
-      aafac   = .05  !for GFDL_MP o
+      aafac   = .1 
 !     evef    = 0.07
       evfact  = 0.3
       evfactl = 0.3
@@ -588,8 +586,8 @@
 !> - The updraft detrainment rate is set constant and equal to the entrainment rate at cloud base.
       do i = 1, im
         if(cnvflg(i)) then
-!          xlamud(i) = xlamue(i,kbcon(i))
-          xlamud(i) = 0.001 * clam  !for GFDL_MP d new
+!          xlamud(i) = xlamue(i,kbcon(i))  !marked for GFDL_MP D
+          xlamud(i) = 0.001 * clam  !for GFDL_MP D
 !         xlamud(i) = crtlamd
         endif
       enddo
@@ -812,7 +810,6 @@
           k = kbcon(i)
           dp = 1000. * del(i,k)
           xmbmax(i) = dp / (g * dt2)
-!          xmbmax(i) = dp / (2. * g * dt2)  !for GFDL_MP x
 !
 !         tem = dp / (g * dt2)
 !         xmbmax(i) = min(tem, xmbmax(i))
