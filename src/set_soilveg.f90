@@ -4,7 +4,7 @@
       implicit none
 
 !     integer, intent(in) :: isot,ivet,nlunit
-      integer, intent(in) :: isot,ivet
+      integer, intent(inout) :: isot,ivet
       integer me
 !my begin locals
 !for 20 igbp veg type and 19 stasgo soil type
@@ -29,6 +29,13 @@
         REFDK_DATA, FRZK_DATA, BARE, DEFINED_VEG, DEFINED_SOIL, &
         DEFINED_SLOPE, FXEXP_DATA, NROOT_DATA, REFKDT_DATA, Z0_DATA, &
         CZIL_DATA, LAI_DATA, CSOIL_DATA,ems1_data,ems2_data
+
+!xb118
+       if((ivet.eq.2).or.(isot.eq.2))then
+         ivet=2
+         isot=2
+       endif
+!xb118
 
 !cmy end locals
       if(ivet.eq.0) then
@@ -95,7 +102,8 @@
                      0.0, 0.0, 0.0, 0.0, 0.0, 0.0, &
                      0.0, 0.0, 0.0, 0.0, 0.0, 0.0/)
 ! use igbp table
-      elseif(ivet.eq.1)then
+!      elseif(ivet.eq.1)then
+      else
 
       SLOPE_DATA =(/1.0,  1.0, 1.0, 1.0, 1.0, 1.0, &
                        1.0, 1.0, 1.0, 1.0,  1.0,  1.0, &
