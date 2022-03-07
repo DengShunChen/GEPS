@@ -22,7 +22,7 @@ else
   echo "usage: $0 [MACHINE]"
   exit
 fi
-machines='fx100 fx10 pcc'
+machines='fx1000 fx100 fx10 pcc'
 [[ $machines =~ (^|[[:space:]])$MACHINE($|[[:space:]]) ]] && known='True' || known='False'
 if [ "${known}" == 'True' ] ; then
   echo "${HOSTNAME} : Build ${MACHINE} executable"
@@ -46,12 +46,21 @@ if [ "${MACHINE}" == 'fx100' ] ; then
    exit
   fi
 fi
+if [ "${MACHINE}" == 'fx1000' ] ; then
+  hostnames='h6ln12 h6ln13 h6ln14 h6ln15'
+  [[ $hostnames =~ (^|[[:space:]])$HOSTNAME($|[[:space:]]) ]] && known='True' || known='False'
+  if [ "${known}" == 'False' ] ; then
+   echo "Fatal Error : Build ${MACHINE} executable, please move to login11/12 for inside HPC, login15/16 for outside HPC !"
+   exit
+  fi
+fi
 
 set -x
 
 # load libs
 export MDIR=$(pwd)
 . /usr/share/Modules/init/bash
+module purge
 module use  ${MDIR}/modulefiles
 module av
 module show modulefile.tcogfs.${MACHINE}
