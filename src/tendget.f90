@@ -154,7 +154,7 @@
 ! transpose partial to full: ut -> ut_sl, vt -> vt_sl, ttm -> ttm_sl, qp -> qm_sl
 
 #ifdef MULTIPLE
-      call mpe2d_transpose_ndsl_p2f_multi(ut   ,vt   ,ttp,dummy,dummy,qp,    &
+      call mpe2d_transpose_ndsl_p2f_multi(ut   ,vt   ,ttp   ,dummy,dummy,qp,    &
                                     ut_sl,vt_sl,ttm_sl,dummy,dummy,qm_sl, &
                                     nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm,4)
 #else
