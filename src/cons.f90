@@ -57,7 +57,7 @@
       real      pnm(jtrun+1,jtrun+1)
 
 !
-      namelist /modlst/ ksgeo,ptop,ptmean,dt,taui,taue                  &
+      namelist /modlst/ ksgeo,ptmean,dt,taui,taue                       &
                       , tauo,frad,ktpbl,ktshl,ktcup,njump,evaprh,lsimpl &
                       , yesdia,dopbl,docup,dorad,dolsp,dograv           &
                       , doshl,dodry,donnmi,idg,jdg,ldiag,nnmiit,nnmivm  &

@@ -125,6 +125,7 @@
            end if
 
 !CWB2015
+           il=0
            ib=0
            cof=0.
 

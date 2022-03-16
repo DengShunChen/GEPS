@@ -215,7 +215,7 @@
                 hltm,evaprh,s0,stbo,cp,rgas,grav,frad,               &
                 hours,tau,dt,cgw
 
-      integer   il(nx,4),ib(nx,4)
+      integer   il(nxp,4),ib(nxp,4)
 
       real      sigma(lev+1,2),dsigma(lev,2),                             &
                 cof(nxp*3,4),xlat(my),                                     &
@@ -1451,7 +1451,7 @@
           call sascnv_n(nxjp(j),nxp,lev,jcap,dta,del,psfc,prsl,phil,qtr &
             ,qtc,ttc,utc,vtc,dotc,cldwrk(1,jj) &
             ,rcup(1,jj),kbot(1,jj),ktop(1,jj)                     &
-            ,kuo(1,jj),slimsk,xkt2,ncld                          &
+            ,kuo(1,jj),slimsk,ncld                                &
           , grav,cp,hltm,rgas,tice)
 
         ! scale-aware SAS
@@ -1534,7 +1534,7 @@
         call nor_gwdp (j,nxjp(j),nxp,lev,                         &
                   ut(1,1,jj),vt(1,1,jj),tt(1,1,jj),qt(1,1,jj),    &
                   plt(1,1,jj),pk(1,1,jj),pk2(1,1,jj),phi,dta,&
-                  grav,rgas,sinl(j),cosl(j),drag_u,drag_v,cp)
+                  grav,rgas,sinl(j),cosl(j),drag_u,drag_v,cp,ptop)
       endif ! (end of docgrav .and. nmgwcv.eq.1)
 
       if( docgrav .and. (nmgwcv.eq.2) )then
