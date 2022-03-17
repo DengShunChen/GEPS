@@ -40,11 +40,11 @@
       dofric=.false.
       do k=1,levtop
         wmaxtmp=max(wmax(k),wmaxtmp)
-!        if( wmax(k) .gt. windmax )then
+        if( wmax(k) .gt. windmax )then
 !          dofric=.true.
-!          if(myrank.eq.0)print *,' rayleifr k=',k,' wmax=',wmax(k), &
+          if(myrank.eq.0)print *,' rayleifr k=',k,' wmax=',wmax(k)
 !           ' dofric=',dofric
-!        endif
+        endif
       enddo
       if(wmaxtmp.gt.windmax)  dofric=.true.
       if(myrank.eq.0)print *,' rayleifr  dofric=',dofric
