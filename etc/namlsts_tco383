@@ -47,7 +47,6 @@
  itypbl=0,
  numreduce=8,
  ptmeans=800.,
- ptop=0.1,
  nmcup=6,
  nmpbl=4,
  nmland=2,

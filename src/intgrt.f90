@@ -561,8 +561,8 @@
       if(nco.le.200)then
 !!        dt_chg=1800.
         nc_stable=1
-        sptendmax2=0.3105
-        sptendmax1=0.2105
+        sptendmax2=0.3405
+        sptendmax1=0.2505
       else if(nco.eq.384)then
 !!        dt_chg=720.
         nc_stable=2

@@ -156,7 +156,7 @@ cat > ${GFSWRK}/namlsts << EOF
   doincr=f,
   hdiff=t, frad=1.0, ldiag=0,
   idg=40, jdg=108,
-  itypbl=0, numreduce=5, ptmeans=800., ptop=0.1,
+  itypbl=0, numreduce=5, ptmeans=800.,
   irad=2, nmland=2,
   nmcup=6, nmshl=3, nmpbl=4, nmmiph=2,  
   nmgwor=2, nmgwcv=2,
