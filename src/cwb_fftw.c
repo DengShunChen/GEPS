@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "fftw3.h"
 /*
   call dfftw_init_threads( )
   call dfftw_plan_with_nthreads()
