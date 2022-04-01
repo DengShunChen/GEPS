@@ -21,7 +21,7 @@
  fi
 
  dtg='18090800'
- fgdtg=$(/nwpr/gfs/xb80/bin/Caldtg.ksh ${dtg} -6)
+ fgdtg=$(/users/xb80/bin/Caldtg.ksh ${dtg} -6)
 
  idmshead='MASOPS'
  idmsbody=''
@@ -46,8 +46,7 @@
   export LNCP='ln -fs'
 
   # maybe no need to change
-#  export source="/data/common/gfs/dms_data/TCo639L72_S2TY.ufs/T_exp20${dtg}"           # TCo IC data path
-  export source="/nwpr/gfs/xb126/data2/Tool/Nemsio2Dms_v2/OUTPUT/ncep_ana.ufs/TCo${JCAP}l72_${dtg}"           # TCo IC data path
+  export source="/data/common/gfs/dms_data/TCo${JCAP}L72_ncep.ufs/TCo${JCAP}l72_${dtg}"           # TCo IC data path
 
   # link/copy DMS files
   export target="${dmsdb_home}/${idmsdb}.ufs"
@@ -59,12 +58,12 @@
        ${LNCP} ${source}/*${fgdtg}* ${target}/${idmshead}${idmsbody}${idmstail}
 
  ${DMSPATH}/rdmsdbcrt -p ufs bckdms
- ${DMSPATH}/rdmscrt BCK_TCo${JCAP}_${DMSFLAG}30S@bckdms
 
  export source="/data/common/gfs/dms_data/bckdms.ufs"
  export target="${dmsdb_home}/bckdms.ufs"
  
  if [ ! -e ${target}/BCK_TCo${JCAP}_${DMSFLAG}30S ] ; then
+   ${DMSPATH}/rdmscrt BCK_TCo${JCAP}_${DMSFLAG}30S@bckdms
    ${LNCP} ${source}/BCK_TCo${JCAP}_${DMSFLAG}30S/* ${target}/BCK_TCo${JCAP}_${DMSFLAG}30S
  fi
 #----------------------------------------------------------------#
@@ -91,7 +90,7 @@ EOF
 export GFSDIR DMSPATH
 export NWPETC=${GFSDIR}/etc
 export NWPETCGLB=${GFSWRK}
-export GLB_TYPHINI="/nwp/npcagfs/TYP/M00/dtg/ty"
+export GLB_TYPHINI="/nwpr/gfs/a361/MODEL/typhoon"
 export FIXDIR=${GFSFIX}
 
 export ANADMS=${idmsfile}
@@ -121,10 +120,10 @@ cp $NWPETC/ocards $GFSWRK/ocards
 cp $NWPETC/namlsts $GFSWRK/namlsts
 
 if [ $JCAP = 639  ] ; then
-  MODLST_RES='dt=225., tfilt=0.040, hfilt=1., cgw=4.2e-5,'
+  MODLST_RES='dt=450., hfilt=1., cgw=4.2e-5,'
   MODEL_BASIC='nco=640,'
 elif [ $JCAP = 383  ] ; then
-  MODLST_RES='dt=360., tfilt=0.050, hfilt=1, cgw=2.6e-5,'
+  MODLST_RES='dt=720., hfilt=1, cgw=2.6e-5,'
   MODEL_BASIC='nco=384,'
 fi
 
@@ -143,20 +142,20 @@ cat > ${GFSWRK}/namlsts << EOF
 
  &modlst
   taui=0.0, taue=120.0, tauo=1.0, taup=6.0, taureg=6.,
-  dt=225.0,
+  dt=450.0,
   cstar=f, update=t, lsimpl=t,
-  tfilt=0.04, hfilt=1.,
+  hfilt=1.,
   ksgeo=2, yesdia=t,
   dopbl=t, docup=t, dorad=t, dolsp=t, doshl=t, dodry=f, 
   dograv=true, docgrav=true,
   donnmi=true, 
-  dosppt=true, dospptout=false, 
+  dosppt=false, dospptout=false, 
   doshum=false,
   cutfreq=3, nnmivm=3,
   doincr=f,
   hdiff=t, frad=1.0, ldiag=0,
   idg=40, jdg=108,
-  itypbl=0, numreduce=5, ptmeans=800.,
+  itypbl=0, numreduce=5, ptmeans=800., ptop=0.1,
   irad=2, nmland=2,
   nmcup=6, nmshl=3, nmpbl=4, nmmiph=2,  
   nmgwor=2, nmgwcv=2,
@@ -167,14 +166,14 @@ cat > ${GFSWRK}/namlsts << EOF
   domfc=384., out_green=t, otgreen=3., out_hp=false,
   ndsladvh2=false,
   isot=1, ivegsrc=1, cgwd=1.20, cmbk=1.00,
-  spl1=5.,
+  spl1=5.,spl2=100.,af=0.1,
   ${MODLST_RES}
  &end
 
  &typ
   write_mem=0,
   trk_intv=3,
-  write_tau=6,
+  write_tau=3,
  &end
  
  &stochy_physics
@@ -205,7 +204,7 @@ EOF
 
 
  FCT_MODEL=$MDIR/src/$EXEC
- /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} 
+ /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} -Wl,-T
 
  if [ $? != 0 ] ; then
   echo "error occured: fct model fail !!"
