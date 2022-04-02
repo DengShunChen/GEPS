@@ -96,7 +96,7 @@
             c3=1.+dta*fact*hfilt*eps4(n,m)**powd
 
             if ( KL .le. hdk1 ) then
-              c2=1.+dta*facd*hfilt2*eps4(n,m)
+              c2=1.+dta*facd*hfilt2*eps4(n,m)+exp(-0.5*(k-1))
             else
               c2=1.+dta*facd*hfilt*eps4(n,m)**powd
             endif
@@ -126,7 +126,7 @@
         if ( wmax(k) .gt. windmax3 ) windchk=.true.
       enddo
       if ( windchk ) then
-       call filter_top(jtrun,jtmax,levp,ncld,temnow,vornow,divnow)
+       call filter_top(jtrun,jtmax,levp,hdk1,ncld,temnow,vornow,divnow)
       end if
 !--------------------------------------------------------------------
       return
@@ -274,7 +274,7 @@
       enddo
 !
       if ( windchk ) then
-       call filter_top(jtrun,jtmax,levp,ncld,temnow,vornow,divnow)
+       call filter_top(jtrun,jtmax,levp,hdk1,ncld,temnow,vornow,divnow)
       end if
 !--------------------------------------------------------------------
       return
@@ -306,7 +306,7 @@
 
       integer   jj,j,nxj,k,i,m,n,mf,nc,kk,KL
       real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu
-      real      hfilt2,hfilt4,hfilt6,nf,kfac,finc
+      real      hfilt2,hfilt4,hfilt6,nf,kfac,finc,fl
       real      c1,c2,c3,c4
       logical   windchk
 
@@ -332,6 +332,7 @@
       nf=jtrun-1
 !
       finc = 10.*max(af,0.001)
+      fl   = 150./hdk2(2)-1.
       hfilt6 = (radsq/(nf*(nf+1)))**3.
       hfilt4 = (radsq/(nf*(nf+1)))**2.
       hfilt2 = radsq/(nf*(nf+1))
@@ -352,7 +353,7 @@
 
         KL=Llist(k)
 !
-        kfac = (5.+finc)*max(float(hdk2(2)-KL),0.)
+        kfac = (fl+finc)*max(float(hdk2(2)-KL),0.)
         facd = mwhd * max(amp,kfac)
         facv = max(min(amp,1.),kfac)
 !!        fact = amp * kfacv 
@@ -372,7 +373,7 @@
 !!            c2=1.+dta*facd*hfilt2*eps4(n,m)
 
             if ( KL .le. hdk1 ) then
-              c2=1.+dta*facd*hfilt2*eps4(n,m)
+              c2=1.+dta*facd*hfilt2*eps4(n,m)+exp(-0.5*(k-1))
             else
               c2=1.+dta*facd*hfilt4*eps4(n,m)**2.
             endif
@@ -397,14 +398,14 @@
         if ( wmax(k) .gt. windmax3 ) windchk=.true.
       enddo
       if ( windchk ) &
-       call filter_top(jtrun,jtmax,levp,ncld,temnow,vornow,divnow)
+       call filter_top(jtrun,jtmax,levp,hdk1,ncld,temnow,vornow,divnow)
 !
 !--------------------------------------------------------------------
       return
       end
 !
 !--------------------------------------------------------------------
-      subroutine filter_top(jtrun,jtmax,lev,ncld,temnow     &
+      subroutine filter_top(jtrun,jtmax,lev,ktop,ncld,temnow     &
                        ,vornow,divnow)
 !
 !  apply Lanczos filter to top "ktop" layers
@@ -415,7 +416,7 @@
       implicit  none
 
       integer   ktop,ktopm1
-      parameter ( ktop=10, ktopm1=ktop-1 ) ! top "ktop" levels are filtered
+!      parameter ( ktop=10, ktopm1=ktop-1 ) ! top "ktop" levels are filtered
 !     parameter ( ktop=4, ktopm1=ktop-1 ) ! top "ktop" levels are filtered
 !     parameter ( ktop=6, ktopm1=ktop-1 ) ! top "ktop" levels are filtered
 !
@@ -439,7 +440,7 @@
 !2dMPI <
 
 !      wvn_top(1) = jtrun*2./3.
-      wvn_top(1) = 155
+      wvn_top(1) = max(min(jtrun/3.,155),55)
       wvn_top(ktop+1) = jtrun
 !!      djt = ( wvn_top(ktop) - wvn_top(1) ) / ktopm1
 

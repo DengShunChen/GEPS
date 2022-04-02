@@ -40,6 +40,9 @@
       real, dimension(:,:,:),allocatable,save :: e,eps,o3l,dtrad,asl,atl
       real, dimension(:,:,:),allocatable,save :: ftp,fqp,ftp1,fqp1
       real, dimension(:,:,:),allocatable,save :: deltaq,cnvwr,cnvcr
+      real, dimension(:,:,:),allocatable,save :: dtcup,ducup,dvcup,    &
+                                                 dtshl,dushl,dvshl,    &
+                                                 dtlsp
 
       contains 
 
@@ -122,6 +125,7 @@
            end if
 
 !CWB2015
+           il=0
            ib=0
            cof=0.
 
@@ -146,6 +150,24 @@
                stop
            end if
 !
+           allocate (dtcup(nxp,lev,my_max),ducup(nxp,lev,my_max),    &
+                     dvcup(nxp,lev,my_max),dtshl(nxp,lev,my_max),    &
+                     dushl(nxp,lev,my_max),dvshl(nxp,lev,my_max),    &
+                     dtlsp(nxp,lev,my_max), stat=ierr)
+
+           if (ierr/= 0) then
+               write(6,*) 'mod_phygrid : allocate fail 8 '
+               stop
+           end if
+!
+           dtcup = 0.
+           ducup = 0.
+           dvcup = 0.
+           dtshl = 0.
+           dushl = 0.
+           dvshl = 0.
+           dtlsp = 0.
+!
            return
 
          end subroutine
@@ -167,6 +189,7 @@
            deallocate (fpsp,fpsp1)
            deallocate (rainlp6,raincu6,rainlp3,raincu3,rainlp1,raincu1)
            deallocate (tsflw)
+           deallocate (dtcup,ducup,dvcup,dtshl,dushl,dvshl,dtlsp)
 
            return
 

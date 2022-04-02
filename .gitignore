@@ -18,3 +18,5 @@ etc/namlsts_tco383_*
 *.o*
 wrk_sample
 src/depend
+work_*
+build
