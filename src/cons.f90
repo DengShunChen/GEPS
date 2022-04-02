@@ -40,7 +40,11 @@
                    sppt_sfclimit, sppt_logit, &
                    shum, shum_seed, shum_decort, shum_lscale, &
                    shum_sigefold, &
-                   ssst, ssst_seed, ssst_decort, ssst_lscale
+                   skeb, skeb_seed, skeb_decort, skeb_lscale, &
+                   skeb_sigtop1, skeb_sigtop2, skeb_sigbot1, skeb_sigbot2, &
+                   skeb_vdof,skebnorm, skebfilt, &
+                   ssst, ssst_seed, ssst_decort, ssst_lscale, &
+                   init_stochastic_physics
 
       implicit  none
 
@@ -69,8 +73,8 @@
                       , ntoz,iovr_sw,iovr_lw,isubc_sw,isubc_lw          &
                       , sashal,crick_proof,ccnorm,norad_precip,me,doo3l &
                       , ioutsigr,domfc,out_green,isot,ivegsrc           &
-                      , otgreen,out_hp,dosppt,dospptout, doshum, dossst  &
-                      , ndsladvh2,hord                                  &
+                      , otgreen,out_hp,dosppt,dospptout, doshum, dossst &
+                      , doskeb, doskebout, ndsladvh2,hord               &
                       , ldailyFCTsst,ldailyFCTicesndpt,lFCTweight       &
                       , dailyClm_option,lopgsst,do_sit,fsit,pdfcloud,updatetg    &
 ! output data for RSM (Also, RSM compiling flag is necessary)
@@ -106,6 +110,9 @@
                    sppt_sfclimit, sppt_logit, &
                    shum, shum_seed, shum_decort, shum_lscale, &
                    shum_sigefold, &
+                   skeb, skeb_seed, skeb_decort, skeb_lscale, &
+                   skeb_sigtop1, skeb_sigtop2, skeb_sigbot1, skeb_sigbot2, &
+                   skeb_vdof, skebnorm, skebfilt, &
                    ssst, ssst_seed, ssst_decort, ssst_lscale
 
 ! for ECHAM4 Tiedtke cumulus scheme
@@ -561,6 +568,10 @@
          ' icliq_sw=',icliq_sw,' icice_sw=', icice_sw,                  &
          ' icliq_lw=',icliq_lw,' icice_lw=', icice_lw
       endif
+!-----------------------------------------------------------------------
+!  for stochastic_physics initialization
+!-----------------------------------------------------------------------
+      call init_stochastic_physics(dt)   
 !-----------------------------------------------------------------------
 !
 ! check if typhoon exit

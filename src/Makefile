@@ -288,6 +288,7 @@ SRCS_f90  = \
   transr1.f90 \
   transr.f90 \
   tranuv.f90 \
+  tranuv1.f90 \
   trdih.f90 \
   trdiv2.f90 \
   trdivv.f90 \

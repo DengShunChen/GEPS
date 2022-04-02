@@ -151,7 +151,8 @@ cat > ${GFSWRK}/namlsts << EOF
   dograv=true, docgrav=true,
   donnmi=true, 
   dosppt=true, dospptout=false, 
-  doshum=false,
+  doshum=false, 
+  doskeb=false, doskebout=false,
   cutfreq=3, nnmivm=3,
   doincr=f,
   hdiff=t, frad=1.0, ldiag=0,
@@ -187,7 +188,7 @@ cat > ${GFSWRK}/namlsts << EOF
   sppt_sigbot1 = 0.975,
   sppt_sigbot2 = 0.9,
   sppt = 0.80,0.4,0.10,0.08,0.04
-  sppt_seed = -999,-999,-999,-999,-999
+  sppt_seed = 29650617,29650645,29650651,29650651,29650651
   sppt_decort = 2.16E4,2.592E5,2.592E6,7.776E6,3.1536E7 
   sppt_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
   shum = 0.04,-999,-999,-999,-999
@@ -195,6 +196,17 @@ cat > ${GFSWRK}/namlsts << EOF
   shum_decort = 2.16E4,1.728E5,2.592E6,7.776E6,3.1536E7
   shum_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
   shum_sigefold = 0.2,
+  skeb_sigtop1 = 0.1,
+  skeb_sigtop2 = 0.025, 
+  skeb_sigbot1 = 0.975,
+  skeb_sigbot2 = 0.9,
+  skeb_vdof = 5,
+  skebnorm = 1,
+  skebfilt = 12,
+  skeb = 0.60,-999,-999,-999,-999
+  skeb_seed = 29650617,29650645,29650651,29650651,29650651
+  skeb_decort = 2.16E4,2.592E5,2.592E6,7.776E6,3.1536E7
+  skeb_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
   ssst = 0.80,-999,-999,-999,-999
   ssst_seed = -999,-999,-999,-999,-999
   ssst_decort = 2.16E4,2.592E5,2.592E6,7.776E6,3.1536E7 

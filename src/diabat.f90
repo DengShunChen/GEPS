@@ -167,10 +167,8 @@
       use index
       use const,                 ONLY:do_sit,ldailyFCTsst,dailyClm_option,      &
                                       pdfcloud,cmbk,cgwd, fsit, dosppt, doshum, dossst, &
-                                      use_zmtnblck,ldailyFCTsst,ldailyFCTicesndpt, &
-                                      ldailyFCTsst,ldailyFCTicesndpt,           &
-                                      dailyClm_option,dSITdt_intv,weightSIT,    &
-                                      bckfile,ggdef,doclx
+                                      use_zmtnblck,ldailyFCTicesndpt,dSITdt_intv, &
+                                      weightSIT,bckfile,ggdef,doclx
       use mod_sitgrid
       USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
       USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt &
@@ -1431,7 +1429,7 @@
           call sascnv_n(nxjp(j),nxp,lev,jcap,dta,del,psfc,prsl,phil,qtr &
             ,qtc,ttc,utc,vtc,dotc,cldwrk(1,jj) &
             ,rcup(1,jj),kbot(1,jj),ktop(1,jj)                     &
-            ,kuo(1,jj),slimsk,xkt2,ncld                          &
+            ,kuo(1,jj),slimsk,ncld                                &
           , grav,cp,hltm,rgas,tice)
 
         ! scale-aware SAS

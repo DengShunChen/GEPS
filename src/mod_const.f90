@@ -62,7 +62,9 @@
     ! for stochastic physics
     logical :: dosppt       =.false.
     logical :: dospptout    =.false.
+    logical :: doskebout    =.false.
     logical :: doshum       =.false.
+    logical :: doskeb       =.false.
     logical :: dossst       =.false.
     logical :: use_zmtnblck =.false.
          
@@ -94,6 +96,9 @@
 
     ! sit
     logical :: do_sit
+
+    ! SKEB
+    logical :: first_call
 
     common/constL/lsimpl,lzadv,yesdia,dopbl,docup,dorad,   &
             dolsp, dograv,doshl, dodry, donnmi,ozon,       &
