@@ -47,10 +47,11 @@
       use radn
       use albn
 !-----------------------------------------------------------------------
-      use mod_stochastic_physics, only : spptout, & 
-                  init_stochastic_physics, &
-                  run_stochastic_physics, & 
-                  destroy_stochastic_physics
+      use mod_stochastic_physics, only : spptout,skebout, &
+                  run_stochastic_physics,                 &
+                  destroy_stochastic_physics,             &
+                  skeb3du,skeb3dv,diss_est,skebfilt,      &
+                  keb,kea
 !-----------------------------------------------------------------------
 
       implicit  none
@@ -572,9 +573,6 @@
         sptendmax1=0.3305
       endif
 
-      ! stochastic_physics
-      call init_stochastic_physics(dta)   
-!
 !
 !      if(typhoon)then
 !        dt_trk=6.
@@ -1318,6 +1316,50 @@
                   , poly,dpoly,vornow,divnow,ut,vt,nsizey)
 !
 
+      ! SKEB process
+      if ( doskeb ) then
+        ! estimate the dissipation of kinectic energy for SKEB
+        do jj =1,jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          do k=1,lev
+            do i=1,nxj
+              diss_est(i,k,jj)=(um(i,k,jj)*ut(i,k,jj)                &
+                               +vm(i,k,jj)*vt(i,k,jj))               &
+                               +0.5*(um(i,k,jj)**2.+vm(i,k,jj)**2.)
+            enddo
+          enddo
+        enddo
+        call joinrs(cc,diss_est,dummy,dummy,dummy,nx,my_max,lev      &
+                   ,jlistnum,1,1)
+        call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc     &
+                   ,temten,1,nsizey)
+        ! apply spectral filter of the dissipation of kinetic energy
+        call filter_skeb(jtrun,jtmax,levp,temten,skebfilt)
+        call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temten,cc,1,nsizey)
+        call ujoinsr(cc,diss_est,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+!
+!        if ( myrank .eq. 0 ) print *,'intgrt: diss_est(1,72,1)=',diss_est(1,72,1)
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          xx=radsq*onocos(j)
+          do k = 1, lev
+            do i = 1, nxj
+              keb(i,k,jj)=0.5*(ut(i,k,jj)**2.+vt(i,k,jj)**2.)*xx
+              ut(i,k,jj)=ut(i,k,jj)+skeb3du(i,k,jj)*diss_est(i,k,jj)
+              vt(i,k,jj)=vt(i,k,jj)+skeb3dv(i,k,jj)*diss_est(i,k,jj)
+              kea(i,k,jj)=0.5*(ut(i,k,jj)**2.+vt(i,k,jj)**2.)*xx
+            enddo
+          enddo
+        enddo
+!        if ( myrank .eq. 0 ) print *,'intgrt: keb(1,72,1)=',keb(1,72,1)
+!        if ( myrank .eq. 0 ) print *,'intgrt: kea(1,72,1)=',kea(1,72,1)
+
+        ! compute vorticity and divergence from u and v
+        call trandv ( jtrun,jtmax,nx,my,my_max,lev,ut,vt,weight,cim &
+                      ,onocos,poly,dpoly,vornow,divnow,nsizey)
+      endif
 !
 !  detact instability occure or not
 !
@@ -1809,6 +1851,9 @@
 !
       if (dosppt .and.  dospptout .and.  (mod(tau+0.001, 1.) .lt. 0.01)) then
          call spptout(tau)
+      endif
+      if (doskeb .and.  doskebout .and.  (mod(tau+0.001, 1.) .lt. 0.01)) then
+         call skebout(tau)
       endif
 
       if(do_sit .AND. lgodas .AND. ldailysst) then
