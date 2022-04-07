@@ -49,7 +49,7 @@
 !  ---  inputs:
            ( nmmiph,nx,nxj,lev,ncld,plt,&!prsi,                          &
              pst,dsigma,phii,islimsk,q0,kdt,ntcw,ntrw,ntiw,ntsw,       &
-             ntgl,ntinc,ntrnc,tpi,me,dta,area,                         &
+             ntgl,ntinc,ntrnc,tpi,me,dta,area,jj,                      &
 !  ---  inputs/outputs:
              tt,qt,qa,ut,vt,sd,                                        &
 !  ---  outputs:
@@ -65,6 +65,8 @@
                                      cloud_diagnosis
       use physcons,            only: con_rd,con_fvirt,con_g
       use physpara,            only: effr_in
+! for slavepp
+      use phygrid,             only: dtlsp
 
       implicit none
 
@@ -72,7 +74,7 @@
       integer,  intent(in)    :: nmmiph,nx,nxj,lev,ncld,kdt,me
       integer,  intent(in)    :: ntcw,ntrw,ntiw,ntsw,ntgl,ntinc,ntrnc
       integer,  intent(in)    :: islimsk(nx)
-      real,     intent(in)    :: tpi,dta
+      real,     intent(in)    :: tpi,dta,jj
       real,     intent(in)    :: plt(nx,lev),pst(nx),dsigma(lev,2),    &
                                  phii(nx,lev+1),q0(nx,lev*ncld)!,       &
 !                                 prsi(nx,lev+1)
@@ -94,7 +96,7 @@
                 qti(nx,lev),qtsw(nx,lev),qtgl(nx,lev),ntnc(nx,lev,2),  &
                 refl10(nx,lev)
       real      rainncv(nx),snowncv(nx),graupelncv(nx)
-      real      icem
+      real      icem,dttmp
       logical   lradar
 ! GFDLMP
       real, parameter ::                                                &
@@ -215,7 +217,14 @@
             qt(i,(ntiw-1)*lev+k) = qti(i,kc)
             qt(i,(ntsw-1)*lev+k) = qtsw(i,kc)
             qt(i,(ntgl-1)*lev+k) = qtgl(i,kc)
-            tt(i,             k) = ttc(i,kc)
+            dttmp = ttc(i,kc)-tt(i,k)
+            if ( kdt .eq. 1 ) then
+              tt(i,k) = ttc(i,kc)
+            else
+              tt(i,k) = 0.5*( dttmp + dtlsp(i,k,jj) ) + tt(i,k)
+            endif
+            dtlsp(i,k,jj) = dttmp
+
           enddo
         enddo
 

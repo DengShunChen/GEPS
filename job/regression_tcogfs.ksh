@@ -7,7 +7,7 @@
  DMSPATH=/package/${machine}/dms/dms.v4/bin
  GFSDIR=$MDIR
  GFSFIX=$MDIR/fix
- GFSWRK=${GFSDIR}/work_${machine}
+ GFSWRK=${GFSDIR}/work_${machine}.$$
  rm -rf $GFSWRK
  mkdir -p $GFSWRK
 
@@ -28,13 +28,10 @@
  idmstail=''
  idmsdb="TCo${JCAP}L72"
 
- odmshead='STOC'
+ odmshead="J$$_"
  odmsbody=${dtg}
  odmstail="${DMSFLAG}MG"
  odmsdb=${idmsdb}
-
-#-- executable
- EXEC='MTCo639L72_'${machine}
 
 #---------------------------------------------------------#
  idmsfile=${idmshead}${idmsbody}${idmstail}@${idmsdb}
@@ -46,8 +43,8 @@
   export LNCP='ln -fs'
 
   # maybe no need to change
-#  export source="/data/common/gfs/dms_data/TCo639L72_S2TY.ufs/T_exp20${dtg}"           # TCo IC data path
-  export source="/nwpr/gfs/xb126/data2/Tool/Nemsio2Dms_v2/OUTPUT/ncep_ana.ufs/TCo${JCAP}l72_${dtg}"           # TCo IC data path
+   export source="/data/common/gfs/dms_data/TCo${JCAP}L72_S2TY.ufs/T_exp20${dtg}"           # TCo IC data path
+  #export source="/nwpr/gfs/xb126/data2/Tool/Nemsio2Dms_v2/OUTPUT/ncep_ana.ufs/TCo${JCAP}l72_${dtg}"           # TCo IC data path
 
   # link/copy DMS files
   export target="${dmsdb_home}/${idmsdb}.ufs"
@@ -124,7 +121,7 @@ if [ $JCAP = 639  ] ; then
   MODLST_RES='dt=225., tfilt=0.040, hfilt=1., cgw=4.2e-5,'
   MODEL_BASIC='nco=640,'
 elif [ $JCAP = 383  ] ; then
-  MODLST_RES='dt=360., tfilt=0.050, hfilt=1, cgw=2.6e-5,'
+  MODLST_RES='dt=360., tfilt=0.050, hfilt=1., cgw=2.6e-5,'
   MODEL_BASIC='nco=384,'
 fi
 
@@ -133,9 +130,9 @@ cat > ${GFSWRK}/namlsts << EOF
   nco=640,
   lev=72,
   ncld=3,
-  octahedral=true,
+  octahedral=t,
   nout=9000,
-  io_quilting=false,
+  io_quilting=f,
   npex=${NPEX},
   npey=${NPEY},
   ${MODEL_BASIC}
@@ -147,27 +144,25 @@ cat > ${GFSWRK}/namlsts << EOF
   cstar=f, update=t, lsimpl=t,
   tfilt=0.04, hfilt=1.,
   ksgeo=2, yesdia=t,
-  dopbl=t, docup=t, dorad=t, dolsp=t, doshl=t, dodry=f, 
-  dograv=true, docgrav=true,
-  donnmi=true, 
-  dosppt=true, dospptout=false, 
-  doshum=false,
+  dopbl=t, docup=t, dorad=t, dolsp=t, doshl=t, dodry=f, dograv=t, docgrav=t,
+  donnmi=t, 
+  dosppt=false, dospptout=false, doshum=false,
   cutfreq=3, nnmivm=3,
   doincr=f,
-  hdiff=t, frad=1.0, ldiag=0,
+  hdiff=t, frad=1.0,
+  ldiag=0,
   idg=40, jdg=108,
-  itypbl=0, numreduce=5, ptmeans=800.,
-  irad=2, nmland=2,
-  nmcup=6, nmshl=3, nmpbl=4, nmmiph=2,  
+  itypbl=0, numreduce=5, ptmeans=800., ptop=0.1,
+  nmcup=6, nmpbl=4, nmland=2, nmshl=3,
   nmgwor=2, nmgwcv=2,
   ktcup=20, cgw=4.2e-5,
   mtnvar=14, doo3l=t,
-  ioutsigr=1,
+  irad=2, ioutsigr=1,
   ggdef='${DMSFLAG}0G', gmdef='${DMSFLAG}MG',
-  domfc=384., out_green=t, otgreen=3., out_hp=false,
-  ndsladvh2=false,
+  domfc=384., out_green=t, otgreen=3., out_hp=f,
+  ndsladvh2=f,
   isot=1, ivegsrc=1, cgwd=1.20, cmbk=1.00,
-  spl1=5.,
+  spl1=50.,
   ${MODLST_RES}
  &end
 
@@ -178,33 +173,20 @@ cat > ${GFSWRK}/namlsts << EOF
  &end
  
  &stochy_physics
-  ncep_seeds = true,
-  use_zmtnblck = true,
-  sppt_logit = true,
-  sppt_sigtop1 = 0.1,
-  sppt_sigtop2 = 0.025, 
-  sppt_sfclimit = true,
-  sppt_sigbot1 = 0.975,
-  sppt_sigbot2 = 0.9,
-  sppt = 0.80,0.4,0.10,0.08,0.04
-  sppt_seed = -999,-999,-999,-999,-999
+  ncep_seeds = false,
+  sppt = 0.8,0.4,0.2,0.08,0.04
   sppt_decort = 2.16E4,2.592E5,2.592E6,7.776E6,3.1536E7 
   sppt_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
-  shum = 0.04,-999,-999,-999,-999
-  shum_seed = -999,-999,-999,-999,-999
+  shum = 0.8,-999,-999,-999,-999
   shum_decort = 2.16E4,1.728E5,2.592E6,7.776E6,3.1536E7
   shum_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
-  shum_sigefold = 0.2,
-  ssst = 0.80,-999,-999,-999,-999
-  ssst_seed = -999,-999,-999,-999,-999
-  ssst_decort = 2.16E4,2.592E5,2.592E6,7.776E6,3.1536E7 
-  ssst_lscale = 500.E3,1000.E3,2000.E3,2000.E3,2000.E3
  /
-
 EOF
 
 
- FCT_MODEL=$MDIR/src/$EXEC
+ FCT_MODEL=$MDIR/build/bin/tcogfs.x
+# FCT_MODEL=$MDIR/src/MTCo639L72_fx100
+
  /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} 
 
  if [ $? != 0 ] ; then
