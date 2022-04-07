@@ -98,7 +98,8 @@
       logical   lradar
 ! GFDLMP
       real, parameter ::                                                &
-                rainmin=1.0e-10  !(mm?)
+!                rainmin=1.0e-10  !(mm?)
+                rainmin=1.0e-20  !test
       real, dimension(:,:), allocatable ::                              &
                 dot,rho,re_graupel,rew,rei,rer,res,reg,dp
       real, dimension(:,:), allocatable ::                              &

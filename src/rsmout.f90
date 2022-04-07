@@ -1,3 +1,4 @@
+#define RSM
 #ifdef RSM
       subroutine rsmout(idtg,itau,nx,my,my_max,lev,ncld            &
              , ptop,cp,rgas,grav,sgeo,pdiff                        &
@@ -430,7 +431,8 @@
 !!        call mpe_unify(bt1,nx,my,2,mpe_double)
         if(myrank.eq.0)print*,' rsmout : start shumout2'
         if(myrank.eq.0)print*,' now is ntrac = ',ntrac, &
-                               '(1:spfh,2:cw,3:o3)'
+!                               '(1:spfh,2:cw,3:o3)'
+                    '(1:spfh,2:cw,3:rain,4:ice,5:snow,6:graupel,7:o3)'
 ! yj replace shumuot2 out
         call voterp(nx,my,my_max,lev,lpout,plog,pllp,tmp,bt1 &
              ,pkout,pres3d,tens)
@@ -466,7 +468,12 @@
 !          enddo
           if (ntrac.eq.1)call qmax2d(spfh_gfs(1,1,lpout-k+1),1,1,nxs,mys)
           if (ntrac.eq.2)call qmax2d(clwr_gfs(1,1,lpout-k+1),1,1,nxs,mys)
-          if (ntrac.eq.3)call qmax2d(ozon_gfs(1,1,lpout-k+1),1,1,nxs,mys)
+!          if (ntrac.eq.3)call qmax2d(ozon_gfs(1,1,lpout-k+1),1,1,nxs,mys)
+          if (ntrac.eq.3)call qmax2d(rain_gfs(1,1,lpout-k+1),1,1,nxs,mys)
+          if (ntrac.eq.4)call qmax2d(qice_gfs(1,1,lpout-k+1),1,1,nxs,mys)
+          if (ntrac.eq.5)call qmax2d(snow_gfs(1,1,lpout-k+1),1,1,nxs,mys)
+          if (ntrac.eq.6)call qmax2d(grpl_gfs(1,1,lpout-k+1),1,1,nxs,mys)
+          if (ntrac.eq.ncld)call qmax2d(ozon_gfs(1,1,lpout-k+1),1,1,nxs,mys)
          endif ! end -- myrank
         enddo !end --loop k
       enddo    !end --loop ntrac

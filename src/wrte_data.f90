@@ -1,3 +1,4 @@
+#define RSM
 #ifdef RSM
       subroutine wrte_data(idtg,fhour,nx,my,lsoil,lev,temp_gfs,spfh_gfs   &
      &              ,clwr_gfs,rain_gfs,qice_gfs,snow_gfs,grpl_gfs    &

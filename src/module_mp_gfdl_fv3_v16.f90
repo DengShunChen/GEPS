@@ -149,7 +149,8 @@ module module_mp_gfdl
     logical :: rad_snow = .true. !< consider snow in cloud fraciton calculation
     logical :: rad_graupel = .true. !< consider graupel in cloud fraction calculation
     logical :: rad_rain = .true. !< consider rain in cloud fraction calculation
-    logical :: fix_negative = .false. !< fix negative water species
+!    logical :: fix_negative = .false. !< fix negative water species
+    logical :: fix_negative = .true. !< fix negative water species
     logical :: do_setup = .true. !< setup constants and parameters
     logical :: p_nonhydro = .false. !< perform hydrosatic adjustment on air density
     logical :: do_melt = .false. !< terminal fall with melting
@@ -244,7 +245,8 @@ module module_mp_gfdl
     real :: qi0_max = 1.0e-4 !< max cloud ice value (by other sources)
     
 !    real :: qi0_crt = 1.0e-4 !< cloud ice to snow autoconversion threshold (was 1.e-4)
-    real :: qi0_crt = 0.3e-4 !< cloud ice to snow autoconversion threshold (was 1.e-4)
+!    real :: qi0_crt = 0.3e-4 !< cloud ice to snow autoconversion threshold (was 1.e-4)
+    real :: qi0_crt = 0.2e-4 !< cloud ice to snow autoconversion threshold (was 1.e-4)
                              !! qi0_crt is highly dependent on horizontal resolution
     real :: qr0_crt = 1.0e-4 !< rain to snow or graupel / hail threshold
                              !! lfo used * mixing ratio * = 1.e-4 (hail in lfo)
