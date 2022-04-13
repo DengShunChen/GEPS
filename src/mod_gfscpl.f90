@@ -23,7 +23,7 @@ subroutine gfs_cpl_init(compid)
   enddo
 
   call cpl_gsmap_init(myid, nlat-1, seg_strt, seg_leng, rank_root, mpi_comm_atm, compid, "datm GSMap:")
-  call cpl_smat_init(myid, rank_root, compid, id_gocn, mpi_comm_atm, "/nwpr/gfs/xb124/TCo_TIMCOM/remap/TCo383_to_tcm1536_consv_modify.nc")
+  call cpl_smat_init(myid, rank_root, compid, id_gocn, mpi_comm_atm, "/nwpr/gfs/xb157/remap/TCo383_to_tcm1536_consv_modify.nc")
   call cpl_attr_init(compid, id_gocn, MPI_COMM_atm)
 end subroutine gfs_cpl_init
 
