@@ -14,6 +14,8 @@ MDIR=$(cd ..; pwd)
 echo "MDIR=${MDIR}"
 
 machine=fx10
+# TERR=GTOPO30
+TERR=GMTED30
 JCAP=383
 
 MPI=768
@@ -31,3 +33,4 @@ source /users/xa09/sample/setup_mpi+omp.${machine} $OMP
 #==============================================================================================================#
 
 . ${MDIR}/job/regression.ksh
+#. ${MDIR}/job/regression_stochy_physics.ksh

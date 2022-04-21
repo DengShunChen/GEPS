@@ -1,7 +1,7 @@
       subroutine gwdc(im,ix,iy,km,u1,v1,t1,q1,           &
                       pmid1,pint1,dpmid1,                &
                       ktop,kbot,kcnv,cldf,qmax,          &   
-                      grav,cp,rd,fv,dta,dlength,             &
+                      grav,cp,rd,fv,deltim,dlength,             &
                       utgwc,vtgwc,tauctx,taucty,j)
 !***********************************************************************
 !        original code for parameterization of convectively forced
@@ -58,7 +58,7 @@
 !lzl      logical lprnt
 !
 !lzl add ---- ##
-      real  grav,cp,rd,fv,fhour,fhourpr,dta
+      real  grav,cp,rd,fv,fhour,fhourpr,deltim
       real, dimension(im)      :: qmax,tauctx, taucty
       real, dimension(im)      :: cldf,dlength
       real, dimension(ix,km)   :: u1,v1,t1,q1,pmid1,dpmid1
@@ -177,13 +177,13 @@
              xstress(:), ystress(:),                                   &
              ucltop(:),  vcltop(:),                                    &
              windcltop(:),tmpwindcltop(:),                             &
-             wrk(:),                                                   &
+             wrk(:),     dtfac(:),                                     &
              dlen(:),       gqmcldlen(:) 
 !     real(kind=kind_phys), allocatable :: plnint(:,:),   dpint(:,:),
 !    &                                     taugwci(:,:),  taugwcxi(:,:),
 !    &                                     taugwcyi(:,:), bruni(:,:),
 !    &                                     taugwcyi(:,:), bruni(:,:),
-      real, allocatable :: plnint(:,:),                                &
+      real, allocatable :: plnint(:,:), velco(:,:),                    &
             taugwci(:,:),  bruni(:,:),                                 &
             rhoi(:,:),     basicui(:,:),                               &
             ti(:,:),       riloc(:,:),                                 &
@@ -191,7 +191,7 @@
 !     real(kind=kind_phys), allocatable :: ugwdc(:,:),    vgwdc(:,:),
       real, allocatable ::                                             &
 !    &                                     plnmid(:,:),   wtgwc(:,:),
-            plnmid(:,:),                                               &
+            plnmid(:,:),   taugw(:,:),                                 &
             utgwcl(:,:),   vtgwcl(:,:),                                &
             basicum(:,:),  u(:,:),v(:,:),                              &
             t(:,:),        spfh(:,:),                                  &
@@ -238,7 +238,8 @@
       real, parameter ::                                     &     
            c1=1.41,          c2=-0.38,     ricrit=0.25,      &
            n2min=1.e-32,     zero=0.0,     one=1.0,          &
-           taumin=1.0e-20,   tauctmax=-5.,                   &
+!           taumin=1.0e-20,   tauctmax=-5.,                   &
+           taumin=1.0e-20,   tauctmax=-20.,                   &
            qmin=1.0e-10,     shmin=1.0e-20,                  &
            rimax=1.0e+20,    rimaxm=0.99e+20,                &
            rimaxp=1.01e+20,  rilarge=0.9e+20,                &
@@ -315,16 +316,16 @@
 !     allocate local arrays
 
       allocate (kcldtop(npt), kcldbot(npt), do_gwc(npt))
-      allocate (tauctxl(npt), tauctyl(npt),                          &
+      allocate (tauctxl(npt), tauctyl(npt), dtfac(npt),              &
                gwdcloc(npt), break(npt), critic(npt),   cosphi(npt), &
                sinphi(npt),  xstress(npt),  ystress(npt), wrk(npt),  &
                windcltop(npt),tmpwindcltop(npt),                     &
                ucltop(npt),  vcltop(npt),dlen(npt),     gqmcldlen(npt))
 
-!     allocate (plnint(npt,km+1),   dpint(npt,km+1),
+!     allocate (plnint(npt,km+1),  dpint(npt,km+1),
 !    &          taugwci(npt,km+1),  taugwcxi(npt,km+1),
 !    &          taugwcyi(npt,km+1), bruni(npt,km+1),
-      allocate (plnint(npt,km+1),                                   &
+      allocate (plnint(npt,2:km+1),                                 &
                taugwci(npt,km+1),  bruni(npt,km+1),                 &
                rhoi(npt,km+1),     basicui(npt,km+1),               &
                ti(npt,km+1),       riloc(npt,km+1),                 &
@@ -333,11 +334,11 @@
 !     allocate (ugwdc(npt,km),   vgwdc(npt,km),
       allocate                                                     &
 !    &         (plnmid(npt,km),  wtgwc(npt,km),                    
-              (plnmid(npt,km),                                    &
+              (plnmid(npt,km),  velco(npt,km),                    &
                utgwcl(npt,km),  vtgwcl(npt,km),                   &
                basicum(npt,km), u(npt,km),    v(npt,km),          &
                t(npt,km),       spfh(npt,km), pmid(npt,km),       &
-               dpmid(npt,km),                                     &
+               dpmid(npt,km),   taugw(npt,km),                    &
 !    &          dpmid(npt,km),   cumchr(npt,km),
                brunm(npt,km),   rhom(npt,km))     
 
@@ -386,7 +387,6 @@
         do i=1,npt
           ii = ipt(i)
           pint(i,k)     = pint1(ii,k)
-          plnint(i,k)   = log(pint(i,k))
           taugwci(i,k)  = zero
           bruni(i,k)    = zero
           rhoi(i,k)     = zero
@@ -394,6 +394,11 @@
           basicui(i,k)  = zero
           riloc(i,k)    = zero
           rimin(i,k)    = zero
+        enddo
+      enddo
+      do k=2,km+1
+        do i=1,npt
+          plnint(i,k)   = log(pint(i,k))
         enddo
       enddo
 
@@ -838,11 +843,15 @@
             kk = kcldtop(i)
             if (k > kk) cycle
             if ( k /= 1 ) then
-              crit1 = ucltop(i)*(u(i,k)+u(i,k-1))*0.5
-              crit2 = vcltop(i)*(v(i,k)+v(i,k-1))*0.5
+              tem1 = (u(i,k)+u(i,k-1))*0.5
+              tem2 = (v(i,k)+v(i,k-1))*0.5
+              crit1 = ucltop(i)*tem1
+              crit2 = vcltop(i)*tem2
+              velco(i,k) = tem1 * cosphi(i) + tem2 * sinphi(i)
             else
               crit1 = ucltop(i)*u(i,1)
               crit2 = vcltop(i)*v(i,1)
+              velco(i,1) = u(i,1) * cosphi(i) + v(i,1) * sinphi(i)
             end if
 
             if ( abs(basicui(i,k)) > zero .and. crit1 > zero          &
@@ -971,7 +980,29 @@
         enddo                     ! end of i=1,npt loop
       enddo                       ! end of k=kcldm,1,-1 loop
 
-!!!!!! vertical differentiation
+      do i=1,npt
+        dtfac(i)   = 1.0
+      enddo
+      do k=1,km
+        do i=1,npt
+          if (do_gwc(i)) then
+            kk = kcldtop(i)
+            if (k < kk) then
+              taugw(i,k) = (taugwci(i,k+1) - taugwci(i,k)) / dpmid(i,k)
+              if (taugw(i,k) /= 0.0) then
+                tem  = deltim * taugw(i,k)
+                dtfac(i) = min(dtfac(i), abs(velco(i,k)/tem)) 
+              endif
+            else
+              taugw(i,k) = 0.0
+            endif
+          else
+            taugw(i,k) = 0.0
+          endif
+        enddo
+      enddo
+
+!!!!!! Vertical differentiation
 !!!!!!
 !
       do k=1,km
@@ -979,7 +1010,8 @@
           if (do_gwc(i)) then
             kk = kcldtop(i)
             if (k < kk) then
-              wtgwc       = (taugwci(i,k+1) - taugwci(i,k)) / dpmid(i,k)
+!              wtgwc       = (taugwci(i,k+1) - taugwci(i,k)) / dpmid(i,k)
+              wtgwc       = taugw(i,k) * dtfac(i)
               utgwcl(i,k) = wtgwc * cosphi(i)
               vtgwcl(i,k) = wtgwc * sinphi(i)
             else
@@ -1179,8 +1211,8 @@
 !
 !!      do k =1,km
 !!        do i = 1,im
-!!          u1(i,k) = u1(i,k)+utgwc(i,k)*dta
-!!          v1(i,k) = v1(i,k)+vtgwc(i,k)*dta
+!!          u1(i,k) = u1(i,k)+utgwc(i,k)*deltim
+!!          v1(i,k) = v1(i,k)+vtgwc(i,k)*deltim
 !!        enddo
 !!      enddo
 !
@@ -1214,12 +1246,12 @@
                  sinphi,         xstress,  ystress,             &
                  dlen,    ucltop, vcltop,  gqmcldlen, wrk)
 
-      deallocate (plnint,          taugwci,                    &
+      deallocate (plnint,          taugwci, velco,            &
                  bruni, rhoi,     basicui,                    &
                  ti,       riloc, rimin,    pint)
 
       deallocate (plnmid, utgwcl, vtgwcl, basicum, u, v, t,   &
-                 pmid,   dpmid,  brunm,  rhom)
+                 pmid,   dpmid,  brunm,  rhom, taugw)
 
       deallocate (windcltop)
 

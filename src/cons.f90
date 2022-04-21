@@ -61,7 +61,7 @@
       real      pnm(jtrun+1,jtrun+1)
 
 !
-      namelist /modlst/ ksgeo,ptop,ptmean,dt,taui,taue                  &
+      namelist /modlst/ ksgeo,ptmean,dt,taui,taue                       &
                       , tauo,frad,ktpbl,ktshl,ktcup,njump,evaprh,lsimpl &
                       , yesdia,dopbl,docup,dorad,dolsp,dograv           &
                       , doshl,dodry,donnmi,idg,jdg,ldiag,nnmiit,nnmivm  &
@@ -81,7 +81,7 @@
                       , outrsm,rsmoutinv,rlon1,rlon2,rlat1,rlat2,rgrdsz &
 !
                       , cmbk,cgwd,nmmiph,spl1,spl2            &
-                      , weightSIT,dSITdt_intv,af,doclx
+                      , weightSIT,dSITdt_intv,af,mwhd,doclx
 !
       real    si(lev+1)
       logical flag
@@ -195,7 +195,7 @@
       close(2)
 ! transfer idtg8 to idtg*12
       if(idtg8.gt.60000000)then
-        idtg = 200000000000 + idtg8*100
+        idtg = 190000000000 + idtg8*100
       else
         idtg = 200000000000 + idtg8*100
       endif

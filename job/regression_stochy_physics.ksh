@@ -11,6 +11,17 @@
  rm -rf $GFSWRK
  mkdir -p $GFSWRK
 
+#-- terrain data
+ TERR=${TERR:-GMTED30}
+
+ if [ $TERR = GTOPO30  ] ; then
+   TER='30S'
+   STYP=1
+ elif [ $TERR = GMTED30  ] ; then
+   TER='30S_xnew'
+   STYP=2
+ fi
+
 #-- dms data
  JCAP=${JCAP:-639}
 
@@ -59,13 +70,14 @@
        ${LNCP} ${source}/*${fgdtg}* ${target}/${idmshead}${idmsbody}${idmstail}
 
  ${DMSPATH}/rdmsdbcrt -p ufs bckdms
- ${DMSPATH}/rdmscrt BCK_TCo${JCAP}_${DMSFLAG}30S@bckdms
+
 
  export source="/data/common/gfs/dms_data/bckdms.ufs"
  export target="${dmsdb_home}/bckdms.ufs"
  
- if [ ! -e ${target}/BCK_TCo${JCAP}_${DMSFLAG}30S ] ; then
-   ${LNCP} ${source}/BCK_TCo${JCAP}_${DMSFLAG}30S/* ${target}/BCK_TCo${JCAP}_${DMSFLAG}30S
+ if [ ! -e ${target}/BCK_TCo${JCAP}_${DMSFLAG}${TER} ] ; then
+   ${DMSPATH}/rdmscrt BCK_TCo${JCAP}_${DMSFLAG}${TER}@bckdms
+   ${LNCP} ${source}/BCK_TCo${JCAP}_${DMSFLAG}${TER}/* ${target}/BCK_TCo${JCAP}_${DMSFLAG}${TER}
  fi
 #----------------------------------------------------------------#
 
@@ -96,7 +108,7 @@ export FIXDIR=${GFSFIX}
 
 export ANADMS=${idmsfile}
 export FCSTDMS=${odmsfile}
-export BCKOPS=BCK_TCo${JCAP}_${DMSFLAG}30S@bckdms
+export BCKOPS=BCK_TCo${JCAP}_${DMSFLAG}${TER}@bckdms
 
 ${DMSPATH}/rdmspurge -f FCSTDMS
 ${DMSPATH}/rdmscrt -l34 FCSTDMS
@@ -121,10 +133,10 @@ cp $NWPETC/ocards $GFSWRK/ocards
 cp $NWPETC/namlsts $GFSWRK/namlsts
 
 if [ $JCAP = 639  ] ; then
-  MODLST_RES='dt=450., hfilt=1., cgw=4.2e-5,'
+  MODLST_RES='dt=450., hfilt=1., cgw=4.2e-5, cgwd=1.20, cmbk=1.00,'
   MODEL_BASIC='nco=640,'
 elif [ $JCAP = 383  ] ; then
-  MODLST_RES='dt=720., hfilt=1, cgw=2.6e-5,'
+  MODLST_RES='dt=720., hfilt=1., cgw=2.6e-5, cgwd=1.60, cmbk=0.30,'
   MODEL_BASIC='nco=384,'
 fi
 
@@ -157,7 +169,7 @@ cat > ${GFSWRK}/namlsts << EOF
   doincr=f,
   hdiff=t, frad=1.0, ldiag=0,
   idg=40, jdg=108,
-  itypbl=0, numreduce=5, ptmeans=800., ptop=0.1,
+  itypbl=0, numreduce=5, ptmeans=800.,
   irad=2, nmland=2,
   nmcup=6, nmshl=3, nmpbl=4,
   nmgwor=2, nmgwcv=2, nmmiph=2,
@@ -167,8 +179,8 @@ cat > ${GFSWRK}/namlsts << EOF
   ggdef='${DMSFLAG}0G', gmdef='${DMSFLAG}MG',
   domfc=384., out_green=t, otgreen=3., out_hp=false,
   ndsladvh2=false,
-  isot=1, ivegsrc=1, cgwd=1.20, cmbk=1.00,
-  spl1=5., spl2=100., af=0.1,
+  isot=${STYP}, ivegsrc=${STYP}, cgwd=1.20, cmbk=1.00,
+  spl1=5., spl2=50., af=0.1,
   ${MODLST_RES}
  &end
 

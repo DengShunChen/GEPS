@@ -77,7 +77,7 @@
                 uum_sl(nx,levp,my_max),ptm(nxp,my_max)
 !
       real      ndsldta,ndsldtah,facm(2,2)
-      integer   ierr,itter,ittw,itt
+      integer   ierr,itter,ittw,itt,year,yrd
 !
       real      glob(nx,my), &
                 hf24(nxp,my_max),qf24(nxp,my_max),ss24(nxp,my_max),rs24(nxp,my_max), &
@@ -210,7 +210,10 @@
 !      data facm/1.,0.,1.5,-0.5/
       data facm/ 1.   , 0.  , &
                  1.5  ,-0.5 /
-
+!
+      year = idate(1)
+      yrd  = 365
+      if ( mod(year,4) .eq. 0 ) yrd = 366
 !
 ! output initialization field
 !
@@ -362,7 +365,7 @@
 ! read mountant variables for topographic gravity wave drag
 !
       if(yesdia .and. dograv .and. nmgwor .eq. 2) then
-         call read_mtnvar(nx,my,mtnvar,hprime_b)
+         call read_mtnvar(nx,my,mtnvar,hprime_b,isot)
 !
          if( myrank .eq. 0 ) &
            print*,'read mtnvar=14 hprime_b=',(hprime_b(1,i,1),i=1,mtnvar)
@@ -556,11 +559,11 @@
       n_stable=0
       n_unstable=0
       hfiltx=hfilt
-      if(nco.eq.180)then
+      if(nco.le.200)then
 !!        dt_chg=1800.
         nc_stable=1
         sptendmax2=0.3405
-        sptendmax1=0.2405
+        sptendmax1=0.2505
       else if(nco.eq.384)then
 !!        dt_chg=720.
         nc_stable=2
@@ -659,6 +662,8 @@
 !         hfiltx=hfilt*2.
 !         alpha = 0.75
 !      endif
+
+
 
 
 !!      endif
@@ -769,8 +774,8 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f(vt,vvm_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-!!      call mpe2d_transpose_ndsl_p2f(tt,ttm_sl,    &
-!!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
+!      call mpe2d_transpose_ndsl_p2f(tt,ttm_sl,    &
+!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !
 !      do itt = 1,itter
         call ndslfv_monoadvh_fgnl(uum_sl,vvm_sl,ttm_sl     &
@@ -781,8 +786,8 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_f2p(vvm_sl,vdmerd, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-!!      call mpe2d_transpose_ndsl_f2p(ttm_sl,ddtemp, &
-!!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
+!      call mpe2d_transpose_ndsl_f2p(ttm_sl,ddtemp, &
+!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !
 !    advect pressure gradient force from t to t+dt
 !
@@ -881,6 +886,10 @@
 !
       call trandv ( jtrun,jtmax,nx,my,my_max,lev,vdzonl,vdmerd,weight,cim &
                    ,onocos,poly,dpoly,vormid,divmid,nsizey)
+!      call joinrs(cc,ddtemp,dummy,dummy,dummy,nx,my_max,lev        &
+!                   ,jlistnum,1,1)
+!      call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc     &
+!                   ,temmid,1,nsizey)
 !
       call whdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld       &
                    ,hfiltx,rad,cosl,ut,vt,vormid,divmid          &
@@ -893,6 +902,7 @@
             do k = 1, levp
               vormid(k,i,n,m)= 0.5*(vormid(k,i,n,m)+vornow(k,i,n,m))
               divmid(k,i,n,m)= 0.5*(divmid(k,i,n,m)+divnow(k,i,n,m))
+!              temmid(k,i,n,m)= 0.5*(temmid(k,i,n,m)+temnow(k,i,n,m))
             enddo
             enddo
           enddo
@@ -909,6 +919,8 @@
                  ,poly,dpoly,vormid,divmid,um,vm,nsizey)
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divmid,cc,1,nsizey)
       call ujoinsr(cc,rdivm,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+!      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temmid,cc,1,nsizey)
+!      call ujoinsr(cc,tm,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
 
 !
 !  the gaussian quadrature loop for spectral tendencies.  subroutine
@@ -1061,7 +1073,7 @@
 !
           call diabat ( docup,dodry,dolsp,dopbl,dorad,doshl,dograv              &
                       , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw      &
-                      , idg,jdg,ldiag,dtx,tau,hours,julian                      &
+                      , idg,jdg,ldiag,dtx,tau,hours,julian,year,yrd             &
                       , frad,ozon,njump,itypbl,ktcup,ktpbl,ktshl,grav           &
                       , rgas,cp,stbo,s0,evaprh,hltm,ptop,sigma,dsigma,il,ib     &
                       , cof,xlat,xlon,sgeo,z0,alb,land,ocean,ice                &
@@ -1372,12 +1384,12 @@
                                  ,n_unstable
         if( mod(tau+0.001, 1.) .lt. dtx_tau)then
           if(n_stable .gt. nc_stable)then
-            hfiltx=0.5*hfilt
+            hfiltx=0.75*hfilt
             alpha=0.75
             if(myrank .eq. 0)print *,'** stable change hfilt=',hfiltx,  &
                              ' and keep alpha=',alpha
           else if(n_unstable .gt. nc_stable)then
-            hfiltx=hfilt
+            hfiltx=1.5*hfilt
             alpha=0.75
             if(myrank .eq. 0)print *,'** unstable change hfilt=',hfiltx,&
                              ' and alpha=',alpha
@@ -1391,6 +1403,7 @@
           n_stable=0
         endif
       endif
+
       do k = 1, lev
         prslp=sigma(k,2)+sigma(k,1)*1000.+ptop
         if ( prslp .le. spl1  ) hdk1=k

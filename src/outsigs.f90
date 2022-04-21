@@ -9,7 +9,7 @@
 
       implicit  none
 
-      integer   itau,nx,my,my_max,lev,ncld,km,nc
+      integer   itau,nx,my,my_max,lev,ncld,km,nc,kl
 
       real      ptop,rad,grav,cp
 
@@ -25,7 +25,7 @@
                 zice(nxp,my_max),wrk1(nxp,my_max),mout(nx,my)
       integer*8 idtg
       character*80 ifilout
-      character typ*6,ihdg*26,ihdg2*26
+      character typ*6,ihdg*26,ihdg2*26,mlayer*1
       character*4 ggdef,gmdef
 !
       integer   i,lenc,k,jj,j,nxj,istat,kk,iout_b10,ntrac,nclds
@@ -60,7 +60,11 @@
 !
       if ( myrank .lt. lev ) then
         k=myrank+1
-        write(typ,'("m",i2.2,"100")')k
+        if ( k .lt. 100 ) then
+          write(typ,'("m",i2.2,"100")')k
+        else
+          write(typ,'("n",i2.2,"100")')mod(k,100)
+        endif
         call syslbl (typ,idtg,itau,gmdef,ihdg)
         call dmswrit_split(nx,my,ihdg,lenc,'H',ifilout,mout,istat)
       endif
@@ -82,7 +86,11 @@
 !
       if ( myrank .lt. lev ) then
         k=myrank+1
-        write(typ,'("m",i2.2,"200")')k
+        if ( k .lt. 100 ) then
+          write(typ,'("m",i2.2,"200")')k
+        else
+          write(typ,'("n",i2.2,"200")')mod(k,100)
+        endif
         call syslbl (typ,idtg,itau,gmdef,ihdg)
         call dmswrit_split(nx,my,ihdg,lenc,'H',ifilout,mout,istat)
       endif
@@ -101,7 +109,11 @@
 !
       if ( myrank .lt. lev ) then
         k=myrank+1
-        write(typ,'("m",i2.2,"210")')k
+        if ( k .lt. 100 ) then
+          write(typ,'("m",i2.2,"210")')k
+        else
+          write(typ,'("n",i2.2,"210")')mod(k,100)
+        endif
         call syslbl (typ,idtg,itau,gmdef,ihdg)
         call dmswrit_split(nx,my,ihdg,lenc,'H',ifilout,mout,istat)
       endif
@@ -119,7 +131,11 @@
 !
       if ( myrank .lt. lev ) then
         k=myrank+1
-        write(typ,'("m",i2.2,"500")')k
+        if ( k .lt. 100 ) then
+          write(typ,'("m",i2.2,"500")')k
+        else
+          write(typ,'("n",i2.2,"500")')mod(k,100)
+        endif
         call syslbl (typ,idtg,itau,gmdef,ihdg)
         call dmswrit_split(nx,my,ihdg,lenc,'H',ifilout,mout,istat)
       endif
@@ -144,7 +160,11 @@
 !
       if ( myrank .lt. lev ) then
         k=myrank+1
-        write(typ,'("m",i2.2,"550")')k
+        if ( k .lt. 100 ) then
+          write(typ,'("m",i2.2,"550")')k
+        else
+          write(typ,'("n",i2.2,"550")')mod(k,100)
+        endif
         call syslbl (typ,idtg,itau,gmdef,ihdg)
         call dmswrit_split(nx,my,ihdg,lenc,'H',ifilout,mout,istat)
       endif
@@ -167,16 +187,23 @@
 !
           if ( myrank .lt. lev ) then
             k=myrank+1
+            if ( k .lt. 100 ) then
+              kl     = k
+              mlayer = 'm'
+            else
+              kl     = mod(k,100)
+              mlayer = 'n'
+            endif
             if(ntrac.eq.ntcw)then
-              write(typ,'("m",i2.2,"551")')k     ! cloud liquid water content
+              write(typ,'(A1,i2.2,"551")')mlayer,kl     ! cloud liquid water content
             else if(ntrac.eq.ntiw)then
-              write(typ,'("m",i2.2,"552")')k     ! cloud ice content
+              write(typ,'(A1,i2.2,"552")')mlayer,kl     ! cloud ice content
             else if(ntrac.eq.ntrw)then
-              write(typ,'("m",i2.2,"553")')k     ! rain
+              write(typ,'(A1,i2.2,"553")')mlayer,kl     ! rain
             else if(ntrac.eq.ntsw)then
-              write(typ,'("m",i2.2,"554")')k     ! snow 
+              write(typ,'(A1,i2.2,"554")')mlayer,kl     ! snow 
             else if(ntrac.eq.ntgl)then
-              write(typ,'("m",i2.2,"555")')k     ! graupel
+              write(typ,'(A1,i2.2,"555")')mlayer,kl     ! graupel
             else
               goto 27
             endif
