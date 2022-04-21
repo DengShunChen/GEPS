@@ -100,6 +100,9 @@
     ! SKEB
     logical :: first_call
 
+    !for IO 
+    logical :: OutR4key
+
     common/constL/lsimpl,lzadv,yesdia,dopbl,docup,dorad,   &
             dolsp, dograv,doshl, dodry, donnmi,ozon,       &
             restrt,hdiff, cstar, update,doincr,hybrid,     &

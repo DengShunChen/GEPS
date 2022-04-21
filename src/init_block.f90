@@ -87,11 +87,12 @@
       doincr=.true.
 !
       doo3l=.true.
-!
-      domfc=384.
-      otgreen=6.
-      out_green=.false.
-      out_hp=.false.
+! about of input and output set
+      domfc    =    384.
+      otgreen  =      6.
+      out_green= .false.
+      out_hp   = .false.
+      OutR4key = .false.
 ! pdf cloud
       pdfcloud=.false.
 ! stochastic physics
