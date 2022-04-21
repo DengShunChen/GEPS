@@ -291,6 +291,7 @@ cat > ${GFSWRK}/namlsts << EOF
   ndsladvh2=false,
   isot=1, ivegsrc=1, cgwd=1.20, cmbk=1.00,
   spl1=5., spl2=50., af=0.1,
+  OutR4key=f,
   ${MODLST_RES}
   ${MODLST_SIT}
  &end
