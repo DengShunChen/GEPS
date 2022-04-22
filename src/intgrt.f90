@@ -47,10 +47,11 @@
       use radn
       use albn
 !-----------------------------------------------------------------------
-      use mod_stochastic_physics, only : spptout, & 
-                  init_stochastic_physics, &
-                  run_stochastic_physics, & 
-                  destroy_stochastic_physics
+      use mod_stochastic_physics, only : spptout,skebout, &
+                  run_stochastic_physics,                 &
+                  destroy_stochastic_physics,             &
+                  skeb3du,skeb3dv,diss_est,skebfilt,      &
+                  keb,kea
 !-----------------------------------------------------------------------
 
       implicit  none
@@ -76,7 +77,7 @@
                 uum_sl(nx,levp,my_max),ptm(nxp,my_max)
 !
       real      ndsldta,ndsldtah,facm(2,2)
-      integer   ierr,itter,ittw,itt
+      integer   ierr,itter,ittw,itt,year,yrd
 !
       real      glob(nx,my), &
                 hf24(nxp,my_max),qf24(nxp,my_max),ss24(nxp,my_max),rs24(nxp,my_max), &
@@ -209,7 +210,10 @@
 !      data facm/1.,0.,1.5,-0.5/
       data facm/ 1.   , 0.  , &
                  1.5  ,-0.5 /
-
+!
+      year = idate(1)
+      yrd  = 365
+      if ( mod(year,4) .eq. 0 ) yrd = 366
 !
 ! output initialization field
 !
@@ -361,7 +365,7 @@
 ! read mountant variables for topographic gravity wave drag
 !
       if(yesdia .and. dograv .and. nmgwor .eq. 2) then
-         call read_mtnvar(nx,my,mtnvar,hprime_b)
+         call read_mtnvar(nx,my,mtnvar,hprime_b,isot)
 !
          if( myrank .eq. 0 ) &
            print*,'read mtnvar=14 hprime_b=',(hprime_b(1,i,1),i=1,mtnvar)
@@ -555,11 +559,11 @@
       n_stable=0
       n_unstable=0
       hfiltx=hfilt
-      if(nco.eq.180)then
+      if(nco.le.200)then
 !!        dt_chg=1800.
         nc_stable=1
         sptendmax2=0.3405
-        sptendmax1=0.2405
+        sptendmax1=0.2505
       else if(nco.eq.384)then
 !!        dt_chg=720.
         nc_stable=2
@@ -572,9 +576,6 @@
         sptendmax1=0.3305
       endif
 
-      ! stochastic_physics
-      call init_stochastic_physics(dta)   
-!
 !
 !      if(typhoon)then
 !        dt_trk=6.
@@ -628,6 +629,7 @@
 #endif
 !
       if(do_sit) then
+        lsitstart=(itimestep .le. 1)
         if(fsit .le. 0) then
           lrun_sitvdiff=.true.
           ic_sit=-99
@@ -660,6 +662,8 @@
 !         hfiltx=hfilt*2.
 !         alpha = 0.75
 !      endif
+
+
 
 
 !!      endif
@@ -770,8 +774,8 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f(vt,vvm_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-!!      call mpe2d_transpose_ndsl_p2f(tt,ttm_sl,    &
-!!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
+!      call mpe2d_transpose_ndsl_p2f(tt,ttm_sl,    &
+!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !
 !      do itt = 1,itter
         call ndslfv_monoadvh_fgnl(uum_sl,vvm_sl,ttm_sl     &
@@ -782,8 +786,8 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_f2p(vvm_sl,vdmerd, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-!!      call mpe2d_transpose_ndsl_f2p(ttm_sl,ddtemp, &
-!!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
+!      call mpe2d_transpose_ndsl_f2p(ttm_sl,ddtemp, &
+!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !
 !    advect pressure gradient force from t to t+dt
 !
@@ -882,6 +886,10 @@
 !
       call trandv ( jtrun,jtmax,nx,my,my_max,lev,vdzonl,vdmerd,weight,cim &
                    ,onocos,poly,dpoly,vormid,divmid,nsizey)
+!      call joinrs(cc,ddtemp,dummy,dummy,dummy,nx,my_max,lev        &
+!                   ,jlistnum,1,1)
+!      call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc     &
+!                   ,temmid,1,nsizey)
 !
       call whdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld       &
                    ,hfiltx,rad,cosl,ut,vt,vormid,divmid          &
@@ -894,6 +902,7 @@
             do k = 1, levp
               vormid(k,i,n,m)= 0.5*(vormid(k,i,n,m)+vornow(k,i,n,m))
               divmid(k,i,n,m)= 0.5*(divmid(k,i,n,m)+divnow(k,i,n,m))
+!              temmid(k,i,n,m)= 0.5*(temmid(k,i,n,m)+temnow(k,i,n,m))
             enddo
             enddo
           enddo
@@ -910,6 +919,8 @@
                  ,poly,dpoly,vormid,divmid,um,vm,nsizey)
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divmid,cc,1,nsizey)
       call ujoinsr(cc,rdivm,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+!      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temmid,cc,1,nsizey)
+!      call ujoinsr(cc,tm,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
 
 !
 !  the gaussian quadrature loop for spectral tendencies.  subroutine
@@ -1062,7 +1073,7 @@
 !
           call diabat ( docup,dodry,dolsp,dopbl,dorad,doshl,dograv              &
                       , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw      &
-                      , idg,jdg,ldiag,dtx,tau,hours,julian                      &
+                      , idg,jdg,ldiag,dtx,tau,hours,julian,year,yrd             &
                       , frad,ozon,njump,itypbl,ktcup,ktpbl,ktshl,grav           &
                       , rgas,cp,stbo,s0,evaprh,hltm,ptop,sigma,dsigma,il,ib     &
                       , cof,xlat,xlon,sgeo,z0,alb,land,ocean,ice                &
@@ -1212,7 +1223,6 @@
                              , hfiltx,rad,cosl,um,vm,vornow,divnow,temnow  &
                              , eps4,trefs)
 !
-        lsitstart=.false.
 !
 !        if ( mod(itimestep,2) .eq. 0 ) xy = -1 * xy
         xy = -1 * xy
@@ -1237,7 +1247,6 @@
                   if(dtaup .lt. dtx_tau)then
                     tg(ii,jj)=tseanow(ii,jj)
                   endif
-
                 endif !end if(ocean)
               enddo
             enddo
@@ -1319,6 +1328,50 @@
                   , poly,dpoly,vornow,divnow,ut,vt,nsizey)
 !
 
+      ! SKEB process
+      if ( doskeb ) then
+        ! estimate the dissipation of kinectic energy for SKEB
+        do jj =1,jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          do k=1,lev
+            do i=1,nxj
+              diss_est(i,k,jj)=(um(i,k,jj)*ut(i,k,jj)                &
+                               +vm(i,k,jj)*vt(i,k,jj))               &
+                               +0.5*(um(i,k,jj)**2.+vm(i,k,jj)**2.)
+            enddo
+          enddo
+        enddo
+        call joinrs(cc,diss_est,dummy,dummy,dummy,nx,my_max,lev      &
+                   ,jlistnum,1,1)
+        call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc     &
+                   ,temten,1,nsizey)
+        ! apply spectral filter of the dissipation of kinetic energy
+        call filter_skeb(jtrun,jtmax,levp,temten,skebfilt)
+        call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temten,cc,1,nsizey)
+        call ujoinsr(cc,diss_est,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+!
+!        if ( myrank .eq. 0 ) print *,'intgrt: diss_est(1,72,1)=',diss_est(1,72,1)
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          xx=radsq*onocos(j)
+          do k = 1, lev
+            do i = 1, nxj
+              keb(i,k,jj)=0.5*(ut(i,k,jj)**2.+vt(i,k,jj)**2.)*xx
+              ut(i,k,jj)=ut(i,k,jj)+skeb3du(i,k,jj)*diss_est(i,k,jj)
+              vt(i,k,jj)=vt(i,k,jj)+skeb3dv(i,k,jj)*diss_est(i,k,jj)
+              kea(i,k,jj)=0.5*(ut(i,k,jj)**2.+vt(i,k,jj)**2.)*xx
+            enddo
+          enddo
+        enddo
+!        if ( myrank .eq. 0 ) print *,'intgrt: keb(1,72,1)=',keb(1,72,1)
+!        if ( myrank .eq. 0 ) print *,'intgrt: kea(1,72,1)=',kea(1,72,1)
+
+        ! compute vorticity and divergence from u and v
+        call trandv ( jtrun,jtmax,nx,my,my_max,lev,ut,vt,weight,cim &
+                      ,onocos,poly,dpoly,vornow,divnow,nsizey)
+      endif
 !
 !  detact instability occure or not
 !
@@ -1331,12 +1384,12 @@
                                  ,n_unstable
         if( mod(tau+0.001, 1.) .lt. dtx_tau)then
           if(n_stable .gt. nc_stable)then
-            hfiltx=0.5*hfilt
+            hfiltx=0.75*hfilt
             alpha=0.75
             if(myrank .eq. 0)print *,'** stable change hfilt=',hfiltx,  &
                              ' and keep alpha=',alpha
           else if(n_unstable .gt. nc_stable)then
-            hfiltx=hfilt
+            hfiltx=1.5*hfilt
             alpha=0.75
             if(myrank .eq. 0)print *,'** unstable change hfilt=',hfiltx,&
                              ' and alpha=',alpha
@@ -1350,6 +1403,7 @@
           n_stable=0
         endif
       endif
+
       do k = 1, lev
         prslp=sigma(k,2)+sigma(k,1)*1000.+ptop
         if ( prslp .le. spl1  ) hdk1=k
@@ -1810,6 +1864,9 @@
 !
       if (dosppt .and.  dospptout .and.  (mod(tau+0.001, 1.) .lt. 0.01)) then
          call spptout(tau)
+      endif
+      if (doskeb .and.  doskebout .and.  (mod(tau+0.001, 1.) .lt. 0.01)) then
+         call skebout(tau)
       endif
 
       if(do_sit .AND. lgodas .AND. ldailysst) then

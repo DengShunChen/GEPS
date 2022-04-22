@@ -4,7 +4,8 @@
       use index
       use mpe
       use rank
-      use const, only : hdk1,hdk2,radsq,hord
+      use const, only : hdk1,hdk2,radsq,doskeb,onocos,wcfac,wdfac      &
+                      , poly,dpoly,hord
       use param, only : octahedral,af
 
       implicit  none
@@ -16,7 +17,9 @@
                 vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),   &
                 temnow(levp,2,jtrun,jtmax),eps4(jtrun,jtmax),            &
                 trefs(levp,2,jtrun,jtmax)
-!
+      real      vordiss(levp,2,jtrun,jtmax),divdiss(levp,2,jtrun,jtmax), &
+                diss_est(nxp,lev,my_max)
+
 !     parameter ( ktop=4, ktop2=ktop/2 ) ! top "ktop" levels are inhenced
 !
       real      wmax(lev)
@@ -77,7 +80,7 @@
 !
         KL=Llist(k)
 !
-        kfac  = (5.+finc)*max(float(hdk2(1)-KL),0.)
+        kfac  = (1.+finc)*max(float(hdk2(1)-KL),0.)
         facd = max(amp,kfac)
         facv = max(min(amp,1.),kfac)
         fact = max(min(amp,1.),kfac)
@@ -85,8 +88,28 @@
 !!        facv = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
 !!        fact = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
 !
-!  difuse vorticity and divergence fields
-!  diffuse moisture and temperature fields
+
+!  if doskeb = .true. estimate the dissipation of kinectic energy for SKEB
+!
+      if ( doskeb ) then
+        do m=1,mlistnum
+          mf=mlist(m)
+          do n=mf,jtrun
+            c1=1.+dta*facv*hfilt*eps4(n,m)**powd
+            if ( KL .le. hdk1 ) then
+              c2=1.+dta*facd*hfilt2*eps4(n,m)
+            else
+              c2=1.+dta*facd*hfilt*eps4(n,m)**powd
+            endif
+            vordiss(k,1,n,m)=(1.-1./c1)*vornow(k,1,n,m)
+            vordiss(k,2,n,m)=(1.-1./c1)*vornow(k,2,n,m)
+            divdiss(k,1,n,m)=(1.-1./c2)*divnow(k,1,n,m)
+            divdiss(k,2,n,m)=(1.-1./c2)*divnow(k,2,n,m)
+          enddo
+        enddo
+      endif 
+!
+!  difuse vorticity, divergence and temperature fields
 !
         do m=1,mlistnum
           mf=mlist(m)
@@ -96,7 +119,7 @@
             c3=1.+dta*fact*hfilt*eps4(n,m)**powd
 
             if ( KL .le. hdk1 ) then
-              c2=1.+dta*facd*hfilt2*eps4(n,m)
+              c2=1.+dta*facd*hfilt2*eps4(n,m)+exp(-0.5*(k-1))
             else
               c2=1.+dta*facd*hfilt*eps4(n,m)**powd
             endif
@@ -113,6 +136,14 @@
         enddo
  100  continue
 !
+!       estimate the dissipation of kinetic energy
+      if ( doskeb ) then
+         ! transfer the dissipation to grid point from spectrum
+         call tranuv (jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac &
+                    , poly,dpoly,vordiss,divdiss,ut,vt,nsizey)
+      endif
+
+!
 !-------------------------------------------------------------------
 !
 !  filter layers near the upper bound if too strong wind speed 
@@ -126,7 +157,7 @@
         if ( wmax(k) .gt. windmax3 ) windchk=.true.
       enddo
       if ( windchk ) then
-       call filter_top(jtrun,jtmax,levp,ncld,temnow,vornow,divnow)
+       call filter_top(jtrun,jtmax,levp,hdk1,ncld,temnow,vornow,divnow)
       end if
 !--------------------------------------------------------------------
       return
@@ -274,7 +305,7 @@
       enddo
 !
       if ( windchk ) then
-       call filter_top(jtrun,jtmax,levp,ncld,temnow,vornow,divnow)
+       call filter_top(jtrun,jtmax,levp,hdk1,ncld,temnow,vornow,divnow)
       end if
 !--------------------------------------------------------------------
       return
@@ -287,7 +318,7 @@
       use mpe
       use rank
       use const, only : hdk1,hdk2,radsq
-      use param, only : octahedral,af
+      use param, only : octahedral,af,mwhd
 
       implicit  none
 
@@ -306,7 +337,7 @@
 
       integer   jj,j,nxj,k,i,m,n,mf,nc,kk,KL
       real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu
-      real      hfilt2,hfilt4,hfilt6,nf,kfac,finc
+      real      hfilt2,hfilt4,hfilt6,nf,kfac,finc,fl
       real      c1,c2,c3,c4
       logical   windchk
 
@@ -332,6 +363,7 @@
       nf=jtrun-1
 !
       finc = 10.*max(af,0.001)
+      fl   = 150./hdk2(2)-1.
       hfilt6 = (radsq/(nf*(nf+1)))**3.
       hfilt4 = (radsq/(nf*(nf+1)))**2.
       hfilt2 = radsq/(nf*(nf+1))
@@ -352,8 +384,8 @@
 
         KL=Llist(k)
 !
-        kfac = (5.+finc)*max(float(hdk2(2)-KL),0.)
-        facd = 10. * max(amp,kfac)
+        kfac = (fl+finc)*max(float(hdk2(2)-KL),0.)
+        facd = mwhd * max(amp,kfac)
         facv = max(min(amp,1.),kfac)
 !!        fact = amp * kfacv 
 !          endif
@@ -372,7 +404,7 @@
 !!            c2=1.+dta*facd*hfilt2*eps4(n,m)
 
             if ( KL .le. hdk1 ) then
-              c2=1.+dta*facd*hfilt2*eps4(n,m)
+              c2=1.+dta*facd*hfilt2*eps4(n,m)+exp(-0.5*(k-1))
             else
               c2=1.+dta*facd*hfilt4*eps4(n,m)**2.
             endif
@@ -397,14 +429,14 @@
         if ( wmax(k) .gt. windmax3 ) windchk=.true.
       enddo
       if ( windchk ) &
-       call filter_top(jtrun,jtmax,levp,ncld,temnow,vornow,divnow)
+       call filter_top(jtrun,jtmax,levp,hdk1,ncld,temnow,vornow,divnow)
 !
 !--------------------------------------------------------------------
       return
       end
 !
 !--------------------------------------------------------------------
-      subroutine filter_top(jtrun,jtmax,lev,ncld,temnow     &
+      subroutine filter_top(jtrun,jtmax,lev,ktop,ncld,temnow     &
                        ,vornow,divnow)
 !
 !  apply Lanczos filter to top "ktop" layers
@@ -415,7 +447,7 @@
       implicit  none
 
       integer   ktop,ktopm1
-      parameter ( ktop=10, ktopm1=ktop-1 ) ! top "ktop" levels are filtered
+!      parameter ( ktop=10, ktopm1=ktop-1 ) ! top "ktop" levels are filtered
 !     parameter ( ktop=4, ktopm1=ktop-1 ) ! top "ktop" levels are filtered
 !     parameter ( ktop=6, ktopm1=ktop-1 ) ! top "ktop" levels are filtered
 !
@@ -439,7 +471,7 @@
 !2dMPI <
 
 !      wvn_top(1) = jtrun*2./3.
-      wvn_top(1) = 155
+      wvn_top(1) = max(min(jtrun/3.,155),55)
       wvn_top(ktop+1) = jtrun
 !!      djt = ( wvn_top(ktop) - wvn_top(1) ) / ktopm1
 
@@ -525,6 +557,80 @@
 !          enddo
 !2dMPI >
         endif
+!2dMPI <
+        enddo
+      endif
+!  
+      return
+      end
+
+!
+!--------------------------------------------------------------------
+      subroutine filter_skeb(jtrun,jtmax,lev,dissest,wvn_top)
+!
+!  apply Lanczos filter to estimation of kinetic energy dissipation.
+!
+      use index
+      use mpe
+!
+      implicit  none
+
+!
+      integer   jtrun,jtmax,lev,ncld
+
+      real      dissest(lev,2,jtrun,jtmax)
+!
+      real      wvn_top
+
+      integer   k,mode,m,mf,n,nflt,IERR,KL
+      real      pi,flt,fac
+!
+
+!2dMPI >
+!     if(ktop.gt.levp)then
+!        print *,'filter_top fatal: ktop greater than lev partial !'
+!        call MPI_FINALIZE(IERR)
+!        stop
+!     endif
+!2dMPI <
+
+!
+      pi = 3.141596
+!
+!  mode = 0 : just truncate into assigned wavenumbers without 
+!             extra filtering
+!  mode = 1 or other : add fitering along with truncating
+!
+      mode = 1
+!
+      if( mode .eq. 0 ) then
+        do k = 1, lev
+!2dMPI >
+        KL=Llist(k)
+          do m = 1, mlistnum
+            mf=max(2,mlist(m))
+            do n = mf, jtrun
+              nflt = int ( wvn_top / float(n) )
+              flt = min( 1.0, float(nflt) )
+              dissest(k,1,n,m)= dissest(k,1,n,m)*flt
+              dissest(k,2,n,m)= dissest(k,2,n,m)*flt
+            enddo
+          enddo
+!2dMPI <
+        enddo
+      else
+        do k = 1, lev
+!2dMPI >
+        KL=Llist(k)
+          do m = 1, mlistnum
+            mf=max(2,mlist(m))
+            do n = mf, jtrun
+              fac = min(wvn_top,float(n-1)) * pi / wvn_top
+              flt = sin(fac)/fac
+              dissest(k,1,n,m)= dissest(k,1,n,m)*flt
+              dissest(k,2,n,m)= dissest(k,2,n,m)*flt
+            enddo
+          enddo
 !2dMPI <
         enddo
       endif

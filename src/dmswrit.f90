@@ -17,6 +17,7 @@
       use mpe
       use rank
 !     use index
+      use const, only : OutR4key 
 
       implicit  none
 
@@ -24,12 +25,16 @@
       logical   t_flg
       real      z(nx,my)
       character lrec*26,ifile*80,kflag*1
+      real*4,allocatable:: r4out(:,:)
+      character::rflag*1
 !
 ! working array
 !
       character key*34
-!
-      write(key,1000)lrec,kflag,lenc
+!   
+      rflag=kflag
+      if (OutR4key)rflag='R' 
+      write(key,1000)lrec,rflag,lenc
  1000 format(a26,a1,i7.7)
 !
       t_flg=.false.
@@ -49,7 +54,14 @@
       else
 
        if(myrank .eq. 0) then
-       call dmsput(ifile,key//char(0),z,istat)
+         if(OutR4key)then
+           allocate(r4out(nx,my))
+           r4out(:,:)=z(:,:)
+           call dmsput(ifile,key//char(0),r4out,istat)
+           deallocate(r4out)
+         else
+           call dmsput(ifile,key//char(0),z,istat)
+        endif
        t_flg=.true.
        endif
  
@@ -112,8 +124,8 @@
       t_flg=.false.
 
        if(myrank .eq. 0) then
-       call dmsput(ifile,key//char(0),z,istat)
-       t_flg=.true.
+        call dmsput(ifile,key//char(0),z,istat)
+        t_flg=.true.
        endif
  
 !ch    call mpe_broadcast(istat,1,t_flg,mpe_integer)
@@ -156,6 +168,7 @@
       use mpe
       use rank
       use index, only : col_rank
+      use const, only : OutR4key 
 
       implicit  none
 
@@ -163,18 +176,30 @@
       logical   t_flg
       real      z(nx,my)
       character lrec*26,ifile*80,kflag*1
+      real*4,allocatable:: r4out(:,:)
+      character::rflag*1
 !
 ! working array
 !
       character key*34
 !
-      write(key,1000)lrec,kflag,lenc
+!
+      rflag=kflag
+      if (OutR4key)rflag='R' 
+      write(key,1000)lrec,rflag,lenc
  1000 format(a26,a1,i7.7)
 !
       t_flg=.false.
 
 !       if(myrank .eq. iroot) then
-       call dmsput(ifile,key//char(0),z,istat)
+      if(OutR4key)then
+        allocate(r4out(nx,my))
+        r4out(:,:)=z(:,:)
+        call dmsput(ifile,key//char(0),r4out,istat)
+        deallocate(r4out)
+      else
+        call dmsput(ifile,key//char(0),z,istat)
+      endif
        t_flg=.true.
 !       endif
  

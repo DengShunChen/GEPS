@@ -41,7 +41,7 @@
 !  ---  inputs:
            ( nmmiph,nx,nxj,lev,ncld,plt,pst,dsigma,                    &
              phii,islimsk,q0,kdt,ntcw,ntrw,ntiw,ntsw,ntgl,             &
-             ntinc,ntrnc,tpi,me,dta,                                   &
+             ntinc,ntrnc,tpi,me,dta,jj,                                &
 !  ---  inputs/outputs:
              tt,qt,                                                    &
 !  ---  outputs:
@@ -58,7 +58,7 @@
       integer,  intent(in)    :: nmmiph,nx,nxj,lev,ncld,kdt,me
       integer,  intent(in)    :: ntcw,ntrw,ntiw,ntsw,ntgl,ntinc,ntrnc
       integer,  intent(in)    :: islimsk(nx)
-      real,     intent(in)    :: tpi,dta
+      real,     intent(in)    :: tpi,dta,jj
       real,     intent(in)    :: plt(nx,lev),pst(nx),dsigma(lev,2),    &
                                  phii(nx,lev+1),q0(nx,lev*ncld)
 !  ---  inputs/outputs:
@@ -74,7 +74,7 @@
                 qti(nx,lev),qtsw(nx,lev),qtgl(nx,lev),ntnc(nx,lev,2),  &
                 refl10(nx,lev)
       real      rainncv(nx),snowncv(nx),graupelncv(nx)
-      real      icem
+      real      icem,dttmp
       logical   lradar
 !
 ! reset all value to zero
@@ -89,6 +89,9 @@
       qtgl  = 0.
       ntnc  = 0.
       refl10= 0.
+      rainncv=0.
+      snowncv=0.
+      graupelncv=0.
 !
       lradar= .false.
       icem  =  4./3.*tpi*3.2768*1.e-14*890.
@@ -150,6 +153,7 @@
             qt(i,(ntsw-1)*lev+k) = qtsw(i,kc)
             qt(i,(ntgl-1)*lev+k) = qtgl(i,kc)
             tt(i,             k) = ttc(i,kc)
+
           enddo
         enddo
 

@@ -289,6 +289,7 @@ SRCS_f90  = \
   transr1.f90 \
   transr.f90 \
   tranuv.f90 \
+  tranuv1.f90 \
   trdih.f90 \
   trdiv2.f90 \
   trdivv.f90 \
@@ -381,6 +382,7 @@ INSTALL = /usr/bin/install
 # If it's using fx-100 compiler(new version), you probably can get -Kparallel flag back.
 #--------------------------------------------------------------------------------------------
 LDFLAGS = ${OMP_COM} ${LDFLAGS_COM}
+
 G2LIB_COM= $(G2_LIB) $(PNG_LIB) $(JASPER_LIB) $(W3LIB_LIB) $(Z_LIB)
 LIBS	= ${NETCDF_LIB} ${HDF5_LIB} ${DMS_LIB} ${OPERLIB_LIB} ${FFTW_LIB} ${LIBS_COM} ${MPMD_LIB} $(G2LIB_COM)
 

@@ -1,11 +1,11 @@
-   subroutine read_mtnvar(nx,my,mtnv,hprime_b)
+   subroutine read_mtnvar(nx,my,mtnv,hprime_b,isot)
       use index
       use param ,only : jtrun,my_max
 !
 !      parameter (nx=3072, my=1536, mtnv=14)
 !      parameter ( mtnv=14)
       implicit none
-      integer i,j,v,jt,nrec,ii,jj,nxj,nx,my,mtnv
+      integer i,j,v,jt,nrec,ii,jj,nxj,nx,my,mtnv,isot
       real*4 hprime_a(nx,my,mtnv)
       real hprime_b(nxp,mtnv,my_max),hprime_a8(nx,my)
 !      real hprime_a(nx,my),hprime_aa(nx,my)
@@ -14,17 +14,33 @@
 !--------------------------------------------
 !!      nrec=nx*my*4
 
-      if ( jtrun .gt. 999 ) then
+!xb118
+      if (isot .le.1) then
+       if ( jtrun .gt. 999 ) then
         write(rfile,100) jtrun,nx,my
-      else
+       else
         if ( nx .gt. 999 .and. my .gt. 999 ) write(rfile,101) jtrun,nx,my
         if ( nx .gt. 999 .and. my .le. 999 ) write(rfile,102) jtrun,nx,my
         if ( nx .le. 999 .and. my .le. 999 ) write(rfile,103) jtrun,nx,my
+       endif
+      elseif (isot.eq.2) then
+       if ( jtrun .gt. 999 ) then
+        write(rfile,105) jtrun,nx,my
+       else
+        if ( nx .gt. 999 .and. my .gt. 999 ) write(rfile,106) jtrun,nx,my
+        if ( nx .gt. 999 .and. my .le. 999 ) write(rfile,107) jtrun,nx,my
+        if ( nx .le. 999 .and. my .le. 999 ) write(rfile,108) jtrun,nx,my
+       endif
       endif
  100  format('global_mtnvar.t',i4.4,'.',i4.4,'.',i4.4,'.f77')
  101  format('global_mtnvar.t',i3.3,'.',i4.4,'.',i4.4,'.f77')
  102  format('global_mtnvar.t',i3.3,'.',i4.4,'.',i3.3,'.f77')
  103  format('global_mtnvar.t',i3.3,'.',i3.3,'.',i3.3,'.f77')
+ 105  format('global_mtnvarw.t',i4.4,'.',i4.4,'.',i4.4,'.f77')
+ 106  format('global_mtnvarw.t',i3.3,'.',i4.4,'.',i4.4,'.f77')
+ 107  format('global_mtnvarw.t',i3.3,'.',i4.4,'.',i3.3,'.f77')
+ 108  format('global_mtnvarw.t',i3.3,'.',i3.3,'.',i3.3,'.f77')
+!xb118
 
       open(22,file=rfile,form='unformatted',status='old' )
 !!      open(22,file=rfile,form='unformatted',status='old'         &

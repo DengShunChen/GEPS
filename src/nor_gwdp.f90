@@ -1,5 +1,5 @@
       subroutine nor_gwdp(j,nxj,nx,lev,u,v,t,q,plt,pk,pk2,hi,dt,grav,rgas,sinl &
-      ,                   cosl,avgdrag_u,avgdrag_v,cp)
+      ,                   cosl,avgdrag_u,avgdrag_v,cp,ptop)
 !
 ! reference : Scinocca(2002,2003) JAS and Andrew Orr(2010) J. of Climate
 !
@@ -72,7 +72,6 @@
       data cmin/0.25/, cmax/2000./ taul/0.6/
       data cstar/1./, pw/1./, s/1./, wavelenth/2000./
       data fluxtotal/3.75e-4/, lunch_lev/44/, ltop/1/
-      data ptop/0.1/
 !
       ilon=1142
       jlat=nx/4

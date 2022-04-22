@@ -60,6 +60,7 @@ set -x
 # load libs
 export MDIR=$(pwd)
 . /usr/share/Modules/init/bash
+module purge
 module use  ${MDIR}/modulefiles
 module av
 module show modulefile.tcogfs.${MACHINE}

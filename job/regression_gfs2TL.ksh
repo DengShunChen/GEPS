@@ -21,7 +21,7 @@
  fi
 
  dtg='18090800'
- fgdtg=$(/nwpr/gfs/xb80/bin/Caldtg.ksh ${dtg} -6)
+ fgdtg=$(/users/xb80/bin/Caldtg.ksh ${dtg} -6)
 
  idmshead='MASOPS'
  idmsbody=''
@@ -46,8 +46,7 @@
   export LNCP='ln -fs'
 
   # maybe no need to change
-#  export source="/data/common/gfs/dms_data/TCo639L72_S2TY.ufs/T_exp20${dtg}"           # TCo IC data path
-  export source="/nwpr/gfs/xb126/data2/Tool/Nemsio2Dms_v2/OUTPUT/ncep_ana.ufs/TCo${JCAP}l72_${dtg}"           # TCo IC data path
+  export source="/data/common/gfs/dms_data/TCo${JCAP}L72_ncep.ufs/TCo${JCAP}l72_${dtg}"           # TCo IC data path
 
   # link/copy DMS files
   export target="${dmsdb_home}/${idmsdb}.ufs"
@@ -59,12 +58,12 @@
        ${LNCP} ${source}/*${fgdtg}* ${target}/${idmshead}${idmsbody}${idmstail}
 
  ${DMSPATH}/rdmsdbcrt -p ufs bckdms
- ${DMSPATH}/rdmscrt BCK_TCo${JCAP}_${DMSFLAG}30S@bckdms
 
  export source="/data/common/gfs/dms_data/bckdms.ufs"
  export target="${dmsdb_home}/bckdms.ufs"
  
  if [ ! -e ${target}/BCK_TCo${JCAP}_${DMSFLAG}30S ] ; then
+   ${DMSPATH}/rdmscrt BCK_TCo${JCAP}_${DMSFLAG}30S@bckdms
    ${LNCP} ${source}/BCK_TCo${JCAP}_${DMSFLAG}30S/* ${target}/BCK_TCo${JCAP}_${DMSFLAG}30S
  fi
 #----------------------------------------------------------------#
@@ -91,7 +90,7 @@ EOF
 export GFSDIR DMSPATH
 export NWPETC=${GFSDIR}/etc
 export NWPETCGLB=${GFSWRK}
-export GLB_TYPHINI="/nwp/npcagfs/TYP/M00/dtg/ty"
+export GLB_TYPHINI="/nwpr/gfs/a361/MODEL/typhoon"
 export FIXDIR=${GFSFIX}
 
 export ANADMS=${idmsfile}
@@ -150,7 +149,7 @@ cat > ${GFSWRK}/namlsts << EOF
   dopbl=t, docup=t, dorad=t, dolsp=t, doshl=t, dodry=f, 
   dograv=true, docgrav=true,
   donnmi=true, 
-  dosppt=true, dospptout=false, 
+  dosppt=false, dospptout=false, 
   doshum=false,
   cutfreq=3, nnmivm=3,
   doincr=f,
@@ -205,7 +204,7 @@ EOF
 
 
  FCT_MODEL=$MDIR/src/$EXEC
- /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} 
+ /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} -Wl,-T
 
  if [ $? != 0 ] ; then
   echo "error occured: fct model fail !!"

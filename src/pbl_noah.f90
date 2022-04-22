@@ -9,7 +9,8 @@
                         , ncld,dsigma,islopetyp,slc,sncover,snwdph       &
                         , shdmax,shdmin,snoalb,albedo2                  &
                         , sld,zice,cice,xtice,hpbl,asl,atl,xmu,gfx      &
-                        , kpbl,nmpbl,nmmiph,jj,isot,ivegsrc,sfemis_g )
+                        , kpbl,nmpbl,nmmiph,jj,isot,ivegsrc,sfemis_g    &
+                        , dudt,dvdt,dtdt )
 !
 !#######################################################################
 !                     subroutine description
@@ -247,6 +248,10 @@
 !----------------------------------------------------
 ! for new pbl: asl,atl,xmu
       real      asl(nx,lev),atl(nx,lev),swh(nx,lev),hlw(nx,lev),xmu(nx)
+
+!----------------------------------------------------
+! for fractional step:
+      real      dudt(nx,lev),dvdt(nx,lev),dtdt(nx,lev) 
 
       integer  lsm,i,k,iter,kc,ntrac
       real     ppd,ppp,ttt,ppu,dth,p850,ddd,cc,qqq
@@ -773,9 +778,14 @@
 !jh       do k=ktpbl,lev
           kc=lev-k+1
           do i=1,nxj
-            tt(i,k) = t1(i,kc)
-            ut(i,k) = u1(i,kc)
-            vt(i,k) = v1(i,kc)
+! time split
+!            tt(i,k) = t1(i,kc)
+!            ut(i,k) = u1(i,kc)
+!            vt(i,k) = v1(i,kc)
+! no time split
+            dtdt(i,kc) = (t1(i,kc)-tt(i,k))/dt
+            dudt(i,kc) = (u1(i,kc)-ut(i,k))/dt
+            dvdt(i,kc) = (v1(i,kc)-vt(i,k))/dt
           enddo
        enddo
 !

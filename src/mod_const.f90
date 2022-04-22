@@ -62,7 +62,9 @@
     ! for stochastic physics
     logical :: dosppt       =.false.
     logical :: dospptout    =.false.
+    logical :: doskebout    =.false.
     logical :: doshum       =.false.
+    logical :: doskeb       =.false.
     logical :: dossst       =.false.
     logical :: use_zmtnblck =.false.
          
@@ -95,6 +97,11 @@
     ! sit
     logical :: do_sit
 
+    ! SKEB
+    logical :: first_call
+
+    !for IO 
+    logical :: OutR4key
     ! output pressure level format
     ! 1 origin dmskey 2 grib2
     integer ,save :: out_pres_form=1

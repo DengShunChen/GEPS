@@ -1,6 +1,6 @@
       subroutine sascnv_n(im,ix,km,jcap,delt,del,ps,prsl,phil,ql_all,   &
            q1,t1,u1,v1,dot,cldwrk,rn,kbot,ktop,kcnv,slimsk,             &
-           xkt2,ncloud,grav,cp,hvap,rd,t0c)
+           ncloud,grav,cp,hvap,rd,t0c)
 !          xkt2,ncloud,ud_mf,dd_mf,dt_mf)
 !          dot,ncloud,ud_mf,dd_mf,dt_mf,me)
 !
@@ -15,7 +15,7 @@
       integer            im, ix,  km, jcap, ncloud,                     &
                          kbot(im), ktop(im), kcnv(im)
 !     ,                  me
-      real delt,xkt2,fpvs
+      real delt,fpvs
       real ps(im),     del(ix,km),  prsl(ix,km),                        &
                            ql(ix,km,2),q1(ix,km),   t1(ix,km),          &
                            u1(ix,km),  v1(ix,km),   rcs(im),            &
