@@ -11,6 +11,7 @@
       use mod_outflds
 !hcwei  write grb2
       use mod_grb2_param
+      use const ,only:out_pres_form
 
 !
       implicit  none
@@ -52,13 +53,13 @@
       real      tnshun
 !kc >
       real      sfac2,sfac3,sfac4
+      integer::praint
 !kc <
 !      logical lwrite
 !xb110>
 !      real flash(nxp,my_max)  !flash density (in flashes km^-2 day^-1)
 !xb110<
 !xb119
-      real*4::r4out(nx,my)
 
       num= 0
       nc = 0
@@ -74,13 +75,6 @@
 
       if(num.eq.0) return
 
-! open grb2 for out2d
-      if(out_pres_form==2 .and. myrank==0)then
-           write(grbfile,133 )'GFS_',idtg   ,'_',itau ,'_out2d.grb2'
-           print*,'OutFileName= ',trim(grbfile)
-           call opn_grb2(nx,my,idtg,itau)
-133                   format( A     ,I12.12 ,A  ,I4.4 ,A     )
-       endif
 !
       tnshun= 1.0
       lenc= nx*my
@@ -112,8 +106,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,0,10,2,1,0,0.,r4out)
+        call wrt_grb2(itau,0,0,10,2,1,0,0.,glob)
       endif
       go to 30
       endif
@@ -128,8 +121,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,0,11,2,1,0,0.,r4out)
+        call wrt_grb2(itau,0,0,11,2,1,0,0.,glob)
       endif
       go to 30
       endif
@@ -144,8 +136,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,0,0,2,1,0,0.,r4out)
+        call wrt_grb2(itau,0,0,0,2,1,0,0.,glob)
       endif
       go to 30
       endif
@@ -160,8 +151,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,19,1,2,1,0,0.,r4out)
+        call wrt_grb2(itau,0,19,1,2,1,0,0.,glob)
       endif
       go to 30
       endif
@@ -185,8 +175,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,0,21,2,1,0,0.,r4out)
+        call wrt_grb2(itau,2,0,21,2,1,0,0.,glob)
       endif
       go to 30
       endif
@@ -201,8 +190,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,0,3,2,1,0,0.,r4out)
+        call wrt_grb2(itau,2,0,3,2,1,0,0.,glob)
       endif
       go to 30
       endif
@@ -217,8 +205,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,1,60,2,103,0,0.,r4out)
+        call wrt_grb2(itau,0,1,60,2,103,0,0.,glob)
       endif
       go to 30
       endif
@@ -233,8 +220,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,0,1,2,1,0,0.,r4out)
+        call wrt_grb2(itau,2,0,1,2,1,0,0.,glob)
       endif
       go to 30
       endif
@@ -255,8 +241,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,1,10,2,1,0,0.,r4out)
+        call wrt_grb2(itau,0,1,10,2,1,0,0.,glob)
       endif
  
 !byl      glob=glob2
@@ -269,8 +254,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,1,9,2,1,0,0.,r4out)
+        call wrt_grb2(itau,0,1,9,2,1,0,0.,glob)
       endif
 !total precipitation  every 12 hour reset to zero (mm)
       call syslbl ('b00620',idtg,itau,ggdef,ihdg)
@@ -290,8 +274,10 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,1,7,2,1,0,0.,r4out)
+        !call wrt_grb2(itau,0,1,7,2,1,0,0.,glob)
+        praint=mod(itau,12)
+        if(praint==0)praint=12
+        call wrt_grb2_accu(itau,0,1,7,2,1,0,0.,1,praint,glob)
       endif
 !accu. total precipitation from tau 0
       call unify_reduceintp(nx,my,my_max,raintot,glob)
@@ -303,8 +289,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,1,8,0,1,0,0.,r4out)
+        call wrt_grb2(itau,0,1,8,0,1,0,0.,glob)
       endif
       go to 30
       endif
@@ -319,8 +304,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,4,0,2,1,0,0.,r4out)
+        call wrt_grb2(itau,0,4,0,2,1,0,0.,glob)
       endif
       go to 30
       endif
@@ -335,8 +319,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,5,0,2,1,0,0.,r4out)
+        call wrt_grb2(itau,0,5,0,2,1,0,0.,glob)
       endif
       go to 30
       endif
@@ -362,8 +345,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,4,2,2,1,0,0.,r4out)
+        call wrt_grb2(itau,0,4,2,2,1,0,0.,glob)
       endif
       go to 30
       endif
@@ -378,8 +360,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,5,3,2,1,0,0.,r4out)
+        call wrt_grb2(itau,0,5,3,2,1,0,0.,glob)
       endif
       go to 30
       endif
@@ -394,8 +375,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,4,7,2,1,0,0.,r4out)
+        call wrt_grb2(itau,0,4,7,2,1,0,0.,glob)
       endif
       go to 30
       endif
@@ -410,8 +390,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,4,1,2,1,0,0.,r4out)
+        call wrt_grb2(itau,0,4,1,2,1,0,0.,glob)
       endif
       go to 30
       endif
@@ -427,8 +406,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,5,1,2,1,0,0.,r4out)
+        call wrt_grb2(itau,0,5,1,2,1,0,0.,glob)
       endif
       go to 30
       endif
@@ -443,8 +421,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,0,10,2,1,0,0.,r4out)
+        call wrt_grb2(itau,2,0,10,2,1,0,0.,glob)
       endif
       go to 30
       endif
@@ -459,8 +436,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,3,16,2,1,0,0.,r4out)
+        call wrt_grb2(itau,0,3,16,2,1,0,0.,glob)
       endif
       go to 30
       endif
@@ -475,8 +451,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,3,17,2,1,0,0.,r4out)
+        call wrt_grb2(itau,0,3,17,2,1,0,0.,glob)
       endif
       go to 30
       endif
@@ -487,8 +462,7 @@
        acld(i,1)=acld(i,1)*100.
       end do
       if(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,6,22,2,7,0,0.,r4out)
+        call wrt_grb2(itau,0,6,22,2,7,0,0.,glob)
       endif
       call syslbl ('x00730',idtg,itau,ggdef,ihdg)
       call dmswrit(lev,my,ihdg,lenc2,'H',ifilout,acld,istat)
@@ -505,8 +479,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,0,0,2,103,0,0.,r4out)
+        call wrt_grb2(itau,0,0,0,2,103,0,0.,glob)
       endif
       go to 30
       endif
@@ -521,8 +494,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,2,2,2,103,0,0.,r4out)
+        call wrt_grb2(itau,0,2,2,2,103,0,0.,glob)
       endif
       go to 30
       endif
@@ -537,8 +509,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,2,3,2,103,0,0.,r4out)
+        call wrt_grb2(itau,0,2,3,2,103,0,0.,glob)
       endif
       go to 30
       endif
@@ -553,8 +524,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,1,3,2,7,0,0.,r4out)
+        call wrt_grb2(itau,0,1,3,2,7,0,0.,glob)
       endif
       go to 30
       endif
@@ -569,8 +539,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,1,1,2,103,0,0.,r4out)
+        call wrt_grb2(itau,0,1,1,2,103,0,0.,glob)
       endif
       go to 30
       endif
@@ -595,8 +564,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,0,0,2,103,0,2.,r4out)
+        call wrt_grb2(itau,0,0,0,2,103,0,2.,glob)
       endif
       go to 30
       endif
@@ -611,8 +579,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,1,0,6,103,0,2.,r4out)
+        call wrt_grb2(itau,0,1,0,6,103,0,2.,glob)
       endif
       go to 30
       endif
@@ -627,8 +594,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,1,1,2,103,0,2.,r4out)
+        call wrt_grb2(itau,0,1,1,2,103,0,2.,glob)
       endif
       go to 30
       endif
@@ -643,8 +609,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,2,2,2,103,0,10.,r4out)
+        call wrt_grb2(itau,0,2,2,2,103,0,10.,glob)
       endif
       go to 30
       endif
@@ -659,8 +624,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,2,3,2,103,0,10.,r4out)
+        call wrt_grb2(itau,0,2,3,2,103,0,10.,glob)
       endif
       go to 30
       endif
@@ -674,8 +638,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,1,1,2,103,0,10.,r4out)
+        call wrt_grb2(itau,0,1,1,2,103,0,10.,glob)
       endif
       go to 30
       endif
@@ -690,8 +653,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,0,3,2,1,0,0.,r4out)
+        call wrt_grb2(itau,2,0,3,2,1,0,0.,glob)
       endif
       go to 30
       endif
@@ -716,8 +678,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,0,3,2,151,0,1.,r4out)
+        call wrt_grb2(itau,2,0,3,2,151,0,1.,glob)
       endif
       go to 30
       endif
@@ -733,8 +694,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,0,3,2,151,0,2.,r4out)
+        call wrt_grb2(itau,2,0,3,2,151,0,2.,glob)
       endif
       go to 30
       endif
@@ -749,8 +709,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,0,3,2,151,0,3.,r4out)
+        call wrt_grb2(itau,2,0,3,2,151,0,3.,glob)
       endif
       go to 30
       endif
@@ -765,8 +724,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,0,3,2,151,0,4.,r4out)
+        call wrt_grb2(itau,2,0,3,2,151,0,4.,glob)
       endif
       go to 30
       endif
@@ -782,8 +740,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,0,3,2,151,0,1.,r4out)
+        call wrt_grb2(itau,2,0,3,2,151,0,1.,glob)
       endif
       go to 30
       endif
@@ -816,8 +773,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,0,3,2,151,0,2.,r4out)
+        call wrt_grb2(itau,2,0,3,2,151,0,2.,glob)
       endif
       go to 30
       endif
@@ -833,8 +789,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,0,3,2,151,0,3.,r4out)
+        call wrt_grb2(itau,2,0,3,2,151,0,3.,glob)
       endif
       go to 30
       endif
@@ -850,8 +805,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,0,3,2,151,0,4.,r4out)
+        call wrt_grb2(itau,2,0,3,2,151,0,4.,glob)
       endif
       go to 30
       endif
@@ -866,8 +820,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,0,3,2,151,0,5.,r4out)
+        call wrt_grb2(itau,2,0,3,2,151,0,5.,glob)
       endif
       go to 30
       endif
@@ -885,8 +838,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,3,10,2,151,0,1.,r4out)
+        call wrt_grb2(itau,2,3,10,2,151,0,1.,glob)
       endif
       go to 30
       endif
@@ -901,8 +853,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,3,10,2,151,0,2.,r4out)
+        call wrt_grb2(itau,2,3,10,2,151,0,2.,glob)
       endif
       go to 30
       endif
@@ -917,8 +868,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,3,10,2,151,0,3.,r4out)
+        call wrt_grb2(itau,2,3,10,2,151,0,3.,glob)
       endif
       go to 30
       endif
@@ -933,8 +883,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,3,10,2,151,0,4.,r4out)
+        call wrt_grb2(itau,2,3,10,2,151,0,4.,glob)
       endif
       go to 30
       endif
@@ -950,8 +899,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,3,10,2,151,0,1.,r4out)
+        call wrt_grb2(itau,2,3,10,2,151,0,1.,glob)
       endif
       go to 30
       endif
@@ -981,8 +929,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,3,10,2,151,0,2.,r4out)
+        call wrt_grb2(itau,2,3,10,2,151,0,2.,glob)
       endif
       go to 30
       endif
@@ -997,8 +944,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,3,10,2,151,0,3.,r4out)
+        call wrt_grb2(itau,2,3,10,2,151,0,3.,glob)
       endif
       go to 30
       endif
@@ -1013,8 +959,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,3,10,2,151,0,4.,r4out)
+        call wrt_grb2(itau,2,3,10,2,151,0,4.,glob)
       endif
       go to 30
       endif
@@ -1029,8 +974,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,3,10,2,151,0,5.,r4out)
+        call wrt_grb2(itau,2,3,10,2,151,0,5.,glob)
       endif
       go to 30
       endif
@@ -1048,8 +992,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,3,18,2,151,0,1.,r4out)
+        call wrt_grb2(itau,2,3,18,2,151,0,1.,glob)
       endif
       go to 30
       endif
@@ -1064,8 +1007,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,3,18,2,151,0,2.,r4out)
+        call wrt_grb2(itau,2,3,18,2,151,0,2.,glob)
       endif
       go to 30
       endif
@@ -1080,8 +1022,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,3,18,2,151,0,3.,r4out)
+        call wrt_grb2(itau,2,3,18,2,151,0,3.,glob)
       endif
       go to 30
       endif
@@ -1096,8 +1037,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,3,18,2,151,0,4.,r4out)
+        call wrt_grb2(itau,2,3,18,2,151,0,4.,glob)
       endif
       go to 30
       endif
@@ -1113,8 +1053,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,3,18,2,151,0,1.,r4out)
+        call wrt_grb2(itau,2,3,18,2,151,0,1.,glob)
       endif
       go to 30
       endif
@@ -1144,8 +1083,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,3,18,2,151,0,2.,r4out)
+        call wrt_grb2(itau,2,3,18,2,151,0,2.,glob)
       endif
       go to 30
       endif
@@ -1161,8 +1099,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,3,18,2,151,0,3.,r4out)
+        call wrt_grb2(itau,2,3,18,2,151,0,3.,glob)
       endif
       go to 30
       endif
@@ -1177,8 +1114,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,3,18,2,151,0,4.,r4out)
+        call wrt_grb2(itau,2,3,18,2,151,0,4.,glob)
       endif
       go to 30
       endif
@@ -1193,8 +1129,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,2,3,18,2,151,0,5.,r4out)
+        call wrt_grb2(itau,2,3,18,2,151,0,5.,glob)
       endif
       go to 30
       endif
@@ -1211,8 +1146,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,6,1,3,7,0,0.,r4out)
+        call wrt_grb2(itau,0,6,1,3,7,0,0.,glob)
       endif
       go to 30
       endif
@@ -1227,8 +1161,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,6,5,3,7,0,0.,r4out)
+        call wrt_grb2(itau,0,6,5,3,7,0,0.,glob)
       endif
       go to 30
       endif
@@ -1243,8 +1176,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,6,4,3,7,0,0.,r4out)
+        call wrt_grb2(itau,0,6,4,3,7,0,0.,glob)
       endif
       go to 30
       endif
@@ -1259,8 +1191,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,6,3,3,7,0,0.,r4out)
+        call wrt_grb2(itau,0,6,3,3,7,0,0.,glob)
       endif
       go to 30
       endif
@@ -1276,8 +1207,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,3,18,1,7,0,0.,r4out)
+        call wrt_grb2(itau,0,3,18,1,7,0,0.,glob)
       endif
       go to 30
       endif
@@ -1293,8 +1223,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,1,0,9,104,0,1.,r4out)
+        call wrt_grb2(itau,0,1,0,9,104,0,1.,glob)
       endif
       go to 30
       endif
@@ -1309,8 +1238,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,1,0,3,104,0,72.,r4out)
+        call wrt_grb2(itau,0,1,0,9,104,0,72.,glob)
       endif
       go to 30
       endif
@@ -1329,8 +1257,6 @@
 
    30 continue
 
-!hcw  close grb2 file
-      if(out_pres_form==2.and.myrank==0)  call cls_grb2
 !
       if(out_pres_form==1)then
       if ( myrank .lt. nc )             &

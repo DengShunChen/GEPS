@@ -9,6 +9,7 @@ contains
       use index
       use rank, only : myrank
       use mod_grb2_param !for write grb2
+      use const ,only:out_pres_form
 
       implicit  none
 
@@ -30,7 +31,6 @@ contains
       integer    k,lpl,lenc,n,num,istat
   
       logical :: lwrite
-      real*4::r4out(nx,my) !for write grb2
 
       do k = 1, lev+1
        tens(k) = 1.0
@@ -57,9 +57,7 @@ contains
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,wk1,istat)
       if(out_pres_form==2.and.myrank==0)then
-        pcoord=plev(k) 
-        r4out(:,:)=wk1(:,:)
-        call wrt_grb2(itau,0,2,13,6,100,-2,pcoord,r4out)
+        call wrt_grb2(itau,0,2,13,6,100,-2,plev(k),wk1)
       endif
       call qmaxn3(wk1,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if ( myrank .eq. ncnt ) then
@@ -83,6 +81,7 @@ contains
       use rank, only : myrank
       use mpe
       use mod_grb2_param !for write grb2
+      use const ,only:out_pres_form
 
       implicit  none
 
@@ -107,7 +106,6 @@ contains
       integer   k,lpl,lenc,j,nxj,ij,jj,i,n,istat
 
       logical lwrite
-      real*4::r4out(nx,my) !for write grb2
 
       do k = 1, lev+1
        tens(k) = 1.0
@@ -154,9 +152,7 @@ contains
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,wk1,istat)
       if(out_pres_form==2.and.myrank==0)then
-        pcoord=plev(k) 
-        r4out(:,:)=wk1(:,:)
-        call wrt_grb2(itau,0,2,196,6,100,-2,pcoord,r4out)
+        call wrt_grb2(itau,0,2,196,6,100,-2,plev(k),wk1)
       endif
       call qmaxn3(wk1,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if ( myrank .eq. ncnt ) then
@@ -180,6 +176,7 @@ contains
       use index
       use rank
       use mod_grb2_param !for write grb2
+      use const ,only:out_pres_form
 
       implicit  none
 
@@ -203,7 +200,6 @@ contains
       integer      i,k,n,lenc,istat,lpl,jj,j,nxj
 
       logical lwrite
-      real*4::r4out(nx,my) !for write grb2
 
       do k = 1, lev+1
        tens(k) = 1.0
@@ -287,9 +283,7 @@ contains
 !      endif
 !
       if(out_pres_form==2.and.myrank==0)then
-        pcoord=plev(k) 
-        r4out(:,:)=slp(:,:)
-        call wrt_grb2(itau,0,3,5,0,100,-2,pcoord,r4out)
+        call wrt_grb2(itau,0,3,5,0,100,-2,plev(k),slp)
       endif
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3(slp,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
@@ -314,6 +308,7 @@ contains
       use index
       use rank, only : myrank
       use mod_grb2_param
+      use const ,only:out_pres_form
 
       implicit  none
       integer   nx,my,my_max,lpout,lev,itau,num,ncnt
@@ -333,7 +328,6 @@ contains
       character*4 ggdef
 !
       logical :: lwrite
-      real*4::r4out(nx,my)
 
       do k = 1, lev+1
        tens(k) = 1.0
@@ -368,9 +362,7 @@ contains
    20 continue
       call unify_reduceintp(nx,my,my_max,tmp,glob)
       if(out_pres_form==2.and.myrank==0)then
-        pcoord=plev(k) 
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,1,1,2,100,-2,pcoord,r4out)
+        call wrt_grb2(itau,0,1,1,2,100,-2,plev(k),glob)
       endif
 
 !!      do 20 i=1,lenc
@@ -405,6 +397,7 @@ contains
       use radn, only : ntoz
       use param, only : ncld
       use mod_grb2_param
+      use const ,only:out_pres_form
 
       implicit  none
 
@@ -425,7 +418,6 @@ contains
       character*4 ggdef
       character*3 cspec(6)
       logical :: lwrite
-      real*4::r4out(nx,my)
 !
       cspec=(/'500','551','553','552','554','555'/)
 !
@@ -493,9 +485,7 @@ contains
 !!      glob(i,1)= max(dew(i,k),0.0)
 !!   20 continue
       if(out_pres_form==2.and.myrank==0)then
-        pcoord=plev(k) 
-        r4out(:,:)=glob(:,:)
-          call wrt_grb2(itau,Ptp0,Ptp1,Ptp2,Ptp3,100,-2,pcoord,r4out)   !Specit Humility
+          call wrt_grb2(itau,Ptp0,Ptp1,Ptp2,Ptp3,100,-2,plev(k),glob)   !Specit Humility
       endif
 !
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
@@ -525,6 +515,7 @@ contains
       use mpe
       use rank
       use mod_grb2_param
+      use const ,only:out_pres_form
 !
       implicit  none
       integer   nx,my,my_max,i,j,jj,kk,n,lev,nxj,itau,ntau,num,lenc,istat
@@ -542,7 +533,6 @@ contains
       character*6 label(ntau),labx
    
       logical :: lwrite
-      real*4::r4out(nx,my)
 !
       do jj = 1, jlistnum
         j=jlist1(jj)
@@ -586,8 +576,7 @@ contains
         if(out_pres_form==1)then
           if(lwrite) call dmswrit(nx,my,lrec,lenc,'H',ifilout,glob,istat)
         elseif(out_pres_form==2.and.myrank==0)then
-          r4out(:,:)=glob(:,:)
-          call wrt_grb2(itau,0,3,0,2,101,0,0.,r4out)
+          call wrt_grb2(itau,0,3,0,2,101,0,0.,glob)
         endif
         call qmaxn3(glob,lrec(1:14),lrec(15:26),1,1,1,nx,my,1)
 
@@ -610,8 +599,7 @@ contains
         if(lwrite) call dmswrit(nx,my,lrec,lenc,'H',ifilout,glob,istat)
         !write grb2 data 
         if(out_pres_form==2.and.myrank==0)then
-          r4out(:,:)=glob(:,:)
-          call wrt_grb2(itau,0,3,0,2,1,0,0.,r4out)
+          call wrt_grb2(itau,0,3,0,2,1,0,0.,glob)
         endif
         call qmaxn3(glob,lrec(1:14),lrec(15:26),1,1,1,nx,my,1)
 
@@ -639,6 +627,7 @@ contains
       use index
       use rank,   only : myrank
       use mod_grb2_param
+      use const ,only:out_pres_form
 
       implicit  none
 
@@ -660,7 +649,6 @@ contains
       character*4 ggdef
 !
      logical :: lwrite
-     real*4::r4out(nx,my)
 
       do k = 1, lev+1
        tens(k) = 1.0
@@ -705,9 +693,7 @@ contains
 !
 !!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       if(out_pres_form==2.and.myrank==0)then
-        pcoord=plev(k)
-        r4out(:,:)=slp(:,:)
-        call wrt_grb2(itau,0,0,0,2,100,-2,pcoord,r4out)
+        call wrt_grb2(itau,0,0,0,2,100,-2,plev(k),slp)
       endif
 
       call qmaxn3(slp,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
@@ -731,6 +717,7 @@ contains
       use index
       use rank, only : myrank
       use mod_grb2_param
+      use const ,only:out_pres_form
 
       implicit  none
 
@@ -753,7 +740,6 @@ contains
       integer   k,lpl,lenc,i,n,istat,jj,j,nxj
 !
       logical :: lwrite
-     real*4::r4out(nx,my)
 
       do k = 1, lev+1
        tens(k) = 1.0
@@ -817,9 +803,7 @@ contains
 !
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,wk1,istat)
       if(out_pres_form==2.and.myrank==0)then
-        pcoord=plev(k)
-        r4out(:,:)=wk1(:,:)
-        call wrt_grb2(itau,0,2,12,6,100,-2,pcoord,r4out)
+        call wrt_grb2(itau,0,2,12,6,100,-2,plev(k),wk1)
       endif
       call qmaxn3(wk1,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if ( myrank .eq. ncnt ) then
@@ -843,6 +827,7 @@ contains
       use index
       use rank, only : myrank
       use mod_grb2_param
+      use const ,only:out_pres_form
 
       implicit none
 
@@ -870,7 +855,6 @@ contains
       data rad/6.371e6/
 !
      logical :: lwrite
-     real*4::r4out(nx,my)
 
       do k = 1, lev+1
        tens(k) = 1.0
@@ -943,9 +927,7 @@ contains
 !!   50 continue
 !
       if(out_pres_form==2.and.myrank==0)then
-        pcoord=plev(k)
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,2,2,2,100,-2,pcoord,r4out)
+        call wrt_grb2(itau,0,2,2,2,100,-2,plev(k),glob)
       endif
 
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
@@ -1019,9 +1001,7 @@ contains
 !!   60 continue
 !
       if(out_pres_form==2.and.myrank==0)then
-        pcoord=plev(k)
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,2,3,2,100,-2,pcoord,r4out)
+        call wrt_grb2(itau,0,2,3,2,100,-2,plev(k),glob)
       endif
 
       call syslbl(krec(k),idtg,itau,ggdef,ihdg)
@@ -1061,9 +1041,7 @@ contains
 !!      enddo
 !
       if(out_pres_form==2.and.myrank==0)then
-        pcoord=plev(k)
-        r4out(:,:)=glob(:,:)
-        call wrt_grb2(itau,0,2,8,6,100,-2,pcoord,r4out)
+        call wrt_grb2(itau,0,2,8,6,100,-2,plev(k),glob)
       endif
 
       call syslbl(mrec(k),idtg,itau,ggdef,ihdg)

@@ -21,7 +21,6 @@ module mod_grb2_param
 !* Jia-ying Wu 2017,09
 !*
 !************************************************************************
-      use const ,only:out_pres_form
       implicit none
       public
       integer*4 :: ierr
@@ -50,7 +49,7 @@ module mod_grb2_param
       !integer,parameter :: llst5=5
       !real :: lcoord5(llst5)
 !GRIB2 SECTION 5
-      integer*4 :: idrsnum40!,idrsnum0
+      integer*4 :: idrsnum40,idrsnum0
       integer*4,parameter :: idrstmplen40=7, idrstmplen0=5
                            !Max dimension of idrstmpl()
       integer*4 :: idrstmpl40(idrstmplen40),idrstmpl0(idrstmplen0)
@@ -66,7 +65,7 @@ integer*4  :: Ptp0,Ptp1,Ptp2,Ptp3,Ptp4,grbnxmy
 !grib2 file name
 character::grbfile*255
 integer*4::grbid=134
-
+integer*8::grbidtg
 !=======================================================================
 !  call baopenw(g2num,g2name,ierr)                                     !
 !=======================================================================
@@ -272,8 +271,8 @@ integer*4::grbid=134
 !       data lcoord5/0.0,10.0,40.0,100.0,200.0/
 !=======================================================================
 ! Grib2 section 5
-       data idrsnum40/0/
-!       data idrsnum0/0/
+       data idrsnum40/40/
+       data idrsnum0  /0/
 !   idrsnum=40   !Data Representation Template Number ( see Code Table 5.0 )
 !   idrsnum=40 : JPEG 2000 Code Stream Format
 
@@ -300,7 +299,7 @@ integer*4::grbid=134
                   !with respect to the bit-depth specified in
                   !idrstmpl(4), when idrstmpl(6) indicates Lossy
                   !Compression. Otherwise, set to missing.
-     data idrstmpl0/0,0,0,16,-1/
+     data idrstmpl0/0,0,0,16,0/
 !    idrstmpl(1)=0  !Reference Value (R)(IEEE 32-bit folating-point value)
 !    idrstmpl(2)=0  !Binary scale factor (E)
 !    idrstmpl(3)=0  !Decimal scale factor (D)
@@ -345,6 +344,7 @@ integer*4::grbid=134
       integer*8::idtg
       integer   itau
       character::cdtg*12
+      grbidtg=idtg
       write(cdtg,'(I12.12)')idtg
       read(cdtg(1:4),'(I4)')yy
       read(cdtg(5:6),'(I2)')mm
@@ -368,14 +368,17 @@ integer*4::grbid=134
 !=======================================================================
       !subroutine seclist45(itau,t1,t2,t10,t11,t12,t13,t14,t15,p3,p5)
       !subroutine seclist45(itau,t0,t1,t2,p3,t10,t11,t12,r4out)
-      subroutine wrt_grb2(itau,t0,t1,t2,p3,t10,t11,t12,r4out)
+      subroutine wrt_grb2(itau,t0,t1,t2,p3,t10,t11,t12,fld)
 !      use cwbgfs_param
       use grib_mod
       implicit none
       integer*4::  t0,t1,t2,t10,t11,t13,t14,p3,p5
       real::  t12,t15
       integer::itau
+      real::fld(grbnxmy)
       real*4::r4out(grbnxmy)
+
+      ipdsnum=0  ! Product Definition Template Number (Code Table 4.0)
 ! t0,t1,t2 of  3 number for set variable
       listsec0(1)=t0   !Product Discipline ( Code Table 0.0 )
 ! Add data info. (section 4)
@@ -392,17 +395,16 @@ integer*4::grbid=134
       ipdstmpl(11)=t11 !Scale factor of first fixed surface
       ipdstmpl(12)=t12 !Scaled value of first fixed surface
       ipdstmpl(13)=255!t13
-      ipdstmpl(14)=0!t14
-      ipdstmpl(15)=0!t15
+      ipdstmpl(14)=0  !t14
+      ipdstmpl(15)=0  !t15
 ! Add packing info. (section 5)
-      idrstmpl40(3)=p3  !dec fac
-
-      !idrstmpl40(5)=0!p5 !Type of original field values(0:folat, 1:int.)
-
+      idrstmpl0(3)=p3  !dec fac
+      idrstmpl0(5)=0   !p5 !Type of original field values(0:folat, 1:int.)
+      r4out(:)=fld(:)
       call gribcreate(cgrib,lcgrib,listsec0,listsec1,ierr)
       call addgrid(cgrib,lcgrib,igds,igdstmpl,igdstmplen,ideflist,idefnum,ierr)
       call addfield(cgrib,lcgrib,ipdsnum,ipdstmpl,ipdstmplen,    &
-           coordlist,numcoord,idrsnum40,idrstmpl40,idrstmplen40, &
+           coordlist,numcoord,idrsnum0,idrstmpl0,idrstmplen0, &
            r4out,grbnxmy,ibmap,bmap,ierr)
       call gribend(cgrib,lcgrib,lengrib,ierr)
       call wryte(grbid,lengrib,cgrib)
@@ -410,13 +412,20 @@ integer*4::grbid=134
       end subroutine
 !=======================================================================
 
-      subroutine seclist4_85(ita,t1,t2,t10,t11,t12,t13,t14,t15,t16,    &
-                             t17,t18,t19,t20,t21,t22,t23,t24,t25,t26,  &
-                             t27,t28,t29,p3,p5)
+!      subroutine seclist4_85(ita,t1,t2,t10,t11,t12,t13,t14,t15,t16,    &
+!                             t17,t18,t19,t20,t21,t22,t23,t24,t25,t26,  &
+!                             t27,t28,t29,p3,p5)
+      subroutine wrt_grb2_accu(ita,t0,t1,t2,p3,t10,t11,t12,t24,t27,fld)
       !use cwbgfs_param
-      integer ita,t1,t2,t10,t11,t13,t14,t16,t17,t18,t19,t20,t21,   &
+      integer ita,t0,t1,t2,t10,t11,t13,t14,t16,t17,t18,t19,t20,t21,   &
                   t22,t23,t24,t25,t26,t27,t28,t29,p3,p5
       real t12,t15
+      real::fld(grbnxmy)
+      real*4::r4out(grbnxmy)
+      integer*8::idtg2
+      character:: cdtg*12
+      if( (ita-t27)  <  0 )return
+      ipdsnum=8  ! Product Definition Template Number (Code Table 4.0)
 ! Add data info. (section 4)
       ipdstmpl8(1)=t1   !Parameter category ( See Code Table 4.1 )
       ipdstmpl8(2)=t2   !Parameter number ( See Code Table 4.2 )
@@ -425,32 +434,44 @@ integer*4::grbid=134
       else
       ipdstmpl8(3)=2
       endif
-      ipdstmpl8(9)=ita !Forecast time in units defined by ipdstmpl(8)
+      ipdstmpl8(8 )=1 !Forecast time in units defined by ipdstmpl(8)
+      ipdstmpl8(9 )= ita-t27  !Forecast time in units defined by ipdstmpl(8)
       ipdstmpl8(10)=t10 !Type of first fixed surface(See Code Table 4.5)
       ipdstmpl8(11)=t11 !Scale factor of first fixed surface
       ipdstmpl8(12)=t12 !Scaled value of first fixed surface
-      ipdstmpl8(13)=t13
-      ipdstmpl8(14)=t14
-      ipdstmpl8(15)=t15
-      ipdstmpl8(16)=t16
-      ipdstmpl8(17)=t17
-      ipdstmpl8(18)=t18
-      ipdstmpl8(19)=t19
-      ipdstmpl8(20)=t20
-      ipdstmpl8(21)=t21
-      ipdstmpl8(22)=t22
-      ipdstmpl8(23)=t23
-      ipdstmpl8(24)=t24
-      ipdstmpl8(25)=t25
-      ipdstmpl8(26)=t26
-      ipdstmpl8(27)=t27
-      ipdstmpl8(28)=t28
-      ipdstmpl8(29)=t29
+      ipdstmpl8(13)=255!t13
+      ipdstmpl8(14)=0!t14
+      ipdstmpl8(15)=0!t15
+      call dtgfix12(grbidtg,idtg2 ,ita)
+      write(cdtg,'(i12.12)')idtg2
+      read(cdtg,'(i4,i2,i2,i2,i2)')ipdstmpl8(16:19)
+      !ipdstmpl8(16)=listsec1(6)!0 !t16 ! Year   | Time of end of overall time interval
+      !ipdstmpl8(17)=listsec1(7)!0 !t17 ! mon
+      !ipdstmpl8(18)=listsec1(8)!0 !t18 ! day
+      !ipdstmpl8(19)=0 !t19 ! hour
+      ipdstmpl8(20)=0 !t20 ! minute
+      ipdstmpl8(21)=0 !t21 ! Second | Time of end of overall time interval
+      ipdstmpl8(22)=1 !t22
+      ipdstmpl8(23)=0 !t23
+      ipdstmpl8(24)=t24 !t24  0 ave 1 accu
+      ipdstmpl8(25)=2 !t25 code 4.11
+      ipdstmpl8(26)=1 !t26 ! unit of time for time range. 1:hour, 2:day
+      ipdstmpl8(27)=t27  !
+      ipdstmpl8(28)=0  !t28 fcst,dt unit 0:minut 1:hour 2:day
+      ipdstmpl8(29)=0  !t29
 
 ! Add packing info. (section 5)
       idrstmpl40(3)=p3
       idrstmpl40(5)=p5 !Type of original field values(0:folat, 1:int.)
 
+      r4out(:)=fld(:)
+      call gribcreate(cgrib,lcgrib,listsec0,listsec1,ierr)
+      call addgrid(cgrib,lcgrib,igds,igdstmpl,igdstmplen,ideflist,idefnum,ierr)
+      call addfield(cgrib,lcgrib,ipdsnum,ipdstmpl8,ipdstmplen8,    &
+           coordlist,numcoord,idrsnum40,idrstmpl40,idrstmplen40, &
+           r4out,grbnxmy,ibmap,bmap,ierr)
+      call gribend(cgrib,lcgrib,lengrib,ierr)
+      call wryte(grbid,lengrib,cgrib)
       return
       !end
       end subroutine
@@ -516,17 +537,18 @@ integer*4::grbid=134
       return
       end subroutine
 !=======================================================================
-      subroutine opn_grb2(nx,my,idtg,itau)
+      subroutine opn_grb2(nx,my,idtg,itau) !,ierr)
       use grib_mod
-           integer::nx,my,itau
+           integer::nx,my,itau,ierr
            integer*8::idtg
            allocate(cgrib(lcgrib),bmap(nx*my))
            call baopenw(grbid,trim(grbfile),ierr)
            call latlong(nx,my)
            call seclist01(idtg,itau)
       end subroutine 
-      subroutine cls_grb2
+      subroutine cls_grb2 (ierr)
       use grib_mod
+        integer::ierr
         call baclose(grbid,ierr)
         deallocate(cgrib,bmap)
       end subroutine 

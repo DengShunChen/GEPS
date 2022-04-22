@@ -21,6 +21,7 @@
       use mod_outflds
       use radn, only : ntcw,ntiw,ntoz
       use mod_grb2_param  !for write grib2 data
+      use const ,only:out_pres_form
 
       implicit  none
 
@@ -93,6 +94,7 @@
 !
       logical :: lwrite,lwritesit
       integer*8 :: tst, ted, rate      !For CPU Timings
+      integer::istat
 !xb110>
 !      real      flash(nxp,my_max)         !flash density 
 !xb110<
@@ -132,17 +134,15 @@
       call whttau (itau,numout,outdir,ntau,taudir)
       if(ntau.eq.0) return
 
-      if(myrank==0)call system_clock(tst)
       !========================
 !hcw !open grb2 data 
 
+      if(myrank==0)call system_clock(tst)
       if(out_pres_form==2 .and. myrank==0)then
-      !if( lwrite .eqv. .true. )then
 133                   format( A     ,I12.12 ,A  ,I4.4 ,A     )
            write(grbfile,133 )'GFS_',idtg   ,'_',itau ,'.grb2'
            print*,'OutFileName= ',trim(grbfile)
            call opn_grb2(nx,my,idtg,itau)
-      !endif
        endif
 
 !
@@ -636,8 +636,6 @@
         endif
       endif
 
-!hcw  close grb2 file
-      if(out_pres_form==2.and.myrank==0)  call cls_grb2
 
 !
 !  wk_xy(-,-,1) : temperature at the lowest sigma level
@@ -735,6 +733,8 @@
 !xb110                 ,sld,wk_xy,soil_xy,canopy,ggdef,lwrite,flash)
                  ,sld,wk_xy,soil_xy,canopy,ggdef)
 
+!hcw  close grb2 file
+      if(out_pres_form==2.and.myrank==0)  call cls_grb2(istat)
       if(myrank==0)then
         call system_clock(ted,rate)
         print *, "In Outfld CPU Time: ",dble(ted-tst)/dble(rate)
