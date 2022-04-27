@@ -51,8 +51,6 @@
       use module_mp_wsm6,      only: wsm6
 ! for thompson
       use module_mp_thompson,  only: mp_gt_driver
-! for slavepp
-      use phygrid,             only: dtlsp
 
       implicit none
 
@@ -76,7 +74,7 @@
                 qti(nx,lev),qtsw(nx,lev),qtgl(nx,lev),ntnc(nx,lev,2),  &
                 refl10(nx,lev)
       real      rainncv(nx),snowncv(nx),graupelncv(nx)
-      real      icem,dttmp
+      real      icem
       logical   lradar
 !
 ! reset all value to zero
@@ -151,13 +149,7 @@
             qt(i,(ntiw-1)*lev+k) = qti(i,kc)
             qt(i,(ntsw-1)*lev+k) = qtsw(i,kc)
             qt(i,(ntgl-1)*lev+k) = qtgl(i,kc)
-            dttmp = ttc(i,kc)-tt(i,k)
-            if ( kdt .eq. 1 ) then
-              tt(i,k) = ttc(i,kc)
-            else
-              tt(i,k) = 0.5*( dttmp + dtlsp(i,k,jj) ) + tt(i,k)
-            endif
-            dtlsp(i,k,jj) = dttmp
+            tt(i,             k) = ttc(i,kc)
 
           enddo
         enddo

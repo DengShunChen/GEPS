@@ -4,7 +4,7 @@
       use index
       use mpe
       use rank
-      use const, only : hdk1,hdk2,radsq,hord
+      use const, only : hdk1,hdk2,radsq,hord,vd
       use param, only : octahedral,af
 
       implicit  none
@@ -96,7 +96,7 @@
             c3=1.+dta*fact*hfilt*eps4(n,m)**powd
 
             if ( KL .le. hdk1 ) then
-              c2=1.+dta*facd*hfilt2*eps4(n,m)+exp(-0.5*(k-1))
+              c2=1.+dta*facd*hfilt2*eps4(n,m)+vd*exp(-0.5*(k-1))
             else
               c2=1.+dta*facd*hfilt*eps4(n,m)**powd
             endif
@@ -286,7 +286,7 @@
       use index
       use mpe
       use rank
-      use const, only : hdk1,hdk2,radsq
+      use const, only : hdk1,hdk2,radsq,vd
       use param, only : octahedral,af,mwhd
 
       implicit  none
@@ -373,7 +373,7 @@
 !!            c2=1.+dta*facd*hfilt2*eps4(n,m)
 
             if ( KL .le. hdk1 ) then
-              c2=1.+dta*facd*hfilt2*eps4(n,m)+exp(-0.5*(k-1))
+              c2=1.+dta*facd*hfilt2*eps4(n,m)+vd*exp(-0.5*(k-1))
             else
               c2=1.+dta*facd*hfilt4*eps4(n,m)**2.
             endif

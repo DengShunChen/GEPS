@@ -97,6 +97,8 @@
       doshum=.false.
 ! update low boundary condition
       doclx=.false.
+! Semi-Lagrangian Averaging of Physical Parametrizations
+      doslavepp=.true.
 ! output data for RSM (Also, RSM compiling flag is necessary)
       outrsm=.false.
       rsmoutinv=6
@@ -185,6 +187,7 @@
 !  sponge layer 
       spl1=10.
       spl2=100.
+      vd=0.
       else if ( lev .eq. 72 ) then
 !
 ! L72 hybrid coordinate
@@ -231,8 +234,9 @@
            1.0000000 /)
       ptop=0.1
 !  sponge layer 
-      spl1=10.
-      spl2=100.
+      spl1=5.
+      spl2=50.
+      vd=0.1
       else if ( lev .eq. 128 ) then
 !
 ! L128 hybrid coordinate
@@ -309,6 +313,7 @@
 !  sponge layer 
       spl1=5.
       spl2=50.
+      vd=0.5
       endif
 !
 !      tmeans=300.
