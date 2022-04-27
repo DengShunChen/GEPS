@@ -74,7 +74,7 @@
                 qti(nx,lev),qtsw(nx,lev),qtgl(nx,lev),ntnc(nx,lev,2),  &
                 refl10(nx,lev)
       real      rainncv(nx),snowncv(nx),graupelncv(nx)
-      real      icem,dttmp
+      real      icem
       logical   lradar
 !
 ! reset all value to zero
