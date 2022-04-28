@@ -118,10 +118,10 @@ cp $NWPETC/ocards $GFSWRK/ocards
 cp $NWPETC/namlsts $GFSWRK/namlsts
 
 if [ $JCAP = 639  ] ; then
-  MODLST_RES='dt=225., tfilt=0.040, hfilt=1., cgw=4.2e-5,'
+  MODLST_RES='dt=450., hfilt=1., cgw=4.2e-5, cgwd=1.20, cmbk=1.00,'
   MODEL_BASIC='nco=640,'
 elif [ $JCAP = 383  ] ; then
-  MODLST_RES='dt=360., tfilt=0.050, hfilt=1., cgw=2.6e-5,'
+  MODLST_RES='dt=720., hfilt=1., cgw=2.6e-5, cgwd=1.60, cmbk=0.30,'
   MODEL_BASIC='nco=384,'
 fi
 
@@ -140,9 +140,9 @@ cat > ${GFSWRK}/namlsts << EOF
 
  &modlst
   taui=0.0, taue=120.0, tauo=1.0, taup=6.0, taureg=6.,
-  dt=225.0,
+  dt=450.0,
   cstar=f, update=t, lsimpl=t,
-  tfilt=0.04, hfilt=1.,
+  hfilt=1.,
   ksgeo=2, yesdia=t,
   dopbl=t, docup=t, dorad=t, dolsp=t, doshl=t, dodry=f, dograv=t, docgrav=t,
   donnmi=t, 
@@ -152,7 +152,7 @@ cat > ${GFSWRK}/namlsts << EOF
   hdiff=t, frad=1.0,
   ldiag=0,
   idg=40, jdg=108,
-  itypbl=0, numreduce=5, ptmeans=800., ptop=0.1,
+  itypbl=0, numreduce=5, ptmeans=800.,
   nmcup=6, nmpbl=4, nmland=2, nmshl=3,
   nmgwor=2, nmgwcv=2,
   ktcup=20, cgw=4.2e-5,
@@ -162,7 +162,7 @@ cat > ${GFSWRK}/namlsts << EOF
   domfc=384., out_green=t, otgreen=3., out_hp=f,
   ndsladvh2=f,
   isot=1, ivegsrc=1, cgwd=1.20, cmbk=1.00,
-  spl1=50.,
+  spl1=5., spl2=50., af=0.1,
   ${MODLST_RES}
  &end
 

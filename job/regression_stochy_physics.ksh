@@ -133,10 +133,10 @@ cp $NWPETC/ocards $GFSWRK/ocards
 cp $NWPETC/namlsts $GFSWRK/namlsts
 
 if [ $JCAP = 639  ] ; then
-  MODLST_RES='dt=450., hfilt=1., cgw=4.2e-5,'
+  MODLST_RES='dt=450., hfilt=1., cgw=4.2e-5, cgwd=1.20, cmbk=1.00,'
   MODEL_BASIC='nco=640,'
 elif [ $JCAP = 383  ] ; then
-  MODLST_RES='dt=720., hfilt=1, cgw=2.6e-5,'
+  MODLST_RES='dt=720., hfilt=1., cgw=2.6e-5, cgwd=1.60, cmbk=0.30,'
   MODEL_BASIC='nco=384,'
 fi
 
@@ -179,7 +179,7 @@ cat > ${GFSWRK}/namlsts << EOF
   domfc=384., out_green=t, otgreen=3., out_hp=false,
   ndsladvh2=false,
   isot=${STYP}, ivegsrc=${STYP}, cgwd=1.20, cmbk=1.00,
-  spl1=5., spl2=100., af=0.1,
+  spl1=5., spl2=50., af=0.1,
   ${MODLST_RES}
  &end
 
