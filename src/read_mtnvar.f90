@@ -26,7 +26,7 @@
  102  format('global_mtnvar.t',i3.3,'.',i4.4,'.',i3.3,'.f77')
  103  format('global_mtnvar.t',i3.3,'.',i3.3,'.',i3.3,'.f77')
 
-      open(22,file=rfile,form='unformatted',status='old' )
+      open(22,file=rfile,form='unformatted',status='old' ,convert='BIG_ENDIAN')
 !!      open(22,file=rfile,form='unformatted',status='old'         &
 !!          ,access='direct',recl=nrec )
 !

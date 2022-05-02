@@ -1,1 +1,1 @@
-regression_tcogfs_rsm.ksh
+regression_tcogfs.ksh

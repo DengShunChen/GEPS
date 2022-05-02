@@ -1,5 +1,5 @@
 #ifdef RSM
-      subroutine rsmout(idtg,itau,nx,my,my_max,lev,ncld            &
+    subroutine rsmout(idtg,itau,nx,my,my_max,lev,ncld            &
              , ptop,cp,rgas,grav,sgeo,pdiff                        &
              , t1000,pt,plt,pk,pk2,phi,ut,vt                       &
              , tt,qt,tg,snr,cosl                                   &
@@ -932,6 +932,5 @@
       deallocate (rsmoutp, stat=ierr)                                
       if (ierr/=0) stop "rsmout: deallocate fail rsmoutp"
 !      
-      return
-      end
+    end subroutine rsmout
 #endif

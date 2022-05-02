@@ -1,13 +1,15 @@
 #!/bin/ksh
 
+PJM_JOBID=${PJM_JOBID:-???}
+
 #-- enviornment
  user=`whoami`
- datamv='login11'
+ datamv='h6dm13'
  dmsdb_home=$(cat ~/.dmsrc |xargs | cut -d' ' -f 2)
- DMSPATH=/package/${machine}/dms/dms.v4/bin
+ DMSPATH=/package/${machine}/dms/bin
  GFSDIR=$MDIR
  GFSFIX=$MDIR/fix
- GFSWRK=${GFSDIR}/work_${machine}.$$
+ GFSWRK=${GFSDIR}/work.${PJM_JOBID}
  rm -rf $GFSWRK
  mkdir -p $GFSWRK
 
@@ -21,29 +23,33 @@
  fi
 
  dtg='18090800'
- fgdtg=$(/nwpr/gfs/xb80/bin/Caldtg.ksh ${dtg} -6)
+ fgdtg=$(/users/xb80/bin/Caldtg.ksh ${dtg} -6)
 
  idmshead='MASOPS'
  idmsbody=''
  idmstail=''
  idmsdb="TCo${JCAP}L72"
 
- odmshead="J$$_"
+ odmshead="J${PJM_JOBID}_"
  odmsbody=${dtg}
  odmstail="${DMSFLAG}MG"
  odmsdb=${idmsdb}
 
 #---------------------------------------------------------#
- idmsfile=${idmshead}${idmsbody}${idmstail}@${idmsdb}
- odmsfile=${odmshead}${odmsbody}${odmstail}@${odmsdb}
+  idmsfile=${idmshead}${idmsbody}${idmstail}@${idmsdb}
+  odmsfile=${odmshead}${odmsbody}${odmstail}@${odmsdb}
 
- ${DMSPATH}/rdmsdbcrt -p ufs $idmsdb
- ${DMSPATH}/rdmscrt $idmsfile
+  ${DMSPATH}/rdmsdbcrt -p ufs $idmsdb
+  ${DMSPATH}/rdmscrt $idmsfile
+  if [ $? -ne 0 ] ; then 
+    mkdir /users/xb80/data/dmsdb/$(echo ${idmsfile} | cut -d'@' -f2).ufs/$(echo ${idmsfile} | cut -d'@' -f1)
+  fi
 
   export LNCP='ln -fs'
 
   # maybe no need to change
-   export source="/data/common/gfs/dms_data/TCo${JCAP}L72_S2TY.ufs/T_exp20${dtg}"           # TCo IC data path
+  # export source="/users/xb80/data/dmsdb/TCo${JCAP}L72_S2TY.ufs/T_exp20${dtg}"           # TCo IC data path
+   export source="/users/xb80/data/dmsdb/ncep_ana.ufs/TCo${JCAP}l72_${dtg}"           # TCo IC data path
   #export source="/nwpr/gfs/xb126/data2/Tool/Nemsio2Dms_v2/OUTPUT/ncep_ana.ufs/TCo${JCAP}l72_${dtg}"           # TCo IC data path
 
   # link/copy DMS files
@@ -55,15 +61,18 @@
   echo ${LNCP} ${source}/*${fgdtg}* ${target}/${idmshead}${idmsbody}${idmstail}
        ${LNCP} ${source}/*${fgdtg}* ${target}/${idmshead}${idmsbody}${idmstail}
 
- ${DMSPATH}/rdmsdbcrt -p ufs bckdms
- ${DMSPATH}/rdmscrt BCK_TCo${JCAP}_${DMSFLAG}30S@bckdms
+# ${DMSPATH}/rdmsdbcrt -p ufs bckdms
+# ${DMSPATH}/rdmscrt BCK_TCo${JCAP}_${DMSFLAG}30S@bckdms
+# if [ $? -ne 0 ] ; then 
+#   mkdir -p /users/xb80/data/dmsdb/bckdms.ufs/BCK_TCo${JCAP}_${DMSFLAG}30S
+# fi
 
- export source="/data/common/gfs/dms_data/bckdms.ufs"
- export target="${dmsdb_home}/bckdms.ufs"
- 
- if [ ! -e ${target}/BCK_TCo${JCAP}_${DMSFLAG}30S ] ; then
-   ${LNCP} ${source}/BCK_TCo${JCAP}_${DMSFLAG}30S/* ${target}/BCK_TCo${JCAP}_${DMSFLAG}30S
- fi
+# export source="/users/xb80/data/common/gfs/dms_data/bckdms.ufs"
+# export target="${dmsdb_home}/bckdms.ufs"
+#
+# if [ ! -e ${target}/BCK_TCo${JCAP}_${DMSFLAG}30S ] ; then
+#   ${LNCP} ${source}/BCK_TCo${JCAP}_${DMSFLAG}30S/* ${target}/BCK_TCo${JCAP}_${DMSFLAG}30S
+# fi
 #----------------------------------------------------------------#
 
 
@@ -94,9 +103,14 @@ export FIXDIR=${GFSFIX}
 export ANADMS=${idmsfile}
 export FCSTDMS=${odmsfile}
 export BCKOPS=BCK_TCo${JCAP}_${DMSFLAG}30S@bckdms
+#export BCKOPS=BCK_TCo${JCAP}_${DMSFLAG}30S_xnew@bckdms
 
 ${DMSPATH}/rdmspurge -f FCSTDMS
 ${DMSPATH}/rdmscrt -l34 FCSTDMS
+# For fx1000 temp fix
+if [ $? -ne 0 ] ; then 
+  mkdir /users/xb80/data/dmsdb/$(echo ${odmsfile} | cut -d'@' -f2).ufs/$(echo ${odmsfile} | cut -d'@' -f1)
+fi
 
 export FLIB_CNTL_BARRIER_ERR=FALSE
 export O3FORC=${O3FORC:-${FIXDIR}/global_o3prdlos.f77}
@@ -184,8 +198,9 @@ cat > ${GFSWRK}/namlsts << EOF
 EOF
 
 
- FCT_MODEL=$MDIR/build/bin/tcogfs.x
-# FCT_MODEL=$MDIR/src/MTCo639L72_fx100
+ FCT_MODEL="$MDIR/build/bin/tcogfs.x "
+ #FCT_MODEL="$MDIR/src/MTCo639L72_fx1000 "
+ # Version not compatiable -->FCT_MODEL="/users/fjapl10/gfs/GFS/MNH/GJ_gfs/src_tco639l72/src/MTCo639L72_fx1000"
 
  /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} 
 

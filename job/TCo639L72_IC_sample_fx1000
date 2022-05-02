@@ -1,34 +1,40 @@
-#!/bin/ksh
-#PJM -L "node=48:noncont"
-#PJM -L rscgrp=research
-#PJM -L elapse=3:00:00
+#!/bin/bash
+#PJM -L "node=80:noncont"
+#PJM -L rscgrp=fujitsu
+#PJM -L elapse=2:00:00
 #PJM -L node-mem=unlimited
 #PJM --no-stging
-#PJM --mpi "proc=768"
+####PJM --mpi "proc=3840"
+#PJM --mpi proc=2560,max-proc-per-node=32
+#PJM --mpi rank-map-bynode
 #PJM -j
-#PJM -N JTCo383L72
+#PJM -N JTCo639L72
+#PJM -x PJM_CACHE_MODE=4
 
 set -x
 
 MDIR=$(cd ..; pwd)
 echo "MDIR=${MDIR}"
 
-machine=fx10
-JCAP=383
+machine=fx1000
+JCAP=639
 
-MPI=768
+#MPI=3840
+MPI=2560
 OMP=1
 
 if [ $JCAP = 639 ] ; then
-  NPEX=2
-  NPEY=384
+  NPEX=8
+  #NPEY=480
+  NPEY=320
 elif [ $JCAP = 383 ] ; then
   NPEX=4
-  NPEY=192
+  NPEY=240
 fi
 source /users/xa09/sample/setup_mpi+omp.${machine} $OMP
+
+#source /users/xb80/setup_mpi+omp.${machine} $OMP
 
 #==============================================================================================================#
 
 . ${MDIR}/job/regression.ksh
-#. ${MDIR}/job/regression_stochy_physics.ksh

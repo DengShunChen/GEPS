@@ -17,19 +17,17 @@
 # limitations under the License.
 #
 
-cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
-
-project(TCO LANGUAGES Fortran CXX C)
-
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+set(CMAKE_Fortran_COMPILER  mpifrtpx)
+set(CMAKE_CXX_COMPILER      mpiFCCpx)
+set(CMAKE_C_COMPILER        mpifccpx)
 
 ###########################################################################
 # Compiler Setting, TCO is built on top of MPI
 ###########################################################################
 
-set(CMAKE_Fortran_COMPILER  mpifrtpx)
-set(CMAKE_CXX_COMPILER      mpiFCCpx)
-set(CMAKE_C_COMPILER        mpifccpx)
+project(TCO LANGUAGES Fortran CXX C)
+cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 ###########################################################################
 # Build Options
@@ -95,6 +93,7 @@ message(STATUS "BUILD_TYPE : ${CMAKE_BUILD_TYPE}")
 ###########################################################################
 
 add_definitions(-DTIMING -DUSE_FFTW -DW3TAG)
+#add_definitions(-DTIMING -DUSE_FFTW -DW3TAG -DVERBOSE -DNO_OUT)
 if (${USE_RSM})
   add_definitions(-DRSM)
 endif()
@@ -104,9 +103,10 @@ endif()
 
 # Specific flags for Fortran only:
 ## Specfic flags for release build 
-set(CMAKE_Fortran_FLAGS_RELEASE "-Kfast,ocl,autoobjstack") 
+#set(CMAKE_Fortran_FLAGS_RELEASE "-Kfast,parallel,openmp,ocl,autoobjstack,simd=2 -Nquickdbg") 
+set(CMAKE_Fortran_FLAGS_RELEASE "-Kfast,ocl,autoobjstack,simd=2") 
 add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-X9 -Free -CcdRR8 -Cpp -x- -fw>")
-add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-Ec -Qa,d,i,p,t,x -Koptmsg=2 >")
+add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 >")
 add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-SSL2BLAMP >")
 if (${USE_OMP})
   add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-Kopenmp>")
@@ -118,7 +118,7 @@ endif()
 # Specific flags for C only:
 ## Specfic flags for release build 
 set(CMAKE_C_FLAGS_RELEASE "")
-add_compile_options("$<$<COMPILE_LANGUAGE:C>:SHELL:-Xg>")
+add_compile_options("$<$<COMPILE_LANGUAGE:C>:SHELL:-std=gnu99>")
 
 ###########################################################################
 # Include Directory (-I<path>)
@@ -143,7 +143,7 @@ set ( TCOGFS_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src
 find_package( DMS REQUIRED )
 
 # W3
-link_libraries($ENV{W3NCO_LIBd})
+link_libraries($ENV{W3LIB_LIB})
 
 # CWB operlib
 link_libraries($ENV{OPERLIB_LIB})
