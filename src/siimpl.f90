@@ -1,6 +1,6 @@
       subroutine siimpl( jtrun,jtmax,lev,dta,ptmean,dsigma,spalm,eps4    &
                 , eigval,evecin,evectr,arrhyd,arsddt,temold,divold,plold &
-                , temnow,divnow,plnow,temten,divten,plten )
+                , temnow,divnow,plnow,temten,divten,plten,alpha )
 !
 !
 !  computes corrections to explicit tendencies to convert model to a
@@ -62,7 +62,7 @@
 
       real wrk1(lev,2,jtp),wrk2(lev,2,jtp),wrk3(lev,2,jtp),&
            wrk4(lev,2,jtp),wrk5(lev,2,jtp),wrk6(lev,2,jtp)
-      alpha = 0.7
+!      alpha = 0.7
       dd = alpha*dta
       odd= 1.0/dd
       dd2= dd*dd

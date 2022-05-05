@@ -1,5 +1,5 @@
  &model_param
- nco=640,
+ nco=384,
  lev=72,
  ncld=3,
  octahedral=t,
@@ -15,11 +15,10 @@
  tauo=1.0,
  taup=6.0,
  taureg=6.,
- dt=300.0,
+ dt=720.0,
  cstar=f,
  update=t,
  lsimpl=t,
- tfilt=0.05,
  spl1=5.,
  spl2=100.,
  hfilt=1.,
@@ -37,6 +36,7 @@
  dosppt=f,
  dospptout=f,
  doclx=f,
+ doslavepp=t,
  cutfreq=3,
  nnmivm=3,
  doincr=f,
@@ -48,7 +48,6 @@
  itypbl=0,
  numreduce=8,
  ptmeans=800.,
- ptop=0.1,
  nmcup=6,
  nmpbl=4,
  nmland=2,
@@ -71,8 +70,9 @@
  ndsladvh2=f,
  isot=1,
  ivegsrc=1,
- cgwd=1.20,
- cmbk=1.00,
+ cgwd=1.60,
+ cmbk=0.30,
+ af=0.1,
  &end
 
  &typ

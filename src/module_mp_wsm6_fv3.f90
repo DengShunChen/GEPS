@@ -1531,7 +1531,7 @@ CONTAINS
          lamdagmax = 2.e4
       ELSE !Graupel!
          n0g       = 4.e6
-         deng      = 500
+         deng      = 500.
          avtg      = 330.0
          bvtg      = 0.8
          lamdagmax = 6.e4

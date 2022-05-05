@@ -1,7 +1,7 @@
       subroutine pbl_noah (nxj,nx,lev,ktpbl,dt,g,r,cp,xkapa,hltm,ptop   &
                         , tice,hice,tg,z0,land,topo,phi,pss,u,v,t,q,ut  &
                         , vt,tt,qt,pk,pk2,ustar,tstar,qstar,e,eps,hflux &
-                        , qflux,fwd,gwclim,tgclim,ocean,ice,sheleg      &
+                        , qflux,itstp,gwclim,tgclim,ocean,ice,sheleg    &
                         , totalp,ss,rs,alb,imx,xkmx,idg,xkmd,itype      &
                         , t2,q2,rh2,rh10,u10,v10,fm,fh,fm10,fh2,srflag  &
                         , rld,stbo                                      &
@@ -9,7 +9,8 @@
                         , ncld,dsigma,islopetyp,slc,sncover,snwdph       &
                         , shdmax,shdmin,snoalb,albedo2                  &
                         , sld,zice,cice,xtice,hpbl,asl,atl,xmu,gfx      &
-                        , kpbl,nmpbl,nmmiph,jj,isot,ivegsrc,sfemis_g )
+                        , kpbl,nmpbl,nmmiph,jj,isot,ivegsrc,sfemis_g    &
+                        , dudt,dvdt,dtdt )
 !
 !#######################################################################
 !                     subroutine description
@@ -59,7 +60,7 @@
 !    eps : tke dissipation           (nx,lev)                  (m2/s2)
 !   hflux: upward surface heat flux         (nx)               (w/m2)
 !   qflux: upward surface moisture flux     (nx)               (w/m2)
-!     fwd: logical variable; .true. for forward, .false. for leapfrog
+!   itstp: indicated which time step it is
 !    gwr : soil water amount           (nx)                    (mm)
 !  gwclim: soil water climate          (nx)                    (mm)
 !  tgclim: climate ground temperature  (nx)                    (k)
@@ -165,7 +166,7 @@
       integer  nxj,nx,lev,ktpbl,jj,itype,idg,ncld,km,nmpbl,nmmiph,nc
       real     dt,g,r,cp,xkapa,hltm,ptop,stbo,hice,tice
 
-      integer  imx(2)
+      integer  imx(2),itstp
 
       real     tg(nx),z0(nx),topo(nx),pss(nx),                             &
                phi(nx,lev),u(nx,lev),v(nx,lev),t(nx,lev),q(nx,lev*ncld),   &
@@ -181,14 +182,14 @@
 
       integer  istyp(nx),ivegtyp(nx)
 !
-      logical fwd,land(nx),ocean(nx),ice(nx)
+      logical  land(nx),ocean(nx),ice(nx)
 !
 !  local work arrays
 !
 !ch   real     hgt(im,lm),xkm(im,lm),xkh(im,lm),ts(im),                    &
 !ch            qsfc(im),zl(im),czh(im),ps(im),sfcw(im),                    &
 !ch            dhgt(im,lm),ro2(im,lm),dhgtz(im,lm)
-      real     hgt(nx,lev),xkm(nx,lev),xkh(nx,lev),ts(nx),                    &
+      real     hgt(nx),xkm(nx,lev),xkh(nx,lev),ts(nx),                     &
                qsfc(nx),zl(nx),czh(nx),ps(nx),sfcw(nx),                    &
                dhgt,ro2(nx),dhgtz(nx,lev)
 !soil
@@ -248,6 +249,10 @@
 ! for new pbl: asl,atl,xmu
       real      asl(nx,lev),atl(nx,lev),swh(nx,lev),hlw(nx,lev),xmu(nx)
 
+!----------------------------------------------------
+! for fractional step:
+      real      dudt(nx,lev),dvdt(nx,lev),dtdt(nx,lev) 
+
       integer  lsm,i,k,iter,kc,ntrac
       real     ppd,ppp,ttt,ppu,dth,p850,ddd,cc,qqq
 !
@@ -293,10 +298,12 @@
       call vexp(pkx(1,k), pkx(1,k), nxj)
       enddo
 !
-      do 100 k = 1, lev
+!      do 100 k = 1, lev
       do 100 i = 1, nxj
-      hgt(i,k) = (phi(i,k) - topo(i) ) / g
+!      hgt(i,k) = (phi(i,k) - topo(i) ) / g
+       hgt(i) = (phi(i,lev) - topo(i) ) / g
   100 continue
+
 !
       do 105 i = 1, nxj
       ppd = pk2x(i,1) * 1000.
@@ -342,7 +349,6 @@
 !
 !
       dth = dt
-      if (.not. fwd) dth = dt*0.5
 !
 !                                                                      c
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -360,7 +366,7 @@
         if(land(i))islmsk(i) =1
         if(ice(i))islmsk(i)  =2
 ! build roughness from ustar over ocean for input
-        if(fwd.and.ocean(i))z0(i)=ustar(i)*ustar(i)*0.014/g ! get z0 from ustar
+        if(itstp.eq.1 .and. ocean(i))z0(i)=ustar(i)*ustar(i)*0.014/g ! get z0 from ustar
 !
         prslki(i)            =pk2(i,lev)/pk(i,lev)   !(ps/p1)**r/cp
 !     sfemis   - real, sfc lw emissivity (fractional)
@@ -460,7 +466,7 @@
 !                    ustar,sfcw,phy_f2d,fm10,fh2,                        &
 !                    sigmaf,ivegtyp,shdmax,                              &
 !                    tsurf,flag_iter)
-                    hgt(1,lev),snwdph,tg,z0rl,cd,cdq,rb,                &
+                    hgt,snwdph,tg,z0rl,cd,cdq,rb,                       &
                     prsl1,prslki,islmsk,                                &
                     stress,fm,fh,                                       &
                     ustar,sfcw,ddvel,fm10,fh2,fh10,                   &
@@ -514,7 +520,7 @@
 !                     tsurf, flag_iter, flag_guess,albedo2,jj,io,jo)
       call sfc_drv(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev),   &
                      istyp,ivegtyp,sigmaf,sfemis,rld,sld,ss,dth,tgclim,     &
-                     cd,cdq,prsl1,prslki,hgt(1,lev),islmsk,ddvel,islopetyp, &
+                     cd,cdq,prsl1,prslki,hgt,islmsk,ddvel,islopetyp,        &
                      shdmin,shdmax,snoalb,alb,flag_iter,flag_guess,         &
                      isot,ivegsrc,                                          &
                      sheleg,snwdph,tg,tprcp,srflag,                         &
@@ -772,9 +778,14 @@
 !jh       do k=ktpbl,lev
           kc=lev-k+1
           do i=1,nxj
-            tt(i,k) = t1(i,kc)
-            ut(i,k) = u1(i,kc)
-            vt(i,k) = v1(i,kc)
+! time split
+!            tt(i,k) = t1(i,kc)
+!            ut(i,k) = u1(i,kc)
+!            vt(i,k) = v1(i,kc)
+! no time split
+            dtdt(i,kc) = (t1(i,kc)-tt(i,k))/dt
+            dudt(i,kc) = (u1(i,kc)-ut(i,k))/dt
+            dvdt(i,kc) = (v1(i,kc)-vt(i,k))/dt
           enddo
        enddo
 !

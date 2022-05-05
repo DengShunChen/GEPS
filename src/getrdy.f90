@@ -41,7 +41,7 @@
                                ,lsftobswt
       use mod_eos_ocean,     only: tmelts,api
       use mod_sst,           only:read_woa0,read_godas,read_dailygodas &
-                                ,read_dailyFCT,obswtbp,obswtbt         &
+                                ,read_dailyFCT                         &
                                 ,ifilin_ocaf,read_ocaf,read_ocaf0      &
                                 ,wtfn12,wsfn12,time_weights,mask1st
       USE mo_netcdf,         ONLY:lkvl,set_ocndepth
@@ -716,7 +716,7 @@
 !ch     call transr1(jtrun,jtmax,nx,my,my_max,poly,spgeo,sgeo,nsize)
 !ch     call mpe_unify_1(ww1,sgeo,nx,my,2,mpe_double)
 
-        call mpe2d_unify_nx(ww3,sgeo) !2dMPI
+        call mpe2d_unify_nx(ww3,sgeo)
         call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww3,spgeo,nsizey)
         call transr1(jtrun,jtmax,nx,my,my_max,poly,spgeo,sgeo,nsizey)
         call mpe2d_unify(ww1,sgeo)

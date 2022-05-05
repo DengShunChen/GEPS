@@ -31,6 +31,8 @@
 !     integer, parameter :: ncld=2
       integer  ncld
       common/comparam2/ncld
+!
+      real     af,alpha,mwhd
 
 !
 ! for nmccup

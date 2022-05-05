@@ -16,12 +16,13 @@
 !byl      real,dimension(:,:,:,:),allocatable,save :: vornow,divnow,temnow,qnow,             &
 !byl                                                  vorold,divold,temold,qold,trefs,       &
       real,dimension(:,:,:,:),allocatable,save :: vornow,divnow,temnow,                  &
+                                                  vormid,divmid,temmid,                  &
                                                   vorold,divold,temold,trefs,            &
                                                   vorten,divten,temten,hldten
 !!                                                vorten,divten,temten,qten,hldten
 
 !byl      real,dimension(:,:,:),  allocatable,save :: plnow,plold,dsqgeo,spgeo,plten
-      real,dimension(:,:,:),  allocatable,save :: plnow,plold,plten,spgeo
+      real,dimension(:,:,:),  allocatable,save :: plnow,plmid,plold,plten,spgeo
 
       real,dimension(:,:),  allocatable,save :: plnowL,ploldL,pltenL   !  for 2dMPI, allocated in cons.f90
 
@@ -36,12 +37,15 @@
                      temnow(levp,2,jtrun,jtmax),temold(levp     ,2,jtrun,jtmax), &
 !byl                     qnow(levp*ncld,2,jtrun,jtmax),qold(levp*ncld,2,jtrun,jtmax),& 
                      vorold(levp,2,jtrun,jtmax),divold(levp,     2,jtrun,jtmax), &
+                     vormid(levp,2,jtrun,jtmax),divmid(levp,     2,jtrun,jtmax), &
+                     temmid(levp,2,jtrun,jtmax),                                 &
                       trefs(levp,2,jtrun,jtmax),                                 &
                      vorten(levp,2,jtrun,jtmax),divten(levp,     2,jtrun,jtmax), &
 !!                   temten(levp,2,jtrun,jtmax),  qten(levp*ncld,2,jtrun,jtmax), &
                      temten(levp,2,jtrun,jtmax),                                 &
                      hldten(levp,2,jtrun,jtmax),                                 &
                       plnow(jtrun,jtmax,2),     plold(jtrun,jtmax,2),            &
+                     plmid(jtrun,jtmax,2),                                       &
 !byl                     dsqgeo(jtrun,jtmax,2),     spgeo(jtrun,jtmax,2),            &
                      spgeo(jtrun,jtmax,2),                                       &
                      plten(jtrun,jtmax,2), stat=ierr)
@@ -62,6 +66,9 @@
            vornow=0.
            divnow=0.
            temnow=0.
+           vormid=0.
+           divmid=0.
+           temmid=0.
 !byl           qnow=0.
            vorold=0.
            divold=0.
@@ -95,11 +102,12 @@
 !byl           deallocate (vornow,divnow,temnow,qnow,             &
 !byl                       vorold,divold,temold,qold,trefs,       &
            deallocate (vornow,divnow,temnow,                  &
+                       vormid,divmid,temmid,                  &
                        vorold,divold,temold,trefs,            &
                        vorten,divten,temten,hldten,           &
 !!                     vorten,divten,temten,qten,hldten,      &
 !byl                       plnow,plold,dsqgeo,spgeo,plten)
-                       plnow,plold,plten,spgeo)
+                       plnow,plmid,plold,plten,spgeo)
 
 !!           deallocate (uzm)
            deallocate (jtwv,jtwvp)

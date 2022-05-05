@@ -105,7 +105,7 @@ endif()
 ## Specfic flags for release build 
 #set(CMAKE_Fortran_FLAGS_RELEASE "-Kfast,parallel,openmp,ocl,autoobjstack,simd=2 -Nquickdbg") 
 set(CMAKE_Fortran_FLAGS_RELEASE "-Kfast,ocl,autoobjstack,simd=2") 
-add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-X9 -Free -CcdRR8 -Cpp -x- -fw>")
+add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-X9 -Free -CcdRR8 -Cpp -Cfpp -x- -fw -Knofp_relaxed>")
 add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 >")
 add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:SHELL:-SSL2BLAMP >")
 if (${USE_OMP})
@@ -118,7 +118,7 @@ endif()
 # Specific flags for C only:
 ## Specfic flags for release build 
 set(CMAKE_C_FLAGS_RELEASE "")
-add_compile_options("$<$<COMPILE_LANGUAGE:C>:SHELL:-std=gnu99>")
+add_compile_options("$<$<COMPILE_LANGUAGE:C>:SHELL:-Xg>")
 
 ###########################################################################
 # Include Directory (-I<path>)

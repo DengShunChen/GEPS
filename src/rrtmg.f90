@@ -153,11 +153,11 @@
          prslk(i,kc)=(plt(i,k)/1000.)**xkapa
          tgrs(i,kc)=tt(i,k)
          qgrs(i,kc)=qt(i,k)
-         vvl(i,kc)=sd(i,k)*0.1                !cb/sec
+         vvl(i,k)=sd(i,k)*0.1                !cb/sec
       enddo
       enddo
 
-      do n = 1, ntrac-1
+      do n = 1, ntrac
       do k = 1, lev
          kc=lev-k+1
       do i = 1, nxj
@@ -169,19 +169,20 @@
 !     if (myrank .eq. 0) print *,'tracer(1,60,1)=',tracer(1,60,1) 
 !     if (myrank .eq. 0) print *,'tracer(1,60,2)=',tracer(1,60,2) 
 
-      do k = 1, lev
-         kc=lev-k+1
-      do i = 1, nxj
-         tracer(i,kc,ntoz) = o3l(i,k)
-      enddo
-      enddo
+!      do k = 1, lev
+!         kc=lev-k+1
+!      do i = 1, nxj
+!         tracer(i,kc,ntoz) = o3l(i,k)
+!      enddo
+!      enddo
 
       do k=1,8
          fac_o3=k*0.1
          if(fac_o3 .le. 0.3) fac_o3=0.3
          kc=lev-k+1
       do i = 1, nxj
-       tracer(i,kc,ntoz) = o3l(i,k)*fac_o3
+!       tracer(i,kc,ntoz) = o3l(i,k)*fac_o3
+       tracer(i,kc,ntoz) = tracer(i,kc,ntoz)*fac_o3
       end do
       end do
       if ( nmmiph.eq.6 .or. nmmiph.eq.8 ) then

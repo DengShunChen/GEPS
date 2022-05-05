@@ -35,7 +35,7 @@
  
     real ::                                                &
          capa,cp,rad,radsq,grav,omega,rgas,stbo,s0,hltm,   &
-         ptop,ptmean,tfilt,dt,tau,taui,taue,tauo,          &
+         ptop,ptmean,dt,tau,taui,taue,tauo,                &
          hours,frad,evaprh,qgini,                          &
          tice,hice,cutfreq,taup,hfilt,ptmeans,             &
          taureg,cgw,domfc,otgreen,cgwd,cmbk,spl1,spl2
@@ -49,7 +49,7 @@
  
     common/constR/                                         &
          capa,cp,rad,radsq,grav,omega,rgas,stbo,s0,hltm,   &
-         ptop,ptmean,tfilt,dt,tau,taui,taue,tauo,          &
+         ptop,ptmean,dt,tau,taui,taue,tauo,                &
          hours,frad,evaprh,qgini,                          &
          tice,hice,cutfreq,taup,hfilt,ptmeans,             &
          taureg,cgw,fsit,domfc,otgreen,spl1,spl2,           &
@@ -57,12 +57,13 @@
     logical :: lsimpl,lzadv, yesdia,dopbl, docup, dorad,      &
             dolsp, dograv,doshl, dodry, donnmi,ozon,       &
             restrt,hdiff, cstar, update,doincr,hybrid,     &
-            doo3l, docgrav,doclx
+            doo3l, docgrav, doclx, doslavepp
 
     ! for stochastic physics
     logical :: dosppt       =.false.
     logical :: dospptout    =.false.
     logical :: doshum       =.false.
+    logical :: dossst       =.false.
     logical :: use_zmtnblck =.false.
          
     logical :: out_green,out_hp
@@ -77,7 +78,8 @@
     real    :: rlon1, rlon2, rlat1, rlat2, rgrdsz
 
     !for horizontal diffusion
-    integer :: hdk1,hdk2
+    integer :: hdk1,hdk2(3),hord
+    real    :: vd
 
     !for pdf cloud
     logical :: pdfcloud

@@ -37,7 +37,15 @@ if [ "${MACHINE}" == 'fx1000' ] ; then
    exit
   fi
 fi
-#set -x
+if [ "${MACHINE}" == 'fx1000' ] ; then
+  [[ $HOSTNAME =~ h6ln?? ]] && known='True' || known='False'
+  if [ "${known}" == 'False' ] ; then
+   echo "Fatal Error : Build ${MACHINE} executable, please move to login12/13/15/16/17/18/19 for inside HPC, login23 for outside HPC !"
+   exit
+  fi
+fi
+
+set -x
 
 # load libs
 export MDIR=$(pwd)

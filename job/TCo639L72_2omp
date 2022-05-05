@@ -14,8 +14,10 @@ set -x
 MDIR=$(cd ..; pwd)
 echo "MDIR=${MDIR}"
 
-machine=fx1000
-JCAP=639
+machine=fx10
+# TERR=GTOPO30
+TERR=GMTED30
+JCAP=383
 
 MPI=1920
 OMP=2

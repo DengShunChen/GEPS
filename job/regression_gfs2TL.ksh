@@ -2,7 +2,7 @@
 
 #-- enviornment
  user=`whoami`
- datamv='login11'
+# datamv='login11'
  dmsdb_home=$(cat ~/.dmsrc |xargs | cut -d' ' -f 2)
  DMSPATH=/package/${machine}/dms/dms.v4/bin
  GFSDIR=$MDIR
@@ -10,17 +10,6 @@
  GFSWRK=${GFSDIR}/work_${machine}
  rm -rf $GFSWRK
  mkdir -p $GFSWRK
-
-#-- terrain data
- TERR=${TERR:-GMTED30}
-
- if [ $TERR = GTOPO30  ] ; then
-   TER='30S'
-   STYP=1
- elif [ $TERR = GMTED30  ] ; then
-   TER='30S_xnew'
-   STYP=2
- fi
 
 #-- dms data
  JCAP=${JCAP:-639}
@@ -32,7 +21,7 @@
  fi
 
  dtg='18090800'
- fgdtg=$(/nwpr/gfs/xb80/bin/Caldtg.ksh ${dtg} -6)
+ fgdtg=$(/users/xb80/bin/Caldtg.ksh ${dtg} -6)
 
  idmshead='MASOPS'
  idmsbody=''
@@ -57,8 +46,7 @@
   export LNCP='ln -fs'
 
   # maybe no need to change
-#  export source="/data/common/gfs/dms_data/TCo639L72_S2TY.ufs/T_exp20${dtg}"           # TCo IC data path
-  export source="/nwpr/gfs/xb126/data2/Tool/Nemsio2Dms_v2/OUTPUT/ncep_ana.ufs/TCo${JCAP}l72_${dtg}"           # TCo IC data path
+  export source="/data/common/gfs/dms_data/TCo${JCAP}L72_ncep.ufs/TCo${JCAP}l72_${dtg}"           # TCo IC data path
 
   # link/copy DMS files
   export target="${dmsdb_home}/${idmsdb}.ufs"
@@ -71,13 +59,12 @@
 
  ${DMSPATH}/rdmsdbcrt -p ufs bckdms
 
-
  export source="/data/common/gfs/dms_data/bckdms.ufs"
  export target="${dmsdb_home}/bckdms.ufs"
  
- if [ ! -e ${target}/BCK_TCo${JCAP}_${DMSFLAG}${TER} ] ; then
-   ${DMSPATH}/rdmscrt BCK_TCo${JCAP}_${DMSFLAG}${TER}@bckdms
-   ${LNCP} ${source}/BCK_TCo${JCAP}_${DMSFLAG}${TER}/* ${target}/BCK_TCo${JCAP}_${DMSFLAG}${TER}
+ if [ ! -e ${target}/BCK_TCo${JCAP}_${DMSFLAG}30S ] ; then
+   ${DMSPATH}/rdmscrt BCK_TCo${JCAP}_${DMSFLAG}30S@bckdms
+   ${LNCP} ${source}/BCK_TCo${JCAP}_${DMSFLAG}30S/* ${target}/BCK_TCo${JCAP}_${DMSFLAG}30S
  fi
 #----------------------------------------------------------------#
 
@@ -103,12 +90,12 @@ EOF
 export GFSDIR DMSPATH
 export NWPETC=${GFSDIR}/etc
 export NWPETCGLB=${GFSWRK}
-export GLB_TYPHINI="/nwp/npcagfs/TYP/M00/dtg/ty"
+export GLB_TYPHINI="/nwpr/gfs/a361/MODEL/typhoon"
 export FIXDIR=${GFSFIX}
 
 export ANADMS=${idmsfile}
 export FCSTDMS=${odmsfile}
-export BCKOPS=BCK_TCo${JCAP}_${DMSFLAG}${TER}@bckdms
+export BCKOPS=BCK_TCo${JCAP}_${DMSFLAG}30S@bckdms
 
 ${DMSPATH}/rdmspurge -f FCSTDMS
 ${DMSPATH}/rdmscrt -l34 FCSTDMS
@@ -162,7 +149,7 @@ cat > ${GFSWRK}/namlsts << EOF
   dopbl=t, docup=t, dorad=t, dolsp=t, doshl=t, dodry=f, 
   dograv=true, docgrav=true,
   donnmi=true, 
-  dosppt=true, dospptout=false, 
+  dosppt=false, dospptout=false, 
   doshum=false,
   cutfreq=3, nnmivm=3,
   doincr=f,
@@ -170,15 +157,15 @@ cat > ${GFSWRK}/namlsts << EOF
   idg=40, jdg=108,
   itypbl=0, numreduce=5, ptmeans=800.,
   irad=2, nmland=2,
-  nmcup=6, nmshl=3, nmpbl=4,
-  nmgwor=2, nmgwcv=2, nmmiph=2,
+  nmcup=6, nmshl=3, nmpbl=4, nmmiph=2,  
+  nmgwor=2, nmgwcv=2,
   ktcup=20, cgw=4.2e-5,
   mtnvar=14, doo3l=t,
   ioutsigr=1,
   ggdef='${DMSFLAG}0G', gmdef='${DMSFLAG}MG',
   domfc=384., out_green=t, otgreen=3., out_hp=false,
   ndsladvh2=false,
-  isot=${STYP}, ivegsrc=${STYP}, cgwd=1.20, cmbk=1.00,
+  isot=1, ivegsrc=1, cgwd=1.20, cmbk=1.00,
   spl1=5., spl2=50., af=0.1,
   ${MODLST_RES}
  &end
@@ -217,7 +204,7 @@ EOF
 
 
  FCT_MODEL=$MDIR/src/$EXEC
- /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} 
+ /usr/bin/time -p mpiexec -n $MPI ${FCT_MODEL} -Wl,-T
 
  if [ $? != 0 ] ; then
   echo "error occured: fct model fail !!"
