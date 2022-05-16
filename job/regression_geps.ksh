@@ -257,7 +257,7 @@ cat > ${GFSWRK}/namlsts << EOF
   lev=72,
   ncld=3,
   octahedral=true,
-  nout=9000,
+  nout=25000,
   io_quilting=false,
   npex=${NPEX},
   npey=${NPEY},
@@ -291,7 +291,7 @@ cat > ${GFSWRK}/namlsts << EOF
   ndsladvh2=false,
   isot=1, ivegsrc=1, cgwd=1.20, cmbk=1.00,
   spl1=5., spl2=50., af=0.1,
-  OutR4key=f,
+  out_pres_form=1, OutR4key=f,
   ${MODLST_RES}
   ${MODLST_SIT}
  &end

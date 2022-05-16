@@ -30,8 +30,8 @@
 !
 !======open grib2 file
       if(out_pres_form==2 .and. myrank==0)then
-133                   format( A     ,I12.12 ,A  ,I4.4 ,A     )
-           write(grbfile,133 )'GFS_',idtg   ,'_',itau ,'_dm.grb2'
+133                   format( A     ,I10.10 ,A  ,I4.4 ,A     )
+           write(grbfile,133 )'GFS_',idtg/100   ,'_',itau ,'_dm.grb2'
            print*,'OutFileName= ',trim(grbfile)
            call opn_grb2(nx,my,idtg,itau)
        endif
@@ -109,6 +109,23 @@
         call wrt_grb2_accu(itau,0,5,0,2,1,0,0.,0,24,glob)
       endif
 !
+!  Total precipitation  24-hours
+      do jj=1,jlistnum
+         j=jlist1(jj)
+         nxj=nxdef_2d(j)
+         do i=1,nxj
+          wrk(i,jj)=rain24(i,jj)
+         enddo
+      enddo
+      call unify_reduceintp(nx,my,my_max,wrk,glob)
+!byl      call mpe_unify(glob,nx,my,2,mpe_double)
+      call syslbl ('b00626',idtg,itau,ggdef,ihdg)
+!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+      if(out_pres_form==1)then
+        call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      elseif(out_pres_form==2.and.myrank==0)then
+        call wrt_grb2_accu(itau,0,1,8,2,1,0,0.,1,24,glob)
+      endif
 
 !  The average of latent heat flux release for total precipitation within 24-hours
       do jj=1,jlistnum
@@ -125,10 +142,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
       if(out_pres_form==1)then
         call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
-      elseif(out_pres_form==2.and.myrank==0)then
-        glob=glob*0.03456
-        call wrt_grb2_accu(itau,0,1,8,2,1,0,0.,1,24,glob)
       endif
+
 !
 
 ! model top of net solor shortwave radiation

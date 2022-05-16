@@ -94,52 +94,9 @@
       label(n) = labx
       enddo
 !
-      do 30 kk=1,num
-!lentent heat flux at the surface
-      if(label(kk).eq.'s00430') then
-      call unify_reduceintp(nx,my,my_max,qflux,glob)
-!byl      call mpe2d_unify(glob,qflux)
-      call syslbl ('s00430',idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,0,10,2,1,0,0.,glob)
-      endif
-      go to 30
-      endif
-!sensible heat flux at the surface
-      if(label(kk).eq.'s00420') then
-      call unify_reduceintp(nx,my,my_max,hflux,glob)
-!byl      call mpe2d_unify(glob,hflux)
-      call syslbl ('s00420',idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,0,11,2,1,0,0.,glob)
-      endif
-      go to 30
-      endif
-!land suface tempaerature or sea surface temperature
-      if(label(kk).eq.'s00100') then
-      call unify_reduceintp(nx,my,my_max,tg,glob)
-!byl      call mpe2d_unify(glob,tg)
-      call syslbl ('s00100',idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,0,0,2,1,0,0.,glob)
-      endif
-      go to 30
-      endif
+      do 30 kk=1,num   ! ---  start  ---
+
+
 !surface albedo  0 - 1.0
       if(label(kk).eq.'s00030') then
       call unify_reduceintp(nx,my,my_max,alb,glob)
@@ -151,61 +108,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,19,1,2,1,0,0.,glob)
-      endif
-      go to 30
-      endif
-!ground wetness 0 - 1.0
-      if(label(kk).eq.'s005a0') then
-!byl      call mpe2d_unify(glob,gwet)
-!byl      do 36 j=1,my
-      do 36 jj=1,jlistnum
-!byl       nxj=nxdef(j)
-         j=jlist1(jj)
-       nxj=nxdef_2d(j)
-      do 36 i=1,nxj
-!byl        glob(i,j)=glob(i,j)/20.
-        globp(i,jj)=gwet(i,jj)/20.
- 36   continue
-      call unify_reduceintp(nx,my,my_max,globp,glob)
-      call syslbl ('s005a0',idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,0,21,2,1,0,0.,glob)
-      endif
-      go to 30
-      endif
-!soil moisture content (mm)
-      if(label(kk).eq.'s005a1') then
-      call unify_reduceintp(nx,my,my_max,gwet,glob)
-!byl      call mpe2d_unify(glob,gwet)
-      call syslbl ('s005a1',idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,0,3,2,1,0,0.,glob)
-      endif
-      go to 30
-      endif
-!snow depth of water state at the surface (mm)
-      if(label(kk).eq.'b00650') then
-      call unify_reduceintp(nx,my,my_max,snr,glob)
-!byl      call mpe2d_unify(glob,snr)
-      call syslbl ('b00650',idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,1,60,2,103,0,0.,glob)
+        call wrt_grb2(itau,0,19,1,3,1,0,0.,glob)
       endif
       go to 30
       endif
@@ -225,6 +128,7 @@
       go to 30
       endif
 
+!   ---------- Precipitation ----------
 !
       if(label(kk).eq.'b00620')then
 !
@@ -293,6 +197,37 @@
       endif
       go to 30
       endif
+!snow depth of water state at the surface (mm)
+      if(label(kk).eq.'b00650') then
+      call unify_reduceintp(nx,my,my_max,snr,glob)
+!byl      call mpe2d_unify(glob,snr)
+      call syslbl ('b00650',idtg,itau,ggdef,ihdg)
+!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      if(out_pres_form==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(out_pres_form==2.and.myrank==0)then
+        call wrt_grb2(itau,0,1,60,2,103,0,0.,glob)
+      endif
+      go to 30
+      endif
+!atmosphere column precipitable water (mm)
+      if(label(kk).eq.'x00590') then
+      call unify_reduceintp(nx,my,my_max,wk_xy(1,1,4),glob)
+!byl      call mpe2d_unify(glob,wk_xy(1,1,4))
+      call syslbl ('x00590',idtg,itau,ggdef,ihdg)
+!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      if(out_pres_form==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(out_pres_form==2.and.myrank==0)then
+        call wrt_grb2(itau,0,1,3,2,7,0,0.,glob)
+      endif
+      go to 30
+      endif
+!   ---------- short wave Radiation ----------
 !net shortwave solar flux at the surface
       if(label(kk).eq.'s00310') then
       call unify_reduceintp(nx,my,my_max,ss,glob)
@@ -305,21 +240,6 @@
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
         call wrt_grb2(itau,0,4,0,2,1,0,0.,glob)
-      endif
-      go to 30
-      endif
-!net longwave infrared flux at the surface
-      if(label(kk).eq.'s00320') then
-      call unify_reduceintp(nx,my,my_max,rs,glob)
-!byl      call mpe2d_unify(glob,rs)
-      call syslbl ('s00320',idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,5,0,2,1,0,0.,glob)
       endif
       go to 30
       endif
@@ -345,22 +265,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,4,2,2,1,0,0.,glob)
-      endif
-      go to 30
-      endif
-!downward longwave radiation at the surface
-      if(label(kk).eq.'s003x0') then
-      call unify_reduceintp(nx,my,my_max,rld,glob)
-!byl      call mpe2d_unify(glob,rld)
-      call syslbl ('s003x0',idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,5,3,2,1,0,0.,glob)
+        call wrt_grb2(itau,0,4,9,2,1,0,0.,glob)
       endif
       go to 30
       endif
@@ -394,6 +299,37 @@
       endif
       go to 30
       endif
+!   ---------- long wave Radiation ----------
+!net longwave infrared flux at the surface
+      if(label(kk).eq.'s00320') then
+      call unify_reduceintp(nx,my,my_max,rs,glob)
+!byl      call mpe2d_unify(glob,rs)
+      call syslbl ('s00320',idtg,itau,ggdef,ihdg)
+!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      if(out_pres_form==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(out_pres_form==2.and.myrank==0)then
+        call wrt_grb2(itau,0,5,0,2,1,0,0.,glob)
+      endif
+      go to 30
+      endif
+!downward longwave radiation at the surface
+      if(label(kk).eq.'s003x0') then
+      call unify_reduceintp(nx,my,my_max,rld,glob)
+!byl      call mpe2d_unify(glob,rld)
+      call syslbl ('s003x0',idtg,itau,ggdef,ihdg)
+!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      if(out_pres_form==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(out_pres_form==2.and.myrank==0)then
+        call wrt_grb2(itau,0,5,3,2,1,0,0.,glob)
+      endif
+      go to 30
+      endif
 !outgoing longwave radiation (OLR) 
 !net longwave flux at the top atmosphere
       if(label(kk).eq.'x00340') then
@@ -407,6 +343,37 @@
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
         call wrt_grb2(itau,0,5,1,2,1,0,0.,glob)
+      endif
+      go to 30
+      endif
+!   ---------- Heat flux ----------
+!sensible heat flux at the surface
+      if(label(kk).eq.'s00420') then
+      call unify_reduceintp(nx,my,my_max,hflux,glob)
+!byl      call mpe2d_unify(glob,hflux)
+      call syslbl ('s00420',idtg,itau,ggdef,ihdg)
+!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      if(out_pres_form==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(out_pres_form==2.and.myrank==0)then
+        call wrt_grb2(itau,0,0,11,2,1,0,0.,glob)
+      endif
+      go to 30
+      endif
+!lentent heat flux at the surface
+      if(label(kk).eq.'s00430') then
+      call unify_reduceintp(nx,my,my_max,qflux,glob)
+!byl      call mpe2d_unify(glob,qflux)
+      call syslbl ('s00430',idtg,itau,ggdef,ihdg)
+!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      if(out_pres_form==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(out_pres_form==2.and.myrank==0)then
+        call wrt_grb2(itau,0,0,10,2,1,0,0.,glob)
       endif
       go to 30
       endif
@@ -455,17 +422,20 @@
       endif
       go to 30
       endif
-!zonal mean cloudiness of Y-Z cross section 0-1 
-      if(label(kk).eq.'x00730') then
-      call mpe_unify(acld,lev,my,2,mpe_double)
-      do i=1,lev*my
-       acld(i,1)=acld(i,1)*100.
-      end do
-      if(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,6,22,2,7,0,0.,glob)
+!   ---------- temperature ----------
+!land suface tempaerature or sea surface temperature
+      if(label(kk).eq.'s00100') then
+      call unify_reduceintp(nx,my,my_max,tg,glob)
+!byl      call mpe2d_unify(glob,tg)
+      call syslbl ('s00100',idtg,itau,ggdef,ihdg)
+!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      if(out_pres_form==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(out_pres_form==2.and.myrank==0)then
+        call wrt_grb2(itau,0,0,0,2,1,0,0.,glob)
       endif
-      call syslbl ('x00730',idtg,itau,ggdef,ihdg)
-      call dmswrit(lev,my,ihdg,lenc2,'H',ifilout,acld,istat)
       go to 30
       endif
 !land skin air temperature (the model lowest)
@@ -483,6 +453,22 @@
       endif
       go to 30
       endif
+! 2m temerature
+      if(label(kk).eq.'b02100') then
+      call unify_reduceintp(nx,my,my_max,t2,glob)
+!byl      call mpe2d_unify(glob,t2)
+      call syslbl ('b02100',idtg,itau,ggdef,ihdg)
+!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      if(out_pres_form==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(out_pres_form==2.and.myrank==0)then
+        call wrt_grb2(itau,0,0,0,2,103,0,2.,glob)
+      endif
+      go to 30
+      endif
+!   ---------- wind component ----------
 !skin u component ( model lowest)
       if(label(kk).eq.'b00200') then
       call unify_reduceintp(nx,my,my_max,wk_xy(1,1,2),glob)
@@ -510,91 +496,6 @@
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
         call wrt_grb2(itau,0,2,3,2,103,0,0.,glob)
-      endif
-      go to 30
-      endif
-!atmosphere column precipitable water (mm)
-      if(label(kk).eq.'x00590') then
-      call unify_reduceintp(nx,my,my_max,wk_xy(1,1,4),glob)
-!byl      call mpe2d_unify(glob,wk_xy(1,1,4))
-      call syslbl ('x00590',idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,1,3,2,7,0,0.,glob)
-      endif
-      go to 30
-      endif
-!skin relative humidity (model lowest)
-      if(label(kk).eq.'b00510') then
-      call unify_reduceintp(nx,my,my_max,wk_xy(1,1,5),glob)
-!byl      call mpe2d_unify(glob,wk_xy(1,1,5))
-      call syslbl ('b00510',idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,1,1,2,103,0,0.,glob)
-      endif
-      go to 30
-      endif
-!
-!      if(label(kk).eq.'b10510') then
-!      call mpe2d_unify(glob,wk_xy(1,1,5))
-!      call syslbl ('b10510',idtg,itau,ggdef,ihdg)
-!      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-!      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-!      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-!      go to 30
-!      endif
-! 2m temerature
-      if(label(kk).eq.'b02100') then
-      call unify_reduceintp(nx,my,my_max,t2,glob)
-!byl      call mpe2d_unify(glob,t2)
-      call syslbl ('b02100',idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,0,0,2,103,0,2.,glob)
-      endif
-      go to 30
-      endif
-!2m specific humidity
-      if(label(kk).eq.'b02500') then
-      call unify_reduceintp(nx,my,my_max,q2,glob)
-!byl      call mpe2d_unify(glob,q2)
-      call syslbl ('b02500',idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,1,0,6,103,0,2.,glob)
-      endif
-      go to 30
-      endif
-!2m relative humidity
-      if(label(kk).eq.'b02510') then
-      call unify_reduceintp(nx,my,my_max,rh2,glob)
-!byl      call mpe2d_unify(glob,rh2)
-      call syslbl ('b02510',idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,1,1,2,103,0,2.,glob)
       endif
       go to 30
       endif
@@ -628,6 +529,52 @@
       endif
       go to 30
       endif
+!   ---------- humidity ----------
+!skin relative humidity (model lowest)
+      if(label(kk).eq.'b00510') then
+      call unify_reduceintp(nx,my,my_max,wk_xy(1,1,5),glob)
+!byl      call mpe2d_unify(glob,wk_xy(1,1,5))
+      call syslbl ('b00510',idtg,itau,ggdef,ihdg)
+!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      if(out_pres_form==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(out_pres_form==2.and.myrank==0)then
+        call wrt_grb2(itau,0,1,1,2,103,0,0.,glob)
+      endif
+      go to 30
+      endif
+!2m specific humidity
+      if(label(kk).eq.'b02500') then
+      call unify_reduceintp(nx,my,my_max,q2,glob)
+!byl      call mpe2d_unify(glob,q2)
+      call syslbl ('b02500',idtg,itau,ggdef,ihdg)
+!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      if(out_pres_form==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(out_pres_form==2.and.myrank==0)then
+        call wrt_grb2(itau,0,1,0,6,103,0,2.,glob)
+      endif
+      go to 30
+      endif
+!2m relative humidity
+      if(label(kk).eq.'b02510') then
+      call unify_reduceintp(nx,my,my_max,rh2,glob)
+!byl      call mpe2d_unify(glob,rh2)
+      call syslbl ('b02510',idtg,itau,ggdef,ihdg)
+!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      if(out_pres_form==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(out_pres_form==2.and.myrank==0)then
+        call wrt_grb2(itau,0,1,1,2,103,0,2.,glob)
+      endif
+      go to 30
+      endif
 !10m relative humidity
       if(label(kk).eq.'b10510') then
       call mpe2d_unify(glob,rh10)
@@ -642,6 +589,57 @@
       endif
       go to 30
       endif
+!
+!      if(label(kk).eq.'b10510') then
+!      call mpe2d_unify(glob,wk_xy(1,1,5))
+!      call syslbl ('b10510',idtg,itau,ggdef,ihdg)
+!      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+!!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+!      call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+!      go to 30
+!      endif
+
+!   ---------- Soil and Land model ----------
+!ground wetness 0 - 1.0
+      if(label(kk).eq.'s005a0') then
+!byl      call mpe2d_unify(glob,gwet)
+!byl      do 36 j=1,my
+      do 36 jj=1,jlistnum
+!byl       nxj=nxdef(j)
+         j=jlist1(jj)
+       nxj=nxdef_2d(j)
+      do 36 i=1,nxj
+!byl        glob(i,j)=glob(i,j)/20.
+        globp(i,jj)=gwet(i,jj)/20.
+ 36   continue
+      call unify_reduceintp(nx,my,my_max,globp,glob)
+      call syslbl ('s005a0',idtg,itau,ggdef,ihdg)
+!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      if(out_pres_form==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(out_pres_form==2.and.myrank==0)then
+        call wrt_grb2(itau,2,0,9,3,1,0,0.,glob)
+      endif
+      go to 30
+      endif
+!soil moisture content (mm)
+      if(label(kk).eq.'s005a1') then
+      call unify_reduceintp(nx,my,my_max,gwet,glob)
+!byl      call mpe2d_unify(glob,gwet)
+      call syslbl ('s005a1',idtg,itau,ggdef,ihdg)
+!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+!byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      if(out_pres_form==1)then
+        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      elseif(out_pres_form==2.and.myrank==0)then
+        call wrt_grb2(itau,2,0,25,2,1,0,0.,glob)
+      endif
+      go to 30
+      endif
 !canopy moisture content(mm)
       if(label(kk).eq.'s005c0') then
       call unify_reduceintp(nx,my,my_max,canopy,glob)
@@ -653,11 +651,11 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,0,3,2,1,0,0.,glob)
+        call wrt_grb2(itau,2,3,19,2,1,0,0.,glob)
       endif
       go to 30
       endif
-!Volumetric soil moisture fraction
+
 ! s**5b0
 !
 !   s01??? = sa1??? = L01???   0-10cm
@@ -667,7 +665,7 @@
 !   s05??? = sa4??? = L04???  100-200cm
 !
 !
-! 0-10cm
+! 0-10cm Volumetric soil moisture fraction (0-1.0)
       if(label(kk).eq.'sa15b0') then
       call unify_reduceintp(nx,my,my_max,soil_xy(1,1,1),glob)
 !byl      call mpe2d_unify(glob,soil_xy(1,1,1))
@@ -678,12 +676,12 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,0,3,2,151,0,1.,glob)
+        call wrt_grb2(itau,2,0,9,2,151,0,1.,glob)
       endif
       go to 30
       endif
 
-! 10-40cm
+! 10-40cm Volumetric soil moisture fraction (0-1.0)
       if(label(kk).eq.'sa25b0') then
       call unify_reduceintp(nx,my,my_max,soil_xy(1,1,2),glob)
 !byl      call mpe2d_unify(glob,soil_xy(1,1,2))
@@ -694,11 +692,11 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,0,3,2,151,0,2.,glob)
+        call wrt_grb2(itau,2,0,9,2,151,0,2.,glob)
       endif
       go to 30
       endif
-! 40-100cm
+! 40-100cm Volumetric soil moisture fraction (0-1.0)
       if(label(kk).eq.'sa35b0') then
       call unify_reduceintp(nx,my,my_max,soil_xy(1,1,3),glob)
 !byl      call mpe2d_unify(glob,soil_xy(1,1,3))
@@ -709,11 +707,11 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,0,3,2,151,0,3.,glob)
+        call wrt_grb2(itau,2,0,9,2,151,0,3.,glob)
       endif
       go to 30
       endif
-! 100-200cm
+! 100-200cm Volumetric soil moisture fraction (0-1.0)
       if(label(kk).eq.'sa45b0') then
       call unify_reduceintp(nx,my,my_max,soil_xy(1,1,4),glob)
 !byl      call mpe2d_unify(glob,soil_xy(1,1,4))
@@ -724,12 +722,12 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,0,3,2,151,0,4.,glob)
+        call wrt_grb2(itau,2,0,9,2,151,0,4.,glob)
       endif
       go to 30
       endif
 !kc >
-! 0-10cm
+! 0-10cm Volumetric soil moisture fraction (0-1.0)
       if(label(kk).eq.'s015b0') then
       call unify_reduceintp(nx,my,my_max,soil_xy(1,1,1),glob)
 !byl      call mpe2d_unify(glob,soil_xy(1,1,1))
@@ -740,7 +738,7 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,0,3,2,151,0,1.,glob)
+        call wrt_grb2(itau,2,0,9,2,151,0,1.,glob)
       endif
       go to 30
       endif
@@ -748,7 +746,7 @@
       sfac2=3./19.
       sfac3=6./19.
       sfac4=10./19.
-! output 10-200cm
+!  10-200cm Volumetric soil moisture fraction (0-1.0)
       if(label(kk).eq.'s025b0') then
 !byl      call mpe2d_unify(glob1,soil_xy(1,1,2))
 !byl      call mpe2d_unify(glob2,soil_xy(1,1,3))
@@ -773,12 +771,12 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,0,3,2,151,0,2.,glob)
+        call wrt_grb2(itau,2,0,9,2,151,0,2.,glob)
       endif
       go to 30
       endif
 !xb13 <
-! 10-40cm
+! 10-40cm Volumetric soil moisture fraction (0-1.0)
       if(label(kk).eq.'s035b0') then
       call unify_reduceintp(nx,my,my_max,soil_xy(1,1,2),glob)
 !byl      call mpe2d_unify(glob,soil_xy(1,1,2))
@@ -789,12 +787,12 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,0,3,2,151,0,3.,glob)
+        call wrt_grb2(itau,2,0,9,2,151,0,3.,glob)
       endif
       go to 30
       endif
 
-! 40-100cm
+! 40-100cm Volumetric soil moisture fraction (0-1.0)
       if(label(kk).eq.'s045b0') then
       call unify_reduceintp(nx,my,my_max,soil_xy(1,1,3),glob)
 !byl      call mpe2d_unify(glob,soil_xy(1,1,3))
@@ -805,11 +803,11 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,0,3,2,151,0,4.,glob)
+        call wrt_grb2(itau,2,0,9,2,151,0,4.,glob)
       endif
       go to 30
       endif
-! 100-200cm
+! 100-200cm Volumetric soil moisture fraction (0-1.0)
       if(label(kk).eq.'s055b0') then
       call unify_reduceintp(nx,my,my_max,soil_xy(1,1,4),glob)
 !byl      call mpe2d_unify(glob,soil_xy(1,1,4))
@@ -820,14 +818,13 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,0,3,2,151,0,5.,glob)
+        call wrt_grb2(itau,2,0,9,2,151,0,5.,glob)
       endif
       go to 30
       endif
 !xb13 >
-!Unfrozen(liquid) soil moisture content(volumetric fraction)
 ! s**5b1
-! 0-10cm
+! 0-10cm Unfrozen(liquid) soil moisture content(volumetric fraction)
       if(label(kk).eq.'sa15b1') then
       call unify_reduceintp(nx,my,my_max,soil_xy(1,1,5),glob)
 !byl      call mpe2d_unify(glob,soil_xy(1,1,5))
@@ -838,11 +835,11 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,3,10,2,151,0,1.,glob)
+        call wrt_grb2(itau,2,3,5,2,151,0,1.,glob)
       endif
       go to 30
       endif
-! 10-40cm
+! 10-40cm Unfrozen(liquid) soil moisture content(volumetric fraction)
       if(label(kk).eq.'sa25b1') then
       call unify_reduceintp(nx,my,my_max,soil_xy(1,1,6),glob)
 !byl      call mpe2d_unify(glob,soil_xy(1,1,6))
@@ -853,11 +850,11 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,3,10,2,151,0,2.,glob)
+        call wrt_grb2(itau,2,3,5,2,151,0,2.,glob)
       endif
       go to 30
       endif
-! 40-100cm
+! 40-100cm Unfrozen(liquid) soil moisture content(volumetric fraction)
       if(label(kk).eq.'sa35b1') then
       call unify_reduceintp(nx,my,my_max,soil_xy(1,1,7),glob)
 !byl      call mpe2d_unify(glob,soil_xy(1,1,7))
@@ -868,11 +865,11 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,3,10,2,151,0,3.,glob)
+        call wrt_grb2(itau,2,3,5,2,151,0,3.,glob)
       endif
       go to 30
       endif
-! 100-200cm
+! 100-200cm Unfrozen(liquid) soil moisture content(volumetric fraction)
       if(label(kk).eq.'sa45b1') then
       call unify_reduceintp(nx,my,my_max,soil_xy(1,1,8),glob)
 !byl      call mpe2d_unify(glob,soil_xy(1,1,8))
@@ -883,12 +880,12 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,3,10,2,151,0,4.,glob)
+        call wrt_grb2(itau,2,3,5,2,151,0,4.,glob)
       endif
       go to 30
       endif
 !xb13
-! 0-10cm
+! 0-10cm Unfrozen(liquid) soil moisture content(volumetric fraction)
       if(label(kk).eq.'s015b1') then
       call unify_reduceintp(nx,my,my_max,soil_xy(1,1,5),glob)
 !byl      call mpe2d_unify(glob,soil_xy(1,1,5))
@@ -899,12 +896,12 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,3,10,2,151,0,1.,glob)
+        call wrt_grb2(itau,2,3,5,2,151,0,1.,glob)
       endif
       go to 30
       endif
 
-! 10-200cm
+! 10-200cm Unfrozen(liquid) soil moisture content(volumetric fraction)
       if(label(kk).eq.'s025b1') then
 !byl      call mpe2d_unify(glob1,soil_xy(1,1,6))
 !byl      call mpe2d_unify(glob2,soil_xy(1,1,7))
@@ -929,11 +926,11 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,3,10,2,151,0,2.,glob)
+        call wrt_grb2(itau,2,3,5,2,151,0,2.,glob)
       endif
       go to 30
       endif
-! 10-40cm
+! 10-40cm Unfrozen(liquid) soil moisture content(volumetric fraction)
       if(label(kk).eq.'s035b1') then
       call unify_reduceintp(nx,my,my_max,soil_xy(1,1,6),glob)
 !byl      call mpe2d_unify(glob,soil_xy(1,1,6))
@@ -944,11 +941,11 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,3,10,2,151,0,3.,glob)
+        call wrt_grb2(itau,2,3,5,2,151,0,3.,glob)
       endif
       go to 30
       endif
-! 40-100cm
+! 40-100cm Unfrozen(liquid) soil moisture content(volumetric fraction)
       if(label(kk).eq.'s045b1') then
       call unify_reduceintp(nx,my,my_max,soil_xy(1,1,7),glob)
 !byl      call mpe2d_unify(glob,soil_xy(1,1,7))
@@ -959,11 +956,11 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,3,10,2,151,0,4.,glob)
+        call wrt_grb2(itau,2,3,5,2,151,0,4.,glob)
       endif
       go to 30
       endif
-! 100-200cm
+! 100-200cm Unfrozen(liquid) soil moisture content(volumetric fraction)
       if(label(kk).eq.'s055b1') then
       call unify_reduceintp(nx,my,my_max,soil_xy(1,1,8),glob)
 !byl      call mpe2d_unify(glob,soil_xy(1,1,8))
@@ -974,14 +971,13 @@
       if(out_pres_form==1)then
         call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,3,10,2,151,0,5.,glob)
+        call wrt_grb2(itau,2,3,5,2,151,0,5.,glob)
       endif
       go to 30
       endif
 !<xb13
-!
 ! s**100
-! 0-10cm
+! 0-10cm Volumetric soil temperature(K)
       if(label(kk).eq.'sa1100') then
       call unify_reduceintp(nx,my,my_max,soil_xy(1,1,9),glob)
 !byl      call mpe2d_unify(glob,soil_xy(1,1,9))
@@ -996,7 +992,7 @@
       endif
       go to 30
       endif
-!10-40cm
+! 10-40cm Volumetric soil temperature(K)
       if(label(kk).eq.'sa2100') then
       call unify_reduceintp(nx,my,my_max,soil_xy(1,1,10),glob)
 !byl      call mpe2d_unify(glob,soil_xy(1,1,10))
@@ -1011,7 +1007,7 @@
       endif
       go to 30
       endif
-! 40-100cm
+! 40-100cm Volumetric soil temperature(K)
       if(label(kk).eq.'sa3100') then
       call unify_reduceintp(nx,my,my_max,soil_xy(1,1,11),glob)
 !byl      call mpe2d_unify(glob,soil_xy(1,1,11))
@@ -1026,7 +1022,7 @@
       endif
       go to 30
       endif
-! 100-200cm
+! 100-200cm Volumetric soil temperature(K)
       if(label(kk).eq.'sa4100') then
       call unify_reduceintp(nx,my,my_max,soil_xy(1,1,12),glob)
 !byl      call mpe2d_unify(glob,soil_xy(1,1,12))
@@ -1042,7 +1038,7 @@
       go to 30
       endif
 !xb13>
-! 0-10cm
+! 0-10cm Volumetric soil temperature(K)
       if(label(kk).eq.'s01100') then
       call unify_reduceintp(nx,my,my_max,soil_xy(1,1,9),glob)
 !byl      call mpe2d_unify(glob,soil_xy(1,1,9))
@@ -1057,7 +1053,7 @@
       endif
       go to 30
       endif
-! 10-200cm
+! 10-200cm Volumetric soil temperature(K)
       if(label(kk).eq.'s02100') then
 
 !byl      call mpe2d_unify(glob1,soil_xy(1,1,10))
@@ -1087,8 +1083,7 @@
       endif
       go to 30
       endif
-! 10-40cm
-
+! 10-40cm Volumetric soil temperature(K)
       if(label(kk).eq.'s03100') then
       call unify_reduceintp(nx,my,my_max,soil_xy(1,1,10),glob)
 !byl      call mpe2d_unify(glob,soil_xy(1,1,10))
@@ -1103,7 +1098,7 @@
       endif
       go to 30
       endif
-! 40-100cm
+! 40-100cm Volumetric soil temperature(K)
       if(label(kk).eq.'s04100') then
       call unify_reduceintp(nx,my,my_max,soil_xy(1,1,11),glob)
 !byl      call mpe2d_unify(glob,soil_xy(1,1,11))
@@ -1118,7 +1113,7 @@
       endif
       go to 30
       endif
-! 100-200cm
+! 100-200cm Volumetric soil temperature(K)
       if(label(kk).eq.'s05100') then
       call unify_reduceintp(nx,my,my_max,soil_xy(1,1,12),glob)
 !byl      call mpe2d_unify(glob,soil_xy(1,1,12))
@@ -1133,6 +1128,7 @@
       endif
       go to 30
       endif
+!   ---------- cloud fraction ----------
 !< xb13
 !
 ! ctot_total cloud fraction
@@ -1195,8 +1191,23 @@
       endif
       go to 30
       endif
-!
-! pbl hight
+!zonal mean cloudiness of Y-Z cross section 0-1 
+      if(label(kk).eq.'x00730') then
+      call mpe_unify(acld,lev,my,2,mpe_double)
+      do i=1,lev*my
+       acld(i,1)=acld(i,1)*100.
+      end do
+      call syslbl ('x00730',idtg,itau,ggdef,ihdg)
+      if(out_pres_form==1)then
+        call dmswrit(lev,my,ihdg,lenc2,'H',ifilout,acld,istat)
+      !elseif(out_pres_form==2.and.myrank==0)then
+      !  call wrt_grb2(itau,0,6,22,2,7,0,0.,glob)
+      endif
+      go to 30
+      endif
+
+!   ---------- other ----------
+! pbl height
       if(label(kk).eq.'pbl000') then
       call unify_reduceintp(nx,my,my_max,wk_xy(1,1,10),glob)
 !byl      call mpe2d_unify(glob,wk_xy(1,1,10))
@@ -1242,6 +1253,8 @@
       endif
       go to 30
       endif
+
+!move to  out24.f90
 !xb110> flash density
 !      if(label(kk).eq.'fshden') then
 !      call unify_reduceintp(nx,my,my_max,flash,glob)
@@ -1255,7 +1268,7 @@
 !      endif
 !xb110<
 
-   30 continue
+   30 continue  !============end do ( kk=1,num )
 
 !
       if(out_pres_form==1)then

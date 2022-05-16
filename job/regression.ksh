@@ -308,6 +308,7 @@ cat > ${GFSWRK}/namlsts << EOF
   ioutsigr=1,
   ggdef='${DMSFLAG}0G', gmdef='${DMSFLAG}MG',
   domfc=384., out_green=t, otgreen=3., out_hp=f,
+  out_pres_form=1, OutR4key=f,
   ndsladvh2=f,
   isot=${STYP}, ivegsrc=${STYP}, cgwd=1.20, cmbk=1.00,
   spl1=5., spl2=50., af=0.1,

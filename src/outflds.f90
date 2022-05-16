@@ -139,8 +139,8 @@
 
       if(myrank==0)call system_clock(tst)
       if(out_pres_form==2 .and. myrank==0)then
-133                   format( A     ,I12.12 ,A  ,I4.4 ,A     )
-           write(grbfile,133 )'GFS_',idtg   ,'_',itau ,'.grb2'
+133                   format( A     ,I10.10 ,A  ,I4.4 ,A     )
+           write(grbfile,133 )'GFS_',idtg/100   ,'_',itau ,'.grb2'
            print*,'OutFileName= ',trim(grbfile)
            call opn_grb2(nx,my,idtg,itau)
        endif
