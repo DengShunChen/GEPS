@@ -52,7 +52,16 @@
       mfcout(:,:,2)=raintot(:,:)
       mfcout(:,:,3)=t2(:,:)
       mfcout(:,:,4)=q2(:,:)
-      mfcout(:,:,5)=rh2(:,:)
+
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        do i=1,nxj
+      !mfcout(:,:,5)=rh2(:,:) * 100.0
+      mfcout(i,jj,5)=rh2(i,jj) * 100.0
+        enddo
+      enddo
+
       mfcout(:,:,6)=u10(:,:)
       mfcout(:,:,7)=v10(:,:)
       mfcout(:,:,8)=tmax(:,:)
@@ -141,6 +150,7 @@
 !      call syslbl ('b10510',idtg,ntau,ggdef,ihdg)
 !      call unify_reduceintp(nx,my,my_max,rh10,glob)
 !!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+!      glob=glob*100.0
 !!     call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
 !      call dmswrit_mfc(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
 

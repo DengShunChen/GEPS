@@ -84,7 +84,7 @@
                 asol24(nxp,my_max),olr24(nxp,my_max),rain24(nxp,my_max),             &
                 drag(nxp,lev,my_max),ugws(nxp,my_max),vgws(nxp,my_max),              &
                 sdpbl(nxp,my_max),rain1(nxp,my_max),                                 &
-                rh2100(nxp,my_max),rh10100(nxp,my_max),pklev(nxp,my_max)
+                pklev(nxp,my_max)
 
        real*4   workn(nx,my)
        integer  kn
@@ -315,15 +315,13 @@
 !!        call mpe_unify(gwet,nx,my,2,mpe_double)
 !!        call mpe_unify(gwr,nx,my,2,mpe_double)
 !
-!       rh2100=rh2*100. 
-!       rh10100=rh10*100. 
 !        call  outflds( 1,nx,my,my_max,lev,ncld                                     &
 !                     , lmax,numout,idtg,ifilout,outdir                             &
 !                     , ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo                     &
 !                     , ptend,pt,plt,pk,pk2,phi,ut,vt,sd                            &
 !                     , tt,qt,rdiv,rvor,tg,gwr,z0,hflux,qflux,snr                   &
 !                     , raintot,raincu,rainlp,asol,olr,ss,rs,alb,gwclim             &
-!                     , acld,cosl,drag,ugws,vgws,t2,rh2100,rh10100,u10,v10,gfx,rld,sld &
+!                     , acld,cosl,drag,ugws,vgws,t2,rh2,rh10,u10,v10,gfx,rld,sld &
 !                     , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500    &
 !                     , ctot,chig,cmid,clow,hpbl,.true.,flash,do_sit)
 !        call  outsigs ( 1,nx,my,my_max,lev,ncld                                    &
@@ -372,15 +370,13 @@
       endif
 !
 !#ifndef NO_OUT
-!       rh2100=rh2*100. 
-!       rh10100=rh10*100. 
 !      call  outflds( 0,nx,my,my_max,lev,ncld                                       &
 !                     , lmax,numout,idtg,ifilout,outdir                             &
 !                     , ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo                     &
 !                     , ptend,pt,plt,pk,pk2,phi,ut,vt,sd                            &
 !                     , tt,qt,rdiv,rvor,tg,gwr,z0,hflux,qflux,snr                   &
 !                     , raintot,raincu,rainlp,asol,olr,ss,rs,alb,gwclim             &
-!                     , acld,cosl,drag,ugws,vgws,t2,rh2100,rh10100,u10,v10,gfx,rld,sld &
+!                     , acld,cosl,drag,ugws,vgws,t2,rh2,rh10,u10,v10,gfx,rld,sld &
 !                     , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500    &
 !                     , ctot,chig,cmid,clow,hpbl,.true.,flash,do_sit)
 !#endif
@@ -1687,15 +1683,13 @@
 !
        call transr(jtrun,jtmax,nx,my,my_max,levp,poly,vornow,cc,1,nsizey)
        call ujoinsr(cc,rvor,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-       rh2100=rh2*100.
-       rh10100=rh10*100.
         call  outflds( itau,nx,my,my_max,lev,ncld                              &
                     , lmax,numout,idtg,ifilout,outdir                          &
                     , ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo                  &
                     , ptend,pt,plt,pk,pk2,phi,ut,vt,sd                         &
                     , tt,qt,rdiv,rvor,tg,gwr,z0,hflux,qflux,snr                &
                     , raintot,raincu,rainlp,asol,olr,ss,rs,alb,gwclim          &
-                    , acld,cosl,drag,ugws,vgws,t2,q2,rh2100,rh10100,u10,v10,gfx,rld,sld &
+                    , acld,cosl,drag,ugws,vgws,t2,q2,rh2,rh10,u10,v10,gfx,rld,sld &
 !byl                    , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500 &
                     , km_soil,smc,slc,stc,canopy,ggdef,typtrk                  &
 !xb110                    , ctot,chig,cmid,clow,hpbl,histim,flash,do_sit)
@@ -1849,10 +1843,8 @@
             enddo
           enddo
 #ifndef NO_OUT
-       rh2100=rh2*100.
-       rh10100=rh10*100.
           call out2d_mfc(nx,lev,my,my_max,ifilout,itau,idtg,ntau  &
-                      ,rain1,raintot,glob,t2,q2,rh2100,rh10100,u10,v10, &
+                      ,rain1,raintot,glob,t2,q2,rh2,rh10,u10,v10, &
                       tmax,tmin,td,rld,sld,ctot,pt,ggdef)
 #endif
           raincu1=0.0

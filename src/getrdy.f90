@@ -53,7 +53,6 @@
 !  local working array
 !
       real      sst(nxp,my_max),ww1(nx,my),ww2(nxp,my_max),     &
-                rh2100(nxp,my_max),rh10100(nxp,my_max),         &
                 wk1(nxp,lev,my_max),pklev(nxp,my_max),          &
                 cc(nx+2,levp,1,my_max),ww3(nx,my_max)
 !byl                wss3(levp,2,3,jtrun,jtmax),cc3(nx+2,levp,3,my_max)
@@ -1295,15 +1294,13 @@
         gfx=0.
         sld=0.
         rld=0.
-       rh2100=rh2*100.
-       rh10100=rh10*100.
 !        flash=0.   !xb110, flash density
         call outflds ( 0,nx,my,my_max,lev,ncld,lmax,numout,idtg,ifilout &
              , outdir,ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo           &
              , ptend,pt,plt,pk,pk2,phi,ut,vt,sd                         &
              , tt,qt,rdiv,rvor,tg,gwr,z0,hflux,qflux,snr                &
              , raintot,raincu,rainlp,plcl,cumtop,ss,rs,alb,gwclim       &
-             , acld,cosl,wk1,ww2,ww2,t2,q2,rh2100,rh10100,u10,v10,gfx,rld,sld &
+             , acld,cosl,wk1,ww2,ww2,t2,q2,rh2,rh10,u10,v10,gfx,rld,sld &
 !byl             , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500 &
              , km_soil,smc,slc,stc,canopy,ggdef,typtrk                  &
 !             , ctot,chig,cmid,clow,hpbl,.true.,flash,do_sit)

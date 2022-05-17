@@ -562,7 +562,14 @@
       endif
 !2m relative humidity
       if(label(kk).eq.'b02510') then
-      call unify_reduceintp(nx,my,my_max,rh2,glob)
+      do 37 jj=1,jlistnum
+         j=jlist1(jj)
+       nxj=nxdef_2d(j)
+      do 37 i=1,nxj
+        globp(i,jj)=rh2(i,jj) * 100.0
+ 37   continue
+      call unify_reduceintp(nx,my,my_max,globp,glob)
+!hcw      call unify_reduceintp(nx,my,my_max,rh2,glob)
 !byl      call mpe2d_unify(glob,rh2)
       call syslbl ('b02510',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
@@ -577,9 +584,16 @@
       endif
 !10m relative humidity
       if(label(kk).eq.'b10510') then
-      call mpe2d_unify(glob,rh10)
+      do 38 jj=1,jlistnum
+         j=jlist1(jj)
+       nxj=nxdef_2d(j)
+      do 38 i=1,nxj
+        globp(i,jj)=rh10(i,jj) * 100.0
+ 38   continue
+      call unify_reduceintp(nx,my,my_max,globp,glob)
+!      call mpe2d_unify(glob,rh10)
       call syslbl ('b10510',idtg,itau,ggdef,ihdg)
-      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+!      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(out_pres_form==1)then
@@ -1128,9 +1142,8 @@
       endif
       go to 30
       endif
-!   ---------- cloud fraction ----------
+!   ---------- cloud cover ----------
 !< xb13
-!
 ! ctot_total cloud fraction
       if(label(kk).eq.'x00770') then
       call unify_reduceintp(nx,my,my_max,wk_xy(1,1,6),glob)
