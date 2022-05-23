@@ -173,8 +173,7 @@
                            rntot(im),   vshear(im), xaa0(im), &
                            xk(im),      xlamd(im),  cina(im), &
                            xmb(im),     xmbmax(im), xpwav(im), &
-                           xpwev(im),   &
-                           xlamx(im), & 
+                           xpwev(im),   xlamx(im), &
                            delubar(im),delvbar(im)
 !
       real(kind=kind_phys) c0(im)
@@ -375,7 +374,7 @@
       edtmaxl = .3
       edtmaxs = .3
       clam    = .1
-      aafac   = .1 
+      aafac   = .1
 !     betal   = .15
 !     betas   = .15
       betal   = .05
@@ -387,8 +386,7 @@
       crtlamu = 1.0e-4
       crtlamd = 1.0e-4
 !
-!      cxlamu  = 1.0e-3
-      cxlamu  = 1.0e-4  !for GFDL_MP e
+      cxlamu  = 1.0e-3
       cxlamd  = 1.0e-4
       xlamde  = 1.0e-4
       xlamdd  = 1.0e-4
@@ -443,7 +441,7 @@
         do i=1,im
           zi(i,k) = 0.5*(zo(i,k)+zo(i,k+1))
           xlamue(i,k) = clam / zi(i,k)
-          xlamue(i,k) = max(xlamue(i,k), crtlamu) !for GFDL_MP e
+!         xlamue(i,k) = max(xlamue(i,k), crtlamu)
         enddo
       enddo
 !
@@ -680,16 +678,14 @@
           xlamx(i) = xlamue(i,kbcon(i))
         endif
       enddo
-! >>>>> marked for GFDL_MP E
-!      do k = 2, km1
-!        do i=1,im
-!          if(cnvflg(i).and. &
-!            (k > kbcon(i) .and. k < kmax(i))) then
-!              xlamue(i,k) = xlamx(i)
-!          endif
-!        enddo
-!      enddo
-! <<<<< marked for GFDL_MP E
+      do k = 2, km1
+        do i=1,im
+          if(cnvflg(i).and. &
+            (k > kbcon(i) .and. k < kmax(i))) then
+              xlamue(i,k) = xlamx(i)
+          endif
+        enddo
+      enddo
 !
 !  specify detrainment rate for the updrafts
 !
@@ -697,8 +693,7 @@
       do k = 1, km1
         do i=1,im
           if(cnvflg(i) .and. k < kmax(i)) then
-!            xlamud(i,k) = xlamx(i)     !marked for GFDL_MP D
-            xlamud(i,k) = 0.001 * clam  !for GFDL_MP D
+            xlamud(i,k) = xlamx(i)
 !           xlamud(i,k) = crtlamd
           endif
         enddo
@@ -728,8 +723,8 @@
             (k > kbcon(i) .and. k < kmax(i))) then
               tem = cxlamu * frh(i,k) * fent2(i,k)
               xlamue(i,k) = xlamue(i,k)*fent1(i,k) + tem
-              tem1 = cxlamd * frh(i,k)          !for GFDL_MP d
-              xlamud(i,k) = xlamud(i,k) + tem1  !for GFDL_MP d
+!             tem1 = cxlamd * frh(i,k)
+!             xlamud(i,k) = xlamud(i,k) + tem1
           endif
         enddo
       enddo

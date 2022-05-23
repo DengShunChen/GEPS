@@ -292,7 +292,7 @@
 !
 !  model tunable parameters are all here
       clam    = .3
-      aafac   = .1 
+      aafac   = .1
 !     evef    = 0.07
       evfact  = 0.3
       evfactl = 0.3
@@ -586,8 +586,7 @@
 !> - The updraft detrainment rate is set constant and equal to the entrainment rate at cloud base.
       do i = 1, im
         if(cnvflg(i)) then
-!          xlamud(i) = xlamue(i,kbcon(i))  !marked for GFDL_MP D
-          xlamud(i) = 0.001 * clam  !for GFDL_MP D
+          xlamud(i) = xlamue(i,kbcon(i))
 !         xlamud(i) = crtlamd
         endif
       enddo
