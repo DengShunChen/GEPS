@@ -1,4 +1,3 @@
-#define RSM
 #ifdef RSM
       subroutine rsmout(idtg,itau,nx,my,my_max,lev,ncld            &
              , ptop,cp,rgas,grav,sgeo,pdiff                        &

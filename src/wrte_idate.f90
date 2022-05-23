@@ -1,4 +1,3 @@
-#define RSM
 #ifdef RSM
       subroutine wrte_idate(idate)
 !
