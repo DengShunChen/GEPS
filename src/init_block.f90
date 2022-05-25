@@ -98,7 +98,7 @@
 ! update low boundary condition
       doclx=.false.
 ! Semi-Lagrangian Averaging of Physical Parametrizations
-      doslavepp=.true.
+      doslavepp=.false.
 ! output data for RSM (Also, RSM compiling flag is necessary)
       outrsm=.false.
       rsmoutinv=6
