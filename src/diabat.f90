@@ -170,7 +170,7 @@
                                       use_zmtnblck,ldailyFCTsst,ldailyFCTicesndpt, &
                                       ldailyFCTsst,ldailyFCTicesndpt,           &
                                       dailyClm_option,dSITdt_intv,weightSIT,    &
-                                      bckfile,ggdef,doclx
+                                      bckfile,ggdef,doclx,doslavepp
       use mod_sitgrid
       USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
       USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt &
@@ -1292,13 +1292,20 @@
 !
 !     update tt by radiation heating/cooling rate: dtrad (k/day)
 !
-      do k = 1, lev
-        do i = 1, nxj
-          tt(i,k,jj) = tt(i,k,jj) + 0.5*dta*(dtrad(i,k,jj)+dtradn(i,k))/86400.0
-!          tt(i,k,jj) = tt(i,k,jj) + dta*dtradn(i,k)/86400.0
-          dtrad(i,k,jj) = dtradn(i,k)
+      if ( doslavepp ) then
+        do k = 1, lev
+          do i = 1, nxj
+            tt(i,k,jj) = tt(i,k,jj) + 0.5*dta*(dtrad(i,k,jj)+dtradn(i,k))/86400.0
+            dtrad(i,k,jj) = dtradn(i,k)
+          enddo
         enddo
-      enddo
+      else
+        do k = 1, lev
+          do i = 1, nxj
+            tt(i,k,jj) = tt(i,k,jj) + dta*dtradn(i,k)/86400.0
+          enddo
+        enddo
+      endif
 !
 !     recompute phi by tt after pbl to ensure consistence of phi & phi2
 !
@@ -1490,7 +1497,7 @@
             dttmp = ttc(i,kc)-tt(i,k,jj)
             dutmp = utc(i,kc)-ut(i,k,jj)
             dvtmp = vtc(i,kc)-vt(i,k,jj)
-            if ( kdt .eq. 1 ) then
+            if ( kdt .eq. 1 .or. .not. doslavepp ) then
               tt(i,k,jj) = ttc(i,kc)
               ut(i,k,jj) = utc(i,kc)
               vt(i,k,jj) = vtc(i,kc)
@@ -1667,7 +1674,7 @@
             dttmp = ttc(i,kc)-tt(i,k,jj)
             dutmp = utc(i,kc)-ut(i,k,jj)
             dvtmp = vtc(i,kc)-vt(i,k,jj)
-            if ( kdt .eq. 1 ) then
+            if ( kdt .eq. 1 .or. .not. doslavepp ) then
               tt(i,k,jj) = ttc(i,kc)
               ut(i,k,jj) = utc(i,kc)
               vt(i,k,jj) = vtc(i,kc)
@@ -1796,7 +1803,7 @@
             qt(i,k    ,jj) = max(qtc(i,kc),qmin)
             qt(i,k+lev,jj) = max(qtr(i,kc),qmin)
             dttmp = ttc(i,kc)-tt(i,k,jj)
-            if ( kdt .eq. 1 ) then
+            if ( kdt .eq. 1 .or. .not. doslavepp ) then
               tt(i,k,jj) = ttc(i,kc)
             else
               tt(i,k,jj) = 0.5*( dttmp + dtlsp(i,k,jj) )+tt(i,k,jj)
