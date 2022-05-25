@@ -4,7 +4,7 @@
       use index
       use mpe
       use mod_grb2_param  !for write grib2 data
-      use const ,only:out_pres_form
+      use const ,only:out_pres_form ,ifilout_grb
 
       implicit  none
 
@@ -28,13 +28,6 @@
       jmax=my
       lenc= imax*jmax
 !
-!======open grib2 file
-      if(out_pres_form==2 .and. myrank==0)then
-133                   format( A     ,I10.10 ,A  ,I4.4 ,A     )
-           write(grbfile,133 )'GFS_',idtg/100   ,'_',itau ,'_dm.grb2'
-           print*,'OutFileName= ',trim(grbfile)
-           call opn_grb2(nx,my,idtg,itau)
-       endif
 !===
 !  Latent heat flux at the surface (W/m**2)
       do jj = 1,jlistnum
@@ -200,7 +193,7 @@
         call wrt_grb2_accu(itau,0,17,0,9,1,0,0.,0,24,glob)
       endif
 !xb110<<
-      if(out_pres_form==2.and.myrank==0)  call cls_grb2(istat)
+
 
       return
       end

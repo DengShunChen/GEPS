@@ -61,11 +61,11 @@ character,allocatable,save :: cgrib(:)*1
 integer*4:: lcgrib=2*1e8,lengrib
 logical*1,allocatable,save :: bmap(:)
 !add default 
-integer*4  :: Ptp0,Ptp1,Ptp2,Ptp3,Ptp4,grbnxmy
+integer*4  :: grbnxmy
 !grib2 file name
 character::grbfile*255
 integer*4::grbid=134
-integer*8::grbidtg
+integer*8::grb_idtg
 !=======================================================================
 !  call baopenw(g2num,g2name,ierr)                                     !
 !=======================================================================
@@ -344,7 +344,7 @@ integer*8::grbidtg
       integer*8::idtg
       integer   itau
       character::cdtg*12
-      grbidtg=idtg
+      grb_idtg=idtg
       write(cdtg,'(I12.12)')idtg
       read(cdtg(1:4),'(I4)')yy
       read(cdtg(5:6),'(I2)')mm
@@ -477,7 +477,7 @@ integer*8::grbidtg
       ipdstmpl8(13)=255!t13
       ipdstmpl8(14)=0  !t14
       ipdstmpl8(15)=0  !t15
-      call dtgfix12(grbidtg,idtg2 ,itau)
+      call dtgfix12(grb_idtg,idtg2 ,itau)
       write(cdtg,'(i12.12)')idtg2
       read(cdtg,'(i4,i2,i2,i2)')ipdstmpl8(16:19)
       !ipdstmpl8(16)=listsec1(6)!0 !t16 ! Year   | Time of end of overall time interval
@@ -579,12 +579,13 @@ integer*8::grbidtg
       return
       end subroutine
 !=======================================================================
-      subroutine opn_grb2(nx,my,idtg,itau) !,ierr)
+      subroutine opn_grb2(nx,my,idtg,itau ,ierr)
       use grib_mod
            integer::nx,my,itau,ierr
            integer*8::idtg
-           allocate(cgrib(lcgrib),bmap(nx*my))
+           if( .not. allocated( cgrib ) )allocate( cgrib(lcgrib) , bmap(nx*my) )
            lengrib=0
+           cgrib=''
            call baopenw(grbid,trim(grbfile),ierr)
            call latlong(nx,my)
            call seclist01(idtg,itau)
@@ -593,7 +594,7 @@ integer*8::grbidtg
       use grib_mod
         integer::ierr
         call baclose(grbid,ierr)
-        deallocate(cgrib,bmap)
+!        deallocate(cgrib,bmap)
       end subroutine 
 
 end module mod_grb2_param

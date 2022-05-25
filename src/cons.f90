@@ -100,7 +100,7 @@
       namelist /filst/ ifilin,cwbout,bckfile,namlsts &
                      , ifilout,crdate,ocards,phyout,cntrl &
                      , ifilin_ncep, ifilin_sst, ifilin_nc &
-                     , ifilin_ClmANA,ifilin_ClmFCT
+                     , ifilin_ClmANA,ifilin_ClmFCT,ifilout_grb
 
       namelist /typ/ write_tau, write_mem, trk_intv, min_trk_pres
 

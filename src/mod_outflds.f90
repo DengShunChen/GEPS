@@ -418,6 +418,7 @@ contains
       character*4 ggdef
       character*3 cspec(6)
       logical :: lwrite
+      integer::Ptp0,Ptp1,Ptp2,Ptp3
 !
       cspec=(/'500','551','553','552','554','555'/)
 !

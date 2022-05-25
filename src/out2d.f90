@@ -11,7 +11,7 @@
       use mod_outflds
 !hcwei  write grb2
       use mod_grb2_param
-      use const ,only:out_pres_form
+      use const ,only:out_pres_form,domfc
 
 !
       implicit  none
@@ -184,6 +184,7 @@
         call wrt_grb2_accu(itau,0,1,7,2,1,0,0.,1,praint,glob)
       endif
 !accu. total precipitation from tau 0
+      if( itau==0 .or.  itau .ge. nint(domfc) )then
       call unify_reduceintp(nx,my,my_max,raintot,glob)
 !byl      call mpe2d_unify(glob,raintot)
       call syslbl ('b0062t',idtg,itau,ggdef,ihdg)
@@ -195,6 +196,7 @@
       elseif(out_pres_form==2.and.myrank==0)then
         call wrt_grb2(itau,0,1,8,0,1,0,0.,glob)
       endif
+      endif !domfc
       go to 30
       endif
 !snow depth of water state at the surface (mm)
@@ -455,6 +457,7 @@
       endif
 ! 2m temerature
       if(label(kk).eq.'b02100') then
+      if( itau==0 .or. itau .ge. nint(domfc) )then
       call unify_reduceintp(nx,my,my_max,t2,glob)
 !byl      call mpe2d_unify(glob,t2)
       call syslbl ('b02100',idtg,itau,ggdef,ihdg)
@@ -467,6 +470,7 @@
         call wrt_grb2(itau,0,0,0,2,103,0,2.,glob)
       endif
       go to 30
+      endif !domfc
       endif
 !   ---------- wind component ----------
 !skin u component ( model lowest)
@@ -501,6 +505,7 @@
       endif
 !10m u component
       if(label(kk).eq.'b10200') then
+      if( itau==0 .or. itau .ge. nint(domfc) )then
       call unify_reduceintp(nx,my,my_max,u10,glob)
 !byl      call mpe2d_unify(glob,u10)
       call syslbl ('b10200',idtg,itau,ggdef,ihdg)
@@ -513,9 +518,11 @@
         call wrt_grb2(itau,0,2,2,2,103,0,10.,glob)
       endif
       go to 30
+      endif !domfc
       endif
 !10m v component
       if(label(kk).eq.'b10210') then
+      if( itau==0 .or.  itau .ge. nint(domfc) )then
       call unify_reduceintp(nx,my,my_max,v10,glob)
 !byl      call mpe2d_unify(glob,v10)
       call syslbl ('b10210',idtg,itau,ggdef,ihdg)
@@ -528,6 +535,7 @@
         call wrt_grb2(itau,0,2,3,2,103,0,10.,glob)
       endif
       go to 30
+      endif !domfc
       endif
 !   ---------- humidity ----------
 !skin relative humidity (model lowest)
@@ -547,6 +555,7 @@
       endif
 !2m specific humidity
       if(label(kk).eq.'b02500') then
+      if( itau==0 .or. itau .ge. nint(domfc) )then
       call unify_reduceintp(nx,my,my_max,q2,glob)
 !byl      call mpe2d_unify(glob,q2)
       call syslbl ('b02500',idtg,itau,ggdef,ihdg)
@@ -559,11 +568,13 @@
         call wrt_grb2(itau,0,1,0,6,103,0,2.,glob)
       endif
       go to 30
+      endif !domfc
       endif
 !2m relative humidity
       if(label(kk).eq.'b02510') then
+      if( itau==0 .or. itau .ge. nint(domfc) )then
       do 37 jj=1,jlistnum
-         j=jlist1(jj)
+        j=jlist1(jj)
        nxj=nxdef_2d(j)
       do 37 i=1,nxj
         globp(i,jj)=rh2(i,jj) * 100.0
@@ -581,6 +592,7 @@
         call wrt_grb2(itau,0,1,1,2,103,0,2.,glob)
       endif
       go to 30
+      endif !domfc
       endif
 !10m relative humidity
       if(label(kk).eq.'b10510') then
