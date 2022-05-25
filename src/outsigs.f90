@@ -13,7 +13,7 @@
 
       real      ptop,rad,grav,cp
 
-      real      cosl(my),pt(nx,my_max),sgeo(nxp,my_max),        &
+      real      cosl(my),pt(nxp,my_max),sgeo(nxp,my_max),       &
                 snr(nxp,my_max),gwr(nxp,my_max),                &
                 tg(nxp,my_max),pk(nxp,lev,my_max),              &
                 pk2(nxp,lev,my_max),ut(nxp,lev,my_max),         &
