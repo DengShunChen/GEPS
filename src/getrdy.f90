@@ -1324,6 +1324,15 @@
               , ggdef)
       endif
 !
+#ifdef RSM_sigp
+       if(outrsm) then
+        call rsmout_sigp( 0,nx,my,my_max,lev,ncld        &
+                     , idtg,ptop,rad,grav,cosl           &
+                     , pt,sgeo,snr,gwr,tg,pk             &
+                     , ut,vt,tt,qt,km_soil,smc,stc       &
+                     , ice,land,ocean,xlon,xlat)
+       endif
+#endif
 #ifdef RSM
       if (outrsm) then
         if(myrank.eq.0)print*,' output: rsm date',idtg

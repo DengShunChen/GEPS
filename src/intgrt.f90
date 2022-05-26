@@ -1661,6 +1661,16 @@
                     , ctot,chig,cmid,clow,hpbl,histim,do_sit)
 #endif
 !
+#ifdef RSM_sigp
+       if(outrsm .and. mod(float(itau)+0.00001, float(rsmoutinv) ) .lt. 0.01)then
+        call rsmout_sigp( itau,nx,my,my_max,lev,ncld     &
+                     , idtg,ptop,rad,grav,cosl           &
+                     , pt,sgeo,snr,gwr,tg,pk             &
+                     , ut,vt,tt,qt,km_soil,smc,stc       &
+                     , ice,land,ocean,xlon,xlat)
+       endif
+#endif
+!
 #ifdef RSM
 ! RSM: output base field ncep-format data for RSM
       if(outrsm .and. mod(float(itau)+0.00001, float(rsmoutinv) ) .lt. 0.01)then
