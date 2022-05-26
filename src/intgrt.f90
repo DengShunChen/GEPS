@@ -594,11 +594,11 @@
       if(myrank .eq. 0) then 
          print *,'forcast begin tau=',itaui,' to tau=',itaue
 
-      ! for io quilting
-      if(io_quilting)then
-         ntag=ntag+1
-         call mpe_send_key(keydoit,ntag,istat)
-      endif
+!     ! for io quilting
+!      if(io_quilting)then
+!         ntag=ntag+1
+!         call mpe_send_key(keydoit,ntag,istat)
+!      endif
 
       endif
 
@@ -1433,6 +1433,7 @@
 !       if(myrank.eq.0)print *,'chkltr dtaup,dt_trk,dtx_tau=',dtaup,dt_trk,dtx_tau
 
 
+        if(myrank==0) call system_clock(toutsrt)
 !       open grib2 file
         if( out_pres_form == 2 .and. myrank == 0 )then
           lopngrb2=.false.
@@ -1442,13 +1443,20 @@
           if( out_hp .and. mod( itau , 3 ) == 0 )lopngrb2=.true.
           if( out_green .and. mod( itau , nint(otgreen) ) == 0 )lopngrb2=.true.
           if( mod( itau , 24 ) == 0  )lopngrb2=.true.
+
           if(lopngrb2)then
-            grbid=233  ! 231 outflds    233 mfc
- 133                     format( A  ,A ,I10.10 ,A , i4.4 ,A      )
-            write(grbfile,133 )trim(ifilout_grb),'/GFS_',idtg/100 ,'_',itau,'.grb2'
-            if(myrank==0) print*,'OutFileName= ',trim(grbfile)
-            call opn_grb2(nx,my,idtg,itau,istat)
-            call system_clock(toutsrt)
+            if(io_quilting)then 
+              write( keydoit,'(A6,I4.4,A4,I12.12,A8)') &
+              "OPEN..",itau,"....",idtg,"H...DOIT"
+              ntag=ntag+1
+              call mpe_send_key(keydoit,ntag,istat)
+            else
+             grbid=233  ! 231 outflds    233 mfc
+ 133                      format( A  ,A ,I10.10 ,A , i4.4 ,A      )
+             write(grbfile,133 )trim(ifilout_grb),'/GFS_',idtg/100 ,'_',itau,'.grb2'
+             if(myrank==0) print*,'OutFileName= ',trim(grbfile)
+             call opn_grb2(nx,my,idtg,itau,istat)              
+            endif
           endif
         endif
 !
@@ -1468,6 +1476,7 @@
 ! gwet(ground wetness) get from smc1*0.2+smc2*0.8
 ! saturate gwrcc set to be 20mm as original land mode setting
 !
+! xb119 2022 not need to run every time step ,move to histim inside
       do jj = 1, jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
@@ -1834,12 +1843,20 @@
         !close grib2 file
         if(out_pres_form==2.and.myrank==0)then
           if(lopngrb2)then
-             call cls_grb2(istat)
-             call system_clock(toutend,toutrate)
-             print *, "In output CPU Time: ",dble(toutend-toutsrt)/dble(toutrate)
+            if(io_quilting)then 
+              keydoit(1:4)='CLSE'
+              ntag=ntag+1
+              call mpe_send_key(keydoit,ntag,istat)
+            else
+              call cls_grb2(istat)
+            endif
           endif
         endif
-
+        if(myrank==0)then
+          call system_clock(toutend,toutrate)
+          print *, "In output tau: ",itau," CPU Time: " &
+                 ,dble(toutend-toutsrt)/dble(toutrate)
+        endif
 
         if(do_sit .AND. lgodas .AND. ldailysst) then
           CALL read_dailygodas(idtg,tau,dtx)
@@ -1883,8 +1900,8 @@
 
       ! for io quilting
       if(io_quilting)then
-         ntag=ntag+1
-         call mpe_send_key(keydoit,ntag,istat)
+!         ntag=ntag+1
+!         call mpe_send_key(keydoit,ntag,istat)
          ntag=ntag+1
          call mpe_send_key(keydone,ntag,istat)
       endif

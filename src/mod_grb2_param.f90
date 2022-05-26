@@ -366,9 +366,55 @@ integer*8::grb_idtg
       return
       end subroutine
 !=======================================================================
+      subroutine wrt_grb2(itau,t0,t1,t2,p3,t10,t11,t12,fld)
+      use param, only : io_quilting
+      use rank,only:ntag
+      integer::  t0,t1,t2,t10,t11,p3
+      real::  t12
+      integer::ptp0(9)
+      integer::itau,ist
+      real::fld(grbnxmy)
+      character:: keydoit*34
+      data keydoit/"DOIT..........................DOIT"/
+      if(io_quilting)then
+        ptp0=(/t0,t1,t2,p3,t10,t11,nint(t12),-999,-999/)
+        ntag=ntag+1
+        call mpe_send_key( keydoit  ,ntag,ist)
+        ntag=ntag+1
+        call mpe_send_int( ptp0 , 9 ,ntag,ist)
+        ntag=ntag+1
+        call mpe_send_data(fld ,grbnxmy ,ntag,ist)
+      else
+        call  wrt_grb2_io(itau,t0,t1,t2,p3,t10,t11,t12,fld)
+      endif
+      end
+!=======================================================================
+      subroutine wrt_grb2_accu(itau,t0,t1,t2,p3,t10,t11,t12,t24,t27,fld)
+      use param, only : io_quilting
+      use rank,only:ntag
+      integer::  t0,t1,t2,t10,t11,p3,t24,t27
+      real::  t12
+      integer::ptp0(9)
+      integer::itau,ist
+      real::fld(grbnxmy)
+      character:: keydoit*34
+      data keydoit/"DOIT..........................DOIT"/
+      if(io_quilting)then
+        ptp0=(/t0,t1,t2,p3,t10,t11,nint(t12), t24 ,t27/)
+        ntag=ntag+1
+        call mpe_send_key( keydoit  ,ntag,ist)
+        ntag=ntag+1
+        call mpe_send_int( ptp0 , 9 ,ntag,ist)
+        ntag=ntag+1
+        call mpe_send_data(fld ,grbnxmy ,ntag,ist)
+      else
+        call wrt_grb2_accu_io(itau,t0,t1,t2,p3,t10,t11,t12,t24,t27,fld)
+      endif
+      end
+!=======================================================================
       !subroutine seclist45(itau,t1,t2,t10,t11,t12,t13,t14,t15,p3,p5)
       !subroutine seclist45(itau,t0,t1,t2,p3,t10,t11,t12,r4out)
-      subroutine wrt_grb2(itau,t0,t1,t2,p3,t10,t11,t12,fld)
+      subroutine wrt_grb2_io(itau,t0,t1,t2,p3,t10,t11,t12,fld)
       !itau :tau
 !===varitabel set ===
       !t0   :Product Discipline ( Code Table 0.0 )
@@ -434,7 +480,7 @@ integer*8::grb_idtg
 !      subroutine seclist4_85(ita,t1,t2,t10,t11,t12,t13,t14,t15,t16,    &
 !                             t17,t18,t19,t20,t21,t22,t23,t24,t25,t26,  &
 !                             t27,t28,t29,p3,p5)
-      subroutine wrt_grb2_accu(itau,t0,t1,t2,p3,t10,t11,t12,t24,t27,fld)
+      subroutine wrt_grb2_accu_io(itau,t0,t1,t2,p3,t10,t11,t12,t24,t27,fld)
       !itau :tau
 !===varitabel set ===
       !t0   :Product Discipline ( Code Table 0.0 )

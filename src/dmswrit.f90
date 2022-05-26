@@ -39,19 +39,19 @@
 !
       t_flg=.false.
 
-      if(io_quilting)then
-
-        if(myrank .eq. 0) then
-          ntag=ntag+1
-          call mpe_send_key(key,ntag,istat)
-          ntag=ntag+1
-          call mpe_send_data(z,nx*my,ntag,istat)
-#ifdef VERBOSE
-          print *,'dmsput key=',key,' ok'
-#endif
-        endif
-
-      else
+!      if(io_quilting)then
+!
+!        if(myrank .eq. 0) then
+!          ntag=ntag+1
+!          call mpe_send_key(key,ntag,istat)
+!          ntag=ntag+1
+!          call mpe_send_data(z,nx*my,ntag,istat)
+!#ifdef VERBOSE
+!          print *,'dmsput key=',key,' ok'
+!#endif
+!        endif
+!
+!      else
 
        if(myrank .eq. 0) then
          if(OutR4key)then
@@ -78,7 +78,7 @@
 #endif
        endif
 
-       endif
+!       endif
 !
       return
       end

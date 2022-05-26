@@ -121,88 +121,18 @@
       ntag=0
 
       if(myrank_all .le. Ngfs-1)then
-        if(npex .eq. -1 .or. npey .eq. -1 ) then
-          ! get number of procs in i and j directions
-          mini = 2*nsize
-          nsizex = 1
-          nsizey = nsize
-          do m = 1, nsize
-            if ( mod( nsize, m ) == 0 ) then
-              n = nsize / m
-              if ( abs(m-n) < mini  ) then
-                mini = abs(m-n)
-                nsizex = m
-                nsizey = n
-              end if
-            end if
-          end do
-        else
-          ! using namlsts setting
-          nsizex=npex
-          nsizey=npey
-      endif
-      if ( npe .lt. lev ) then
-         if(myrank == 0)print *,'fatal error : npe  .lt. lev !'
-!        call MPI_FINALIZE(IERR)
-         stop ! force abort
-      endif
-
-      if ( (nsizex*nsizey) /= npe ) then
-        if(myrank == 0)print *,'fatal error : npex*npey  .ne. npe !'
-!       call MPI_FINALIZE(IERR)
-        stop ! force abort
-      endif
-        mrow = myrank/nsizex
-        ncol = mod(myrank, nsizex)
-        call MPI_Comm_split(MPI_COMM_gfs, mrow, ncol, row_comm, ierr)
-        call MPI_Comm_split(MPI_COMM_gfs, ncol, mrow, col_comm, ierr)
-        call MPI_Comm_rank(row_comm, row_rank, ierr)
-        call MPI_Comm_rank(col_comm, col_rank, ierr)
-
-        nxp=nx/nsizex       !nx partial
-        n=mod(nx,nsizex)
-        if(n.ne.0)nxp=nxp+1
-
-        my_max=my/nsizey+1
-        jtmax=jtrun/nsizey+1
-    
-        nxf=nx       !nx full
-        myf=my       !my full
-        jlen=my_max
-    
-        if ( mod( lev, nsizex ) /= 0 ) then
-           if(myrank == 0)print *,'fatal error : lev not devided by nsizex !'
+        if ( npe .lt. lev ) then
+           if(myrank == 0)print *,'fatal error : npe  .lt. lev !'
 !          call MPI_FINALIZE(IERR)
-           stop
-        else
-           levf=lev  !lev full
-           Llen=lev/nsizex
-           levp=Llen
-           Lstart=row_rank*Llen+1
-           Lend=Lstart+Llen-1
-    
-          ! for lev*ncld array
-           Lstart_ncld=row_rank*((lev*ncld)/nsizex)+1
-           Lend_ncld=Lstart_ncld+((lev*ncld)/nsizex)-1
+           stop ! force abort
         endif
-
-        ! allocate dynamic arrays
-        call allocate_grid_array
-        call allocate_phygrid_array
-        call allocate_noah_array
-        call allocate_const_array
-        call allocate_spec_array
-        call allocate_typhoon_array
-        call allocate_index_array
-        !rad
-        call allocate_alb_array
-        call allocate_raddiag_array
-        ! initial block data
-        call init_block
       else
-        call ioserver(nx*my)
+        !call ioserver(nx*my)
+        call ioserver_grb2(nx,my)
       endif
+
     else ! non io_quilting
+
       nsize=nsize_all
       myrank=myrank_all
 #if defined(RSM) && defined(CWB_MPMD)
@@ -212,6 +142,9 @@
 #endif
 
       npe=nsize
+
+    endif !if( io_quilting )
+
       if(npex .eq. -1 .or. npey .eq. -1 ) then
         ! get number of procs in i and j directions
         mini = 2*nsize
@@ -232,6 +165,7 @@
         nsizex=npex
         nsizey=npey
       endif
+
 
       if ( (nsizex*nsizey) /= npe ) then
          if(myrank == 0)print *,'fatal error : npex*npey  .ne. npe !'
@@ -287,6 +221,5 @@
       call allocate_raddiag_array
       ! initial block data
       call init_block
-    endif
-
+  
   end subroutine mpe_init
