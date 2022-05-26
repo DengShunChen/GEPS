@@ -1,6 +1,6 @@
 #!/bin/ksh
 #PJM -L "node=32:noncont"
-#PJM -L rscgrp=CWB
+#PJM -L rscgrp=cfs
 #PJM -x PJM_CACHE_MODE=4
 #PJM -L elapse=2:00:00
 #PJM -L node-mem=unlimited
@@ -29,8 +29,8 @@ elif [ $JCAP = 383 ] ; then
   NPEX=8
   NPEY=192
 fi
-source /users/fjapl10/GFS/MNH/bin/setup_mpi+omp.fx100 $OMP
-#source /users/xa09/sample/setup_mpi+omp.${machine} $OMP
+#source /users/fjapl10/GFS/MNH/bin/setup_mpi+omp.fx100 $OMP
+source /users/xa09/sample/setup_mpi+omp.${machine} $OMP
 
 #==============================================================================================================#
 
