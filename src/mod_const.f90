@@ -57,7 +57,7 @@
     logical :: lsimpl,lzadv, yesdia,dopbl, docup, dorad,      &
             dolsp, dograv,doshl, dodry, donnmi,ozon,       &
             restrt,hdiff, cstar, update,doincr,hybrid,     &
-            doo3l, docgrav,doclx
+            doo3l, docgrav, doclx, doslavepp
 
     ! for stochastic physics
     logical :: dosppt       =.false.
@@ -81,6 +81,7 @@
 
     !for horizontal diffusion
     integer :: hdk1,hdk2(3),hord
+    real    :: vd
 
     !for pdf cloud
     logical :: pdfcloud

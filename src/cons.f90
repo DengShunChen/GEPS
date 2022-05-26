@@ -81,8 +81,8 @@
                       , outrsm,rsmoutinv,rlon1,rlon2,rlat1,rlat2,rgrdsz &
 !
                       , cmbk,cgwd,nmmiph,spl1,spl2            &
-                      , weightSIT,dSITdt_intv,af,mwhd,doclx,OutR4key    &
-                      , out_pres_form
+                      , weightSIT,dSITdt_intv,af,mwhd,doclx,doslavepp   &
+                      , OutR4key, out_pres_form
 !
       real    si(lev+1)
       logical flag
