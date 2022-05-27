@@ -2,7 +2,7 @@
                     prsi,del,prsl,prslk,phii, phil,deltim,kdt,           &
                     hprime,oc,oa4,clx4,theta,sigma,gamma,elvmax,         &
                     dusfc,dvsfc,g, cp, rd, rv, imx,                      &
-                    nmtvr, cdmbgwd, me, rdxzb)
+                    nmtvr, cdmbgwd, me, idxzb,dxmet,hpbl,tofd)
 !
 !   ********************************************************************
 ! ----->  i m p l e m e n t a t i o n    v e r s i o n   <----------
@@ -124,7 +124,6 @@
 !lzl           hprime(im)
       real oc(im),     oa4(ix,4), clx4(ix,4),                            &
            hprime(im)
-      integer rdxzb(ix)
 
 
 ! for lm mtn blocking
@@ -141,8 +140,23 @@
       real bnv2lm(im,km),pe(im),ek(im),zbk(im),up(im)
       real db(im,km),ang(im,km),uds(im,km)
       real zlen, dbtmp, r, phiang, cdmb, dbim
-      real eng0, eng1
-
+      real eng0, eng1, eng2
+!xb118---for TOFD
+      logical tofd
+      real utendform(ix,km),vtendform(ix,km),za(ix,km),                &
+           hpbl(ix),dxmet(im)
+      real wsp,H_efold,a1,a2,var_temp,dxmeter,ss_taper,ro_tmp
+      real varmax_fd,beta_fd,a1_coeff,a2_coeff,TOFD_coeff,Hefold_nom,  &
+           dxmin_ss,dxmax_ss
+      parameter (varmax_fd = 160.)
+      parameter (beta_fd = 0.2)
+      parameter (a1_coeff = 0.00026615161)  ! Coefficient for TOFD from Beljaars et al. (2004)
+      parameter (a2_coeff = 0.005363)       !  ""
+      parameter (TOFD_coeff = 0.0759)       !  ""
+      parameter (Hefold_nom = 1500.)        ! Nominal TOFD e-folding height (m)
+! Small-scale GWD + turbulent form drag
+      parameter (dxmin_ss = 1000., dxmax_ss = 12000.)  ! min,max range of tapering (m)
+!xb118---
 !     some constants
 !
 !lzl      real(kind=kind_phys) pi, dw2min, rimin, ric, bnv2min, efmin
@@ -257,7 +271,6 @@
               , kmll
 !    &, kmll,kmds,ihit,jhit
       logical lprnt
-!
 !     parameter (cdmb = 1.0)     ! non-dim sub grid mtn drag amp (*j*)
 ! non-dim sub grid mtn drag amp (*j*)
 !     cdmb = 1.0/float(imx/192)
@@ -291,10 +304,64 @@
       lcap   = km
       lcapp1 = lcap + 1
 !
+!xb118---for TOFD
+!--- calculate scale-aware tapering factors
+      if (tofd) then
+        utendform=0.0
+        vtendform=0.0
+! ----  for lm and gwd calculation points
+        ipt = 0
+        npt = 0
+        do i = 1,im
+          if ( (elvmax(i) .gt. hminmt)                                  & 
+            .and. (hprime(i) .gt. hpmin) )  then
+             npt      = npt + 1
+             ipt(npt) = i
+!             if (ipr .eq. i) npr = npt
+          endif
+        enddo
+        if (npt .eq. 0) return     ! no gwd/mb calculation done!
+
+        do i = 1, npt
+          j = ipt(i)
+          dxmeter=sqrt(dxmet(j))
+          if ( dxmeter .ge. dxmax_ss ) then
+            ss_taper = 1.
+          else
+            if ( dxmeter .le. dxmin_ss) then
+              ss_taper = 0.
+            else
+              ss_taper = dxmax_ss * (1. - dxmin_ss/dxmeter)/(dxmax_ss-dxmin_ss)
+            end if
+          end if
+          if (ss_taper .gt. 1.e-2)then
+          do k=1,km
+            var_temp = MIN(hprime(j),varmax_fd) +                 &
+                       MAX(0.,beta_fd*(hprime(j)-varmax_fd))
+            a1=a1_coeff*var_temp**2
+            a2=a1*a2_coeff
+         ! Revise e-folding height based on PBL height and topographic std. dev. -- M. Toy 3/12/2018
+            H_efold = max(2*hprime(j),hpbl(j))
+            H_efold = min(H_efold,Hefold_nom)
+            za(j,k) = 0.5*(phii(j,k)+phii(j,k+1))/g
+            wsp=SQRT(u1(j,k)**2 + v1(j,k)**2)
+            vtj(i,k)  = t1(j,k)  * (1.+fv*q1(j,k))
+            ro_tmp    = rdi * prsl(j,k) / vtj(i,k) ! density tons/m**3
+         ! Eqn. (16) of Beljaars et al. (2004)
+            utendform(j,k)=-TOFD_coeff*wsp*u1(j,k)* ro_tmp* &
+                           EXP(-(za(j,k)/H_efold)**1.5)*a2*za(j,k)**(-1.2)*ss_taper
+            vtendform(j,k)=-TOFD_coeff*wsp*v1(j,k)* ro_tmp* &
+                           EXP(-(za(j,k)/H_efold)**1.5)*a2*za(j,k)**(-1.2)*ss_taper
+            a(j,k)  = vtendform(j,k) + a(j,k)
+            b(j,k)  = utendform(j,k) + b(j,k)
+          enddo  ! enddo k
+          endif ! ss_taper
+        enddo ! enddo i
+      endif ! tofd
+!!xb118---
 !
       if ( nmtvr .eq. 14) then 
 ! ----  for lm and gwd calculation points
-        rdxzb(:)  = 0
         ipt = 0
         npt = 0
         do i = 1,im
@@ -465,7 +532,6 @@
 ! --- dividing stream line  is found when pe =exceeds ek.
               if ( pe(i) .ge.  ek(i) ) then
                 idxzb(i) = k
-                rdxzb(i) = k
               endif
 ! --- then mtn blocked flow is between zb=k(idxzb(i)) and surface
 !
@@ -551,7 +617,6 @@
 !
         do i=1,npt
           idxzb(i) = 0
-          rdxzb(i) = 0
         enddo
       endif
 !
@@ -904,10 +969,7 @@
 
      do k = 1,km                !org
         do i = 1,npt            !org 
-!cjh test      do i = 1,npt
           j          = ipt(i)   !org
-!cjh test        do  k = kref(i),km
-!cjh test          j          = ipt(i)
           taud(i,k)  = taud(i,k) * dtfac(i)
           dtaux      = taud(i,k) * xn(i)
           dtauy      = taud(i,k) * yn(i)
@@ -932,7 +994,13 @@
             dusfc(j)   = dusfc(j)  + dtaux * del(j,k)
             dvsfc(j)   = dvsfc(j)  + dtauy * del(j,k)
           endif
-          c(j,k) = c(j,k) + max((eng0-eng1),0.0)/cp/deltim
+          if (tofd)then
+            eng2       = 0.5*((u1(j,k)+utendform(j,k)*deltim)**2.0+     &
+                              (v1(j,k)+vtendform(j,k)*deltim)**2.0)
+          else
+            eng2       = 0.0
+          endif
+          c(j,k) = c(j,k) + max((eng0-eng1-eng2),0.0)/cp/deltim
 !
 !          u1(j,k) = u1(j,k) + b(j,k) * deltim
 !          v1(j,k) = v1(j,k) + a(j,k) * deltim
