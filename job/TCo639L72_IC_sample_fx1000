@@ -1,0 +1,38 @@
+#!/bin/ksh
+#PJM -L "node=32:noncont"
+#PJM -L rscgrp=cfs
+#PJM -x PJM_CACHE_MODE=4
+#PJM -L elapse=2:00:00
+#PJM -L node-mem=unlimited
+#PJM --no-stging
+#PJM --mpi "proc=1536"
+#PJM -j
+#PJM -N JTCo639L72
+
+set -x
+
+MDIR=$(cd ..; pwd)
+echo "MDIR=${MDIR}"
+
+machine=fx1000
+# TERR=GTOPO30
+TERR=GMTED30
+JCAP=639
+
+MPI=1536
+OMP=1
+
+if [ $JCAP = 639 ] ; then
+  NPEX=4
+  NPEY=384
+elif [ $JCAP = 383 ] ; then
+  NPEX=8
+  NPEY=192
+fi
+#source /users/fjapl10/GFS/MNH/bin/setup_mpi+omp.fx100 $OMP
+source /users/xa09/sample/setup_mpi+omp.${machine} $OMP
+
+#==============================================================================================================#
+
+. ${MDIR}/job/regression_gfs2TL.ksh
+#. ${MDIR}/job/regression_stochy_physics.ksh

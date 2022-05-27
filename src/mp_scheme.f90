@@ -121,6 +121,9 @@
       qtgl  = 0.
       ntnc  = 0.
       refl10= 0.
+      rainncv=0.
+      snowncv=0.
+      graupelncv=0.
 
       if ( nmmiph .eq. 11 ) then
         allocate                                                        &
@@ -153,7 +156,6 @@
         ice0  = 0.
         graupel0 = 0.
       endif
-
 !
       lradar= .false.
       icem  =  4./3.*tpi*3.2768*1.e-14*890.
