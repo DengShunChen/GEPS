@@ -1476,7 +1476,7 @@
 ! gwet(ground wetness) get from smc1*0.2+smc2*0.8
 ! saturate gwrcc set to be 20mm as original land mode setting
 !
-! xb119 2022 not need to run every time step ,move to histim inside
+! xb119 may2022 not need to run every time step ,move to histim inside
       do jj = 1, jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
