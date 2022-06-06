@@ -1,4 +1,4 @@
-      subroutine diabat ( docup,dodry,dolsp,dopbl,dorad,doshl,dograv           &
+      subroutine diabat ( docup,dodry,dolsp,dopbl,dorad,doshl,dograv,tofd      &
                     , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw       &
                     , idg,jdg,ldiag,dt,tau,hours,julian,year,yrd               &
                     , frad,ozon,njump,itypbl,ktcup,ktpbl,ktshl,grav            &
@@ -209,7 +209,7 @@
 
       logical   docup,dodry,dolsp,dopbl,dorad,doshl,dograv,ozon,     &
                 land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max),  &
-                docgrav
+                docgrav,tofd
 
       real      tice,hice,qgini,thdai,tengi,ptop,                    &
                 hltm,evaprh,s0,stbo,cp,rgas,grav,frad,               &
@@ -1274,7 +1274,8 @@
 !               theta,sigmaog,gamma,elvmax,dusfcg, dvsfcg,          &
                theta,sigmaog,gamma,elvmax,ugws(1,jj),vgws(1,jj),   &
                grav,cp,con_rd,con_rv, nx, mtnvar, cdmbgwd,         &
-               me,zmtnblck)
+!              me,zmtnblck)
+               me,zmtnblck,garea,hpbl(1,jj),tofd)
 
         do k=1,lev
           kc=lev-k+1
