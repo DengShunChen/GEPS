@@ -1,6 +1,9 @@
       subroutine unify_reducepick(nx,my,my_max,ff,fp)
       use mpe
       use index
+      ! pick the reduce-grid value from the nearest regular grid.
+      ! this is only for changing low boundary data to reducegrid from
+      ! regular grid.
 
       implicit none
 
@@ -12,7 +15,7 @@
        j=jlist1(jj)
        ii=nxjstart(j)
        nxj=nxdef_2d(j)
-       if( lreduce.eq.1 )call reducepick (ff(1,j),nxdef(j),nx,1)
+       if( lreduce.eq.1 )call reducepickr (ff(1,j),nxdef(j),nx,1)
         do i = 1, nxj
           fp(i,jj) = ff(ii,j)
           ii=ii+1
