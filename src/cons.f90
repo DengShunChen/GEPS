@@ -64,7 +64,7 @@
                       , cutfreq,hdiff,itypbl,cstar,taup,hfilt           &
                       , ptmeans,update,taureg,doincr,numreduce          &
                       , nmcup,nmpbl,nmland,nmshl,cgw,ggdef,gmdef        &
-                      , nmgwor,nmgwcv,mtnvar,docgrav                    &
+                      , nmgwor,tofd,nmgwcv,mtnvar,docgrav               &
                       , ictm,isol,ico2,iaer,ialb,irad,iems,ntcw         &
                       , ntoz,iovr_sw,iovr_lw,isubc_sw,isubc_lw          &
                       , sashal,crick_proof,ccnorm,norad_precip,me,doo3l &

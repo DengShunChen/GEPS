@@ -134,6 +134,7 @@
 ! specify the default option for orographic and convective gwd
 !
       nmgwor=2
+      tofd=.false.
       nmgwcv=2
       mtnvar=14
       cmbk = 1.0
