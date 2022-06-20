@@ -59,10 +59,10 @@
 !byl                wss3(levp,2,3,jtrun,jtmax),cc3(nx+2,levp,3,my_max)
 
       character lrec*26,rfile*55,ctau*6,topostd*4,topohgt*4,key*34
-#ifdef RSM
+!#ifdef RSM
       character*12 dtgrsm
       integer idtgrsm
-#endif
+!#endif
 !
 ! restart  : read(7) work array
 !
@@ -1326,6 +1326,10 @@
 !
 #ifdef RSM_sigp
        if(outrsm) then
+        if(myrank.eq.0)print*,' output: rsm date',idtg
+        write(dtgrsm,'(I12)') idtg
+        read(dtgrsm,'(I10,I2)')idtgrsm,ii   ! ii is dummy integer
+        call wrte_idate(idtgrsm)
         call rsmout_sigp( 0,nx,my,my_max,lev,ncld        &
                      , idtg,ptop,rad,grav,cosl           &
                      , pt,sgeo,snr,gwr,tg,pk             &

@@ -58,10 +58,11 @@
       integer   itag0
 
 ! output record      
-      integer   kfh,ktt,ksgeo,ksfcp,kuu,kvv
+      integer   kfh,knt,ktt,ksgeo,ksfcp,kuu,kvv
       integer   kqt,kcw,krw,kiw,ksw,kgl,koz
       integer   ktg,ksmc,ksnr,kstc,ksimk,kslmk
       integer   ktrace,kend,krec
+      integer   ntindex(7)
 
 ! local variable initization
       nxmy=nx*my
@@ -82,6 +83,14 @@
       if(myrank .eq. 0) print *,' rsmout_sigp : ',                     &
                                 'ntoz,ntcw,ntrw,ntiw,ntsw,ntgl=',      &
                                  ntoz,ntcw,ntrw,ntiw,ntsw,ntgl
+! list tracer index
+        ntindex(1)=nclds
+        ntindex(2)=ntoz
+        ntindex(3)=ntcw
+        ntindex(4)=ntrw
+        ntindex(5)=ntiw
+        ntindex(6)=ntsw
+        ntindex(7)=ntgl
 
 #ifdef send_RSM
 ! mpmd send tag
@@ -100,29 +109,30 @@
 ! output record sequence 
       ktrace=-999
       kfh=1
-      ktt=kfh+1
-      ksgeo=ktt+lev
+      knt=kfh+1
+      ksgeo=knt+1
       ksfcp=ksgeo+1
-      kuu=ksfcp+1
+      ktt=ksfcp+1
+      kuu=ktt+lev
       kvv=kuu+lev
       kqt=kvv+lev
       kcw=kqt+lev
       koz=kcw+lev
-      ktg=koz+lev
+      kslmk=koz+lev
+      ksnr=kslmk+1
+      ksimk=ksnr+1
+      ktg=ksimk+1
       ksmc=ktg+1
-      ksnr=ksmc+4
-      kstc=ksnr+1
-      ksimk=kstc+4
-      kslmk=ksimk+1
-      krw=kslmk+1
+      kstc=ksmc+4
+      krw=kstc+4
       kiw=krw+lev
       ksw=kiw+lev
       kgl=ksw+lev
       kend=kgl+lev
 
       if(myrank.eq.0) then
-        print*,'ktrace,kfh,ktt,ksgeo,ksfcp,kuu,kvv,kqt,kcw,koz='
-        print*,ktrace,kfh,ktt,ksgeo,ksfcp,kuu,kvv,kqt,kcw,koz
+        print*,'ktrace,kfh,knt,ktt,ksgeo,ksfcp,kuu,kvv,kqt,kcw,koz='
+        print*,ktrace,kfh,knt,ktt,ksgeo,ksfcp,kuu,kvv,kqt,kcw,koz
         print*,'ktg,ksmc,ksnr,kstc,ksimk,kslmk,krw,kiw,ksw,kgl,kend='
         print*,ktg,ksmc,ksnr,kstc,ksimk,kslmk,krw,kiw,ksw,kgl,kend
       endif
@@ -203,6 +213,75 @@
       endif
 #endif
 
+! gfs tracer index
+#ifdef write_RSM
+      if(myrank.eq.0) then
+        krec=knt
+        write(nsig,rec=krec) ntindex
+      endif
+#endif
+#ifdef send_RSM
+      if(myrank.eq.0) then
+        itag=itag0+knt
+        call mpmd_send(ntindex,7,root_rsm,itag,'I')
+      endif
+#endif
+!
+!  convert terrain geopotential to terrain geopotential hight
+!
+      do 28 jj = 1, jlistnum
+       j=jlist1(jj)
+       nxj=nxdef_2d(j)
+      do 28 i=1,nxj
+        wrk1(i,jj)=sgeo(i,jj)/grav
+ 28   continue
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
+!
+#ifdef write_RSM
+      if(myrank.eq.0) then
+        krec=ksgeo
+        write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
+      endif
+#endif
+#ifdef send_RSM
+      if(myrank.eq.0) then
+        g2send(:,:)=work(x1:x2,y1:y2)
+      endif
+#endif
+#ifdef send_RSM
+      if(myrank.eq.0) then
+        itag=itag0+ksgeo
+        call mpmd_send(g2send,nxmy,root_rsm,itag,'R')
+      endif
+#endif
+!
+! surface pressure
+!
+      do 31 jj = 1, jlistnum
+       j=jlist1(jj)
+       nxj=nxdef_2d(j)
+      do 31 i = 1,nxj
+       wrk1(i,jj)=pt(i,jj)+ptop
+ 31   continue
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
+!
+#ifdef write_RSM
+      if(myrank.eq.0) then
+        krec=ksfcp
+        write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
+      endif
+#endif
+#ifdef send_RSM
+      if(myrank.eq.0) then
+        g2send(:,:)=work(x1:x2,y1:y2)
+      endif
+#endif
+#ifdef send_RSM
+      if(myrank.eq.0) then
+        itag=itag0+ksfcp
+        call mpmd_send(g2send,nxmy,root_rsm,itag,'R')
+      endif
+#endif
 !
 !  convert virture potential temperature to temperature
 !
@@ -415,65 +494,85 @@
 !
       endif
 !
-!  convert terrain geopotential to terrain geopotential hight
-!
-      k=lev
-      do 28 jj = 1, jlistnum
-       j=jlist1(jj)
-       nxj=nxdef_2d(j)
-      do 28 i=1,nxj
-        wrk1(i,jj)=sgeo(i,jj)/grav
- 28   continue
-      call unify_reduceintp(nx,my,my_max,wrk1,work)
-!
-#ifdef write_RSM
-      if(myrank.eq.0) then
-        krec=ksgeo-1+(lev-k+1)
-        write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
-      endif
-#endif
-#ifdef send_RSM
-      if(myrank.eq.0) then
-        g2send(:,:)=work(x1:x2,y1:y2)
-      endif
-#endif
-#ifdef send_RSM
-      if(myrank.eq.0) then
-        itag=itag0+ksgeo
-        call mpmd_send(g2send,nxmy,root_rsm,itag,'R')
-      endif
-#endif
-!
-! surface pressure
-!
-      do 31 jj = 1, jlistnum
-       j=jlist1(jj)
-       nxj=nxdef_2d(j)
-      do 31 i = 1,nxj
-       wrk1(i,jj)=pt(i,jj)+ptop
- 31   continue
-      call unify_reduceintp(nx,my,my_max,wrk1,work)
-!
-#ifdef write_RSM
-      if(myrank.eq.0) then
-        krec=ksfcp
-        write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
-      endif
-#endif
-#ifdef send_RSM
-      if(myrank.eq.0) then
-        g2send(:,:)=work(x1:x2,y1:y2)
-      endif
-#endif
-#ifdef send_RSM
-      if(myrank.eq.0) then
-        itag=itag0+ksfcp
-        call mpmd_send(g2send,nxmy,root_rsm,itag,'R')
-      endif
-#endif
-!
 !----- start to output surface data ------
       if(myrank .eq. 0) print *,' rsmout_sigp : output surface file'
+! ***land and sea mask***(land=1,sea=0)***
+      wrk1(:,:)=0.0
+      do jj=1,jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+      do i=1,nxj
+        if(land(i,jj))wrk1(i,jj)=1.0
+        if(ocean(i,jj))wrk1(i,jj)=0.0
+      enddo
+      enddo
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
+!
+#ifdef write_RSM
+      if(myrank.eq.0) then
+        krec=kslmk
+        write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
+      endif
+#endif
+#ifdef send_RSM
+      if(myrank.eq.0) then
+        g2send(:,:)=work(x1:x2,y1:y2)
+      endif
+#endif
+#ifdef send_RSM
+      if(myrank.eq.0) then
+        itag=itag0+kslmk
+        call mpmd_send(g2send,nxmy,root_rsm,itag,'R')
+      endif
+#endif
+! ***snr***
+      call unify_reduceintp(nx,my,my_max,snr,work)
+!
+#ifdef write_RSM
+      if(myrank.eq.0) then
+        krec=ksnr
+        write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
+      endif
+#endif
+#ifdef send_RSM
+      if(myrank.eq.0) then
+        g2send(:,:)=work(x1:x2,y1:y2)
+      endif
+#endif
+#ifdef send_RSM
+      if(myrank.eq.0) then
+        itag=itag0+ksnr
+        call mpmd_send(g2send,nxmy,root_rsm,itag,'R')
+      endif
+#endif
+!! ***ice***(simk in RSM-csfcfld(:,13))
+      wrk1(:,:)=0.0
+      do jj=1,jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+      do i=1,nxj
+        if(ice(i,jj))wrk1(i,jj)=2.0
+      enddo
+      enddo
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
+!
+#ifdef write_RSM
+      if(myrank.eq.0) then
+        krec=ksimk
+        write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
+      endif
+#endif
+#ifdef send_RSM
+      if(myrank.eq.0) then
+        g2send(:,:)=work(x1:x2,y1:y2)
+      endif
+#endif
+#ifdef send_RSM
+      if(myrank.eq.0) then
+        itag=itag0+ksimk
+        call mpmd_send(g2send,nxmy,root_rsm,itag,'R')
+      endif
+#endif
 ! ***tg***
       call unify_reduceintp(nx,my,my_max,tg,work)
 !
@@ -528,26 +627,6 @@
         call mpmd_send(gssend,nxmys,root_rsm,itag,'R')
       endif
 #endif
-! ***snr***
-      call unify_reduceintp(nx,my,my_max,snr,work)
-!
-#ifdef write_RSM
-      if(myrank.eq.0) then
-        krec=ksnr
-        write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
-      endif
-#endif
-#ifdef send_RSM
-      if(myrank.eq.0) then
-        g2send(:,:)=work(x1:x2,y1:y2)
-      endif
-#endif
-#ifdef send_RSM
-      if(myrank.eq.0) then
-        itag=itag0+ksnr
-        call mpmd_send(g2send,nxmy,root_rsm,itag,'R')
-      endif
-#endif
 !
 ! ***0-0.1m soil temperature***
 ! ***0.1-0.4m soil temperature***
@@ -579,63 +658,6 @@
       if(myrank.eq.0) then
         itag=itag0+kstc
         call mpmd_send(gssend,nxmys,root_rsm,itag,'R')
-      endif
-#endif
-! ***land and sea mask***(land=1,sea=0)***
-      wrk1(:,:)=0.0
-      do jj=1,jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-      do i=1,nxj
-        if(land(i,jj))wrk1(i,jj)=1.0
-        if(ocean(i,jj))wrk1(i,jj)=0.0
-      enddo
-      enddo
-      call unify_reduceintp(nx,my,my_max,wrk1,work)
-!
-#ifdef write_RSM
-      if(myrank.eq.0) then
-        krec=kslmk
-        write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
-      endif
-#endif
-#ifdef send_RSM
-      if(myrank.eq.0) then
-        g2send(:,:)=work(x1:x2,y1:y2)
-      endif
-#endif
-#ifdef send_RSM
-      if(myrank.eq.0) then
-        itag=itag0+kslmk
-        call mpmd_send(g2send,nxmy,root_rsm,itag,'R')
-      endif
-#endif
-!! ***ice***(simk in RSM-csfcfld(:,13))
-      wrk1(:,:)=0.0
-      do jj=1,jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-      do i=1,nxj
-        if(ice(i,jj))wrk1(i,jj)=2.0
-      enddo
-      enddo
-      call unify_reduceintp(nx,my,my_max,wrk1,work)
-!
-#ifdef write_RSM
-      if(myrank.eq.0) then
-        krec=ksimk
-        write(nsig,rec=krec) ((work(i,j),i=x1,x2),j=y1,y2)
-      endif
-#endif
-#ifdef send_RSM
-      if(myrank.eq.0) then
-        g2send(:,:)=work(x1:x2,y1:y2)
-      endif
-#endif
-#ifdef send_RSM
-      if(myrank.eq.0) then
-        itag=itag0+ksimk
-        call mpmd_send(g2send,nxmy,root_rsm,itag,'R')
       endif
 #endif
 !--------------
