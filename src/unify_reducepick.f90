@@ -43,7 +43,7 @@
        j=jlist1(jj)
        ii=nxjstart(j)
        nxj=nxdef_2d(j)
-       if( lreduce.eq.1 )call reducepickr (ff(1,j),nxdef(j),nx,1)
+       if( lreduce.eq.1 )call reducepicki (ff(1,j),nxdef(j),nx,1)
         do i = 1, nxj
           fp(i,jj) = ff(ii,j)
           ii=ii+1
