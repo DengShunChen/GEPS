@@ -107,6 +107,7 @@
       rlat1=5.
       rlat2=40.
       rgrdsz=0.25
+      rsmsfcmgrhr=24
 !---------------------------------------------------------------------------
 !
 ! specify the default option for cup and pbl

@@ -1,4 +1,4 @@
-!#ifdef RSM
+#ifdef RSM
       subroutine wrte_idate(idate)
 !
       use rank, only : myrank
@@ -18,4 +18,4 @@
 !
       return
       end
-!#endif
+#endif

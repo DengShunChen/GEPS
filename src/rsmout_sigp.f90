@@ -3,7 +3,8 @@
                          , pt,sgeo,snr,gwr,tg,pk                     &
                          , ut,vt,tt,qt,km,smc,stc                    &
                          , ice,land,ocean,xlon,xlat)
-#ifdef RSM_sigp
+!#ifdef RSM_sigp
+#ifdef RSM
 
 #ifdef CWB_MPMD
 #define send_RSM
@@ -15,9 +16,11 @@
       use mpe
       use radn, only : ntoz,ntcw,ntrw,ntiw,ntsw,ntgl
       use rank, only : root_rsm,myrank,itag
-      use const, only: rlon1, rlon2, rlat1, rlat2, rgrdsz
+      use const, only: rlon1, rlon2, rlat1, rlat2, rgrdsz, rsmsfcmgrhr
 
       implicit  none
+
+      logical   ldosfc
 
       integer   itau,nx,my,my_max,lev,ncld,km
 
@@ -45,7 +48,7 @@
       real      xx
 !
       integer   nxmy, nxmyl, nxmys
-      integer   nxs, mys
+      integer   nxs, mys, len2
       integer   x1, x2, y1, y2
 #ifdef send_RSM
       real,allocatable ::  g3send(:,:,:),g2send(:,:),gssend(:,:,:)
@@ -62,7 +65,10 @@
       integer   kqt,kcw,krw,kiw,ksw,kgl,koz
       integer   ktg,ksmc,ksnr,kstc,ksimk,kslmk
       integer   ktrace,kend,krec
+      integer   klon,klat
       integer   ntindex(7)
+
+      ldosfc=mod(float(itau)+0.00001, float(rsmsfcmgrhr) ).lt.0.01
 
 ! local variable initization
       nxmy=nx*my
@@ -92,11 +98,6 @@
         ntindex(6)=ntsw
         ntindex(7)=ntgl
 
-#ifdef send_RSM
-! mpmd send tag
-      itag0=itag
-#endif
-
 #ifdef write_RSM
 ! output file name      
       nsig=21
@@ -108,6 +109,9 @@
 
 ! output record sequence 
       ktrace=-999
+!lat/lon
+      klon=2
+      klat=3
       kfh=1
       knt=kfh+1
       ksgeo=knt+1
@@ -131,6 +135,8 @@
       kend=kgl+lev
 
       if(myrank.eq.0) then
+        print*,'klon,klat='
+        print*,klon,klat
         print*,'ktrace,kfh,knt,ktt,ksgeo,ksfcp,kuu,kvv,kqt,kcw,koz='
         print*,ktrace,kfh,knt,ktt,ksgeo,ksfcp,kuu,kvv,kqt,kcw,koz
         print*,'ktg,ksmc,ksnr,kstc,ksimk,kslmk,krw,kiw,ksw,kgl,kend='
@@ -148,6 +154,7 @@
       x2=nxs-1+x1
       y1=nint(  (rlat1-(-90.)) /rgrdsz+1.)
       y2=mys-1+y1
+      len2=nxs*mys
 !
 ! print/output information of regional domain at itau=0
 !
@@ -169,17 +176,32 @@
               form='formatted',iostat=ierr)
           if (ierr/=0) stop "rsmout_sigp: open file xlon fail"
           write(99,*) work(x1:x2,1)
+#ifdef send_RSM
+        itag=klon
+        call mpmd_send(work(x1:x2,1),nxs,root_rsm,itag,'R')
+#endif
           close(99)
           open(98,file='rsm_xlat_'//cidtg//'.txt',status='unknown', &
               form='formatted',iostat=ierr)
           if (ierr/=0) stop "rsmout_sigp: open file xlat fail"
           write(98,*) xlat(y1:y2)
+#ifdef send_RSM
+        itag=klat
+        call mpmd_send(xlat(y1:y2),mys,root_rsm,itag,'R')
+#endif
           close(98)
           print*,'-----output data for rsm-----'
           print*,'--nxs, mys, x1, x2, y1, y2=--'
           print*,'-',nxs, mys, x1, x2, y1, y2,'-'
         endif
       endif  !endif (itau=0)
+
+#ifdef send_RSM
+      if(myrank.eq.0) then
+! mpmd send tag
+      itag0=itag
+      endif
+#endif
 
 
 ! allocate temporary 
@@ -210,6 +232,7 @@
       if(myrank.eq.0) then
         itag=itag0+kfh
         call mpmd_send(float(itau),1,root_rsm,itag,'R')
+        print*,'gfs kfh itag=',itag
       endif
 #endif
 
@@ -224,6 +247,7 @@
       if(myrank.eq.0) then
         itag=itag0+knt
         call mpmd_send(ntindex,7,root_rsm,itag,'I')
+        print*,'gfs knt itag=',itag
       endif
 #endif
 !
@@ -251,7 +275,8 @@
 #ifdef send_RSM
       if(myrank.eq.0) then
         itag=itag0+ksgeo
-        call mpmd_send(g2send,nxmy,root_rsm,itag,'R')
+        call mpmd_send(g2send,len2,root_rsm,itag,'R')
+        print*,'gfs ksgeo itag=',itag
       endif
 #endif
 !
@@ -279,7 +304,8 @@
 #ifdef send_RSM
       if(myrank.eq.0) then
         itag=itag0+ksfcp
-        call mpmd_send(g2send,nxmy,root_rsm,itag,'R')
+        call mpmd_send(g2send,len2,root_rsm,itag,'R')
+        print*,'gfs ksfcp itag=',itag
       endif
 #endif
 !
@@ -308,8 +334,10 @@
       enddo
 #ifdef send_RSM
       if(myrank.eq.0) then
-        itag=itag0+ktt
-        call mpmd_send(g3send,nxmyl,root_rsm,itag,'R')
+      do k=1,lev
+        itag=itag0+ktt-1+k
+        call mpmd_send(g3send(:,:,k),len2,root_rsm,itag,'R')
+      enddo
       endif
 #endif
 
@@ -343,8 +371,10 @@
       enddo
 #ifdef send_RSM
       if(myrank.eq.0) then
-        itag=itag0+kuu
-        call mpmd_send(g3send,nxmyl,root_rsm,itag,'R')
+      do k=1,lev
+        itag=itag0+kuu-1+k
+        call mpmd_send(g3send(:,:,k),len2,root_rsm,itag,'R')
+      enddo
       endif
 #endif
 !
@@ -374,8 +404,10 @@
       enddo
 #ifdef send_RSM
       if(myrank.eq.0) then
-        itag=itag0+kvv
-        call mpmd_send(g3send,nxmyl,root_rsm,itag,'R')
+      do k=1,lev
+        itag=itag0+kvv-1+k
+        call mpmd_send(g3send(:,:,k),len2,root_rsm,itag,'R')
+      enddo
       endif
 #endif
 !
@@ -404,8 +436,10 @@
       enddo
 #ifdef send_RSM
       if(myrank.eq.0) then
-        itag=itag0+kqt
-        call mpmd_send(g3send,nxmyl,root_rsm,itag,'R')
+      do k=1,lev
+        itag=itag0+kqt-1+k
+        call mpmd_send(g3send(:,:,k),len2,root_rsm,itag,'R')
+      enddo
       endif
 #endif
 !
@@ -452,8 +486,10 @@
             enddo   !enddo k=1,lev
 #ifdef send_RSM
             if(myrank.eq.0) then
-              itag=itag0+ktrace
-              call mpmd_send(g3send,nxmyl,root_rsm,itag,'R')
+            do k=1,lev
+              itag=itag0+ktrace-1+k
+              call mpmd_send(g3send(:,:,k),len2,root_rsm,itag,'R')
+            enddo
             endif
 #endif
 !
@@ -487,14 +523,18 @@
       enddo
 #ifdef send_RSM
       if(myrank.eq.0) then
-        itag=itag0+koz
-        call mpmd_send(g3send,nxmyl,root_rsm,itag,'R')
+      do k=1,lev
+        itag=itag0+koz-1+k
+        call mpmd_send(g3send(:,:,k),len2,root_rsm,itag,'R')
+      enddo
       endif
 #endif
 !
       endif
 !
 !----- start to output surface data ------
+      if (ldosfc) then
+
       if(myrank .eq. 0) print *,' rsmout_sigp : output surface file'
 ! ***land and sea mask***(land=1,sea=0)***
       wrk1(:,:)=0.0
@@ -522,7 +562,7 @@
 #ifdef send_RSM
       if(myrank.eq.0) then
         itag=itag0+kslmk
-        call mpmd_send(g2send,nxmy,root_rsm,itag,'R')
+        call mpmd_send(g2send,len2,root_rsm,itag,'R')
       endif
 #endif
 ! ***snr***
@@ -542,7 +582,7 @@
 #ifdef send_RSM
       if(myrank.eq.0) then
         itag=itag0+ksnr
-        call mpmd_send(g2send,nxmy,root_rsm,itag,'R')
+        call mpmd_send(g2send,len2,root_rsm,itag,'R')
       endif
 #endif
 !! ***ice***(simk in RSM-csfcfld(:,13))
@@ -570,7 +610,7 @@
 #ifdef send_RSM
       if(myrank.eq.0) then
         itag=itag0+ksimk
-        call mpmd_send(g2send,nxmy,root_rsm,itag,'R')
+        call mpmd_send(g2send,len2,root_rsm,itag,'R')
       endif
 #endif
 ! ***tg***
@@ -590,7 +630,7 @@
 #ifdef send_RSM
       if(myrank.eq.0) then
         itag=itag0+ktg
-        call mpmd_send(g2send,nxmy,root_rsm,itag,'R')
+        call mpmd_send(g2send,len2,root_rsm,itag,'R')
       endif
 #endif
 !
@@ -623,8 +663,10 @@
       enddo
 #ifdef send_RSM
       if(myrank.eq.0) then
-        itag=itag0+ksmc
-        call mpmd_send(gssend,nxmys,root_rsm,itag,'R')
+      do k=1,km
+        itag=itag0+ksmc-1+k
+        call mpmd_send(gssend(:,:,k),len2,root_rsm,itag,'R')
+      enddo
       endif
 #endif
 !
@@ -656,10 +698,14 @@
       enddo
 #ifdef send_RSM
       if(myrank.eq.0) then
-        itag=itag0+kstc
-        call mpmd_send(gssend,nxmys,root_rsm,itag,'R')
+      do k=1,km
+        itag=itag0+kstc-1+k
+        call mpmd_send(gssend(:,:,k),len2,root_rsm,itag,'R')
+      enddo
       endif
 #endif
+      endif ! (ldosfc)
+
 !--------------
 !
 #ifdef write_RSM

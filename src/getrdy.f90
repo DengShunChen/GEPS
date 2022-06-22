@@ -59,10 +59,10 @@
 !byl                wss3(levp,2,3,jtrun,jtmax),cc3(nx+2,levp,3,my_max)
 
       character lrec*26,rfile*55,ctau*6,topostd*4,topohgt*4,key*34
-!#ifdef RSM
+#ifdef RSM
       character*12 dtgrsm
       integer idtgrsm
-!#endif
+#endif
 !
 ! restart  : read(7) work array
 !
@@ -1324,21 +1324,9 @@
               , ggdef)
       endif
 !
-#ifdef RSM_sigp
-       if(outrsm) then
-        if(myrank.eq.0)print*,' output: rsm date',idtg
-        write(dtgrsm,'(I12)') idtg
-        read(dtgrsm,'(I10,I2)')idtgrsm,ii   ! ii is dummy integer
-        call wrte_idate(idtgrsm)
-        call rsmout_sigp( 0,nx,my,my_max,lev,ncld        &
-                     , idtg,ptop,rad,grav,cosl           &
-                     , pt,sgeo,snr,gwr,tg,pk             &
-                     , ut,vt,tt,qt,km_soil,smc,stc       &
-                     , ice,land,ocean,xlon,xlat)
-       endif
-#endif
+!#ifdef RSM_sigp
 #ifdef RSM
-      if (outrsm) then
+       if(outrsm) then
         if(myrank.eq.0)print*,' output: rsm date',idtg
         write(dtgrsm,'(I12)') idtg
         read(dtgrsm,'(I10,I2)')idtgrsm,ii   ! ii is dummy integer
@@ -1347,14 +1335,31 @@
 #else
         call wrte_idate(idtgrsm)
 #endif
-        call rsmout(idtg,0,nx,my,my_max,lev,ncld      &
-                , ptop,cp,rgas,grav,sgeo,pdiff        &
-                , t1000,pt,plt,pk,pk2,phi,ut,vt       &
-                , tt,qt,tg,snr,cosl                   &
-                , km_soil,smc,stc                     &
-                , ice,land,ocean)
-      endif
+        call rsmout_sigp( 0,nx,my,my_max,lev,ncld        &
+                     , idtg,ptop,rad,grav,cosl           &
+                     , pt,sgeo,snr,gwr,tg,pk             &
+                     , ut,vt,tt,qt,km_soil,smc,stc       &
+                     , ice,land,ocean,xlon,xlat)
+       endif
 #endif
+!#ifdef RSM
+!      if (outrsm) then
+!        if(myrank.eq.0)print*,' output: rsm date',idtg
+!        write(dtgrsm,'(I12)') idtg
+!        read(dtgrsm,'(I10,I2)')idtgrsm,ii   ! ii is dummy integer
+!#ifdef CWB_MPMD
+!        call send_idate(idtgrsm)
+!#else
+!        call wrte_idate(idtgrsm)
+!#endif
+!        call rsmout(idtg,0,nx,my,my_max,lev,ncld      &
+!                , ptop,cp,rgas,grav,sgeo,pdiff        &
+!                , t1000,pt,plt,pk,pk2,phi,ut,vt       &
+!                , tt,qt,tg,snr,cosl                   &
+!                , km_soil,smc,stc                     &
+!                , ice,land,ocean)
+!      endif
+!#endif
 !
 !
         if(typhoon)then

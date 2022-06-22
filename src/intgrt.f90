@@ -1661,8 +1661,10 @@
                     , ctot,chig,cmid,clow,hpbl,histim,do_sit)
 #endif
 !
-#ifdef RSM_sigp
+!#ifdef RSM_sigp
+#ifdef RSM
        if(outrsm .and. mod(float(itau)+0.00001, float(rsmoutinv) ) .lt. 0.01)then
+        if(myrank.eq.0)print*,' call rsmout for rsm output at tau=',itau
         call rsmout_sigp( itau,nx,my,my_max,lev,ncld     &
                      , idtg,ptop,rad,grav,cosl           &
                      , pt,sgeo,snr,gwr,tg,pk             &
@@ -1671,18 +1673,18 @@
        endif
 #endif
 !
-#ifdef RSM
-! RSM: output base field ncep-format data for RSM
-      if(outrsm .and. mod(float(itau)+0.00001, float(rsmoutinv) ) .lt. 0.01)then
-        if(myrank.eq.0)print*,' call rsmout for rsm output at tau=',itau
-        call rsmout(idtg,itau,nx,my,my_max,lev,ncld   &
-                , ptop,cp,rgas,grav,sgeo,pdiff        &
-                , t1000,pt,plt,pk,pk2,phi,ut,vt       &
-                , tt,qt,tg,snr,cosl                   &
-                , km_soil,smc,stc                     &
-                , ice,land,ocean)
-      endif
-#endif
+!#ifdef RSM
+!! RSM: output base field ncep-format data for RSM
+!      if(outrsm .and. mod(float(itau)+0.00001, float(rsmoutinv) ) .lt. 0.01)then
+!        if(myrank.eq.0)print*,' call rsmout for rsm output at tau=',itau
+!        call rsmout(idtg,itau,nx,my,my_max,lev,ncld   &
+!                , ptop,cp,rgas,grav,sgeo,pdiff        &
+!                , t1000,pt,plt,pk,pk2,phi,ut,vt       &
+!                , tt,qt,tg,snr,cosl                   &
+!                , km_soil,smc,stc                     &
+!                , ice,land,ocean)
+!      endif
+!#endif
 !
 !        if(typhoon .and. ltrack)then
          if(typhoon .and. ltrack .and. itau .le. 384 )then
