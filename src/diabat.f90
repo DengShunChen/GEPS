@@ -364,6 +364,9 @@
       logical   donor,upnor
       data      donor/.true./,fnor/0.5/
 
+! for GFDL microphysics
+      real area(nxp,1)
+
 !#######################################################################
 !
 !     local logical variables and work arrays
@@ -581,6 +584,7 @@
          doozon = .false.
          kdt    = 0
       endif
+
 !------------------------------------------------------------------------------
 !     set hours, iter, icrad, julian, uprad, doozon
 !------------------------------------------------------------------------------
@@ -1076,8 +1080,8 @@
              nxp,nxjp(j),lev,ncld,lprnt,ipt,kdt,rsolhr,                    &
              uni_cloud,lmfshal,lmfdeep2,                                   &
              deltaq(1,1,jj),sup,cnvwr(1,1,jj),cnvcr(1,1,jj),               &
-             ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),nmmiph,                  &
-          !  ---  outputs:
+             ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),fqp1(1,1,jj),nmmiph,     &
+!  ---  outputs:
              asol(1,jj),olr(1,jj),ss(1,jj),rs(1,jj),                       &
              sld(1,jj),rld(1,jj),tsflw(1,jj),                              &
              ctot(1,jj),chig(1,jj),cmid(1,jj),clow(1,jj),                  &
@@ -1810,19 +1814,29 @@
           enddo
         enddo
       endif !( dolsp .and. nmmiph.eq.2 )
+!
+      if ( dolsp .and. (nmmiph.eq.6 .or. nmmiph.eq.8 .or. nmmiph.eq.11) ) then
 
-      if ( dolsp .and. (nmmiph.eq.6 .or. nmmiph.eq.8) ) then
-        call mp_scheme                                                   &
-          !  ---  inputs:
-           ( nmmiph,nxp,nxjp(j),lev,ncld,plt(1,1,jj),pst(1,jj),dsigma, &
-             phii,islimsk,q0,kdt,ntcw,ntrw,ntiw,ntsw,ntgl,             &
-             ntinc,ntrnc,tpi,me,dta,jj,                                &
-          !  ---  inputs/outputs:
-             tt(1,1,jj),qt(1,1,jj),                                    &
-          !  ---  outputs:
-             ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),rlsp(1,jj),sr(1,jj) )
+! for GFDL MP
+      do i = 1, nxj
+        area(i,1) = tem1*tem2  !area of grid box
+      enddo
+
+      call mp_scheme                                                   &
+!  ---  inputs:
+           ( nmmiph,nxp,nxjp(j),lev,ncld,plt(1,1,jj),                  &
+             pst(1,jj),dsigma,phii,islimsk,q0,kdt,ntcw,ntrw,ntiw,ntsw, &
+             ntgl,ntinc,ntrnc,tpi,me,dta,area,jj,                      &
+!  ---  inputs/outputs:
+             tt(1,1,jj),qt(1,1,jj),clds(1,1,jj),                       &
+             ut(1,1,jj),vt(1,1,jj),sd(1,1,jj),                         &
+!  ---  outputs:
+             ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),fqp1(1,1,jj),        &
+             rlsp(1,jj),sr(1,jj) )
+!    
       endif
 
+!
       if ( dodry ) then
          do k=1,lev
            dsigpp(k) = dsigma(k,1)+dsigma(k,2)/1000.
