@@ -33,7 +33,7 @@
              print *,'Thompson cloud microphysics initialized'
         endif
 ! GFDLMP
-        if ( nmmiph . eq. 11 ) then
+        if ( nmmiph .eq. 11 ) then
           call gfdl_cloud_microphys_init()
           if ( myrank .eq. 0 )                                         &
              print *, 'GFDL cloud microphysics initialized'
