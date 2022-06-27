@@ -623,8 +623,18 @@
           call mpe_finalize
           call dmsexit(-1)
         endif
-        call unify_reducepick(nx,my,my_max,ww1,sgeo)
-        sgeo(:,:) = sgeo(:,:)*grav
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          ii=nxjstart(j)
+!byl          nxj=nxdef(j)
+          nxj=nxdef_2d(j)
+          if( lreduce.eq.1 ) call reducepick (ww1(1,j),nxdef(j),nx,1)
+          do i = 1, nxj
+!byl            ww3(i,jj) = ww1(i,j)*grav
+            sgeo(i,jj) = ww1(ii,j)*grav
+            ii=ii+1
+          enddo
+        enddo
 
 
 !ch     call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,sgeo,spgeo,nsize)
