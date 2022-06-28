@@ -146,7 +146,7 @@
       logical tofd
       real utendform(ix,km),vtendform(ix,km),za(ix,km),                &
            hpbl(ix),dxmet(im)
-      real wsp,H_efold,a1,a2,var_temp,dxmeter,ss_taper,ro_tmp
+      real wsp,H_efold,a1,a2,var_temp,dxmeter,ss_taper,ro_tmp,utmp,vtmp
       real varmax_fd,beta_fd,a1_coeff,a2_coeff,TOFD_coeff,Hefold_nom,  &
            dxmin_ss,dxmax_ss
       parameter (varmax_fd = 160.)
@@ -345,13 +345,16 @@
             H_efold = max(2*hprime(j),hpbl(j))
             H_efold = min(H_efold,Hefold_nom)
             za(j,k) = 0.5*(phii(j,k)+phii(j,k+1))/g
-            wsp=SQRT(u1(j,k)**2 + v1(j,k)**2)
+!            wsp=SQRT(u1(j,k)**2 + v1(j,k)**2)
+            utmp=u1(j,k)+b(j,k)*deltim
+            vtmp=v1(j,k)+a(j,k)*deltim
+            wsp=SQRT(utmp*utmp + vtmp*vtmp)
             vtj(i,k)  = t1(j,k)  * (1.+fv*q1(j,k))
             ro_tmp    = rdi * prsl(j,k) / vtj(i,k) ! density tons/m**3
          ! Eqn. (16) of Beljaars et al. (2004)
-            utendform(j,k)=-TOFD_coeff*wsp*u1(j,k)* ro_tmp* &
+            utendform(j,k)=-TOFD_coeff*wsp*utmp* ro_tmp* &
                            EXP(-(za(j,k)/H_efold)**1.5)*a2*za(j,k)**(-1.2)*ss_taper
-            vtendform(j,k)=-TOFD_coeff*wsp*v1(j,k)* ro_tmp* &
+            vtendform(j,k)=-TOFD_coeff*wsp*vtmp* ro_tmp* &
                            EXP(-(za(j,k)/H_efold)**1.5)*a2*za(j,k)**(-1.2)*ss_taper
             a(j,k)  = vtendform(j,k) + a(j,k)
             b(j,k)  = utendform(j,k) + b(j,k)
