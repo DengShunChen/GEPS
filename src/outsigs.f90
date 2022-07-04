@@ -9,11 +9,11 @@
 
       implicit  none
 
-      integer   itau,nx,my,my_max,lev,ncld,km,nc
+      integer   itau,nx,my,my_max,lev,ncld,km,nc,kl
 
       real      ptop,rad,grav,cp
 
-      real      cosl(my),pt(nx,my_max),sgeo(nxp,my_max),        &
+      real      cosl(my),pt(nxp,my_max),sgeo(nxp,my_max),       &
                 snr(nxp,my_max),gwr(nxp,my_max),                &
                 tg(nxp,my_max),pk(nxp,lev,my_max),              &
                 pk2(nxp,lev,my_max),ut(nxp,lev,my_max),         &
@@ -25,7 +25,7 @@
                 zice(nxp,my_max),wrk1(nxp,my_max),mout(nx,my)
       integer*8 idtg
       character*80 ifilout
-      character typ*6,ihdg*26,ihdg2*26
+      character typ*6,ihdg*26,ihdg2*26,mlayer*1
       character*4 ggdef,gmdef
 !
       integer   i,lenc,k,jj,j,nxj,istat,kk,iout_b10,ntrac,nclds
@@ -60,7 +60,11 @@
 !
       if ( myrank .lt. lev ) then
         k=myrank+1
-        write(typ,'("m",i2.2,"100")')k
+        if ( k .lt. 100 ) then
+          write(typ,'("m",i2.2,"100")')k
+        else
+          write(typ,'("n",i2.2,"100")')mod(k,100)
+        endif
         call syslbl (typ,idtg,itau,gmdef,ihdg)
         call dmswrit_split(nx,my,ihdg,lenc,'H',ifilout,mout,istat)
       endif
@@ -82,7 +86,11 @@
 !
       if ( myrank .lt. lev ) then
         k=myrank+1
-        write(typ,'("m",i2.2,"200")')k
+        if ( k .lt. 100 ) then
+          write(typ,'("m",i2.2,"200")')k
+        else
+          write(typ,'("n",i2.2,"200")')mod(k,100)
+        endif
         call syslbl (typ,idtg,itau,gmdef,ihdg)
         call dmswrit_split(nx,my,ihdg,lenc,'H',ifilout,mout,istat)
       endif
@@ -101,7 +109,11 @@
 !
       if ( myrank .lt. lev ) then
         k=myrank+1
-        write(typ,'("m",i2.2,"210")')k
+        if ( k .lt. 100 ) then
+          write(typ,'("m",i2.2,"210")')k
+        else
+          write(typ,'("n",i2.2,"210")')mod(k,100)
+        endif
         call syslbl (typ,idtg,itau,gmdef,ihdg)
         call dmswrit_split(nx,my,ihdg,lenc,'H',ifilout,mout,istat)
       endif
@@ -119,7 +131,11 @@
 !
       if ( myrank .lt. lev ) then
         k=myrank+1
-        write(typ,'("m",i2.2,"500")')k
+        if ( k .lt. 100 ) then
+          write(typ,'("m",i2.2,"500")')k
+        else
+          write(typ,'("n",i2.2,"500")')mod(k,100)
+        endif
         call syslbl (typ,idtg,itau,gmdef,ihdg)
         call dmswrit_split(nx,my,ihdg,lenc,'H',ifilout,mout,istat)
       endif
@@ -144,7 +160,11 @@
 !
       if ( myrank .lt. lev ) then
         k=myrank+1
-        write(typ,'("m",i2.2,"550")')k
+        if ( k .lt. 100 ) then
+          write(typ,'("m",i2.2,"550")')k
+        else
+          write(typ,'("n",i2.2,"550")')mod(k,100)
+        endif
         call syslbl (typ,idtg,itau,gmdef,ihdg)
         call dmswrit_split(nx,my,ihdg,lenc,'H',ifilout,mout,istat)
       endif
@@ -167,16 +187,23 @@
 !
           if ( myrank .lt. lev ) then
             k=myrank+1
+            if ( k .lt. 100 ) then
+              kl     = k
+              mlayer = 'm'
+            else
+              kl     = mod(k,100)
+              mlayer = 'n'
+            endif
             if(ntrac.eq.ntcw)then
-              write(typ,'("m",i2.2,"551")')k     ! cloud liquid water content
+              write(typ,'(A1,i2.2,"551")')mlayer,kl     ! cloud liquid water content
             else if(ntrac.eq.ntiw)then
-              write(typ,'("m",i2.2,"552")')k     ! cloud ice content
+              write(typ,'(A1,i2.2,"552")')mlayer,kl     ! cloud ice content
             else if(ntrac.eq.ntrw)then
-              write(typ,'("m",i2.2,"553")')k     ! rain
+              write(typ,'(A1,i2.2,"553")')mlayer,kl     ! rain
             else if(ntrac.eq.ntsw)then
-              write(typ,'("m",i2.2,"554")')k     ! snow 
+              write(typ,'(A1,i2.2,"554")')mlayer,kl     ! snow 
             else if(ntrac.eq.ntgl)then
-              write(typ,'("m",i2.2,"555")')k     ! graupel
+              write(typ,'(A1,i2.2,"555")')mlayer,kl     ! graupel
             else
               goto 27
             endif
@@ -492,17 +519,7 @@
 !
       call syslbl ('b00650',idtg,itau,ggdef,ihdg)
       call dmsread(nx,my,ihdg,lenc,'H',ifilout,work,istat)
-!byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
-      do jj=1,jlistnum
-         j=jlist1(jj)
-         if( lreduce.eq.1 ) call reducepick (work(1,j),nxdef(j),nx,1)
-         ii=nxjstart(j)
-         nxj=nxdef_2d(j)
-      do i=1,nxj
-         snr(i,jj)=work(ii,j)
-         ii=ii+1
-      enddo
-      enddo
+      call unify_reducepick(nx,my,my_max,work,snr)
 
 !
 !!      call syslbl ('s005a1',idtg,itau,ggdef,ihdg)
@@ -521,31 +538,11 @@
 !
       call syslbl ('s00100',idtg,itau,ggdef,ihdg)
       call dmsread(nx,my,ihdg,lenc,'H',ifilout,work,istat)
-!byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
-      do jj=1,jlistnum
-         j=jlist1(jj)
-         if( lreduce.eq.1 ) call reducepick (work(1,j),nxdef(j),nx,1)
-         ii=nxjstart(j)
-         nxj=nxdef_2d(j)
-      do i=1,nxj
-         tg(i,jj)=work(ii,j)
-         ii=ii+1
-      enddo
-      enddo
+      call unify_reducepick(nx,my,my_max,work,tg)
 !
       call syslbl ('w00092',idtg,itau,ggdef,ihdg)
       call dmsread(nx,my,ihdg,lenc,'H',ifilout,work,istat)
-!byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
-      do jj=1,jlistnum
-         j=jlist1(jj)
-         if( lreduce.eq.1 ) call reducepick (work(1,j),nxdef(j),nx,1)
-         ii=nxjstart(j)
-         nxj=nxdef_2d(j)
-      do i=1,nxj
-         zice(i,jj)=work(ii,j)
-         ii=ii+1
-      enddo
-      enddo
+      call unify_reducepick(nx,my,my_max,work,zice)
 !
       return
       end
@@ -569,7 +566,7 @@
       character*4 ggdef,gmdef
 
       character ifilout*80
-      real      work(nx,my)
+      real      work(nx,my),tmp(nxp,my_max)
       integer*8 idtg
       character typ*6,ihdg*26
 !
@@ -579,17 +576,7 @@
 !
       call syslbl ('s005c0',idtg,itau,ggdef,ihdg)
       call dmsread(nx,my,ihdg,lenc,'H',ifilout,work,istat)
-!byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
-      do jj=1,jlistnum
-         j=jlist1(jj)
-         if( lreduce.eq.1 ) call reducepick (work(1,j),nxdef(j),nx,1)
-         ii=nxjstart(j)
-         nxj=nxdef_2d(j)
-      do i=1,nxj
-         canopy(i,jj)=work(ii,j)
-         ii=ii+1
-      enddo
-      enddo
+      call unify_reducepick(nx,my,my_max,work,canopy)
 
 !
 ! for Noah 4-layer land model
@@ -605,54 +592,25 @@
       write(typ,'("l0",i1.1,"5b0")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
       call dmsread(nx,my,ihdg,lenc,'H',ifilout,work,istat)
-!byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
-!
-      do jj = 1, jlistnum
-       j=jlist1(jj)
-       if( lreduce.eq.1 ) call reducepick (work(1,j),nxdef(j),nx,1)
-       ii=nxjstart(j)
-       nxj=nxdef_2d(j)
-      do i = 1,nxj
-       smc(i,k,jj)=work(ii,j)
-       ii=ii+1
-      enddo
-      enddo
+      call unify_reducepick(nx,my,my_max,work,tmp)
+      smc(:,k,:) = tmp(:,:)
 !
 ! read slc  l015b1
 !
       write(typ,'("l0",i1.1,"5b1")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
       call dmsread(nx,my,ihdg,lenc,'H',ifilout,work,istat)
-!byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
-!
-      do jj = 1, jlistnum
-       j=jlist1(jj)
-       if( lreduce.eq.1 ) call reducepick (work(1,j),nxdef(j),nx,1)
-       ii=nxjstart(j)
-       nxj=nxdef_2d(j)
-      do i = 1,nxj
-       slc(i,k,jj)=work(ii,j)
-       ii=ii+1
-      enddo
-      enddo
+      call unify_reducepick(nx,my,my_max,work,tmp)
+      slc(:,k,:) = tmp(:,:)
 !
 ! read stc  l01100
 !
       write(typ,'("l0",i1.1,"100")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
       call dmsread(nx,my,ihdg,lenc,'H',ifilout,work,istat)
-!byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
+      call unify_reducepick(nx,my,my_max,work,tmp)
+      stc(:,k,:) = tmp(:,:)
 !
-      do jj = 1, jlistnum
-       j=jlist1(jj)
-       if( lreduce.eq.1 ) call reducepick (work(1,j),nxdef(j),nx,1)
-       ii=nxjstart(j)
-       nxj=nxdef_2d(j)
-      do i = 1,nxj
-       stc(i,k,jj)=work(ii,j)
-       ii=ii+1
-      enddo
-      enddo
 !
       enddo
 !

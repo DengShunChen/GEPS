@@ -68,7 +68,7 @@
     logical :: lsimpl,lzadv, yesdia,dopbl, docup, dorad,      &
             dolsp, dograv,doshl, dodry, donnmi,ozon,       &
             restrt,hdiff, cstar, update,doincr,hybrid,     &
-            doo3l, docgrav,doclx
+            doo3l, docgrav, doclx, tofd, doslavepp
 
     ! for stochastic physics
     logical :: dosppt       =.false.
@@ -90,6 +90,7 @@
 
     !for horizontal diffusion
     integer :: hdk1,hdk2(3),hord
+    real    :: vd
 
     !for pdf cloud
     logical :: pdfcloud
@@ -111,7 +112,7 @@
             restrt,hdiff, cstar, update,doincr,hybrid,     &
             doo3l,ndsladvh2,docgrav,out_green,out_hp,      &
             ldailyFCTsst,ldailyFCTicesndpt,lFCTweight,     &
-            dailyClm_option,lopgsst,do_sit
+            dailyClm_option,lopgsst,do_sit,tofd
 
 
     character(len=80) ifilin,cwbout,bckfile,namlsts, &

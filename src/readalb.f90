@@ -103,67 +103,27 @@
       if (ialbflg.eq.0) write(lrec,31)ggdef,mm
       if (ialbflg.eq.1) write(lrec,37)ggdef,mm
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,work,istat)
+      call unify_reducepick(nx,my,my_max,work,alvsfcl(1,1,nn))
 !     call qmax2d(work,1,1,nx,my)
-!byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
-      do jj=1,jlistnum
-        j=jlist1(jj)
-        ii=nxjstart(j)
-        nxj=nxdef_2d(j)
-        if( lreduce.eq.1 ) call reducepick (work(1,j),nxdef(j),nx,1)
-        do i=1,nxj
-          alvsfcl(i,jj,nn)=work(ii,j)
-          ii=ii+1
-        enddo
-      enddo
 
 
       if (ialbflg.eq.0) write(lrec,32)ggdef,mm
       if (ialbflg.eq.1) write(lrec,38)ggdef,mm
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,work,istat)
+      call unify_reducepick(nx,my,my_max,work,alvwfcl(1,1,nn))
 !     call qmax2d(work,1,1,nx,my)
-!byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
-      do jj=1,jlistnum
-        j=jlist1(jj)
-        ii=nxjstart(j)
-        nxj=nxdef_2d(j)
-        if( lreduce.eq.1 ) call reducepick (work(1,j),nxdef(j),nx,1)
-        do i=1,nxj
-          alvwfcl(i,jj,nn)=work(ii,j)
-          ii=ii+1
-        enddo
-      enddo
 
       if (ialbflg.eq.0) write(lrec,33)ggdef,mm
       if (ialbflg.eq.1) write(lrec,39)ggdef,mm
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,work,istat)
+      call unify_reducepick(nx,my,my_max,work,alnsfcl(1,1,nn))
 !     call qmax2d(work,1,1,nx,my)
-!byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
-      do jj=1,jlistnum
-        j=jlist1(jj)
-        ii=nxjstart(j)
-        nxj=nxdef_2d(j)
-        if( lreduce.eq.1 ) call reducepick (work(1,j),nxdef(j),nx,1)
-        do i=1,nxj
-          alnsfcl(i,jj,nn)=work(ii,j)
-          ii=ii+1
-        enddo
-      enddo
 
       if (ialbflg.eq.0) write(lrec,34)ggdef,mm
       if (ialbflg.eq.1) write(lrec,40)ggdef,mm
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,work,istat)
+      call unify_reducepick(nx,my,my_max,work,alnwfcl(1,1,nn))
 !     call qmax2d(work,1,1,nx,my)
-!byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
-      do jj=1,jlistnum
-        j=jlist1(jj)
-        ii=nxjstart(j)
-        nxj=nxdef_2d(j)
-        if( lreduce.eq.1 ) call reducepick (work(1,j),nxdef(j),nx,1)
-        do i=1,nxj
-          alnwfcl(i,jj,nn)=work(ii,j)
-          ii=ii+1
-        enddo
-      enddo
 
       enddo ! end of nn
 !
@@ -172,36 +132,17 @@
       write(lrec,35)ggdef
 !     write(*,*)'35, lrec=',lrec
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,work,istat)
+      call unify_reducepick(nx,my,my_max,work,facsf)
 !     call qmax2d(work,1,1,nx,my)
-!byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
-      do jj=1,jlistnum
-         j=jlist1(jj)
-         ii=nxjstart(j)
-         nxj=nxdef_2d(j)
-         if( lreduce.eq.1 ) call reducepick (work(1,j),nxdef(j),nx,1)
-      do i=1,nxj
-         facsf(i,jj)=work(ii,j)
-         ii=ii+1
-      enddo
-      enddo
 !
 !-- facwf (0-100)
 !
       write(lrec,36)ggdef
 !     write(*,*)'35, lrec=',lrec
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,work,istat)
+      call unify_reducepick(nx,my,my_max,work,facwf)
 !     call qmax2d(work,1,1,nx,my)
-!byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
-      do jj=1,jlistnum
-         j=jlist1(jj)
-         ii=nxjstart(j)
-         nxj=nxdef_2d(j)
-         if( lreduce.eq.1 ) call reducepick (work(1,j),nxdef(j),nx,1)
-      do i=1,nxj
-         facwf(i,jj)=work(ii,j)
-         ii=ii+1
-      enddo
-      enddo
+!
 !----------------------------------------------------------------
   31  format('S0003A','GBCK',a4,4x,i2.2,6x)  ! alvsfcl
   32  format('S0003B','GBCK',a4,4x,i2.2,6x)  ! alvwfcl

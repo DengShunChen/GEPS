@@ -9,7 +9,8 @@
                         , ncld,dsigma,islopetyp,slc,sncover,snwdph       &
                         , shdmax,shdmin,snoalb,albedo2                  &
                         , sld,zice,cice,xtice,hpbl,asl,atl,xmu,gfx      &
-                        , kpbl,nmpbl,nmmiph,jj,isot,ivegsrc,sfemis_g )
+                        , kpbl,nmpbl,nmmiph,jj,isot,ivegsrc,sfemis_g    &
+                        , dudt,dvdt,dtdt )
 !
 !#######################################################################
 !                     subroutine description
@@ -154,7 +155,7 @@
       use mpe
       use rank
       use index
-      use radn,   only:ntcw,ntiw,ntinc,ntoz
+      use radn,   only:ntcw,ntiw,ntinc,ntoz,ntrw,ntsw,ntgl
 !ch   use paramt
 
 !
@@ -248,6 +249,10 @@
 ! for new pbl: asl,atl,xmu
       real      asl(nx,lev),atl(nx,lev),swh(nx,lev),hlw(nx,lev),xmu(nx)
 
+!----------------------------------------------------
+! for fractional step:
+      real      dudt(nx,lev),dvdt(nx,lev),dtdt(nx,lev) 
+
       integer  lsm,i,k,iter,kc,ntrac
       real     ppd,ppp,ttt,ppu,dth,p850,ddd,cc,qqq
 !
@@ -268,6 +273,7 @@
       ntrac=ncld
       if ( nmmiph .eq. 6 ) ntrac=ncld-3
       if ( nmmiph .eq. 8 ) ntrac=ncld-4
+      if ( nmmiph .eq.11 ) ntrac=7
       allocate(q1(nx,lev,ntrac))
 !
 ! --- ensure ktpbl selection is greater than 2
@@ -615,6 +621,19 @@
             q1(i,kc,5) = qt(i,lev*(ntoz-1)+k)
           enddo
         enddo
+      else if ( nmmiph .eq. 11 ) then ! GFDL MP
+        do k=1,lev
+          kc=lev-k+1
+          do i=1,nxj
+            q1(i,kc,1) = qt(i,             k)
+            q1(i,kc,2) = qt(i,lev*(ntcw-1)+k)
+            q1(i,kc,3) = qt(i,lev*(ntiw-1)+k)
+            q1(i,kc,4) = qt(i,lev*(ntrw-1)+k)
+            q1(i,kc,5) = qt(i,lev*(ntsw-1)+k)
+            q1(i,kc,6) = qt(i,lev*(ntgl-1)+k)
+            q1(i,kc,7) = qt(i,lev*(ntoz-1)+k)
+          enddo
+        enddo
       else
         do nc=1,ntrac
           do k=1,lev
@@ -758,6 +777,19 @@
             qt(i,lev*(ntoz-1)+k) = q1(i,kc,5)
           enddo
         enddo
+      else if ( nmmiph .eq. 11 ) then ! GFDL MP
+        do k=1,lev
+          kc=lev-k+1
+          do i=1,nxj
+            qt(i,             k) = q1(i,kc,1)
+            qt(i,lev*(ntcw-1)+k) = q1(i,kc,2)
+            qt(i,lev*(ntiw-1)+k) = q1(i,kc,3)
+            qt(i,lev*(ntrw-1)+k) = q1(i,kc,4)
+            qt(i,lev*(ntsw-1)+k) = q1(i,kc,5)
+            qt(i,lev*(ntgl-1)+k) = q1(i,kc,6)
+            qt(i,lev*(ntoz-1)+k) = q1(i,kc,7)
+          enddo
+        enddo
       else
         do nc=1,ntrac
           do k=1,lev
@@ -773,9 +805,14 @@
 !jh       do k=ktpbl,lev
           kc=lev-k+1
           do i=1,nxj
-            tt(i,k) = t1(i,kc)
-            ut(i,k) = u1(i,kc)
-            vt(i,k) = v1(i,kc)
+! time split
+!            tt(i,k) = t1(i,kc)
+!            ut(i,k) = u1(i,kc)
+!            vt(i,k) = v1(i,kc)
+! no time split
+            dtdt(i,kc) = (t1(i,kc)-tt(i,k))/dt
+            dudt(i,kc) = (u1(i,kc)-ut(i,k))/dt
+            dvdt(i,kc) = (v1(i,kc)-vt(i,k))/dt
           enddo
        enddo
 !

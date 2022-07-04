@@ -150,6 +150,7 @@ SRCS_f90  = \
   module_mp_radar.f90 \
   module_mp_thompson_gfs.f90 \
   module_mp_wsm6_fv3.f90 \
+  module_mp_gfdl_fv3_v16.f90 \
   moninedmf.f90 \
   mpe2d.f90 \
   mpe_barrier.f90 \
@@ -380,7 +381,7 @@ INSTALL = /usr/bin/install
 # If it's using fx-100 compiler(new version), you probably can get -Kparallel flag back.
 #--------------------------------------------------------------------------------------------
 LDFLAGS = ${OMP_COM} ${LDFLAGS_COM}
-LIBS	= ${NETCDF_LIB} ${W3NCO_LIBd} ${DMS_LIB} ${OPERLIB_LIB} ${FFTW_LIB} ${LIBS_COM} ${MPMD_LIB}
+LIBS	= ${NETCDF_LIB} ${W3LIB_LIB} ${DMS_LIB} ${OPERLIB_LIB} ${FFTW_LIB} ${LIBS_COM} ${MPMD_LIB}
 
 .SUFFIXES: .o .mod .f90 .c
 all defalut:	depend $(CMD)

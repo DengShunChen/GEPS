@@ -57,14 +57,14 @@
       real      pnm(jtrun+1,jtrun+1)
 
 !
-      namelist /modlst/ ksgeo,ptop,ptmean,dt,taui,taue                  &
+      namelist /modlst/ ksgeo,ptmean,dt,taui,taue                       &
                       , tauo,frad,ktpbl,ktshl,ktcup,njump,evaprh,lsimpl &
                       , yesdia,dopbl,docup,dorad,dolsp,dograv           &
                       , doshl,dodry,donnmi,idg,jdg,ldiag,nnmiit,nnmivm  &
                       , cutfreq,hdiff,itypbl,cstar,taup,hfilt           &
                       , ptmeans,update,taureg,doincr,numreduce          &
                       , nmcup,nmpbl,nmland,nmshl,cgw,ggdef,gmdef        &
-                      , nmgwor,nmgwcv,mtnvar,docgrav                    &
+                      , nmgwor,tofd,nmgwcv,mtnvar,docgrav               &
                       , ictm,isol,ico2,iaer,ialb,irad,iems,ntcw         &
                       , ntoz,iovr_sw,iovr_lw,isubc_sw,isubc_lw          &
                       , sashal,crick_proof,ccnorm,norad_precip,me,doo3l &
@@ -77,7 +77,7 @@
                       , outrsm,rsmoutinv,rlon1,rlon2,rlat1,rlat2,rgrdsz &
 !
                       , cmbk,cgwd,nmmiph,spl1,spl2            &
-                      , weightSIT,dSITdt_intv,af,doclx
+                      , weightSIT,dSITdt_intv,af,mwhd,doclx,doslavepp
 !
       real    si(lev+1)
       logical flag
@@ -188,7 +188,7 @@
       close(2)
 ! transfer idtg8 to idtg*12
       if(idtg8.gt.60000000)then
-        idtg = 200000000000 + idtg8*100
+        idtg = 190000000000 + idtg8*100
       else
         idtg = 200000000000 + idtg8*100
       endif
@@ -526,7 +526,11 @@
 !-----------------------------------------------------------------------
 !  for cloud microphysics initialization
 !-----------------------------------------------------------------------
-      ntrac_req = nmmiph
+      if ( nmmiph .eq. 11 ) then
+        ntrac_req = 6   ! only six species of hydrometeors for GFDL MP
+      else
+        ntrac_req = nmmiph
+      endif
       if ( ntoz .gt. 0 ) then
         ntrac_req = ntrac_req + 1
         ntoz = ncld
@@ -538,7 +542,8 @@
            call dmsexit(-1)
         endif
 !
-        if ( nmmiph.eq.6 .or. nmmiph.eq.8 ) call mp_init(nmmiph,myrank)
+        if ( nmmiph.eq.6 .or. nmmiph.eq.8 .or. nmmiph.eq.11 )           &
+          call mp_init(nmmiph,myrank)
 !
       endif
 
