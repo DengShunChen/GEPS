@@ -258,13 +258,12 @@
 #ifdef SP
       call rfftmlt_sp(cc,gwk1,trigs,ifax,1,nx+2,nx,lev*jlistnum*num,1)
 #else
-      cc_r8=cc
-      call rfftmlt(cc_r8,gwk1,trigs,ifax,1,nx+2,nx,lev*jlistnum*num,1)
+      call rfftmlt(cc,gwk1,trigs,ifax,1,nx+2,nx,lev*jlistnum*num,1)
 #endif
       else
-!$omp  parallel do default(none)                                &
-!$omp  private(jj,j,nxj,gwk1)                                   &
-!$omp  shared(jlistnum,jlist1,nxdef,cc,trigsj,ifaxj,nx,lev,num) &
+!$omp  parallel do default(none)                                      &
+!$omp  private(jj,j,nxj,gwk1)                                         &
+!$omp  shared(jlistnum,jlist1,nxdef,cc,trigsj,ifaxj,nx,lev,num)       &
 !$omp  schedule(dynamic)
          do jj = 1, jlistnum
             j= jlist1(jj)
@@ -272,8 +271,7 @@
 #ifdef SP
             call rfftmlt_sp(cc(1,1,1,jj),gwk1(1,1,1,jj),trigsj(1,j),ifaxj(1,j), &
 #else
-            cc_r8=cc
-            call rfftmlt(cc_r8(1,1,1,jj),gwk1(1,1,1,jj),trigsj(1,j),ifaxj(1,j), &
+            call rfftmlt(cc(1,1,1,jj),gwk1(1,1,1,jj),trigsj(1,j),ifaxj(1,j), &
 #endif
                  1,nx+2,nxj,lev*num,1)
          end do

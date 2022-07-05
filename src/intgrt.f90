@@ -1126,9 +1126,9 @@
         if (yesdia)  then
 !
 !CWB2021
-                      vdzonl_r8=vdzonl
-                      vdmerd_r8=vdmerd
-                      ddtemp_r8=ddtemp
+          vdzonl_r8=vdzonl
+          vdmerd_r8=vdmerd
+          ddtemp_r8=ddtemp
 
           call diabat ( docup,dodry,dolsp,dopbl,dorad,doshl,dograv,tofd         &
                       , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw      &
@@ -1170,12 +1170,14 @@
 ! add reynolds stress
 !
           call rayleifr(nx,my,my_max,lev,rad,cosl,dt,vdzonl_r8,vdmerd_r8)
-        endif    ! end of (yesdia)
 
-!CWB2021
           vdzonl=vdzonl_r8
           vdmerd=vdmerd_r8
           ddtemp=ddtemp_r8
+        endif    ! end of (yesdia)
+
+!CWB2021
+
 
         itimestep=itimestep+1 
 !

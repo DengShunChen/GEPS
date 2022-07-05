@@ -456,6 +456,7 @@
                      1,nx+2,nxj,lev*2,1)
 #else
         call rfftmlt(cc(1,1,1,jj),gwk1(1,1,1,jj),trigsj(1,j),ifaxj(1,j), &
+                     1,nx+2,nxj,lev*2,1)
 #endif
       end do
 !$omp end parallel do
