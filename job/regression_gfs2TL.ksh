@@ -18,27 +18,30 @@
    DMSFLAG=GJ
  elif [ $JCAP = 383  ] ; then 
    DMSFLAG=GI
+ elif [ $JCAP = 199  ] ; then
+   DMSFLAG=GK
  fi
 
- dtg='18090800'
+ dtg='10111900'
  fgdtg=$(/users/xb80/bin/Caldtg.ksh ${dtg} -6)
 
- idmshead='MASOPS'
- idmsbody=''
- idmstail=''
- idmsdb="TCo${JCAP}L72"
+ idmshead="TCo${JCAP}l72"
+ idmsbody=${dtg}
+ idmstail='_ksgeo1'
+ idmsdb="/nwpr/cfs/xb82/data/dmsdb"
 
- odmshead='STOC'
- odmsbody=${dtg}
- odmstail="${DMSFLAG}MG"
+ odmshead=O${dtg}
+ odmsbody="gfs"
+ odmstail="_ksgeo1"
  odmsdb=${idmsdb}
 
 #-- executable
  EXEC='MTCo639L72_'${machine}
 
 #---------------------------------------------------------#
- idmsfile=${idmshead}${idmsbody}${idmstail}@${idmsdb}
- odmsfile=${odmshead}${odmsbody}${odmstail}@${odmsdb}
+ idmsfile=${idmshead}_${idmsbody}${idmstail}@${idmsdb}/cwb_ReAna_TCo${JCAP}l72_SSL
+# idmsfile=${idmshead}${idmsbody}${idmstail}@${idmsdb}
+ odmsfile=${odmshead}${odmsbody}${odmstail}@${odmsdb}/TCo${JCAP}l72
 
  ${DMSPATH}/rdmsdbcrt -p ufs $idmsdb
  ${DMSPATH}/rdmscrt $idmsfile
@@ -46,25 +49,25 @@
   export LNCP='ln -fs'
 
   # maybe no need to change
-  export source="/data/common/gfs/dms_data/TCo${JCAP}L72_ncep.ufs/TCo${JCAP}l72_${dtg}"           # TCo IC data path
+#  export source="/data/common/gfs/dms_data/TCo${JCAP}L72_ncep.ufs/TCo${JCAP}l72_${dtg}"           # TCo IC data path
 
   # link/copy DMS files
-  export target="${dmsdb_home}/${idmsdb}.ufs"
+#  export target="${dmsdb_home}/${idmsdb}.ufs"
 
   # analysis
-  echo ${LNCP} ${source}/*${dtg}* ${target}/${idmshead}${idmsbody}${idmstail}
-       ${LNCP} ${source}/*${dtg}* ${target}/${idmshead}${idmsbody}${idmstail}
-  echo ${LNCP} ${source}/*${fgdtg}* ${target}/${idmshead}${idmsbody}${idmstail}
-       ${LNCP} ${source}/*${fgdtg}* ${target}/${idmshead}${idmsbody}${idmstail}
+#  echo ${LNCP} ${source}/*${dtg}* ${target}/${idmshead}${idmsbody}${idmstail}
+#       ${LNCP} ${source}/*${dtg}* ${target}/${idmshead}${idmsbody}${idmstail}
+#  echo ${LNCP} ${source}/*${fgdtg}* ${target}/${idmshead}${idmsbody}${idmstail}
+#       ${LNCP} ${source}/*${fgdtg}* ${target}/${idmshead}${idmsbody}${idmstail}
 
- ${DMSPATH}/rdmsdbcrt -p ufs bckdms
+# ${DMSPATH}/rdmsdbcrt -p ufs bckdms
 
  export source="/data/common/gfs/dms_data/bckdms.ufs"
  export target="${dmsdb_home}/bckdms.ufs"
  
- if [ ! -e ${target}/BCK_TCo${JCAP}_${DMSFLAG}30S ] ; then
-   ${DMSPATH}/rdmscrt BCK_TCo${JCAP}_${DMSFLAG}30S@bckdms
-   ${LNCP} ${source}/BCK_TCo${JCAP}_${DMSFLAG}30S/* ${target}/BCK_TCo${JCAP}_${DMSFLAG}30S
+ if [ ! -e ${target}/BCK_TCo${JCAP}_${DMSFLAG}30S_xnew ] ; then
+   ${DMSPATH}/rdmscrt BCK_TCo${JCAP}_${DMSFLAG}30S_xnew@bckdms
+   ${LNCP} ${source}/BCK_TCo${JCAP}_${DMSFLAG}30S_xnew/* ${target}/BCK_TCo${JCAP}_${DMSFLAG}30S_xnew
  fi
 #----------------------------------------------------------------#
 
@@ -95,7 +98,7 @@ export FIXDIR=${GFSFIX}
 
 export ANADMS=${idmsfile}
 export FCSTDMS=${odmsfile}
-export BCKOPS=BCK_TCo${JCAP}_${DMSFLAG}30S@bckdms
+export BCKOPS=BCK_TCo${JCAP}_${DMSFLAG}30S_xnew@bckdms
 
 ${DMSPATH}/rdmspurge -f FCSTDMS
 ${DMSPATH}/rdmscrt -l34 FCSTDMS
@@ -125,6 +128,9 @@ if [ $JCAP = 639  ] ; then
 elif [ $JCAP = 383  ] ; then
   MODLST_RES='dt=720., hfilt=1., cgw=2.6e-5, cgwd=1.60, cmbk=0.30,'
   MODEL_BASIC='nco=384,'
+elif [ $JCAP = 199  ] ; then
+  MODLST_RES='dt=1200., hfilt=1., cgw=4.2e-5,'
+  MODEL_BASIC='nco=200,'
 fi
 
 cat > ${GFSWRK}/namlsts << EOF
@@ -145,7 +151,7 @@ cat > ${GFSWRK}/namlsts << EOF
   dt=450.0,
   cstar=f, update=t, lsimpl=t,
   hfilt=1.,
-  ksgeo=2, yesdia=t,
+  ksgeo=1, yesdia=t,
   dopbl=t, docup=t, dorad=t, dolsp=t, doshl=t, dodry=f, 
   dograv=true, docgrav=true,
   donnmi=true, 
@@ -165,7 +171,7 @@ cat > ${GFSWRK}/namlsts << EOF
   ggdef='${DMSFLAG}0G', gmdef='${DMSFLAG}MG',
   domfc=384., out_green=t, otgreen=3., out_hp=false,
   ndsladvh2=false,
-  isot=1, ivegsrc=1, cgwd=1.20, cmbk=1.00,
+  isot=2, ivegsrc=2, cgwd=1.20, cmbk=1.00,
   spl1=5., spl2=50., af=0.1,
   ${MODLST_RES}
  &end
