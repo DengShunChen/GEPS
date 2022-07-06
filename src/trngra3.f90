@@ -24,6 +24,7 @@
 !
 ! ****************************************************
 !
+      use const, only : RTYPE
       use index
 !     use paramt
       use fftcom
@@ -35,22 +36,22 @@
       real s(lev,2,jtrun,jtmax)
       real cim(jtmax)
 
-      real*4 dlpl(nxp,levF,my_max),dtpl(nxp,levF,my_max)
+      real(kind=RTYPE) dlpl(nxp,levF,my_max),dtpl(nxp,levF,my_max)
 !
       integer myhalf,k,m,mf,l,j,jj,i,jtrunj,mm,mp,mlst,nxj
-      real*4 cc(nx+2,lev,2,my_max)
+      real(kind=RTYPE) cc(nx+2,lev,2,my_max)
 !
-      real*4 gwk1(nx+2,lev,2,my_max)
+      real(kind=RTYPE) gwk1(nx+2,lev,2,my_max)
 !
-      real*4 twcc_fk(my_max,jtmax*nsize,lev,2)
-      real*4 twdd_fk(my_max,jtmax*nsize,lev,2)
+      real(kind=RTYPE) twcc_fk(my_max,jtmax*nsize,lev,2)
+      real(kind=RTYPE) twdd_fk(my_max,jtmax*nsize,lev,2)
 
-      real*4 wcu_fk(my_max*nsize,jtmax,lev,2),wcv_fk(my_max*nsize,jtmax,lev,2)
-      real wcu_t(lev,2,my),wcv_t(lev,2,my)
+      real(kind=RTYPE) wcu_fk(my_max*nsize,jtmax,lev,2),wcv_fk(my_max*nsize,jtmax,lev,2)
+      real(kind=RTYPE) wcu_t(lev,2,my),wcv_t(lev,2,my)
 
       real ws3(lev,2,2,jtrun)
       real ws4(lev,2,2,jtrun)
-      real*4 dummy
+      real(kind=RTYPE) dummy
 
 !
       myhalf=my/2
@@ -135,8 +136,13 @@
 
       enddo
 
+#ifdef SP
        call mpe_transpose_rs1_sp(wcu_fk,twcc_fk,my_max,jtmax,lev*2,nsize,col_comm)
        call mpe_transpose_rs1_sp(wcv_fk,twdd_fk,my_max,jtmax,lev*2,nsize,col_comm)
+#else
+       call mpe_transpose_rs1(wcu_fk,twcc_fk,my_max,jtmax,lev*2,nsize,col_comm)
+       call mpe_transpose_rs1(wcv_fk,twdd_fk,my_max,jtmax,lev*2,nsize,col_comm)
+#endif
 
       do jj=1,jlistnum
       do k=1,lev
@@ -164,7 +170,11 @@
       enddo
 
       if( lreduce.eq.0 ) then
+#ifdef SP
       call rfftmlt_sp(cc,gwk1,trigs,ifax,1,nx+2,nx,jlistnum*lev*2,1)
+#else
+      call rfftmlt(cc,gwk1,trigs,ifax,1,nx+2,nx,jlistnum*lev*2,1)
+#endif
       else
 !$omp  parallel do default(none)                                &
 !$omp  private(jj,j,nxj,gwk1)                                   &
@@ -173,7 +183,11 @@
       do jj=1,jlistnum
         j= jlist1(jj)
         nxj=nxdef(j)
+#ifdef SP
         call rfftmlt_sp(cc(1,1,1,jj),gwk1(1,1,1,jj),trigsj(1,j),ifaxj(1,j),1,nx+2,nxj,lev*2,1)
+#else
+        call rfftmlt(cc(1,1,1,jj),gwk1(1,1,1,jj),trigsj(1,j),ifaxj(1,j),1,nx+2,nxj,lev*2,1)
+#endif
       enddo
 !$omp end parallel do
       endif
@@ -188,7 +202,11 @@
 !  22 continue
 
 !ch
+#ifdef SP
       call ujoinsr_sp(cc,dlpl,dtpl,dummy,dummy,nx,my_max,levF,jlistnum,2,1)
+#else
+      call ujoinsr(cc,dlpl,dtpl,dummy,dummy,nx,my_max,levF,jlistnum,2,1)
+#endif
       dlpl= -dlpl
       dtpl= -dtpl
 

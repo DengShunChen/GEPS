@@ -48,6 +48,7 @@
                ,vor(lev,2,jtrun,jtmax),div(lev,2,jtrun,jtmax)     &
                ,ut(nxp,levF,my_max),vt(nxp,levF,my_max)
 !
+      real(kind=RTYPE)      ut4(nxp,levF,my_max),vt4(nxp,levF,my_max)
       real(kind=RTYPE)      gwk1(nx+2,lev,2,my_max)
       real(kind=RTYPE)      wcc_fk (lev,2,2,jtmax,my_max*nsize)
       real(kind=RTYPE)      twcc_fk(lev,2,2,jtmax*nsize,my_max)
@@ -59,9 +60,6 @@
       real(kind=RTYPE)      tc2(lev,2,2,my)
       real(kind=RTYPE)      wc(jtrun,my/2),wd(jtrun,my/2)
 
-#ifdef SP
-      real                  cc_r8(nx+2,lev,2,my_max)
-#endif
 
 !CWB2015
 !     real      coslr(jm)
@@ -473,8 +471,9 @@
 
 !2dMPI
 #ifdef SP
-      cc_r8=cc
-      call ujoinsr(cc_r8,ut,vt,dummy,dummy,nx,my_max,levF,jlistnum,2,1)
+      call ujoinsr_sp(cc,ut4,vt4,dummy,dummy,nx,my_max,levF,jlistnum,2,1)
+      ut=ut4
+      vt=vt4
 #else
       call ujoinsr(cc,ut,vt,dummy,dummy,nx,my_max,levF,jlistnum,2,1)
 #endif

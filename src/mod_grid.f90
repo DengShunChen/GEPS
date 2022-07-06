@@ -10,12 +10,13 @@
 
       public
 
-      real, dimension(:,:),allocatable,save :: pt,dlpl,dtpl,sgeo, &
+      real, dimension(:,:),allocatable,save :: pt,sgeo,             &
                            pdiff,ptend,t1000,tsave,std,ptp
 
       real, dimension(:,:,:),allocatable,save :: ut,vt,sd,rvor,rdiv,&
                            tt,qt,phi,plt,pk,pk2,up,vp,ttp,qp
 !! for Semi-Lagrangian
+      real(kind=RTYPE), dimension(:,:),allocatable,save :: dlpl,dtpl
       real(kind=RTYPE), dimension(:,:,:),allocatable,save :: ut_sl,vt_sl,dlphi,dtphi
 
 !!                             ut_sl,vt_sl,uum_sl,vvm_sl,ttm_sl
