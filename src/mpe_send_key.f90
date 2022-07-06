@@ -6,13 +6,13 @@
       use rank, only : root_io
 #endif
       use mpi
-      character*34 key
+      character*38 key
 
 #if defined(RSM) && defined(CWB_MPMD)
-      call MPI_SEND( key, 34, MPI_CHARACTER, root_io, J, &
+      call MPI_SEND( key, 38, MPI_CHARACTER, root_io, J, &
                      MPI_COMM_gfs_all, ist )
 #else
-      call MPI_SEND( key, 34, MPI_CHARACTER, root_io, J, &
+      call MPI_SEND( key, 38, MPI_CHARACTER, root_io, J, &
                      MPI_COMM_WORLD, ist )
 #endif
       return

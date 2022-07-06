@@ -63,11 +63,11 @@
 !
       real      plnow(jtrun,jtmax,2),ww1(nx,my_max)
 !
-      character*26 lrec
+      character*28 lrec
       character*6 typ
       character*80 ifilin,ifilout
       character*3 cspec(6)
-      character*34 key
+      character*38 key
       integer      inistat
 !dms34
       integer*8 idtg,idtg2
@@ -185,7 +185,7 @@
             do ntrac=2,nclds
               write (typ, '("m",i2.2,a3)' ) Llist(1),cspec(ntrac) 
               call syslbl (typ,idtg2,itaup,gmdef,lrec)
-              write(key,'(a26,a1,i7.7)') lrec,'H',lncrec
+              write(key,'(a28,a1,i9.9)') lrec,'H',lncrec
               call dmschkr (ifilin,key//char(0),istat)
               inistat=inistat+istat
             enddo

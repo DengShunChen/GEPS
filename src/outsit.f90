@@ -16,7 +16,7 @@
       integer*8 idtg
       character*4 ggdef
       integer lenc,n,k,jj,j,nxj,ii,istat
-      character*26 ihdg,ihdg2
+      character*28 ihdg,ihdg2
       character*6 lrec
       real wk1(nx,my),pout(nx,my)
       integer ncnt
@@ -183,7 +183,7 @@
       integer*8 idtg
       character*4 ggdef
       integer lenc,k,jj,j,nxj,ii,istat
-      character*26 ihdg,ihdg2
+      character*28 ihdg,ihdg2
       character*6 lrec
       real glob2d(nxp,my_max) 
       real wk1(nx,my),pout(nx,my)
@@ -236,7 +236,7 @@
       integer*8 idtg
       character*4 ggdef
       integer lenc,k,jj,j,nxj,ii,istat
-      character*26 ihdg,ihdg2
+      character*28 ihdg,ihdg2
       character*6 lrec
       real tm1(nxp,my_max),tm2(nxp,my_max),tm3(nxp,my_max)
       real wk1(nx,my),pout(nx,my)
@@ -308,7 +308,7 @@
       integer*8 idtg
       character*4 ggdef
       integer lenc,i,j,k,ii,jj,nxj,istat
-      character*26 ihdg,ihdg2
+      character*28 ihdg,ihdg2
       character*6 lrec
       real glob2d(nxp,my_max),wk1(nx,my),pout(nx,my)
       integer ncnt
@@ -1075,7 +1075,7 @@
       real wrk2(nxp,my_max),ratioSIT(nxp,my_max)
       integer*8 idtg
       character*80 ifilout
-      character*26 ihdg
+      character*28 ihdg
       character*4  ggdef
       integer   imax,jmax,lenc,j,nxj,i,istat,jj
 

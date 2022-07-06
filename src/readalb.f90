@@ -48,7 +48,7 @@
             alnsfcl(nxp,my_max,2),alnwfcl(nxp,my_max,2)
       real work(nx,my)
 !
-      character bckfile*80,lrec*26,blnk*1,ggdef*4
+      character bckfile*80,lrec*28,blnk*1,ggdef*4
       integer   mon(12),mmse(2),mmax,mmt,mon1(12),mon2(12)
       data mon1/ 74,166,258,349,  0,  0,  0,  0,  0,  0,  0,  0/
       data mon2/ 15, 46, 74,105,135,166,196,227,258,288,319,349/
@@ -144,16 +144,16 @@
 !     call qmax2d(work,1,1,nx,my)
 !
 !----------------------------------------------------------------
-  31  format('S0003A','GBCK',a4,4x,i2.2,6x)  ! alvsfcl
-  32  format('S0003B','GBCK',a4,4x,i2.2,6x)  ! alvwfcl
-  33  format('S0003C','GBCK',a4,4x,i2.2,6x)  ! alnsfcl
-  34  format('S0003D','GBCK',a4,4x,i2.2,6x)  ! alnwfcl
-  35  format('S0003E','GBCK',a4,12x)         ! facsf
-  36  format('S0003F','GBCK',a4,12x)         ! facwf
-  37  format('S00X3A','GBCK',a4,4x,i2.2,6x)  ! alvsfcl
-  38  format('S00X3B','GBCK',a4,4x,i2.2,6x)  ! alvwfcl
-  39  format('S00X3C','GBCK',a4,4x,i2.2,6x)  ! alnsfcl
-  40  format('S00X3D','GBCK',a4,4x,i2.2,6x)  ! alnwfcl
+  31  format('S0003A','  GBCK',a4,4x,i2.2,6x)  ! alvsfcl
+  32  format('S0003B','  GBCK',a4,4x,i2.2,6x)  ! alvwfcl
+  33  format('S0003C','  GBCK',a4,4x,i2.2,6x)  ! alnsfcl
+  34  format('S0003D','  GBCK',a4,4x,i2.2,6x)  ! alnwfcl
+  35  format('S0003E','  GBCK',a4,12x)         ! facsf
+  36  format('S0003F','  GBCK',a4,12x)         ! facwf
+  37  format('S00X3A','  GBCK',a4,4x,i2.2,6x)  ! alvsfcl
+  38  format('S00X3B','  GBCK',a4,4x,i2.2,6x)  ! alvwfcl
+  39  format('S00X3C','  GBCK',a4,4x,i2.2,6x)  ! alnsfcl
+  40  format('S00X3D','  GBCK',a4,4x,i2.2,6x)  ! alnwfcl
 !----------------------------------------------------------------
 
 ! 

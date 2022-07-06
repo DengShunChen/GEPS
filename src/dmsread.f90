@@ -24,12 +24,12 @@
 !
       logical t_flg
 !
-      character lrec*26,ifile*80,kflag*1
+      character lrec*28,ifile*80,kflag*1
 !
-      character key*34,crmk*88
+      character key*38,crmk*88
 !
       write(key,1000)lrec,kflag,lenc
- 1000 format(a26,a1,i7.7)
+ 1000 format(a28,a1,i9.9)
 !
       t_flg=.false.
 !
@@ -46,7 +46,7 @@
       if(istat.ne.0) then
 !
       write(crmk,100) key
-  100 format('#######  record ',a34,' missing  ######')
+  100 format('#######  record ',a38,' missing  ######')
 !
       if(myrank .eq. 0) then
       print*, crmk
@@ -62,6 +62,7 @@
 #ifdef VERBOSE
       if(myrank .eq. 0) print *,'dms key=',key,' found'
 #endif
+      if(myrank .eq. 0) print *,'dms key=',key,'found',maxval(z),minval(z)
 !
       endif
 !
@@ -95,12 +96,12 @@
 !
       logical t_flg
 !
-      character lrec*26,ifile*80,kflag*1
+      character lrec*28,ifile*80,kflag*1
 !
-      character key*34,crmk*88
+      character key*38,crmk*88
 !
       write(key,1000)lrec,kflag,lenc
- 1000 format(a26,a1,i7.7)
+ 1000 format(a28,a1,i9.9)
 !
       t_flg=.false.
 !
@@ -117,7 +118,7 @@
       if(istat.ne.0) then
 !
       write(crmk,100) key
-  100 format('#######  record ',a34,' missing  ######')
+  100 format('#######  record ',a38,' missing  ######')
 !
       if(myrank .eq. 0) then
       print*, crmk
@@ -133,6 +134,7 @@
 #ifdef VERBOSE
       if(myrank .eq. 0) print *,'dms key=',key,' found'
 #endif
+      if(myrank .eq. 0) print *,'dms key=',key,'found',maxval(z),minval(z)
 !
       endif
 !
@@ -165,12 +167,12 @@
 !
       logical t_flg
 !
-      character lrec*26,ifile*80,kflag*1
+      character lrec*28,ifile*80,kflag*1
 !
-      character key*34,crmk*88
+      character key*38,crmk*88
 !
       write(key,1000)lrec,kflag,lenc
- 1000 format(a26,a1,i7.7)
+ 1000 format(a28,a1,i9.9)
 !
       t_flg=.false.
 !
@@ -187,7 +189,7 @@
       if(istat.ne.0) then
 !
       write(crmk,100) key
-  100 format('#######  record ',a34,' missing  ######')
+  100 format('#######  record ',a38,' missing  ######')
 !
       if(col_rank .eq. 0) then
       print*, crmk
@@ -203,6 +205,7 @@
 #ifdef VERBOSE
       if(col_rank .eq. 0) print *,'dms key=',key,' found'
 #endif
+      if(myrank .eq. 0) print *,'dms key=',key,'found',maxval(z),minval(z)
 !
       endif
 !

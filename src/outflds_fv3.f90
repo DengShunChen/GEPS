@@ -16,7 +16,7 @@
               , fm10(nxp,my_max),fh2(nxp,my_max)        &
               , srflag(nxp,my_max)
          
-      character ifilout*60, ggdef*4, ihdg*26
+      character ifilout*60, ggdef*4, ihdg*28
       integer*8 idtg
 !
 ! local work arrays

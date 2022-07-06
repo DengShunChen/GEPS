@@ -87,7 +87,7 @@
 
        real*4   workn(nx,my)
        integer  kn
-      character*26 ihdg
+      character*28 ihdg
 
       real      tmin(nxp,my_max),tmax(nxp,my_max),td(nxp,my_max),temp
 !
@@ -156,7 +156,7 @@
       integer*8 idtg_sst,idtg1_sst,idtg_temp
       integer icurrenttau,yyyymmdd,hhii
       logical lsstrestore,iceold(nxp,my_max),oceanold(nxp,my_max)
-      character lrec*26
+      character lrec*28
       character*12 cdtg
       real    ssttemp,cicetemp,snrtemp
       real    sst(nxp,my_max),ssttau,tautemp
@@ -178,7 +178,7 @@
 !pscheckdata
       integer lenc,itautest
       real mout(nx,my)
-      character*26 ihdg2
+      character*28 ihdg2
       integer nc
 
       
@@ -339,6 +339,7 @@
         call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pt(1,jj), &
                           pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
       enddo
+      if (myrank .eq. 0 )print*,'TYW in intgrt, after prexp_hybrid_cwb'
 !      call  outsigs ( 0,nx,my,my_max,lev,ncld                                    &
 !                    , idtg,ifilout,ptop,rad,grav                                 &
 !                    , cp,cosl,pt,sgeo,snr,gwr,tg,pk,pk2                          &
@@ -369,6 +370,7 @@
          if( myrank .eq. 0 ) &
            print*,'read mtnvar=14 hprime_b=',(hprime_b(1,i,1),i=1,mtnvar)
       endif
+      if (myrank .eq. 0 )print*,'TYW in intgrt, after ed_mtnvar'
 !
 !#ifndef NO_OUT
 !       rh2100=rh2*100. 
@@ -577,6 +579,7 @@
 
       ! stochastic_physics
       call init_stochastic_physics(dta)   
+      if (myrank .eq. 0 )print*,'TYW in intgrt, nit_stochastic_physics'
 !
 !
 !      if(typhoon)then
@@ -848,6 +851,8 @@
 !!      call mpe2d_transpose_ndsl_f2p(ttm_sl,pten, &
 !!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 
+      if (myrank .eq. 0 )print*, &
+         'TYW in intgrt, mpe2d_transpose_ndsl_f2p'
 !
 !     calculate vertical velocity at mid-point
 !
@@ -1114,6 +1119,8 @@
           call rayleifr(nx,my,my_max,lev,rad,cosl,dt,vdzonl,vdmerd)
         endif    ! end of (yesdia)
         itimestep=itimestep+1 
+      if (myrank .eq. 0 )print*, &
+         'TYW in intgrt, after yesdia'
 !
 !  after phyical parameterization,transform grid point u,v,t,q to
 !  spectrum

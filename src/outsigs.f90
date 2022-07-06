@@ -25,7 +25,7 @@
                 zice(nxp,my_max),wrk1(nxp,my_max),mout(nx,my)
       integer*8 idtg
       character*80 ifilout
-      character typ*6,ihdg*26,ihdg2*26,mlayer*1
+      character typ*6,ihdg*28,ihdg2*28,mlayer*1
       character*4 ggdef,gmdef
 !
       integer   i,lenc,k,jj,j,nxj,istat,kk,iout_b10,ntrac,nclds
@@ -511,7 +511,7 @@
       character ifilout*80
       real      work(nx,my)
       integer*8 idtg
-      character typ*6,ihdg*26,ggdef*4
+      character typ*6,ihdg*28,ggdef*4
 !
       integer   lenc,istat,jj,j,ii,nxj,i
 
@@ -568,7 +568,7 @@
       character ifilout*80
       real      work(nx,my),tmp(nxp,my_max)
       integer*8 idtg
-      character typ*6,ihdg*26
+      character typ*6,ihdg*28
 !
       integer   lenc,i,j,k,ii,jj,nxj,istat
 

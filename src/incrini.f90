@@ -14,7 +14,7 @@
 
       real hld1(nx,my),pt1(nx,my_max),hld3(nx,levp,my_max),           &
            hld4(nx,levp,ncld,my_max)
-      character typ*6,lrec*26
+      character typ*6,lrec*28
       real      cc(nx+2,levp,1,my_max)
 !!      real      cc(nx+2,levp,3+ncld,my_max),wss(levp,2,3+ncld,jtrun,jtmax)
 

@@ -206,7 +206,7 @@
           character*12 cdtg
           integer   iyyyy,mm,ddhhmn,iyy,imm,istat
           integer lncrec
-          character lrec*26
+          character lrec*28
           integer i,j,ii,jj,nxj,kmm
           real,dimension(:,:), allocatable:: temp1
           logical ocean(nxp,my_max),ice(nxp,my_max)
@@ -214,7 +214,7 @@
 
           allocate(temp1(nx,my))
 !
-  11     format('W00100','0000',a4,i4.4,i2.2,'010000')  ! W10
+  11     format('W00100','000000',a4,i4.4,i2.2,'010000')  ! W10
 
 !           if(myrank.eq.0) call dmsopn(ifilin_sst,"r",istat)
 !           call mpe_broadcast(istat,1,flag,mpe_integer)
@@ -431,7 +431,7 @@
           INTEGER*8 idtg1
           INTEGER iyyyy,imm,idd,ihh,imn
           INTEGER lncrec
-          character lrec*26
+          character lrec*28
           REAL ssttemp(nx,my),cicetemp(nx,my),sndpttemp(nx,my)
           INTEGER ii,jj,nxj,i,j,istat,nxjtot
           INTEGER itemp,jtemp
@@ -449,14 +449,14 @@
           cicetemp=0.
           sndpttemp=0.
 
-   11     format('W00100','0000',a4,i4.4,i2.2,i2.2,i2.2,'00')  ! sea surface temperature
+   11     format('W00100','000000',a4,i4.4,i2.2,i2.2,i2.2,'00')  ! sea surface temperature
           write(lrec,11) ggdef,iyyyy,imm,idd,ihh
           call dmsread(nx,my,lrec,lncrec,'H',ifilin_sst,ssttemp(:,:),istat)
           if(ldailyFCTicesndpt)then
-   12       format('W00091','0000',a4,i4.4,i2.2,i2.2,i2.2,'00')  ! sea ice fration
+   12       format('W00091','000000',a4,i4.4,i2.2,i2.2,i2.2,'00')  ! sea ice fration
             write(lrec,12) ggdef,iyyyy,imm,idd,ihh
             call dmsread(nx,my,lrec,lncrec,'H',ifilin_ncep,cicetemp(:,:),istat)
-   13       format('B00650','0000',a4,i4.4,i2.2,i2.2,i2.2,'00')  ! water equivlent snow depth
+   13       format('B00650','000000',a4,i4.4,i2.2,i2.2,i2.2,'00')  ! water equivlent snow depth
             write(lrec,13) ggdef,iyyyy,imm,idd,ihh
             call dmsread(nx,my,lrec,lncrec,'H',ifilin_ncep,sndpttemp(:,:),istat)
           endif
@@ -581,7 +581,7 @@
           INTEGER iyyyy,imm,idd,ihh,imn
           INTEGER iyyyy2,imm2,idd2,ihh2,imn2
           INTEGER lncrec
-          CHARACTER lrec*26
+          CHARACTER lrec*28
           REAL sstANA0(nx,my),sstANA1(nx,my)
           REAL sstFCT0(nx,my),sstFCT1(nx,my)
           INTEGER i,j,ii,jj,nxj,istat
@@ -601,11 +601,11 @@
           sstFCT1=0.
 
           !dailyClm_option>=1, read climatology ana. sst
-   11     format('W00100',4x,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
+   11     format('W00100',6x,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
           write(lrec,11) ggdef,imm,idd
           call dmsread(nx,my,lrec,lncrec,'H',ifilin_ClmANA,sstANA0(:,:),istat)
 
-   12     format('W00100',4x,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
+   12     format('W00100',6x,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
           write(lrec,12) ggdef,imm2,idd2
           call dmsread(nx,my,lrec,lncrec,'H',ifilin_ClmANA,sstANA1(:,:),istat)
 
@@ -623,11 +623,11 @@
 
 
           if(dailyClm_option .eq. 2) then     !dailyClm_option=2, read forcast climatology sst
-   13       format('W00100',i4.4,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
+   13       format('W00100',i6.6,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
             write(lrec,13) itau,ggdef,imm,idd
             call dmsread(nx,my,lrec,lncrec,'H',ifilin_ClmFCT,sstFCT0(:,:),istat)
 
-   14       format('W00100',i4.4,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
+   14       format('W00100',i6.6,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
             write(lrec,14) itau+24,ggdef,imm,idd
             call dmsread(nx,my,lrec,lncrec,'H',ifilin_ClmFCT,sstFCT1(:,:),istat)
 
@@ -710,7 +710,7 @@
           INTEGER iyyyy,imm,idd,ihh,imn
           INTEGER iyyyy2,imm2,idd2,ihh2,imn2
           INTEGER lncrec
-          CHARACTER lrec*26
+          CHARACTER lrec*28
           REAL sstANA(nx,my),sstFCT(nx,my)
           INTEGER i,j,ii,jj,nxj,istat
           REAL wweight
@@ -727,7 +727,7 @@
           sstFCT=0.          
 
 
-   11     format('W00100',4x,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
+   11     format('W00100',6x,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
           write(lrec,11) ggdef,imm2,idd2
           call dmsread(nx,my,lrec,lncrec,'H',ifilin_ClmANA,sstANA(:,:),istat)
 
@@ -741,7 +741,7 @@
 
 
           if(dailyClm_option .eq. 2) then
-   13       format('W00100',i4.4,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
+   13       format('W00100',i6.6,a4,4x,i2.2,i2.2,4x)  ! sea surface temperature
             write(lrec,13) itau,ggdef,imm,idd
             call dmsread(nx,my,lrec,lncrec,'H',ifilin_ClmFCT,sstFCT(:,:),istat)
 
@@ -821,7 +821,7 @@
       real wrk(nxp,my_max),glob(nx,my)
       integer*8 idtg
       character*80 ifilout
-      character*26 ihdg
+      character*28 ihdg
       character*4  ggdef
       integer   imax,jmax,lenc,j,nxj,i,istat,jj
 
@@ -885,7 +885,7 @@
 !          integer   iyyyy,mmddhhmn,iyy,imm,istat
           integer istat,k,mm,lncrec
           integer j,jj,nxj,i,ii
-          character lrec*26
+          character lrec*28
           REAL, ALLOCATABLE, TARGET :: temp1(:,:),temp2(:,:)
           logical flag
 !       
@@ -902,8 +902,8 @@
           wsfn12=0.
 
          
-  11     format(i3.3,'TFM','gbck',a4,4x,i2.2,6x)  ! ???TFM
-  12     format(i3.3,'SFM','gbck',a4,4x,i2.2,6x)  ! ???SFM
+  11     format(i3.3,'TFM','gbck',a4,4x,i2.2,8x)  ! ???TFM
+  12     format(i3.3,'SFM','gbck',a4,4x,i2.2,8x)  ! ???SFM
 
           flag=.false.
           if(myrank.eq.0) then
@@ -980,7 +980,7 @@
 !          integer   iyyyy,mm,ddhhmn,iyy,imm,istat
           integer istat,k,lncrec
           integer j,jj,nxj,i,ii
-          character lrec*26
+          character lrec*28
           REAL, ALLOCATABLE, TARGET :: temp1(:,:),temp2(:,:)
           logical flag
 !
@@ -1000,8 +1000,8 @@
 !          read(cdtg,'(i4,i2,i8)')iyyyy,mm,ddhhmn
 
 
-  11     format(i3.3,'TFN','0000',a4,a12)  ! ???TFM
-  12     format(i3.3,'MSK','0000',a4,a12)  ! ???SFM
+  11     format(i3.3,'TFN','000000',a4,a12)  ! ???TFM
+  12     format(i3.3,'MSK','000000',a4,a12)  ! ???SFM
 
 !          do k=1,lkvl+2
           do k=1,1

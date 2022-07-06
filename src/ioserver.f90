@@ -10,7 +10,7 @@
 
       integer  nxmy,i,j,ist,ist1,ist2,iL,Len,ncnt,ntag
       real*8   z(nxmy,NMAX)
-      character*34 key,keys(NMAX)
+      character*38 key,keys(NMAX)
 
 !CWB2016
       integer  ifromtau,itotau,istat
@@ -47,7 +47,7 @@
           enddo
 
 !CWB2016
-          read(keys(ncnt)(7:10),'(i4)')itotau
+          read(keys(ncnt)(7:12),'(i6)')itotau
 
 !CWB20160927 for NWP control
           if(itotau == 9) call sleep(20)

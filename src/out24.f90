@@ -17,7 +17,7 @@
 !
       integer*8 idtg
       character*80 ifilout
-      character*26 ihdg
+      character*28 ihdg
       character*4  ggdef
 
       integer   imax,jmax,lenc,j,nxj,i,istat,jj

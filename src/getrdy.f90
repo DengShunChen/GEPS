@@ -57,7 +57,7 @@
                 cc(nx+2,levp,1,my_max),ww3(nx,my_max)
 !byl                wss3(levp,2,3,jtrun,jtmax),cc3(nx+2,levp,3,my_max)
 
-      character lrec*26,rfile*55,ctau*6,topostd*4,topohgt*4,key*34
+      character lrec*28,rfile*55,ctau*6,topostd*4,topohgt*4,key*38
 #ifdef RSM
       character*12 dtgrsm
       integer idtgrsm
@@ -259,7 +259,7 @@
 !dms    istdno=0
 !c      topostd='gbkf'   ! responding to istdno=99
         topostd='gbk0'   ! responding to istdno=0
-        write(lrec,'("s00062",a4,a4,12x)')topostd,ggdef
+        write(lrec,'("s00062",2x,a4,a4,12x)')topostd,ggdef
         call dmsread(nx,my,lrec,nxmy,'H',bckfile,ww1,istat)
 !
         do jj=1,jlistnum
@@ -346,7 +346,7 @@
 !
         itaup=int(taup+0.0001)
 !
-!  dtgfix12 needs idtg of long integer for dms 34 keys
+!  dtgfix12 needs idtg of long integer for dms 38 keys
 !
         call dtgfix12(idtg,idtg2,-itaup)
         call rdpbl(nx,my,my_max,snr,gwr,tg,zice,ifilin,idtg2,itaup,ggdef)
@@ -405,7 +405,7 @@
           if( myrank .eq. 0 ) then
              print*,"get ncep's sea ice analysis, at dtg=",idtg
              call syslbl('w00092',idtg,0,ggdef,lrec)
-             write(key,'(a26,a1,i7.7)') lrec,'H',nxmy
+             write(key,'(a28,a1,i9.9)') lrec,'H',nxmy
              call dmschkr (ifilin,key//char(0),istat)
           endif
           call mpe_bcast(istat,1,0,mpe_integer)
@@ -617,7 +617,7 @@
         else
          write(topohgt,'(a3,i1.1)')'gbk',ksgeo
         end if
-        write(lrec,'("s00060",a4,a4,12x)')topohgt,ggdef
+        write(lrec,'("s00060",2x,a4,a4,12x)')topohgt,ggdef
         call dmsread(nx,my,lrec,nxmy,'H',bckfile,ww1,istat)
         if(istat.ne.0)then
           call mpe_finalize
@@ -646,12 +646,14 @@
         call transr1(jtrun,jtmax,nx,my,my_max,poly,spgeo,sgeo,nsizey)
         call mpe2d_unify(ww1,sgeo)
 
-        call qmaxn3 (ww1,'sgeo',' ',1,1,1,nx,my,1)
+        call qmaxn3 (ww1,'  sgeo',' ',1,1,1,nx,my,1)
+          if(myrank == 0) &
+          write(*,*) 'sgeo=',maxval(sgeo),maxloc(sgeo),minval(sgeo),minloc(sgeo)
 !dms    istdno=99
 !dms    istdno=0
 !c      topostd='gbkf'   ! responding to istdno=99
         topostd='gbk0'   ! responding to istdno=0
-        write(lrec,'("s00062",a4,a4,12x)')topostd,ggdef
+        write(lrec,'("s00062",2x,a4,a4,12x)')topostd,ggdef
         call dmsread(nx,my,lrec,nxmy,'H',bckfile,ww1,istat)
         if(istat.ne.0)then
           call mpe_finalize
@@ -960,6 +962,7 @@
       enddo
 
 
+      if(do_sit) then
 !---------------------------------
 ! read forecast sst
 !---------------------------------
@@ -970,7 +973,6 @@
 !---------------------------------
 !0.0 initial_sit
 !---------------------------------
-      if(do_sit) then
         CALL set_ocndepth()
         if(myrank .eq. 0) print *,'end set_ocndepth'
         CALL allocate_sitgrid_array(nxp,my_max)

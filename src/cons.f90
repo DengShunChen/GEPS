@@ -436,7 +436,7 @@
       if( myrank .eq. 0 ) then
        type_r="RORDER"//char(0)
        type_w="WORDER"//char(0)
-       argument="34"//char(0)
+       argument="38"//char(0)
        call dmscfg(type_r,argument,istat_r)
        call dmscfg(type_w,argument,istat_w)
        istat = abs(istat_r) + abs(istat_w)
@@ -455,13 +455,16 @@
       call dmsmsg("ALL",istat)
       call dmsopn(bckfile,"r",istat1)
       endif
+      print*,'TYW in cons, bckfile, istat1 = ',bckfile,istat1
 !
 !  open the input file.  this too will be replaced by the appropriate
 !  dbms operation when available
 !
       if(col_rank .eq. 0) call dmsopn(ifilin,"w",istat2)
+      print*,'TYW in cons, ifilin ,istat2 = ',ifilin,istat2
 !
       if(myrank .lt. lev) call dmsopn(ifilout,"w",istat3)
+      print*,'TYW in cons, ifilout, istat3 = ',ifilout,istat3
 !
       if(myrank.eq.0) then
       istat = abs(istat1) + abs(istat2) + abs(istat3)
@@ -480,6 +483,7 @@
           call dmsopn(ifilin_ncep,"r",istat5)
           istat = istat + abs(istat5)
         endif
+        if(do_sit) then
         if(dailyClm_option .ge. 1) then
           istat6=0
           istat7=0
@@ -488,6 +492,7 @@
             call dmsopn(ifilin_ClmFCT,"r",istat7)
           endif
           istat = istat + abs(istat6)+abs(istat7)
+        endif
         endif
 
       end if

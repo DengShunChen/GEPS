@@ -29,7 +29,7 @@
       real      glob(nx,my),mout(nx,my)
 !
       character*80 ifilout
-      character*26 ihdg,ihdg2
+      character*28 ihdg,ihdg2
 !
       integer   n,levz,lenc,lenc2,i,ia,kk,j,nxj,istat,jj,llts,k
       real      tnshun,alaps,rdg,ttb,ttp,ttt,ttt1,ttt2,anlslp,apha

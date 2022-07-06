@@ -22,7 +22,7 @@ contains
 !
       integer*8 idtg
       character*80 ifilout
-      character*26 ihdg,ihdg2
+      character*28 ihdg,ihdg2
       character*6 lrec(lpout)
       character*4 ggdef
 !
@@ -54,7 +54,7 @@ contains
       call unify_reduceintp(nx,my,my_max,div(1,1,k),wk1)
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,wk1,istat)
-      call qmaxn3(wk1,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call qmaxn3(wk1,ihdg(1:16),ihdg(17:28),1,1,1,nx,my,1)
       if ( myrank .eq. ncnt ) then
         pout=wk1
         ihdg2=ihdg
@@ -87,7 +87,7 @@ contains
 !
       integer*8 idtg
       character*80 ifilout
-      character*26 ihdg,ihdg2
+      character*28 ihdg,ihdg2
       character*6 lrec(lpout)
       character*4 ggdef
 !
@@ -143,7 +143,7 @@ contains
       call unify_reduceintp(nx,my,my_max,drag(1,1,k),wk1)
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,wk1,istat)
-      call qmaxn3(wk1,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call qmaxn3(wk1,ihdg(1:16),ihdg(17:28),1,1,1,nx,my,1)
       if ( myrank .eq. ncnt ) then
         pout=wk1
         ihdg2=ihdg
@@ -179,7 +179,7 @@ contains
       integer*8    idtg
 
       character*80 ifilout
-      character*26 ihdg,ihdg2
+      character*28 ihdg,ihdg2
       character*6  lrec(lpout)
       character*4  ggdef
 !
@@ -269,7 +269,7 @@ contains
 !      endif
 !
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call qmaxn3(slp,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call qmaxn3(slp,ihdg(1:16),ihdg(17:28),1,1,1,nx,my,1)
       if ( myrank .eq. ncnt ) then
         pout=slp
         ihdg2=ihdg
@@ -303,7 +303,7 @@ contains
 !
       integer*8 idtg
       character*80 ifilout
-      character*26 ihdg,ihdg2
+      character*28 ihdg,ihdg2
       character*6 lrec(lpout)
       character*4 ggdef
 !
@@ -350,7 +350,7 @@ contains
 !  reduceintp has been done in voterp (2011/5)
 !
 !!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call qmaxn3(glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call qmaxn3(glob,ihdg(1:16),ihdg(17:28),1,1,1,nx,my,1)
       if ( myrank .eq. ncnt ) then
         pout=glob
         ihdg2=ihdg
@@ -386,7 +386,7 @@ contains
 
       integer*8 idtg
       character*80 ifilout
-      character*26 ihdg,ihdg2
+      character*28 ihdg,ihdg2
       character*6 lrec(lpout)
       character*4 ggdef
       character*3 cspec(6)
@@ -457,7 +457,7 @@ contains
 !
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
 !!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call qmaxn3(glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call qmaxn3(glob,ihdg(1:16),ihdg(17:28),1,1,1,nx,my,1)
       if ( myrank .eq. ncnt ) then
         pout=glob
         ihdg2=ihdg
@@ -595,8 +595,8 @@ contains
 !
       integer*8 idtg
       character*80 ifilout
-      character*26 ihdg
-      character*26 ihdg2
+      character*28 ihdg
+      character*28 ihdg2
       character*6 lrec(lpout)
       character*4 ggdef
 !
@@ -644,7 +644,7 @@ contains
 !!        glob=slp
 !
 !!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call qmaxn3(slp,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call qmaxn3(slp,ihdg(1:16),ihdg(17:28),1,1,1,nx,my,1)
       if ( myrank .eq. ncnt ) then
         pout=slp
         ihdg2=ihdg
@@ -678,7 +678,7 @@ contains
 !
       integer*8 idtg
       character*80 ifilout
-      character*26 ihdg,ihdg2
+      character*28 ihdg,ihdg2
       character*6 lrec(lpout)
       character*4 ggdef
 
@@ -747,7 +747,7 @@ contains
 !  reduceintp has been done in voterp (2011/5)
 !
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,wk1,istat)
-      call qmaxn3(wk1,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call qmaxn3(wk1,ihdg(1:16),ihdg(17:28),1,1,1,nx,my,1)
       if ( myrank .eq. ncnt ) then
         pout=wk1
         ihdg2=ihdg
@@ -787,7 +787,7 @@ contains
 
       integer*8 idtg
       character*80 ifilout
-      character*26 ihdg,ihdg2
+      character*28 ihdg,ihdg2
       character*6 lrec(lpout),krec(lpout),mrec(lpout)
       character*4 ggdef
 !
@@ -870,7 +870,7 @@ contains
 !  reduceintp has been done in voterp (2011/5)
 !
 !!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call qmaxn3(glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call qmaxn3(glob,ihdg(1:16),ihdg(17:28),1,1,1,nx,my,1)
       if ( myrank .eq. ncnt ) then
         pout=glob
         ihdg2=ihdg
@@ -939,7 +939,7 @@ contains
 !  reduceintp has been done in voterp (2011/5)
 !
 !!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call qmaxn3(glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call qmaxn3(glob,ihdg(1:16),ihdg(17:28),1,1,1,nx,my,1)
       if ( myrank .eq. ncnt ) then
         pout=glob
         ihdg2=ihdg
@@ -972,7 +972,7 @@ contains
       call syslbl(mrec(k),idtg,itau,ggdef,ihdg)
 !
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      call qmaxn3(glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call qmaxn3(glob,ihdg(1:16),ihdg(17:28),1,1,1,nx,my,1)
       if ( myrank .eq. ncnt ) then
         pout=glob*100.
         ihdg2=ihdg
