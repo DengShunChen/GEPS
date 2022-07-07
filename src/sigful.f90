@@ -25,6 +25,7 @@
 !  pk: 3-d full level exner func on gaussian grid and sigma coord.
 !  pk2: 3-d half level exner func on gaussian grid and sigma coord.
 !
+      use const, only : RTYPE
       use mpe
       use rank
       use index
@@ -61,7 +62,8 @@
       real      cc(nx+2,levp,1+ncld,my_max),wss(levp,2,1+ncld,jtrun,jtmax)
       real      work_pr1(lev), work_pr2(lev), work_pr3(lev)
 !
-      real      plnow(jtrun,jtmax,2),ww1(nx,my_max)
+      real      ww1(nx,my_max)
+      real(kind=RTYPE) plnow(jtrun,jtmax,2)
 !
       character*26 lrec
       character*6 typ

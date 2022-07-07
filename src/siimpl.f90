@@ -41,7 +41,7 @@
 
       use index
       use paramt
-      use const,only : eps4L
+      use const,only : eps4L,RTYPE
       use spec ,only : plnowL,ploldL,pltenL,jtwvp
 
       implicit  none
@@ -53,7 +53,7 @@
       real*4    temold(levp,2,jtrun,jtmax),divold(levp,2,jtrun,jtmax) &
       ,         temnow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax) &
       ,         temten(levp,2,jtrun,jtmax),divten(levp,2,jtrun,jtmax)
-      real*4    plold(jtrun,jtmax,2),plnow(jtrun,jtmax,2),plten(jtrun,jtmax,2)
+      real(kind=RTYPE) plold(jtrun,jtmax,2),plnow(jtrun,jtmax,2),plten(jtrun,jtmax,2)
  
       real*4    divavg(lev,2),phiave(lev,2,jtrun),eps4e(lev,jtrun)
  

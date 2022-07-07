@@ -23,7 +23,7 @@
 !!                                                vorten,divten,temten,qten,hldten
 
 !byl      real,dimension(:,:,:),  allocatable,save :: plnow,plold,dsqgeo,spgeo,plten
-      real,dimension(:,:,:),  allocatable,save :: plnow,plmid,plold,plten,spgeo
+      real(kind=RTYPE),dimension(:,:,:),  allocatable,save :: plnow,plmid,plold,plten,spgeo
 
 !ch   real,dimension(:,:),  allocatable,save :: plnowL,ploldL,pltenL   !  for 2dMPI, allocated in cons.f90
       real(kind=RTYPE),dimension(:,:),  allocatable,save :: plnowL,ploldL,pltenL   !  for 2dMPI, allocated in cons.f90

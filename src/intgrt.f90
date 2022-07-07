@@ -1224,22 +1224,18 @@
        arsddt_r4=arsddt
        temnow_r4=temnow
        divnow_r4=divnow
-        plnow_r4=plnow
        temmid_r4=temmid
        divmid_r4=divmid
-       plmid_r4=plmid
        temten_r4=temten
        divten_r4=divten
-        plten_r4=plten
         alpha_r4=alpha
 
       call siimpl ( jtrun,jtmax,lev,dta_r4,ptmeans_r4,dsigma_r4,spalm_r4,eps4_r4,eigval_r4 &
-                  , evecin_r4,evectr_r4,arrhyd_r4,arsddt_r4,temnow_r4,divnow_r4,plnow_r4   &
-                  , temmid_r4,divmid_r4,plmid_r4,temten_r4,divten_r4,plten_r4,alpha_r4)
+                  , evecin_r4,evectr_r4,arrhyd_r4,arsddt_r4,temnow_r4,divnow_r4,plnow      &
+                  , temmid_r4,divmid_r4,plmid,temten_r4,divten_r4,plten,alpha_r4)
 
        temten=temten_r4
        divten=divten_r4
-        plten=plten_r4
 !
       endif
 !

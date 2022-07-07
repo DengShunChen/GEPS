@@ -20,12 +20,14 @@
 ! modify 2015 by River Chen
 !-------------------------------------------------------------------------
 !
+      use const, only : RTYPE
       use index
 !
       real vorten(levp,2,jtrun,jtmax),divten(levp,2,jtrun,jtmax)
       real phiten(levp,2,jtrun,jtmax),temnow(levp,2,jtrun,jtmax)
       real vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax)
-      real plnow(jtrun,jtmax,2),tmcor(lev,lev),pmcor(lev)
+      real tmcor(lev,lev),pmcor(lev)
+      real(kind=RTYPE) plnow(jtrun,jtmax,2)
 
 !2dMPI >
       real phiten1(lev,2,jtrun,jtmax)
