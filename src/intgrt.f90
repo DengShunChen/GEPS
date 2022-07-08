@@ -63,7 +63,6 @@
                 vdmerd_r8(nxp,lev,my_max),vdzonl_r8(nxp,lev,my_max),&
                 um(nxp,lev,my_max),vm(nxp,lev,my_max),             &
                 tm(nxp,lev,my_max),                                &
-                rdivm(nxp,lev,my_max),                             &
                 ptm(nxp,my_max)
 !
       real(kind=RTYPE) ndsldta,ndsldtah,facm(2,2),                 &
@@ -77,7 +76,8 @@
                 vdmerdr(nxp,lev,my_max),vdzonlr(nxp,lev,my_max),   &
                 vdmerdrp(nxp,lev,my_max),vdzonlrp(nxp,lev,my_max), &
                 ddtemp(nxp,lev,my_max),                            &
-                pten(nxp,lev,my_max)
+                pten(nxp,lev,my_max),tmp(nxp,lev,my_max),dummy,    &
+                rdivm(nxp,lev,my_max)
 
       integer   ierr,itter,ittw,itt,year,yrd
 !
@@ -93,9 +93,9 @@
 
       real      tmin(nxp,my_max),tmax(nxp,my_max),td(nxp,my_max),temp
 !
-      real      cc(nx+2,levp,1,my_max),ww1(nx,my_max)
-      real*4    cc4(nx+2,levp,1,my_max)
-      real      pltemp(jtrun,jtmax,2),sptm(jtrun,jtmax,2)
+      real      ww1(nx,my_max)
+      real(kind=RTYPE) pltemp(jtrun,jtmax,2),cc(nx+2,levp,1,my_max)
+      real      sptm(jtrun,jtmax,2)
 !byl      real      dlgeo(nxp,my_max),dtgeo(nxp,my_max)
 !byl      real      cc3(nx+2,levp,3,my_max),wss3(levp,2,3,jtrun,jtmax)
 !
@@ -146,9 +146,8 @@
 
       real    www,dtx,dta,thdai,tkei,tpei,dsigp,            &
               cosw,tengi,dt24,tg2,dtx_tau,hfiltx,sqhaf,     &
-              dummy,dt1,sptend,wmax,xx,facw,dtaup,          &
+              dt1,sptend,wmax,xx,facw,dtaup,                &
               sptendmax2,sptendmax1,dt_chg,prslp
-      real*4  dum4
       integer itimestep,recn
 
 ! for io quilting
@@ -204,16 +203,7 @@
           evecin_r4(lev,lev),           &
           evectr_r4(lev,lev),           &
           arrhyd_r4(lev,lev),           &
-          arsddt_r4(lev,lev),           &
-          temnow_r4(levp,2,jtrun,jtmax),&
-          divnow_r4(levp,2,jtrun,jtmax),&
-          plnow_r4(jtrun,jtmax,2),      &
-          temmid_r4(levp,2,jtrun,jtmax),&
-          divmid_r4(levp,2,jtrun,jtmax),&
-          temten_r4(levp,2,jtrun,jtmax),&
-          divten_r4(levp,2,jtrun,jtmax),&
-          plmid_r4(jtrun,jtmax,2),      &
-          plten_r4(jtrun,jtmax,2)
+          arsddt_r4(lev,lev)
 
 !
 !xb110>
@@ -573,18 +563,18 @@
 !
 ! sppt
       itimestep=1
-      ptm=0.
-      do jj = 1, jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-        do i = 1,nxj
-          ptm(i,jj)= sgeo(i,jj)/(rgas*288.15)
-          call vexp(ptm(i,jj),ptm(i,jj),1)
-        enddo
-      enddo
-      call mpe2d_unify_nx(ww1,ptm) 
-      call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1         &
-                  ,sptm,nsizey)
+!      ptm=0.
+!      do jj = 1, jlistnum
+!        j=jlist1(jj)
+!        nxj=nxdef_2d(j)
+!        do i = 1,nxj
+!          ptm(i,jj)= sgeo(i,jj)/(rgas*288.15)
+!          call vexp(ptm(i,jj),ptm(i,jj),1)
+!        enddo
+!      enddo
+!      call mpe2d_unify_nx(ww1,ptm) 
+!      call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1         &
+!                  ,sptm,nsizey)
 !!      call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,spgeo    &
 !!                  ,dlgeo,dtgeo,nsizey)
 !
@@ -795,6 +785,7 @@
        pten=0.
 
        deldm=0.
+
 !
 !
 !     advet grid non-linear forcing from t-dt/2 to t+dt/2 via NDSL advection
@@ -825,6 +816,7 @@
 !
 !    advect pressure gradient force from t to t+dt
 !
+      tmp=rdiv
       do jj = 1, jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
@@ -832,7 +824,7 @@
 !       Calculate Vertical velocity & Stream Functions
 !
         call gridnl_hybrid_ndsl_2tl_sp (nxjp(j),nxp,lev,ncld           &
-        , cp,radsq,ut(1,1,jj),vt(1,1,jj),rdiv(1,1,jj),tt(1,1,jj)       &
+        , cp,radsq,ut(1,1,jj),vt(1,1,jj),tmp(1,1,jj),tt(1,1,jj)        &
         , qt(1,1,jj),phi(1,1,jj),pt(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
         , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)         &
         , diveng(1,1,jj),vdmerdr(1,1,jj),vdzonlr(1,1,jj),pten(1,1,jj)  &
@@ -840,10 +832,10 @@
 !
       enddo !jj = 1,jlistnum
 !
-      call joinrs_sp(cc4,diveng,dum4,dum4,dum4,nx,my_max,lev,jlistnum,1,1)
-      call tranrs_sp(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc4      &
+      call joinrs(cc,diveng,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc         &
                  ,hldten,1,nsizey)
-      call trngra3(jtrun,jtmax,nx,levp,my,my_max,cim,poly,dpoly      &
+      call trngra3(jtrun,jtmax,nx,levp,my,my_max,cim,poly,dpoly        &
                  ,hldten,dlphi,dtphi,nsizey)
 !!      call mpe2d_unify_nx(ww1,deldm) 
 !!      call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1         &
@@ -927,7 +919,7 @@
       ptm=ptm_sp
 
 !
-      call trandv_sp ( jtrun,jtmax,nx,my,my_max,lev,vdzonl,vdmerd,weight,cim &
+      call trandv ( jtrun,jtmax,nx,my,my_max,lev,vdzonl,vdmerd,weight,cim &
                    ,onocos,poly,dpoly,vormid,divmid,nsizey)
 !      call joinrs(cc,ddtemp,dummy,dummy,dummy,nx,my_max,lev        &
 !                   ,jlistnum,1,1)
@@ -993,10 +985,10 @@
         , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),sgeo(1,jj) )
       enddo !jj = 1,jlistnum
 !
-      call joinrs_sp(cc4,diveng,dum4,dum4,dum4,nx,my_max,lev,jlistnum,1,1)
-      call tranrs_sp(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc4      &
+      call joinrs(cc,diveng,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc          &
                  ,hldten,1,nsizey)
-      call trngra3(jtrun,jtmax,nx,levp,my,my_max,cim,poly,dpoly      &
+      call trngra3(jtrun,jtmax,nx,levp,my,my_max,cim,poly,dpoly         &
                  ,hldten,dlphi,dtphi,nsizey)
 !
       do jj = 1, jlistnum
@@ -1196,11 +1188,11 @@
             enddo
           enddo
 !
-          call joinrs_sp(cc4,ddtemp,dum4,dum4,dum4,nx,my_max,lev    &
+          call joinrs(cc,ddtemp,dummy,dummy,dummy,nx,my_max,lev    &
                    ,jlistnum,1,1)
-          call tranrs_sp(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc4 &
+          call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc &
                    ,temten,1,nsizey)
-          call rstrandz_sp (jtrun,jtmax,nx,my,my_max,levp,vdmerd,vdzonl   &
+          call rstrandz (jtrun,jtmax,nx,my,my_max,levp,vdmerd,vdzonl   &
                    ,weight,cim,onocos,poly,dpoly,divten,vorten,nsizey)
 !
       if (lsimpl)  then
@@ -1222,20 +1214,12 @@
        evectr_r4=evectr
        arrhyd_r4=arrhyd
        arsddt_r4=arsddt
-       temnow_r4=temnow
-       divnow_r4=divnow
-       temmid_r4=temmid
-       divmid_r4=divmid
-       temten_r4=temten
-       divten_r4=divten
         alpha_r4=alpha
 
       call siimpl ( jtrun,jtmax,lev,dta_r4,ptmeans_r4,dsigma_r4,spalm_r4,eps4_r4,eigval_r4 &
-                  , evecin_r4,evectr_r4,arrhyd_r4,arsddt_r4,temnow_r4,divnow_r4,plnow      &
-                  , temmid_r4,divmid_r4,plmid,temten_r4,divten_r4,plten,alpha_r4)
+                  , evecin_r4,evectr_r4,arrhyd_r4,arsddt_r4,temnow,divnow,plnow      &
+                  , temmid,divmid,plmid,temten,divten,plten,alpha_r4)
 
-       temten=temten_r4
-       divten=divten_r4
 !
       endif
 !
@@ -1391,9 +1375,11 @@
 !!      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,vornow,cc,1,nsizey)
 !!      call ujoinsr(cc,rvor,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divnow,cc,1,nsizey)
-      call ujoinsr(cc,rdiv,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      call ujoinsr(cc,tmp,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      rdiv=tmp
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temnow,cc,1,nsizey)
-      call ujoinsr(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      call ujoinsr(cc,tmp,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      tt=tmp
       call transr1(jtrun,jtmax,nx,my,my_max,poly,plnow,pt,nsizey)
 !
 !   computing new p**capa quantities
@@ -1734,7 +1720,8 @@
 #ifndef NO_OUT
 !
        call transr(jtrun,jtmax,nx,my,my_max,levp,poly,vornow,cc,1,nsizey)
-       call ujoinsr(cc,rvor,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+       call ujoinsr(cc,tmp,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+       rvor=tmp
        rh2100=rh2*100.
        rh10100=rh10*100.
         call  outflds( itau,nx,my,my_max,lev,ncld                              &

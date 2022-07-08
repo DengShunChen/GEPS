@@ -1,4 +1,4 @@
-      subroutine tranrs (jtrun,jtmax,nx,my,my_max,lev,poly,w,cc_r8  &
+      subroutine tranrs (jtrun,jtmax,nx,my,my_max,lev,poly,w,cc  &
                         ,wss,num,nsize)
 !
 !  subroutine to transform a scalar grid point field to spectral
@@ -37,8 +37,7 @@
       integer lchk,lle,jlistnum_fj,j_fj,j1,j2,l,l_fj,llistnum_fj
 
       real    poly(jtrun,my/2,jtmax),w(my)
-      real    cc_r8(nx+2,lev,num,my_max)
-      real    wss(lev,2,num,jtrun,jtmax)
+      real(kind=RTYPE)    wss(lev,2,num,jtrun,jtmax)
 !
       real(kind=RTYPE)    gwk1(nx+2,lev,num,my_max)
 !
@@ -62,7 +61,6 @@
       gwk1=0.
 
 !CWB2021 for single precision test
-      cc=cc_r8
 
       mlx= (jtrun/2)*((jtrun+1)/2)
       myhalf=my/2
@@ -277,7 +275,7 @@
       integer lchk,lle,jlistnum_fj,j_fj,j1,j2,l,l_fj,llistnum_fj
 
       real    poly(jtrun,my/2,jtmax),w(my)
-      real    wss(lev,2,num,jtrun,jtmax)
+      real(kind=RTYPE)    wss(lev,2,num,jtrun,jtmax)
 !
       real(kind=RTYPE)    gwk1(nx+2,lev,num,my_max)
 !

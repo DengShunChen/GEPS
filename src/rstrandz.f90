@@ -1,11 +1,7 @@
 !--------------------------------------------------------------
 !CWB2021 for single precision test
 
-#ifdef SP
-      subroutine rstrandz_sp ( jtrun,jtmax,nx,my,my_max,lev                &
-#else
-      subroutine rstrandz    ( jtrun,jtmax,nx,my,my_max,lev                &
-#endif
+      subroutine rstrandz    ( jtrun,jtmax,nx,my,my_max,lev             &
                   ,vdmer,vdzon,w,cim,onocos,poly,dpoly                  &
                   ,hldten,vorten,nsize )
 !
@@ -22,7 +18,7 @@
 
       real      poly(jtrun,my/2,jtmax),dpoly(jtrun,my/2,jtmax),         &
                 cim(jtmax),onocos(my),w(my)
-      real      hldten(lev,2,jtrun,jtmax),vorten(lev,2,jtrun,jtmax)
+      real(kind=RTYPE)      hldten(lev,2,jtrun,jtmax),vorten(lev,2,jtrun,jtmax)
       real(kind=RTYPE)      vdmer(nxp,levf,my_max),vdzon(nxp,levf,my_max),dummy
 !
       real(kind=RTYPE)      gwk1(nx+2,lev,2,my_max)
@@ -66,11 +62,7 @@
 !      cc(i,k,2,jj)= vdzon(i,k,jj)
 !   23 continue
 
-#ifdef SP
-      call joinrs_sp(cc,vdmer,vdzon,dummy,dummy,nx,my_max,levf,jlistnum,2,1)
-#else
       call joinrs(cc,vdmer,vdzon,dummy,dummy,nx,my_max,levf,jlistnum,2,1)
-#endif
 
       if( length_fft .eq. 0 .and. lreduce.eq.0 ) then
 #ifdef SP

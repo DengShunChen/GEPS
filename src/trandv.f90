@@ -41,15 +41,14 @@
 
       real      poly(jtrun,my/2,jtmax),dpoly(jtrun,my/2,jtmax)   &
                ,cim(jtmax),onocos(my),w(my)
-      real      ut(nxp,lev,my_max),vt(nxp,lev,my_max)              &
-               ,vor(levp,2,jtrun,jtmax),div(levp,2,jtrun,jtmax)
+      real(kind=RTYPE)      ut(nxp,lev,my_max),vt(nxp,lev,my_max) 
+      real(kind=RTYPE)      vor(levp,2,jtrun,jtmax),div(levp,2,jtrun,jtmax)
 !
       real(kind=RTYPE)      gwk1(nx+2,levp,2,my_max)
       real(kind=RTYPE)      wss (levp,2,2,jtrun)
       real(kind=RTYPE)      wcc_fk (levp,2,2,jtmax,my_max*nsize)
       real(kind=RTYPE)      twcc_fk(levp,2,2,jtmax*nsize,my_max)
-      real(kind=RTYPE)      cc(nx+2,levp,2,my_max)
-      real                  cc8(nx+2,levp,2,my_max)
+      real(kind=RTYPE)      cc(nx+2,levp,2,my_max),dummy
 !
       real(kind=RTYPE)      wcc2(levp,2,2,my/2)
       real(kind=RTYPE)      wcc3(levp,2,2,my/2)
@@ -65,7 +64,7 @@
       real      fj_wss23(levp*2*2,jtrun)
       real      fj_wss45(levp*2*2,jtrun)
       real      fj_wd2(my/2,jtrun),fj_wp3(my/2,jtrun)
-      real      fj_wd4(my/2,jtrun),fj_wp5(my/2,jtrun),dummy
+      real      fj_wd4(my/2,jtrun),fj_wp5(my/2,jtrun)
       integer   jlist_fj(my/2)
 !
 !CWBinit
@@ -88,12 +87,7 @@
 !  23 continue
 
 !2dMPI
-#ifdef SP
-      call joinrs(cc8,ut,vt,dummy,dummy,nx,my_max,lev,jlistnum,2,1)
-      cc=cc8
-#else
       call joinrs(cc,ut,vt,dummy,dummy,nx,my_max,lev,jlistnum,2,1)
-#endif
 
       if( length_fft .eq. 0 .and. lreduce.eq.0 )then
 #ifdef SP
@@ -327,7 +321,7 @@
 
       real      poly(jtrun,my/2,jtmax),dpoly(jtrun,my/2,jtmax)   &
                ,cim(jtmax),onocos(my),w(my)
-      real      vor(levp,2,jtrun,jtmax),div(levp,2,jtrun,jtmax)
+      real(kind=RTYPE)      vor(levp,2,jtrun,jtmax),div(levp,2,jtrun,jtmax)
 !
       real(kind=RTYPE)      ut(nxp,lev,my_max),vt(nxp,lev,my_max)
       real(kind=RTYPE)      gwk1(nx+2,levp,2,my_max)

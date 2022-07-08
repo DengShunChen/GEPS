@@ -16,12 +16,11 @@
 
 !byl      real,dimension(:,:,:,:),allocatable,save :: vornow,divnow,temnow,qnow,             &
 !byl                                                  vorold,divold,temold,qold,trefs,       &
-      real,dimension(:,:,:,:),allocatable,save :: vornow,divnow,temnow,                  &
-                                                  vormid,divmid,temmid,                  &
-                                                  vorold,divold,temold,trefs,            &
-                                                  vorten,divten,temten,hldten
-!!                                                vorten,divten,temten,qten,hldten
-
+      real(kind=RTYPE),dimension(:,:,:,:),allocatable,save :: vornow,divnow,temnow,         &
+                                                              vormid,divmid,temmid,         &
+                                                              vorold,divold,temold,trefs,   &
+                                                              vorten,divten,temten,hldten
+!!                                                            vorten,divten,temten,qten,hldten
 !byl      real,dimension(:,:,:),  allocatable,save :: plnow,plold,dsqgeo,spgeo,plten
       real(kind=RTYPE),dimension(:,:,:),  allocatable,save :: plnow,plmid,plold,plten,spgeo
 

@@ -15,11 +15,12 @@
       real hld1(nx,my),pt1(nx,my_max),hld3(nx,levp,my_max),           &
            hld4(nx,levp,ncld,my_max)
       character typ*6,lrec*26
-      real      cc(nx+2,levp,1,my_max)
+      real(kind=RTYPE) cc(nx+2,levp,1,my_max),dummy,                  &
+                       tmp1(nxp,lev,my_max),tmp2(nxp,lev,my_max)
 !!      real      cc(nx+2,levp,3+ncld,my_max),wss(levp,2,3+ncld,jtrun,jtmax)
 
       integer   k,ii,jj,j,nxj,lmax,itaup,lncrec,istat,i,KL,m,n,mf,ntrac
-      real      fac,dummy
+      real      fac
 !
       lmax=16
 !
@@ -180,13 +181,16 @@
         enddo
       enddo
 
-      call joinrs(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      tmp1=tt
+      call joinrs(cc,tmp1,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc   &
                    ,temnow,1,nsizey)
 !ch   call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,pt      &
       call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,pt1     &
                  ,plnow,nsizey)
-      call trandv(jtrun,jtmax,nx,my,my_max,lev,ut,vt,weight,cim &
+      tmp1=ut
+      tmp2=vt
+      call trandv(jtrun,jtmax,nx,my,my_max,lev,tmp1,tmp2,weight,cim &
                  ,onocos,poly,dpoly,vornow,divnow,nsizey)
 !
       do m=1,mlistnum
@@ -206,11 +210,14 @@
 !!      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,wss,cc,3,nsizey)
 !!      call ujoinsr(cc,rvor,rdiv,tt,dummy,nx,my_max,lev,jlistnum,3,1)
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,vornow,cc,1,nsizey)
-      call ujoinsr(cc,rvor,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      call ujoinsr(cc,tmp1,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      rvor=tmp1
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divnow,cc,1,nsizey)
-      call ujoinsr(cc,rdiv,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      call ujoinsr(cc,tmp1,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      rdiv=tmp1
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temnow,cc,1,nsizey)
-      call ujoinsr(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      call ujoinsr(cc,tmp1,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      tt=tmp1
       call transr1(jtrun,jtmax,nx,my,my_max,poly,plnow,pt,nsizey)
       call tranuv(jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac &
                  ,poly,dpoly,vornow,divnow,ut,vt,nsizey)

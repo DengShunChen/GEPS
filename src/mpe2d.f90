@@ -469,17 +469,51 @@
       return
       end
 !-------------------------------------------------------------------------------------------------
-      subroutine mpe2d_unify_spec_lev_zx(aout,a1,a2,a3,lev,levp,jtrun,jtmax,mlistnum,proc,comm)
+      subroutine mpe2d_unify_spec_lev_sp(ain,aout,lev,levp,jtrun,jtmax,mlistnum,proc,comm)
 
-! unify lev of spectrum for zx
+! unify lev of spectrum
  
       use mpi
  
       implicit none
 
+      integer lev,levp,jtrun,jtmax,mlistnum,proc,comm,ii,j,jj,k,kk,ierr
+
+      real*4 ain(levp,2,jtrun,jtmax)
+      real*4 aout(lev,2,jtrun,jtmax)
+      real*4 b1(levp,2,jtrun,jtmax)
+      real*4 b2(levp,2,jtrun,jtmax,proc)
+
+      call MPI_ALLGATHER( ain, levp*2*jtrun*jtmax, MPI_REAL4, &
+                           b2, levp*2*jtrun*jtmax, MPI_REAL4, &
+                          comm,IERR )
+
+      do jj=1,mlistnum
+      do j=1,jtrun
+         kk=1
+      do ii=1,proc
+         aout(kk:kk+levp-1,1,j,jj)=b2(1:levp,1,j,jj,ii)
+         aout(kk:kk+levp-1,2,j,jj)=b2(1:levp,2,j,jj,ii)
+         kk=kk+levp
+      enddo
+      enddo
+      enddo
+
+      return
+      end
+!-------------------------------------------------------------------------------------------------
+      subroutine mpe2d_unify_spec_lev_zx(aout,a1,a2,a3,lev,levp,jtrun,jtmax,mlistnum,proc,comm)
+
+! unify lev of spectrum for zx
+ 
+      use mpi
+      use const, only: RTYPE
+ 
+      implicit none
+
       integer lev,levp,jtrun,jtmax,mlistnum,proc,comm,ii,j,jj,k,kk,n,ierr
 
-      real a1(levp,2,jtrun,jtmax),a2(levp,2,jtrun,jtmax),a3(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) a1(levp,2,jtrun,jtmax),a2(levp,2,jtrun,jtmax),a3(levp,2,jtrun,jtmax)
       real ain(levp,2,3,jtrun,jtmax)
       real aout(lev,2,3,jtrun,jtmax)
       real b1(levp,2,jtrun,jtmax)
@@ -966,19 +1000,26 @@
 ! unify lev of spectrum var
 
       use mpi
+      use const, only: RTYPE
 
       implicit none
 
       integer lev,levp,jtrun,jtmax,mlistnum,proc,comm,ii,j,jj,k,kk,ierr
 
-      real ain(levp,2,jtrun,jtmax)
-      real aout(lev,2,jtrun,jtmax)
-      real b1(levp,2,jtrun,jtmax)
-      real b2(levp,2,jtrun,jtmax,proc)
+      real(kind=RTYPE) ain(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) aout(lev,2,jtrun,jtmax)
+      real(kind=RTYPE) b1(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) b2(levp,2,jtrun,jtmax,proc)
 
+#ifdef SP
+      call MPI_ALLGATHER( ain, levp*2*jtrun*jtmax, MPI_REAL4, &
+                           b2, levp*2*jtrun*jtmax, MPI_REAL4, &
+                          comm,IERR )
+#else
       call MPI_ALLGATHER( ain, levp*2*jtrun*jtmax, MPI_DOUBLE_PRECISION, &
                            b2, levp*2*jtrun*jtmax, MPI_DOUBLE_PRECISION, &
                           comm,IERR )
+#endif
 
       do jj=1,mlistnum
       do j=1,jtrun

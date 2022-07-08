@@ -40,14 +40,14 @@
       integer   kk,ll,jj,jx,j2,i,jtrunj,mchk,mm,mp,mlst
       integer   mm1,mp1,mlst1,mm2,mp2,mlst2,mm3,mp3,mlst3,nxj,ierr
 
-      real(kind=RTYPE) sa00,sa10,sa20,sa30
-      real      dummy
+      real(kind=RTYPE) sa00,sa10,sa20,sa30,dummy
 !
       real      onocos(my),wcfac(jtrun,jtmax),wdfac(jtrun,jtmax)  &
                ,poly(jtrun,my/2,jtmax),dpoly(jtrun,my/2,jtmax)    &
-               ,vor(lev,2,jtrun,jtmax),div(lev,2,jtrun,jtmax)     &
+!               ,vor(lev,2,jtrun,jtmax),div(lev,2,jtrun,jtmax)     &
                ,ut(nxp,levF,my_max),vt(nxp,levF,my_max)
 !
+      real(kind=RTYPE)      vor(lev,2,jtrun,jtmax),div(lev,2,jtrun,jtmax)
       real(kind=RTYPE)      ut4(nxp,levF,my_max),vt4(nxp,levF,my_max)
       real(kind=RTYPE)      gwk1(nx+2,lev,2,my_max)
       real(kind=RTYPE)      wcc_fk (lev,2,2,jtmax,my_max*nsize)
@@ -470,13 +470,9 @@
 !  22 continue
 
 !2dMPI
-#ifdef SP
-      call ujoinsr_sp(cc,ut4,vt4,dummy,dummy,nx,my_max,levF,jlistnum,2,1)
+      call ujoinsr(cc,ut4,vt4,dummy,dummy,nx,my_max,levF,jlistnum,2,1)
       ut=ut4
       vt=vt4
-#else
-      call ujoinsr(cc,ut,vt,dummy,dummy,nx,my_max,levF,jlistnum,2,1)
-#endif
 
       return
       end

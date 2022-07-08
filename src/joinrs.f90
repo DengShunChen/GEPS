@@ -1,7 +1,9 @@
       subroutine joinrs(cc,r1,r2,r3,r4,nx,my_max,lev,jlistnum,num,ncld)
 !
+      use const, only: RTYPE
+!
       implicit  none
-      real      cc(*), r1(*), r2(*), r3(*), r4(*)
+      real(kind=RTYPE) cc(*), r1(*), r2(*), r3(*), r4(*)
       integer   nx,my_max,lev,jlistnum,num,ncld
 !
       if(num .eq. 1) call join1rs(cc,r1,nx,my_max,lev,jlistnum,ncld)
@@ -15,10 +17,11 @@
 !
 !     include '../include/index.h'
       use index
+      use const, only: RTYPE
 
       implicit  none
-      real      cc(nx+2,levp,ncld,my_max)
-      real      r1(nxp,lev*ncld,my_max)
+      real(kind=RTYPE) cc(nx+2,levp,ncld,my_max)
+      real(kind=RTYPE) r1(nxp,lev*ncld,my_max)
       real      bufA(nxp,lev, ncld,my_max)
       real      bufB(nx ,levp,ncld,my_max)
       integer   nx,my_max,lev,jnum,ncld
@@ -58,11 +61,12 @@
 !
 !     include '../include/index.h'
       use index
+      use const, only: RTYPE
 
       implicit  none
-      real      cc(nx+2,levp,1+ncld,my_max)
-      real      r1(nxp,lev,my_max)
-      real      r2(nxp,lev*ncld,my_max)
+      real(kind=RTYPE) cc(nx+2,levp,1+ncld,my_max)
+      real(kind=RTYPE) r1(nxp,lev,my_max)
+      real(kind=RTYPE) r2(nxp,lev*ncld,my_max)
       real      bufA(nxp,lev, 1+ncld,my_max)
       real      bufB(nx ,levp,1+ncld,my_max)
       integer   nx,my_max,lev,jnum,ncld
@@ -110,12 +114,13 @@
 !
 !     include '../include/index.h'
       use index
+      use const, only: RTYPE
 
       implicit  none
-      real      cc(nx+2,levp,2+ncld,my_max)
-      real      r1(nxp,lev,my_max)
-      real      r2(nxp,lev,my_max)
-      real      r3(nxp,lev*ncld,my_max)
+      real(kind=RTYPE) cc(nx+2,levp,2+ncld,my_max)
+      real(kind=RTYPE) r1(nxp,lev,my_max)
+      real(kind=RTYPE) r2(nxp,lev,my_max)
+      real(kind=RTYPE) r3(nxp,lev*ncld,my_max)
       real      bufA(nxp,lev, 2+ncld,my_max)
       real      bufB(nx ,levp,2+ncld,my_max)
       integer   nx,my_max,lev,jnum,ncld

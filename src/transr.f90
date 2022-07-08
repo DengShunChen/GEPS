@@ -1,5 +1,5 @@
       subroutine transr (jtrun,jtmax,nx,my,my_max,lev,poly,wss  &
-                        ,cc_r8,num,nsize)
+                        ,cc,num,nsize)
 !
 !  subroutine to transform a spectral coefficient field to
 !  grid point form
@@ -38,8 +38,7 @@
       real(kind=RTYPE)      sa00,sa10,sb00,sb10
 
       real      poly(jtrun,my/2,jtmax)
-      real                  cc_r8(nx+2,lev,num,my_max),wss(lev,2,num,jtrun,jtmax)
-      real(kind=RTYPE)      cc(nx+2,lev,num,my_max)
+      real(kind=RTYPE)      cc(nx+2,lev,num,my_max),wss(lev,2,num,jtrun,jtmax)
 !
       real(kind=RTYPE)      gwk1(nx+2,lev,num,my_max)
 !
@@ -281,7 +280,6 @@
    20 continue
 
 !CWB2021
-      cc_r8=cc
 
       return
       end

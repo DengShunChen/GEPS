@@ -23,18 +23,27 @@
       use const, only : RTYPE
       use index
 !
-      real vorten(levp,2,jtrun,jtmax),divten(levp,2,jtrun,jtmax)
-      real phiten(levp,2,jtrun,jtmax),temnow(levp,2,jtrun,jtmax)
-      real vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) vorten(levp,2,jtrun,jtmax),  &
+                       divten(levp,2,jtrun,jtmax),  &
+                       phiten(levp,2,jtrun,jtmax),  &
+                       vornow(levp,2,jtrun,jtmax),  &
+                       divnow(levp,2,jtrun,jtmax),  &
+                       temnow(levp,2,jtrun,jtmax),  &
+                       temnow1(lev,2,jtrun,jtmax),  &
+                       phiten1(lev,2,jtrun,jtmax),  &
+                       plnow(jtrun,jtmax,2)
       real tmcor(lev,lev),pmcor(lev)
-      real(kind=RTYPE) plnow(jtrun,jtmax,2)
 
 !2dMPI >
-      real phiten1(lev,2,jtrun,jtmax)
-      real temnow1(lev,2,jtrun,jtmax)
 
+
+#ifdef SP
+      call mpe2d_unify_spec_lev_sp(phiten,phiten1,lev,levp,jtrun,jtmax,mlistnum,nsizex,row_comm)
+      call mpe2d_unify_spec_lev_sp(temnow,temnow1,lev,levp,jtrun,jtmax,mlistnum,nsizex,row_comm)
+#else
       call mpe2d_unify_spec_lev(phiten,phiten1,lev,levp,jtrun,jtmax,mlistnum,nsizex,row_comm)
       call mpe2d_unify_spec_lev(temnow,temnow1,lev,levp,jtrun,jtmax,mlistnum,nsizex,row_comm)
+#endif
 !2dMPI <
 
 !

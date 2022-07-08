@@ -2,7 +2,7 @@
               , ifilout,cstar,ktrop,idtg,ptop,taux,capa,grav,rgas,rad,cp  &
               , weight,poly,sigma,cosl,phi,tt,ut,vt,sht,o3l,pt,sgeo,pdiff &
 !             , weight,poly,sigma,cosl,phi,tt,ut,vt,sht,pt,sgeo,pdiff
-              , tsave,t1000,plt,pk,pk2,trefs,taup,ggdef,gmdef)
+              , tsave,t1000,plt,pk,pk2,taup,ggdef,gmdef)
 !
 !  read and interpolate analysis fields to model's coordinates
 !
@@ -30,6 +30,7 @@
       use rank
       use index
       use radn, only : ntoz,ntcw,ntiw
+      use spec, only : trefs
 
       implicit  none
 
@@ -37,7 +38,7 @@
       integer   ktrop,nxmy,nxlev,lncrec,lmaxp1,lmaxp2,k,itaux,itaup
       integer   istat,i,ii,jj,j,nxj,kk,lqwset,m,mf,n,llts,ntrac,nclds
 
-      real      taup,cp,rad,rgas,grav,capa,taux,ptop,dummy,ppp,fac
+      real      taup,cp,rad,rgas,grav,capa,taux,ptop,ppp,fac
       real      alaps,rdg,ttt1,ttt2,apha,ttt,sigp,x1,opok,pk800,pk300
 
 
@@ -48,7 +49,7 @@
               , pt(nxp,my_max),sgeo(nxp,my_max),pdiff(nxp,my_max),t1000(nxp,my_max) &
               , tsave(nxp,my_max),plt(nxp,lev,my_max),pk2(nxp,lev,my_max)&
               , sht(nxp,lev*ncld,my_max)                                    &
-              , trefs(levp,2,jtrun,jtmax),o3l(nxp,lev,my_max)
+              , o3l(nxp,lev,my_max)
       character*4 ggdef,gmdef
 !
 !  local work arrays
@@ -59,11 +60,12 @@
                hld4(nx,levp,ncld,my_max)
       real      puvphi(26)
 !
-      real      cc(nx+2,levp,1+ncld,my_max),wss(levp,2,1+ncld,jtrun,jtmax)
+      real(kind=RTYPE) cc(nx+2,levp,1+ncld,my_max),temp(nxp,lev,my_max)
+      real      wss(levp,2,1+ncld,jtrun,jtmax)
       real      work_pr1(lev), work_pr2(lev), work_pr3(lev)
 !
       real      ww1(nx,my_max)
-      real(kind=RTYPE) plnow(jtrun,jtmax,2)
+      real(kind=RTYPE) plnow(jtrun,jtmax,2),dummy
 !
       character*26 lrec
       character*6 typ
@@ -291,10 +293,12 @@
       
 !----
       if( lreduce.eq.1 )then
-      call joinrs(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      temp=tt
+      call joinrs(cc,temp,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc,trefs,1,nsizey)
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,trefs,cc,1,nsizey)
-      call ujoinsr(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      call ujoinsr(cc,temp,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      tt=temp
       endif
 !------
 !
@@ -441,8 +445,8 @@
 !     enddo
 !
 !!    qrefs=0.0
-
-      call joinrs(cc,ut,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      temp=ut
+      call joinrs(cc,temp,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc,trefs,1,nsizey)
 
 !

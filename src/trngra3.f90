@@ -33,7 +33,7 @@
 !
       integer jtrun,jtmax,nx,lev,my,my_max,nsize
       real poly(jtrun,my/2,jtmax),dpoly(jtrun,my/2,jtmax)
-      real s(lev,2,jtrun,jtmax)
+      real(kind=RTYPE) s(lev,2,jtrun,jtmax)
       real cim(jtmax)
 
       real(kind=RTYPE) dlpl(nxp,levF,my_max),dtpl(nxp,levF,my_max)
@@ -202,11 +202,7 @@
 !  22 continue
 
 !ch
-#ifdef SP
-      call ujoinsr_sp(cc,dlpl,dtpl,dummy,dummy,nx,my_max,levF,jlistnum,2,1)
-#else
       call ujoinsr(cc,dlpl,dtpl,dummy,dummy,nx,my_max,levF,jlistnum,2,1)
-#endif
       dlpl= -dlpl
       dtpl= -dtpl
 

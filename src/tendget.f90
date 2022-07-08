@@ -24,10 +24,9 @@
       implicit none
 
       integer  m,mf,j,jj,k,n,l,mlst,nxj,nk,kk,kl,i,ii,nl
-      real     sqhaf,dummy
-      real*4   dum4
+      real     sqhaf
 
-      real phiten(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) phiten(levp,2,jtrun,jtmax)
 !byl      real tbar(lev),qbar(lev*ncld)
       real sdpbl(nxp,my_max)
 
@@ -48,7 +47,7 @@
       ,diveng(nxp,lev,my_max),pten(nxp,lev,my_max)
 
 !byl      real cc(nx+2,levp,1+ncld,my_max)
-      real(kind=RTYPE) cc(nx+2,levp,1,my_max)
+      real(kind=RTYPE) cc(nx+2,levp,1,my_max),dummy,temp(nxp,lev,my_max)
 !byl,wss(levp,2,1+ncld,jtrun,jtmax)
 !
       integer   ierr
@@ -56,8 +55,8 @@
       real             ww1(nx,my_max)
 
 !for 2dMPI
-      real temten1(lev,2,jtrun,jtmax)
-      real phiten1(lev,2,jtrun,jtmax)
+      real(kind=RTYPE) temten1(lev,2,jtrun,jtmax)
+      real(kind=RTYPE) phiten1(lev,2,jtrun,jtmax)
       phiten1=0.
 
 !
@@ -213,6 +212,7 @@
 
 !ch<
 
+      temp=rdiv
       do jj =1, jlistnum
       j=jlist1(jj)
 !     nxj=nxdef(j)
@@ -225,7 +225,7 @@
 ! Calculate Vertical velocity & Stream Functions
 !
         call gridnl_hybrid_ndsl_sp (nxjp(j),nxp,lev,ncld               &
-        , cp,radsq,ut(1,1,jj),vt(1,1,jj),rdiv(1,1,jj),tt(1,1,jj)       &
+        , cp,radsq,ut(1,1,jj),vt(1,1,jj),temp(1,1,jj),tt(1,1,jj)       &
         , qt(1,1,jj),phi(1,1,jj),pt(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
         , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)         &
         , diveng(1,1,jj),vdmerdr(1,1,jj),vdzonlr(1,1,jj),pten(1,1,jj)  &
@@ -234,8 +234,8 @@
       enddo !jj = 1,jlistnum
 !
 !CWB2021 for single precision test
-        call joinrs_sp(cc,diveng,dum4,dum4,dum4,nx,my_max,lev,jlistnum,1,1)
-        call tranrs_sp(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc       &
+        call joinrs(cc,diveng,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+        call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc       &
                    ,hldten,1,nsizey)
 
         call trngra3(jtrun,jtmax,nx,levp,my,my_max,cim,poly,dpoly      &
@@ -287,8 +287,8 @@
 !
 !  combine non-linear grid point terms via gaussian quadrature
 !
-      call joinrs_sp(cc,ddtemp,dum4,dum4,dum4,nx,my_max,lev,jlistnum,1,1)
-      call tranrs_sp(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc  &
+      call joinrs(cc,ddtemp,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc  &
                    ,temten,1,nsizey)
 !!      call joinrs(cc,ddtemp,qvadv,dummy,dummy,nx,my_max,lev           &
 !!                 ,jlistnum,2,ncld)
@@ -301,7 +301,7 @@
                  ,plten,nsizey)
 !
 !CWB2021 for single precision test
-      call rstrandz_sp (jtrun,jtmax,nx,my,my_max,levp,vdmerd,vdzonl      &
+      call rstrandz (jtrun,jtmax,nx,my,my_max,levp,vdmerd,vdzonl      &
                     ,weight,cim,onocos,poly,dpoly,divten,vorten,nsizey)
 !
 !  no tendency of zero mode
