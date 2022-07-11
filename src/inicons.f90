@@ -24,13 +24,15 @@
 !------------------------------------------------------------------------
 !
       use index
+      use const, only: RTYPE
 
       implicit none
       integer  lev,jtrun,jtmax,nw(jtrun,jtmax),nnmivm
 !byl      real     a(jtrun,jtrun,lev),b(jtrun,jtrun,lev),c(jtrun,jtrun,lev)
       real     a(jtrun,jtrun,nnmivm),b(jtrun,jtrun,nnmivm),c(jtrun,jtrun,nnmivm)
 !byl      real     eigval(lev),h(jtrun,jtmax,lev)
-      real     eigval(lev),h(jtrun,jtmax,nnmivm)
+      real     h(jtrun,jtmax,nnmivm)
+      real(kind=RTYPE) eigval(lev)
 
       integer  k,l,m,n,m1,mf,mm,mn,nnp1
       real     omega,omega2,omga2r2,rad,rad2,tem,epxn

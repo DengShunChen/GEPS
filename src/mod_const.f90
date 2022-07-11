@@ -39,10 +39,13 @@
  
     real, dimension(:), allocatable, save  ::              &
          weight,sinl,cosl,cor,onocos,sig,dsig,             &
-         tmean,spalm,eigval,pmcor,tmeans
+         tmean,spalm,pmcor,tmeans
  
     real, dimension(:,:), allocatable, save  :: evecin,    &
          evectr,arrhyd,arsddt,tmcor
+
+    real(kind=RTYPE), dimension(:), allocatable,save ::    &
+         eigval
  
     real ::                                                &
          capa,cp,rad,radsq,grav,omega,rgas,stbo,s0,hltm,   &

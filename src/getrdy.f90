@@ -168,7 +168,7 @@
 !
 !!      call scatter_spec(work_io,vornow,divnow,temnow,qnow,plnow,   &
 !!         vorold,divold,temold,qold,plold,dsqgeo,spgeo,trefs,       &
-!!         uzm,lev,ncld,jtrun,jtmax,my,nsize)
+!!         lev,ncld,jtrun,jtmax,my,nsize)
 !
       rfile = phyout(1:lphy)//ctau
 !
@@ -785,7 +785,6 @@
 !!      call tranuv ( jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac &
 !!                   ,poly,dpoly,vornow,divnow,wk1,wk2,nsizey)
 !
-!!      call uzmean ( nx,my,my_max,lev,wk1,uzm )
 !
 !  write initial spectral coefficients to history file
 !
@@ -796,7 +795,7 @@
 !!        allocate (work_io((( (7+2*ncld)*2*lev+8)*jtrun*jtmax+my*lev)*nsize))
 !!        call gather_spec(work_io,vornow,divnow,temnow,qnow,plnow,   &
 !!           vorold,divold,temold,qold,plold,dsqgeo,spgeo,trefs,      &
-!!           uzm,lev,ncld,jtrun,jtmax,my,nsize)
+!!           lev,ncld,jtrun,jtmax,my,nsize)
 !         if(myrank .eq. 0) then
 !           open (unit=7,file=rfile,form='unformatted')
 !cc         write (7) work_io

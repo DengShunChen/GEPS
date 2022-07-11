@@ -1569,7 +1569,7 @@
  
 !!          call gather_spec(work_io,vornow,divnow,temnow,qnow,plnow,    &
 !!             vorold,divold,temold,qold,plold,dsqgeo,spgeo,trefs,       &
-!!             uzm,lev,ncld,jtrun,jtmax,my,nsize)
+!!             lev,ncld,jtrun,jtmax,my,nsize)
 !
 !  add if check to let restart output performed every 24h
 !

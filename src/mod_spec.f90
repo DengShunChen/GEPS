@@ -12,7 +12,6 @@
 
       integer,dimension(:),allocatable,save :: jtwv,jtwvp
 
-!!      real,dimension(:,:),allocatable,save :: uzm
 
 !byl      real,dimension(:,:,:,:),allocatable,save :: vornow,divnow,temnow,qnow,             &
 !byl                                                  vorold,divold,temold,qold,trefs,       &
@@ -87,13 +86,6 @@
            spgeo=0.
            jtwv=0.
 
-!!           allocate (uzm(my,lev), stat=ierr)
-!!
-!!           if (ierr/= 0) then
-!!               write(6,*) 'mod_spec : allocate fail 2 '
-!!               stop
-!!           end if
-
            return
 
          end subroutine
@@ -110,7 +102,6 @@
 !byl                       plnow,plold,dsqgeo,spgeo,plten)
                        plnow,plmid,plold,plten,spgeo)
 
-!!           deallocate (uzm)
            deallocate (jtwv,jtwvp)
            deallocate (plnowL,ploldL,pltenL)
 
