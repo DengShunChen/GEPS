@@ -186,8 +186,13 @@
           inistat=0
 
           if(col_rank .eq. 0) then
+            KL=lev-Llist(1)+1
             do ntrac=2,nclds
-              write (typ, '("m",i2.2,a3)' ) Llist(1),cspec(ntrac) 
+              if ( KL .lt. 100 ) then
+                write (typ, '("m",i2.2,a3)' ) KL,cspec(ntrac)
+              else
+                write (typ, '("n",i2.2,a3)' ) mod(KL,100),cspec(ntrac)
+              endif
               call syslbl (typ,idtg2,itaup,gmdef,lrec)
               write(key,'(a26,a1,i7.7)') lrec,'H',lncrec
               call dmschkr (ifilin,key//char(0),istat)
