@@ -166,13 +166,13 @@
 !                                    ut_sl,vt_sl,ttm_sl,dummy,dummy,qm_sl, &
 !                                    nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm,4)
 !#else
-      call mpe2d_transpose_ndsl_p2f_sp(ut,ut_sl,    &
+      call mpe2d_transpose_ndsl_p2f(ut,ut_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f_sp(vt,vt_sl,    &
+      call mpe2d_transpose_ndsl_p2f(vt,vt_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f_sp(ttp,ttm_sl,  &
+      call mpe2d_transpose_ndsl_p2f(ttp,ttm_sl,  &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f_sp(qp,qm_sl,    &
+      call mpe2d_transpose_ndsl_p2f(qp,qm_sl,    &
                                     nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !#endif
 
@@ -224,7 +224,7 @@
 !
 ! Calculate Vertical velocity & Stream Functions
 !
-        call gridnl_hybrid_ndsl_sp (nxjp(j),nxp,lev,ncld               &
+        call gridnl_hybrid_ndsl (nxjp(j),nxp,lev,ncld                  &
         , cp,radsq,ut(1,1,jj),vt(1,1,jj),temp(1,1,jj),tt(1,1,jj)       &
         , qt(1,1,jj),phi(1,1,jj),pt(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
         , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)         &

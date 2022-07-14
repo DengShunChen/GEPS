@@ -50,50 +50,50 @@
       real*4    dsigma(lev,2),eps4(jtrun,jtmax),eigval(lev),evecin(lev,lev) &
       ,     evectr(lev,lev),arrhyd(lev,lev),arsddt(lev,lev),spalm(lev)
  
-      real*4    temold(levp,2,jtrun,jtmax),divold(levp,2,jtrun,jtmax) &
-      ,         temnow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax) &
-      ,         temten(levp,2,jtrun,jtmax),divten(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) temold(levp,2,jtrun,jtmax),divold(levp,2,jtrun,jtmax) &
+      ,                temnow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax) &
+      ,                temten(levp,2,jtrun,jtmax),divten(levp,2,jtrun,jtmax)
       real(kind=RTYPE) plold(jtrun,jtmax,2),plnow(jtrun,jtmax,2),plten(jtrun,jtmax,2)
  
-      real*4    divavg(lev,2),phiave(lev,2,jtrun),eps4e(lev,jtrun)
+      real(kind=RTYPE) divavg(lev,2),phiave(lev,2,jtrun),eps4e(lev,jtrun)
  
       integer   m,mf,k,n,l,j
       real*4    dd,odd,dd2,ptmean,dta,tem,s1,s2,d1,d2,dp,alpha
 
-      real*4 wrk1(lev,2,jtp),wrk2(lev,2,jtp),wrk3(lev,2,jtp),&
-             wrk4(lev,2,jtp),wrk5(lev,2,jtp),wrk6(lev,2,jtp)
+      real(kind=RTYPE) wrk1(lev,2,jtp),wrk2(lev,2,jtp),wrk3(lev,2,jtp),&
+                       wrk4(lev,2,jtp),wrk5(lev,2,jtp),wrk6(lev,2,jtp)
 
       dd = alpha*dta
       odd= 1.0/dd
       dd2= dd*dd
 
 #ifdef MULTIPLE
-      call mpe2d_reshape_pl_multi_sp(plten, plnow, plold, pltenL, plnowL, ploldL)
+      call mpe2d_reshape_pl_multi(plten, plnow, plold, pltenL, plnowL, ploldL)
 
-      call mpe2d_transpose_siimpl_multi_sp(temold,temnow,temten,divold,divnow,divten, &
+      call mpe2d_transpose_siimpl_multi(temold,temnow,temten,divold,divnow,divten, &
                                    wrk1  ,wrk2  ,wrk3  ,wrk4  ,wrk5  ,wrk6  , &
                                    levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist,nsizex,row_comm)
 #else
-      call mpe2d_reshape_pl_sp(plten, pltenL)
-      call mpe2d_reshape_pl_sp(plnow, plnowL)
-      call mpe2d_reshape_pl_sp(plold, ploldL)
+      call mpe2d_reshape_pl(plten, pltenL)
+      call mpe2d_reshape_pl(plnow, plnowL)
+      call mpe2d_reshape_pl(plold, ploldL)
 
-      call mpe2d_transpose_siimpl_sp(temold, &
+      call mpe2d_transpose_siimpl(temold, &
                                    wrk1 , &
                                    levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist,nsizex,row_comm)
-      call mpe2d_transpose_siimpl_sp(temnow, &
+      call mpe2d_transpose_siimpl(temnow, &
                                    wrk2 , &
                                    levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist,nsizex,row_comm)
-      call mpe2d_transpose_siimpl_sp(temten, &
+      call mpe2d_transpose_siimpl(temten, &
                                    wrk3 , &
                                    levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist,nsizex,row_comm)
-      call mpe2d_transpose_siimpl_sp(divold, &
+      call mpe2d_transpose_siimpl(divold, &
                                    wrk4 , &
                                    levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist,nsizex,row_comm)
-      call mpe2d_transpose_siimpl_sp(divnow, &
+      call mpe2d_transpose_siimpl(divnow, &
                                    wrk5 , &
                                    levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist,nsizex,row_comm)
-      call mpe2d_transpose_siimpl_sp(divten, &
+      call mpe2d_transpose_siimpl(divten, &
                                    wrk6 , &
                                    levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist,nsizex,row_comm)
 #endif
@@ -193,13 +193,13 @@
 
   700 continue   ! end of large m loop
  
-      call mpe2d_reshape_pl_back_sp(pltenL, plten)
+      call mpe2d_reshape_pl_back(pltenL, plten)
 
 #ifdef MULTIPLE
-      call mpe2d_transpose_siimpl_back_multi_sp(wrk3,wrk6,temten,divten,levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist,nsizex,row_comm)
+      call mpe2d_transpose_siimpl_back_multi(wrk3,wrk6,temten,divten,levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist,nsizex,row_comm)
 #else
-      call mpe2d_transpose_siimpl_back_sp(wrk3,temten,levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist,nsizex,row_comm)
-      call mpe2d_transpose_siimpl_back_sp(wrk6,divten,levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist,nsizex,row_comm)
+      call mpe2d_transpose_siimpl_back(wrk3,temten,levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist,nsizex,row_comm)
+      call mpe2d_transpose_siimpl_back(wrk6,divten,levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist,nsizex,row_comm)
 #endif
 
       return

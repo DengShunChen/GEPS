@@ -790,16 +790,16 @@
 !
 !     advet grid non-linear forcing from t-dt/2 to t+dt/2 via NDSL advection
 !
-      call mpe2d_transpose_ndsl_p2f_sp(um,ut_sl,    &
+      call mpe2d_transpose_ndsl_p2f(um,ut_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f_sp(vm,vt_sl,    &
+      call mpe2d_transpose_ndsl_p2f(vm,vt_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 
-      call mpe2d_transpose_ndsl_p2f_sp(ut,uum_sl,    &
+      call mpe2d_transpose_ndsl_p2f(ut,uum_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f_sp(vt,vvm_sl,    &
+      call mpe2d_transpose_ndsl_p2f(vt,vvm_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-!!      call mpe2d_transpose_ndsl_p2f_sp(tt,ttm_sl,    &
+!!      call mpe2d_transpose_ndsl_p2f(tt,ttm_sl,    &
 !!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !
 !      do itt = 1,itter
@@ -811,7 +811,7 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_f2p_sp2(vvm_sl,vdmerd, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-!!      call mpe2d_transpose_ndsl_f2p_sp(ttm_sl,ddtemp, &
+!!      call mpe2d_transpose_ndsl_f2p_sp2(ttm_sl,ddtemp, &
 !!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !
 !    advect pressure gradient force from t to t+dt
@@ -823,7 +823,7 @@
 !
 !       Calculate Vertical velocity & Stream Functions
 !
-        call gridnl_hybrid_ndsl_2tl_sp (nxjp(j),nxp,lev,ncld           &
+        call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld              &
         , cp,radsq,ut(1,1,jj),vt(1,1,jj),tmp(1,1,jj),tt(1,1,jj)        &
         , qt(1,1,jj),phi(1,1,jj),pt(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
         , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)         &
@@ -858,7 +858,7 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f_sp2(vdmerdr,vvm_sl,   &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-!!      call mpe2d_transpose_ndsl_p2f_sp(diveng,ttm_sl,    &
+!!      call mpe2d_transpose_ndsl_p2f_sp2(diveng,ttm_sl,    &
 !!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !
 !!      do itt = 1,itter
@@ -871,7 +871,7 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_f2p_sp2(vvm_sl,vdmerdrp, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-!!      call mpe2d_transpose_ndsl_f2p_sp(ttm_sl,pten, &
+!!      call mpe2d_transpose_ndsl_f2p_sp2(ttm_sl,pten, &
 !!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 
 !
@@ -884,7 +884,7 @@
         j=jlist1(jj)
         nxj=nxdef_2d(j)
 !
-        call gridnl_hybrid_ndsl_2tl_sp (nxjp(j),nxp,lev,ncld              &
+        call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld               &
 !byl        call gridnl_hybrid_ndsl (nxjp(j),nxp,lev,ncld                  &
         , cp,radsq,um(1,1,jj),vm(1,1,jj),rdivm(1,1,jj),tm(1,1,jj)       &
         , qt(1,1,jj),phi(1,1,jj),ptm(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
@@ -977,7 +977,7 @@
 !       Calculate Vertical velocity & Stream Functions
 !
 !!        call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld              &
-        call gridnl_hybrid_ndsl_sp (nxjp(j),nxp,lev,ncld                   &
+        call gridnl_hybrid_ndsl (nxjp(j),nxp,lev,ncld                   &
         , cp,radsq,um(1,1,jj),vm(1,1,jj),rdivm(1,1,jj),tm(1,1,jj)       &
         , qp(1,1,jj),phi(1,1,jj),ptm(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
         , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)          &
