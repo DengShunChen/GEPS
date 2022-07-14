@@ -37,13 +37,8 @@
 !2dMPI >
 
 
-#ifdef SP
-      call mpe2d_unify_spec_lev_sp(phiten,phiten1,lev,levp,jtrun,jtmax,mlistnum,nsizex,row_comm)
-      call mpe2d_unify_spec_lev_sp(temnow,temnow1,lev,levp,jtrun,jtmax,mlistnum,nsizex,row_comm)
-#else
       call mpe2d_unify_spec_lev(phiten,phiten1,lev,levp,jtrun,jtmax,mlistnum,nsizex,row_comm)
       call mpe2d_unify_spec_lev(temnow,temnow1,lev,levp,jtrun,jtmax,mlistnum,nsizex,row_comm)
-#endif
 !2dMPI <
 
 !

@@ -3,6 +3,10 @@
     use param
     use mpi,   only : MPI_REAL4, MPI_REAL8
 
+    implicit none
+ 
+    public
+
 !CWB2021 for single precison test
 #ifdef SP
       integer, parameter ::     RTYPE=4
@@ -11,10 +15,6 @@
       integer, parameter ::     RTYPE=8
       integer, parameter :: MPI_RTYPE=MPI_REAL8
 #endif
-
-    implicit none
- 
-    public
  
     real, dimension(:)  , allocatable, save  :: aki,bki
     real, dimension(:,:), allocatable, save  :: sigma,dsigma
@@ -39,13 +39,13 @@
  
     real, dimension(:), allocatable, save  ::              &
          weight,sinl,cosl,cor,onocos,sig,dsig,             &
-         tmean,spalm,pmcor,tmeans
+         tmean,spalm,eigval,pmcor,tmeans
  
     real, dimension(:,:), allocatable, save  :: evecin,    &
          evectr,arrhyd,arsddt,tmcor
 
-    real(kind=RTYPE), dimension(:), allocatable,save ::    &
-         eigval
+!    real(kind=RTYPE), dimension(:), allocatable,save ::    &
+!         eigval
  
     real ::                                                &
          capa,cp,rad,radsq,grav,omega,rgas,stbo,s0,hltm,   &

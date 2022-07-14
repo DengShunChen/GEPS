@@ -1,13 +1,10 @@
       SUBROUTINE RG(NM,N,A,WR,WI,MATZ,Z,IV1,FV1,IERR)
 !!
 !
-      use const, only:RTYPE
-!
       INTEGER N,NM,IS1,IS2,IERR,MATZ
-      REAL A(NM,N),WR(N),Z(NM,N),FV1(N)
+      REAL A(NM,N),WR(N),WI(N),Z(NM,N),FV1(N)
       INTEGER IV1(N)
 !
-      REAL(kind=RTYPE) WI(N)
 !
       IF (N.LE.NM) GO TO 10
       IERR=10*N
@@ -287,11 +284,8 @@
 !
       SUBROUTINE HQR(NM,N,LOW,IGH,H,WR,WI,IERR)
 !
-      USE CONST, ONLY: RTYPE        
-!
       INTEGER I,J,K,L,M,N,EN,LL,MM,NA,NM,IGH,ITS,LOW,MP2,ENM2,IERR
-      REAL H(NM,N),WR(N)
-      REAL(KIND=RTYPE) WI(N)
+      REAL H(NM,N),WR(N),WI(N)
       REAL P,Q,R,S,T,W,X,Y,ZZ,NORM,MACHEP
 !      REAL SQRT,ABS,SIGN
 !      INTEGER MIN0
@@ -464,12 +458,9 @@
 !
       SUBROUTINE HQR2(NM,N,LOW,IGH,H,WR,WI,Z,IERR)
 !
-      USE CONST, ONLY: RTYPE
-!
       INTEGER I,J,K,L,M,N,EN,II,JJ,LL,MM,NA,NM,NN, &
               IGH,ITS,LOW,MP2,ENM2,IERR
-      REAL H(NM,N),WR(N),Z(NM,N)
-      REAL(KIND=RTYPE) WI(N)
+      REAL H(NM,N),WR(N),WI(N),Z(NM,N)
       REAL P,Q,R,S,T,W,X,Y,RA,SA,VI,VR,ZZ,NORM,MACHEP
 !      REAL SQRT,ABS,SIGN
 !      INTEGER MIN0

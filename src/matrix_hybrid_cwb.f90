@@ -29,15 +29,13 @@
 !  time differencing scheme of the model.
 !
       use param
-      use const, only: RTYPE
 
       implicit  none
       real      cp,ptop,ptmean
 !
       real      sigma(lev+1,2),dsigma(lev,2),tmean(lev),spalm(lev),    &
-                evecin(lev,lev),evectr(lev,lev),pmcor(lev),            &
+                eigval(lev),evecin(lev,lev),evectr(lev,lev),pmcor(lev),&
                 tmcor(lev,lev),arrhyd(lev,lev),arsddt(lev,lev)
-      real(kind=RTYPE) eigval(lev)
 !
       integer   ipp(lev*2),iwk(lev)
       real      a(lev,lev),b(lev,lev),asd(lev,lev),                    &

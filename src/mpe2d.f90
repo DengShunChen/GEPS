@@ -441,18 +441,19 @@
 ! unify lev of spectrum
  
       use mpi
+      use const, only : RTYPE,MPI_RTYPE
  
       implicit none
 
       integer lev,levp,jtrun,jtmax,mlistnum,proc,comm,ii,j,jj,k,kk,ierr
 
-      real ain(levp,2,jtrun,jtmax)
-      real aout(lev,2,jtrun,jtmax)
-      real b1(levp,2,jtrun,jtmax)
-      real b2(levp,2,jtrun,jtmax,proc)
+      real(kind=RTYPE) ain(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) aout(lev,2,jtrun,jtmax)
+      real(kind=RTYPE) b1(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) b2(levp,2,jtrun,jtmax,proc)
 
-      call MPI_ALLGATHER( ain, levp*2*jtrun*jtmax, MPI_DOUBLE_PRECISION, &
-                           b2, levp*2*jtrun*jtmax, MPI_DOUBLE_PRECISION, &
+      call MPI_ALLGATHER( ain, levp*2*jtrun*jtmax, MPI_RTYPE, &
+                           b2, levp*2*jtrun*jtmax, MPI_RTYPE, &
                           comm,IERR )
 
       do jj=1,mlistnum
@@ -507,24 +508,25 @@
 ! unify lev of spectrum for zx
  
       use mpi
-      use const, only: RTYPE
+      use const, only: RTYPE,MPI_RTYPE
  
       implicit none
 
       integer lev,levp,jtrun,jtmax,mlistnum,proc,comm,ii,j,jj,k,kk,n,ierr
 
-      real(kind=RTYPE) a1(levp,2,jtrun,jtmax),a2(levp,2,jtrun,jtmax),a3(levp,2,jtrun,jtmax)
-      real ain(levp,2,3,jtrun,jtmax)
-      real aout(lev,2,3,jtrun,jtmax)
-      real b1(levp,2,jtrun,jtmax)
-      real b2(levp,2,3,jtrun,jtmax,proc)
+      real(kind=RTYPE) a1(levp,2,jtrun,jtmax),a2(levp,2,jtrun,jtmax),  &
+                       a3(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) ain(levp,2,3,jtrun,jtmax)
+      real(kind=RTYPE) aout(lev,2,3,jtrun,jtmax)
+      real(kind=RTYPE) b1(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) b2(levp,2,3,jtrun,jtmax,proc)
 
       ain(:,:,1,:,:)=a1(:,:,:,:)
       ain(:,:,2,:,:)=a2(:,:,:,:)
       ain(:,:,3,:,:)=a3(:,:,:,:)
 
-      call MPI_ALLGATHER( ain, levp*2*3*jtrun*jtmax, MPI_DOUBLE_PRECISION, &
-                           b2, levp*2*3*jtrun*jtmax, MPI_DOUBLE_PRECISION, &
+      call MPI_ALLGATHER( ain, levp*2*3*jtrun*jtmax, MPI_RTYPE, &
+                           b2, levp*2*3*jtrun*jtmax, MPI_RTYPE, &
                           comm,IERR )
 
       do jj=1,mlistnum
