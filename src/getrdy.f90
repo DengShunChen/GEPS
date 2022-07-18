@@ -46,7 +46,7 @@
                                 ,wtfn12,wsfn12,time_weights,mask1st
       USE mo_netcdf,         ONLY:lkvl,set_ocndepth
 !-----------------------------------------------------------------------
-
+      use mod_grb2_param , only : grbid ,grbfile ,opn_grb2 ,cls_grb2,grbnxmy
 
       implicit   none
 
@@ -105,6 +105,8 @@
       real, parameter:: specified_ice_thickness  = 2.0
       real lontest(nxp,my_max)
       integer nxjpart      
+! for io quilting
+      character:: keydoit*34
 
       lmax=26
 !
@@ -1295,6 +1297,24 @@
         sld=0.
         rld=0.
 !        flash=0.   !xb110, flash density
+
+!!       open grib2 file
+        if( outgrb2 == 1 .and. myrank == 0 )then
+          if(io_quilting)then 
+              grbnxmy=nx*my
+              write( keydoit,'(A14,I12.12,A8)') &
+              "OPEN..0000....",idtg,"H...DOIT"
+              ntag=ntag+1
+              call mpe_send_key(keydoit,ntag,istat)
+          else
+            grbid=233  ! 231 outflds  232 out24  233 mfc
+ 133                    format( A  ,A ,I10.10 ,A       )
+            write(grbfile,133 )trim(ifilout_grb),'/GFS_',idtg/100 ,'_0000.grb2'
+            if(myrank==0) print*,'OutFileName= ',trim(grbfile)
+            call opn_grb2(nx,my,idtg, 0 ,istat)
+          endif
+        endif
+
         call outflds ( 0,nx,my,my_max,lev,ncld,lmax,numout,idtg,ifilout &
              , outdir,ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo           &
              , ptend,pt,plt,pk,pk2,phi,ut,vt,sd                         &
@@ -1307,20 +1327,25 @@
              , ctot,chig,cmid,clow,hpbl,.true.,do_sit)
 
 ! add 40m 100m output for green energy plan
+
       if(out_green)then
-          do jj = 1, jlistnum
-            j=jlist1(jj)
-            nxj=nxdef_2d(j)
-            do i = 1,nxj
-              pklev(i,jj) = pk(i,lev,jj)
-            enddo
-          enddo
+
+        
         call  outflds_green(0,nx,my,my_max,lev,ncld                     &
-              , idtg,ifilout,cp,rgas,grav,t2,u10,v10,ss,pklev           &
+              , idtg,ifilout,cp,rgas,grav,t2,u10,v10,ss,pk           &
               , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6       &
               , ggdef)
       endif
-!
+        if(outgrb2==1.and.myrank==0)then
+            if(io_quilting)then 
+              keydoit(1:4)='CLSE'
+              ntag=ntag+1
+              call mpe_send_key(keydoit,ntag,istat)
+            else
+              call cls_grb2(istat)
+            endif
+        endif
+
 #ifdef RSM
       if (outrsm) then
         if(myrank.eq.0)print*,' output: rsm date',idtg

@@ -288,10 +288,10 @@ cat > ${GFSWRK}/namlsts << EOF
   ioutsigr=1,
   ggdef='${DMSFLAG}0G', gmdef='${DMSFLAG}MG',
   domfc=384., out_green=t, otgreen=3., out_hp=false,
+  outdms   =1, outgrb2  =0, 
   ndsladvh2=false,
   isot=1, ivegsrc=1, cgwd=1.20, cmbk=1.00,
   spl1=5., spl2=50., af=0.1,
-  out_pres_form=1, OutR4key=f,
   ${MODLST_RES}
   ${MODLST_SIT}
  &end
@@ -301,7 +301,7 @@ cat > ${GFSWRK}/namlsts << EOF
   trk_intv=3,
   write_tau=6,
  &end
- 
+
  &stochy_physics
   ncep_seeds = true,
   use_zmtnblck = true,

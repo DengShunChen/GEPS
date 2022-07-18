@@ -161,6 +161,7 @@ SRCS_f90  = \
   mpe_recv_key.f90 \
   mpe_scatter_io.f90 \
   mpe_send_data.f90 \
+  mpe_send_int.f90 \
   mpe_send_key.f90 \
   mpe_transpose_rs1.f90 \
   mpe_transpose_rs.f90 \

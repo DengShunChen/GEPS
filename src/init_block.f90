@@ -89,7 +89,8 @@
       otgreen  =      6.
       out_green= .false.
       out_hp   = .false.
-      OutR4key = .false.
+      outgrb2  =      0  !output grib2 format
+      outdms   =      1  !output dmskey 1:real-8  ,2:real-4
 ! pdf cloud
       pdfcloud=.false.
 ! stochastic physics
@@ -354,6 +355,8 @@
       ifilin_nc     = 'ifilin_nc'
       ifilin_ClmANA = 'ifilin_ClmANA'
       ifilin_ClmFCT = 'ifilin_ClmFCT'
+!-- for grib2 output path
+      ifilout_grb  = './'
 !
 !dms
 !t512l60

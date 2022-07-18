@@ -11,7 +11,7 @@
       use mod_outflds
 !hcwei  write grb2
       use mod_grb2_param
-      use const ,only:out_pres_form
+      use const ,only:outgrb2 ,outdms ,domfc
 
 !
       implicit  none
@@ -59,7 +59,6 @@
 !xb110>
 !      real flash(nxp,my_max)  !flash density (in flashes km^-2 day^-1)
 !xb110<
-!xb119
 
       num= 0
       nc = 0
@@ -105,11 +104,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,19,1,3,1,0,0.,glob)
-      endif
+      if(outdms.gt.0) call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,19,1,3,1,0,0.,glob)
       go to 30
       endif
 !surface roughness(m)
@@ -120,11 +116,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,0,1,2,1,0,0.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,1,2,1,0,0.,glob)
       go to 30
       endif
 
@@ -142,11 +135,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,1,10,2,1,0,0.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,10,2,1,0,0.,glob)
  
 !byl      glob=glob2
 !large scale precipitation
@@ -155,11 +145,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,1,9,2,1,0,0.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,9,2,1,0,0.,glob)
 !total precipitation  every 12 hour reset to zero (mm)
       call syslbl ('b00620',idtg,itau,ggdef,ihdg)
 !byl      do 98 j=1,my
@@ -175,26 +162,23 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        !call wrt_grb2(itau,0,1,7,2,1,0,0.,glob)
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)then
         praint=mod(itau,12)
         if(praint==0)praint=12
         call wrt_grb2_accu(itau,0,1,7,2,1,0,0.,1,praint,glob)
       endif
 !accu. total precipitation from tau 0
+      if( itau==0 .or.  itau .ge. nint(domfc) )then
       call unify_reduceintp(nx,my,my_max,raintot,glob)
 !byl      call mpe2d_unify(glob,raintot)
       call syslbl ('b0062t',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,1,8,0,1,0,0.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,8,0,1,0,0.,glob)
+      endif !domfc
       go to 30
       endif
 !snow depth of water state at the surface (mm)
@@ -205,11 +189,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,1,60,2,103,0,0.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,1,60,2,103,0,0.,glob)
       go to 30
       endif
 !atmosphere column precipitable water (mm)
@@ -220,11 +201,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,1,3,2,7,0,0.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,3,2,7,0,0.,glob)
       go to 30
       endif
 !   ---------- short wave Radiation ----------
@@ -236,11 +214,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,4,0,2,1,0,0.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,4,0,2,1,0,0.,glob)
       go to 30
       endif
 !net radiation flux at the surface
@@ -262,11 +237,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,4,9,2,1,0,0.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,4,9,2,1,0,0.,glob)
       go to 30
       endif
 !donwward shortwave radiation at the surface
@@ -277,11 +249,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,4,7,2,1,0,0.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,4,7,2,1,0,0.,glob)
       go to 30
       endif
 !solar absorption at the top atmosphere
@@ -292,11 +261,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,4,1,2,1,0,0.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,4,1,2,1,0,0.,glob)
       go to 30
       endif
 !   ---------- long wave Radiation ----------
@@ -308,11 +274,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,5,0,2,1,0,0.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,5,0,2,1,0,0.,glob)
       go to 30
       endif
 !downward longwave radiation at the surface
@@ -323,11 +286,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,5,3,2,1,0,0.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,5,3,2,1,0,0.,glob)
       go to 30
       endif
 !outgoing longwave radiation (OLR) 
@@ -339,11 +299,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,5,1,2,1,0,0.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,5,1,2,1,0,0.,glob)
       go to 30
       endif
 !   ---------- Heat flux ----------
@@ -355,11 +312,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,0,11,2,1,0,0.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,0,11,2,1,0,0.,glob)
       go to 30
       endif
 !lentent heat flux at the surface
@@ -370,11 +324,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,0,10,2,1,0,0.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,0,10,2,1,0,0.,glob)
       go to 30
       endif
 !ground heat flux
@@ -385,11 +336,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,0,10,2,1,0,0.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,10,2,1,0,0.,glob)
       go to 30
       endif
 !u conponent of surface grivity wave stress
@@ -400,11 +348,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,3,16,2,1,0,0.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,3,16,2,1,0,0.,glob)
       go to 30
       endif
 !v conponent of surface grivity wave stress
@@ -415,11 +360,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,3,17,2,1,0,0.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,3,17,2,1,0,0.,glob)
       go to 30
       endif
 !   ---------- temperature ----------
@@ -431,11 +373,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,0,0,2,1,0,0.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,0,0,2,1,0,0.,glob)
       go to 30
       endif
 !land skin air temperature (the model lowest)
@@ -446,27 +385,23 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,0,0,2,103,0,0.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,0,0,2,103,0,0.,glob)
       go to 30
       endif
 ! 2m temerature
       if(label(kk).eq.'b02100') then
+      if( itau==0 .or. itau .ge. nint(domfc) )then
       call unify_reduceintp(nx,my,my_max,t2,glob)
 !byl      call mpe2d_unify(glob,t2)
       call syslbl ('b02100',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,0,0,2,103,0,2.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,0,0,2,103,0,2.,glob)
       go to 30
+      endif !domfc
       endif
 !   ---------- wind component ----------
 !skin u component ( model lowest)
@@ -477,11 +412,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,2,2,2,103,0,0.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,2,2,2,103,0,0.,glob)
       go to 30
       endif
 !skinvu component ( model lowest)
@@ -492,42 +424,37 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,2,3,2,103,0,0.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,2,3,2,103,0,0.,glob)
       go to 30
       endif
 !10m u component
       if(label(kk).eq.'b10200') then
+      if( itau==0 .or. itau .ge. nint(domfc) )then
       call unify_reduceintp(nx,my,my_max,u10,glob)
 !byl      call mpe2d_unify(glob,u10)
       call syslbl ('b10200',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,2,2,2,103,0,10.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,2,2,2,103,0,10.,glob)
       go to 30
+      endif !domfc
       endif
 !10m v component
       if(label(kk).eq.'b10210') then
+      if( itau==0 .or.  itau .ge. nint(domfc) )then
       call unify_reduceintp(nx,my,my_max,v10,glob)
 !byl      call mpe2d_unify(glob,v10)
       call syslbl ('b10210',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,2,3,2,103,0,10.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,2,3,2,103,0,10.,glob)
       go to 30
+      endif !domfc
       endif
 !   ---------- humidity ----------
 !skin relative humidity (model lowest)
@@ -538,32 +465,29 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,1,1,2,103,0,0.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,1,2,103,0,0.,glob)
       go to 30
       endif
 !2m specific humidity
       if(label(kk).eq.'b02500') then
+      if( itau==0 .or. itau .ge. nint(domfc) )then
       call unify_reduceintp(nx,my,my_max,q2,glob)
 !byl      call mpe2d_unify(glob,q2)
       call syslbl ('b02500',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,1,0,6,103,0,2.,glob)
-      endif
+      if(outdms.gt.0) call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,1,0,6,103,0,2.,glob)
       go to 30
+      endif !domfc
       endif
 !2m relative humidity
       if(label(kk).eq.'b02510') then
+      if( itau==0 .or. itau .ge. nint(domfc) )then
       do 37 jj=1,jlistnum
-         j=jlist1(jj)
+        j=jlist1(jj)
        nxj=nxdef_2d(j)
       do 37 i=1,nxj
         globp(i,jj)=rh2(i,jj) * 100.0
@@ -575,12 +499,10 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,1,1,2,103,0,2.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,1,2,103,0,2.,glob)
       go to 30
+      endif !domfc
       endif
 !10m relative humidity
       if(label(kk).eq.'b10510') then
@@ -596,11 +518,8 @@
 !      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,1,1,2,103,0,10.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,1,2,103,0,10.,glob)
       go to 30
       endif
 !
@@ -632,11 +551,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,0,9,3,1,0,0.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,9,3,1,0,0.,glob)
       go to 30
       endif
 !soil moisture content (mm)
@@ -647,11 +563,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,0,25,2,1,0,0.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,2,0,25,2,1,0,0.,glob)
       go to 30
       endif
 !canopy moisture content(mm)
@@ -662,11 +575,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,3,19,2,1,0,0.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,19,2,1,0,0.,glob)
       go to 30
       endif
 
@@ -687,11 +597,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,0,9,2,151,0,1.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,2,0,9,2,151,0,1.,glob)
       go to 30
       endif
 
@@ -703,11 +610,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,0,9,2,151,0,2.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,9,2,151,0,2.,glob)
       go to 30
       endif
 ! 40-100cm Volumetric soil moisture fraction (0-1.0)
@@ -718,11 +622,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,0,9,2,151,0,3.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,9,2,151,0,3.,glob)
       go to 30
       endif
 ! 100-200cm Volumetric soil moisture fraction (0-1.0)
@@ -733,11 +634,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,0,9,2,151,0,4.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,2,0,9,2,151,0,4.,glob)
       go to 30
       endif
 !kc >
@@ -749,11 +647,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,0,9,2,151,0,1.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,9,2,151,0,1.,glob)
       go to 30
       endif
 
@@ -782,11 +677,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,0,9,2,151,0,2.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,9,2,151,0,2.,glob)
       go to 30
       endif
 !xb13 <
@@ -798,11 +690,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,0,9,2,151,0,3.,glob)
-      endif
+      if(outdms.gt.0) call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,9,2,151,0,3.,glob)
       go to 30
       endif
 
@@ -814,11 +703,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,0,9,2,151,0,4.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,9,2,151,0,4.,glob)
       go to 30
       endif
 ! 100-200cm Volumetric soil moisture fraction (0-1.0)
@@ -829,11 +715,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,0,9,2,151,0,5.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,0,9,2,151,0,5.,glob)
       go to 30
       endif
 !xb13 >
@@ -846,11 +729,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,3,5,2,151,0,1.,glob)
-      endif
+      if(outdms.gt.0 )call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,5,2,151,0,1.,glob)
       go to 30
       endif
 ! 10-40cm Unfrozen(liquid) soil moisture content(volumetric fraction)
@@ -861,11 +741,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,3,5,2,151,0,2.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,5,2,151,0,2.,glob)
       go to 30
       endif
 ! 40-100cm Unfrozen(liquid) soil moisture content(volumetric fraction)
@@ -876,11 +753,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,3,5,2,151,0,3.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,5,2,151,0,3.,glob)
       go to 30
       endif
 ! 100-200cm Unfrozen(liquid) soil moisture content(volumetric fraction)
@@ -891,11 +765,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,3,5,2,151,0,4.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,5,2,151,0,4.,glob)
       go to 30
       endif
 !xb13
@@ -907,11 +778,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,3,5,2,151,0,1.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,5,2,151,0,1.,glob)
       go to 30
       endif
 
@@ -937,11 +805,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,3,5,2,151,0,2.,glob)
-      endif
+      if(outdms.gt.0) call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,2,3,5,2,151,0,2.,glob)
       go to 30
       endif
 ! 10-40cm Unfrozen(liquid) soil moisture content(volumetric fraction)
@@ -952,11 +817,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,3,5,2,151,0,3.,glob)
-      endif
+      if(outdms.gt.0) call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,5,2,151,0,3.,glob)
       go to 30
       endif
 ! 40-100cm Unfrozen(liquid) soil moisture content(volumetric fraction)
@@ -967,11 +829,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,3,5,2,151,0,4.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,5,2,151,0,4.,glob)
       go to 30
       endif
 ! 100-200cm Unfrozen(liquid) soil moisture content(volumetric fraction)
@@ -982,11 +841,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,3,5,2,151,0,5.,glob)
-      endif
+      if(outdms.gt.0) call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,5,2,151,0,5.,glob)
       go to 30
       endif
 !<xb13
@@ -999,11 +855,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,3,18,2,151,0,1.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,18,2,151,0,1.,glob)
       go to 30
       endif
 ! 10-40cm Volumetric soil temperature(K)
@@ -1014,11 +867,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,3,18,2,151,0,2.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,2,3,18,2,151,0,2.,glob)
       go to 30
       endif
 ! 40-100cm Volumetric soil temperature(K)
@@ -1029,11 +879,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,3,18,2,151,0,3.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,2,3,18,2,151,0,3.,glob)
       go to 30
       endif
 ! 100-200cm Volumetric soil temperature(K)
@@ -1044,11 +891,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,3,18,2,151,0,4.,glob)
-      endif
+      if(outdms.gt.0) call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,18,2,151,0,4.,glob)
       go to 30
       endif
 !xb13>
@@ -1060,11 +904,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,3,18,2,151,0,1.,glob)
-      endif
+      if(outdms.gt.0) call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,18,2,151,0,1.,glob)
       go to 30
       endif
 ! 10-200cm Volumetric soil temperature(K)
@@ -1090,11 +931,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,3,18,2,151,0,2.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,18,2,151,0,2.,glob)
       go to 30
       endif
 ! 10-40cm Volumetric soil temperature(K)
@@ -1105,11 +943,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,3,18,2,151,0,3.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,18,2,151,0,3.,glob)
       go to 30
       endif
 ! 40-100cm Volumetric soil temperature(K)
@@ -1120,11 +955,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,3,18,2,151,0,4.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,18,2,151,0,4.,glob)
       go to 30
       endif
 ! 100-200cm Volumetric soil temperature(K)
@@ -1135,11 +967,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,2,3,18,2,151,0,5.,glob)
-      endif
+      if(outdms.gt.0) call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,2,3,18,2,151,0,5.,glob)
       go to 30
       endif
 !   ---------- cloud cover ----------
@@ -1152,11 +981,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,6,1,3,7,0,0.,glob)
-      endif
+      if(outdms.gt.0) call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,6,1,3,7,0,0.,glob)
       go to 30
       endif
 ! chig_high cloud fraction
@@ -1167,11 +993,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,6,5,3,7,0,0.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,6,5,3,7,0,0.,glob)
       go to 30
       endif
 ! cmid_middle cloud fraction
@@ -1182,11 +1005,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,6,4,3,7,0,0.,glob)
-      endif
+      if(outdms.gt.0) call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,6,4,3,7,0,0.,glob)
       go to 30
       endif
 ! clow_low cloud fraction
@@ -1197,11 +1017,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,6,3,3,7,0,0.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,6,3,3,7,0,0.,glob)
       go to 30
       endif
 !zonal mean cloudiness of Y-Z cross section 0-1 
@@ -1211,11 +1028,8 @@
        acld(i,1)=acld(i,1)*100.
       end do
       call syslbl ('x00730',idtg,itau,ggdef,ihdg)
-      if(out_pres_form==1)then
-        call dmswrit(lev,my,ihdg,lenc2,'H',ifilout,acld,istat)
-      !elseif(out_pres_form==2.and.myrank==0)then
-      !  call wrt_grb2(itau,0,6,22,2,7,0,0.,glob)
-      endif
+      if(outdms.gt.0) call dmswrit(lev,my,ihdg,lenc2,'H',ifilout,acld,istat)
+      !if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,6,22,2,7,0,0.,glob)
       go to 30
       endif
 
@@ -1228,11 +1042,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,3,18,1,7,0,0.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,3,18,1,7,0,0.,glob)
       go to 30
       endif
 !
@@ -1244,11 +1055,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,1,0,9,104,0,1.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,0,9,104,0,1.,glob)
       go to 30
       endif
 !
@@ -1259,11 +1067,8 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if(out_pres_form==1)then
-        call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2(itau,0,1,0,9,104,0,72.,glob)
-      endif
+      if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,0,9,104,0,72.,glob)
       go to 30
       endif
 
@@ -1284,9 +1089,9 @@
    30 continue  !============end do ( kk=1,num )
 
 !
-      if(out_pres_form==1)then
-      if ( myrank .lt. nc )             &
-         call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,mout,istat)
+      if(outdms.gt.0)then
+       if ( myrank .lt. nc )             &
+          call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,mout,istat)
       endif
 !
       return

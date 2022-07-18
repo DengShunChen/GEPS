@@ -6,7 +6,7 @@
       use const, only : ifilin,cwbout,bckfile,namlsts,   &
                         ifilout,crdate,ocards,phyout,cntrl, &
                         ifilin_ncep,ifilin_sst,ifilin_nc,&
-                        ifilin_ClmANA,ifilin_ClmFCT
+                        ifilin_ClmANA,ifilin_ClmFCT,ifilout_grb
 
       use paramt
 
@@ -24,7 +24,7 @@
       namelist /filst/ ifilin,cwbout,bckfile,namlsts &
                      , ifilout,crdate,ocards,phyout,cntrl &
                      , ifilin_ncep,ifilin_sst,ifilin_nc &
-                     , ifilin_ClmANA,ifilin_ClmFCT
+                     , ifilin_ClmANA,ifilin_ClmFCT,ifilout_grb
       data pathname/'NWPETCGLB'/
       data logicname/'filist'/
 !

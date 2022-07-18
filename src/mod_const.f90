@@ -101,11 +101,9 @@
     ! SKEB
     logical :: first_call
 
-    !for IO 
-    logical :: OutR4key
-    ! output pressure level format
-    ! 1 origin dmskey 2 grib2
-    integer ,save :: out_pres_form=1
+    !for output 
+    integer :: outgrb2    !output grib2 format
+    integer :: outdms     !output dmskey
 
     common/constL/lsimpl,lzadv,yesdia,dopbl,docup,dorad,   &
             dolsp, dograv,doshl, dodry, donnmi,ozon,       &
@@ -118,7 +116,7 @@
     character(len=80) ifilin,cwbout,bckfile,namlsts, &
             ifilout,crdate,ocards,phyout,cntrl, &
             ifilin_ncep,ifilin_sst,ifilin_nc,   &
-            ifilin_ClmANA,ifilin_ClmFCT
+            ifilin_ClmANA,ifilin_ClmFCT,ifilout_grb
 
     common/files/ifilin,cwbout,bckfile,namlsts, &
             ifilout,crdate,ocards,phyout,cntrl, &

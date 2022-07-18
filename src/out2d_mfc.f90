@@ -1,12 +1,13 @@
-      subroutine out2d_mfc (nx,lev,my,my_max,ifilout,itau,idtg,ntau    &
-                            ,rain1,raintot,glob,t2,q2,rh2,rh10,u10,v10 &
-                            ,tmax,tmin,td,rld,sld,ctot,pt,ggdef )
+      subroutine out2d_mfc (nx,lev,my,my_max,ifilout,itau,idtg    &
+                            ,raincu1,rainlp1,raintot,glob,t2,q2,rh2,rh10 &
+                            ,u10,v10,tmax,tmin,rld,sld,ctot,pt,ggdef )
 !
       use rank
       use mpe
       use index
-      use const ,only : grav,ptop,rgas,cp
+      use const ,only : grav,ptop,rgas,cp ,outdms ,outgrb2 ,ifilout_grb
       use grid  ,only : tt,qt,plt,pk,pk2,sgeo
+      use mod_grb2_param  !for write grib2 data
 !
       implicit  none
 
@@ -16,15 +17,18 @@
       real      raintot(nxp,my_max),t2(nxp,my_max),u10(nxp,my_max),   &
                 v10(nxp,my_max),ctot(nxp,my_max),pt(nxp,my_max)
 
-      real rain1(nxp,my_max),q2(nxp,my_max),rh2(nxp,my_max),          &
+      real                   q2(nxp,my_max),rh2(nxp,my_max),          &
            rh10(nxp,my_max),tmax(nxp,my_max),tmin(nxp,my_max),        &
-           td(nxp,my_max),rld(nxp,my_max),sld(nxp,my_max)
+                          rld(nxp,my_max),sld(nxp,my_max),            &
+           raincu1(nxp,my_max),rainlp1(nxp,my_max)
 !
       real mfcout(nxp,my_max,num)
 !
       character*4 ggdef
       integer*8 idtg
       character*6 dmskey(num)
+
+      integer:: ptp0(num) ,ptp1(num) ,ptp2(num) ,ptp3(num) ,ptp4(num) ,ptp5(num)
 !
       real      glob(nx,my),mout(nx,my)
 !
@@ -34,42 +38,69 @@
       integer   n,levz,lenc,lenc2,i,ia,kk,j,nxj,istat,jj,llts,k
       real      tnshun,alaps,rdg,ttb,ttp,ttt,ttt1,ttt2,anlslp,apha
       real      phi(nxp,lev,my_max),hld1(nxp,my_max),hld2(nxp,my_max)
-      
+! for due point temperature
+      real,parameter:: TdAlpha = 17.27 ,TdBeta = 237.7
+      real      TdGamma
 !
       data dmskey/'b00621','b0062t','b02100','b02500','b02510', &
                   'b10200','b10210','b02171','b02181','b02150', &
                   's003x0','s003u0','x00770','ssl010'/
 
+!     grib code 
+!                1h Tot                   T2M T2M  2M DW DW       
+!                p  p  T2 sh2 rh2 u10 v10 max min DPT LW SW CC SLP
+      data ptp0/ 0, 0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0, 0,  0 /
+      data ptp1/ 1, 1,  0,  1,  1,  2,  2,  0,  0,  0, 5, 4, 6,  3 /
+      data ptp2/ 7, 8,  0,  0,  1,  2,  3,  4,  5,  6, 3, 7, 1,  0 /
+      data ptp3/ 2, 1,  2,  6,  0,  2,  2,  2,  2,  2, 2, 2, 3,  2 /
+      data ptp4/ 1, 1,103,103,103,103,103,103,103,103, 1, 1, 7,101 /
+      data ptp5/ 0, 0,  2,  2,  2, 10, 10,  2,  2,  2, 0, 0, 0,  0 /
 
 !
+      ntau=itau
       tnshun= 1.0
       lenc= nx*my
       lenc2= lev*my
       alaps = 0.0065
       rdg = rgas/grav
-!      
-      mfcout(:,:,1)=rain1(:,:)
-      mfcout(:,:,2)=raintot(:,:)
-      mfcout(:,:,3)=t2(:,:)
-      mfcout(:,:,4)=q2(:,:)
-
+!     
+ 
       do jj = 1, jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
         do i=1,nxj
-      !mfcout(:,:,5)=rh2(:,:) * 100.0
-      mfcout(i,jj,5)=rh2(i,jj) * 100.0
+          mfcout(i,jj,1)=raincu1(i,jj) + rainlp1(i,jj) !rain1
+          mfcout(i,jj,2)=raintot(i,jj)
+          mfcout(i,jj,3)=t2  (i,jj)
+          mfcout(i,jj,4)=q2  (i,jj)
+          mfcout(i,jj,5)=rh2 (i,jj) * 100.0  ! ( % )
+          mfcout(i,jj,6)=u10 (i,jj)
+          mfcout(i,jj,7)=v10 (i,jj)
+          mfcout(i,jj,8)=tmax(i,jj)
+          mfcout(i,jj,9)=tmin(i,jj)
+
+          TdGamma = TdAlpha * (t2(i,jj)-273.15)  / ( TdBeta + ( t2(i,jj) - 273.15 ) ) + &
+                     log(rh2(i,jj))
+          mfcout(i,jj,10)= ( TdBeta * TdGamma / ( TdAlpha - TdGamma ) ) + 273.15
+          mfcout(i,jj,11)=rld (i,jj)
+          mfcout(i,jj,12)=sld (i,jj)
+          mfcout(i,jj,13)=ctot(i,jj) ! total cloud cover
         enddo
       enddo
 
-      mfcout(:,:,6)=u10(:,:)
-      mfcout(:,:,7)=v10(:,:)
-      mfcout(:,:,8)=tmax(:,:)
-      mfcout(:,:,9)=tmin(:,:)
-      mfcout(:,:,10)=td(:,:)
-      mfcout(:,:,11)=rld(:,:)
-      mfcout(:,:,12)=sld(:,:)
-      mfcout(:,:,13)=ctot(:,:)
+     !mfcout(:,:,1)=rain1(:,:)
+     !mfcout(:,:,2)=raintot(:,:)
+     !mfcout(:,:,3)=t2(:,:)
+     !mfcout(:,:,4)=q2(:,:)
+     !mfcout(:,:,5)=rh2(:,:) * 100.0
+     !mfcout(:,:,6)=u10(:,:)
+     !mfcout(:,:,7)=v10(:,:)
+     !mfcout(:,:,8)=tmax(:,:)
+     !mfcout(:,:,9)=tmin(:,:)
+     !mfcout(:,:,10)=td(:,:)
+     !mfcout(:,:,11)=rld(:,:)
+     !mfcout(:,:,12)=sld(:,:)
+     !mfcout(:,:,13)=ctot(:,:)
 !
 !  hydrostatic equation
 !
@@ -134,16 +165,32 @@
 !
 ! Total Precp.
 !byl      call mpe2d_unify(glob,raintot)
-      do n=1,num
-        call syslbl (dmskey(n),idtg,ntau,ggdef,ihdg)
-        call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),mout)
-        if ( myrank .eq. n-1 ) then
-          glob=mout
-          ihdg2=ihdg
-        endif
-      enddo
+
+      if(outdms.gt.0)then
+
+        do n=1,num
+          call syslbl (dmskey(n),idtg,ntau,ggdef,ihdg)
+          call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),mout)
+          if ( myrank .eq. n-1 ) then
+            glob=mout
+            ihdg2=ihdg
+          endif
+        enddo
 !
-      if (myrank .lt. num ) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,glob,istat)
+        if (myrank .lt. num ) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,glob,istat)
+
+      endif ! outdms .gt. 0
+
+!====== grib2 output
+      if(outgrb2==1 )then
+          do n=1,num
+            call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),mout)
+            if(myrank==0)then
+              call wrt_grb2(ntau,ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,float(ptp5(n)) ,mout ) 
+            endif
+          enddo
+      endif
+
 !
 !! rh10
 !!byl      call mpe2d_unify(glob,rh10)

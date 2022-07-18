@@ -20,8 +20,6 @@
       use index
       use mod_outflds
       use radn, only : ntcw,ntiw,ntoz
-      use mod_grb2_param  !for write grib2 data
-      use const ,only:out_pres_form
 
       implicit  none
 
@@ -75,7 +73,7 @@
 !             , pres3d(nx,my,lpout)
               , pres3d(nxp,my_max,lpout)
 !
-      real      sht(nxp,lev*ncld,my_max),sdhat(nxp,lev,my_max)
+      real      qt_s(nxp,lev*ncld,my_max),sdhat(nxp,lev,my_max)
 !
       real      wk_xy(nxp,my_max,12)   ! the last dim is changable
 !
@@ -93,8 +91,7 @@
       real      dsigma(lev,2),deodp
 !
       logical :: lwrite,lwritesit
-      integer*8 :: tst, ted, rate      !For CPU Timings
-      integer::istat
+      integer::istat 
 !xb110>
 !      real      flash(nxp,my_max)         !flash density 
 !xb110<
@@ -134,17 +131,6 @@
       call whttau (itau,numout,outdir,ntau,taudir)
       if(ntau.eq.0) return
 
-      !========================
-!hcw !open grb2 data 
-
-      if(myrank==0)call system_clock(tst)
-      if(out_pres_form==2 .and. myrank==0)then
-133                   format( A     ,I10.10 ,A  ,I4.4 ,A     )
-           write(grbfile,133 )'GFS_',idtg/100   ,'_',itau ,'.grb2'
-           print*,'OutFileName= ',trim(grbfile)
-           call opn_grb2(nx,my,idtg,itau)
-       endif
-
 !
 !  save qt into local arrays
 !
@@ -153,7 +139,7 @@
         nxj=nxdef_2d(j)
         do k = 1, lev*ncld
           do i = 1,nxj
-            sht(i,k,jj) = qt(i,k,jj)
+            qt_s(i,k,jj) = qt(i,k,jj)
           enddo
         enddo
       enddo
@@ -173,9 +159,9 @@
           do k = 1, lev
             kk=nk+k
             do i = 1,nxj
-              if ( qt(i,kk,jj) .lt. 0.0 )  then
+              if ( qt_s(i,kk,jj) .lt. 0.0 )  then
                 ngq = ngq + 1
-                qt(i,kk,jj) = 0.0
+                qt_s(i,kk,jj) = 0.0
               endif
             enddo
           enddo
@@ -248,8 +234,8 @@
         j=jlist1(jj)
         nxj=nxdef_2d(j)
         do i=1,nxj
-          ttb  = tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt(i,lev,jj))
-          ttp  = tt(i,llts,jj)*pk(i,llts,jj)/(1.0+0.608*qt(i,llts,jj))
+          ttb  = tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt_s(i,lev,jj))
+          ttp  = tt(i,llts,jj)*pk(i,llts,jj)/(1.0+0.608*qt_s(i,llts,jj))
           ttt1 = ttb + alaps*rdg*ttb*   &
               ((pt(i,jj)+ptop)/plt(i,lev,jj)-1.0)
           ttt2 = ttp + alaps*(phi(i,llts,jj)-sgeo(i,jj))/grav
@@ -379,7 +365,7 @@
 !
         do k = 1, lev
           do i = 1,nxj
-            tmp(i,k,jj) = tt(i,k,jj)*pk(i,k,jj)/(1.0+0.608*qt(i,k,jj))
+            tmp(i,k,jj) = tt(i,k,jj)*pk(i,k,jj)/(1.0+0.608*qt_s(i,k,jj))
           enddo
         enddo
 !
@@ -433,7 +419,7 @@
         call qsatq_2d(nxjp(j),nxp,lev,tmp(1,1,jj),plt(1,1,jj),wrk1(1,1))
         do k=1, lev
           do i=1,nxj
-            tmp(i,k,jj)= qt(i,k,jj)/wrk1(i,k)
+            tmp(i,k,jj)= qt_s(i,k,jj)/wrk1(i,k)
           enddo
         enddo
         do i=1,nxj
@@ -460,7 +446,7 @@
               do k = 1, lev
                 kk = (ntrac-1)*lev+k
                 do i = 1,nxj
-                  tmp(i,k,jj)=qt(i,kk,jj)
+                  tmp(i,k,jj)=qt_s(i,kk,jj)
                 enddo
               enddo
               do i = 1,nxj
@@ -481,7 +467,7 @@
             nxj=nxdef_2d(j)
             do k = 1, lev
               do i = 1,nxj
-                tmp(i,k,jj)=qt(i,k+(ntoz-1)*lev,jj)
+                tmp(i,k,jj)=qt_s(i,k+(ntoz-1)*lev,jj)
               enddo
             enddo
             do i = 1,nxj
@@ -502,7 +488,7 @@
           do k = 1, lev
             do ntrac=2,nclds
               do i = 1,nxj
-                tmp(i,k,jj)=tmp(i,k,jj)+qt(i,k+(ntrac-1)*lev,jj)
+                tmp(i,k,jj)=tmp(i,k,jj)+qt_s(i,k+(ntrac-1)*lev,jj)
               enddo
             enddo
           enddo
@@ -654,7 +640,7 @@
         nxj=nxdef_2d(j)
         xx=rad/cosl(j)
         do i = 1,nxj
-          wk_xy(i,jj,1) = tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt(i,lev,jj))
+          wk_xy(i,jj,1) = tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt_s(i,lev,jj))
           wk_xy(i,jj,2) = ut(i,lev,jj)*xx
           wk_xy(i,jj,3) = vt(i,lev,jj)*xx
         end do
@@ -664,29 +650,48 @@
             do i = 1,nxj
               deltap = ( pt(i,jj)*(sigma(k+1,1)-sigma(k,1))+ &
                        (sigma(k+1,2)-sigma(k,2)) ) * 100./grav
-              wk_xy(i,jj,4) = wk_xy(i,jj,4) + qt(i,kk,jj)*deltap
+              wk_xy(i,jj,4) = wk_xy(i,jj,4) + qt_s(i,kk,jj)*deltap
             enddo
           enddo
         enddo
         call qsatq(nxj,wk_xy(1,jj,1),plt(1,lev,jj),wk_xy(1,jj,5))
         do i = 1,nxj
-          wk_xy(i,jj,5) = 100.*(qt(i,lev,jj)/wk_xy(i,jj,5))
+          wk_xy(i,jj,5) = 100.*(qt_s(i,lev,jj)/wk_xy(i,jj,5))
           wk_xy(i,jj,5) = min( 100., max( 1., wk_xy(i,jj,5) ) )
         enddo
       enddo
+
+!xb119  qt copy to local array qt_s  on line 157
+!       and later variable use qt_s
 !
 !  get back original qt
 !
-      do jj = 1, jlistnum
+!      do jj = 1, jlistnum
+!        j=jlist1(jj)
+!        nxj=nxdef_2d(j)
+!        do k = 1, lev*ncld
+!          do i = 1,nxj
+!            qt(i,k,jj) = qt_s(i,k,jj)
+!          enddo
+!        enddo
+!      enddo
+
+!
+      do jj =1,jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
-        do k = 1, lev*ncld
-          do i = 1,nxj
-            qt(i,k,jj) = sht(i,k,jj)
-          enddo
+        do i=1,nxj
+          wk_xy(i,jj,6) = ctot(i,jj)
+          wk_xy(i,jj,7) = chig(i,jj)
+          wk_xy(i,jj,8) = cmid(i,jj)
+          wk_xy(i,jj,9) = clow(i,jj)
+          wk_xy(i,jj,10) = hpbl(i,jj)
+          wk_xy(i,jj,11) = qt(i,1,jj)
+          wk_xy(i,jj,12) = qt(i,lev,jj)
         enddo
       enddo
- 
+
+!soil variable 
       do jj = 1, jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
@@ -705,21 +710,6 @@
           soil_xy(i,jj,12) = stc(i,4,jj)
         enddo
       enddo
-!
-      do jj =1,jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-        do i=1,nxj
-          wk_xy(i,jj,6) = ctot(i,jj)
-          wk_xy(i,jj,7) = chig(i,jj)
-          wk_xy(i,jj,8) = cmid(i,jj)
-          wk_xy(i,jj,9) = clow(i,jj)
-          wk_xy(i,jj,10) = hpbl(i,jj)
-          wk_xy(i,jj,11) = qt(i,1,jj)
-          wk_xy(i,jj,12) = qt(i,lev,jj)
-        enddo
-      enddo
-
 
 !
 ! output some 2-dimension veriable to dmsfile
@@ -733,12 +723,6 @@
 !xb110                 ,sld,wk_xy,soil_xy,canopy,ggdef,lwrite,flash)
                  ,sld,wk_xy,soil_xy,canopy,ggdef)
 
-!hcw  close grb2 file
-      if(out_pres_form==2.and.myrank==0)  call cls_grb2(istat)
-      if(myrank==0)then
-        call system_clock(ted,rate)
-        print *, "In Outfld CPU Time: ",dble(ted-tst)/dble(rate)
-      endif
 
       return
       end

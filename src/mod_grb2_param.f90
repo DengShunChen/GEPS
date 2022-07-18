@@ -61,11 +61,11 @@ character,allocatable,save :: cgrib(:)*1
 integer*4:: lcgrib=2*1e8,lengrib
 logical*1,allocatable,save :: bmap(:)
 !add default 
-integer*4  :: Ptp0,Ptp1,Ptp2,Ptp3,Ptp4,grbnxmy
+integer*4  :: grbnxmy
 !grib2 file name
 character::grbfile*255
 integer*4::grbid=134
-integer*8::grbidtg
+integer*8::grb_idtg
 !=======================================================================
 !  call baopenw(g2num,g2name,ierr)                                     !
 !=======================================================================
@@ -344,7 +344,7 @@ integer*8::grbidtg
       integer*8::idtg
       integer   itau
       character::cdtg*12
-      grbidtg=idtg
+      grb_idtg=idtg
       write(cdtg,'(I12.12)')idtg
       read(cdtg(1:4),'(I4)')yy
       read(cdtg(5:6),'(I2)')mm
@@ -366,9 +366,59 @@ integer*8::grbidtg
       return
       end subroutine
 !=======================================================================
+      subroutine wrt_grb2(itau,t0,t1,t2,p3,t10,t11,t12,fld)
+      use param, only : io_quilting
+      use rank,only:ntag
+      integer::  t0,t1,t2,t10,t11,p3
+      real::  t12
+      integer::ptp0(9)
+      integer::itau,ist
+      real::fld(grbnxmy)
+      real*4::r4out(grbnxmy)
+      character:: keydoit*34
+      data keydoit/"DOIT..........................DOIT"/
+      if(io_quilting)then
+        ptp0=(/t0,t1,t2,p3,t10,t11,nint(t12),-999,-999/)
+        ntag=ntag+1
+        call mpe_send_key( keydoit  ,ntag,ist)
+        ntag=ntag+1
+        call mpe_send_int( ptp0 , 9 ,ntag,ist)
+        ntag=ntag+1
+        call mpe_send_data(fld ,grbnxmy ,ntag,ist)
+      else
+        r4out(:)=fld(:)
+        call  wrt_grb2_io(itau,t0,t1,t2,p3,t10,t11,t12, r4out )
+      endif
+      end
+!=======================================================================
+      subroutine wrt_grb2_accu(itau,t0,t1,t2,p3,t10,t11,t12,t24,t27,fld)
+      use param, only : io_quilting
+      use rank,only:ntag
+      integer::  t0,t1,t2,t10,t11,p3,t24,t27
+      real::  t12
+      integer::ptp0(9)
+      integer::itau,ist
+      real::fld(grbnxmy)
+      real*4::r4out(grbnxmy)
+      character:: keydoit*34
+      data keydoit/"DOIT..........................DOIT"/
+      if(io_quilting)then
+        ptp0=(/t0,t1,t2,p3,t10,t11,nint(t12), t24 ,t27/)
+        ntag=ntag+1
+        call mpe_send_key( keydoit  ,ntag,ist)
+        ntag=ntag+1
+        call mpe_send_int( ptp0 , 9 ,ntag,ist)
+        ntag=ntag+1
+        call mpe_send_data(fld ,grbnxmy ,ntag,ist)
+      else
+        r4out(:)=fld(:)
+        call wrt_grb2_accu_io(itau,t0,t1,t2,p3,t10,t11,t12,t24,t27,r4out)
+      endif
+      end
+!=======================================================================
       !subroutine seclist45(itau,t1,t2,t10,t11,t12,t13,t14,t15,p3,p5)
       !subroutine seclist45(itau,t0,t1,t2,p3,t10,t11,t12,r4out)
-      subroutine wrt_grb2(itau,t0,t1,t2,p3,t10,t11,t12,fld)
+      subroutine wrt_grb2_io(itau,t0,t1,t2,p3,t10,t11,t12,fld)
       !itau :tau
 !===varitabel set ===
       !t0   :Product Discipline ( Code Table 0.0 )
@@ -386,8 +436,7 @@ integer*8::grbidtg
       integer*4::  t0,t1,t2,t10,t11,t13,t14,p3,p5
       real::  t12,t15
       integer::itau
-      real::fld(grbnxmy)
-      real*4::r4out(grbnxmy)
+      real*4::fld(grbnxmy)
 
       listsec0(1)=t0   !Product Discipline ( Code Table 0.0 )
 ! Add data info. (section 4)
@@ -415,16 +464,15 @@ integer*8::grbidtg
       idrstmpl0 (4) =0   !Number of bits 
       idrstmpl0 (5) =0   !p5 !Type of original field values(0:folat, 1:int.)
 
-      r4out(:)=fld(:)
       call gribcreate(cgrib,lcgrib,listsec0,listsec1,ierr)
       call addgrid(cgrib,lcgrib,igds,igdstmpl,igdstmplen,ideflist,idefnum,ierr)
       call addfield(cgrib,lcgrib,ipdsnum,ipdstmpl,ipdstmplen,    &
            coordlist,numcoord,idrsnum0,idrstmpl0,idrstmplen0, &
-           r4out,grbnxmy,ibmap,bmap,ierr)
+           fld,grbnxmy,ibmap,bmap,ierr)
 !jpeg comppress
 !      call addfield(cgrib,lcgrib,ipdsnum,ipdstmpl,ipdstmplen,    &
 !           coordlist,numcoord,idrsnum40,idrstmpl40,idrstmplen40, &
-!           r4out,grbnxmy,ibmap,bmap,ierr)
+!           fld,grbnxmy,ibmap,bmap,ierr)
       call gribend(cgrib,lcgrib,lengrib,ierr)
       call wryte(grbid,lengrib,cgrib)
       return
@@ -434,7 +482,7 @@ integer*8::grbidtg
 !      subroutine seclist4_85(ita,t1,t2,t10,t11,t12,t13,t14,t15,t16,    &
 !                             t17,t18,t19,t20,t21,t22,t23,t24,t25,t26,  &
 !                             t27,t28,t29,p3,p5)
-      subroutine wrt_grb2_accu(itau,t0,t1,t2,p3,t10,t11,t12,t24,t27,fld)
+      subroutine wrt_grb2_accu_io(itau,t0,t1,t2,p3,t10,t11,t12,t24,t27,fld)
       !itau :tau
 !===varitabel set ===
       !t0   :Product Discipline ( Code Table 0.0 )
@@ -453,8 +501,7 @@ integer*8::grbidtg
       integer itau,t0,t1,t2,t10,t11,t13,t14,t16,t17,t18,t19,t20,t21,   &
                   t22,t23,t24,t25,t26,t27,t28,t29,p3,p5
       real t12,t15
-      real::fld(grbnxmy)
-      real*4::r4out(grbnxmy)
+      real*4::fld(grbnxmy)
       integer*8::idtg2
       character:: cdtg*12
 
@@ -477,7 +524,7 @@ integer*8::grbidtg
       ipdstmpl8(13)=255!t13
       ipdstmpl8(14)=0  !t14
       ipdstmpl8(15)=0  !t15
-      call dtgfix12(grbidtg,idtg2 ,itau)
+      call dtgfix12(grb_idtg,idtg2 ,itau)
       write(cdtg,'(i12.12)')idtg2
       read(cdtg,'(i4,i2,i2,i2)')ipdstmpl8(16:19)
       !ipdstmpl8(16)=listsec1(6)!0 !t16 ! Year   | Time of end of overall time interval
@@ -502,16 +549,15 @@ integer*8::grbidtg
       idrstmpl0 (4) =0   !Number of bits  !reset to default
       idrstmpl0 (5) =0   !p5 !Type of original field values(0:folat, 1:int.)
 
-      r4out(:)=fld(:)
       call gribcreate(cgrib,lcgrib,listsec0,listsec1,ierr)
       call addgrid(cgrib,lcgrib,igds,igdstmpl,igdstmplen,ideflist,idefnum,ierr)
       call addfield(cgrib,lcgrib,ipdsnum,ipdstmpl8,ipdstmplen8,    &
            coordlist,numcoord,idrsnum0,idrstmpl0,idrstmplen0, &
-           r4out,grbnxmy,ibmap,bmap,ierr)
+           fld,grbnxmy,ibmap,bmap,ierr)
 !jpeg comppress
 !      call addfield(cgrib,lcgrib,ipdsnum,ipdstmpl8,ipdstmplen8,    &
 !           coordlist,numcoord,idrsnum40,idrstmpl40,idrstmplen40, &
-!           r4out,grbnxmy,ibmap,bmap,ierr)
+!           fld,grbnxmy,ibmap,bmap,ierr)
       call gribend(cgrib,lcgrib,lengrib,ierr)
       call wryte(grbid,lengrib,cgrib)
       return
@@ -579,12 +625,13 @@ integer*8::grbidtg
       return
       end subroutine
 !=======================================================================
-      subroutine opn_grb2(nx,my,idtg,itau) !,ierr)
+      subroutine opn_grb2(nx,my,idtg,itau ,ierr)
       use grib_mod
            integer::nx,my,itau,ierr
            integer*8::idtg
-           allocate(cgrib(lcgrib),bmap(nx*my))
+           if( .not. allocated( cgrib ) )allocate( cgrib(lcgrib) , bmap(nx*my) )
            lengrib=0
+           cgrib=''
            call baopenw(grbid,trim(grbfile),ierr)
            call latlong(nx,my)
            call seclist01(idtg,itau)
@@ -593,7 +640,7 @@ integer*8::grbidtg
       use grib_mod
         integer::ierr
         call baclose(grbid,ierr)
-        deallocate(cgrib,bmap)
+!        deallocate(cgrib,bmap)
       end subroutine 
 
 end module mod_grb2_param
