@@ -1,4 +1,4 @@
-      subroutine diabat ( docup,dodry,dolsp,dopbl,dorad,doshl,dograv           &
+      subroutine diabat ( docup,dodry,dolsp,dopbl,dorad,doshl,dograv,tofd      &
                     , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw       &
                     , idg,jdg,ldiag,dt,tau,hours,julian,year,yrd               &
                     , frad,ozon,njump,itypbl,ktcup,ktpbl,ktshl,grav            &
@@ -207,7 +207,7 @@
 
       logical   docup,dodry,dolsp,dopbl,dorad,doshl,dograv,ozon,     &
                 land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max),  &
-                docgrav
+                docgrav,tofd
 
       real      tice,hice,qgini,thdai,tengi,ptop,                    &
                 hltm,evaprh,s0,stbo,cp,rgas,grav,frad,               &
@@ -360,6 +360,9 @@
       real      fnor
       logical   donor,upnor
       data      donor/.true./,fnor/0.5/
+
+! for GFDL microphysics
+      real area(nxp,1)
 
 !#######################################################################
 !
@@ -578,6 +581,7 @@
          doozon = .false.
          kdt    = 0
       endif
+
 !------------------------------------------------------------------------------
 !     set hours, iter, icrad, julian, uprad, doozon
 !------------------------------------------------------------------------------
@@ -1073,8 +1077,8 @@
              nxp,nxjp(j),lev,ncld,lprnt,ipt,kdt,rsolhr,                    &
              uni_cloud,lmfshal,lmfdeep2,                                   &
              deltaq(1,1,jj),sup,cnvwr(1,1,jj),cnvcr(1,1,jj),               &
-             ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),nmmiph,                  &
-          !  ---  outputs:
+             ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),fqp1(1,1,jj),nmmiph,     &
+!  ---  outputs:
              asol(1,jj),olr(1,jj),ss(1,jj),rs(1,jj),                       &
              sld(1,jj),rld(1,jj),tsflw(1,jj),                              &
              ctot(1,jj),chig(1,jj),cmid(1,jj),clow(1,jj),                  &
@@ -1271,7 +1275,8 @@
 !               theta,sigmaog,gamma,elvmax,dusfcg, dvsfcg,          &
                theta,sigmaog,gamma,elvmax,ugws(1,jj),vgws(1,jj),   &
                grav,cp,con_rd,con_rv, nx, mtnvar, cdmbgwd,         &
-               me,zmtnblck)
+!              me,zmtnblck)
+               me,zmtnblck,garea,hpbl(1,jj),tofd)
 
         do k=1,lev
           kc=lev-k+1
@@ -1806,19 +1811,29 @@
           enddo
         enddo
       endif !( dolsp .and. nmmiph.eq.2 )
+!
+      if ( dolsp .and. (nmmiph.eq.6 .or. nmmiph.eq.8 .or. nmmiph.eq.11) ) then
 
-      if ( dolsp .and. (nmmiph.eq.6 .or. nmmiph.eq.8) ) then
-        call mp_scheme                                                   &
-          !  ---  inputs:
-           ( nmmiph,nxp,nxjp(j),lev,ncld,plt(1,1,jj),pst(1,jj),dsigma, &
-             phii,islimsk,q0,kdt,ntcw,ntrw,ntiw,ntsw,ntgl,             &
-             ntinc,ntrnc,tpi,me,dta,jj,                                &
-          !  ---  inputs/outputs:
-             tt(1,1,jj),qt(1,1,jj),                                    &
-          !  ---  outputs:
-             ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),rlsp(1,jj),sr(1,jj) )
+! for GFDL MP
+      do i = 1, nxj
+        area(i,1) = tem1*tem2  !area of grid box
+      enddo
+
+      call mp_scheme                                                   &
+!  ---  inputs:
+           ( nmmiph,nxp,nxjp(j),lev,ncld,plt(1,1,jj),                  &
+             pst(1,jj),dsigma,phii,islimsk,q0,kdt,ntcw,ntrw,ntiw,ntsw, &
+             ntgl,ntinc,ntrnc,tpi,me,dta,area,jj,                      &
+!  ---  inputs/outputs:
+             tt(1,1,jj),qt(1,1,jj),clds(1,1,jj),                       &
+             ut(1,1,jj),vt(1,1,jj),sd(1,1,jj),                         &
+!  ---  outputs:
+             ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),fqp1(1,1,jj),        &
+             rlsp(1,jj),sr(1,jj) )
+!    
       endif
 
+!
       if ( dodry ) then
          do k=1,lev
            dsigpp(k) = dsigma(k,1)+dsigma(k,2)/1000.

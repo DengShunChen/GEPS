@@ -136,14 +136,16 @@
 ! specify the default option for orographic and convective gwd
 !
       nmgwor=2
+      tofd=.false.
       nmgwcv=2
       mtnvar=14
       cmbk = 1.0
       cgwd = 1.2
 !-for Cloud Micro Physics
       nmmiph=2
-      ntinc=7
-      ntrnc=8
+      ntinc=7   ! tracer index for ice number concentration
+      ntrnc=8   ! tracer index for rain number concentration
+!     ntlnc=9   ! tracer index for liquid number concentration
 !
 ! specify the default option for reduced grids
 ! numreduce : -99 for full grids, 1 to 4 proper for reduced grids
@@ -402,6 +404,7 @@
 !     num_p3d  = 4  ! num_p3d=4, Zhao Microphysics cloud scheme (default)
 !              = 3  ! num_p3d=3, Brad Ferrier's Microphysics cloud scheme
 !              = 5  ! num_p3d=5, WSM6 Microphysics cloud scheme
+!              = 5  ! num_p3d=5, GFDL Microphysics cloud scheme with effective radii
 !     ntoz     = 0  ! use climatological ozone profile
 !              > 0  ! use interactive ozone profile
 !     iovr_sw  = 1  ! sw: maximum-random overlapping vertical cloud layer

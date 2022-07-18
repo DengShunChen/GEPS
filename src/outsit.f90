@@ -401,7 +401,7 @@
               tmp14(ii,j) = tsnic(ii,jj,k)
             endif
             if(k .ge. 2) then
-              tmp14(ii,j) = tsnic(ii,jj,k)
+              tmp13(ii,j) = tsnic(ii,jj,k)
             endif
 
           enddo
@@ -759,24 +759,24 @@
         i=nxjstart(j)
         nxj=nxdef_2d(j)
         if( lreduce.eq.1 ) then
-          call reducepick (tmp1(1,j),nxdef(j),nx,1)
-          call reducepick (tmp2(1,j),nxdef(j),nx,1)
-          call reducepick (tmp3(1,j),nxdef(j),nx,1)
-          call reducepick (tmp4(1,j),nxdef(j),nx,1)
-          call reducepick (tmp5(1,j),nxdef(j),nx,1)
-          call reducepick (tmp6(1,j),nxdef(j),nx,1)
-          call reducepick (tmp7(1,j),nxdef(j),nx,1)
-          call reducepick (tmp8(1,j),nxdef(j),nx,1)
-          call reducepick (tmp9(1,j),nxdef(j),nx,1)
-          call reducepick (tmp10(1,j),nxdef(j),nx,1)
-          call reducepick (tmp11(1,j),nxdef(j),nx,1)
+          call reducepickr (tmp1(1,j),nxdef(j),nx,1)
+          call reducepickr (tmp2(1,j),nxdef(j),nx,1)
+          call reducepickr (tmp3(1,j),nxdef(j),nx,1)
+          call reducepickr (tmp4(1,j),nxdef(j),nx,1)
+          call reducepickr (tmp5(1,j),nxdef(j),nx,1)
+          call reducepickr (tmp6(1,j),nxdef(j),nx,1)
+          call reducepickr (tmp7(1,j),nxdef(j),nx,1)
+          call reducepickr (tmp8(1,j),nxdef(j),nx,1)
+          call reducepickr (tmp9(1,j),nxdef(j),nx,1)
+          call reducepickr (tmp10(1,j),nxdef(j),nx,1)
+          call reducepickr (tmp11(1,j),nxdef(j),nx,1)
           do k=0, 3
             if(k .le. 1)then
-              call reducepick (tm12(1,k,j),nxdef(j),nx,1)
-              call reducepick (tm13(1,k,j),nxdef(j),nx,1)
-              call reducepick (tm14(1,k,j),nxdef(j),nx,1)
+              call reducepickr (tm12(1,k,j),nxdef(j),nx,1)
+              call reducepickr (tm13(1,k,j),nxdef(j),nx,1)
+              call reducepickr (tm14(1,k,j),nxdef(j),nx,1)
             elseif(k .ge. 2) then
-              call reducepick (tm14(1,k,j),nxdef(j),nx,1)
+              call reducepickr (tm14(1,k,j),nxdef(j),nx,1)
             endif
           enddo
         endif
@@ -875,12 +875,12 @@
           i=nxjstart(j)
           nxj=nxdef_2d(j)
           if( lreduce.eq.1 ) then
-            call reducepick (tm11(1,k,j),nxdef(j),nx,1)
-            call reducepick (tm12(1,k,j),nxdef(j),nx,1)
-            call reducepick (tm13(1,k,j),nxdef(j),nx,1)
-            call reducepick (tm14(1,k,j),nxdef(j),nx,1)
-            call reducepick (tm15(1,k,j),nxdef(j),nx,1)
-            call reducepick (tm16(1,k,j),nxdef(j),nx,1)
+            call reducepickr (tm11(1,k,j),nxdef(j),nx,1)
+            call reducepickr (tm12(1,k,j),nxdef(j),nx,1)
+            call reducepickr (tm13(1,k,j),nxdef(j),nx,1)
+            call reducepickr (tm14(1,k,j),nxdef(j),nx,1)
+            call reducepickr (tm15(1,k,j),nxdef(j),nx,1)
+            call reducepickr (tm16(1,k,j),nxdef(j),nx,1)
           endif
   
           do ii = 1, nxj
@@ -948,8 +948,8 @@
           i=nxjstart(j)
           nxj=nxdef_2d(j)
           if(lreduce .eq. 1) then 
-            call reducepick (tm11(1,k,j),nxdef(j),nx,1)
-            call reducepick (tm12(1,k,j),nxdef(j),nx,1)
+            call reducepickr (tm11(1,k,j),nxdef(j),nx,1)
+            call reducepickr (tm12(1,k,j),nxdef(j),nx,1)
           endif
 
           do ii = 1, nxj
@@ -1031,12 +1031,12 @@
           i=nxjstart(j)
           nxj=nxdef_2d(j)
           if(lreduce.eq.1 ) then
-            call reducepick (tm1(1,j),nxdef(j),nx,1)
-            call reducepick (tm2(1,j),nxdef(j),nx,1)
-            call reducepick (tm3(1,j),nxdef(j),nx,1)
-            call reducepick (tm4(1,j),nxdef(j),nx,1)
-            call reducepick (tm5(1,j),nxdef(j),nx,1)
-            call reducepick (tm6(1,j),nxdef(j),nx,1)
+            call reducepickr (tm1(1,j),nxdef(j),nx,1)
+            call reducepickr (tm2(1,j),nxdef(j),nx,1)
+            call reducepickr (tm3(1,j),nxdef(j),nx,1)
+            call reducepickr (tm4(1,j),nxdef(j),nx,1)
+            call reducepickr (tm5(1,j),nxdef(j),nx,1)
+            call reducepickr (tm6(1,j),nxdef(j),nx,1)
           endif
           do ii = 1, nxj
             i=nxjstart(j)+ii-1

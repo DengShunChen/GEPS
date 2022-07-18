@@ -1063,7 +1063,7 @@
 !
         if (yesdia)  then
 !
-          call diabat ( docup,dodry,dolsp,dopbl,dorad,doshl,dograv              &
+          call diabat ( docup,dodry,dolsp,dopbl,dorad,doshl,dograv,tofd         &
                       , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw      &
                       , idg,jdg,ldiag,dtx,tau,hours,julian,year,yrd             &
                       , frad,ozon,njump,itypbl,ktcup,ktpbl,ktshl,grav           &

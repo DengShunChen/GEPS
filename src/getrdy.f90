@@ -1,4 +1,3 @@
-
       subroutine getrdy
 !
 !***********************************************************************
@@ -245,45 +244,15 @@
       lncrec=nx*my
       call syslbl('x00dif',idtg,0,ggdef,lrec)
       call dmsread(nx,my,lrec,lncrec,'H',ifilout,ww1,istat)
-!byl      if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
-      do jj=1,jlistnum
-        j=jlist1(jj)
-        ii=nxjstart(j)
-        nxj=nxdef_2d(j)
-        if( lreduce.eq.1 ) call reducepick (ww1(1,j),nxdef(j),nx,1)
-        do i=1,nxj
-          pdiff(i,jj)=ww1(ii,j)
-          ii=ii+1
-        enddo
-      enddo
+      call unify_reducepick(nx,my,my_max,ww1,pdiff)
 
       call syslbl('h00100',idtg,0,ggdef,lrec)
       call dmsread(nx,my,lrec,lncrec,'H',ifilin,ww1,istat)
-!byl      if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
-      do jj=1,jlistnum
-        j=jlist1(jj)
-        ii=nxjstart(j)
-        nxj=nxdef_2d(j)
-        if( lreduce.eq.1 ) call reducepick (ww1(1,j),nxdef(j),nx,1)
-        do i=1,nxj
-          t1000(i,jj)=ww1(ii,j)
-          ii=ii+1
-        enddo
-      enddo
+      call unify_reducepick(nx,my,my_max,ww1,t1000)
 
       call syslbl('x00tsv',idtg,0,ggdef,lrec)
       call dmsread(nx,my,lrec,lncrec,'H',ifilout,ww1,istat)
-!byl      if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
-      do jj=1,jlistnum
-        j=jlist1(jj)
-        ii=nxjstart(j)
-        nxj=nxdef_2d(j)
-        if( lreduce.eq.1 ) call reducepick (ww1(1,j),nxdef(j),nx,1)
-        do i=1,nxj
-          tsave(i,jj)=ww1(ii,j)
-          ii=ii+1
-        enddo
-      enddo
+      call unify_reducepick(nx,my,my_max,ww1,tsave)
 !
 !  read dmsdata for standard deviation of terrain field
 !
@@ -293,16 +262,14 @@
         topostd='gbk0'   ! responding to istdno=0
         write(lrec,'("s00062",a4,a4,12x)')topostd,ggdef
         call dmsread(nx,my,lrec,nxmy,'H',bckfile,ww1,istat)
-!byl        if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
 !
         do jj=1,jlistnum
           j=jlist1(jj)
           ii=nxjstart(j)
           nxj=nxdef_2d(j)
-        if( lreduce.eq.1 ) call reducepick (ww1(1,j),nxdef(j),nx,1)
+        if( lreduce.eq.1 ) call reducepickr (ww1(1,j),nxdef(j),nx,1)
           do i=1,nxj
             std(i,jj)=ww1(ii,j)*ww1(ii,j)
-!byl            if(std(i,jj).le.0. .or. ocean(i,jj)) std(i,jj)=0.
             if(ww1(ii,j).le.0. .or. ocean(i,jj)) std(i,jj)=0.
             ii=ii+1
           enddo
@@ -346,18 +313,7 @@
 !
         call syslbl('w00100',idtg,0,ggdef,lrec)
         call dmsread(nx,my,lrec,nxmy,'H',ifilin,ww1,istat)
-!byl        if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
-        do jj=1,jlistnum
-          j=jlist1(jj)
-          ii=nxjstart(j)
-          nxj=nxdef_2d(j)
-
-        if( lreduce.eq.1 ) call reducepick (ww1(1,j),nxdef(j),nx,1)
-          do i=1,nxj
-            sst(i,jj)=ww1(ii,j)
-            ii=ii+1
-          enddo
-        enddo
+        call unify_reducepick(nx,my,my_max,ww1,sst)
 ! ------------------------------------------------------------
 !   read new albedo
 !-------------------------------------------------------------
@@ -409,17 +365,7 @@
         if( ncepsnow  .and. isnow.eq.0 )then
           call syslbl('b00650',idtg,0,ggdef,lrec)
           call dmsread(nx,my,lrec,nxmy,'H',ifilin,ww1,istat)
-!byl          if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
-          do jj=1,jlistnum
-            j=jlist1(jj)
-            ii=nxjstart(j)
-            nxj=nxdef_2d(j)
-            if( lreduce.eq.1 ) call reducepick (ww1(1,j),nxdef(j),nx,1)
-            do i=1,nxj
-              snr(i,jj)=ww1(ii,j)
-              ii=ii+1
-            enddo
-          enddo
+          call unify_reducepick(nx,my,my_max,ww1,snr)
           if( myrank .eq. 0 ) print*, &
             "update snow depth with ncep's snow analysis, at dtg=",idtg
         endif
@@ -455,17 +401,7 @@
 !
           call syslbl('w00091',idtg,0,ggdef,lrec)
           call dmsread(nx,my,lrec,nxmy,'H',ifilin,ww1,istat)
-!byl          if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
-          do jj=1,jlistnum
-            j=jlist1(jj)
-            ii=nxjstart(j)
-            nxj=nxdef_2d(j)
-            if( lreduce.eq.1 ) call reducepick (ww1(1,j),nxdef(j),nx,1)
-            do i=1,nxj
-              cice(i,jj)=ww1(ii,j)
-              ii=ii+1
-            enddo
-          enddo
+          call unify_reducepick(nx,my,my_max,ww1,cice)
 !
           if( myrank .eq. 0 ) then
              print*,"get ncep's sea ice analysis, at dtg=",idtg
@@ -477,17 +413,7 @@
 !
           if ( istat .eq. 0 ) then
             call dmsread(nx,my,lrec,nxmy,'H',ifilin,ww1,istat)
-!byl          if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
-            do jj=1,jlistnum
-              j=jlist1(jj)
-              ii=nxjstart(j)
-              nxj=nxdef_2d(j)
-              if( lreduce.eq.1 ) call reducepick(ww1(1,j),nxdef(j),nx,1)
-              do i=1,nxj
-                zice(i,jj)=ww1(ii,j)
-                ii=ii+1
-              enddo
-            enddo
+            call unify_reducepick(nx,my,my_max,ww1,zice)
             if( myrank .eq. 0 ) &
                print*,"get sea ice thickness from ncep analysis,",     &
                " at dtg=",idtg
@@ -694,7 +620,6 @@
         end if
         write(lrec,'("s00060",a4,a4,12x)')topohgt,ggdef
         call dmsread(nx,my,lrec,nxmy,'H',bckfile,ww1,istat)
-!byl        if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
         if(istat.ne.0)then
           call mpe_finalize
           call dmsexit(-1)
@@ -733,12 +658,11 @@
           call mpe_finalize
           call dmsexit(-1)
         endif
-!byl        if( lreduce.eq.1 ) call reducepick (ww1,nxdef,nx,my)
         do jj = 1, jlistnum
           j=jlist1(jj)    
           ii=nxjstart(j)
           nxj=nxdef_2d(j)
-          if( lreduce.eq.1 ) call reducepick (ww1(1,j),nxdef(j),nx,1)
+          if( lreduce.eq.1 ) call reducepickr (ww1(1,j),nxdef(j),nx,1)
           do i=1,nxj
             std(i,jj)=ww1(ii,j)*ww1(ii,j)
 !byl            if(std(i,jj).le.0. .or. ocean(i,jj)) std(i,jj)=0.

@@ -57,7 +57,7 @@
     logical :: lsimpl,lzadv, yesdia,dopbl, docup, dorad,      &
             dolsp, dograv,doshl, dodry, donnmi,ozon,       &
             restrt,hdiff, cstar, update,doincr,hybrid,     &
-            doo3l, docgrav, doclx, doslavepp
+            doo3l, docgrav, doclx, tofd, doslavepp
 
     ! for stochastic physics
     logical :: dosppt       =.false.
@@ -110,7 +110,7 @@
             restrt,hdiff, cstar, update,doincr,hybrid,     &
             doo3l,ndsladvh2,docgrav,out_green,out_hp,      &
             ldailyFCTsst,ldailyFCTicesndpt,lFCTweight,     &
-            dailyClm_option,lopgsst,do_sit
+            dailyClm_option,lopgsst,do_sit,tofd
 
 
     character(len=80) ifilin,cwbout,bckfile,namlsts, &
