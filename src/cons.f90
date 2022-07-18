@@ -79,10 +79,9 @@
                       , dailyClm_option,lopgsst,do_sit,fsit,pdfcloud,updatetg    &
 ! output data for RSM (Also, RSM compiling flag is necessary)
                       , outrsm,rsmoutinv,rlon1,rlon2,rlat1,rlat2,rgrdsz &
-!
-                      , cmbk,cgwd,nmmiph,spl1,spl2            &
+                      , cmbk,cgwd,nmmiph,spl1,spl2                      &
                       , weightSIT,dSITdt_intv,af,mwhd,doclx,doslavepp   &
-                      , OutR4key, out_pres_form
+                      , outdms,outgrb2
 !
       real    si(lev+1)
       logical flag
@@ -137,6 +136,8 @@
 !
 !  read namlist of path/file name(operation)
 !
+      call getenv(pathname,ifilin_nc)
+
       call getfname(pathname,logicname,truefile,istat)
       if(istat.ne.0)then
         print *,'getfname : error','RANK=',myrank
@@ -169,7 +170,6 @@
   122 continue
       close(1)
 !
-      close(1)
       open (unit=1,file=trim(namlsts),form='formatted')
 
       if(do_sit) then
@@ -187,6 +187,7 @@
         endif
   130 continue
       endif
+      close(1)
 
 !
       open (unit=2,file=trim(crdate),form='formatted')

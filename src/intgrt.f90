@@ -1435,7 +1435,7 @@
 
         if(myrank==0) call system_clock(toutsrt)
 !       open grib2 file
-        if( out_pres_form == 2 .and. myrank == 0 )then
+        if( outgrb2 == 1 .and. myrank == 0 )then
           lopngrb2=.false.
           if(histim)lopngrb2=.true.
           if(ltrack)lopngrb2=.true.
@@ -1679,12 +1679,12 @@
         if(myrank .eq. 0)then
           flag =.true.
 !CWB2016 
-          if(.not. io_quilting)then
+!          if(.not. io_quilting)then
 !CWB2017           call sendmsg ('gfs',ifromtau,itotau,istat)
             if(itau.eq.itotau) call sendmsg ('gfs',ifromtau,itotau,istat)
-          else
-            istat=0
-          endif
+!          else
+!            istat=0
+!          endif
         endif
 !ch     call mpe_broadcast(istat,1,flag,mpe_integer)
         call mpe_bcast(istat,1,0,mpe_integer)
@@ -1841,7 +1841,7 @@
         endif
 
         !close grib2 file
-        if(out_pres_form==2.and.myrank==0)then
+        if(outgrb2==1.and.myrank==0)then
           if(lopngrb2)then
             if(io_quilting)then 
               keydoit(1:4)='CLSE'

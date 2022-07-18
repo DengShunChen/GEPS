@@ -89,8 +89,8 @@
       otgreen  =      6.
       out_green= .false.
       out_hp   = .false.
-      OutR4key = .false.
-      out_pres_form = 1  !1 dmskey 2 grib2
+      outgrb2  =      0  !output grib2 format
+      outdms   =      1  !output dmskey 1:real-8  ,2:real-4
 ! pdf cloud
       pdfcloud=.false.
 ! stochastic physics

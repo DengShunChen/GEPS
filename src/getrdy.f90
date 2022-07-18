@@ -1299,7 +1299,7 @@
 !        flash=0.   !xb110, flash density
 
 !!       open grib2 file
-        if( out_pres_form == 2 .and. myrank == 0 )then
+        if( outgrb2 == 1 .and. myrank == 0 )then
           if(io_quilting)then 
               grbnxmy=nx*my
               write( keydoit,'(A14,I12.12,A8)') &
@@ -1336,7 +1336,7 @@
               , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6       &
               , ggdef)
       endif
-        if(out_pres_form==2.and.myrank==0)then
+        if(outgrb2==1.and.myrank==0)then
             if(io_quilting)then 
               keydoit(1:4)='CLSE'
               ntag=ntag+1

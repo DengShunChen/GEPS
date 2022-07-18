@@ -5,7 +5,7 @@
       use rank
       use mpe
       use index
-      use const ,only : grav,ptop,rgas,cp ,out_pres_form ,ifilout_grb
+      use const ,only : grav,ptop,rgas,cp ,outdms ,outgrb2 ,ifilout_grb
       use grid  ,only : tt,qt,plt,pk,pk2,sgeo
       use mod_grb2_param  !for write grib2 data
 !
@@ -166,7 +166,7 @@
 ! Total Precp.
 !byl      call mpe2d_unify(glob,raintot)
 
-      if(out_pres_form==1)then
+      if(outdms.gt.0)then
 
         do n=1,num
           call syslbl (dmskey(n),idtg,ntau,ggdef,ihdg)
@@ -179,10 +179,10 @@
 !
         if (myrank .lt. num ) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,glob,istat)
 
-      endif ! out_pres_form == 1
+      endif ! outdms .gt. 0
 
 !====== grib2 output
-      if(out_pres_form==2 )then
+      if(outgrb2==1 )then
           do n=1,num
             call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),mout)
             if(myrank==0)then

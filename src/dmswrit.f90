@@ -17,7 +17,7 @@
       use mpe
       use rank
 !     use index
-      use const, only : OutR4key 
+      use const, only : outdms 
 
       implicit  none
 
@@ -33,7 +33,7 @@
       character key*34
 !   
       rflag=kflag
-      if (OutR4key)rflag='R' 
+      if (outdms==2)rflag='R' 
       write(key,1000)lrec,rflag,lenc
  1000 format(a26,a1,i7.7)
 !
@@ -54,7 +54,7 @@
 !      else
 
        if(myrank .eq. 0) then
-         if(OutR4key)then
+         if(outdms==2)then
            allocate(r4out(nx,my))
            r4out(:,:)=z(:,:)
            call dmsput(ifile,key//char(0),r4out,istat)
@@ -168,7 +168,7 @@
       use mpe
       use rank
       use index, only : col_rank
-      use const, only : OutR4key 
+      use const, only : outdms 
 
       implicit  none
 
@@ -185,14 +185,14 @@
 !
 !
       rflag=kflag
-      if (OutR4key)rflag='R' 
+      if (outdms==2)rflag='R' 
       write(key,1000)lrec,rflag,lenc
  1000 format(a26,a1,i7.7)
 !
       t_flg=.false.
 
 !       if(myrank .eq. iroot) then
-      if(OutR4key)then
+      if(outdms==2)then
         allocate(r4out(nx,my))
         r4out(:,:)=z(:,:)
         call dmsput(ifile,key//char(0),r4out,istat)

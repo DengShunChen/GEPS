@@ -101,10 +101,9 @@
     ! SKEB
     logical :: first_call
 
-    !for IO 
-    logical :: OutR4key
-    ! output pressure level format
-    integer ,save :: out_pres_form
+    !for output 
+    integer :: outgrb2    !output grib2 format
+    integer :: outdms     !output dmskey
 
     common/constL/lsimpl,lzadv,yesdia,dopbl,docup,dorad,   &
             dolsp, dograv,doshl, dodry, donnmi,ozon,       &

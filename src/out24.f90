@@ -4,7 +4,7 @@
       use index
       use mpe
       use mod_grb2_param  !for write grib2 data
-      use const ,only:out_pres_form ,ifilout_grb
+      use const ,only:outdms ,outgrb2 ,ifilout_grb
 
       implicit  none
 
@@ -42,11 +42,8 @@
 !byl      call mpe_unify(glob,nx,my,2,mpe_double)
       call syslbl ('s0043f',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(out_pres_form==1)then
-        call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2_accu(itau,0,0,10,2,1,0,0.,0,24,glob)
-      endif
+      if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,0,10,2,1,0,0.,0,24,glob)
 ! Sensible heat flux at the surface (W/m**2)
       do jj=1,jlistnum
          j=jlist1(jj)
@@ -60,11 +57,8 @@
 !byl      call mpe_unify(glob,nx,my,2,mpe_double)
       call syslbl ('s0042f',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(out_pres_form==1)then
-        call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2_accu(itau,0,0,11,2,1,0,0.,0,24,glob)
-      endif
+      if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,0,11,2,1,0,0.,0,24,glob)
 ! Net shortwave (solar) flux at the surface (W/m**2) (positive : downward flux)
       do jj=1,jlistnum
          j=jlist1(jj)
@@ -78,11 +72,8 @@
 !byl      call mpe_unify(glob,nx,my,2,mpe_double)
       call syslbl ('s0031f',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(out_pres_form==1)then
-        call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2_accu(itau,0,4,0,2,1,0,0.,0,24,glob)
-      endif
+      if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,4,0,2,1,0,0.,0,24,glob)
 ! net surface longwave radiation
       do jj=1,jlistnum
          j=jlist1(jj)
@@ -96,11 +87,8 @@
 !byl      call mpe_unify(glob,nx,my,2,mpe_double)
       call syslbl ('s0032f',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(out_pres_form==1)then
-        call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2_accu(itau,0,5,0,2,1,0,0.,0,24,glob)
-      endif
+      if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,5,0,2,1,0,0.,0,24,glob)
 !
 !  Total precipitation  24-hours
       do jj=1,jlistnum
@@ -114,11 +102,8 @@
 !byl      call mpe_unify(glob,nx,my,2,mpe_double)
       call syslbl ('b00626',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(out_pres_form==1)then
-        call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2_accu(itau,0,1,8,2,1,0,0.,1,24,glob)
-      endif
+      if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,1,8,2,1,0,0.,1,24,glob)
 
 !  The average of latent heat flux release for total precipitation within 24-hours
       do jj=1,jlistnum
@@ -133,11 +118,7 @@
 !byl      call mpe_unify(glob,nx,my,2,mpe_double)
       call syslbl ('b0062f',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(out_pres_form==1)then
-        call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
-      endif
-
-!
+      if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
 
 ! model top of net solor shortwave radiation
       do jj=1,jlistnum
@@ -152,11 +133,8 @@
 !byl      call mpe_unify(glob,nx,my,2,mpe_double)
       call syslbl ('x0033f',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(out_pres_form==1)then
-        call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2_accu(itau,0,4,1,2,8,0,0.,0,24,glob)
-      endif
+      if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,4,1,2,8,0,0.,0,24,glob)
 
 ! model top of Outgoing longwave radiation (OLR)
       do jj=1,jlistnum
@@ -171,11 +149,8 @@
 !byl      call mpe_unify(glob,nx,my,2,mpe_double)
       call syslbl ('x0034f',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      if(out_pres_form==1)then
-        call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2_accu(itau,0,5,4,2,8,0,0.,0,24,glob)
-      endif
+      if(outdms.gt.0)  call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,5,4,2,8,0,0.,0,24,glob)
 !
 !xb110>>
       do jj = 1,jlistnum
@@ -187,11 +162,8 @@
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       call syslbl ('x00999',idtg,itau,ggdef,ihdg)
-      if(out_pres_form==1)then
-        call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
-      elseif(out_pres_form==2.and.myrank==0)then
-        call wrt_grb2_accu(itau,0,17,0,9,1,0,0.,0,24,glob)
-      endif
+      if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,17,0,9,1,0,0.,0,24,glob)
 !xb110<<
 
 
