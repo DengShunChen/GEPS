@@ -1,13 +1,13 @@
 #!/bin/ksh
-#PJM -L "node=17:noncont"
+#PJM -L "node=12:noncont"
 #PJM -L rscgrp=cfs-x
 #PJM -x PJM_CACHE_MODE=4
 #PJM -L elapse=1:00:00
 #PJM -L node-mem=unlimited
 #PJM --no-stging
-#PJM --mpi "proc=800"
+#PJM --mpi "proc=400"
 #PJM -j
-#PJM -N JTCo199L72
+#PJM -N JTCo199L72_38k
 
 set -x
 
@@ -19,7 +19,7 @@ machine=fx1000
 TERR=GMTED30
 JCAP=199
 
-MPI=800 
+MPI=400 
 OMP=1
 
 if [ $JCAP = 639 ] ; then
@@ -30,7 +30,7 @@ elif [ $JCAP = 383 ] ; then
   NPEY=192
 elif [ $JCAP = 199 ] ; then
   NPEX=2
-  NPEY=400
+  NPEY=200
 fi
 #source /users/xa09/sample/setup_mpi+omp.${machine} $OMP
 source /nwpr/cfs/xb82/model_git/tco639l72/job/setup_mpi+omp_38k.${machine} $OMP
