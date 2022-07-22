@@ -1,6 +1,6 @@
       subroutine matrix_hybrid_cwb(cp,sigma,dsigma,ptop,ptmean,tmean,spalm &
-                        ,eigval_r,evecin_r,evectr_r,arrhyd_r,arsddt_r      &
-                        ,pmcor_r,tmcor_r )
+                        ,eigval,evecin,evectr,arrhyd,arsddt                &
+                        ,pmcor,tmcor )
 !
 !  ***input***
 !
@@ -39,9 +39,6 @@
       real(kind=RTYPE) eigval(lev),evecin(lev,lev),evectr(lev,lev),    &
                 pmcor(lev),tmcor(lev,lev),arrhyd(lev,lev),             &
                 arsddt(lev,lev)
-      real      eigval_r(lev),evecin_r(lev,lev),evectr_r(lev,lev),     &
-                arrhyd_r(lev,lev),arsddt_r(lev,lev),pmcor_r(lev),      &
-                tmcor_r(lev,lev)
 !
       integer   ipp(lev*2),iwk(lev)
       real      phatk(lev+1),pko(lev),thatm(lev),p2(lev+1),            &
@@ -195,14 +192,6 @@
 #ifdef VERBOSE
       call mtxprt (tmcor,lev,lev,'tmcor   ','20f6.3  ')
 #endif
-!
-      eigval_r = eigval
-      evecin_r = evecin
-      evectr_r = evectr
-      arrhyd_r = arrhyd
-      arsddt_r = arsddt
-      pmcor_r  = pmcor
-      tmcor_r  = tmcor
 !
       return
       end

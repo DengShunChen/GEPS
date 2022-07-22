@@ -32,7 +32,7 @@
                        temnow1(lev,2,jtrun,jtmax),  &
                        phiten1(lev,2,jtrun,jtmax),  &
                        plnow(jtrun,jtmax,2)
-      real tmcor(lev,lev),pmcor(lev)
+      real(kind=RTYPE) tmcor(lev,lev),pmcor(lev)
 
 !2dMPI >
 

@@ -198,12 +198,7 @@
           alpha_r4,                     &
           dsigma_r4(lev,2),             &
           spalm_r4(lev),                &
-          eps4_r4(jtrun,jtmax),         &
-          eigval_r4(lev),               &
-          evecin_r4(lev,lev),           &
-          evectr_r4(lev,lev),           &
-          arrhyd_r4(lev,lev),           &
-          arsddt_r4(lev,lev)
+          eps4_r4(jtrun,jtmax)
 
 !
 !xb110>
@@ -1209,15 +1204,10 @@
        dsigma_r4=dsigma
         spalm_r4=spalm
          eps4_r4=eps4
-       eigval_r4=eigval
-       evecin_r4=evecin
-       evectr_r4=evectr
-       arrhyd_r4=arrhyd
-       arsddt_r4=arsddt
         alpha_r4=alpha
 
-      call siimpl ( jtrun,jtmax,lev,dta_r4,ptmeans_r4,dsigma_r4,spalm_r4,eps4_r4,eigval_r4 &
-                  , evecin_r4,evectr_r4,arrhyd_r4,arsddt_r4,temnow,divnow,plnow      &
+      call siimpl ( jtrun,jtmax,lev,dta_r4,ptmeans_r4,dsigma_r4,spalm_r4,eps4_r4,eigval &
+                  , evecin,evectr,arrhyd,arsddt,temnow,divnow,plnow      &
                   , temmid,divmid,plmid,temten,divten,plten,alpha_r4)
 
 !

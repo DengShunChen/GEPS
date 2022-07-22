@@ -21,7 +21,7 @@
 
       integer  lev,jtrun,jtmax,m,mf,n,j,l,k,KK,KL
 
-      real evec(lev,lev)
+      real(kind=RTYPE) evec(lev,lev)
       real(kind=RTYPE) vorten(levp,2,jtrun,jtmax),        &
                        phiten(levp,2,jtrun,jtmax),        &
                        divten(levp,2,jtrun,jtmax)
