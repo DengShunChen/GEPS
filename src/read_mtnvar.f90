@@ -8,11 +8,13 @@
       integer i,j,v,jt,nrec,ii,jj,nxj,nx,my,mtnv,isot
       real*4 hprime_a(nx,my,mtnv)
       real hprime_b(nxp,mtnv,my_max),hprime_a8(nx,my)
+      real work(nxp,my_max)
 !      real hprime_a(nx,my),hprime_aa(nx,my)
       character rfile*40
 ! 
 !--------------------------------------------
 !!      nrec=nx*my*4
+      work = 0.
 
 !xb118
       if (isot .le.1) then
@@ -58,19 +60,9 @@
 !      print*,' in read_mtnvar hprime_a = ',(hprime_a(1500,155,i),i=1,mtnv)
 
 !--------------------------------------------
-
-        do jj = 1, jlistnum
-          j=jlist1(jj)
-          ii=nxjstart(j)
-          nxj=nxdef_2d(j)
-          if( lreduce.eq.1 )call reducepick(hprime_a8(1,j),nxdef(j),nx,1)        
-          do i = 1, nxj
-            hprime_b(i,v,jj) = hprime_a8(ii,j)
-            ii=ii+1
-          enddo
-        enddo
+        call unify_reducepick(nx,my,my_max,hprime_a8,work)
+        hprime_b(:,v,:) = work(:,:)
       enddo
-
 !-- transpose even though glob 30" is from S to N and NCEP std is N to S
 
 

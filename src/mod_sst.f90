@@ -246,12 +246,12 @@
 
              write(lrec,11) ggdef,iyy,imm
              call dmsread(nx,my,lrec,lncrec,'H',ifilin_sst,temp1(:,:),istat)
-!             if( lreduce.eq.1 ) call reducepick(temp1(1,imm,1),nxdef,nx,my)
+!             if( lreduce.eq.1 ) call reducepickr(temp1(1,imm,1),nxdef,nx,my)
              do jj = 1, jlistnum
                j=jlist1(jj)
                i=nxjstart(j)
                nxj=nxdef_2d(j)
-               if( lreduce.eq.1 )call reducepick (temp1(1,j),nxdef(j),nx,1)
+               if( lreduce.eq.1 )call reducepickr (temp1(1,j),nxdef(j),nx,1)
                do ii = 1, nxj
                  i=nxjstart(j)+ii-1
                  if(ocean(ii,jj) .or. ice(ii,jj))then
@@ -474,10 +474,10 @@
             i=nxjstart(j)
             nxj=nxdef_2d(j)
             if( lreduce.eq.1 ) then
-              call reducepick (ssttemp(1,j),nxdef(j),nx,1)
+              call reducepickr (ssttemp(1,j),nxdef(j),nx,1)
               if(ldailyFCTicesndpt)then
-                call reducepick (cicetemp(1,j),nxdef(j),nx,1)
-                call reducepick (sndpttemp(1,j),nxdef(j),nx,1)
+                call reducepickr (cicetemp(1,j),nxdef(j),nx,1)
+                call reducepickr (sndpttemp(1,j),nxdef(j),nx,1)
               endif
             endif
 
@@ -610,8 +610,8 @@
           call dmsread(nx,my,lrec,lncrec,'H',ifilin_ClmANA,sstANA1(:,:),istat)
 
 !          if( lreduce.eq.1 ) then
-!            call reducepick(sstANA0(1,1),nxdef,nx,my)
-!            call reducepick(sstANA1(1,1),nxdef,nx,my)
+!            call reducepickr(sstANA0(1,1),nxdef,nx,my)
+!            call reducepickr(sstANA1(1,1),nxdef,nx,my)
 !          endif
 
 
@@ -633,8 +633,8 @@
 
 
 !            if( lreduce.eq.1 ) then
-!              call reducepick(sstFCT0(1,1),nxdef,nx,my)
-!              call reducepick(sstFCT1(1,1),nxdef,nx,my)
+!              call reducepickr(sstFCT0(1,1),nxdef,nx,my)
+!              call reducepickr(sstFCT1(1,1),nxdef,nx,my)
 !            endif 
 
             sstFCT0=MERGE(sstFCT0,xmissing,(sstFCT0.GE.sstmin .AND. sstFCT0.LE.400.))
@@ -650,10 +650,10 @@
             nxj=nxdef_2d(j)
             i=nxjstart(j)
             if( lreduce.eq.1 ) then
-              call reducepick(sstANA0(1,j),nxdef(j),nx,1)
-              call reducepick(sstANA1(1,j),nxdef(j),nx,1)
-              call reducepick(sstFCT0(1,j),nxdef(j),nx,1)
-              call reducepick(sstFCT1(1,j),nxdef(j),nx,1)
+              call reducepickr(sstANA0(1,j),nxdef(j),nx,1)
+              call reducepickr(sstANA1(1,j),nxdef(j),nx,1)
+              call reducepickr(sstFCT0(1,j),nxdef(j),nx,1)
+              call reducepickr(sstFCT1(1,j),nxdef(j),nx,1)
             end if
             DO ii=1,nxj
               wweight=0.
@@ -732,7 +732,7 @@
           call dmsread(nx,my,lrec,lncrec,'H',ifilin_ClmANA,sstANA(:,:),istat)
 
 !          if( lreduce.eq.1 ) then
-!            call reducepick(sstANA(1,1),nxdef,nx,my)
+!            call reducepickr(sstANA(1,1),nxdef,nx,my)
 !          endif
 
           sstANA=MERGE(sstANA,xmissing,(sstANA.GE.sstmin .AND. sstANA.LE.400.))
@@ -746,7 +746,7 @@
             call dmsread(nx,my,lrec,lncrec,'H',ifilin_ClmFCT,sstFCT(:,:),istat)
 
 !            if( lreduce.eq.1 ) then
-!              call reducepick(sstFCT(1,1),nxdef,nx,my)
+!              call reducepickr(sstFCT(1,1),nxdef,nx,my)
 !            endif
 
             sstFCT=MERGE(sstFCT,xmissing,(sstFCT.GE.sstmin .AND. sstFCT.LE.400.))
@@ -758,8 +758,8 @@
             j=jlist1(jj)
             nxj=nxdef_2d(j)
             if( lreduce.eq.1 ) then 
-              call reducepick(sstANA(1,j),nxdef(j),nx,1)
-              call reducepick(sstFCT(1,j),nxdef(j),nx,1)
+              call reducepickr(sstANA(1,j),nxdef(j),nx,1)
+              call reducepickr(sstFCT(1,j),nxdef(j),nx,1)
             end if
             DO ii=1,nxj
               wweight=0.
@@ -940,8 +940,8 @@
                 j=jlist1(jj)
                 nxj=nxdef_2d(j)
                 if( lreduce.eq.1 )then
-                  call reducepick (temp1(1,j),nxdef(j),nx,1)
-                  call reducepick (temp2(1,j),nxdef(j),nx,1)
+                  call reducepickr (temp1(1,j),nxdef(j),nx,1)
+                  call reducepickr (temp2(1,j),nxdef(j),nx,1)
                 endif
                 do ii = 1, nxj
                   i=nxjstart(j)+ii-1
@@ -1014,16 +1014,16 @@
            if(myrank .eq. 0) print *, 'lrec12=',lrec
            call dmsread(nx,my,lrec,lncrec,'H',ifilin,temp2(:,:),istat)
 
-!           if( lreduce.eq.1 ) call reducepick(temp1(1,1),nxdef,nx,my)
-!           if( lreduce.eq.1 ) call reducepick(temp2(1,1),nxdef,nx,my)
+!           if( lreduce.eq.1 ) call reducepickr(temp1(1,1),nxdef,nx,my)
+!           if( lreduce.eq.1 ) call reducepickr(temp2(1,1),nxdef,nx,my)
 
 
            do jj=1,jlistnum
               j=jlist1(jj)
               nxj=nxdef_2d(j)
               if( lreduce.eq.1 )then
-                call reducepick (temp1(1,j),nxdef(j),nx,1)
-                call reducepick (temp2(1,j),nxdef(j),nx,1)
+                call reducepickr (temp1(1,j),nxdef(j),nx,1)
+                call reducepickr (temp2(1,j),nxdef(j),nx,1)
               endif
               do ii = 1, nxj
                  i=nxjstart(j)+ii-1
@@ -1324,7 +1324,7 @@
                 DO jj = 1, jlistnum
                   j=jlist1(jj)
                   nxj=nxdef_2d(j)
-                  if( lreduce.eq.1 )call reducepick(zin(1,j),nxdef(j),nx,1)
+                  if( lreduce.eq.1 )call reducepickr(zin(1,j),nxdef(j),nx,1)
                   DO ii=1,nxj
                     i=nxjstart(j)+ii-1
                     IF(irec .eq. 1) THEN
@@ -1390,7 +1390,7 @@
                 DO jj = 1, jlistnum
                   j=jlist1(jj)
                   nxj=nxdef_2d(j)
-                  if( lreduce.eq.1 )call reducepick(zin(1,j),nxdef(j),nx,1)
+                  if( lreduce.eq.1 )call reducepickr(zin(1,j),nxdef(j),nx,1)
                   DO ii=1,nxj
                     i=nxjstart(j)+ii-1
                     IF(irec .eq. 1) THEN
@@ -1435,7 +1435,7 @@
                 DO jj = 1, jlistnum
                   j=jlist1(jj)
                   nxj=nxdef_2d(j)
-                  if( lreduce.eq.1 ) call reducepick(zin(1,j),nxdef(j),nx,1)
+                  if( lreduce.eq.1 ) call reducepickr(zin(1,j),nxdef(j),nx,1)
                   DO ii=1,nxj
                     i=nxjstart(j)+ii-1
                     IF(irec .eq. 1) THEN
@@ -1687,7 +1687,7 @@
           DO jj = 1, jlistnum
             j=jlist1(jj)
             nxj=nxdef_2d(j)
-            if( lreduce.eq.1 )call reducepick (zin(1,j),nxdef(j),nx,1)
+            if( lreduce.eq.1 )call reducepickr (zin(1,j),nxdef(j),nx,1)
             DO ii=1,nxj
               i=nxjstart(j)+ii-1
               IF (irec .eq. 1) THEN
@@ -2155,7 +2155,7 @@
            DO jj = 1, jlistnum
              j=jlist1(jj)
              nxj=nxdef_2d(j)
-             if( lreduce.eq.1 ) call reducepick(zin(1,j),nxdef(j),nx,1)
+             if( lreduce.eq.1 ) call reducepickr(zin(1,j),nxdef(j),nx,1)
              DO ii=1,nxj
                i=nxjstart(j)+ii-1
                if(irec .eq. 1) then
