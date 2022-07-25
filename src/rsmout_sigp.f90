@@ -3,7 +3,6 @@
                          , pt,sgeo,snr,gwr,tg,pk                     &
                          , ut,vt,tt,qt,km,smc,stc                    &
                          , ice,land,ocean,xlon,xlat)
-!#ifdef RSM_sigp
 #ifdef RSM
 
 #ifdef CWB_MPMD
@@ -51,7 +50,7 @@
       integer   nxs, mys, len2
       integer   x1, x2, y1, y2
 #ifdef send_RSM
-      real,allocatable ::  g3send(:,:,:),g2send(:,:),gssend(:,:,:)
+      real,allocatable ::  g3send(:,:,:),g2send(:,:)
 #endif
       integer   ierr
 
@@ -206,7 +205,7 @@
 
 ! allocate temporary 
 #ifdef send_RSM
-      allocate(g3send(nxs,mys,lev),g2send(nxs,mys),gssend(nxs,mys,km), &
+      allocate(g3send(nxs,mys,lev),g2send(nxs,mys), &
                stat=ierr)
       if (ierr/=0) stop "rsmout_sigp: allocate fail"
       if (ierr/=0) call mpe_finalize               
@@ -657,7 +656,7 @@
 #endif
 #ifdef send_RSM
       if(myrank.eq.0) then
-        gssend(:,:,k)=work(x1:x2,y1:y2)
+        g3send(:,:,k)=work(x1:x2,y1:y2)
       endif
 #endif
       enddo
@@ -665,7 +664,7 @@
       if(myrank.eq.0) then
       do k=1,km
         itag=itag0+ksmc-1+k
-        call mpmd_send(gssend(:,:,k),len2,root_rsm,itag,'R')
+        call mpmd_send(g3send(:,:,k),len2,root_rsm,itag,'R')
       enddo
       endif
 #endif
@@ -692,7 +691,7 @@
 #endif
 #ifdef send_RSM
       if(myrank.eq.0) then
-        gssend(:,:,k)=work(x1:x2,y1:y2)
+        g3send(:,:,k)=work(x1:x2,y1:y2)
       endif
 #endif
       enddo
@@ -700,7 +699,7 @@
       if(myrank.eq.0) then
       do k=1,km
         itag=itag0+kstc-1+k
-        call mpmd_send(gssend(:,:,k),len2,root_rsm,itag,'R')
+        call mpmd_send(g3send(:,:,k),len2,root_rsm,itag,'R')
       enddo
       endif
 #endif
@@ -719,7 +718,7 @@
 #endif
 !
 #ifdef send_RSM
-      deallocate(g3send,g2send,gssend,stat=ierr)
+      deallocate(g3send,g2send,stat=ierr)
       if (ierr/=0) stop "rsmout_sigp: deallocate fail"
 #endif
 
