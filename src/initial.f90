@@ -280,11 +280,9 @@
 !!        call transr(jtrun,jtmax,nx,my,my_max,levp,poly,wss,cc,3,nsizey)
 !!        call ujoinsr(cc,rvor,rdiv,tt,dummy,nx,my_max,lev,jlistnum,3,1)
         call transr(jtrun,jtmax,nx,my,my_max,levp,poly,vornow,cc,1,nsizey)
-        call ujoinsr(cc,temp,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-        rvor=temp
+        call ujoinsr(cc,rvor,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
         call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divnow,cc,1,nsizey)
-        call ujoinsr(cc,temp,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-        rdiv=temp
+        call ujoinsr(cc,rdiv,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
         call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temnow,cc,1,nsizey)
         call ujoinsr(cc,temp,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
         tt=temp

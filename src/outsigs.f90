@@ -1,11 +1,12 @@
       subroutine outsigs ( itau,nx,my,my_max,lev,ncld                &
                          , idtg,ifilout,ptop,rad,grav                &
                          , cp,cosl,pt,sgeo,snr,gwr,tg,pk,pk2         &
-                         , ut,vt,tt,qt,phi,rdiv,km,smc               &
+                         , ut,vt,tt,qt,phi,km,smc                    &
                          , slc,stc,canopy,zice,ggdef,gmdef)
       use index
       use mpe
       use radn, only : ntoz,ntcw,ntrw,ntiw,ntsw,ntgl
+      use const, only : RTYPE
 
       implicit  none
 
@@ -19,7 +20,7 @@
                 pk2(nxp,lev,my_max),ut(nxp,lev,my_max),         &
                 vt(nxp,lev,my_max),tt(nxp,lev,my_max),          &
                 qt(nxp,lev*ncld,my_max),phi(nxp,lev,my_max),    &
-                rdiv(nxp,lev,my_max),work(nx,my),               &
+                work(nx,my),                                    &
                 smc(nxp,km,my_max),stc(nxp,km,my_max),          &
                 canopy(nxp,my_max),slc(nxp,km,my_max),          &
                 zice(nxp,my_max),wrk1(nxp,my_max),mout(nx,my)

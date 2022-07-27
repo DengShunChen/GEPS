@@ -1340,14 +1340,16 @@
 ! transpose (nx partial,lev full) to (nx full,lev partial) for NDSL
 
       use index, only : lreduce,nxjlen_all,jlist1,nxjlen
+      use const, only : RTYPE,MPI_RTYPE
 
       implicit none
 
       include 'mpif.h'
 
-      real*4   ain(nxp,lev,ncld,my_max), &
-               aout(nx,levp,ncld,my_max),&
-               c1(nxp,jlen,ncld,lev),c2(nxp,jlen,ncld,levp,nsizex)
+      real(kind=RTYPE) ain(nxp,lev,ncld,my_max),        &
+                       aout(nx,levp,ncld,my_max),       &
+                       c1(nxp,jlen,ncld,lev),           &
+                       c2(nxp,jlen,ncld,levp,nsizex)
 
       integer  nxp,nx,lev,levp,ncld,my,my_max,jlen,nsizex,comm
       integer  nlen,ii,j,i,k,kk,ierr,jlistnum,nn,jj,n
@@ -1366,8 +1368,8 @@
 
       nlen=nxp*levp*jlen*ncld
 
-      call MPI_ALLTOALL( c1 ,nlen, MPI_REAL4, &
-                         c2, nlen, MPI_REAL4, &
+      call MPI_ALLTOALL( c1 ,nlen, MPI_RTYPE, &
+                         c2, nlen, MPI_RTYPE, &
                          comm, IERR )
 
       do k=1,levp

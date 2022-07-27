@@ -8,14 +8,16 @@ contains
 !
       use index
       use rank, only : myrank
+      use const, only : RTYPE
 
       implicit  none
 
       integer   nx,my,my_max,lpout,lev,itau,ncnt
 
       real      pkout(lpout),pklp(nxp,my_max),pk(nxp,lev,my_max),       &
-                rdiv(nxp,lev,my_max),rdivb(nxp,my_max),div(nxp,my_max,lpout),&
+                work3d(nxp,lev,my_max),rdivb(nxp,my_max),div(nxp,my_max,lpout),&
                 plev(lpout),whtlev(num)
+      real(kind=RTYPE) rdiv(nxp,lev,my_max)
       real      tens(lev+1)
       real      wk1(nx,my),pout(nx,my)
 
@@ -41,8 +43,9 @@ contains
        write( lrec(k), '(i3.3,a3)' ) lpl,'230'
       end do
       lrec(lpout) = 'h00230'
+      work3d=rdiv
 !
-      call voterp(nx,my,my_max,lev,lpout,pk,pklp,rdiv,rdivb,pkout,div,tens)
+      call voterp(nx,my,my_max,lev,lpout,pk,pklp,work3d,rdivb,pkout,div,tens)
 !
       lenc= nx*my
       ncnt= -1
@@ -663,14 +666,16 @@ contains
 !
       use index
       use rank, only : myrank
+      use const, only : RTYPE
 
       implicit  none
 
       integer   nx,my,my_max,lpout,lev,itau,num,ncnt
 
-      real      pkout(lpout),pklp(nxp,my_max)                     &
-      , pk(nxp,lev,my_max),rvor(nxp,lev,my_max),rvorb(nxp,my_max) &
+      real      pkout(lpout),pklp(nxp,my_max)                        &
+      , pk(nxp,lev,my_max),work3d(nxp,lev,my_max),rvorb(nxp,my_max)  &
       , vor(nxp,my_max,lpout),plev(lpout),whtlev(num)
+      real(kind=RTYPE) rvor(nxp,lev,my_max)
       real      tens(lev+1)
       real      v850(nxp,my_max),v700(nxp,my_max)
       real      wk1(nx,my),pout(nx,my)
@@ -697,8 +702,9 @@ contains
        write( lrec(k), '(i3.3,a3)' ) lpl,'240'
       end do
       lrec(lpout) = 'h00240'
+      work3d=rvor
 !
-      call voterp(nx,my,my_max,lev,lpout,pk,pklp,rvor,rvorb,pkout,vor,tens)
+      call voterp(nx,my,my_max,lev,lpout,pk,pklp,work3d,rvorb,pkout,vor,tens)
 !
       lenc= nx*my
       ncnt= -1

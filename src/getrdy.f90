@@ -870,11 +870,9 @@
 !!                 ,3,nsizey)
 !!      call ujoinsr(cc3,rvor,rdiv,tt,dummy,nx,my_max,lev,jlistnum,3,1)
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,vornow,cc,1,nsizey)
-      call ujoinsr(cc,tmp1,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-      rvor=tmp1
+      call ujoinsr(cc,rvor,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divnow,cc,1,nsizey)
-      call ujoinsr(cc,tmp1,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-      rdiv=tmp1
+      call ujoinsr(cc,rdiv,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temnow,cc,1,nsizey)
       call ujoinsr(cc,tmp1,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       tt=tmp1

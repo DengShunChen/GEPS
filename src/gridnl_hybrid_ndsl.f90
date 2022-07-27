@@ -42,6 +42,8 @@
 !
 ! ******************************************************************
 !
+      use const, only : RTYPE
+!
       implicit  none
 
       integer   nxj,nx,lev,ncld
@@ -53,8 +55,8 @@
       
 !
       real      deldm(nx)
-      real*4    diveng(nx,lev),vdmerd(nx,lev),vdzonl(nx,lev),     &
-                pdot(nx,lev+1),pten(nx,lev),dlpl(nx),dtpl(nx),    &
+      real(kind=RTYPE) diveng(nx,lev),vdmerd(nx,lev),vdzonl(nx,lev), &
+                pdot(nx,lev+1),pten(nx,lev),dlpl(nx),dtpl(nx),       &
                 rdiv(nx,lev)
 !
       real      sdpbl(nx)
@@ -192,6 +194,7 @@
 !
 ! ******************************************************************
 !
+      use const, only : RTYPE
       implicit  none
 
       integer   nxj,nx,lev,ncld
@@ -203,9 +206,9 @@
       
 !
       real      deldm(nx)
-      real*4    diveng(nx,lev),vdmerd(nx,lev),vdzonl(nx,lev),     &
-                pdot(nx,lev+1),pten(nx,lev),dlpl(nx),dtpl(nx),    &
-                rdiv(nx,lev)
+      real(kind=RTYPE) diveng(nx,lev),vdmerd(nx,lev),vdzonl(nx,lev),   &
+                       pdot(nx,lev+1),pten(nx,lev),dlpl(nx),dtpl(nx),  &
+                       rdiv(nx,lev)
 !
       real      sdpbl(nx)
       logical   flag(nx)
@@ -496,6 +499,8 @@
 !
 ! ******************************************************************
 !
+      use const, only : RTYPE
+!
       implicit  none
 
       integer   nxj,nx,lev,ncld
@@ -508,9 +513,9 @@
       
 !
       real      deldm(nx)
-      real*4    diveng(nx,lev),vdmerd(nx,lev),vdzonl(nx,lev),     &
-                pdot(nx,lev+1),pten(nx,lev),dlpl(nx),dtpl(nx),    &
-                rdiv(nx,lev)
+      real(kind=RTYPE) diveng(nx,lev),vdmerd(nx,lev),vdzonl(nx,lev),   &
+                       pdot(nx,lev+1),pten(nx,lev),dlpl(nx),dtpl(nx),  &
+                       rdiv(nx,lev)
 !
       real      sdpbl(nx)
       logical   flag(nx)

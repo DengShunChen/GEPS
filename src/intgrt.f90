@@ -61,9 +61,8 @@
 !  for Semi-Lagrangian
       real      deldm(nxp,my_max),ddtemp_r8(nxp,lev,my_max),       &
                 vdmerd_r8(nxp,lev,my_max),vdzonl_r8(nxp,lev,my_max),&
-                um(nxp,lev,my_max),vm(nxp,lev,my_max),             &
-                tm(nxp,lev,my_max),                                &
-                ptm(nxp,my_max)
+                ptm(nxp,my_max),umtmp(nxp,lev,my_max),             &
+                vmtmp(nxp,lev,my_max),tmtmp(nxp,lev,my_max)
 !
       real(kind=RTYPE) ndsldta,ndsldtah,facm(2,2),                 &
                 diveng(nxp,lev,my_max),                            &
@@ -71,6 +70,8 @@
                 pten_sl(nx,levp,my_max),                           &
                 uum_sl(nx,levp,my_max),vvm_sl(nx,levp,my_max),     &
                 ttm_sl(nx,levp,my_max),                            &
+                um(nxp,lev,my_max),vm(nxp,lev,my_max),             &
+                tm(nxp,lev,my_max),                                &
                 vdmerd(nxp,lev,my_max),vdzonl(nxp,lev,my_max),     &
                 vdmerdg(nxp,lev,my_max),vdzonlg(nxp,lev,my_max),   &
                 vdmerdr(nxp,lev,my_max),vdzonlr(nxp,lev,my_max),   &
@@ -785,9 +786,9 @@
 !
 !     advet grid non-linear forcing from t-dt/2 to t+dt/2 via NDSL advection
 !
-      call mpe2d_transpose_ndsl_p2f(um,ut_sl,    &
+      call mpe2d_transpose_ndsl_p2f_sp2(um,ut_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f(vm,vt_sl,    &
+      call mpe2d_transpose_ndsl_p2f_sp2(vm,vt_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 
       call mpe2d_transpose_ndsl_p2f(ut,uum_sl,    &
@@ -811,7 +812,6 @@
 !
 !    advect pressure gradient force from t to t+dt
 !
-      tmp=rdiv
       do jj = 1, jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
@@ -819,7 +819,7 @@
 !       Calculate Vertical velocity & Stream Functions
 !
         call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld              &
-        , cp,radsq,ut(1,1,jj),vt(1,1,jj),tmp(1,1,jj),tt(1,1,jj)        &
+        , cp,radsq,ut(1,1,jj),vt(1,1,jj),rdiv(1,1,jj),tt(1,1,jj)       &
         , qt(1,1,jj),phi(1,1,jj),pt(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
         , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)         &
         , diveng(1,1,jj),vdmerdr(1,1,jj),vdzonlr(1,1,jj),pten(1,1,jj)  &
@@ -875,13 +875,16 @@
       call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,plmid      &
                  ,dlpl,dtpl,nsizey)
 !
+      umtmp=um
+      vmtmp=vm
+      tmtmp=tm
       do jj = 1, jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
 !
         call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld               &
 !byl        call gridnl_hybrid_ndsl (nxjp(j),nxp,lev,ncld                  &
-        , cp,radsq,um(1,1,jj),vm(1,1,jj),rdivm(1,1,jj),tm(1,1,jj)       &
+        , cp,radsq,umtmp(1,1,jj),vmtmp(1,1,jj),rdivm(1,1,jj),tmtmp(1,1,jj) &
         , qt(1,1,jj),phi(1,1,jj),ptm(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
         , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)         &
         , diveng(1,1,jj),vdmerdg(1,1,jj),vdzonlg(1,1,jj),pten(1,1,jj)  &
@@ -946,7 +949,9 @@
 !     update all new wind field at mid-point
 !
       call tranuv(jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac    &
-                 ,poly,dpoly,vormid,divmid,um,vm,nsizey)
+                 ,poly,dpoly,vormid,divmid,umtmp,vmtmp,nsizey)
+      um=umtmp
+      vm=vmtmp
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divmid,cc,1,nsizey)
       call ujoinsr(cc,rdivm,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
 !      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temmid,cc,1,nsizey)
@@ -958,6 +963,9 @@
 !  these non-linear contributions are then combined in 'rstran' using
 !  the symmetry properties of the spherical harmonics
 !
+      umtmp=um
+      vmtmp=vm
+      tmtmp=tm
       do jj = 1, jlistnum
 
         j=jlist1(jj)
@@ -973,7 +981,7 @@
 !
 !!        call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld              &
         call gridnl_hybrid_ndsl (nxjp(j),nxp,lev,ncld                   &
-        , cp,radsq,um(1,1,jj),vm(1,1,jj),rdivm(1,1,jj),tm(1,1,jj)       &
+        , cp,radsq,umtmp(1,1,jj),vmtmp(1,1,jj),rdivm(1,1,jj),tmtmp(1,1,jj) &
         , qp(1,1,jj),phi(1,1,jj),ptm(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
         , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)          &
         , diveng(1,1,jj),vdmerdg(1,1,jj),vdzonlg(1,1,jj),pten(1,1,jj)   &
@@ -1005,9 +1013,9 @@
 !                                    ut_sl,vt_sl,uum_sl,vvm_sl,ttm_sl,qm_sl, &
 !                                    nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm,6)
 !#else
-      call mpe2d_transpose_ndsl_p2f_sp(um,ut_sl,    &
+      call mpe2d_transpose_ndsl_p2f_sp2(um,ut_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f_sp(vm,vt_sl,    &
+      call mpe2d_transpose_ndsl_p2f_sp2(vm,vt_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f_sp(ut,uum_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
@@ -1365,8 +1373,7 @@
 !!      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,vornow,cc,1,nsizey)
 !!      call ujoinsr(cc,rvor,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divnow,cc,1,nsizey)
-      call ujoinsr(cc,tmp,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-      rdiv=tmp
+      call ujoinsr(cc,rdiv,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temnow,cc,1,nsizey)
       call ujoinsr(cc,tmp,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       tt=tmp
@@ -1679,7 +1686,7 @@
         call outsigs ( itau,nx,my,my_max,lev,ncld        &
                      , idtg,ifilout,ptop,rad,grav        &
                      , cp,cosl,pt,sgeo,snr,gwr,tg,pk,pk2 &
-                     , ut,vt,tt,qt,phi,rdiv,km_soil,smc  &
+                     , ut,vt,tt,qt,phi,km_soil,smc       &
                      , slc,stc,canopy,zice,ggdef,gmdef )
 #endif
         endif
@@ -1710,15 +1717,14 @@
 #ifndef NO_OUT
 !
        call transr(jtrun,jtmax,nx,my,my_max,levp,poly,vornow,cc,1,nsizey)
-       call ujoinsr(cc,tmp,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-       rvor=tmp
+       call ujoinsr(cc,rvor,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
        rh2100=rh2*100.
        rh10100=rh10*100.
         call  outflds( itau,nx,my,my_max,lev,ncld                              &
                     , lmax,numout,idtg,ifilout,outdir                          &
                     , ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo                  &
                     , ptend,pt,plt,pk,pk2,phi,ut,vt,sd                         &
-                    , tt,qt,rdiv,rvor,tg,gwr,z0,hflux,qflux,snr                &
+                    , tt,qt,rdiv,rvor,tg,gwr,z0,hflux,qflux,snr              &
                     , raintot,raincu,rainlp,asol,olr,ss,rs,alb,gwclim          &
                     , acld,cosl,drag,ugws,vgws,t2,q2,rh2100,rh10100,u10,v10,gfx,rld,sld &
 !byl                    , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500 &
