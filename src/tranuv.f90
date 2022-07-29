@@ -43,12 +43,11 @@
       real(kind=RTYPE) sa00,sa10,sa20,sa30,dummy
 !
       real      onocos(my),wcfac(jtrun,jtmax),wdfac(jtrun,jtmax)  &
-               ,poly(jtrun,my/2,jtmax),dpoly(jtrun,my/2,jtmax)    &
+               ,poly(jtrun,my/2,jtmax),dpoly(jtrun,my/2,jtmax)
 !               ,vor(lev,2,jtrun,jtmax),div(lev,2,jtrun,jtmax)     &
-               ,ut(nxp,levF,my_max),vt(nxp,levF,my_max)
 !
       real(kind=RTYPE)      vor(lev,2,jtrun,jtmax),div(lev,2,jtrun,jtmax)
-      real(kind=RTYPE)      ut4(nxp,levF,my_max),vt4(nxp,levF,my_max)
+      real(kind=RTYPE)      ut(nxp,levF,my_max),vt(nxp,levF,my_max)
       real(kind=RTYPE)      gwk1(nx+2,lev,2,my_max)
       real(kind=RTYPE)      wcc_fk (lev,2,2,jtmax,my_max*nsize)
       real(kind=RTYPE)      twcc_fk(lev,2,2,jtmax*nsize,my_max)
@@ -470,9 +469,7 @@
 !  22 continue
 
 !2dMPI
-      call ujoinsr(cc,ut4,vt4,dummy,dummy,nx,my_max,levF,jlistnum,2,1)
-      ut=ut4
-      vt=vt4
+      call ujoinsr(cc,ut,vt,dummy,dummy,nx,my_max,levF,jlistnum,2,1)
 
       return
       end

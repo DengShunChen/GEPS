@@ -773,13 +773,15 @@ contains
 !
       use index
       use rank, only : myrank
+      use const, only : RTYPE
 
       implicit none
 
       real      pkout(lpout),pklp(nxp,my_max),pk(nxp,lev,my_max)          &
-      , rdiv(nxp,lev,my_max),ut(nxp,lev,my_max),vt(nxp,lev,my_max)        &
+      , rdiv(nxp,lev,my_max),work3d(nxp,lev,my_max)                       &
       , utb(nxp,my_max),vtb(nxp,my_max),wind(nxp,my_max,lpout),cosl(my)   &
       , glob(nx,my),plev(lpout),whtlev(num),sdhat(nxp,lev,my_max)
+      real(kind=RTYPE) ut(nxp,lev,my_max),vt(nxp,lev,my_max)
 
       real      tens(lev+1),wtb(nxp,my_max),pout(nx,my),tmp(nxp,my_max)
 !
@@ -821,7 +823,8 @@ contains
 !
 ! first: do the u components
 !
-      call voterp(nx,my,my_max,lev,lpout,pk,pklp,ut,utb,pkout,wind,tens)
+      work3d=ut
+      call voterp(nx,my,my_max,lev,lpout,pk,pklp,work3d,utb,pkout,wind,tens)
 !
 !!      if( lreduce.eq.1 ) call reduceintp (utb,nxdef,nx,my)
 !
@@ -889,7 +892,8 @@ contains
 !
 !  now the v components
 !
-      call voterp(nx,my,my_max,lev,lpout,pk,pklp,vt,vtb,pkout,wind,tens)
+      work3d=vt
+      call voterp(nx,my,my_max,lev,lpout,pk,pklp,work3d,vtb,pkout,wind,tens)
 !
 !!      if( lreduce.eq.1 ) call reduceintp (vtb,nxdef,nx,my)
 !

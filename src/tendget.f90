@@ -166,9 +166,9 @@
 !                                    ut_sl,vt_sl,ttm_sl,dummy,dummy,qm_sl, &
 !                                    nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm,4)
 !#else
-      call mpe2d_transpose_ndsl_p2f(ut,ut_sl,    &
+      call mpe2d_transpose_ndsl_p2f_sp2(ut,ut_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f(vt,vt_sl,    &
+      call mpe2d_transpose_ndsl_p2f_sp2(vt,vt_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f(ttp,ttm_sl,  &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)

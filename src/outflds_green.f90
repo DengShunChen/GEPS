@@ -8,7 +8,7 @@
       use mpe
       use rank
       use index
-      use const ,only:aki,bki
+      use const ,only:aki,bki,RTYPE
 
       implicit  none
 
@@ -17,11 +17,12 @@
       real      rcp
 
       real      sgeo(nxp,my_max),pt(nxp,my_max),plt(nxp,lev,my_max)      &
-              , ut(nxp,lev,my_max),vt(nxp,lev,my_max),tt(nxp,lev,my_max) &
+              , tt(nxp,lev,my_max)                                       &
               , qt(nxp,lev*ncld,my_max),cosl(my)                         &
               , u10(nxp,my_max),v10(nxp,my_max),t2(nxp,my_max)           &
               , ss(nxp,my_max),pk(nxp,my_max),rh0(nxp,my_max)            &
               , tht(nxp,my_max),raincu6(nxp,my_max),rainlp6(nxp,my_max)
+      real(kind=RTYPE) ut(nxp,lev,my_max),vt(nxp,lev,my_max)
 
       character ifilout*80, ggdef*4, ihdg*26, ihdg2*26
       integer*8 idtg

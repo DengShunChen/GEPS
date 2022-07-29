@@ -12,7 +12,7 @@
       use mpe
       use rank
       use index
-      use const, only: rlon1, rlon2, rlat1, rlat2, rgrdsz
+      use const, only: rlon1, rlon2, rlat1, rlat2, rgrdsz, RTYPE
       implicit  none
 
       integer(kind=8)  :: idtg
@@ -23,11 +23,11 @@
               , t1000(nxp,my_max),pt(nxp,my_max),plt(nxp,lev,my_max)  &
               , pk(nxp,lev,my_max),pk2(nxp,lev,my_max)                &
               , phi(nxp,lev,my_max),tt(nxp,lev,my_max)                &
-              , ut(nxp,lev,my_max),vt(nxp,lev,my_max)                 &
               , qt(nxp,lev*ncld,my_max)                               &
               , tg(nxp,my_max),snr(nxp,my_max),cosl(my)               &
 !soil
-              , smc(nxp,km,my_max),stc(nxp,km,my_max)                 
+              , smc(nxp,km,my_max),stc(nxp,km,my_max)
+      real(kind=RTYPE) ut(nxp,lev,my_max),vt(nxp,lev,my_max)
 
       logical   land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max)
 
@@ -552,7 +552,8 @@
         if(myrank.eq.0)print*,' rsmout : start windout'
 !  yj replace windout
 ! first: do the u components
-      call voterp(nx,my,my_max,lev,lpout,plog,pllp,ut,bt1 &
+      tmp=ut
+      call voterp(nx,my,my_max,lev,lpout,plog,pllp,tmp,bt1 &
                  ,pkout,pres3d,tens)
 !      if( lreduce.eq.1 ) call reduceintp (bt1,nxdef,nx,my)
 !      do i =1,nx
@@ -599,7 +600,8 @@
         endif
       enddo  
 !  now the v components
-      call voterp(nx,my,my_max,lev,lpout,plog,pllp,vt,bt2 &
+      tmp=vt
+      call voterp(nx,my,my_max,lev,lpout,plog,pllp,tmp,bt2 &
                  ,pkout,pres3d,tens)
 !      if( lreduce.eq.1 ) call reduceintp (bt2,nxdef,nx,my)
 !

@@ -791,9 +791,9 @@
       call mpe2d_transpose_ndsl_p2f_sp2(vm,vt_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 
-      call mpe2d_transpose_ndsl_p2f(ut,uum_sl,    &
+      call mpe2d_transpose_ndsl_p2f_sp2(ut,uum_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f(vt,vvm_sl,    &
+      call mpe2d_transpose_ndsl_p2f_sp2(vt,vvm_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !!      call mpe2d_transpose_ndsl_p2f(tt,ttm_sl,    &
 !!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
@@ -875,8 +875,6 @@
       call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,plmid      &
                  ,dlpl,dtpl,nsizey)
 !
-      umtmp=um
-      vmtmp=vm
       tmtmp=tm
       do jj = 1, jlistnum
         j=jlist1(jj)
@@ -884,7 +882,7 @@
 !
         call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld               &
 !byl        call gridnl_hybrid_ndsl (nxjp(j),nxp,lev,ncld                  &
-        , cp,radsq,umtmp(1,1,jj),vmtmp(1,1,jj),rdivm(1,1,jj),tmtmp(1,1,jj) &
+        , cp,radsq,um(1,1,jj),vm(1,1,jj),rdivm(1,1,jj),tmtmp(1,1,jj)    &
         , qt(1,1,jj),phi(1,1,jj),ptm(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
         , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)         &
         , diveng(1,1,jj),vdmerdg(1,1,jj),vdzonlg(1,1,jj),pten(1,1,jj)  &
@@ -949,9 +947,7 @@
 !     update all new wind field at mid-point
 !
       call tranuv(jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac    &
-                 ,poly,dpoly,vormid,divmid,umtmp,vmtmp,nsizey)
-      um=umtmp
-      vm=vmtmp
+                 ,poly,dpoly,vormid,divmid,um,vm,nsizey)
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divmid,cc,1,nsizey)
       call ujoinsr(cc,rdivm,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
 !      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temmid,cc,1,nsizey)
@@ -963,8 +959,6 @@
 !  these non-linear contributions are then combined in 'rstran' using
 !  the symmetry properties of the spherical harmonics
 !
-      umtmp=um
-      vmtmp=vm
       tmtmp=tm
       do jj = 1, jlistnum
 
@@ -981,7 +975,7 @@
 !
 !!        call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld              &
         call gridnl_hybrid_ndsl (nxjp(j),nxp,lev,ncld                   &
-        , cp,radsq,umtmp(1,1,jj),vmtmp(1,1,jj),rdivm(1,1,jj),tmtmp(1,1,jj) &
+        , cp,radsq,um(1,1,jj),vm(1,1,jj),rdivm(1,1,jj),tmtmp(1,1,jj)    &
         , qp(1,1,jj),phi(1,1,jj),ptm(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
         , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)          &
         , diveng(1,1,jj),vdmerdg(1,1,jj),vdzonlg(1,1,jj),pten(1,1,jj)   &
@@ -1017,9 +1011,9 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f_sp2(vm,vt_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f_sp(ut,uum_sl,    &
+      call mpe2d_transpose_ndsl_p2f_sp2(ut,uum_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f_sp(vt,vvm_sl,    &
+      call mpe2d_transpose_ndsl_p2f_sp2(vt,vvm_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f_sp(tt,ttm_sl,  &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
