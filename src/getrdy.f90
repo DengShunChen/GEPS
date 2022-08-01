@@ -55,8 +55,7 @@
                 rh2100(nxp,my_max),rh10100(nxp,my_max),         &
                 wk1(nxp,lev,my_max),pklev(nxp,my_max),          &
                 ww3(nx,my_max)
-      real(kind=RTYPE) cc(nx+2,levp,1,my_max),dummy,            &
-                       tmp1(nxp,lev,my_max),tmp2(nxp,lev,my_max)
+      real(kind=RTYPE) cc(nx+2,levp,1,my_max),dummy
 !byl                wss3(levp,2,3,jtrun,jtmax),cc3(nx+2,levp,3,my_max)
 
       character lrec*26,rfile*55,ctau*6,topostd*4,topohgt*4,key*34
@@ -709,8 +708,7 @@
 !                 ,wss,1+ncld,nsizey)
 !      call ujoinrs(wss,temnow,qnow,dummy,dummy,jtrun,jtmax,levp &
 !byl                 ,mlistnum,2,ncld)
-      tmp1=tt
-      call joinrs(cc,tmp1,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      call joinrs(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc  &
                  ,temnow,1,nsizey)
       call mpe2d_unify_nx(ww3,pt) !2dMPI
@@ -720,9 +718,7 @@
 !
 !  compute vorticity and divergence from u and v
 !
-      tmp1=ut
-      tmp2=vt
-      call trandv ( jtrun,jtmax,nx,my,my_max,lev,tmp1,tmp2,weight,cim &
+      call trandv ( jtrun,jtmax,nx,my,my_max,lev,ut,vt,weight,cim &
                    ,onocos,poly,dpoly,vornow,divnow,nsizey)
 !
 !  set both time levels equal at tau=0
@@ -874,8 +870,7 @@
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divnow,cc,1,nsizey)
       call ujoinsr(cc,rdiv,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temnow,cc,1,nsizey)
-      call ujoinsr(cc,tmp1,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-      tt=tmp1
+      call ujoinsr(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       call transr1(jtrun,jtmax,nx,my,my_max,poly,plnow,pt,nsizey)
 !
       do 160 jj = 1, jlistnum

@@ -44,7 +44,7 @@
 
       logical cstar
       real      weight(my),poly(jtrun,jtmax,my/2),sigma(lev+1,2)                &
-              , cosl(my),phi(nxp,lev,my_max),tt(nxp,lev,my_max)         &
+              , cosl(my),phi(nxp,lev,my_max)                            &
               , pk(nxp,lev,my_max)                                      &
               , pt(nxp,my_max),sgeo(nxp,my_max),pdiff(nxp,my_max),t1000(nxp,my_max) &
               , tsave(nxp,my_max),plt(nxp,lev,my_max),pk2(nxp,lev,my_max)&
@@ -60,8 +60,9 @@
                hld4(nx,levp,ncld,my_max),utmp(nxp,lev),vtmp(nxp,lev)
       real      puvphi(26)
 !
-      real(kind=RTYPE) cc(nx+2,levp,1+ncld,my_max),temp(nxp,lev,my_max)&
-               ,       ut(nxp,lev,my_max),vt(nxp,lev,my_max)
+      real(kind=RTYPE) cc(nx+2,levp,1+ncld,my_max)                     &
+               ,       ut(nxp,lev,my_max),vt(nxp,lev,my_max)           &
+               ,       tt(nxp,lev,my_max)
       real      wss(levp,2,1+ncld,jtrun,jtmax)
       real      work_pr1(lev), work_pr2(lev), work_pr3(lev)
 !
@@ -156,8 +157,9 @@
        do 71 i = 1, nxj
          hld3(i,k,jj) = hld1(i,j)
   71  continue
-      call mpe2d_transpose_ndsl_f2p(hld3,tt, &
+      call mpe2d_transpose_ndsl_f2p(hld3,tmp, &
             nxp,nx,levf,levp,1,myf,my_max,jlistnum,jlen,nsizex,row_comm)
+      tt=tmp
 !
 !  read in q at sigma levels
 !
@@ -299,12 +301,10 @@
       
 !----
       if( lreduce.eq.1 )then
-      temp=tt
-      call joinrs(cc,temp,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      call joinrs(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc,trefs,1,nsizey)
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,trefs,cc,1,nsizey)
-      call ujoinsr(cc,temp,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-      tt=temp
+      call ujoinsr(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       endif
 !------
 !
@@ -452,8 +452,7 @@
 !     enddo
 !
 !!    qrefs=0.0
-      temp=ut
-      call joinrs(cc,temp,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      call joinrs(cc,ut,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc,trefs,1,nsizey)
 
 !

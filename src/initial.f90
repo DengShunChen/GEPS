@@ -30,7 +30,7 @@
       integer   nw(jtrun,jtmax)
       real(kind=RTYPE) phiten(levp,2,jtrun,jtmax),dummy
       real      wk(no*no),wc(no*2),wd(no*2),ew(no*no)
-      real(kind=RTYPE) cc(nx+2,levp,1,my_max),temp(nxp,lev,my_max)
+      real(kind=RTYPE) cc(nx+2,levp,1,my_max)
 !byl      real      cc(nx+2,levp,3,my_max),wss(levp,2,3,jtrun,jtmax)
       real      bal_tmp(jtrun)
       character lab*10,lrec*16
@@ -284,8 +284,7 @@
         call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divnow,cc,1,nsizey)
         call ujoinsr(cc,rdiv,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
         call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temnow,cc,1,nsizey)
-        call ujoinsr(cc,temp,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-        tt=temp
+        call ujoinsr(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
         call transr1(jtrun,jtmax,nx,my,my_max,poly,plnow,pt,nsizey)
 !
 !  compute zonal and meridional gradients of terrain pressure

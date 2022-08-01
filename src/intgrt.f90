@@ -62,7 +62,7 @@
       real      deldm(nxp,my_max),ddtemp_r8(nxp,lev,my_max),       &
                 vdmerd_r8(nxp,lev,my_max),vdzonl_r8(nxp,lev,my_max),&
                 ptm(nxp,my_max),umtmp(nxp,lev,my_max),             &
-                vmtmp(nxp,lev,my_max),tmtmp(nxp,lev,my_max)
+                vmtmp(nxp,lev,my_max)
 !
       real(kind=RTYPE) ndsldta,ndsldtah,facm(2,2),                 &
                 diveng(nxp,lev,my_max),                            &
@@ -795,7 +795,7 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f_sp2(vt,vvm_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-!!      call mpe2d_transpose_ndsl_p2f(tt,ttm_sl,    &
+!!      call mpe2d_transpose_ndsl_p2f_sp2(tt,ttm_sl,    &
 !!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !
 !      do itt = 1,itter
@@ -875,14 +875,13 @@
       call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,plmid      &
                  ,dlpl,dtpl,nsizey)
 !
-      tmtmp=tm
       do jj = 1, jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
 !
         call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld               &
 !byl        call gridnl_hybrid_ndsl (nxjp(j),nxp,lev,ncld                  &
-        , cp,radsq,um(1,1,jj),vm(1,1,jj),rdivm(1,1,jj),tmtmp(1,1,jj)    &
+        , cp,radsq,um(1,1,jj),vm(1,1,jj),rdivm(1,1,jj),tm(1,1,jj)       &
         , qt(1,1,jj),phi(1,1,jj),ptm(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
         , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)         &
         , diveng(1,1,jj),vdmerdg(1,1,jj),vdzonlg(1,1,jj),pten(1,1,jj)  &
@@ -959,7 +958,6 @@
 !  these non-linear contributions are then combined in 'rstran' using
 !  the symmetry properties of the spherical harmonics
 !
-      tmtmp=tm
       do jj = 1, jlistnum
 
         j=jlist1(jj)
@@ -975,7 +973,7 @@
 !
 !!        call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld              &
         call gridnl_hybrid_ndsl (nxjp(j),nxp,lev,ncld                   &
-        , cp,radsq,um(1,1,jj),vm(1,1,jj),rdivm(1,1,jj),tmtmp(1,1,jj)    &
+        , cp,radsq,um(1,1,jj),vm(1,1,jj),rdivm(1,1,jj),tm(1,1,jj)       &
         , qp(1,1,jj),phi(1,1,jj),ptm(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
         , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)          &
         , diveng(1,1,jj),vdmerdg(1,1,jj),vdzonlg(1,1,jj),pten(1,1,jj)   &
@@ -1011,11 +1009,11 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f_sp2(vm,vt_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f_sp2(ut,uum_sl,    &
+      call mpe2d_transpose_ndsl_p2f_sp2(ut,uum_sl,   &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f_sp2(vt,vvm_sl,    &
+      call mpe2d_transpose_ndsl_p2f_sp2(vt,vvm_sl,   &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f_sp(tt,ttm_sl,  &
+      call mpe2d_transpose_ndsl_p2f_sp2(tt,ttm_sl,   &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !!      call mpe2d_transpose_ndsl_p2f_sp(pten,pten_sl, &
 !!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
@@ -1369,8 +1367,7 @@
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divnow,cc,1,nsizey)
       call ujoinsr(cc,rdiv,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temnow,cc,1,nsizey)
-      call ujoinsr(cc,tmp,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-      tt=tmp
+      call ujoinsr(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       call transr1(jtrun,jtmax,nx,my,my_max,poly,plnow,pt,nsizey)
 !
 !   computing new p**capa quantities

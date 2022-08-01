@@ -14,11 +14,11 @@
                            pdiff,ptend,t1000,tsave,std,ptp
 
       real, dimension(:,:,:),allocatable,save :: sd,                &
-                           tt,qt,phi,plt,pk,pk2,up,vp,ttp,qp
+                           qt,phi,plt,pk,pk2,up,vp,ttp,qp
 !! for Semi-Lagrangian
       real(kind=RTYPE), dimension(:,:),allocatable,save :: dlpl,dtpl
       real(kind=RTYPE), dimension(:,:,:),allocatable,save ::        &
-                           ut,vt,                                   &
+                           ut,vt,tt,                                &
                            ut_sl,vt_sl,dlphi,dtphi,rvor,rdiv
 
 !!                             ut_sl,vt_sl,uum_sl,vvm_sl,ttm_sl
