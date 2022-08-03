@@ -401,9 +401,10 @@ subroutine gfdl_cloud_microphys_driver                                    &
     integer :: ks, ke !< vertical dimension
     integer :: days, ntimes, kflip
     
-    real, dimension (iie - iis + 1, jje - jjs + 1) :: prec_mp, prec1, cond, w_var, rh0
+    real, dimension (iie - iis + 1, jje - jjs + 1) :: prec_mp, prec1, cond, rh0
+!    real, dimension (iie - iis + 1, jje - jjs + 1) :: w_var
     
-    real, dimension (iie - iis + 1, jje - jjs + 1, kke - kks + 1) :: vt_r, vt_s, vt_g, vt_i, qn2
+!    real, dimension (iie - iis + 1, jje - jjs + 1, kke - kks + 1) :: vt_r, vt_s, vt_g, vt_i, qn2
     
     real, dimension (size (pt, 1), size (pt, 3)) :: m2_rain, m2_sol
 
@@ -484,14 +485,14 @@ subroutine gfdl_cloud_microphys_driver                                    &
     ! -----------------------------------------------------------------------
     ! major cloud microphysics
     ! -----------------------------------------------------------------------
-    
+
     do j = js, je
         call mpdrv (hydrostatic, uin, vin, w, delp, pt, qv, ql, qr, qi, qs, qg,&
             qa, qn, dz, is, ie, js, je, ks, ke, ktop, kbot, j, dt_in, ntimes,  &
             rain (:, j), snow (:, j), graupel (:, j), ice (:, j), m2_rain,     &
             m2_sol, cond (:, j), area (:, j), land (:, j), udt, vdt, pt_dt,    &
-            qv_dt, ql_dt, qr_dt, qi_dt, qs_dt, qg_dt, qa_dt, w_var, vt_r,      &
-            vt_s, vt_g, vt_i, qn2)
+            qv_dt, ql_dt, qr_dt, qi_dt, qs_dt, qg_dt, qa_dt )
+!            , w_var, vt_r, vt_s, vt_g, vt_i, qn2)
     enddo
     
     ! -----------------------------------------------------------------------
@@ -680,8 +681,8 @@ end subroutine gfdl_cloud_microphys_driver
 subroutine mpdrv (hydrostatic, uin, vin, w, delp, pt, qv, ql, qr, qi, qs,     &
         qg, qa, qn, dz, is, ie, js, je, ks, ke, ktop, kbot, j, dt_in, ntimes, &
         rain, snow, graupel, ice, m2_rain, m2_sol, cond, area1, land,         &
-        u_dt, v_dt, pt_dt, qv_dt, ql_dt, qr_dt, qi_dt, qs_dt, qg_dt, qa_dt,   &
-        w_var, vt_r, vt_s, vt_g, vt_i, qn2)
+        u_dt, v_dt, pt_dt, qv_dt, ql_dt, qr_dt, qi_dt, qs_dt, qg_dt, qa_dt)
+!       , w_var, vt_r, vt_s, vt_g, vt_i, qn2)
     
     implicit none
     
@@ -703,9 +704,9 @@ subroutine mpdrv (hydrostatic, uin, vin, w, delp, pt, qv, ql, qr, qi, qs,     &
     
     real, intent (inout), dimension (is:) :: rain, snow, ice, graupel, cond
     
-    real, intent (out), dimension (is:, js:) :: w_var
+!    real, intent (out), dimension (is:, js:) :: w_var
     
-    real, intent (out), dimension (is:, js:, ks:) :: vt_r, vt_s, vt_g, vt_i, qn2
+!    real, intent (out), dimension (is:, js:, ks:) :: vt_r, vt_s, vt_g, vt_i, qn2
     
     real, intent (out), dimension (is:, ks:) :: m2_rain, m2_sol
     
