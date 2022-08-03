@@ -231,7 +231,7 @@
         sedi_w = .false.
 
         do i = 1, nxj
-          if( islimsk(i) == 1 ) frland(i,1) = 1.  !land fraction
+          if( islimsk(i) .eq. 1 ) frland(i,1) = 1.  !land fraction
         enddo
          
         do k = 1, lev
@@ -270,7 +270,7 @@
                   dz, delp, area, dta, frland,                          &
                   rain0, snow0, ice0, graupel0,                         &
                   hydrostatic, phys_hydrostatic,                        &
-                  1, nx, 1, 1, 1, lev, 1, lev )
+                  1, nxj, 1, 1, 1, lev, 1, lev )
 
         do k = 1, lev
           do i = 1, nxj
@@ -308,7 +308,7 @@
           call cloud_diagnosis                                          &
 !               ( 1, nx, 1, lev, rho, qtr, qti, qtrw, qtsw, qtgl, tt,    &  ! module_mp_gfdl_fv3.f90
 !                 rew, rei, rer, res, reg )
-               ( 1, nx, 1, lev, rho, dp, islimsk,                       &  ! module_mp_gfdl_fv3_v16.f90
+               ( 1, nxj, 1, lev, rho, dp, islimsk,                      &  ! module_mp_gfdl_fv3_v16.f90
                  qtr, qti, qtrw, qtsw, qtgl, tt,                        &
                  rew, rei, rer, res, reg )
           do k = 1, lev
@@ -324,13 +324,13 @@
         endif
 !
         do i = 1, nxj
-          if ( rain0(i,1)    < rainmin ) rain0(i,1)    = 0.0 
-          if ( ice0(i,1)     < rainmin ) ice0(i,1)     = 0.0
-          if ( snow0(i,1)    < rainmin ) snow0(i,1)    = 0.0
-          if ( graupel0(i,1) < rainmin ) graupel0(i,1) = 0.0
+          if ( rain0(i,1)    .lt. rainmin ) rain0(i,1)    = 0.0
+          if ( ice0(i,1)     .lt. rainmin ) ice0(i,1)     = 0.0
+          if ( snow0(i,1)    .lt. rainmin ) snow0(i,1)    = 0.0
+          if ( graupel0(i,1) .lt. rainmin ) graupel0(i,1) = 0.0
 
           rlsp(i) = rain0(i,1)+snow0(i,1)+ice0(i,1)+graupel0(i,1)  !total large scale precipitation (mm)
-          if ( rlsp(i) > rainmin ) then                         
+          if ( rain0(i,1)+snow0(i,1)+ice0(i,1)+graupel0(i,1) .gt. rainmin ) then
             sr(i) = (snow0(i,1)+ice0(i,1)+graupel0(i,1))/rlsp(i)   !snow ratio
           else
             sr(i) = 0.0

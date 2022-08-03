@@ -34,7 +34,7 @@
 ! developer: shian-jiann lin, linjiong zhou
 ! =======================================================================
 
-module module_mp_gfdl
+module module_mp_gfdl_v15
     
     ! use mpp_mod, only: stdlog, mpp_pe, mpp_root_pe, mpp_clock_id, &
     ! mpp_clock_begin, mpp_clock_end, clock_routine, &
@@ -4742,4 +4742,4 @@ subroutine cloud_diagnosis                                              &
     
 end subroutine cloud_diagnosis
 
-end module module_mp_gfdl
+end module module_mp_gfdl_v15
