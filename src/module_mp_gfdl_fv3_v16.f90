@@ -140,7 +140,6 @@ module module_mp_gfdl
     integer :: irain_f = 0 !< cloud water to rain auto conversion scheme
     
     logical :: de_ice = .false. !< to prevent excessive build - up of cloud ice from external sources
-!    logical :: de_ice = .true. !< to prevent excessive build - up of cloud ice from external sources
     logical :: sedi_transport = .true. !< transport of momentum in sedimentation
     logical :: do_sedi_w = .false. !< transport of vertical motion in sedimentation
     logical :: do_sedi_heat = .true. !< transport of heat in sedimentation
@@ -149,12 +148,10 @@ module module_mp_gfdl
     logical :: rad_snow = .true. !< consider snow in cloud fraciton calculation
     logical :: rad_graupel = .true. !< consider graupel in cloud fraction calculation
     logical :: rad_rain = .true. !< consider rain in cloud fraction calculation
-!    logical :: fix_negative = .false. !< fix negative water species
-    logical :: fix_negative = .true. !< fix negative water species
+    logical :: fix_negative = .false. !< fix negative water species
     logical :: do_setup = .true. !< setup constants and parameters
     logical :: p_nonhydro = .false. !< perform hydrosatic adjustment on air density
     logical :: do_melt = .false. !< terminal fall with melting
-!    logical :: do_melt = .true. !< terminal fall with melting
     
     real, allocatable :: table (:), table2 (:), table3 (:), tablew (:)
     real, allocatable :: des (:), des2 (:), des3 (:), desw (:)
@@ -292,7 +289,6 @@ module module_mp_gfdl
     logical :: z_slope_ice = .false. !< use linear mono slope for autocconversions
     logical :: use_ccn = .false. !< must be true when prog_ccn is false
     logical :: use_ppm = .false. !< use ppm fall scheme
-!    logical :: use_ppm = .true. !< use piecewise parabolic method (PPM) for the falling condensates
     logical :: mono_prof = .true. !< perform terminal fall with mono ppm scheme
     logical :: mp_print = .false. !< cloud microphysics debugging printout
     
@@ -401,10 +397,9 @@ subroutine gfdl_cloud_microphys_driver                                    &
     integer :: ks, ke !< vertical dimension
     integer :: days, ntimes, kflip
     
-    real, dimension (iie - iis + 1, jje - jjs + 1) :: prec_mp, prec1, cond, rh0
-!    real, dimension (iie - iis + 1, jje - jjs + 1) :: w_var
+    real, dimension (iie - iis + 1, jje - jjs + 1) :: prec_mp, prec1, cond, w_var, rh0
     
-!    real, dimension (iie - iis + 1, jje - jjs + 1, kke - kks + 1) :: vt_r, vt_s, vt_g, vt_i, qn2
+    real, dimension (iie - iis + 1, jje - jjs + 1, kke - kks + 1) :: vt_r, vt_s, vt_g, vt_i, qn2
     
     real, dimension (size (pt, 1), size (pt, 3)) :: m2_rain, m2_sol
 
@@ -491,8 +486,8 @@ subroutine gfdl_cloud_microphys_driver                                    &
             qa, qn, dz, is, ie, js, je, ks, ke, ktop, kbot, j, dt_in, ntimes,  &
             rain (:, j), snow (:, j), graupel (:, j), ice (:, j), m2_rain,     &
             m2_sol, cond (:, j), area (:, j), land (:, j), udt, vdt, pt_dt,    &
-            qv_dt, ql_dt, qr_dt, qi_dt, qs_dt, qg_dt, qa_dt )
-!            , w_var, vt_r, vt_s, vt_g, vt_i, qn2)
+            qv_dt, ql_dt, qr_dt, qi_dt, qs_dt, qg_dt, qa_dt, w_var, vt_r,      &
+            vt_s, vt_g, vt_i, qn2)
     enddo
     
     ! -----------------------------------------------------------------------
@@ -681,8 +676,8 @@ end subroutine gfdl_cloud_microphys_driver
 subroutine mpdrv (hydrostatic, uin, vin, w, delp, pt, qv, ql, qr, qi, qs,     &
         qg, qa, qn, dz, is, ie, js, je, ks, ke, ktop, kbot, j, dt_in, ntimes, &
         rain, snow, graupel, ice, m2_rain, m2_sol, cond, area1, land,         &
-        u_dt, v_dt, pt_dt, qv_dt, ql_dt, qr_dt, qi_dt, qs_dt, qg_dt, qa_dt)
-!       , w_var, vt_r, vt_s, vt_g, vt_i, qn2)
+        u_dt, v_dt, pt_dt, qv_dt, ql_dt, qr_dt, qi_dt, qs_dt, qg_dt, qa_dt,   &
+        w_var, vt_r, vt_s, vt_g, vt_i, qn2)
     
     implicit none
     
@@ -704,9 +699,9 @@ subroutine mpdrv (hydrostatic, uin, vin, w, delp, pt, qv, ql, qr, qi, qs,     &
     
     real, intent (inout), dimension (is:) :: rain, snow, ice, graupel, cond
     
-!    real, intent (out), dimension (is:, js:) :: w_var
+    real, intent (out), dimension (is:, js:) :: w_var
     
-!    real, intent (out), dimension (is:, js:, ks:) :: vt_r, vt_s, vt_g, vt_i, qn2
+    real, intent (out), dimension (is:, js:, ks:) :: vt_r, vt_s, vt_g, vt_i, qn2
     
     real, intent (out), dimension (is:, ks:) :: m2_rain, m2_sol
     
