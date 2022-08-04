@@ -41,6 +41,7 @@
       use rank
       use index
       use mo_constants, only:alv
+      use const, only:RTYPE
 !
       implicit none
 !c input & output variable
@@ -48,12 +49,13 @@
 !      integer nx,lev,ncld,j,jj
       integer nx,nxj,lev,ncld,j,jj
       integer kcbot(nx),kctop(nx)
-      real*8 topo(nx),phi(nx,lev)                                     &
-          , u(nx,lev),v(nx,lev),t(nx,lev),q(nx,lev*ncld)             &
-          , ut(nx,lev),vt(nx,lev),tt(nx,lev),qt(nx,lev*ncld)         &
+      real  topo(nx),phi(nx,lev)                                     &
+          , u(nx,lev),v(nx,lev),t(nx,lev)                            &
+          , ut(nx,lev),vt(nx,lev),tt(nx,lev)                         &
           , qflux(nx),sd(nx,lev)                                     &
           , pk(nx,lev),pk2(nx,lev)                                   &
           , sigma(lev+1,2),plt(nx,lev),pt(nx)
+      real(kind=RTYPE) q(nx,lev*ncld),qt(nx,lev*ncld)
 !c
 !c
 !c  local work arrays

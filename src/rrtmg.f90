@@ -32,6 +32,7 @@
       use rank
       use index
       use radn
+      use const, only: RTYPE
 ! -------------------------------------------------------------------
 ! --- for rrtmg input :
 !
@@ -40,7 +41,8 @@
 ! --- 3d parameters
 !
       real    sigma(lev+1,2),pst(nx),plt(nx,lev),std(nx),tg(nx),  &
-              tt(nx,lev),qt(nx,lev*ncld),o3l(nx,lev),sd(nx,lev)
+              tt(nx,lev),o3l(nx,lev),sd(nx,lev)
+      real(kind=RTYPE)    qt(nx,lev*ncld)
 !
 ! --- 2d parameters
 !

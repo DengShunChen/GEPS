@@ -48,7 +48,6 @@
               , pk(nxp,lev,my_max)                                      &
               , pt(nxp,my_max),sgeo(nxp,my_max),pdiff(nxp,my_max),t1000(nxp,my_max) &
               , tsave(nxp,my_max),plt(nxp,lev,my_max),pk2(nxp,lev,my_max)&
-              , sht(nxp,lev*ncld,my_max)                                    &
               , o3l(nxp,lev,my_max),tmp(nxp,lev,my_max)
       character*4 ggdef,gmdef
 !
@@ -57,12 +56,13 @@
       real      preplt(nx,lmax+2),prett(nx,lmax+2),hld1(nx,my)         &
                ,plog(nx,lev),hld2(nx,my),anlslp(nx,my),hkd1(nx,lev),ut_tmp(nx,lev)
       real     tens(lmax+2),tstd(lmax),hld3(nx,levp,my_max),           &
-               hld4(nx,levp,ncld,my_max),utmp(nxp,lev),vtmp(nxp,lev)
+               utmp(nxp,lev),vtmp(nxp,lev)
       real      puvphi(26)
 !
       real(kind=RTYPE) cc(nx+2,levp,1+ncld,my_max)                     &
                ,       ut(nxp,lev,my_max),vt(nxp,lev,my_max)           &
-               ,       tt(nxp,lev,my_max)
+               ,       tt(nxp,lev,my_max),sht(nxp,lev*ncld,my_max)
+      real(kind=RTYPE) hld4(nx,levp,ncld,my_max)
       real      wss(levp,2,1+ncld,jtrun,jtmax)
       real      work_pr1(lev), work_pr2(lev), work_pr3(lev)
 !
@@ -294,7 +294,7 @@
       endif
 !
       endif    ! end of if(ncld.ge.2)
-      call mpe2d_transpose_ndsl_f2p(hld4,sht, &
+      call mpe2d_transpose_ndsl_f2p_sp2(hld4,sht, &
             nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_f2p(hld3,o3l, &
             nxp,nx,levf,levp,1,myf,my_max,jlistnum,jlen,nsizex,row_comm)

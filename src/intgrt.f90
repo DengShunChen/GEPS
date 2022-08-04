@@ -188,7 +188,6 @@
 !CWB2021 ndsl single precision test
       real(kind=RTYPE)                                            &
           ptm_sp(nxp,my_max),                                     &
-          qt_sp(nxp,lev*ncld,my_max),                             &
           pdot(nxp,lev+1,latpart)
 
 
@@ -1017,7 +1016,7 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !!      call mpe2d_transpose_ndsl_p2f_sp(pten,pten_sl, &
 !!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f_sp(qp,qm_sl,    &
+      call mpe2d_transpose_ndsl_p2f_sp2(qp,qm_sl,    &
                                     nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !#endif
 
@@ -1045,13 +1044,13 @@
 !#else
       call mpe2d_transpose_ndsl_f2p_sp2(ttm_sl,ddtemp, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_f2p_sp2(pten_sl,pten,     &
+      call mpe2d_transpose_ndsl_f2p_sp2(pten_sl,pten,  &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_f2p_sp2(uum_sl,vdzonl, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_f2p_sp2(vvm_sl,vdmerd, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_f2p_sp(qm_sl,qt,   &
+      call mpe2d_transpose_ndsl_f2p_sp2(qm_sl,qt,      &
                                     nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !#endif
 !
@@ -1076,17 +1075,15 @@
       call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlrp,vdmerdrp,ndsldta)
 
 !CWB2021 ndsl single precision test
-      qt_sp=qt
       ptm_sp=ptm
 !
 !       Vertical Advection
 !
 !       call ndslfv_monoadvv(ddtemp,qt,vdzonl,vdmerd,pdot,ptm      &
-        call ndslfv_monoadvv(ddtemp,qt_sp,vdzonl,vdmerd,pdot,ptm_sp &
+        call ndslfv_monoadvv(ddtemp,qt,vdzonl,vdmerd,pdot,ptm_sp &
                             ,nxjp,ndsldta)
 
 !CWB2021 ndsl single precision test
-      qt=qt_sp
       ptm=ptm_sp
 
 !

@@ -65,6 +65,7 @@
                                      cloud_diagnosis
       use physcons,            only: con_rd,con_fvirt,con_g
       use physpara,            only: effr_in
+      use const,               only: RTYPE
 
       implicit none
 
@@ -74,15 +75,17 @@
       integer,  intent(in)    :: islimsk(nx)
       real,     intent(in)    :: tpi,dta,jj
       real,     intent(in)    :: plt(nx,lev),pst(nx),dsigma(lev,2),    &
-                                 phii(nx,lev+1),q0(nx,lev*ncld)!,       &
+                                 phii(nx,lev+1)!,       &
 !                                 prsi(nx,lev+1)
       real,     intent(in)    :: area(nx,1)  ! area of grid box (m^2)
 !      real,     intent(in)    :: sd(nx,lev+1)
       real,     intent(inout) :: sd(nx,lev+1)
+      real(kind=RTYPE), intent(in):: q0(nx,lev*ncld)
 !  ---  inputs/outputs:
-      real,     intent(inout) :: tt(nx,lev),qt(nx,lev*ncld)
+      real,     intent(inout) :: tt(nx,lev)
       real,     intent(inout) :: qa(nx,lev)  ! only changed in GFDL MP
       real,     intent(inout) :: ut(nx,lev),vt(nx,lev)
+      real(kind=RTYPE), intent(inout):: qt(nx,lev*ncld)
 !  ---  outputs:
       real,     intent(inout)   :: re_cloud(nx,lev),re_ice(nx,lev),    &
                                    re_snow(nx,lev),re_rain(nx,lev)

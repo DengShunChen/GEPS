@@ -82,6 +82,8 @@
 !                                                                      c
 !######################################################################c
 !
+      use const, only: RTYPE
+!
       implicit none
       integer, parameter :: ibsl = 11, ibir = 12 
 !
@@ -97,7 +99,8 @@
 
       integer il(nx),ib(lvlw)
 
-      real    o3lx(nx,lev),qtx(nx,lev*ncld)
+      real    o3lx(nx,lev)
+      real(kind=RTYPE) qtx(nx,lev*ncld)
 !
 !  clear part
 !

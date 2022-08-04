@@ -42,6 +42,7 @@
 
 !ch>
       use index, only : nxdef
+      use const, only : RTYPE
 !ch<
 
       implicit  none
@@ -49,9 +50,10 @@
       integer   j,nxj,nx,lev
       real      dt,grav,rgas,sinl,cosl,cp
 
-      real      t(nx,lev),q(nx,lev),plt(nx,lev),u(nx,lev),v(nx,lev),    &
+      real      t(nx,lev),plt(nx,lev),u(nx,lev),v(nx,lev),    &
                 pk(nx,lev),pk2(nx,lev),hi(nx,lev),                      &
                 avgdrag_u(lev),avgdrag_v(lev)
+      real(kind=RTYPE) q(nx,lev)
 
 ! local array
       integer,  parameter :: nc=20,nphi=4

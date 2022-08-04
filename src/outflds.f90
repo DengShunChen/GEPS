@@ -33,7 +33,7 @@
               , sd(nxp,lev,my_max)                                                  &
 !              , qt(nxp,lev*ncld,my_max),rdiv(nxp,lev,my_max)                        &
 !              , rvor(nxp,lev,my_max),tg(nxp,my_max),gwet(nxp,my_max)                &
-              , qt(nxp,lev*ncld,my_max),tg(nxp,my_max),gwet(nxp,my_max)             &
+              , tg(nxp,my_max),gwet(nxp,my_max)                                     &
               , z0(nxp,my_max),hflux(nxp,my_max),qflux(nxp,my_max),snr(nxp,my_max)  &
               , raincu(nxp,my_max),rainlp(nxp,my_max),plcl(nxp,my_max),cumtop(nxp,my_max) &
               , ss(nxp,my_max),rs(nxp,my_max),alb(nxp,my_max),gwclim(nxp,my_max)    &
@@ -56,7 +56,8 @@
               , typtrk(nxp,my_max,5)
       real(kind=RTYPE) rdiv(nxp,lev,my_max),rvor(nxp,lev,my_max)    &
                      , ut(nxp,lev,my_max),vt(nxp,lev,my_max)        &
-                     , tt(nxp,lev,my_max)
+                     , tt(nxp,lev,my_max),qt(nxp,lev*ncld,my_max)   &
+                     , sht(nxp,lev*ncld,my_max)
 !
       character ifilout*80, ggdef*4
       integer*8 idtg
@@ -77,7 +78,7 @@
 !             , pres3d(nx,my,lpout)
               , pres3d(nxp,my_max,lpout)
 !
-      real      sht(nxp,lev*ncld,my_max),sdhat(nxp,lev,my_max)
+      real      sdhat(nxp,lev,my_max)
 !
       real      wk_xy(nxp,my_max,12)   ! the last dim is changable
 !

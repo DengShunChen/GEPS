@@ -156,6 +156,7 @@
       use rank
       use index
       use radn,   only:ntcw,ntiw,ntinc,ntoz,ntrw,ntsw,ntgl
+      use const,  only:RTYPE 
 !ch   use paramt
 
 !
@@ -169,13 +170,14 @@
       integer  imx(2),itstp
 
       real     tg(nx),z0(nx),topo(nx),pss(nx),                             &
-               phi(nx,lev),u(nx,lev),v(nx,lev),t(nx,lev),q(nx,lev*ncld),   &
-               ut(nx,lev),vt(nx,lev),tt(nx,lev),qt(nx,lev*ncld),ustar(nx), &
+               phi(nx,lev),u(nx,lev),v(nx,lev),t(nx,lev),                  &
+               ut(nx,lev),vt(nx,lev),tt(nx,lev),qtd(nx,lev),ustar(nx),     &
                tstar(nx),qstar(nx),e(nx,lev),eps(nx,lev),hflux(nx),        &
                qflux(nx),pk(nx,lev),pk2(nx,lev),gwclim(nx),                &
                tgclim(nx),snr(nx),totalp(nx),                              &
                ss(nx),rs(nx),alb(nx),xkmx(2),xkmd(lev),                    &
                t2(nx),u10(nx),v10(nx)
+      real(kind=RTYPE) qt(nx,lev*ncld),q(nx,lev*ncld)
 !soil
       real     smc(nx,km),stc(nx,km),canopy(nx),sigmaf(nx),                &
                rld(nx),runoff(nx)
@@ -274,6 +276,7 @@
       if ( nmmiph .eq. 6 ) ntrac=ncld-3
       if ( nmmiph .eq. 8 ) ntrac=ncld-4
       if ( nmmiph .eq.11 ) ntrac=7
+
       allocate(q1(nx,lev,ntrac))
 !
 ! --- ensure ktpbl selection is greater than 2
@@ -453,7 +456,8 @@
          srflag(i)=1.
        endif
        enddo
-
+      qtd(:,1:lev)=qt(:,1:lev)
+    
 !.............................................
 ! loop needed to remove unstable in calm situation (sfcw < 2m/s)
 !............................................
@@ -461,7 +465,7 @@
 !
 !surface exchange coefficient
 !
-      call sfc_diff(nxj,nx,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev), &
+      call sfc_diff(nxj,nx,psi,ut(1,lev),vt(1,lev),tt(1,lev),qtd(1,lev),&
 !                    tg,z0rl,cd,cdq,rb,                                  &
 !                    rcl,prsl(1,1),work1,slmsk,                          &
 !                    ustar,sfcw,phy_f2d,fm10,fh2,                        &
@@ -486,7 +490,7 @@
 !                     tg,qsurf,evapc,gfx,cd,cdq,rcl,prsl(1,1),work1,     &
 !                     slmsk,qflux,hflux,ep1d,phy_f2d,                    &
 !                     flag_iter)
-      call sfc_ocean(nxj,nx,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev), &
+      call sfc_ocean(nxj,nx,psi,ut(1,lev),vt(1,lev),tt(1,lev),qtd(1,lev),&
                      tg,cd,cdq,prsl1,prslki,islmsk,ddvel,flag_iter,      &
                      qsurf,gfx,qflux,hflux,ep1d)
 !
@@ -510,7 +514,7 @@
 !     enddo
 !     endif
 !
-!      call sfc_drv(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev), &
+!      call sfc_drv(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qtd(1,lev),&
 !                     sheleg,sncover,snwdph,tg,qsurf,tprcp,SRFLAG,       &
 !                     smc,stc,slc,evapc,istyp,sigmaf,                    &
 !                     ivegtyp,canopy,rld,sld,                            &
@@ -519,7 +523,7 @@
 !                     drain,qflux,hflux,ep1d,phy_f2d,                    &
 !                     runof,SLOPETYP,SHDMIN,SHDMAX,SNOALB,alb,           &
 !                     tsurf, flag_iter, flag_guess,albedo2,jj,io,jo)
-      call sfc_drv(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev),   &
+      call sfc_drv(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qtd(1,lev),  &
                      istyp,ivegtyp,sigmaf,sfemis,rld,sld,ss,dth,tgclim,     &
                      cd,cdq,prsl1,prslki,hgt,islmsk,ddvel,islopetyp,        &
                      shdmin,shdmax,snoalb,alb,flag_iter,flag_guess,         &
@@ -530,14 +534,14 @@
                      drain,qflux,hflux,ep1d,runof,                          &
                      albedo2,jj,io,jo)
 !
-!       call sfc_sice(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev),    &
+!       call sfc_sice(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qtd(1,lev),   &
 !                      zice,cice,xtice,sld,        &    ! FOR SEA-ICE - XW Nov04
 !                      sheleg,snwdph,tg,qsurf,tprcp,SRFLAG,stc,evapc,    &
 !                      rld,radsl,SNOMT,dth,gfx,cd,cdq,                   &
 !                      rcl,prsl(1,1),work1,slmsk,                        &
 !                      qflux,hflux,ep1d,phy_f2d,flag_iter,               &
 !                      mom4ice,lsm)
-       call sfc_sice(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev),  &
+       call sfc_sice(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qtd(1,lev), &
                      dth,sfemis,rld,ss,sld,srflag,cd,cdq,prsl1,prslki,       &
                      islmsk,ddvel,flag_iter,mom4ice,lsm,                     &
                      zice,cice,xtice,sheleg,tg,tprcp,stc,ep1d,               &
@@ -554,10 +558,10 @@
 !
 !** update near surface fields
 !
-!      call sfc_diag(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev), &
+!      call sfc_diag(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qtd(1,lev), &
 !                    tg,qsurf,u10,v10,t2,q2,rcl,work1,slmsk,             &
 !                    qflux,fm,fh,fm10,fh2,fh10,rh2,rh10)
-      call sfc_diag(nxj,nx,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev),  &
+      call sfc_diag(nxj,nx,psi,ut(1,lev),vt(1,lev),tt(1,lev),qtd(1,lev), &
                     tg,qsurf,u10,v10,t2,q2,prslki,                       &
                     qflux,fm,fh,fm10,fh2,fh10,rh2,rh10)    
 

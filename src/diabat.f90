@@ -170,7 +170,7 @@
                                       use_zmtnblck,ldailyFCTsst,ldailyFCTicesndpt, &
                                       ldailyFCTsst,ldailyFCTicesndpt,           &
                                       dailyClm_option,dSITdt_intv,weightSIT,    &
-                                      bckfile,ggdef,doclx,doslavepp
+                                      bckfile,ggdef,doclx,doslavepp,RTYPE
       use mod_sitgrid
       USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
       USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt &
@@ -230,9 +230,9 @@
                 rs(nxp,my_max),plt(nxp,lev,my_max),pk(nxp,lev,my_max),    &
                 pk2(nxp,lev,my_max),ps(nxp,my_max),up(nxp,lev,my_max),    &
                 vp(nxp,lev,my_max),ttp(nxp,lev,my_max),                   &
-                qp(nxp,lev*ncld,my_max),rainlp(nxp,my_max),               &
+                rainlp(nxp,my_max),               &
                 pst(nxp,my_max),ut(nxp,lev,my_max),vt(nxp,lev,my_max),    &
-                tt(nxp,lev,my_max),qt(nxp,lev*ncld,my_max),               &
+                tt(nxp,lev,my_max),               &
                 gwclim(nxp,my_max),acld(lev,my),std(nxp,my_max),          &
                 asol(nxp,my_max),olr(nxp,my_max),drag(nxp,lev,my_max),    &
                 ugws(nxp,my_max),vgws(nxp,my_max),sdpbl(nxp,my_max),      &
@@ -244,6 +244,7 @@
                 raincu6(nxp,my_max),rainlp6(nxp,my_max),                  &
                 raincu3(nxp,my_max),rainlp3(nxp,my_max),                  &
                 raincu1(nxp,my_max),rainlp1(nxp,my_max)
+      real(kind=RTYPE) qt(nxp,lev*ncld,my_max),qp(nxp,lev*ncld,my_max)
 !soil (2005/01/12)
       integer,  parameter :: ntype=9, ngrid=22
       integer   istyp(nxp,my_max),ivegtyp(nxp,my_max)
@@ -468,7 +469,8 @@
 
 !xb110>
 !for new precpd & nTDK
-      real      u0(nxp,lev),v0(nxp,lev),t0(nxp,lev),q0(nxp,lev*ncld)
+      real      u0(nxp,lev),v0(nxp,lev),t0(nxp,lev)
+      real(kind=RTYPE) q0(nxp,lev*ncld)
       real      upp(nxp,lev),vpp(nxp,lev),tpp(nxp,lev),ttpp(nxp,lev)
       real      pkp(nxp,lev),pk2p(nxp,lev),pltp(nxp,lev)
 !for lightning

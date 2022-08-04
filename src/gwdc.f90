@@ -14,6 +14,7 @@
       use mpe
       use rank
       use index
+      use const, only: RTYPE
 !lzl -end === #
 
 !lzl      use machine , only : kind_phys
@@ -61,10 +62,11 @@
       real  grav,cp,rd,fv,fhour,fhourpr,deltim
       real, dimension(im)      :: qmax,tauctx, taucty
       real, dimension(im)      :: cldf,dlength
-      real, dimension(ix,km)   :: u1,v1,t1,q1,pmid1,dpmid1
+      real, dimension(ix,km)   :: u1,v1,t1,pmid1,dpmid1
 !    &,                                           cumchr1
       real, dimension(iy,km)   :: utgwc,vtgwc
       real, dimension(ix,km+1) :: pint1
+      real(kind=RTYPE), dimension(ix,km) :: q1
 
       logical lprnt
 !

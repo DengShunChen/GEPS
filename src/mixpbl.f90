@@ -88,6 +88,7 @@
 !
 !#####################################################################
       use paramt
+      use const, only : RTYPE
 
       implicit  none
       integer   nxj,mn,kk,ktpbl,itypbl
@@ -95,11 +96,12 @@
 !
 ! input & output variables
 !
-      real      hgt(mn,kk),u(mn,kk),v(mn,kk),t(mn,kk),q(mn,kk),  &
-                ut(mn,kk),vt(mn,kk),tt(mn,kk),qt(mn,kk),e(mn,kk),&
+      real      hgt(mn,kk),u(mn,kk),v(mn,kk),t(mn,kk),           &
+                ut(mn,kk),vt(mn,kk),tt(mn,kk),e(mn,kk),          &
                 eps(mn,kk),xkm(mn,kk),xkh(mn,kk),zl(mn),         &
                 sfcw(mn),ustar(mn),tstar(mn),qstar(mn),          &
-                dhgt(mn,kk),ro2(mn,kk),dhgtz(mn,kk)
+                dhgt(mn,kk),ro2(mn,kk),dhgtz(mn,kk),qtd(mn,kk)
+      real(kind=RTYPE) q(mn,kk),qt(mn,kk)
 !
 !  local work arrays
 !
@@ -265,7 +267,8 @@
 !     limit surface forcing effects to less than 20% of current
 !     values to avoid too large forcing
 !
-      call couvtq ( nxj,mn,kk,ktpbl,dt,wktri,xkh,hgt,qt,beta,dhgt,ro2 )
+      qtd=qt
+      call couvtq ( nxj,mn,kk,ktpbl,dt,wktri,xkh,hgt,qtd,beta,dhgt,ro2 )
       if ( itypbl .ne. 1 )  then
        nlimq=0
          do 370 i = 1, nxj

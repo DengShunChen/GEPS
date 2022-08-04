@@ -1,13 +1,17 @@
        subroutine get_phi(nxj,nx,lev,ptop,cp,r,g,sgeo,pk,pk2,tt,qt,  &
                           phii,phi)
+!
+        use const, only : RTYPE
+!
 
         integer nxj,nx,lev,i,k,kc
         real    ptop,cp,r,g,pk(nx,lev),pk2(nx,lev),         &
-                tt(nx,lev),qt(nx,lev),sgeo(nx)
+                tt(nx,lev),sgeo(nx)
         real    pk2x(nx,lev),pkx(nx,lev),dhgtz(nx,lev),     &
                 ppd,ppp,ppu,ttv,dhgt,theda(nx,lev)
 
         real    phii(nx,lev+1),phi(nx,lev)
+        real(kind=RTYPE) qt(nx,lev)
 !
 ! geopotential height at model interface
 !

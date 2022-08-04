@@ -32,6 +32,7 @@
 !     external function called:  qsatq
 !
       use paramt
+      use const, only: RTYPE
 
       implicit  none
 
@@ -39,8 +40,9 @@
       integer   lsppt(lev),ipass(lev)
 
       real      g,evaprh,cp,hltm 
-      real      t(nx,lev),q(nx,lev),pl(nx,lev),pst(nx),dsigma(lev,2), &
+      real      t(nx,lev),pl(nx,lev),pst(nx),dsigma(lev,2), &
                 rlsp(nx)
+      real(kind=RTYPE) q(nx,lev)
 !
 !     local work arrays
 !
