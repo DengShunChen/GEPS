@@ -106,6 +106,8 @@
       real, dimension(:,:,:), allocatable ::                            &
                 qv1,ql1,qr1,qi1,qs1,qg1,qa1,qn1,pt,w,uin,vin,delp,dz,   &
                 qv_dt,ql_dt,qr_dt,qi_dt,qs_dt,qg_dt,qa_dt,udt,vdt,pt_dt
+      real, dimension(:,:), allocatable ::                              &
+                ql2,qr2,qi2,qs2,qg2
       logical   hydrostatic,phys_hydrostatic,sedi_w 
 !
 ! reset all value to zero
@@ -138,7 +140,9 @@
            qi_dt(nxj,1,lev),qs_dt(nxj,1,lev),qg_dt(nxj,1,lev),          &
            qa_dt(nxj,1,lev),udt(nxj,1,lev),vdt(nxj,1,lev),              &
            pt_dt(nxj,1,lev) )
-        if ( effr_in ) allocate ( dp(nxj,lev),rho(nxj,lev) )
+        if ( effr_in ) allocate                                         &
+           ( dp(nxj,lev),rho(nxj,lev),ql2(nxj,lev),qr2(nxj,lev),        &
+             qi2(nxj,lev),qs2(nxj,lev),qg2(nxj,lev) )
         if ( sedi_w ) allocate ( dot(nxj,lev) )
         frland = 0.
         garea = 0.
@@ -276,19 +280,19 @@
 
         do k = 1, lev
           do i = 1, nxj
-            qtc(i,k)  = qv1(i,1,k) + qv_dt(i,1,k) * dta
-            qtr(i,k)  = ql1(i,1,k) + ql_dt(i,1,k) * dta
-            qtrw(i,k) = qr1(i,1,k) + qr_dt(i,1,k) * dta
-            qti(i,k)  = qi1(i,1,k) + qi_dt(i,1,k) * dta
-            qtsw(i,k) = qs1(i,1,k) + qs_dt(i,1,k) * dta
-            qtgl(i,k) = qg1(i,1,k) + qg_dt(i,1,k) * dta
-            qa(i,k)   = qa1(i,1,k) + qa_dt(i,1,k) * dta
-            qt(i,             k) = qtc(i,k)
-            qt(i,(ntcw-1)*lev+k) = qtr(i,k)
-            qt(i,(ntrw-1)*lev+k) = qtrw(i,k)
-            qt(i,(ntiw-1)*lev+k) = qti(i,k)
-            qt(i,(ntsw-1)*lev+k) = qtsw(i,k)
-            qt(i,(ntgl-1)*lev+k) = qtgl(i,k)
+            ql2(i,k) = ql1(i,1,k) + ql_dt(i,1,k) * dta
+            qr2(i,k) = qr1(i,1,k) + qr_dt(i,1,k) * dta
+            qi2(i,k) = qi1(i,1,k) + qi_dt(i,1,k) * dta
+            qs2(i,k) = qs1(i,1,k) + qs_dt(i,1,k) * dta
+            qg2(i,k) = qg1(i,1,k) + qg_dt(i,1,k) * dta
+
+            qa(i,k)  = qa1(i,1,k) + qa_dt(i,1,k) * dta
+            qt(i,             k) = qv1(i,1,k) + qv_dt(i,1,k) * dta
+            qt(i,(ntcw-1)*lev+k) = ql2(i,k)
+            qt(i,(ntrw-1)*lev+k) = qr2(i,k)
+            qt(i,(ntiw-1)*lev+k) = qi2(i,k)
+            qt(i,(ntsw-1)*lev+k) = qs2(i,k)
+            qt(i,(ntgl-1)*lev+k) = qg2(i,k)
             tt(i,k)  = pt(i,1,k)  + pt_dt(i,1,k) * dta
             ut(i,k)  = uin(i,1,k) + udt(i,1,k)   * dta
             vt(i,k)  = vin(i,1,k) + vdt(i,1,k)   * dta
@@ -311,7 +315,7 @@
 !               ( 1, nx, 1, lev, rho, qtr, qti, qtrw, qtsw, qtgl, tt,    &  ! module_mp_gfdl_fv3.f90
 !                 rew, rei, rer, res, reg )
                ( 1, nxj, 1, lev, rho, dp, islimsk,                      &  ! module_mp_gfdl_fv3_v16.f90
-                 qtr, qti, qtrw, qtsw, qtgl, tt,                        &
+                 ql2, qi2, qr2, qs2, qg2, tt,                           &
                  rew, rei, rer, res, reg )
           do k = 1, lev
             kc = lev - k + 1
@@ -345,7 +349,7 @@
             frland,rain0,snow0,ice0,graupel0,garea,                     &
             qv1,ql1,qr1,qi1,qs1,qg1,qa1,qn1,pt,w,uin,vin,delp,dz,       &
             qv_dt,ql_dt,qr_dt,qi_dt,qs_dt,qg_dt,qa_dt,udt,vdt,pt_dt )
-        if ( effr_in ) deallocate ( dp,rho )
+        if ( effr_in ) deallocate ( dp,rho,ql2,qi2,qr2,qs2,qg2 )
         if ( sedi_w ) deallocate ( dot )
 
       endif  ! end of nmmiph.eq.11
