@@ -34,8 +34,8 @@
 
       real      pk(nx,lev),pk2(nx,lev),spal(nx,lev),odpsig(nx,lev)     &
       , that(nx,lev)                                                   &
-      , phi(nx,lev),pt(nx),dsigma(lev,2),sigma(lev+1,2)
-      real(kind=RTYPE) tt(nx,lev),qt(nx,lev*ncld)
+      , pt(nx),dsigma(lev,2),sigma(lev+1,2)
+      real(kind=RTYPE) tt(nx,lev),qt(nx,lev*ncld),phi(nx,lev)
 
       real      cpr2,cp,radsq
       integer   i,n,nk,k,kk

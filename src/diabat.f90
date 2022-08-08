@@ -226,13 +226,11 @@
                 hflux(nxp,my_max),qflux(nxp,my_max),ustar(nxp,my_max),    &
                 tstar(nxp,my_max),qstar(nxp,my_max),                      &
                 e(nxp,lev,my_max),eps(nxp,lev,my_max),                    &
-                o3l(nxp,lev,my_max),dtrad(nxp,lev,my_max),ss(nxp,my_max), &
+                dtrad(nxp,lev,my_max),ss(nxp,my_max),                     &
                 rs(nxp,my_max),plt(nxp,lev,my_max),pk(nxp,lev,my_max),    &
-                pk2(nxp,lev,my_max),ps(nxp,my_max),up(nxp,lev,my_max),    &
-                vp(nxp,lev,my_max),ttp(nxp,lev,my_max),                   &
-                rainlp(nxp,my_max),               &
+                pk2(nxp,lev,my_max),ps(nxp,my_max),rainlp(nxp,my_max),    &
                 pst(nxp,my_max),ut(nxp,lev,my_max),vt(nxp,lev,my_max),    &
-                tt(nxp,lev,my_max),               &
+                tt(nxp,lev,my_max),                                       &
                 gwclim(nxp,my_max),acld(lev,my),std(nxp,my_max),          &
                 asol(nxp,my_max),olr(nxp,my_max),drag(nxp,lev,my_max),    &
                 ugws(nxp,my_max),vgws(nxp,my_max),sdpbl(nxp,my_max),      &
@@ -244,7 +242,9 @@
                 raincu6(nxp,my_max),rainlp6(nxp,my_max),                  &
                 raincu3(nxp,my_max),rainlp3(nxp,my_max),                  &
                 raincu1(nxp,my_max),rainlp1(nxp,my_max)
-      real(kind=RTYPE) qt(nxp,lev*ncld,my_max),qp(nxp,lev*ncld,my_max)
+      real(kind=RTYPE) qt(nxp,lev*ncld,my_max),qp(nxp,lev*ncld,my_max),   &
+                       up(nxp,lev,my_max),vp(nxp,lev,my_max),             &
+                       ttp(nxp,lev,my_max),o3l(nxp,lev,my_max)
 !soil (2005/01/12)
       integer,  parameter :: ntype=9, ngrid=22
       integer   istyp(nxp,my_max),ivegtyp(nxp,my_max)
@@ -384,8 +384,8 @@
                 aflxd(lev+2,my),aflxu(lev+2,my),                         &
                 dtcupx(my),dtcupz(lev,my),dqcupz(lev,my),dtcupd(lev),    &
                 dqcupd(lev),dtcupl(lev),dqcupl(lev),xkmx(2,my),xkmd(lev),&
-                phi(nxp,lev),albx(nxp,my_max), &
-                cofx(nxp*3,my_max),dphi(nxp,lev)
+                albx(nxp,my_max),cofx(nxp*3,my_max),dphi(nxp,lev)
+      real(kind=RTYPE) phi(nxp,lev)
 
       real      wkj(4,my),dsigpp(lev),qt_diff(ncld)
 

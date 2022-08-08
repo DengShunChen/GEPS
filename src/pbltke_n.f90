@@ -159,14 +159,14 @@
       integer  imx(2)
 
       real     tg(nx),z0(nx),topo(nx),pss(nx),                            &
-               phi(nx,lev),u(nx,lev),v(nx,lev),t(nx,lev),                 &
+               u(nx,lev),v(nx,lev),t(nx,lev),                             &
                ut(nx,lev),vt(nx,lev),tt(nx,lev),ustar(nx),                &
                tstar(nx),qstar(nx),e(nx,lev),eps(nx,lev),hflux(nx),       &
                qflux(nx),pk(nx,lev),pk2(nx,lev),gwclim(nx),               &
                tgclim(nx),snr(nx),totalp(nx),                             &
                ss(nx),rs(nx),alb(nx),xkmx(2),xkmd(lev),                   &
                t2(nx),rh2(nx),u10(nx),v10(nx)
-      real(kind=RTYPE) q(nx,lev*ncld),qt(nx,lev*ncld)
+      real(kind=RTYPE) q(nx,lev*ncld),qt(nx,lev*ncld),phi(nx,lev)
 !soil
       real     smc(nx,km),stc(nx,km),canopy(nx),sigmaf(nx),               &
                rld(nx),runoff(nx)             

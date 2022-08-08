@@ -51,9 +51,9 @@
       real      dt,grav,rgas,sinl,cosl,cp
 
       real      t(nx,lev),plt(nx,lev),u(nx,lev),v(nx,lev),    &
-                pk(nx,lev),pk2(nx,lev),hi(nx,lev),                      &
+                pk(nx,lev),pk2(nx,lev),                       &
                 avgdrag_u(lev),avgdrag_v(lev)
-      real(kind=RTYPE) q(nx,lev)
+      real(kind=RTYPE) q(nx,lev),hi(nx,lev)
 
 ! local array
       integer,  parameter :: nc=20,nphi=4

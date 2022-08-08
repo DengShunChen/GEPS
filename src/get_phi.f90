@@ -10,8 +10,8 @@
         real    pk2x(nx,lev),pkx(nx,lev),dhgtz(nx,lev),     &
                 ppd,ppp,ppu,ttv,dhgt,theda(nx,lev)
 
-        real    phii(nx,lev+1),phi(nx,lev)
-        real(kind=RTYPE) qt(nx,lev)
+        real    phii(nx,lev+1)
+        real(kind=RTYPE) qt(nx,lev),phi(nx,lev)
 !
 ! geopotential height at model interface
 !

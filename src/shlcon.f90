@@ -54,9 +54,8 @@
       integer   nxj,nx,lev,ktshl,ncld
 
       real      dsigma(lev,2),tg(nx),pst(nx),topo(nx),po(nx,lev)    &
-              , tt(nx,lev),pok(nx,lev),phi(nx,lev)  &
-              , ql(nx,lev)
-      real(kind=RTYPE) qt(nx,lev*ncld)
+              , tt(nx,lev),pok(nx,lev),ql(nx,lev)
+      real(kind=RTYPE) qt(nx,lev*ncld),phi(nx,lev)
 !
 !     local work arrays
 !

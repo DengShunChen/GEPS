@@ -94,8 +94,8 @@
 
       real      dsigma(lev,2),topo(nx),ps(nx),pl(nx,lev),pk(nx,lev)     &
         ,pk2(nx,lev),tl(nx,lev),plcl(nx),cumtop(nx),rcup(nx) &
-        ,phi(nx,lev),dtcupz(lev),dqcupz(lev),dtcupd(lev),dqcupd(lev)
-      real(kind=RTYPE) ql(nx,lev)
+        ,dtcupz(lev),dqcupz(lev),dtcupd(lev),dqcupd(lev)
+      real(kind=RTYPE) ql(nx,lev),phi(nx,lev)
 
       integer   nlcl(lev),nnegl(lev),nosat(lev),nwork(lev),ntcup(lev),nflx(lev)
 !

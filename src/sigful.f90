@@ -44,25 +44,24 @@
 
       logical cstar
       real      weight(my),poly(jtrun,jtmax,my/2),sigma(lev+1,2)                &
-              , cosl(my),phi(nxp,lev,my_max)                            &
+              , cosl(my)                                                &
               , pk(nxp,lev,my_max)                                      &
               , pt(nxp,my_max),sgeo(nxp,my_max),pdiff(nxp,my_max),t1000(nxp,my_max) &
-              , tsave(nxp,my_max),plt(nxp,lev,my_max),pk2(nxp,lev,my_max)&
-              , o3l(nxp,lev,my_max),tmp(nxp,lev,my_max)
+              , tsave(nxp,my_max),plt(nxp,lev,my_max),pk2(nxp,lev,my_max)
       character*4 ggdef,gmdef
 !
 !  local work arrays
 !
       real      preplt(nx,lmax+2),prett(nx,lmax+2),hld1(nx,my)         &
                ,plog(nx,lev),hld2(nx,my),anlslp(nx,my),hkd1(nx,lev),ut_tmp(nx,lev)
-      real     tens(lmax+2),tstd(lmax),hld3(nx,levp,my_max),           &
-               utmp(nxp,lev),vtmp(nxp,lev)
+      real     tens(lmax+2),tstd(lmax),utmp(nxp,lev),vtmp(nxp,lev)
       real      puvphi(26)
 !
       real(kind=RTYPE) cc(nx+2,levp,1+ncld,my_max)                     &
                ,       ut(nxp,lev,my_max),vt(nxp,lev,my_max)           &
-               ,       tt(nxp,lev,my_max),sht(nxp,lev*ncld,my_max)
-      real(kind=RTYPE) hld4(nx,levp,ncld,my_max)
+               ,       tt(nxp,lev,my_max),sht(nxp,lev*ncld,my_max)     &
+               ,       o3l(nxp,lev,my_max),phi(nxp,lev,my_max)
+      real(kind=RTYPE) hld4(nx,levp,ncld,my_max),hld3(nx,levp,my_max)
       real      wss(levp,2,1+ncld,jtrun,jtmax)
       real      work_pr1(lev), work_pr2(lev), work_pr3(lev)
 !
@@ -157,9 +156,8 @@
        do 71 i = 1, nxj
          hld3(i,k,jj) = hld1(i,j)
   71  continue
-      call mpe2d_transpose_ndsl_f2p(hld3,tmp, &
+      call mpe2d_transpose_ndsl_f2p_sp2(hld3,tt, &
             nxp,nx,levf,levp,1,myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      tt=tmp
 !
 !  read in q at sigma levels
 !
@@ -296,7 +294,7 @@
       endif    ! end of if(ncld.ge.2)
       call mpe2d_transpose_ndsl_f2p_sp2(hld4,sht, &
             nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_f2p(hld3,o3l, &
+      call mpe2d_transpose_ndsl_f2p_sp2(hld3,o3l, &
             nxp,nx,levf,levp,1,myf,my_max,jlistnum,jlen,nsizex,row_comm)
       
 !----
@@ -606,9 +604,8 @@
        do 320 i = 1,nxj
          hld3(i,k,jj) = hld1(i,j)*fac
   320 continue
-      call mpe2d_transpose_ndsl_f2p(hld3,tmp, &
+      call mpe2d_transpose_ndsl_f2p_sp2(hld3,ut, &
             nxp,nx,levf,levp,1,myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      ut=tmp
 !
       do 321 k = 1, levp
         KL=lev-Llist(k)+1
@@ -628,9 +625,8 @@
        do 321 i = 1,nxj
          hld3(i,k,jj) = hld1(i,j)*fac
   321 continue
-      call mpe2d_transpose_ndsl_f2p(hld3,tmp, &
+      call mpe2d_transpose_ndsl_f2p_sp2(hld3,vt, &
             nxp,nx,levf,levp,1,myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      vt=tmp
 !
 !  read in ozone at sigma levels
 !  add in june 2010

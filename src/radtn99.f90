@@ -99,8 +99,7 @@
 
       integer il(nx),ib(lvlw)
 
-      real    o3lx(nx,lev)
-      real(kind=RTYPE) qtx(nx,lev*ncld)
+      real(kind=RTYPE) qtx(nx,lev*ncld),o3lx(nx,lev)
 !
 !  clear part
 !

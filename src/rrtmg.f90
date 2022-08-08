@@ -41,8 +41,8 @@
 ! --- 3d parameters
 !
       real    sigma(lev+1,2),pst(nx),plt(nx,lev),std(nx),tg(nx),  &
-              tt(nx,lev),o3l(nx,lev),sd(nx,lev)
-      real(kind=RTYPE)    qt(nx,lev*ncld)
+              tt(nx,lev),sd(nx,lev)
+      real(kind=RTYPE)    qt(nx,lev*ncld),o3l(nx,lev)
 !
 ! --- 2d parameters
 !
