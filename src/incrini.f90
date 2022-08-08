@@ -42,7 +42,7 @@
           enddo
         enddo
       enddo
-      call mpe2d_transpose_ndsl_f2p_sp2(hld3,ut, &
+      call mpe2d_transpose_ndsl_f2p(hld3,ut, &
             nxp,nx,levf,levp,1,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !
       do k = 1, levp
@@ -60,7 +60,7 @@
           enddo
         enddo
       enddo
-      call mpe2d_transpose_ndsl_f2p_sp2(hld3,vt, &
+      call mpe2d_transpose_ndsl_f2p(hld3,vt, &
             nxp,nx,levf,levp,1,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !
       call syslbl ('B00010',idtg2,itaup,ggdef,lrec)
@@ -92,7 +92,7 @@
           enddo
         enddo
       enddo
-      call mpe2d_transpose_ndsl_f2p_sp2(hld3,tt, &
+      call mpe2d_transpose_ndsl_f2p(hld3,tt, &
             nxp,nx,levf,levp,1,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !
       do k = 1, levp
@@ -144,7 +144,7 @@
         enddo
         endif
       endif
-      call mpe2d_transpose_ndsl_f2p_sp2(hld4,qt, &
+      call mpe2d_transpose_ndsl_f2p(hld4,qt, &
             nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !
       do k = 1, levp
@@ -161,7 +161,7 @@
           enddo
         enddo
       enddo
-      call mpe2d_transpose_ndsl_f2p_sp2(hld3,phi, &
+      call mpe2d_transpose_ndsl_f2p(hld3,phi, &
             nxp,nx,levf,levp,1,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !
       do jj = 1, jlistnum

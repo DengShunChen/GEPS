@@ -1237,115 +1237,6 @@
 
       include 'mpif.h'
 
-      real*8   ain(nxp,lev,ncld,my_max)
-      real(kind=RTYPE) aout(nx,levp,ncld,my_max)       &
-      ,                c1(nxp,jlen,ncld,lev)           &
-      ,                c2(nxp,jlen,ncld,levp,nsizex)
-
-      integer  nxp,nx,lev,levp,ncld,my,my_max,jlen,nsizex,comm
-      integer  nlen,ii,j,i,k,kk,ierr,jlistnum,nn,jj,n
-
-      do k=1,lev
-         kk=lev-k+1
-      do j=1,jlistnum
-         jj=jlist1(j)
-      do i=1,nxjlen(jj)
-         do n=1,ncld
-            c1(i,j,n,kk)=ain(i,k,n,j)
-         enddo
-      enddo
-      enddo
-      enddo
-
-      nlen=nxp*levp*jlen*ncld
-
-      call MPI_ALLTOALL( c1 ,nlen, MPI_RTYPE, &
-                         c2, nlen, MPI_RTYPE, &
-                         comm, IERR )
-
-      do k=1,levp
-      do j=1,jlistnum
-         jj=jlist1(j)
-         ii=1
-      do i=1,nsizex
-         nn=nxjlen_all(i,jj)
-         do n=1,ncld
-            aout(ii:ii+nn-1,k,n,j)=c2(1:nn,j,n,k,i)
-         enddo
-         ii=ii+nn
-      enddo
-      enddo
-      enddo
-
-
-      return
-      end
-!---------------------------------------------------------------------------------------------------------
-      subroutine mpe2d_transpose_ndsl_p2f_sp(ain,aout,nxp,nx,lev,levp,ncld,my,my_max,jlistnum,jlen,nsizex,comm)
-
-! transpose (nx partial,lev full) to (nx full,lev partial) for NDSL
-
-      use index, only : lreduce,nxjlen_all,jlist1,nxjlen
-
-      implicit none
-
-      include 'mpif.h'
-
-      real*8   ain(nxp,lev,ncld,my_max)
-      real*4   aout(nx,levp,ncld,my_max),&
-               c1(nxp,jlen,ncld,lev),c2(nxp,jlen,ncld,levp,nsizex)
-
-      integer  nxp,nx,lev,levp,ncld,my,my_max,jlen,nsizex,comm
-      integer  nlen,ii,j,i,k,kk,ierr,jlistnum,nn,jj,n
-
-      do k=1,lev
-         kk=lev-k+1
-      do j=1,jlistnum
-         jj=jlist1(j)
-      do i=1,nxjlen(jj)
-         do n=1,ncld
-            c1(i,j,n,kk)=ain(i,k,n,j)
-         enddo
-      enddo
-      enddo
-      enddo
-
-      nlen=nxp*levp*jlen*ncld
-
-      call MPI_ALLTOALL( c1 ,nlen, MPI_REAL4, &
-                         c2, nlen, MPI_REAL4, &
-                         comm, IERR )
-
-      do k=1,levp
-      do j=1,jlistnum
-         jj=jlist1(j)
-         ii=1
-      do i=1,nsizex
-         nn=nxjlen_all(i,jj)
-         do n=1,ncld
-            aout(ii:ii+nn-1,k,n,j)=c2(1:nn,j,n,k,i)
-         enddo
-         ii=ii+nn
-      enddo
-      enddo
-      enddo
-
-
-      return
-      end
-
-!---------------------------------------------------------------------------------------------------------
-      subroutine mpe2d_transpose_ndsl_p2f_sp2(ain,aout,nxp,nx,lev,levp,ncld,my,my_max,jlistnum,jlen,nsizex,comm)
-
-! transpose (nx partial,lev full) to (nx full,lev partial) for NDSL
-
-      use index, only : lreduce,nxjlen_all,jlist1,nxjlen
-      use const, only : RTYPE,MPI_RTYPE
-
-      implicit none
-
-      include 'mpif.h'
-
       real(kind=RTYPE) ain(nxp,lev,ncld,my_max),        &
                        aout(nx,levp,ncld,my_max),       &
                        c1(nxp,jlen,ncld,lev),           &
@@ -1395,13 +1286,16 @@
 ! transpose (nx full,lev partial) to (nx partial,lev full) for NDSL
 
       use index, only : jlist1,nsizex,lreduce,nxjstart_all,nxjend_all,nxjlen_all,nxjp
+      use const, only : RTYPE,MPI_RTYPE
 
       implicit none
 
       include 'mpif.h'
 
-      real*8 ain(nx,levp,ncld,my_max),aout(nxp,lev,ncld,my_max)
-      real*8 c1(levp,ncld,jlen,nxp,proc),c2(levp,ncld,jlen,nxp,proc)
+      real(kind=RTYPE) ain(nx,levp,ncld,my_max),      &
+                       aout(nxp,lev,ncld,my_max),     &
+                       c1(levp,ncld,jlen,nxp,proc),   &
+                       c2(levp,ncld,jlen,nxp,proc)
 
       integer  nxp,nx,lev,levp,ncld,my,my_max,jlen,proc,comm
       integer  nlen,ii,j,jj,i,k,KL,ierr,jlistnum,n,i1,i2,i3,i4
@@ -1422,122 +1316,8 @@
 
       nlen=nxp*levp*jlen*ncld
 
-      call MPI_ALLTOALL( c1 ,nlen, MPI_DOUBLE_PRECISION, &
-                         c2, nlen, MPI_DOUBLE_PRECISION, &
-                         comm, IERR )
-
-      do jj=1,jlistnum
-
-      ii=jlist1(jj)
-      do i=1,nxjp(ii)
-
-         KL=lev
-      do j=1,proc
-      do k=1,levp
-         do n=1,ncld
-            aout(i,KL,n,jj)=c2(k,n,jj,i,j)
-         enddo
-         KL=KL-1
-      enddo
-      enddo
-      enddo
-      enddo
-
-      return
-      end
-!----------------------------------------------------------------------------------------
-      subroutine mpe2d_transpose_ndsl_f2p_sp(ain,aout,nxp,nx,lev,levp,ncld,my,my_max,jlistnum,jlen,proc,comm)
-
-! transpose (nx full,lev partial) to (nx partial,lev full) for NDSL
-
-      use index, only : jlist1,nsizex,lreduce,nxjstart_all,nxjend_all,nxjlen_all,nxjp
-
-      implicit none
-
-      include 'mpif.h'
-
-      real*4   ain(nx,levp,ncld,my_max),  &
-               c1(levp,ncld,jlen,nxp,proc),c2(levp,ncld,jlen,nxp,proc)
-      real*8   aout(nxp,lev,ncld,my_max)
-
-      integer  nxp,nx,lev,levp,ncld,my,my_max,jlen,proc,comm
-      integer  nlen,ii,j,jj,i,k,KL,ierr,jlistnum,n,i1,i2,i3,i4
-
-      do j=1,jlistnum
-         jj=jlist1(j)
-      do k=1,levp
-         i1=1
-      do i=1,nsizex
-         i2=nxjlen_all(i,jj)
-         do n=1,ncld
-            c1(k,n,j,1:i2,i)=ain(i1:i1+i2-1,k,n,j)
-         enddo
-         i1=i1+i2
-      enddo
-      enddo
-      enddo
-
-      nlen=nxp*levp*jlen*ncld
-
-      call MPI_ALLTOALL( c1 ,nlen, MPI_REAL4, &
-                         c2, nlen, MPI_REAL4, &
-                         comm, IERR )
-
-      do jj=1,jlistnum
-
-      ii=jlist1(jj)
-      do i=1,nxjp(ii)
-
-         KL=lev
-      do j=1,proc
-      do k=1,levp
-         do n=1,ncld
-            aout(i,KL,n,jj)=c2(k,n,jj,i,j)
-         enddo
-         KL=KL-1
-      enddo
-      enddo
-      enddo
-      enddo
-
-      return
-      end
-!----------------------------------------------------------------------------------------
-      subroutine mpe2d_transpose_ndsl_f2p_sp2(ain,aout,nxp,nx,lev,levp,ncld,my,my_max,jlistnum,jlen,proc,comm)
-
-! transpose (nx full,lev partial) to (nx partial,lev full) for NDSL
-
-      use index, only : jlist1,nsizex,lreduce,nxjstart_all,nxjend_all,nxjlen_all,nxjp
-
-      implicit none
-
-      include 'mpif.h'
-
-      real*4   ain(nx,levp,ncld,my_max),  &
-               aout(nxp,lev,ncld,my_max), &
-               c1(levp,ncld,jlen,nxp,proc),c2(levp,ncld,jlen,nxp,proc)
-
-      integer  nxp,nx,lev,levp,ncld,my,my_max,jlen,proc,comm
-      integer  nlen,ii,j,jj,i,k,KL,ierr,jlistnum,n,i1,i2,i3,i4
-
-      do j=1,jlistnum
-         jj=jlist1(j)
-      do k=1,levp
-         i1=1
-      do i=1,nsizex
-         i2=nxjlen_all(i,jj)
-         do n=1,ncld
-            c1(k,n,j,1:i2,i)=ain(i1:i1+i2-1,k,n,j)
-         enddo
-         i1=i1+i2
-      enddo
-      enddo
-      enddo
-
-      nlen=nxp*levp*jlen*ncld
-
-      call MPI_ALLTOALL( c1 ,nlen, MPI_REAL4, &
-                         c2, nlen, MPI_REAL4, &
+      call MPI_ALLTOALL( c1 ,nlen, MPI_RTYPE, &
+                         c2, nlen, MPI_RTYPE, &
                          comm, IERR )
 
       do jj=1,jlistnum

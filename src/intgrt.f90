@@ -785,16 +785,16 @@
 !
 !     advet grid non-linear forcing from t-dt/2 to t+dt/2 via NDSL advection
 !
-      call mpe2d_transpose_ndsl_p2f_sp2(um,ut_sl,    &
+      call mpe2d_transpose_ndsl_p2f(um,ut_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f_sp2(vm,vt_sl,    &
+      call mpe2d_transpose_ndsl_p2f(vm,vt_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 
-      call mpe2d_transpose_ndsl_p2f_sp2(ut,uum_sl,    &
+      call mpe2d_transpose_ndsl_p2f(ut,uum_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f_sp2(vt,vvm_sl,    &
+      call mpe2d_transpose_ndsl_p2f(vt,vvm_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-!!      call mpe2d_transpose_ndsl_p2f_sp2(tt,ttm_sl,    &
+!!      call mpe2d_transpose_ndsl_p2f(tt,ttm_sl,    &
 !!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !
 !      do itt = 1,itter
@@ -802,11 +802,11 @@
                              ,nxdef,ndsldtah,xy,levp,2)
 !      enddo
 !
-      call mpe2d_transpose_ndsl_f2p_sp2(uum_sl,vdzonl, &
+      call mpe2d_transpose_ndsl_f2p(uum_sl,vdzonl, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_f2p_sp2(vvm_sl,vdmerd, &
+      call mpe2d_transpose_ndsl_f2p(vvm_sl,vdmerd, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-!!      call mpe2d_transpose_ndsl_f2p_sp2(ttm_sl,ddtemp, &
+!!      call mpe2d_transpose_ndsl_f2p(ttm_sl,ddtemp, &
 !!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !
 !    advect pressure gradient force from t to t+dt
@@ -848,11 +848,11 @@
 !
 !     advet grid pressure gradient force from t to t+dt via NDSL advection
 !
-      call mpe2d_transpose_ndsl_p2f_sp2(vdzonlr,uum_sl,   &
+      call mpe2d_transpose_ndsl_p2f(vdzonlr,uum_sl,   &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f_sp2(vdmerdr,vvm_sl,   &
+      call mpe2d_transpose_ndsl_p2f(vdmerdr,vvm_sl,   &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-!!      call mpe2d_transpose_ndsl_p2f_sp2(diveng,ttm_sl,    &
+!!      call mpe2d_transpose_ndsl_p2f(diveng,ttm_sl,    &
 !!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !
 !!      do itt = 1,itter
@@ -860,12 +860,12 @@
                              ,nxdef,ndsldtah,xy,levp,2)
 !!      enddo
 !
-!CWB2021 note, sp2 means both arrays are single precision
-      call mpe2d_transpose_ndsl_f2p_sp2(uum_sl,vdzonlrp, &
+!CWB2021 note, both arrays can be single precision
+      call mpe2d_transpose_ndsl_f2p(uum_sl,vdzonlrp, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_f2p_sp2(vvm_sl,vdmerdrp, &
+      call mpe2d_transpose_ndsl_f2p(vvm_sl,vdmerdrp, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-!!      call mpe2d_transpose_ndsl_f2p_sp2(ttm_sl,pten, &
+!!      call mpe2d_transpose_ndsl_f2p(ttm_sl,pten, &
 !!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 
 !
@@ -1004,19 +1004,19 @@
 !                                    ut_sl,vt_sl,uum_sl,vvm_sl,ttm_sl,qm_sl, &
 !                                    nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm,6)
 !#else
-      call mpe2d_transpose_ndsl_p2f_sp2(um,ut_sl,    &
+      call mpe2d_transpose_ndsl_p2f(um,ut_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f_sp2(vm,vt_sl,    &
+      call mpe2d_transpose_ndsl_p2f(vm,vt_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f_sp2(ut,uum_sl,   &
+      call mpe2d_transpose_ndsl_p2f(ut,uum_sl,   &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f_sp2(vt,vvm_sl,   &
+      call mpe2d_transpose_ndsl_p2f(vt,vvm_sl,   &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f_sp2(tt,ttm_sl,   &
+      call mpe2d_transpose_ndsl_p2f(tt,ttm_sl,   &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !!      call mpe2d_transpose_ndsl_p2f_sp(pten,pten_sl, &
 !!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f_sp2(qp,qm_sl,    &
+      call mpe2d_transpose_ndsl_p2f(qp,qm_sl,    &
                                     nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !#endif
 
@@ -1042,15 +1042,15 @@
 !                                    ddtemp   ,pten   ,vdzonl   ,vdmerd   ,qt   , &
 !                                    nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !#else
-      call mpe2d_transpose_ndsl_f2p_sp2(ttm_sl,ddtemp, &
+      call mpe2d_transpose_ndsl_f2p(ttm_sl,ddtemp, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_f2p_sp2(pten_sl,pten,  &
+      call mpe2d_transpose_ndsl_f2p(pten_sl,pten,  &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_f2p_sp2(uum_sl,vdzonl, &
+      call mpe2d_transpose_ndsl_f2p(uum_sl,vdzonl, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_f2p_sp2(vvm_sl,vdmerd, &
+      call mpe2d_transpose_ndsl_f2p(vvm_sl,vdmerd, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_f2p_sp2(qm_sl,qt,      &
+      call mpe2d_transpose_ndsl_f2p(qm_sl,qt,      &
                                     nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !#endif
 !
