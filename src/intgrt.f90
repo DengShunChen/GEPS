@@ -1124,7 +1124,7 @@
                       , rainlp,raincu6,rainlp6,raincu3,rainlp3,raincu1,rainlp1  &
                       , hflux,qflux,ustar,tstar,qstar,e                         &
                       , eps,o3l,dtrad,ss,rs,plt,pk,pk2                          &
-                      , ptp,    up,    vp,   ttp,qp                             &
+                      , ptp,    ut,    vt,    tt,qp                             &
                       , pt ,vdzonl_r8,vdmerd_r8,ddtemp_r8,qt                    &
                       , gwclim,tice,hice,qgini,thdai,tengi                      &
                       , acld,std,asol,olr,drag,ugws,vgws                        &
