@@ -31,7 +31,7 @@
       real sdpbl(nxp,my_max)
 
 ! for Semi-Lagrangian
-      real deldm(nxp,my_max)
+      real(kind=RTYPE) deldm(nxp,my_max)
 
 !CWB2021 ndsl single precision test
       real(kind=RTYPE) uum_sl(nx,levp,my_max)              &
@@ -52,7 +52,7 @@
 !
       integer   ierr
       real(kind=RTYPE) dta
-      real             ww1(nx,my_max)
+      real(kind=RTYPE) ww1(nx,my_max)
 
 !for 2dMPI
       real(kind=RTYPE) temten1(lev,2,jtrun,jtmax)

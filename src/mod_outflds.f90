@@ -483,12 +483,14 @@ contains
       use index
       use mpe
       use rank
+      use const, only: RTYPE
 !
       implicit  none
       integer   nx,my,my_max,i,j,jj,kk,n,lev,nxj,itau,ntau,num,lenc,istat
 
-      real      pdiff(nxp,my_max),pt(nxp,my_max),ptend(nxp,my_max),slp(nxp,my_max),glob(nx,my)
+      real      pdiff(nxp,my_max),slp(nxp,my_max),glob(nx,my)
       real      tmp(nxp,my_max)
+      real(kind=RTYPE) ptend(nxp,my_max),pt(nxp,my_max)
       character*16 taudir(ntau)
       character*4 ggdef
 !

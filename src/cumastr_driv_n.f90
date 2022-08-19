@@ -48,13 +48,13 @@
 !c input & output variable
       integer nx,nxj,lev,ncld,j,jj
       integer kcbot(nx),kctop(nx)
-      real  topo(nx)                                                 &
-          , u(nx,lev),v(nx,lev),t(nx,lev)                            &
+      real  u(nx,lev),v(nx,lev),t(nx,lev)                            &
           , ut(nx,lev),vt(nx,lev),tt(nx,lev)                         &
           , qflux(nx),sd(nx,lev)                                     &
           , pk(nx,lev),pk2(nx,lev)                                   &
-          , sigma(lev+1,2),plt(nx,lev),pt(nx)
-      real(kind=RTYPE) q(nx,lev*ncld),qt(nx,lev*ncld),phi(nx,lev)
+          , sigma(lev+1,2),plt(nx,lev)
+      real(kind=RTYPE) q(nx,lev*ncld),qt(nx,lev*ncld),phi(nx,lev)    &
+          ,            topo(nx),pt(nx)
 !c  local work arrays
       real pkxmb(nx,lev)
       real pk2x(nx,lev),pkx(nx,lev)

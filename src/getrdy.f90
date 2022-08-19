@@ -53,9 +53,8 @@
 !
       real      sst(nxp,my_max),ww1(nx,my),ww2(nxp,my_max),     &
                 rh2100(nxp,my_max),rh10100(nxp,my_max),         &
-                wk1(nxp,lev,my_max),pklev(nxp,my_max),          &
-                ww3(nx,my_max)
-      real(kind=RTYPE) cc(nx+2,levp,1,my_max),dummy
+                wk1(nxp,lev,my_max),pklev(nxp,my_max)
+      real(kind=RTYPE) cc(nx+2,levp,1,my_max),dummy,ww3(nx,my_max)
 !byl                wss3(levp,2,3,jtrun,jtmax),cc3(nx+2,levp,3,my_max)
 
       character lrec*26,rfile*55,ctau*6,topostd*4,topohgt*4,key*34
@@ -507,7 +506,7 @@
           do i = 1,nxj
             totalp(i,jj)=0.
 !            flash(i,jj)=0.   !xb110, flash density
-!byl            ustar(i,jj)=0.1
+!            ustar(i,jj)=0.1
             ustar(i,jj)=sqrt(0.14) !make sure z0 will be 0.0002 over ocean
             tstar(i,jj)=0.025
             qstar(i,jj)=0.0
@@ -645,7 +644,8 @@
         call mpe2d_unify_nx(ww3,sgeo)
         call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww3,spgeo,nsizey)
         call transr1(jtrun,jtmax,nx,my,my_max,poly,spgeo,sgeo,nsizey)
-        call mpe2d_unify(ww1,sgeo)
+        ww2=sgeo
+        call mpe2d_unify(ww1,ww2)
 
         call qmaxn3 (ww1,'sgeo',' ',1,1,1,nx,my,1)
 !dms    istdno=99

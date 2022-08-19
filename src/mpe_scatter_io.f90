@@ -27,15 +27,16 @@
 !     include 'mpif.h'
       use index, only :col_comm
       use mpi
+      use const, only :RTYPE,MPI_RTYPE
 !
       implicit  none
       real      a(len*nsize)
-      real      b(len)
+      real(kind=RTYPE) b(len)
       integer   len,nsize,iroot,ierr
 !
       iroot=0
       call MPI_SCATTER(A,LEN,       MPI_DOUBLE_PRECISION,     &
-                       B,LEN,       MPI_DOUBLE_PRECISION,     &
+                       B,LEN,       MPI_RTYPE,                &
                        IROOT,       col_comm,IERR )
 !
       return

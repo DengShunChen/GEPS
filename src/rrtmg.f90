@@ -40,9 +40,9 @@
       integer ntrac,nfxr,nx,nxj,lev,ipt,ncld,kdt,nmmiph,nclds
 ! --- 3d parameters
 !
-      real    sigma(lev+1,2),pst(nx),plt(nx,lev),std(nx),tg(nx),  &
+      real    sigma(lev+1,2),plt(nx,lev),std(nx),tg(nx),          &
               tt(nx,lev),sd(nx,lev)
-      real(kind=RTYPE)    qt(nx,lev*ncld),o3l(nx,lev)
+      real(kind=RTYPE)    qt(nx,lev*ncld),o3l(nx,lev),pst(nx)
 !
 ! --- 2d parameters
 !

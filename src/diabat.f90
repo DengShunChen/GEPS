@@ -218,8 +218,8 @@
       integer   il(nxp,4),ib(nxp,4)
 
       real      sigma(lev+1,2),dsigma(lev,2),                             &
-                cof(nxp*3,4),xlat(my),                                     &
-                xlon(nx,my_max),sgeo(nxp,my_max),z0(nxp,my_max),          &
+                cof(nxp*3,4),xlat(my),                                    &
+                xlon(nx,my_max),z0(nxp,my_max),                           &
                 alb(nxp,my_max),snr(nxp,my_max),tg(nxp,my_max),           &
                 tgclim(nxp,my_max),curate(nxp,my_max),plcl(nxp,my_max),   &
                 cumtop(nxp,my_max),totalp(nxp,my_max),raincu(nxp,my_max), &
@@ -228,8 +228,8 @@
                 e(nxp,lev,my_max),eps(nxp,lev,my_max),                    &
                 dtrad(nxp,lev,my_max),ss(nxp,my_max),                     &
                 rs(nxp,my_max),plt(nxp,lev,my_max),pk(nxp,lev,my_max),    &
-                pk2(nxp,lev,my_max),ps(nxp,my_max),rainlp(nxp,my_max),    &
-                pst(nxp,my_max),ut(nxp,lev,my_max),vt(nxp,lev,my_max),    &
+                pk2(nxp,lev,my_max),rainlp(nxp,my_max),                   &
+                ut(nxp,lev,my_max),vt(nxp,lev,my_max),                    &
                 tt(nxp,lev,my_max),                                       &
                 gwclim(nxp,my_max),acld(lev,my),std(nxp,my_max),          &
                 asol(nxp,my_max),olr(nxp,my_max),drag(nxp,lev,my_max),    &
@@ -244,7 +244,8 @@
                 raincu1(nxp,my_max),rainlp1(nxp,my_max)
       real(kind=RTYPE) qt(nxp,lev*ncld,my_max),qp(nxp,lev*ncld,my_max),   &
                        up(nxp,lev,my_max),vp(nxp,lev,my_max),             &
-                       ttp(nxp,lev,my_max),o3l(nxp,lev,my_max)
+                       ttp(nxp,lev,my_max),o3l(nxp,lev,my_max),           &
+                       sgeo(nxp,my_max),ps(nxp,my_max),pst(nxp,my_max)
 !soil (2005/01/12)
       integer,  parameter :: ntype=9, ngrid=22
       integer   istyp(nxp,my_max),ivegtyp(nxp,my_max)

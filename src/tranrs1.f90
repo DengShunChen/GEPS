@@ -32,7 +32,7 @@
       integer l,i1,i2,i3,j1,j2
 
       real                poly(jtrun,my/2,jtmax),w(my)
-      real                r(nx,my_max)
+      real(kind=RTYPE)    r(nx,my_max)
       real(kind=RTYPE)    s(jtrun,jtmax,2)
 !
 !      real(kind=RTYPE)    gwk1(nx+2,1,6,my_max)

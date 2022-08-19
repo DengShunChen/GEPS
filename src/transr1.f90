@@ -31,7 +31,7 @@
       integer   mlx,myhalf,m,mf,l,jlistnum_fj,j,l_fj,j_fj
       integer   llistnum_fj,jj,i,jtrunj,mm,mp,mlst,nxj
 
-      real                  r(nxp,my_max)
+      real(kind=RTYPE)      r(nxp,my_max)
 !
       real(kind=RTYPE)      s(jtrun,jtmax,2)
       real(kind=RTYPE)      gwk1(nx+2,my_max)

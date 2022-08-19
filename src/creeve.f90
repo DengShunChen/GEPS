@@ -69,10 +69,10 @@
 
       real      pl(nx,lev),tl(nx,lev),ql(nx,lev),qls(nx,lev),sl(nx,lev) &
               , hl(nx,lev),hls(nx,lev),zl(nx,lev)                       &
-              , topo(nx),pk(nx,lev),pk2(nx,lev),pl2(nx,lev)             &
+              , pk(nx,lev),pk2(nx,lev),pl2(nx,lev)                      &
               , tl2(nx,lev),ql2(nx,lev),qls2(nx,lev),sl2(nx,lev)        &
               , hl2(nx,lev),hls2(nx,lev),zl2(nx,lev),phil2(nx,lev)
-      real(kind=RTYPE) phil(nx,lev)
+      real(kind=RTYPE) phil(nx,lev),topo(nx)
       real      tmp1(nx,lev)
 !
       real      ograv,g,hltm,cp,r,ratio,amean,bmean

@@ -44,9 +44,9 @@
 
       logical cstar
       real      weight(my),poly(jtrun,jtmax,my/2),sigma(lev+1,2)                &
-              , cosl(my)                                                &
+              , cosl(my),wk1(nxp,my_max)                                &
               , pk(nxp,lev,my_max)                                      &
-              , pt(nxp,my_max),sgeo(nxp,my_max),pdiff(nxp,my_max),t1000(nxp,my_max) &
+              , pdiff(nxp,my_max),t1000(nxp,my_max)                     &
               , tsave(nxp,my_max),plt(nxp,lev,my_max),pk2(nxp,lev,my_max)
       character*4 ggdef,gmdef
 !
@@ -60,13 +60,13 @@
       real(kind=RTYPE) cc(nx+2,levp,1+ncld,my_max)                     &
                ,       ut(nxp,lev,my_max),vt(nxp,lev,my_max)           &
                ,       tt(nxp,lev,my_max),sht(nxp,lev*ncld,my_max)     &
-               ,       o3l(nxp,lev,my_max),phi(nxp,lev,my_max)
+               ,       o3l(nxp,lev,my_max),phi(nxp,lev,my_max)         &
+               ,       pt(nxp,my_max),sgeo(nxp,my_max)
       real(kind=RTYPE) hld4(nx,levp,ncld,my_max),hld3(nx,levp,my_max)
       real      wss(levp,2,1+ncld,jtrun,jtmax)
       real      work_pr1(lev), work_pr2(lev), work_pr3(lev)
 !
-      real      ww1(nx,my_max)
-      real(kind=RTYPE) plnow(jtrun,jtmax,2),dummy
+      real(kind=RTYPE) plnow(jtrun,jtmax,2),dummy,ww1(nx,my_max)
 !
       character*26 lrec
       character*6 typ
@@ -361,7 +361,8 @@
 !c
 
 !ch> 
-      call mpe2d_unify(hld2,pt)
+      wk1=pt
+      call mpe2d_unify(hld2,wk1)
 !ch<
 
       do 170 jj = 1, jlistnum

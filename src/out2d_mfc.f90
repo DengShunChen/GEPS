@@ -5,7 +5,7 @@
       use rank
       use mpe
       use index
-      use const ,only : grav,ptop,rgas,cp
+      use const ,only : grav,ptop,rgas,cp,RTYPE
       use grid  ,only : tt,qt,plt,pk,pk2,sgeo
 !
       implicit  none
@@ -14,7 +14,8 @@
       parameter (num=14)
 
       real      raintot(nxp,my_max),t2(nxp,my_max),u10(nxp,my_max),   &
-                v10(nxp,my_max),ctot(nxp,my_max),pt(nxp,my_max)
+                v10(nxp,my_max),ctot(nxp,my_max)
+      real(kind=RTYPE) pt(nxp,my_max)
 
       real rain1(nxp,my_max),q2(nxp,my_max),rh2(nxp,my_max),          &
            rh10(nxp,my_max),tmax(nxp,my_max),tmin(nxp,my_max),        &

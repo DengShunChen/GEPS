@@ -61,7 +61,7 @@
 ! for thompson
       use module_mp_thompson,  only: mp_gt_driver
 ! for GFDLMP
-      use module_mp_gfdl,      only: gfdl_cloud_microphys_driver,       &
+      use module_mp_gfdl,      only: gfdl_cloud_microphys_driver,      &
                                      cloud_diagnosis
       use physcons,            only: con_rd,con_fvirt,con_g
       use physpara,            only: effr_in
@@ -74,13 +74,13 @@
       integer,  intent(in)    :: ntcw,ntrw,ntiw,ntsw,ntgl,ntinc,ntrnc
       integer,  intent(in)    :: islimsk(nx)
       real,     intent(in)    :: tpi,dta,jj
-      real,     intent(in)    :: plt(nx,lev),pst(nx),dsigma(lev,2),    &
+      real,     intent(in)    :: plt(nx,lev),dsigma(lev,2),            &
                                  phii(nx,lev+1)!,       &
 !                                 prsi(nx,lev+1)
       real,     intent(in)    :: area(nx,1)  ! area of grid box (m^2)
 !      real,     intent(in)    :: sd(nx,lev+1)
       real,     intent(inout) :: sd(nx,lev+1)
-      real(kind=RTYPE), intent(in):: q0(nx,lev*ncld)
+      real(kind=RTYPE), intent(in):: q0(nx,lev*ncld),pst(nx)
 !  ---  inputs/outputs:
       real,     intent(inout) :: tt(nx,lev)
       real,     intent(inout) :: qa(nx,lev)  ! only changed in GFDL MP

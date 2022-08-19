@@ -390,13 +390,14 @@
       use param
       use index
       use mpi
+      use const, only: RTYPE,MPI_RTYPE
 
-      real work(nx,my_max)
-      real a(nxp,my_max)
-      real b(nxp,my_max,nsizex)
+      real(kind=RTYPE) work(nx,my_max)
+      real(kind=RTYPE) a(nxp,my_max)
+      real(kind=RTYPE) b(nxp,my_max,nsizex)
 
-      call MPI_ALLGATHER( a,nxp*my_max, MPI_DOUBLE_PRECISION, &
-                          b,nxp*my_max, MPI_DOUBLE_PRECISION, &
+      call MPI_ALLGATHER( a,nxp*my_max, MPI_RTYPE, &
+                          b,nxp*my_max, MPI_RTYPE, &
                           row_comm, IERR )
 
       do jj=1,jlistnum
@@ -419,13 +420,14 @@
       use param
       use index
       use mpi
+      use const, only: RTYPE,MPI_RTYPE
 
-      real work(nx,my)
-      real a(nx,my_max)
-      real b(nx,my_max*nsizey)
+      real(kind=RTYPE) work(nx,my)
+      real(kind=RTYPE) a(nx,my_max)
+      real(kind=RTYPE) b(nx,my_max*nsizey)
 
-      call MPI_ALLGATHER( a,nx*my_max, MPI_DOUBLE_PRECISION, &
-                          b,nx*my_max, MPI_DOUBLE_PRECISION, &
+      call MPI_ALLGATHER( a,nx*my_max, MPI_RTYPE, &
+                          b,nx*my_max, MPI_RTYPE, &
                           col_comm, IERR )
 
 

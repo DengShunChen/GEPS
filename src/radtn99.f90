@@ -91,7 +91,7 @@
       integer nxj,nx,lev,ncld,lvlw,julian
       real    stbo,s0,cp,ptop
 
-      real    dsigma(lev,2),cosz(nx),alb(nx),tg(nx),curate(nx),pst(nx),&
+      real    dsigma(lev,2),cosz(nx),alb(nx),tg(nx),curate(nx),        &
               pl(nx,lev),tt(nx,lev),qt(nx,lev),o3l(nx,lev),plcl(nx),   &
               cumtop(nx),ss(nx),rs(nx),dtrad(nx,lev),asr(lev),alr(lev),&
               xsr(lev),xlr(lev),acld(lev),aflxd(lev+2),aflxu(lev+2),   &
@@ -99,7 +99,7 @@
 
       integer il(nx),ib(lvlw)
 
-      real(kind=RTYPE) qtx(nx,lev*ncld),o3lx(nx,lev)
+      real(kind=RTYPE) qtx(nx,lev*ncld),o3lx(nx,lev),pst(nx)
 !
 !  clear part
 !

@@ -10,8 +10,10 @@
 
       public
 
-      real, dimension(:,:),allocatable,save :: pt,sgeo,             &
-                           pdiff,ptend,t1000,tsave,std,ptp
+      real, dimension(:,:),allocatable,save ::                      &
+                           pdiff,t1000,tsave,std
+      real(kind=RTYPE),dimension(:,:),allocatable,save :: pt,sgeo,  &
+                           ptend,ptp
 
       real, dimension(:,:,:),allocatable,save :: sd,plt,pk,pk2
 !! for Semi-Lagrangian

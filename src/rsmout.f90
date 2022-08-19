@@ -19,15 +19,16 @@
       integer   itau,nx,my,my_max,lev,ncld,km
       real      ptop,cp,rgas,grav
 
-      real      sgeo(nxp,my_max),pdiff(nxp,my_max)                    &
-              , t1000(nxp,my_max),pt(nxp,my_max),plt(nxp,lev,my_max)  &
+      real      pdiff(nxp,my_max)                                     &
+              , t1000(nxp,my_max),plt(nxp,lev,my_max)                 &
               , pk(nxp,lev,my_max),pk2(nxp,lev,my_max)                &
               , tg(nxp,my_max),snr(nxp,my_max),cosl(my)               &
 !soil
               , smc(nxp,km,my_max),stc(nxp,km,my_max)
       real(kind=RTYPE) ut(nxp,lev,my_max),vt(nxp,lev,my_max)          &
               ,        tt(nxp,lev,my_max),qt(nxp,lev*ncld,my_max)     &
-              ,        phi(nxp,lev,my_max)
+              ,        phi(nxp,lev,my_max),sgeo(nxp,my_max)           &
+              ,        pt(nxp,my_max)
 
       logical   land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max)
 

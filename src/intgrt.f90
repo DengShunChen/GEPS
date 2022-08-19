@@ -59,10 +59,9 @@
 !
       integer   nfxr
 !  for Semi-Lagrangian
-      real      deldm(nxp,my_max),ddtemp_r8(nxp,lev,my_max),       &
+      real      ddtemp_r8(nxp,lev,my_max),                         &
                 vdmerd_r8(nxp,lev,my_max),vdzonl_r8(nxp,lev,my_max),&
-                ptm(nxp,my_max),umtmp(nxp,lev,my_max),             &
-                vmtmp(nxp,lev,my_max)
+                umtmp(nxp,lev,my_max),vmtmp(nxp,lev,my_max)
 !
       real(kind=RTYPE) ndsldta,ndsldtah,facm(2,2),                 &
                 diveng(nxp,lev,my_max),                            &
@@ -78,7 +77,8 @@
                 vdmerdrp(nxp,lev,my_max),vdzonlrp(nxp,lev,my_max), &
                 ddtemp(nxp,lev,my_max),                            &
                 pten(nxp,lev,my_max),tmp(nxp,lev,my_max),dummy,    &
-                rdivm(nxp,lev,my_max)
+                rdivm(nxp,lev,my_max),ptm(nxp,my_max),             &
+                deldm(nxp,my_max)
 
       integer   ierr,itter,ittw,itt,year,yrd
 !
@@ -94,9 +94,8 @@
 
       real      tmin(nxp,my_max),tmax(nxp,my_max),td(nxp,my_max),temp
 !
-      real      ww1(nx,my_max)
       real(kind=RTYPE) pltemp(jtrun,jtmax,2),cc(nx+2,levp,1,my_max)
-      real      sptm(jtrun,jtmax,2)
+      real      sptm(jtrun,jtmax,2),ww1(nx,my_max)
 !byl      real      dlgeo(nxp,my_max),dtgeo(nxp,my_max)
 !byl      real      cc3(nx+2,levp,3,my_max),wss3(levp,2,3,jtrun,jtmax)
 !
@@ -187,7 +186,6 @@
 
 !CWB2021 ndsl single precision test
       real(kind=RTYPE)                                            &
-          ptm_sp(nxp,my_max),                                     &
           pdot(nxp,lev+1,latpart)
 
 
@@ -906,11 +904,9 @@
 
 !CWB2021 ndsl single precision test
       call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlrp,vdmerdrp,ndsldta)
-      ptm_sp=ptm
-      call ndslfv_monoadvv_fgnl(vdzonl,vdmerd,ddtemp,pdot,ptm_sp &
+      call ndslfv_monoadvv_fgnl(vdzonl,vdmerd,ddtemp,pdot,ptm &
                           ,nxjp,ndsldta,2)
 !CWB2021 ndsl single precision test
-      ptm=ptm_sp
 
 !
       call trandv ( jtrun,jtmax,nx,my,my_max,lev,vdzonl,vdmerd,weight,cim &
@@ -1075,16 +1071,14 @@
       call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlrp,vdmerdrp,ndsldta)
 
 !CWB2021 ndsl single precision test
-      ptm_sp=ptm
 !
 !       Vertical Advection
 !
 !       call ndslfv_monoadvv(ddtemp,qt,vdzonl,vdmerd,pdot,ptm      &
-        call ndslfv_monoadvv(ddtemp,qt,vdzonl,vdmerd,pdot,ptm_sp &
+        call ndslfv_monoadvv(ddtemp,qt,vdzonl,vdmerd,pdot,ptm &
                             ,nxjp,ndsldta)
 
 !CWB2021 ndsl single precision test
-      ptm=ptm_sp
 
 !
 !
