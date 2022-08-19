@@ -114,6 +114,8 @@ integer,allocatable::ptp0(:,:)
 real*4,allocatable ::z(:,:)
 character:: key*34
 real::t12
+integer  ifromtau,itotau,istat
+ifromtau=0
 nxmy=nx*my
 
 !        memery GB                          core       real-4 
@@ -167,6 +169,19 @@ do while (.true.)
     end do ! while ( key(1:4)='DOIT' )
 
     call cls_grb2(istat)
+
+    !CWB20160927 for NWP control
+    read(key(7:10),'(i4)')itotau
+    !if(itotau == 9) call sleep(20)
+    if((itotau /= 0).and.(itotau /= ifromtau))then
+    call sendmsg ('gfs',ifromtau,itotau,istat)
+    if (istat.eq.-1) then
+        print *,'ioserver:  SENDMSG ERROR '
+        call dmsexit(-1)
+    endif
+    ifromtau=itotau
+    endif
+
   endif ! (key(1:4).eq."OPEN")
 enddo
 

@@ -33,14 +33,14 @@
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,raincu3,glob)
       if(outdms.gt.0)call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,1,10,2,1,0,0.,1,3,glob)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,1,10,2,103,0,0.,1,3,glob)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
 !
       call syslbl ('b00642',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob1,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,rainlp3,glob)
       if(outdms.gt.0)call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,1,9,2,1,0,0.,1,3,glob)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,1,9,2,103,0,0.,1,3,glob)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
 !
       call syslbl ('b00622',idtg,itau,ggdef,ihdg)
@@ -52,7 +52,7 @@
  98   continue
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       if(outdms.gt.0)call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,1,7,2,1,0,0.,1,3,glob)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,1,7,2,103,0,0.,1,3,glob)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
 
 !=======================================================================

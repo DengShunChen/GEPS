@@ -136,7 +136,7 @@
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,10,2,1,0,0.,glob)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,10,2,103,0,0.,glob)
  
 !byl      glob=glob2
 !large scale precipitation
@@ -146,7 +146,7 @@
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,9,2,1,0,0.,glob)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,9,2,103,0,0.,glob)
 !total precipitation  every 12 hour reset to zero (mm)
       call syslbl ('b00620',idtg,itau,ggdef,ihdg)
 !byl      do 98 j=1,my
@@ -166,7 +166,7 @@
       if(outgrb2==1.and.myrank==0)then
         praint=mod(itau,12)
         if(praint==0)praint=12
-        call wrt_grb2_accu(itau,0,1,7,2,1,0,0.,1,praint,glob)
+        call wrt_grb2_accu(itau,0,1,7,2,103,0,0.,1,praint,glob)
       endif
 !accu. total precipitation from tau 0
       if( itau==0 .or.  itau .ge. nint(domfc) )then
@@ -177,7 +177,7 @@
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,8,0,1,0,0.,glob)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,8,0,103,0,0.,glob)
       endif !domfc
       go to 30
       endif
@@ -300,7 +300,7 @@
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,5,1,2,1,0,0.,glob)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,5,1,2,7,0,0.,glob)
       go to 30
       endif
 !   ---------- Heat flux ----------

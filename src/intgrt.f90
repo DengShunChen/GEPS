@@ -1673,26 +1673,6 @@
 !          call zilch (runoff,nxmy)
         endif
 !
-        ifromtau = taui
-        itotau   = taue
-        flag =.false.
-        if(myrank .eq. 0)then
-          flag =.true.
-!CWB2016 
-!          if(.not. io_quilting)then
-!CWB2017           call sendmsg ('gfs',ifromtau,itotau,istat)
-            if(itau.eq.itotau) call sendmsg ('gfs',ifromtau,itotau,istat)
-!          else
-!            istat=0
-!          endif
-        endif
-!ch     call mpe_broadcast(istat,1,flag,mpe_integer)
-        call mpe_bcast(istat,1,0,mpe_integer)
-
-        if (istat.eq.-1) then
-          print *,' SENDMSG ERROR ', 'RANK=',myrank
-          call dmsexit(-1)
-        endif
 !
         if(myrank .eq. 0) print *,' history written at tau=',itau
       endif     ! end of (histim) --- --- ---
@@ -1762,17 +1742,6 @@
 !        endif
         endif
 !
-!       output sit var. at "outsitmean" interval
-!
-        if(do_sit .and. (outsitmean .gt. 0.)) then
-!          dtaup = mod(tau+0.001, outsitmean)
-!          if( dtaup .lt. dtx_tau ) then
-           if(  mod( itau , NINT(outsitmean) ) == 0  )then 
-             if(myrank .eq. 0) print *,'outsitmean at tau=',itau
-             call writesitmean(nx,my,my_max,lkvl,ifilout,itau,idtg,ggdef)
-           endif
-        endif
-!
 !       output flux at 24 hour interval
 !
         if(  mod( itau , 24 ) == 0  )then
@@ -1793,6 +1762,15 @@
           endif
 
           if(do_sit)then
+!           output sit var. at "outsitmean" interval
+            if(outsitmean .gt. 0. ) then
+!              dtaup = mod(tau+0.001, outsitmean)
+!              if( dtaup .lt. dtx_tau ) then
+               if(  mod( itau , NINT(outsitmean) ) == 0  )then 
+                 if(myrank .eq. 0) print *,'outsitmean at tau=',itau
+                 call writesitmean(nx,my,my_max,lkvl,ifilout,itau,idtg,ggdef)
+               endif
+            endif
             if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. (dailyClm_option.ge.1)) then
               call outtseadiffSIT24(nx,my,my_max,ratioSIT,dtsit24,ifilout,itau,idtg,ggdef)
             endif
@@ -1840,6 +1818,10 @@
            call skebout(tau)
         endif
 
+        if(do_sit .AND. lgodas .AND. ldailysst) then
+          CALL read_dailygodas(idtg,tau,dtx)
+        endif
+
         !close grib2 file
         if(outgrb2==1.and.myrank==0)then
           if(lopngrb2)then
@@ -1858,9 +1840,28 @@
                  ,dble(toutend-toutsrt)/dble(toutrate)
         endif
 
-        if(do_sit .AND. lgodas .AND. ldailysst) then
-          CALL read_dailygodas(idtg,tau,dtx)
-        endif
+        if ( histim .or. ltrack )  then
+          ifromtau = taui
+          itotau   = taue
+          flag =.false.
+          if(myrank .eq. 0)then
+            flag =.true.
+!CWB2016   
+            if(.not. io_quilting)then
+!CWB2017             call sendmsg ('gfs',ifromtau,itotau,istat)
+              if(itau.eq.itotau) call sendmsg ('gfs',ifromtau,itotau,istat)
+            else
+              istat=0
+            endif
+            if (istat.eq.-1) then
+              print *,' SENDMSG ERROR ', 'RANK=',myrank
+              call dmsexit(-1)
+            endif
+          endif
+!ch       call mpe_broadcast(istat,1,flag,mpe_integer)
+!         call mpe_bcast(istat,1,0,mpe_integer)
+        endif !histim 
+
       endif !  (mod(tau+0.001, 1.) .lt. 0.01)  hourly for output 
 !    ---------------------------------------------------------------
 !
@@ -1926,7 +1927,7 @@
           call deallocate_opgsst_array
         endif
         if(do_sit) then
-           print *,'myrank=',myrank,'ready sit_vdiff_end'
+           if(myrank==0)print *,'ready sit_vdiff_end'
            if(locaf) call deallocate_ocaf_array
            if(lwoa0) call deallocate_woa0_array
            if(lgodas) call deallocate_godas_array

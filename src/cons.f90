@@ -136,8 +136,6 @@
 !
 !  read namlist of path/file name(operation)
 !
-      call getenv(pathname,ifilin_nc)
-
       call getfname(pathname,logicname,truefile,istat)
       if(istat.ne.0)then
         print *,'getfname : error','RANK=',myrank
@@ -479,19 +477,16 @@
 ! data
 ! open ncep data dms
 !
+       istat4=0; istat5=0; istat6=0; istat7=0
        if(ldailyFCTsst) then
-          istat4=0
           call dmsopn(ifilin_sst,"r",istat4)
           istat = istat + abs(istat4)
         endif
         if(ldailyFCTicesndpt) then
-          istat5=0
           call dmsopn(ifilin_ncep,"r",istat5)
           istat = istat + abs(istat5)
         endif
         if(dailyClm_option .ge. 1) then
-          istat6=0
-          istat7=0
           call dmsopn(ifilin_ClmANA,"r",istat6)
           if(dailyClm_option .eq. 2) then
             call dmsopn(ifilin_ClmFCT,"r",istat7)

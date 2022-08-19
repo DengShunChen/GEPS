@@ -47,14 +47,14 @@
                   's003x0','s003u0','x00770','ssl010'/
 
 !     grib code 
-!                1h Tot                   T2M T2M  2M DW DW       
-!                p  p  T2 sh2 rh2 u10 v10 max min DPT LW SW CC SLP
-      data ptp0/ 0, 0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0, 0,  0 /
-      data ptp1/ 1, 1,  0,  1,  1,  2,  2,  0,  0,  0, 5, 4, 6,  3 /
-      data ptp2/ 7, 8,  0,  0,  1,  2,  3,  4,  5,  6, 3, 7, 1,  0 /
-      data ptp3/ 2, 1,  2,  6,  0,  2,  2,  2,  2,  2, 2, 2, 3,  2 /
-      data ptp4/ 1, 1,103,103,103,103,103,103,103,103, 1, 1, 7,101 /
-      data ptp5/ 0, 0,  2,  2,  2, 10, 10,  2,  2,  2, 0, 0, 0,  0 /
+!                 1h  Tot                   T2M T2M  2M DW DW       
+!                 p   p  T2 sh2 rh2 u10 v10 max min DPT LW SW CC SLP
+      data ptp0/  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0, 0,  0 /
+      data ptp1/  1,  1,  0,  1,  1,  2,  2,  0,  0,  0, 5, 4, 6,  3 /
+      data ptp2/  7,  8,  0,  0,  1,  2,  3,  4,  5,  6, 3, 7, 1,  0 /
+      data ptp3/  2,  1,  2,  6,  0,  2,  2,  2,  2,  2, 2, 2, 3,  2 /
+      data ptp4/103,103,103,103,103,103,103,103,103,103, 1, 1, 7,101 /
+      data ptp5/  0,  0,  2,  2,  2, 10, 10,  2,  2,  2, 0, 0, 0,  0 /
 
 !
       ntau=itau
@@ -183,7 +183,12 @@
 
 !====== grib2 output
       if(outgrb2==1 )then
-          do n=1,num
+          n=1
+          call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),mout)
+          if(myrank==0)then
+            call wrt_grb2_accu(ntau,ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,float(ptp5(n)),1,1,mout ) 
+          endif
+          do n=2,num
             call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),mout)
             if(myrank==0)then
               call wrt_grb2(ntau,ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,float(ptp5(n)) ,mout ) 

@@ -79,7 +79,7 @@ module load w3lib/2.0.2
 module unuse  /data/common/gfs/modulefiles/$machine
 
 #===add for grib2 output
-setenv G2_LIB "-L/nwpr/gfs/xb119/data/fx1000/g2lib-1.4.0/lib -lg2 "
-setenv G2_INC "/package/fx1000/g2lib-1.4.0/include"
+setenv G2_LIB "-L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 "
+setenv G2_INC "/package/fx1000/g2lib-1.4.0_cwb/include"
 setenv PNG_LIB " -L/package/fx1000/libpng-1.6.37/lib -lpng "
 setenv JASPER_LIB "-L/package/fx1000/jasper-1.900.1/lib -ljasper"

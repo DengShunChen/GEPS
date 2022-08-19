@@ -322,7 +322,7 @@ cat > ${GFSWRK}/namlsts << EOF
   write_tau=6,
  &end
  
-&stochy_physics
+ &stochy_physics
   ncep_seeds = true,
   use_zmtnblck = true,
   sppt_logit = true,

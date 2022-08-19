@@ -2,7 +2,7 @@
              , lmax,numout,idtg,ifilout                              &
              , outdir,ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo        &
              , ptend,pt,plt,pk,pk2,phi,ut,vt,sd                      &
-             , tt,qt,rdiv,rvor,tg,gwet,z0,hflux,qflux,snr            &
+             , tt,sht,rdiv,rvor,tg,gwet,z0,hflux,qflux,snr            &
              , raintot,raincu,rainlp,plcl,cumtop,ss,rs,alb,gwclim    &
              , acld,cosl,drag,ugws,vgws,t2,q2,rh2,rh10,u10,v10,gfx,rld,sld &
 !byl             , km,smc,slc,stc,canopy,ggdef,slptyp,v850,v700,h850,h500   &
@@ -73,7 +73,7 @@
 !             , pres3d(nx,my,lpout)
               , pres3d(nxp,my_max,lpout)
 !
-      real      qt_s(nxp,lev*ncld,my_max),sdhat(nxp,lev,my_max)
+      real      sht(nxp,lev*ncld,my_max),sdhat(nxp,lev,my_max)
 !
       real      wk_xy(nxp,my_max,12)   ! the last dim is changable
 !
@@ -91,7 +91,6 @@
       real      dsigma(lev,2),deodp
 !
       logical :: lwrite,lwritesit
-      integer::istat 
 !xb110>
 !      real      flash(nxp,my_max)         !flash density 
 !xb110<
@@ -139,7 +138,8 @@
         nxj=nxdef_2d(j)
         do k = 1, lev*ncld
           do i = 1,nxj
-            qt_s(i,k,jj) = qt(i,k,jj)
+!            sht(i,k,jj) = qt(i,k,jj)
+            qt(i,k,jj) = sht(i,k,jj)  !copy to local variable
           enddo
         enddo
       enddo
@@ -159,9 +159,9 @@
           do k = 1, lev
             kk=nk+k
             do i = 1,nxj
-              if ( qt_s(i,kk,jj) .lt. 0.0 )  then
+              if ( qt(i,kk,jj) .lt. 0.0 )  then
                 ngq = ngq + 1
-                qt_s(i,kk,jj) = 0.0
+                qt(i,kk,jj) = 0.0
               endif
             enddo
           enddo
@@ -234,8 +234,8 @@
         j=jlist1(jj)
         nxj=nxdef_2d(j)
         do i=1,nxj
-          ttb  = tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt_s(i,lev,jj))
-          ttp  = tt(i,llts,jj)*pk(i,llts,jj)/(1.0+0.608*qt_s(i,llts,jj))
+          ttb  = tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt(i,lev,jj))
+          ttp  = tt(i,llts,jj)*pk(i,llts,jj)/(1.0+0.608*qt(i,llts,jj))
           ttt1 = ttb + alaps*rdg*ttb*   &
               ((pt(i,jj)+ptop)/plt(i,lev,jj)-1.0)
           ttt2 = ttp + alaps*(phi(i,llts,jj)-sgeo(i,jj))/grav
@@ -365,7 +365,7 @@
 !
         do k = 1, lev
           do i = 1,nxj
-            tmp(i,k,jj) = tt(i,k,jj)*pk(i,k,jj)/(1.0+0.608*qt_s(i,k,jj))
+            tmp(i,k,jj) = tt(i,k,jj)*pk(i,k,jj)/(1.0+0.608*qt(i,k,jj))
           enddo
         enddo
 !
@@ -419,7 +419,7 @@
         call qsatq_2d(nxjp(j),nxp,lev,tmp(1,1,jj),plt(1,1,jj),wrk1(1,1))
         do k=1, lev
           do i=1,nxj
-            tmp(i,k,jj)= qt_s(i,k,jj)/wrk1(i,k)
+            tmp(i,k,jj)= qt(i,k,jj)/wrk1(i,k)
           enddo
         enddo
         do i=1,nxj
@@ -446,7 +446,7 @@
               do k = 1, lev
                 kk = (ntrac-1)*lev+k
                 do i = 1,nxj
-                  tmp(i,k,jj)=qt_s(i,kk,jj)
+                  tmp(i,k,jj)=qt(i,kk,jj)
                 enddo
               enddo
               do i = 1,nxj
@@ -467,7 +467,7 @@
             nxj=nxdef_2d(j)
             do k = 1, lev
               do i = 1,nxj
-                tmp(i,k,jj)=qt_s(i,k+(ntoz-1)*lev,jj)
+                tmp(i,k,jj)=qt(i,k+(ntoz-1)*lev,jj)
               enddo
             enddo
             do i = 1,nxj
@@ -488,7 +488,7 @@
           do k = 1, lev
             do ntrac=2,nclds
               do i = 1,nxj
-                tmp(i,k,jj)=tmp(i,k,jj)+qt_s(i,k+(ntrac-1)*lev,jj)
+                tmp(i,k,jj)=tmp(i,k,jj)+qt(i,k+(ntrac-1)*lev,jj)
               enddo
             enddo
           enddo
@@ -621,8 +621,6 @@
           call sitout(nx,my,my_max,itau,ifilout,idtg,num,whtlev,ggdef)
         endif
       endif
-
-
 !
 !  wk_xy(-,-,1) : temperature at the lowest sigma level
 !  wk_xy(-,-,2) : u wind at the lowest sigma level
@@ -640,7 +638,7 @@
         nxj=nxdef_2d(j)
         xx=rad/cosl(j)
         do i = 1,nxj
-          wk_xy(i,jj,1) = tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt_s(i,lev,jj))
+          wk_xy(i,jj,1) = tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt(i,lev,jj))
           wk_xy(i,jj,2) = ut(i,lev,jj)*xx
           wk_xy(i,jj,3) = vt(i,lev,jj)*xx
         end do
@@ -650,19 +648,19 @@
             do i = 1,nxj
               deltap = ( pt(i,jj)*(sigma(k+1,1)-sigma(k,1))+ &
                        (sigma(k+1,2)-sigma(k,2)) ) * 100./grav
-              wk_xy(i,jj,4) = wk_xy(i,jj,4) + qt_s(i,kk,jj)*deltap
+              wk_xy(i,jj,4) = wk_xy(i,jj,4) + qt(i,kk,jj)*deltap
             enddo
           enddo
         enddo
         call qsatq(nxj,wk_xy(1,jj,1),plt(1,lev,jj),wk_xy(1,jj,5))
         do i = 1,nxj
-          wk_xy(i,jj,5) = 100.*(qt_s(i,lev,jj)/wk_xy(i,jj,5))
+          wk_xy(i,jj,5) = 100.*(qt(i,lev,jj)/wk_xy(i,jj,5))
           wk_xy(i,jj,5) = min( 100., max( 1., wk_xy(i,jj,5) ) )
         enddo
       enddo
 
-!xb119  qt copy to local array qt_s  on line 157
-!       and later variable use qt_s
+!xb119  origin qt rename to sht ,and 
+!     sht copy to local array qt  on line 142
 !
 !  get back original qt
 !
@@ -671,7 +669,7 @@
 !        nxj=nxdef_2d(j)
 !        do k = 1, lev*ncld
 !          do i = 1,nxj
-!            qt(i,k,jj) = qt_s(i,k,jj)
+!            qt(i,k,jj) = sht(i,k,jj)
 !          enddo
 !        enddo
 !      enddo
@@ -691,7 +689,7 @@
         enddo
       enddo
 
-!soil variable 
+!soil variable
       do jj = 1, jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
@@ -722,7 +720,6 @@
                  ,acld,ugws,vgws,t2,q2,rh2,rh10,u10,v10,gfx,rld     &
 !xb110                 ,sld,wk_xy,soil_xy,canopy,ggdef,lwrite,flash)
                  ,sld,wk_xy,soil_xy,canopy,ggdef)
-
-
+!
       return
       end

@@ -252,7 +252,7 @@
       call unify_reduceintp(nx,my,my_max,wrk,glob)
 !byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       if(outdms.gt.0) call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,3,0,2,1,0,0.,glob)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,3,0,2,103,0,0.,glob)
 !=======================================================================
 !output 1hr prec. at tau=0
       if (itau .eq. 0) then
@@ -260,7 +260,7 @@
         glob=0.
         call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      !if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,1,7,2,1,0,0.,1,1,glob)
+      !if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,1,7,2,103,0,0.,1,1,glob)
       endif
 !output 6hr prec.
       if (mod(float(itau)+0.00001, 6. ) .lt. 0.01) then
@@ -272,7 +272,7 @@
 !byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,1,10,2,1,0,0.,1,6,glob)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,1,10,2,103,0,0.,1,6,glob)
 
 !
       call syslbl ('b00643',idtg,itau,ggdef,ihdg)
@@ -281,7 +281,7 @@
 !byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0) call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,1,9,2,1,0,0.,1,6,glob)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,1,9,2,103,0,0.,1,6,glob)
 
 !
       call syslbl ('b00623',idtg,itau,ggdef,ihdg)
@@ -295,7 +295,7 @@
 !byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0) call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,1,7,2,1,0,0.,1,6,glob)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,1,7,2,103,0,0.,1,6,glob)
 
       endif
 !

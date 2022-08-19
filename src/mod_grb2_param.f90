@@ -15,47 +15,46 @@ module mod_grb2_param
 !* output variabels.
 !*
 !*
-!*
 !* EDITED BY
 !*
 !* Jia-ying Wu 2017,09
 !*
 !************************************************************************
-      implicit none
-      public
-      integer*4 :: ierr
+implicit none
+public
+integer*4 :: ierr
 !GRIB1 SECTION 0 & 1
-      integer*4 :: listsec0(2),listsec1(13)
+integer*4 :: listsec0(2),listsec1(13)
 !GRIB2 SECTION 2 SKIP
 !GRIB2 SECTION 3
-      integer*4 :: igds(5),idefnum,ideflist
-      integer*4,parameter :: igdstmplen=19 !Max dimension of igdstmpl()
-      integer*4 :: igdstmpl(igdstmplen)
+integer*4 :: igds(5),idefnum,ideflist
+integer*4,parameter :: igdstmplen=19 !Max dimension of igdstmpl()
+integer*4 :: igdstmpl(igdstmplen)
 !GRIB2 SECTION 4
-      integer*4 :: ipdsnum
-      integer*4,parameter :: ipdstmplen=15 !Max dimension of ipdstmpl()
-      integer*4 :: ipdstmpl(ipdstmplen)
-      integer*4,parameter :: ipdstmplen8=29 !Max dimension of ipdstmpl()
-      integer*4 :: ipdstmpl8(ipdstmplen8)
-      integer*4,parameter :: numcoord=1 !number of values in array
-                                      !coordlist.
-      real :: pcoord
-      real*4 :: coordlist(numcoord)    !Array containg floating point
-                                     !values
-                                     ! intended to document
-      !integer,parameter :: numcoord2=60, plst26=26, plst16=16, plst31=31
-      !real :: coordlist2(numcoord2),                               &
-      !        pcoord26(plst26),pcoord16(plst16),pcoord31(plst31)
-      !integer,parameter :: llst5=5
-      !real :: lcoord5(llst5)
+integer*4 :: ipdsnum
+integer*4,parameter :: ipdstmplen=15 !Max dimension of ipdstmpl()
+integer*4 :: ipdstmpl(ipdstmplen)
+integer*4,parameter :: ipdstmplen8=29 !Max dimension of ipdstmpl()
+integer*4 :: ipdstmpl8(ipdstmplen8)
+integer*4,parameter :: numcoord=1 !number of values in array
+                                !coordlist.
+real :: pcoord
+real*4 :: coordlist(numcoord)    !Array containg floating point
+                               !values
+                               ! intended to document
+!integer,parameter :: numcoord2=60, plst26=26, plst16=16, plst31=31
+!real :: coordlist2(numcoord2),                               &
+!        pcoord26(plst26),pcoord16(plst16),pcoord31(plst31)
+!integer,parameter :: llst5=5
+!real :: lcoord5(llst5)
 !GRIB2 SECTION 5
-      integer*4 :: idrsnum40,idrsnum0
-      integer*4,parameter :: idrstmplen40=7, idrstmplen0=5
-                           !Max dimension of idrstmpl()
-      integer*4 :: idrstmpl40(idrstmplen40),idrstmpl0(idrstmplen0)
-      integer*4 :: ngrdpts
+integer*4 :: idrsnum40,idrsnum0
+integer*4,parameter :: idrstmplen40=7, idrstmplen0=5
+                     !Max dimension of idrstmpl()
+integer*4 :: idrstmpl40(idrstmplen40),idrstmpl0(idrstmplen0)
+integer*4 :: ngrdpts
 !GRIB2 SECTION 6
-      integer*4 :: ibmap
+integer*4 :: ibmap
 
 character,allocatable,save :: cgrib(:)*1
 integer*4:: lcgrib=2*1e8,lengrib
@@ -83,22 +82,19 @@ integer*8::grb_idtg
 ! listsec0(2)=2  !GRIB Edition Number (currently 2)
 
 ! Grib2 section 1 (Must be dimensioned >= 13)
-!      data listsec1/137,  0,  9,  0,  1, -1,    &
-!      data listsec1/  7,  0,  2,  1,  1, -1,    &
-      data listsec1/139,  0,  2,  1,  1, & 
-                     -1, -1, -1, -1,  0,  0,  0, -1/
-! listsec1(1)=137   !Id of orginating centre (Code Table C-1)
-! listsec1(2)=0     !Id of orginating sub-centre 
-! listsec1(3)=9     !GRIB Master Tables Version Number (Code Table 1.0)
-! listsec1(4)=0     !GRIB Local Tables Version Number  (Code Table 1.1)
-! listsec1(5)=1     !Significance of Reference Time    (Code Table 1.2)
-! listsec1(6)=yy    !Reference Time - Year (4 digits)
-! listsec1(7)=mon   !Reference Time - Month
-! listsec1(8)=dd    !Reference Time - Day
-! listsec1(9)=hh    !Reference Time - Hour
-! listsec1(10)=0    !Reference Time - Minute
-! listsec1(11)=0    !Reference Time - Second
-! listsec1(12)=0    !Production status of data         (Code Table 1.3)
+ data listsec1/138, 10,  2,  1,  1, -1, -1, -1, -1,  0,  0,  0, -1/
+! listsec1(1)=137    !Id of orginating centre (Code Table C-1)
+! listsec1(2)=0      !Id of orginating sub-centre 
+! listsec1(3)=9      !GRIB Master Tables Version Number (Code Table 1.0)
+! listsec1(4)=0      !GRIB Local Tables Version Number  (Code Table 1.1)
+! listsec1(5)=1      !Significance of Reference Time    (Code Table 1.2)
+! listsec1(6)=yy     !Reference Time - Year (4 digits)
+! listsec1(7)=mon    !Reference Time - Month
+! listsec1(8)=dd     !Reference Time - Day
+! listsec1(9)=hh     !Reference Time - Hour
+! listsec1(10)=0     !Reference Time - Minute
+! listsec1(11)=0     !Reference Time - Second
+! listsec1(12)=0     !Production status of data        (Code Table 1.3)
 ! listsec1(13)=tproc !Type of processed data           (Code Table 1.4)
 
 !=======================================================================
@@ -107,14 +103,13 @@ integer*8::grb_idtg
 ! Grib2 section 2 skip!!!
 
 !=======================================================================
-!  call addgrid(cgrib,lcgrib,igds,igdstmpl,igdstmplen,ideflist,        !     
-!               idefnum,ierr)                                          !
+! call addgrid(cgrib,lcgrib,igds,igdstmpl,igdstmplen,ideflist,idefnum,ierr)
 !=======================================================================
 !*#     cgrib
 !**     lcgrib
 
 ! Grib2 section 3 (Must be dimensioned >= 5)
-      data igds/0,-1,0,0,-1/
+ data igds/0,-1,0,0,-1/
 !   igds(1)=0     !Source of grid definition (see Code Table 3.0)
 !** igds(2)=nx*my !Number of grid points in the defined grid.
 !   igds(3)=0     !Number of octets needed for each additional grid points definition.
@@ -129,10 +124,10 @@ integer*8::grb_idtg
 ! ( NN=igds(5) ).  Each element of this integer array contains an entry
 ! (in the order specified) of Grid Defintion Template 3.NN
 !      data igdstmpl//
-      data igdstmpl/ 6,        0,  0 , 0,  0,  &
-                     0,        0, -1, -1,  0,  &
-                     0,-90000000,  0, 48, -1,  &
-                    -1,       -1, -1, 64/
+ data igdstmpl/ 6,        0,  0 , 0,  0,  &
+                0,        0, -1, -1,  0,  &
+                0,-90000000,  0, 48, -1,  &
+               -1,       -1, -1, 64/
 !                     0,-90000000,  0,00000000, -1,  &
 !                    -1,       -1, -1,01000000/
 ! igdstmpl(1)=6      !Shpape of the Earth( See Code talbe 3.2)
@@ -171,14 +166,13 @@ integer*8::grb_idtg
 !**     lcgrib
 
 ! Grib2 section 4
-   data ipdsnum/0/
+ data ipdsnum/0/
 !  ipdsnum=0    !Product Definition Template Number ( see Code Table 4.0)
 !  ipdsnum=0  :Analysis or forecast at a horizontal level or in a horizontal layer at a point in time.
 ! Contains the data values for the specified Product Definition Template
 ! ( N=ipdsnum ).  Each element of this integer array  contains an entry
 ! (in the order specified) of Product Defintion Template 4.N
-       data ipdstmpl/ -1, -1, -1,  0, 81,  0,  0,  1, -1, -1,  &
-                      -1, -1,255,  0,  0/
+ data ipdstmpl/ -1, -1, -1,  0, 81,  0,  0,  1, -1, -1, -1, -1,255,  0,  0/
 ! ipdstmpl(1)=    !Parameter category ( See Code Table 4.1 )
 ! ipdstmpl(2)=    !Parameter number ( See Code Table 4.2 )
 ! ipdstmpl(3)=    !Type of generating process ( See Code Table 4.3 )
@@ -196,12 +190,9 @@ integer*8::grb_idtg
 ! ipdstmpl(14)=0  !Scale factor of second fixed surface
 ! ipdstmpl(15)=0  !Scaled value of second fixed surface
 
-!       data ipdstmpl8/ -1, -1, -1,  0, 81,  0,  0,  1, -1, -1,  &
-!                       -1, -1,255,  0,  0/
-!       ipdstmpl8(1:15)=ipdstmpl(1:15)
-       data ipdstmpl8/ -1, -1, -1,  0, 81,  0,  0,  1, -1, -1,  &
-                      -1, -1,255,  0,  0,                       &
-                      -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1/
+ data ipdstmpl8/ -1, -1, -1,  0, 81,  0,  0,  1, -1, -1,  &
+                 -1, -1,255,  0,  0,                       &
+                 -1, -1, -1, -1, -1,-1,-1,-1,-1,-1,-1,-1,-1,-1/
 !  ipdstmpl(16)= 0 ! Year   | Time of end of overall time interval
 !  ipdstmpl(17)= 0 ! Month  | Time of end of overall time interval
 !  ipdstmpl(18)= 0 ! Day    | Time of end of overall time interval
@@ -211,12 +202,11 @@ integer*8::grb_idtg
 !  ipdstmpl(22)= 1 ! n - Number of time range specifications describing
                    !     the time intervals used to calculate the
                    !     statistically processed field
-!  ipdstmpl(23)= 0 ! Total number of data values missing in statistical
-                   ! process.
+!  ipdstmpl(23)= 0 ! Total number of data values missing in statistical process.
 !  ipdstmpl(24)= 0 ! Statistical process used to calculate the processed
                    ! field from the field at each time increment during
                    ! the time range (Code Table 4.10)= 0
-                   ! 0 --> Average
+                   ! 0 --> Average  1 --> Accum
 !  ipdstmpl(25)= 2 ! Type of time increment between successive fields
                    ! used in the statistical processing (Code Table 4.11)
                    ! 2 --> Sucessive times processed have same start
@@ -233,48 +223,46 @@ integer*8::grb_idtg
 !  ipdstmpl(29)= 6 ! Time increment between successive fields, in units
                    ! defined by the previous octet (see Note 3 and 4)
 
-
-
-       data coordlist/1/
-!      coordlist(1)=0 !Array containg floating point values intended to
-                     !document the vertical discretisation associated to
-                     !model
-                     !data on hybrid coordinate vertical levels.
-!       data coordlist2/          0.00085400,0.00182570,0.00293106, &
-!           0.00418811,0.00561725,0.00724145,0.00908662,0.01118186, &
-!           0.01355986,0.01625721,0.01931478,0.02277809,0.02669766, &
-!           0.03112936,0.03613468,0.04178099,0.04814158,0.05529569, &
-!           0.06332831,0.07232963,0.08239436,0.09362052,0.10610791, &
-!           0.11995598,0.13526124,0.15211401,0.17059470,0.19076949, &
-!           0.21268569,0.23636683,0.26180792,0.28897095,0.31778133, &
-!           0.34812545,0.37984984,0.41276224,0.44663487,0.48120970, &
-!           0.51620575,0.55132793,0.58627691,0.62075919,0.65449686, &
-!           0.68723622,0.71875478,0.74886625,0.77742342,0.80431894, &
-!           0.82948416,0.85288658,0.87452598,0.89442998,0.91264919, &
-!           0.92925232,0.94432163,0.95794864,0.97023054,0.98126698, &
-!           0.99058760,1.00000000/
+ data coordlist/1/
+!coordlist(1)=0 !Array containg floating point values intended to
+                !document the vertical discretisation associated to
+                !model
+                !data on hybrid coordinate vertical levels.
+! data coordlist2/          0.00085400,0.00182570,0.00293106, &
+!     0.00418811,0.00561725,0.00724145,0.00908662,0.01118186, &
+!     0.01355986,0.01625721,0.01931478,0.02277809,0.02669766, &
+!     0.03112936,0.03613468,0.04178099,0.04814158,0.05529569, &
+!     0.06332831,0.07232963,0.08239436,0.09362052,0.10610791, &
+!     0.11995598,0.13526124,0.15211401,0.17059470,0.19076949, &
+!     0.21268569,0.23636683,0.26180792,0.28897095,0.31778133, &
+!     0.34812545,0.37984984,0.41276224,0.44663487,0.48120970, &
+!     0.51620575,0.55132793,0.58627691,0.62075919,0.65449686, &
+!     0.68723622,0.71875478,0.74886625,0.77742342,0.80431894, &
+!     0.82948416,0.85288658,0.87452598,0.89442998,0.91264919, &
+!     0.92925232,0.94432163,0.95794864,0.97023054,0.98126698, &
+!     0.99058760,1.00000000/
 !
-!       data pcoord16/ 10.0, 20.0, 30.0, 50.0, 70.0,    &
-!                     100.0,150.0,200.0,250.0,300.0,    &
-!                     400.0,500.0,700.0,850.0,925.0,1000.0/
+! data pcoord16/ 10.0, 20.0, 30.0, 50.0, 70.0,    &
+!               100.0,150.0,200.0,250.0,300.0,    &
+!               400.0,500.0,700.0,850.0,925.0,1000.0/
 !
-!       data pcoord26/ 10.0, 20.0, 30.0, 50.0, 70.0,100.0,150.0,200.0, &
-!                     250.0,300.0,350.0,400.0,450.0,500.0,550.0,600.0, &
-!                     650.0,700.0,750.0,800.0,850.0,900.0,925.0,950.0, &
-!                     975.0,1000.0/
+! data pcoord26/ 10.0, 20.0, 30.0, 50.0, 70.0,100.0,150.0,200.0, &
+!               250.0,300.0,350.0,400.0,450.0,500.0,550.0,600.0, &
+!               650.0,700.0,750.0,800.0,850.0,900.0,925.0,950.0, &
+!               975.0,1000.0/
 !
-!       data pcoord31/  1.0,  2.0,  3.0,  5.0,  7.0, 10.0, 20.0, 30.0, &
+! data pcoord31/  1.0,  2.0,  3.0,  5.0,  7.0, 10.0, 20.0, 30.0, &
 !                      50.0, 70.0,100.0,150.0,200.0,250.0,300.0,350.0, &
 !                     400.0,450.0,500.0,550.0,600.0,650.0,700.0,750.0, &
 !                     800.0,850.0,900.0,925.0,950.0,975.0,1000.0/
 !
-!       data lcoord5/0.0,10.0,40.0,100.0,200.0/
+! data lcoord5/0.0,10.0,40.0,100.0,200.0/
 !=======================================================================
 ! Grib2 section 5
-       data idrsnum40/40/  !jpeg comppress
-       data idrsnum0  /0/  !normal
-!   idrsnum=40   !Data Representation Template Number ( see Code Table 5.0 )
-!   idrsnum=40 : JPEG 2000 Code Stream Format
+ data idrsnum40/40/  !jpeg comppress
+ data idrsnum0  /0/  !normal
+!idrsnum=0    !Data Representation Template Number ( see Code Table 5.0 )
+!idrsnum=40   !JPEG 2000 Code Stream Format
 
 !Contains the data values for the specified Data Representation Template
 ! ( N=idrsnum ). Each element of this integer array contains an entry
@@ -284,46 +272,40 @@ integer*8::grb_idtg
 ! etc...) may be changed by the data packing algorithms. Use this to
 ! specify
 ! scaling factors and order of spatial differencing, if desired.
-       !data idrstmpl40/0,0,2,8,0,0,255/
-       data idrstmpl40/0,0,2,0,0,0,255/
-!   idrstmpl(1)=0  !Reference Value (R)(IEEE 32-bit folating-point value)
-!   idrstmpl(2)=0  !Binary scale factor (E)
-!   idrstmpl(3)=0  !Decimal scale factor (D)
-!   idrstmpl(4)=8  !Number of bits required to hold the resulting scaled and
+  data idrstmpl40/0,0,2,0,0,0,255/
+! idrstmpl(1)=0  !Reference Value (R)(IEEE 32-bit folating-point value)
+! idrstmpl(2)=0  !Binary scale factor (E)
+! idrstmpl(3)=0  !Decimal scale factor (D)
+! idrstmpl(4)=8  !Number of bits required to hold the resulting scaled and
+!          referenced data values.(i.e. The depth of the grayscale image.)
+! idrstmpl(5)=    !Type of original field values( see Code Table 5.1 )
+                  ! 0:folating points, 1:integer
+! idrstmpl(6)=0    !Type of Compression used.( see Code Table 5.40 )
+! idrstmpl(7)=255  !Target compression ratio, M:1.
+               !with respect to the bit-depth specified in
+               !idrstmpl(4), when idrstmpl(6) indicates Lossy
+               !Compression. Otherwise, set to missing.
+  data idrstmpl0/0,0,2,0,0/
+! idrstmpl(1)=0  !Reference Value (R)(IEEE 32-bit folating-point value)
+! idrstmpl(2)=0  !Binary scale factor (E)
+! idrstmpl(3)=0  !Decimal scale factor (D)
+! idrstmpl(4)=8  !Number of bits required to hold the resulting scaled and
 !            referenced data values.(i.e. The depth of the grayscale image.)
-!   idrstmpl(5)=    !Type of original field values( see Code Table 5.1 )
-                    ! 0:folating points, 1:integer
-!   idrstmpl(6)=0    !Type of Compression used.( see Code Table 5.40
-!    )
-!    idrstmpl(7)=255  !Target compression ratio, M:1.
-                  !with respect to the bit-depth specified in
-                  !idrstmpl(4), when idrstmpl(6) indicates Lossy
-                  !Compression. Otherwise, set to missing.
-     data idrstmpl0/0,0,2,0,0/
-!    idrstmpl(1)=0  !Reference Value (R)(IEEE 32-bit folating-point value)
-!    idrstmpl(2)=0  !Binary scale factor (E)
-!    idrstmpl(3)=0  !Decimal scale factor (D)
-!    idrstmpl(4)=8  !Number of bits required to hold the resulting scaled and
-!               referenced data values.(i.e. The depth of the grayscale image.)
-!    idrstmpl(5)=    !Type of original field values( see Code Table 5.1 )
-              ! 0:folating points, 1:integer
-!     ngrdpts=nx*my  !Number of data points in grid. i.e. size of fld
-!     and bmap.
-
+! idrstmpl(5)=    !Type of original field values( see Code Table 5.1 )
+                  ! 0 -> folating points, 1 -> integer
+!  ngrdpts=nx*my  !Number of data points in grid. i.e. size of fld and bmap.
 !=======================================================================
 ! grib2 section 6
-      data ibmap/255/
-!      ibmap=255      !Bitmap indicator ( see Code Table 6.0 )
-!                     0 = bitmap applies and is included in Section 6.
-!                     1-253 = Predefined bitmap applies
-!                     254 = Previously defined bitmap applies to this
-!                     field
-!                     255 = Bit map does not apply to this product.
-! bmap(nx*my)=    Logical*1 array containing bitmap to be added.
-!                 ( if ibmap=0 or ibmap=254)
+  data ibmap/255/
+!      ibmap=255  !Bitmap indicator ( see Code Table 6.0 )
+!                 0 = bitmap applies and is included in Section 6.
+!                 1-253 = Predefined bitmap applies
+!                 254 = Previously defined bitmap applies to this field
+!                 255 = Bit map does not apply to this product.
+! bmap(nx*my)=    Logical*1 array containing bitmap to be added. ( if ibmap=0 or ibmap=254)
 !=======================================================================
 ! grib2 section 7
-!     fld(nx*my)          !Array of data points to pack.
+! fld(nx*my)          !Array of data points to pack.
 !=======================================================================
 ! grib2 section 8
 !
@@ -334,8 +316,7 @@ integer*8::grb_idtg
 !=======================================================================
 !end module cwbgfs_param
 !=======================================================================
-
-      contains
+contains
 !=======================================================================
       subroutine seclist01(idtg,itau)
       !use cwbgfs_param
@@ -432,6 +413,7 @@ integer*8::grb_idtg
       !t11  :Scale factor         final value is result=t12*10**t11
       !t12  :Value   (ex: T2M  t12=2    850hPa t12=85000 )
       use grib_mod
+!     use mod_typhoon, only: write_mem    !for read ensemble member num
       implicit none
       integer*4::  t0,t1,t2,t10,t11,t13,t14,p3,p5
       real::  t12,t15
@@ -456,6 +438,10 @@ integer*8::grb_idtg
       ipdstmpl(13)=255!t13
       ipdstmpl(14)=0  !t14
       ipdstmpl(15)=0  !t15
+      !ipdstmpl(16)=3            !0:hi-res-ctl 1:low-res-ctl 3:member 
+                                 !(Table 4.6) must set ipdsnum=1 and ipdstmplen=17
+      !if(write_mem==0)ipdstmpl(16)=1
+      !ipdstmpl(17)=1 !write_mem !ensembel member 
 ! Add packing info. (section 5) 
       idrstmpl0 (2) =0   !Binary scale factor (E)
       idrstmpl40(2) =0   !Binary scale factor (E)
@@ -566,7 +552,6 @@ integer*8::grb_idtg
 !=======================================================================
       !subroutine latlong(im,jm,la2,lo2,din) !gaussian grid
       subroutine latlong(im,jm)!,la2,lo2,din) !gaussian grid
-      !use cwbgfs_param
       !for golbal grid (start at 0E,90S)
 
       integer*4 im,jm,xxyy,la2,lo2,din
@@ -588,16 +573,13 @@ integer*8::grb_idtg
        igdstmpl(16)=lo2  !Lo2 - longitude of last grid point
        igdstmpl(17)=din  !Di  - i direction increment
 !      igdstmpl(18)=jm   !N   - number of parallels between a pole and
-       igdstmpl(18)=jm/2 !N   - number of parallels between a pole and
-                         !      the equator
+       igdstmpl(18)=jm/2 !N   - number of parallels between a pole and the equator
 
       return
-      !end
       end subroutine
 !=======================================================================
       !subroutine latlonc(im,jm,la2,lo2,din)
       subroutine latlonc(im,jm)!,la2,lo2,din) !lat-lon grid
-      !use cwbgfs_param
       !for golbal grid (start at 0E,90S)
 
       integer im,jm,xxyy,la2,lo2,din
@@ -619,8 +601,7 @@ integer*8::grb_idtg
        igdstmpl(16)=lo2  !Lo2 - longitude of last grid point
        igdstmpl(17)=din  !Di  - i direction increment
        igdstmpl(18)=din  !Di  - j direction increment
-!       igdstmpl(18)=jm   !N   - number of parallels between a pole and
-                         !      the equator
+!       igdstmpl(18)=jm   !N   - number of parallels between a pole and the equator
 
       return
       end subroutine
@@ -640,7 +621,7 @@ integer*8::grb_idtg
       use grib_mod
         integer::ierr
         call baclose(grbid,ierr)
-!        deallocate(cgrib,bmap)
+!       deallocate(cgrib,bmap)
       end subroutine 
 
 end module mod_grb2_param

@@ -354,11 +354,11 @@
 !-- for sit
       ifilin_ncep   = 'ifilin_ncep'
       ifilin_sst    = 'ifilin_sst'
-      ifilin_nc     = 'ifilin_nc'
+      ifilin_nc     = '.' ! 'ifilin_nc'  change to path
       ifilin_ClmANA = 'ifilin_ClmANA'
       ifilin_ClmFCT = 'ifilin_ClmFCT'
 !-- for grib2 output path
-      ifilout_grb  = './'
+      ifilout_grb  = '.'
 !
 !dms
 !t512l60

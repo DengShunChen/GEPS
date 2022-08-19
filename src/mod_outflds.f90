@@ -613,7 +613,7 @@ contains
 !byl        if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
         if(lwrite) call dmswrit(nx,my,lrec,lenc,'H',ifilout,glob,istat)
         if(outgrb2==1.and.myrank==0)then
-          call wrt_grb2(itau,0,3,0,2,1,0,0.,glob)
+          call wrt_grb2(itau,0,3,0,2,103,0,0.,glob)
         endif
         call qmaxn3(glob,lrec(1:14),lrec(15:26),1,1,1,nx,my,1)
 
