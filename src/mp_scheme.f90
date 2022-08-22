@@ -101,15 +101,16 @@
       logical   lradar
 ! GFDLMP
       real, parameter ::                                                &
-!                rainmin=1.0e-10  !(mm?)
-                rainmin=1.0e-20  !test
+                rainmin=1.0e-10 !(mm)
       real, dimension(:,:), allocatable ::                              &
                 dot,rho,re_graupel,rew,rei,rer,res,reg,dp
       real, dimension(:,:), allocatable ::                              &
-                frland,rain0,snow0,ice0,graupel0
+                garea,frland,rain0,snow0,ice0,graupel0
       real, dimension(:,:,:), allocatable ::                            &
                 qv1,ql1,qr1,qi1,qs1,qg1,qa1,qn1,pt,w,uin,vin,delp,dz,   &
                 qv_dt,ql_dt,qr_dt,qi_dt,qs_dt,qg_dt,qa_dt,udt,vdt,pt_dt
+      real, dimension(:,:), allocatable ::                              &
+                ql2,qr2,qi2,qs2,qg2
       logical   hydrostatic,phys_hydrostatic,sedi_w 
 !
 ! reset all value to zero
@@ -130,20 +131,24 @@
 
       if ( nmmiph .eq. 11 ) then
         allocate                                                        &
-         ( re_graupel(nx,lev),rew(nx,lev),                              &
-           rei(nx,lev),rer(nx,lev),res(nx,lev),reg(nx,lev),             &
-           frland(nx,1),rain0(nx,1),snow0(nx,1),ice0(nx,1),             &
-           graupel0(nx,1),                                              &
-           qv1(nx,1,lev),ql1(nx,1,lev),qr1(nx,1,lev),qi1(nx,1,lev),     &
-           qs1(nx,1,lev),qg1(nx,1,lev),qa1(nx,1,lev),qn1(nx,1,lev),     &
-           pt(nx,1,lev),w(nx,1,lev),uin(nx,1,lev),vin(nx,1,lev),        &
-           delp(nx,1,lev),dz(nx,1,lev),                                 &
-           qv_dt(nx,1,lev),ql_dt(nx,1,lev),qr_dt(nx,1,lev),             &
-           qi_dt(nx,1,lev),qs_dt(nx,1,lev),qg_dt(nx,1,lev),             &
-           qa_dt(nx,1,lev),udt(nx,1,lev),vdt(nx,1,lev),pt_dt(nx,1,lev) )
-        if ( effr_in ) allocate ( dp(nx,lev),rho(nx,lev) )
-        if ( sedi_w ) allocate ( dot(nx,lev) )
+         ( re_graupel(nxj,lev),rew(nxj,lev),                            &
+           rei(nxj,lev),rer(nxj,lev),res(nxj,lev),reg(nxj,lev),         &
+           frland(nxj,1),rain0(nxj,1),snow0(nxj,1),ice0(nxj,1),         &
+           graupel0(nxj,1),garea(nxj,1),                                &
+           qv1(nxj,1,lev),ql1(nxj,1,lev),qr1(nxj,1,lev),qi1(nxj,1,lev), &
+           qs1(nxj,1,lev),qg1(nxj,1,lev),qa1(nxj,1,lev),qn1(nxj,1,lev), &
+           pt(nxj,1,lev),w(nxj,1,lev),uin(nxj,1,lev),vin(nxj,1,lev),    &
+           delp(nxj,1,lev),dz(nxj,1,lev),                               &
+           qv_dt(nxj,1,lev),ql_dt(nxj,1,lev),qr_dt(nxj,1,lev),          &
+           qi_dt(nxj,1,lev),qs_dt(nxj,1,lev),qg_dt(nxj,1,lev),          &
+           qa_dt(nxj,1,lev),udt(nxj,1,lev),vdt(nxj,1,lev),              &
+           pt_dt(nxj,1,lev) )
+        if ( effr_in ) allocate                                         &
+           ( dp(nxj,lev),rho(nxj,lev),ql2(nxj,lev),qr2(nxj,lev),        &
+             qi2(nxj,lev),qs2(nxj,lev),qg2(nxj,lev) )
+        if ( sedi_w ) allocate ( dot(nxj,lev) )
         frland = 0.
+        garea = 0.
         qv_dt = 0.
         ql_dt = 0.
         qr_dt = 0.
@@ -234,7 +239,8 @@
         sedi_w = .false.
 
         do i = 1, nxj
-          if( islimsk(i) == 1 ) frland(i,1) = 1.  !land fraction
+          if( islimsk(i) .eq. 1 ) frland(i,1) = 1.  !land fraction
+          garea(i,1) = area(i,1)                    !area of grid box (m^-2)
         enddo
          
         do k = 1, lev
@@ -270,26 +276,26 @@
                 ( qv1, ql1, qr1, qi1, qs1, qg1, qa1, qn1,               &
                   qv_dt, ql_dt, qr_dt, qi_dt, qs_dt, qg_dt, qa_dt,      &
                   pt_dt, pt, w, uin, vin, udt, vdt,                     &
-                  dz, delp, area, dta, frland,                          &
+                  dz, delp, garea, dta, frland,                         &
                   rain0, snow0, ice0, graupel0,                         &
                   hydrostatic, phys_hydrostatic,                        &
-                  1, nx, 1, 1, 1, lev, 1, lev )
+                  1, nxj, 1, 1, 1, lev, 1, lev )
 
         do k = 1, lev
           do i = 1, nxj
-            qtc(i,k)  = qv1(i,1,k) + qv_dt(i,1,k) * dta
-            qtr(i,k)  = ql1(i,1,k) + ql_dt(i,1,k) * dta
-            qtrw(i,k) = qr1(i,1,k) + qr_dt(i,1,k) * dta
-            qti(i,k)  = qi1(i,1,k) + qi_dt(i,1,k) * dta
-            qtsw(i,k) = qs1(i,1,k) + qs_dt(i,1,k) * dta
-            qtgl(i,k) = qg1(i,1,k) + qg_dt(i,1,k) * dta
-            qa(i,k)   = qa1(i,1,k) + qa_dt(i,1,k) * dta
-            qt(i,             k) = qtc(i,k)
-            qt(i,(ntcw-1)*lev+k) = qtr(i,k)
-            qt(i,(ntrw-1)*lev+k) = qtrw(i,k)
-            qt(i,(ntiw-1)*lev+k) = qti(i,k)
-            qt(i,(ntsw-1)*lev+k) = qtsw(i,k)
-            qt(i,(ntgl-1)*lev+k) = qtgl(i,k)
+            ql2(i,k) = ql1(i,1,k) + ql_dt(i,1,k) * dta
+            qr2(i,k) = qr1(i,1,k) + qr_dt(i,1,k) * dta
+            qi2(i,k) = qi1(i,1,k) + qi_dt(i,1,k) * dta
+            qs2(i,k) = qs1(i,1,k) + qs_dt(i,1,k) * dta
+            qg2(i,k) = qg1(i,1,k) + qg_dt(i,1,k) * dta
+
+            qa(i,k)  = qa1(i,1,k) + qa_dt(i,1,k) * dta
+            qt(i,             k) = qv1(i,1,k) + qv_dt(i,1,k) * dta
+            qt(i,(ntcw-1)*lev+k) = ql2(i,k)
+            qt(i,(ntrw-1)*lev+k) = qr2(i,k)
+            qt(i,(ntiw-1)*lev+k) = qi2(i,k)
+            qt(i,(ntsw-1)*lev+k) = qs2(i,k)
+            qt(i,(ntgl-1)*lev+k) = qg2(i,k)
             tt(i,k)  = pt(i,1,k)  + pt_dt(i,1,k) * dta
             ut(i,k)  = uin(i,1,k) + udt(i,1,k)   * dta
             vt(i,k)  = vin(i,1,k) + vdt(i,1,k)   * dta
@@ -311,8 +317,8 @@
           call cloud_diagnosis                                          &
 !               ( 1, nx, 1, lev, rho, qtr, qti, qtrw, qtsw, qtgl, tt,    &  ! module_mp_gfdl_fv3.f90
 !                 rew, rei, rer, res, reg )
-               ( 1, nx, 1, lev, rho, dp, islimsk,                       &  ! module_mp_gfdl_fv3_v16.f90
-                 qtr, qti, qtrw, qtsw, qtgl, tt,                        &
+               ( 1, nxj, 1, lev, rho, dp, islimsk,                      &  ! module_mp_gfdl_fv3_v16.f90
+                 ql2, qi2, qr2, qs2, qg2, tt,                           &
                  rew, rei, rer, res, reg )
           do k = 1, lev
             kc = lev - k + 1
@@ -321,20 +327,21 @@
               re_ice(i,k)     = rei(i,kc)   !(micron)
               re_rain(i,k)    = rer(i,kc)   !(micron)
               re_snow(i,k)    = res(i,kc)   !(micron)
-              re_graupel(i,k) = reg(i,kc)
+              re_graupel(i,k) = reg(i,kc)   !(micron)
             enddo
           enddo
         endif
 !
         do i = 1, nxj
-          if ( rain0(i,1)    < rainmin ) rain0(i,1)    = 0.0 
-          if ( ice0(i,1)     < rainmin ) ice0(i,1)     = 0.0
-          if ( snow0(i,1)    < rainmin ) snow0(i,1)    = 0.0
-          if ( graupel0(i,1) < rainmin ) graupel0(i,1) = 0.0
+          if ( rain0(i,1)    .lt. rainmin ) rain0(i,1)    = 0.0
+          if ( ice0(i,1)     .lt. rainmin ) ice0(i,1)     = 0.0
+          if ( snow0(i,1)    .lt. rainmin ) snow0(i,1)    = 0.0
+          if ( graupel0(i,1) .lt. rainmin ) graupel0(i,1) = 0.0
 
           rlsp(i) = rain0(i,1)+snow0(i,1)+ice0(i,1)+graupel0(i,1)  !total large scale precipitation (mm)
-          if ( rlsp(i) > rainmin ) then                         
-            sr(i) = (snow0(i,1)+ice0(i,1)+graupel0(i,1))/rlsp(i)   !snow ratio
+          if ( rlsp(i) .gt. rainmin ) then
+            sr(i) = (snow0(i,1)+ice0(i,1)+graupel0(i,1))                &
+                    /(rain0(i,1)+snow0(i,1)+ice0(i,1)+graupel0(i,1))  !snow ratio
           else
             sr(i) = 0.0
           endif
@@ -342,10 +349,10 @@
 
         deallocate                                                      &
           ( re_graupel,rew,rei,rer,res,reg,                             &
-            frland,rain0,snow0,ice0,graupel0,                           &
+            frland,rain0,snow0,ice0,graupel0,garea,                     &
             qv1,ql1,qr1,qi1,qs1,qg1,qa1,qn1,pt,w,uin,vin,delp,dz,       &
             qv_dt,ql_dt,qr_dt,qi_dt,qs_dt,qg_dt,qa_dt,udt,vdt,pt_dt )
-        if ( effr_in ) deallocate ( dp,rho )
+        if ( effr_in ) deallocate ( dp,rho,ql2,qi2,qr2,qs2,qg2 )
         if ( sedi_w ) deallocate ( dot )
 
       endif  ! end of nmmiph.eq.11
