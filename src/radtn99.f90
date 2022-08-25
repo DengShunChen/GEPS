@@ -95,11 +95,11 @@
               pl(nx,lev),tt(nx,lev),qt(nx,lev),o3l(nx,lev),plcl(nx),   &
               cumtop(nx),ss(nx),rs(nx),dtrad(nx,lev),asr(lev),alr(lev),&
               xsr(lev),xlr(lev),acld(lev),aflxd(lev+2),aflxu(lev+2),   &
-              cof(lvlw,3),sdpbl(nx),ctot(nx),chig(nx),cmid(nx),clow(nx)
+              cof(lvlw,3),ctot(nx),chig(nx),cmid(nx),clow(nx)
 
       integer il(nx),ib(lvlw)
 
-      real(kind=RTYPE) qtx(nx,lev*ncld),o3lx(nx,lev),pst(nx)
+      real(kind=RTYPE) qtx(nx,lev*ncld),o3lx(nx,lev),pst(nx),sdpbl(nx)
 !
 !  clear part
 !

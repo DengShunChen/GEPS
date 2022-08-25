@@ -28,7 +28,7 @@
 
       real(kind=RTYPE) phiten(levp,2,jtrun,jtmax)
 !byl      real tbar(lev),qbar(lev*ncld)
-      real sdpbl(nxp,my_max)
+      real(kind=RTYPE) sdpbl(nxp,my_max)
 
 ! for Semi-Lagrangian
       real(kind=RTYPE) deldm(nxp,my_max)

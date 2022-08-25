@@ -46,6 +46,8 @@
 !                                                                      c
 !######################################################################c
 !
+      use const, only: RTYPE
+!
       implicit  none
 
       integer   nxj,im,lm,ls,ncld
@@ -53,8 +55,9 @@
 
       real      pst(im),pp(im,lm),tt(im,lm),rh(im,lm),cufrac(im),        &
                 plcl(im),cumtop(im),clds(im,lm),cvclds(im,lm),rhx(im,lm),&
-                sdpbl(im),qtr(im,lm),                                    &
+                qtr(im,lm),                                              &
                 clwc(im,lm),ciwc(im,lm),cre(im,lm),cde(im,lm)
+      real(kind=RTYPE) sdpbl(im)
 !
       real      rhc(im,lm)
       real      okk,cre_min,cre_max

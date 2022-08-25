@@ -233,7 +233,7 @@
                 tt(nxp,lev,my_max),                                       &
                 gwclim(nxp,my_max),acld(lev,my),std(nxp,my_max),          &
                 asol(nxp,my_max),olr(nxp,my_max),drag(nxp,lev,my_max),    &
-                ugws(nxp,my_max),vgws(nxp,my_max),sdpbl(nxp,my_max),      &
+                ugws(nxp,my_max),vgws(nxp,my_max),                        &
                 raintot(nxp,my_max),t2(nxp,my_max),rh2(nxp,my_max),       &
                 rh10(nxp,my_max),                                         &
                 q2(nxp,my_max),fm(nxp,my_max),fh(nxp,my_max),             &
@@ -245,7 +245,8 @@
       real(kind=RTYPE) qt(nxp,lev*ncld,my_max),qp(nxp,lev*ncld,my_max),   &
                        up(nxp,lev,my_max),vp(nxp,lev,my_max),             &
                        ttp(nxp,lev,my_max),o3l(nxp,lev,my_max),           &
-                       sgeo(nxp,my_max),ps(nxp,my_max),pst(nxp,my_max)
+                       sgeo(nxp,my_max),ps(nxp,my_max),pst(nxp,my_max),   &
+                       sdpbl(nxp,my_max)
 !soil (2005/01/12)
       integer,  parameter :: ntype=9, ngrid=22
       integer   istyp(nxp,my_max),ivegtyp(nxp,my_max)
@@ -427,7 +428,7 @@
 
 !ch   real      cldwrk(nxp,my_max),sd(nxp,lev+1,my_max),xkt2(nx)
       real      cldwrk(nxp,my_max),                     xkt2(nx)
-      real*4                       sd(nxp,lev+1,my_max)
+      real(kind=RTYPE) sd(nxp,lev+1,my_max)
 
 ! for new shlcon
       real      rcup2(nxp)

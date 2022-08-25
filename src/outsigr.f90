@@ -12,6 +12,7 @@
                          , ggdef,gmdef)
       use index
       use mpe
+      use const, only: RTYPE
 !
       dimension fusl(nxp,lev+1,my_max),fdsl(nxp,lev+1,my_max)    &
               , fuir(nxp,lev+1,my_max),fdir(nxp,lev+1,my_max)    &
@@ -20,7 +21,7 @@
               , asl(nxp,lev,my_max),atl(nxp,lev,my_max)          &
               , asl_clr(nxp,lev,my_max),atl_clr(nxp,lev,my_max)  &
               , dtrad(nxp,lev,my_max),dtrad0(nxp,lev,my_max)     &
-              , cldcov(nxp,lev,my_max),sd(nxp,lev,my_max)        &
+              , cldcov(nxp,lev,my_max)                           &
               , ss(nxp,my_max),rs(nxp,my_max)                    &
               , olr(nxp,my_max),asol(nxp,my_max)                 &
               , sld(nxp,my_max),rld(nxp,my_max)                  &
@@ -31,6 +32,7 @@
               , sncover(nxp,my_max),snoalb(nxp,my_max)           &
               , ctot(nxp,my_max),chig(nxp,my_max),cmid(nxp,my_max),clow(nxp,my_max) &
               , work(nx,my)
+      real(kind=RTYPE) sd(nxp,lev,my_max)
 
       integer*8 idtg
       character*80 ifilout

@@ -782,8 +782,9 @@ contains
       real      pkout(lpout),pklp(nxp,my_max),pk(nxp,lev,my_max)          &
       , rdiv(nxp,lev,my_max),work3d(nxp,lev,my_max)                       &
       , utb(nxp,my_max),vtb(nxp,my_max),wind(nxp,my_max,lpout),cosl(my)   &
-      , glob(nx,my),plev(lpout),whtlev(num),sdhat(nxp,lev,my_max)
-      real(kind=RTYPE) ut(nxp,lev,my_max),vt(nxp,lev,my_max)
+      , glob(nx,my),plev(lpout),whtlev(num)
+      real(kind=RTYPE) ut(nxp,lev,my_max),vt(nxp,lev,my_max)              &
+      , sdhat(nxp,lev,my_max)
 
       real      tens(lev+1),wtb(nxp,my_max),pout(nx,my),tmp(nxp,my_max)
 !
@@ -965,7 +966,8 @@ contains
 !  now the w components
 !
       wtb=0.
-      call voterp(nx,my,my_max,lev,lpout,pk,pklp,sdhat,wtb,pkout,wind,tens)
+      work3d=sdhat
+      call voterp(nx,my,my_max,lev,lpout,pk,pklp,work3d,wtb,pkout,wind,tens)
 !
       ncnt= -1
       do 42 n=1,num

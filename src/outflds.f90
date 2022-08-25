@@ -29,7 +29,7 @@
 
       real      sigma(lev+1,2),pdiff(nxp,my_max)                                    &
               , t1000(nxp,my_max),plt(nxp,lev,my_max)                               &
-              , pk(nxp,lev,my_max),pk2(nxp,lev,my_max),sd(nxp,lev,my_max)           &
+              , pk(nxp,lev,my_max),pk2(nxp,lev,my_max)                              &
 !              , qt(nxp,lev*ncld,my_max),rdiv(nxp,lev,my_max)                        &
 !              , rvor(nxp,lev,my_max),tg(nxp,my_max),gwet(nxp,my_max)                &
               , tg(nxp,my_max),gwet(nxp,my_max)                                     &
@@ -57,7 +57,8 @@
                      , ut(nxp,lev,my_max),vt(nxp,lev,my_max)        &
                      , tt(nxp,lev,my_max),qt(nxp,lev*ncld,my_max)   &
                      , sht(nxp,lev*ncld,my_max),phi(nxp,lev,my_max) &
-                     , sgeo(nxp,my_max),ptend(nxp,my_max),pt(nxp,my_max)
+                     , sgeo(nxp,my_max),ptend(nxp,my_max)           &
+                     , pt(nxp,my_max),sd(nxp,lev,my_max)
 !
       character ifilout*80, ggdef*4
       integer*8 idtg
@@ -78,7 +79,7 @@
 !             , pres3d(nx,my,lpout)
               , pres3d(nxp,my_max,lpout)
 !
-      real      sdhat(nxp,lev,my_max)
+      real(kind=RTYPE) sdhat(nxp,lev,my_max)
 !
       real      wk_xy(nxp,my_max,12)   ! the last dim is changable
 !

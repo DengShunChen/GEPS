@@ -78,7 +78,7 @@
                 ddtemp(nxp,lev,my_max),                            &
                 pten(nxp,lev,my_max),tmp(nxp,lev,my_max),dummy,    &
                 rdivm(nxp,lev,my_max),ptm(nxp,my_max),             &
-                deldm(nxp,my_max)
+                deldm(nxp,my_max),sdpbl(nxp,my_max)
 
       integer   ierr,itter,ittw,itt,year,yrd
 !
@@ -86,7 +86,7 @@
                 hf24(nxp,my_max),qf24(nxp,my_max),ss24(nxp,my_max),rs24(nxp,my_max), &
                 asol24(nxp,my_max),olr24(nxp,my_max),rain24(nxp,my_max),             &
                 drag(nxp,lev,my_max),ugws(nxp,my_max),vgws(nxp,my_max),              &
-                sdpbl(nxp,my_max),rain1(nxp,my_max),                                 &
+                rain1(nxp,my_max),                                                   &
                 rh2100(nxp,my_max),rh10100(nxp,my_max),pklev(nxp,my_max)
 
        integer  kn
