@@ -91,7 +91,7 @@
       integer nxj,nx,lev,ncld,lvlw,julian
       real    stbo,s0,cp,ptop
 
-      real    dsigma(lev,2),cosz(nx),alb(nx),tg(nx),curate(nx),        &
+      real    cosz(nx),alb(nx),tg(nx),curate(nx),                      &
               pl(nx,lev),tt(nx,lev),qt(nx,lev),o3l(nx,lev),plcl(nx),   &
               cumtop(nx),ss(nx),rs(nx),dtrad(nx,lev),asr(lev),alr(lev),&
               xsr(lev),xlr(lev),acld(lev),aflxd(lev+2),aflxu(lev+2),   &
@@ -99,7 +99,8 @@
 
       integer il(nx),ib(lvlw)
 
-      real(kind=RTYPE) qtx(nx,lev*ncld),o3lx(nx,lev),pst(nx),sdpbl(nx)
+      real(kind=RTYPE) qtx(nx,lev*ncld),o3lx(nx,lev),pst(nx),sdpbl(nx) &
+              ,        dsigma(lev,2),sigma(lev+1,2)
 !
 !  clear part
 !
@@ -110,7 +111,7 @@
 !
       real    asl(nx,lev),atl(nx,lev),clds(nx,lev),fluxdd(nx,lev+3), &
               fluxuu(nx,lev+2)
-      real    wk1(nx),wk2(nx),sigma(lev+1,2)
+      real    wk1(nx),wk2(nx)
       real    cvclds(nx,lev),cufrac(nx)
 !
 !  working arrays for new radiation scheme

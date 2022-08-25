@@ -217,8 +217,7 @@
 
       integer   il(nxp,4),ib(nxp,4)
 
-      real      sigma(lev+1,2),dsigma(lev,2),                             &
-                cof(nxp*3,4),xlat(my),                                    &
+      real      cof(nxp*3,4),xlat(my),                                    &
                 xlon(nx,my_max),z0(nxp,my_max),                           &
                 alb(nxp,my_max),snr(nxp,my_max),tg(nxp,my_max),           &
                 tgclim(nxp,my_max),curate(nxp,my_max),plcl(nxp,my_max),   &
@@ -246,7 +245,7 @@
                        up(nxp,lev,my_max),vp(nxp,lev,my_max),             &
                        ttp(nxp,lev,my_max),o3l(nxp,lev,my_max),           &
                        sgeo(nxp,my_max),ps(nxp,my_max),pst(nxp,my_max),   &
-                       sdpbl(nxp,my_max)
+                       sdpbl(nxp,my_max),sigma(lev+1,2),dsigma(lev,2)
 !soil (2005/01/12)
       integer,  parameter :: ntype=9, ngrid=22
       integer   istyp(nxp,my_max),ivegtyp(nxp,my_max)

@@ -28,8 +28,8 @@
       implicit  none
   
 !      real      sigma(lev+1,2),tmean(lev),a(lev,lev),b(lev,lev),ai(lev,lev),&
-      real      sigma(lev+1,2),tmean(lev),phatk(lev),spalm(lev),dcdp(lev)
-      real(kind=RTYPE) a(lev,lev),b(lev,lev),ai(lev,lev)
+      real      tmean(lev),phatk(lev),spalm(lev),dcdp(lev)
+      real(kind=RTYPE) a(lev,lev),b(lev,lev),ai(lev,lev),sigma(lev+1,2)
 !
       integer   i,j,k
       real      capa,ps,spamin,ptmean,ptop,cp,tem,tem1,tem2,tem3,phat

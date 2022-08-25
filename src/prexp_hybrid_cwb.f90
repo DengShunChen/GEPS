@@ -22,8 +22,8 @@
       integer   nxj,nx,lev
       real      ptop
 
-      real      pk2(nx,lev),pk(nx,lev),sigma(lev+1,2),plt(nx,lev)
-      real(kind=RTYPE) pt(nx)
+      real      pk2(nx,lev),pk(nx,lev),plt(nx,lev)
+      real(kind=RTYPE) pt(nx),sigma(lev+1,2)
 !
       real      pl2(nx,2)
 !

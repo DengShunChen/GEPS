@@ -16,8 +16,8 @@
       integer, parameter :: MPI_RTYPE=MPI_REAL8
 #endif
  
-    real, dimension(:)  , allocatable, save  :: aki,bki
-    real, dimension(:,:), allocatable, save  :: sigma,dsigma
+    real(kind=RTYPE), dimension(:)  , allocatable, save  :: aki,bki
+    real(kind=RTYPE), dimension(:,:), allocatable, save  :: sigma,dsigma
  
     integer, allocatable, save ::  mlsort(:,:)
     integer, allocatable, save ::  msort(:),lsort(:)

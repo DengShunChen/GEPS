@@ -40,9 +40,8 @@
       integer   lsppt(lev),ipass(lev)
 
       real      g,evaprh,cp,hltm 
-      real      t(nx,lev),pl(nx,lev),dsigma(lev,2), &
-                rlsp(nx)
-      real(kind=RTYPE) q(nx,lev),pst(nx)
+      real      t(nx,lev),pl(nx,lev),rlsp(nx)
+      real(kind=RTYPE) q(nx,lev),pst(nx),dsigma(lev,2)
 !
 !     local work arrays
 !

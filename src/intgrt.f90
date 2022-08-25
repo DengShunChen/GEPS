@@ -1192,12 +1192,11 @@
 !                 , temmid,divmid,plmid,temten,divten,plten,alpha)
           dta_r4=dta
       ptmeans_r4=ptmeans
-       dsigma_r4=dsigma
         spalm_r4=spalm
          eps4_r4=eps4
         alpha_r4=alpha
 
-      call siimpl ( jtrun,jtmax,lev,dta_r4,ptmeans_r4,dsigma_r4,spalm_r4,eps4_r4,eigval &
+      call siimpl ( jtrun,jtmax,lev,dta_r4,ptmeans_r4,dsigma,spalm_r4,eps4_r4,eigval &
                   , evecin,evectr,arrhyd,arsddt,temnow,divnow,plnow      &
                   , temmid,divmid,plmid,temten,divten,plten,alpha_r4)
 

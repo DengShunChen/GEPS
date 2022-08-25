@@ -27,7 +27,7 @@
       integer   itau,nx,my,my_max,lev,ncld,lmax,numout,ktrop,km
       real      ptop,capa,cp,rgas,grav
 
-      real      sigma(lev+1,2),pdiff(nxp,my_max)                                    &
+      real      pdiff(nxp,my_max)                                                   &
               , t1000(nxp,my_max),plt(nxp,lev,my_max)                               &
               , pk(nxp,lev,my_max),pk2(nxp,lev,my_max)                              &
 !              , qt(nxp,lev*ncld,my_max),rdiv(nxp,lev,my_max)                        &
@@ -58,7 +58,8 @@
                      , tt(nxp,lev,my_max),qt(nxp,lev*ncld,my_max)   &
                      , sht(nxp,lev*ncld,my_max),phi(nxp,lev,my_max) &
                      , sgeo(nxp,my_max),ptend(nxp,my_max)           &
-                     , pt(nxp,my_max),sd(nxp,lev,my_max)
+                     , pt(nxp,my_max),sd(nxp,lev,my_max)            &
+                     , sigma(lev+1,2)
 !
       character ifilout*80, ggdef*4
       integer*8 idtg
@@ -94,7 +95,7 @@
       real      rad,ograv,alaps,rdg,ttb,ttp,ttt,ttt1,ttt2,anlslp
       real      apha,pl1000,splog,ax,bx,cx,dx,tmid,tsf,tadia,xx,deltap
 !
-      real      dsigma(lev,2),deodp
+      real(kind=RTYPE) dsigma(lev,2)
 !
       logical :: lwrite,lwritesit
 !xb110>

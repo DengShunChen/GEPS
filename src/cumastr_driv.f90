@@ -53,9 +53,9 @@
           , ut(nx,lev),vt(nx,lev),tt(nx,lev)                         &
           , qflux(nx),sd(nx,lev)                                     &
           , pk(nx,lev),pk2(nx,lev)                                   &
-          , sigma(lev+1,2),plt(nx,lev)
+          , plt(nx,lev)
       real(kind=RTYPE) q(nx,lev*ncld),qt(nx,lev*ncld),phi(nx,lev)    &
-          ,            topo(nx),pt(nx)
+          ,            topo(nx),pt(nx),sigma(lev+1,2)
 !c
 !c
 !c  local work arrays

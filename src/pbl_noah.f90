@@ -216,8 +216,9 @@
                 prsl(nx,lev),prslk(nx,lev),phil(nx,lev),del(nx,lev),        &
 !byl                prsi(nx,lev+1),phi2(nx,lev+1),phii(nx,lev+1),              &
                 prsi(nx,lev+1),phii(nx,lev+1),                          &
-                dsigma(lev,2),rcl(nx),                                  &
+                rcl(nx),                                                &
                 u1(nx,lev),v1(nx,lev),t1(nx,lev)
+      real(kind=RTYPE) dsigma(lev,2)
       real, dimension(:,:,:), allocatable :: q1
 !
       real      pk2x(nx,lev),pkx(nx,lev)

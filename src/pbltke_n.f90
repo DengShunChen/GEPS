@@ -198,8 +198,9 @@
                 heat(im),evap(im),stress(im),                          &
                 prsl(im,lm),prslk(im,lm),phil(im,lm),del(im,lm),       &
                 prsi(im,lm+1),phi2(im,lm+1),phii(im,lm+1),             &
-                dsigma(lm,2),rcl(im),                                  &
+                rcl(im),                                               &
                 u1(nx,lev),v1(nx,lev),t1(nx,lev),q1(nx,lev,2)
+      real(kind=RTYPE) dsigma(lm,2)
 !ibm---add
       real      pk2x(nx,lev),pkx(nx,lev)
 !ibm---

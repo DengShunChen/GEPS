@@ -42,7 +42,8 @@
            pp(nxp,my_max),p2(nxp,my_max),p10(nxp,my_max)
       real, parameter ::rad=6.371e6
       integer,parameter :: l= 4, m= 2
-      real   avett,p(l),hm(m),akir(l),bkir(l),xxx,temp,tepl(nxp,l,my_max)
+      real   avett,p(l),hm(m),xxx,temp,tepl(nxp,l,my_max)
+      real(kind=RTYPE) akir(l),bkir(l)
       data hm/100.0,40.0/
 !      data aki/   .00000,   .02193,   .26557,   .97701/ !M60~M57
 !      data bki/.99058760,.98124505,.96996497,.95697164/
@@ -288,9 +289,13 @@
 
 !***********************************************************************
       subroutine sigmap(layer,aki,bki,psfc,p)
+!
+      use const, only: RTYPE
+!
       implicit none
       integer i, layer
-      real aki(layer), bki(layer), psfc, p(layer)
+      real psfc, p(layer)
+      real(kind=RTYPE) aki(layer), bki(layer)
 
       do i=1,layer
       p(i)=aki(i)+(bki(i)*psfc)
