@@ -3,12 +3,14 @@
       use mpe
       use rank
       use index
+      use const, only: RTYPE
 
       implicit  none
       integer   nx,my,my_max,lev
       real      rad
 
-      real      ut(nxp,lev,my_max),vt(nxp,lev,my_max),cosl(my)
+      real      cosl(my)
+      real(kind=RTYPE) ut(nxp,lev,my_max),vt(nxp,lev,my_max)
       real      wmax(lev),wmaxtmp
 !
       integer, parameter :: levtop=6,lev2=3

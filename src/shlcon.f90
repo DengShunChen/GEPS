@@ -54,9 +54,9 @@
       integer   nxj,nx,lev,ktshl,ncld
 
       real      tg(nx),po(nx,lev)                                   &
-              , tt(nx,lev),pok(nx,lev),ql(nx,lev)
-      real(kind=RTYPE) qt(nx,lev*ncld),phi(nx,lev),topo(nx),pst(nx) &
-              ,        dsigma(lev,2)
+              , pok(nx,lev),ql(nx,lev),ttmp(nx)
+      real(kind=RTYPE) tt(nx,lev),qt(nx,lev*ncld),phi(nx,lev)       &
+              ,        topo(nx),pst(nx),dsigma(lev,2)
 !
 !     local work arrays
 !
@@ -152,7 +152,8 @@
         enddo
       enddo
 !
-      call qsatq (nxj, tt(1,lev), po(1,lev), wk )
+      ttmp(:)=tt(:,lev)
+      call qsatq (nxj, ttmp, po(1,lev), wk )
 !
       do 200 i = 1, nxj
       rh = qt(i,lev)/wk(i)

@@ -194,14 +194,14 @@
 
       real     tg(nx),z0(nx),                                        &
                u(nx,lev),v(nx,lev),t(nx,lev),                        &
-               ut(nx,lev),vt(nx,lev),tt(nx,lev),ustar(nx),           &
+               ustar(nx),                                            &
                tstar(nx),qstar(nx),e(nx,lev),eps(nx,lev),hflux(nx),  &
                qflux(nx),pk(nx,lev),pk2(nx,lev),gwclim(nx),          &
                tgclim(nx),snr(nx),totalp(nx),                        &
                ss(nx),rs(nx),alb(nx),xkmx(2),xkmd(lev),              &
                t2(nx),rh2(nx),u10(nx),v10(nx)
       real(kind=RTYPE) phi(nx,lev),qt(nx,lev),q(nx,lev),topo(nx),    &
-                       pss(nx)
+                       pss(nx),tt(nx,lev),ut(nx,lev),vt(nx,lev)
 !soil
       real     smc(nx,km),stc(nx,km),canopy(nx),sigmaf(nx),          &
                rld(nx),runoff(nx)

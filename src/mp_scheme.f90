@@ -82,9 +82,9 @@
       real(kind=RTYPE), intent(in):: q0(nx,lev*ncld),pst(nx),          &
                                      dsigma(lev,2)
 !  ---  inputs/outputs:
-      real,     intent(inout) :: tt(nx,lev)
+      real(kind=RTYPE), intent(inout) :: tt(nx,lev)
       real,     intent(inout) :: qa(nx,lev)  ! only changed in GFDL MP
-      real,     intent(inout) :: ut(nx,lev),vt(nx,lev)
+      real(kind=RTYPE), intent(inout) :: ut(nx,lev),vt(nx,lev)
       real(kind=RTYPE), intent(inout):: qt(nx,lev*ncld)
 !  ---  outputs:
       real,     intent(inout)   :: re_cloud(nx,lev),re_ice(nx,lev),    &

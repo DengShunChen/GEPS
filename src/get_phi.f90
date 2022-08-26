@@ -5,13 +5,13 @@
 !
 
         integer nxj,nx,lev,i,k,kc
-        real    ptop,cp,r,g,pk(nx,lev),pk2(nx,lev),         &
-                tt(nx,lev)
+        real    ptop,cp,r,g,pk(nx,lev),pk2(nx,lev)
         real    pk2x(nx,lev),pkx(nx,lev),dhgtz(nx,lev),     &
                 ppd,ppp,ppu,ttv,dhgt,theda(nx,lev)
 
         real    phii(nx,lev+1)
-        real(kind=RTYPE) qt(nx,lev),phi(nx,lev),sgeo(nx)
+        real(kind=RTYPE) tt(nx,lev),qt(nx,lev),phi(nx,lev), &
+                         sgeo(nx)
 !
 ! geopotential height at model interface
 !

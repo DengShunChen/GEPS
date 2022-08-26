@@ -50,11 +50,11 @@
       integer nx,nxj,lev,ncld,j,jj
       integer kcbot(nx),kctop(nx)
       real  u(nx,lev),v(nx,lev),t(nx,lev)                            &
-          , ut(nx,lev),vt(nx,lev),tt(nx,lev)                         &
           , qflux(nx),sd(nx,lev)                                     &
           , pk(nx,lev),pk2(nx,lev)                                   &
-          , plt(nx,lev)
-      real(kind=RTYPE) q(nx,lev*ncld),qt(nx,lev*ncld),phi(nx,lev)    &
+          , plt(nx,lev),ttmp(nx)
+      real(kind=RTYPE) ut(nx,lev),vt(nx,lev),tt(nx,lev)              &
+          ,            q(nx,lev*ncld),qt(nx,lev*ncld),phi(nx,lev)    &
           ,            topo(nx),pt(nx),sigma(lev+1,2)
 !c
 !c
@@ -88,7 +88,8 @@
         pgeo(i,k) = phi(i,k) 
         pverv(i,k)=sd(i,k)*100.  ! from mb to pa
       enddo
-        call qsatq(nxj,tt(1,k),plt(1,k),zqsat(1,k))
+        ttmp(:)=tt(:,k)
+        call qsatq(nxj,ttmp,plt(1,k),zqsat(1,k))
       enddo
       do i=1,nxj
         paphp1(i,lev+1)= (sigma(lev+1,1)*pt(i)+sigma(lev+1,2)+ptop)*100.

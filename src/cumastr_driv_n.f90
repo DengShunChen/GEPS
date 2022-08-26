@@ -49,11 +49,12 @@
       integer nx,nxj,lev,ncld,j,jj
       integer kcbot(nx),kctop(nx)
       real  u(nx,lev),v(nx,lev),t(nx,lev)                            &
-          , ut(nx,lev),vt(nx,lev),tt(nx,lev)                         &
+
           , qflux(nx),sd(nx,lev)                                     &
           , pk(nx,lev),pk2(nx,lev)                                   &
           , plt(nx,lev)
-      real(kind=RTYPE) q(nx,lev*ncld),qt(nx,lev*ncld),phi(nx,lev)    &
+      real(kind=RTYPE) ut(nx,lev),vt(nx,lev),tt(nx,lev)              &
+          ,            q(nx,lev*ncld),qt(nx,lev*ncld),phi(nx,lev)    &
           ,            topo(nx),pt(nx),sigma(lev+1,2)
 !c  local work arrays
       real pkxmb(nx,lev)

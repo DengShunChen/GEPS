@@ -228,8 +228,6 @@
                 dtrad(nxp,lev,my_max),ss(nxp,my_max),                     &
                 rs(nxp,my_max),plt(nxp,lev,my_max),pk(nxp,lev,my_max),    &
                 pk2(nxp,lev,my_max),rainlp(nxp,my_max),                   &
-                ut(nxp,lev,my_max),vt(nxp,lev,my_max),                    &
-                tt(nxp,lev,my_max),                                       &
                 gwclim(nxp,my_max),acld(lev,my),std(nxp,my_max),          &
                 asol(nxp,my_max),olr(nxp,my_max),drag(nxp,lev,my_max),    &
                 ugws(nxp,my_max),vgws(nxp,my_max),                        &
@@ -245,7 +243,9 @@
                        up(nxp,lev,my_max),vp(nxp,lev,my_max),             &
                        ttp(nxp,lev,my_max),o3l(nxp,lev,my_max),           &
                        sgeo(nxp,my_max),ps(nxp,my_max),pst(nxp,my_max),   &
-                       sdpbl(nxp,my_max),sigma(lev+1,2),dsigma(lev,2)
+                       sdpbl(nxp,my_max),sigma(lev+1,2),dsigma(lev,2),    &
+                       ut(nxp,lev,my_max),vt(nxp,lev,my_max),             &
+                       tt(nxp,lev,my_max)
 !soil (2005/01/12)
       integer,  parameter :: ntype=9, ngrid=22
       integer   istyp(nxp,my_max),ivegtyp(nxp,my_max)

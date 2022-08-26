@@ -12,10 +12,13 @@
 !     by c.s. liou  6/92
 !     modify to f90 by C-H Lee and sort by River Chen in 2015
 !
+      use const, only: RTYPE
+!              
       implicit  none
 
       integer   j,nxj,nx,lev,ncon
-      real      tt(nx,lev),plk(nx,lev),dp(lev)
+      real      plk(nx,lev),dp(lev)
+      real(kind=RTYPE) tt(nx,lev)
 !
 !     local work array
 !

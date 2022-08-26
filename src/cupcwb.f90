@@ -92,11 +92,11 @@
 
       integer   jcup,nxj,nx,my,lev,ktcup,idg,nxx,ncup
 
-      real      pl(nx,lev),pk(nx,lev)                        &
-        ,pk2(nx,lev),tl(nx,lev),plcl(nx),cumtop(nx),rcup(nx) &
+      real      pl(nx,lev),pk(nx,lev),tltmp(nx)              &
+        ,pk2(nx,lev),plcl(nx),cumtop(nx),rcup(nx)            &
         ,dtcupz(lev),dqcupz(lev),dtcupd(lev),dqcupd(lev)
-      real(kind=RTYPE) ql(nx,lev),phi(nx,lev),topo(nx),ps(nx)&
-        ,       dsigma(lev,2)
+      real(kind=RTYPE) tl(nx,lev),ql(nx,lev),phi(nx,lev)     &
+        ,       topo(nx),ps(nx),dsigma(lev,2)
 
       integer   nlcl(lev),nnegl(lev),nosat(lev),nwork(lev),ntcup(lev),nflx(lev)
 !
@@ -138,7 +138,8 @@
 !     define even level variables and mass between even levels (pmassl)
 !
       do k = 1, lev
-      call qsatq (nxj,tl(1,k),pl(1,k),qls(1,k))
+      tltmp(:)=tl(:,k)
+      call qsatq (nxj,tltmp,pl(1,k),qls(1,k))
       enddo
 !
       sige = 0.0

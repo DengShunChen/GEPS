@@ -16,9 +16,8 @@
              
 
       real(kind=kind_phys) ps(nx),                               &
-                           pp(nx,lev),  tt(nx,lev),              &
-                           ozp(nx,lev,pl_coeff)
-      real(kind=RTYPE)     o3l(nx,lev)
+                           pp(nx,lev),ozp(nx,lev,pl_coeff)
+      real(kind=RTYPE)     o3l(nx,lev),tt(nx,lev)
       real(kind=kind_phys) dt
 !
       integer k,i,j

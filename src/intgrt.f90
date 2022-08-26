@@ -1102,11 +1102,6 @@
 !  for physical parameterization,output spectrum u,v,t,q to grid point
 !
         if (yesdia)  then
-!
-!CWB2021
-          vdzonl_r8=vdzonl
-          vdmerd_r8=vdmerd
-          ddtemp_r8=ddtemp
 
           call diabat ( docup,dodry,dolsp,dopbl,dorad,doshl,dograv,tofd         &
                       , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw      &
@@ -1119,7 +1114,7 @@
                       , hflux,qflux,ustar,tstar,qstar,e                         &
                       , eps,o3l,dtrad,ss,rs,plt,pk,pk2                          &
                       , ptp,    ut,    vt,    tt,qp                             &
-                      , pt ,vdzonl_r8,vdmerd_r8,ddtemp_r8,qt                    &
+                      , pt ,vdzonl,vdmerd,ddtemp,qt                             &
                       , gwclim,tice,hice,qgini,thdai,tengi                      &
                       , acld,std,asol,olr,drag,ugws,vgws                        &
                       , sdpbl,t2,q2,rh2,rh10,u10,v10,gfx                        &
@@ -1147,11 +1142,8 @@
 !
 ! add reynolds stress
 !
-          call rayleifr(nx,my,my_max,lev,rad,cosl,dt,vdzonl_r8,vdmerd_r8)
+          call rayleifr(nx,my,my_max,lev,rad,cosl,dt,vdzonl,vdmerd)
 
-          vdzonl=vdzonl_r8
-          vdmerd=vdmerd_r8
-          ddtemp=ddtemp_r8
         endif    ! end of (yesdia)
 
 !CWB2021
