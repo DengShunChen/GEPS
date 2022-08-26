@@ -49,15 +49,13 @@
       integer   nxj,nx,lev,ncld
       real      cp,radsq,onocos,cor,sinl
 
-      real      pk(nx,lev),pk2(nx,lev)
-      
 !
       real(kind=RTYPE) diveng(nx,lev),vdmerd(nx,lev),vdzonl(nx,lev), &
                 pdot(nx,lev+1),pten(nx,lev),dlpl(nx),dtpl(nx),       &
                 rdiv(nx,lev),ut(nx,lev),vt(nx,lev),tt(nx,lev),       &
                 qt(nx,lev*ncld),phi(nx,lev),pt(nx),sgeo(nx),         &
                 deldm(nx),spal(nx,lev),sd(nx,lev),sdpbl(nx),         &
-                dsigma(lev,2),sigma(lev+1,2)
+                dsigma(lev,2),sigma(lev+1,2),pk(nx,lev),pk2(nx,lev)
 !
       logical   flag(nx)
 !
@@ -197,14 +195,14 @@
       integer   nxj,nx,lev,ncld
       real      cp,radsq,onocos,cor,sinl
 
-      real      pk(nx,lev),pk2(nx,lev)
 !
       real(kind=RTYPE) diveng(nx,lev),vdmerd(nx,lev),vdzonl(nx,lev),   &
                        pdot(nx,lev+1),pten(nx,lev),dlpl(nx),dtpl(nx),  &
                        rdiv(nx,lev),ut(nx,lev),vt(nx,lev),tt(nx,lev),  &
                        qt(nx,lev*ncld),phi(nx,lev),pt(nx),sgeo(nx),    &
                        deldm(nx),spal(nx,lev),sd(nx,lev),sdpbl(nx),    &
-                       dsigma(lev,2),sigma(lev+1,2)
+                       dsigma(lev,2),sigma(lev+1,2),pk(nx,lev),        &
+                       pk2(nx,lev)
 !
       logical   flag(nx)
 !

@@ -92,11 +92,12 @@
 
       integer   jcup,nxj,nx,my,lev,ktcup,idg,nxx,ncup
 
-      real      pl(nx,lev),pk(nx,lev),tltmp(nx)              &
-        ,pk2(nx,lev),plcl(nx),cumtop(nx),rcup(nx)            &
+      real      pl(nx,lev),tltmp(nx)                         &
+        ,plcl(nx),cumtop(nx),rcup(nx)                        &
         ,dtcupz(lev),dqcupz(lev),dtcupd(lev),dqcupd(lev)
       real(kind=RTYPE) tl(nx,lev),ql(nx,lev),phi(nx,lev)     &
-        ,       topo(nx),ps(nx),dsigma(lev,2)
+        ,       topo(nx),ps(nx),dsigma(lev,2),pk(nx,lev)     &
+        ,       pk2(nx,lev)
 
       integer   nlcl(lev),nnegl(lev),nosat(lev),nwork(lev),ntcup(lev),nflx(lev)
 !

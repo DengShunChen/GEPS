@@ -32,10 +32,9 @@
 
       integer   nxj,nx,lev,ncld
 
-      real      pk(nx,lev),pk2(nx,lev)
       real(kind=RTYPE) tt(nx,lev),qt(nx,lev*ncld),phi(nx,lev),pt(nx)   &
       , odpsig(nx,lev),spal(nx,lev),that(nx,lev),dsigma(lev,2)         &
-      , sigma(lev+1,2)
+      , sigma(lev+1,2),pk(nx,lev),pk2(nx,lev)
 
       real      cpr2,cp,radsq
       integer   i,n,nk,k,kk

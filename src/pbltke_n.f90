@@ -162,12 +162,13 @@
                u(nx,lev),v(nx,lev),t(nx,lev),                             &
                ustar(nx),                                                 &
                tstar(nx),qstar(nx),e(nx,lev),eps(nx,lev),hflux(nx),       &
-               qflux(nx),pk(nx,lev),pk2(nx,lev),gwclim(nx),               &
+               qflux(nx),pkd(nx),pk2d(nx),gwclim(nx),                     &
                tgclim(nx),snr(nx),totalp(nx),                             &
                ss(nx),rs(nx),alb(nx),xkmx(2),xkmd(lev),                   &
                t2(nx),rh2(nx),u10(nx),v10(nx)
       real(kind=RTYPE) q(nx,lev*ncld),qt(nx,lev*ncld),phi(nx,lev),        &
-                       topo(nx),pss(nx),ut(nx,lev),vt(nx,lev),tt(nx,lev)
+                       topo(nx),pss(nx),ut(nx,lev),vt(nx,lev),tt(nx,lev), &
+                       pk(nx,lev),pk2(nx,lev)
 !soil
       real     smc(nx,km),stc(nx,km),canopy(nx),sigmaf(nx),               &
                rld(nx),runoff(nx)             
@@ -224,8 +225,10 @@
 
 !
       do k = 1, lev
-      call vlog(pk2x(1,k),pk2(1,k),nxj)
-      call vlog(pkx(1,k), pk(1,k), nxj)
+      pkd(:) =pk(:,k)
+      pk2d(:)=pk2(:,k)
+      call vlog(pk2x(1,k),pk2d,nxj)
+      call vlog(pkx(1,k), pkd, nxj)
       do i = 1, nxj
         pk2x(i,k)=pk2x(i,k)*(cp/r)
         pkx(i,k) = pkx(i,k)*(cp/r)

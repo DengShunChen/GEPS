@@ -119,11 +119,11 @@
       real      dt,g,r,cp
 
       real      p(nx,lev)
-      real      pk(nx,lev),pk2(nx,lev),var(nx)
       real      drag(nx,lev)
       real      ugws(nx),vgws(nx)
       real(kind=RTYPE) u(nx,lev),v(nx,lev),t(nx,lev),q(nx,lev),   &
                        hi(nx,lev)
+      real(kind=RTYPE) pk(nx,lev),pk2(nx,lev),var(nx)
 !
 ! ... local variable
 !

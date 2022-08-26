@@ -22,8 +22,8 @@
       integer   nxj,nx,lev
       real      ptop
 
-      real      pk2(nx,lev),pk(nx,lev),plt(nx,lev)
-      real(kind=RTYPE) pt(nx),sigma(lev+1,2)
+      real      plt(nx,lev),pk2d(nx,lev)
+      real(kind=RTYPE) pt(nx),sigma(lev+1,2),pk2(nx,lev),pk(nx,lev)
 !
       real      pl2(nx,2)
 !
@@ -40,17 +40,18 @@
 !
       do k=1,lev
       do i=1,nxj
-      pk2(i,k)= sigma(k+1,1)*pt(i)+sigma(k+1,2)+ptop
+      pk2d(i,k)= sigma(k+1,1)*pt(i)+sigma(k+1,2)+ptop
 !      pk2(i,k)= sig(k+1)*pt(i)+ptop
       enddo
-      call vlog(pk2(1,k),pk2(1,k),nxj)
+      call vlog(pk2d(1,k),pk2d(1,k),nxj)
       enddo
 !
       do k=1,lev
       do i=1,nxj
-      pk2(i,k)=capa*pk2(i,k)
+      pk2d(i,k)=capa*pk2d(i,k)
       enddo
-      call vexp(pk2(1,k),pk2(1,k),nxj)
+      call vexp(pk2d(1,k),pk2d(1,k),nxj)
+      pk2(:,k)= pk2d(:,k)
       enddo
 
       kbot= 1

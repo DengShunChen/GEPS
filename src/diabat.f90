@@ -226,8 +226,8 @@
                 tstar(nxp,my_max),qstar(nxp,my_max),                      &
                 e(nxp,lev,my_max),eps(nxp,lev,my_max),                    &
                 dtrad(nxp,lev,my_max),ss(nxp,my_max),                     &
-                rs(nxp,my_max),plt(nxp,lev,my_max),pk(nxp,lev,my_max),    &
-                pk2(nxp,lev,my_max),rainlp(nxp,my_max),                   &
+                rs(nxp,my_max),plt(nxp,lev,my_max),                       &
+                rainlp(nxp,my_max),                                       &
                 gwclim(nxp,my_max),acld(lev,my),std(nxp,my_max),          &
                 asol(nxp,my_max),olr(nxp,my_max),drag(nxp,lev,my_max),    &
                 ugws(nxp,my_max),vgws(nxp,my_max),                        &
@@ -245,7 +245,8 @@
                        sgeo(nxp,my_max),ps(nxp,my_max),pst(nxp,my_max),   &
                        sdpbl(nxp,my_max),sigma(lev+1,2),dsigma(lev,2),    &
                        ut(nxp,lev,my_max),vt(nxp,lev,my_max),             &
-                       tt(nxp,lev,my_max)
+                       tt(nxp,lev,my_max),pk(nxp,lev,my_max),             &
+                       pk2(nxp,lev,my_max)
 !soil (2005/01/12)
       integer,  parameter :: ntype=9, ngrid=22
       integer   istyp(nxp,my_max),ivegtyp(nxp,my_max)
@@ -473,7 +474,8 @@
       real      u0(nxp,lev),v0(nxp,lev),t0(nxp,lev)
       real(kind=RTYPE) q0(nxp,lev*ncld)
       real      upp(nxp,lev),vpp(nxp,lev),tpp(nxp,lev),ttpp(nxp,lev)
-      real      pkp(nxp,lev),pk2p(nxp,lev),pltp(nxp,lev)
+      real      pltp(nxp,lev)
+      real(kind=RTYPE) pkp(nxp,lev),pk2p(nxp,lev)
 !for lightning
       real      flash(nxp,my_max)        !flash density (unit in flashes km^-2 day^-1)
       real      ztenh(nxp,lev),zqenh(nxp,lev),rho(nxp,lev)              &

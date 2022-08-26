@@ -5,19 +5,21 @@
 !
 
         integer nxj,nx,lev,i,k,kc
-        real    ptop,cp,r,g,pk(nx,lev),pk2(nx,lev)
+        real    ptop,cp,r,g,pkd(nx),pk2d(nx)
         real    pk2x(nx,lev),pkx(nx,lev),dhgtz(nx,lev),     &
                 ppd,ppp,ppu,ttv,dhgt,theda(nx,lev)
 
         real    phii(nx,lev+1)
         real(kind=RTYPE) tt(nx,lev),qt(nx,lev),phi(nx,lev), &
-                         sgeo(nx)
+                         sgeo(nx),pk(nx,lev),pk2(nx,lev)
 !
 ! geopotential height at model interface
 !
       do k=1,lev
-      call vlog(pk2x(1,k),pk2(1,k),nxj)
-      call vlog(pkx(1,k), pk(1,k), nxj)
+      pkd(:) =pk(:,k)
+      pk2d(:)=pk2(:,k)
+      call vlog(pk2x(1,k),pk2d,nxj)
+      call vlog(pkx(1,k), pkd, nxj)
 
       do i=1,nxj
         pk2x(i,k)=pk2x(i,k)*(cp/r)

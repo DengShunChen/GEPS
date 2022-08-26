@@ -162,10 +162,10 @@
                 tstar(mn),qstar(mn),e(mn,kk),eps(mn,kk),hflux(mn), &
                 qflux(mn),qsfc(mn),zl(mn),ts(mn),                  &
 ! for pm-evap.
-                ss(mn),rld(mn),pk(mn,kk),pk2(mn,kk),gfx(mn),       &
+                ss(mn),rld(mn),gfx(mn),                            &
                 as(mn)
       real(kind=RTYPE) qt(mn,kk),q(mn,kk),tt(mn,kk),               &
-                       ut(mn,kk),vt(mn,kk)
+                       ut(mn,kk),vt(mn,kk),pk(mn,kk),pk2(mn,kk)
       logical   ocean(mn)
 !
       real      phim(mn),phih(mn),zsz0(mn),rosfc(mn),              &

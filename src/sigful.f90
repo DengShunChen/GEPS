@@ -45,10 +45,10 @@
       logical cstar
       real      weight(my),poly(jtrun,jtmax,my/2)                       &
               , cosl(my),wk1(nxp,my_max)                                &
-              , pk(nxp,lev,my_max)                                      &
               , pdiff(nxp,my_max),t1000(nxp,my_max)                     &
-              , tsave(nxp,my_max),plt(nxp,lev,my_max),pk2(nxp,lev,my_max)
-      real(kind=RTYPE) sigma(lev+1,2)
+              , tsave(nxp,my_max),plt(nxp,lev,my_max)
+      real(kind=RTYPE) sigma(lev+1,2),pk(nxp,lev,my_max),               &
+                       pk2(nxp,lev,my_max)
       character*4 ggdef,gmdef
 !
 !  local work arrays

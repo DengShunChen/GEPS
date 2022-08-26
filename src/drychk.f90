@@ -17,8 +17,8 @@
       implicit  none
 
       integer   j,nxj,nx,lev,ncon
-      real      plk(nx,lev),dp(lev)
-      real(kind=RTYPE) tt(nx,lev)
+      real      dp(lev)
+      real(kind=RTYPE) tt(nx,lev),plk(nx,lev)
 !
 !     local work array
 !

@@ -51,11 +51,11 @@
       integer kcbot(nx),kctop(nx)
       real  u(nx,lev),v(nx,lev),t(nx,lev)                            &
           , qflux(nx),sd(nx,lev)                                     &
-          , pk(nx,lev),pk2(nx,lev)                                   &
           , plt(nx,lev),ttmp(nx)
       real(kind=RTYPE) ut(nx,lev),vt(nx,lev),tt(nx,lev)              &
           ,            q(nx,lev*ncld),qt(nx,lev*ncld),phi(nx,lev)    &
-          ,            topo(nx),pt(nx),sigma(lev+1,2)
+          ,            topo(nx),pt(nx),sigma(lev+1,2)                &
+          ,            pk(nx,lev),pk2(nx,lev)
 !c
 !c
 !c  local work arrays
