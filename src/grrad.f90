@@ -1009,8 +1009,9 @@
              olyr, rhly, qstl, vvel, clw, prslk1, tem2da, tem2db, tvly
       real (kind=kind_phys), dimension(im,lm+ltp)  :: qst2, rhly2
       real (kind=kind_phys), dimension(im,lm+ltp)  :: es2, qs2
-!      real (kind=kind_phys), dimension(im,lm+ltp)  :: effrl, effri,     &
-!             effrs, effrr
+      real (kind=kind_phys), dimension(im,lm+ltp)  :: effrw, effri,     &
+             effrs, effrr
+      real (kind=kind_phys), dimension(im,lm+ltp)  :: cldcov1
 
       real (kind=kind_phys), dimension(im) :: tsfa, cvt1, cvb1, tem1d,  &
              sfcemis, tsfg, tskn
@@ -1246,6 +1247,17 @@
 !         plyr(i,k1)   = 0.01 * prsl(i,k)   ! pa to mb (hpa)
           tlyr(i,k1)   = tgrs(i,k)
           prslk1(i,k1) = prslk(i,k)
+          if(icmphys == 6 .or. icmphys == 8) then
+            effrw(i,k1) = phy_f3d(i,k,1)
+            effri(i,k1) = phy_f3d(i,k,2)
+            effrs(i,k1) = phy_f3d(i,k,3)
+          elseif(icmphys == 11) then
+            effrw(i,k1) = phy_f3d(i,k,1)
+            effri(i,k1) = phy_f3d(i,k,2)
+            effrs(i,k1) = phy_f3d(i,k,3)
+            effrr(i,k1) = phy_f3d(i,k,4)
+          endif
+          cldcov1(i,k1) = cldcov(i,k)
 
 !  --- ...  compute relative humidity
 !         es  = min( prsl(i,k), 0.001 * fpvs( tgrs(i,k) ) )   ! fpvs in pa
@@ -1643,9 +1655,9 @@
          endif
          
          if (kdt == 1) then
-           phy_f3d(:,:,1) = 10.
-           phy_f3d(:,:,2) = 50.
-           phy_f3d(:,:,3) = 250.
+           effrw = 10.
+           effri = 50.
+           effrs = 250.
          endif
 !
          call progcld4                               &
@@ -1655,8 +1667,7 @@
             ntrac,ntcw,ntiw,ntrw,ntsw,ntgl,          &
             im, lmk, lmp,                            &
             uni_cloud,lmfshal,lmfdeep2,              &
-            cldcov(:,1:lmk),phy_f3d(:,:,1),          &
-            phy_f3d(:,:,2),phy_f3d(:,:,3),           &
+            cldcov1,effrw,effri,effrs,               &
 !   --- outputs:
             clouds,cldsa,mtopa,mbota                 &
            )
@@ -1679,10 +1690,10 @@
          endif
 
          if (kdt == 1) then
-           phy_f3d(:,:,1) = 10.
-           phy_f3d(:,:,2) = 50.
-           phy_f3d(:,:,3) = 250.
-           phy_f3d(:,:,4) = 1000.
+           effrw = 10.
+           effri = 50.
+           effrs = 250.
+           effrr = 1000.
          endif
 
          if ( .not. lgfdlmprad ) then  ! no consistency between GFDLMP and radiation
@@ -1690,29 +1701,17 @@
 !    ---  inputs:
              ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,clw,cnvw,cnvc,        &
                xlat,xlon,slmsk,im,lmk,lmp,                              &
-               cldcov(:,1:lmk),                                         &
+               cldcov1,                                                 &
 !    ---  outputs:
                clouds,cldsa,mtopa,mbota                                 &
               ) 
          else
-!           if ( uni_cloud ) then
-!           call progclduni                                              &
-!    ---  inputs:
-!            ( plyr,plvl,tlyr,tvly,tracer1,ntrac,                        &
-!              xlat,xlon,slmsk,ix,lmk,lmp,cldcov(:,1:lmk),               &
-!              phy_f3d(:,:,1),phy_f3d(:,:,2),phy_f3d(:,:,3),             &
-!              phy_f3d(:,:,4),effr_in,                                   &
-!    ---  outputs:
-!              clouds,cldsa,mtopa,mbota                                  &
-!             )
-!           else
            call progcld5o                                               &
 !    ---  inputs:
              ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,tracer1,              &
                xlat,xlon,slmsk,                                         &
-               ntrac,ntcw,ntiw,ntrw,ntsw,ntgl,cldcov(:,1:lmk),          &
-               phy_f3d(:,:,1),phy_f3d(:,:,2),phy_f3d(:,:,3),            &
-               phy_f3d(:,:,4),effr_in,                                  &
+               ntrac,ntcw,ntiw,ntrw,ntsw,ntgl,cldcov1,                  &
+               effrw,effri,effrs,effrr, effr_in,                        &
                im,lmk,lmp,                                              &
 !    ---  outputs:
                clouds,cldsa,mtopa,mbota                                 &
