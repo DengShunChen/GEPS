@@ -486,9 +486,10 @@
       endif
 !
       if(label(kk).eq.'b10510') then
-      call mpe2d_unify(glob,rh10)
+      call unify_reduceintp(nx,my,my_max,rh10,glob)
+!byl      call mpe2d_unify(glob,rh10)
       call syslbl ('b10510',idtg,itau,ggdef,ihdg)
-      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !byl      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
