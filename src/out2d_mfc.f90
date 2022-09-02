@@ -28,7 +28,7 @@
       integer*8 idtg
       character*6 dmskey(num)
 
-      integer:: ptp0(num) ,ptp1(num) ,ptp2(num) ,ptp3(num) ,ptp4(num) ,ptp5(num)
+      integer,dimension(num):: ptp0 ,ptp1 ,ptp2 ,ptp3 ,ptp4 ,ptp5
 !
       real      glob(nx,my),mout(nx,my)
 !
@@ -46,13 +46,13 @@
                   'b10200','b10210','b02171','b02181','b02150', &
                   's003x0','s003u0','x00770','ssl010'/
 
-!     grib code 
+!     grib code 0,1,2:variable   3:order  4:layer  5:above_land_height
 !                 1h  Tot                   T2M T2M  2M DW DW       
 !                 p   p  T2 sh2 rh2 u10 v10 max min DPT LW SW CC SLP
       data ptp0/  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0, 0,  0 /
       data ptp1/  1,  1,  0,  1,  1,  2,  2,  0,  0,  0, 5, 4, 6,  3 /
-      data ptp2/  7,  8,  0,  0,  1,  2,  3,  4,  5,  6, 3, 7, 1,  0 /
-      data ptp3/  2,  1,  2,  6,  0,  2,  2,  2,  2,  2, 2, 2, 3,  2 /
+      data ptp2/  8, 49,  0,  0,  1,  2,  3,  4,  5,  6, 3, 7, 1,  1 /
+      data ptp3/  2,  1,  2,  6,  2,  2,  2,  2,  2,  2, 2, 2, 3,  2 /
       data ptp4/103,103,103,103,103,103,103,103,103,103, 1, 1, 7,101 /
       data ptp5/  0,  0,  2,  2,  2, 10, 10,  2,  2,  2, 0, 0, 0,  0 /
 
@@ -188,13 +188,30 @@
           if(myrank==0)then
             call wrt_grb2_accu(ntau,ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,float(ptp5(n)),1,1,mout ) 
           endif
-          do n=2,num
+          do n=2,7
+            call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),mout)
+            if(myrank==0)then
+              call wrt_grb2(ntau,ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,float(ptp5(n)) ,mout ) 
+            endif
+          enddo
+
+          !Tmax2m 
+          n=8
+          call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),mout)
+          if(myrank==0)call wrt_grb2_accu(ntau,ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,float(ptp5(n)),2,1,mout ) 
+          !Tmin2m
+          n=9
+          call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),mout)
+          if(myrank==0)call wrt_grb2_accu(ntau,ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,float(ptp5(n)),3,1,mout ) 
+
+          do n=10,num
             call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),mout)
             if(myrank==0)then
               call wrt_grb2(ntau,ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,float(ptp5(n)) ,mout ) 
             endif
           enddo
       endif
+
 
 !
 !! rh10

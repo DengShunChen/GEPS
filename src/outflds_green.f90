@@ -181,7 +181,7 @@
       call unify_reduceintp(nx,my,my_max,oqc,glob)
 !byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,22,8,103,0,hm(mm),glob)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,235,8,103,0,hm(mm),glob)
 
 !output U,V
       write(wtemp,'(a3,a3)')layer(mm),var(3)
@@ -217,7 +217,7 @@
       call unify_reduceintp(nx,my,my_max,ss,glob)
 !byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,4,0,2,1,0,0.,glob)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,4,9,2,1,0,0.,glob)
 
 !output RH at bottom level
       do jj = 1, jlistnum
@@ -281,7 +281,7 @@
 !byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0) call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,1,9,2,103,0,0.,1,6,glob)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,1,47,2,103,0,0.,1,6,glob)
 
 !
       call syslbl ('b00623',idtg,itau,ggdef,ihdg)
@@ -295,7 +295,7 @@
 !byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0) call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,1,7,2,103,0,0.,1,6,glob)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,1,8,2,103,0,0.,1,6,glob)
 
       endif
 !

@@ -73,7 +73,7 @@
       call syslbl ('s0031f',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
       if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,4,0,2,1,0,0.,0,24,glob)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,4,9,2,1,0,0.,0,24,glob)
 ! net surface longwave radiation
       do jj=1,jlistnum
          j=jlist1(jj)
@@ -88,7 +88,7 @@
       call syslbl ('s0032f',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
       if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,5,0,2,1,0,0.,0,24,glob)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,5,5,2,1,0,0.,0,24,glob)
 !
 !  Total precipitation  24-hours
       do jj=1,jlistnum
@@ -103,7 +103,7 @@
       call syslbl ('b00626',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
       if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,1,7,2,103,0,0.,1,24,glob)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,1,8,2,103,0,0.,1,24,glob)
 
 !  The average of latent heat flux release for total precipitation within 24-hours
       do jj=1,jlistnum
@@ -150,7 +150,7 @@
       call syslbl ('x0034f',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
       if(outdms.gt.0)  call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,5,4,2,8,0,0.,0,24,glob)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,5,5,2,8,0,0.,0,24,glob)
 !
 !xb110>>
       do jj = 1,jlistnum
@@ -163,7 +163,7 @@
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       call syslbl ('x00999',idtg,itau,ggdef,ihdg)
       if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,17,0,9,7,0,0.,0,24,glob)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,17,4,9,7,0,0.,0,24,glob)
 !xb110<<
 
 

@@ -57,7 +57,7 @@ contains
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,'H',ifilout,wk1,istat)
       if(outgrb2==1.and.myrank==0)then
-        call wrt_grb2(itau,0,2,13,6,100,-2,plev(k),wk1)
+        call wrt_grb2(itau,0,2,11,6,100,-2,plev(k),wk1)
       endif
       call qmaxn3(wk1,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if ( myrank .eq. ncnt ) then
@@ -430,8 +430,13 @@ contains
       character*3 cspec(6)
       logical :: lwrite
       integer::Ptp0,Ptp1,Ptp2,Ptp3
+      integer,dimension(6)::cspe0,cspe1,cspe2,cspe3
 !
       cspec=(/'500','551','553','552','554','555'/)
+      cspe0=(/  0  ,  0  ,  0  ,  0  ,  0  ,  0  /)
+      cspe1=(/  1  ,  1  ,  1  ,  1  ,  1  ,  1  /)
+      cspe2=(/  0  , 22  , 24  , 82  , 25  , 32  /)
+      cspe3=(/  6  ,  8  ,  8  ,  8  ,  8  ,  8  /)
 !
       ntrchk=ncld
       if ( ntoz .gt. 0 ) ntrchk=ncld-1
@@ -449,7 +454,8 @@ contains
        write( lrec(k), '(i3.3,a3)' ) lpl,cspec(ntrac)
       end do
       write( lrec(lpout), '(a3,a3)' ) 'h00',cspec(ntrac)
-      Ptp0=0 ;Ptp1=1 ;Ptp2=0 ;Ptp3=6 !grib code
+      Ptp0=cspe0(ntrac) ;Ptp1=cspe1(ntrac)
+      Ptp2=cspe2(ntrac) ;Ptp3=cspe3(ntrac)
 !
       else if(ntrac.eq.ntoz)then
 !
@@ -467,7 +473,7 @@ contains
           write( lrec(k), '(i3.3,a3)' ) lpl,'550'   ! combine cloud water and cloud ice together
         end do
         lrec(lpout) = 'h00550'
-        Ptp0=0 ;Ptp1=1 ;Ptp2=22 ;Ptp3=8 !grib code 
+        Ptp0=0 ;Ptp1=1 ;Ptp2=235 ;Ptp3=8 !grib code 
       else
         goto 40
       endif
@@ -591,7 +597,7 @@ contains
           if(lwrite) call dmswrit(nx,my,lrec,lenc,'H',ifilout,glob,istat)
         endif
         if(outgrb2==1.and.myrank==0)then
-          call wrt_grb2(itau,0,3,0,2,101,0,0.,glob)
+          call wrt_grb2(itau,0,3,1,2,101,0,0.,glob)
         endif
         call qmaxn3(glob,lrec(1:14),lrec(15:26),1,1,1,nx,my,1)
 

@@ -2408,7 +2408,11 @@
              call date2JulianDay(ydate3,ydate3_jd)
 
              IF (ydate_jd .LE. ydate2_jd) THEN
-               wgto2=(ydate_jd-ydate1_jd)/(ydate2_jd-ydate1_jd)
+               IF (ydate_jd .EQ. ydate2_jd) THEN
+                 wgto2=1
+               else
+                 wgto2=(ydate_jd-ydate1_jd)/(ydate2_jd-ydate1_jd)
+               endif
                wgto1=1.-wgto2
                now1=1
                now2=2
@@ -2594,8 +2598,11 @@
         ! check the length of the month
          idmax = Get_JulianMonLen (ky, km)
 
+         if(myrank==0)then
          IF (kd < 1 .OR. idmax < kd) &
-           print *,'Set_JulianDay: day in months invalid'
+           print *,'Set_JulianDay: day in months invalid' &
+                  ,' kd=', kd,'idmax= ',idmax
+         endif
 
          zd = real(365.25*iy)+INT(30.6001*(im+1)) &
              +REAL(ib)+1720996.5+REAL(kd)+zsec
