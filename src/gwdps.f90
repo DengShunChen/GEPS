@@ -1005,7 +1005,8 @@
 !           eng2       = 0.0
 !         endif
 !         c(j,k) = c(j,k) + max((eng0-eng1-eng2),0.0)/cp/deltim
-          c(j,k) = c(j,k) + max((eng0-eng1),0.0)/cp/deltim
+!org          c(j,k) = c(j,k) + max((eng0-eng1),0.0)/cp/deltim   #need to make sure the meaning of the constraint of maximum value
+          c(j,k) = c(j,k) + (eng0-eng1) / (cp*deltim)
 !
 !          u1(j,k) = u1(j,k) + b(j,k) * deltim
 !          v1(j,k) = v1(j,k) + a(j,k) * deltim

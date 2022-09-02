@@ -86,7 +86,7 @@
       real    deltaq(nx,lev),cnvw(nx,lev),cnvc(nx,lev)
 ! --- for MP WSM6 & Thompson & GFDL
       real    ftp(nx,lev),ftp1(nx,lev),fqp(nx,lev),fqp1(nx,lev)
-      real    phy3d(nx,lev,5)
+      real    phy3d(nxj,lev,5)
 
 ! -------------------------------------------------------------------
 ! --- for rrtmg output:
@@ -110,7 +110,7 @@
 
 ! for GFDL MP
       real    cldcov(nx,lev)   ! input/output layer cloud fraction
-      real    dummy3(nx,lev)
+      real    dummy3(nxj,lev)
       
 
 !
