@@ -4,6 +4,7 @@
       use rank
       use mpe
       use index
+      use const,              only:kflag
       use mod_sitgrid
       use mod_sit_control,    only:outsitlev
 
@@ -35,7 +36,7 @@
           ihdg2=ihdg
         endif
    10 continue
-      if(myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
+      if(myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
 
       ncnt=-1 
       do 20 k = 0, outsitlev+1
@@ -48,7 +49,7 @@
           ihdg2=ihdg
         endif
    20 continue
-      if(myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
+      if(myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
 
   
       end subroutine sitout
@@ -170,6 +171,7 @@
       use rank
       use mpe
       use index
+      use const,           only:kflag
       use mod_sitgrid,     only:sitwttau,sitwstau,sitwutau,sitwvtau &
                                ,dtsittau
       use mod_sit_control, only: xmissing,outsitlev
@@ -209,7 +211,7 @@
         endif
    10 continue
 
-      if(myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat)
+      if(myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
 
       sitwttau=0.
       dtsittau=0.
@@ -224,6 +226,7 @@
       use rank
       use mpe
       use index
+      use const,          only: kflag
       use mod_sitgrid,    only: sitwt24,sitws24,sitwu24,sitwv24 &
                                ,dtsit24,wtfn0,wsfn0,obswt,sitwt
       use mod_sit_control,only: xmissing,outsitlev
@@ -276,9 +279,9 @@
           pout=wk1
           ihdg2=ihdg
         endif
-!        call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!        call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
    10 continue
-      if(myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat) 
+      if(myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat) 
      
       sitwt24=0.
       wtfn0=0.
@@ -294,6 +297,7 @@
       use rank
       use mpe
       use index
+      use const,              only: kflag
       use mod_sitgrid,        only: dtsitmon,wtfn,wtfns,wsfn,wsfns
       use mod_sit_control,    only: xmissing,outsitlev
   
@@ -327,13 +331,13 @@
           ihdg2=ihdg
         endif
    10 continue
-      if(myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,pout,istat) 
+      if(myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat) 
 
         write( lrec, '(i3.3,a3)' ) k,'TFS'
         call syslbl (lrec,idtg,itau,ggdef,ihdg)
         glob2d(:,:)=wtfns(:,:)/dtsitmon
         call unify_reduceintp(nx,my,my_max,glob2d,wk1) 
-        call dmswrit(nx,my,ihdg,lenc,'H',ifilout,wk1,istat)
+        call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,wk1,istat)
 
 !reset wtfn,wsfn,wtfns,wsfns
       dtsitmon=0.
@@ -934,6 +938,7 @@
 
       use mpe
       use index
+      use const,             only: kflag
       use mod_sitgrid,       only: tseadiffSIT24
 
       implicit none
@@ -962,11 +967,11 @@
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       call syslbl ('w0002f',idtg,itau,ggdef,ihdg)
-      call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
       tseadiffSIT24=0.
 
       call unify_reduceintp(nx,my,my_max,wrk2,glob)
       call syslbl ('w00002',idtg,itau,ggdef,ihdg)
-      call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
 
       END SUBROUTINE outtseadiffSIT24

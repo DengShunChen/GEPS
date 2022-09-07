@@ -5,7 +5,7 @@
       use rank
       use mpe
       use index
-      use const ,only : grav,ptop,rgas,cp,RTYPE
+      use const ,only : grav,ptop,rgas,cp,RTYPE,kflag
       use grid  ,only : tt,qt,plt,pk,pk2,sgeo
 !
       implicit  none
@@ -135,15 +135,15 @@
         endif
       enddo
 !
-      if (myrank .lt. num ) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,glob,istat)
+      if (myrank .lt. num ) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,glob,istat)
 !
 !! rh10
 !!byl      call mpe2d_unify(glob,rh10)
 !      call syslbl ('b10510',idtg,ntau,ggdef,ihdg)
 !      call unify_reduceintp(nx,my,my_max,rh10,glob)
 !!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!!     call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-!      call dmswrit_mfc(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!!     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
+!      call dmswrit_mfc(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
 
 
       return

@@ -813,6 +813,7 @@
 
       use index 
       use mpe
+      use const, only: kflag
 
       implicit none
 
@@ -838,7 +839,7 @@
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       call syslbl ('w0001f',idtg,itau,ggdef,ihdg)
-      call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
       tseadiffFCT24=0.
 
       END SUBROUTINE 

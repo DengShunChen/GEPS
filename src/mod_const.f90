@@ -11,9 +11,11 @@
 #ifdef SP
       integer, parameter ::     RTYPE=4
       integer, parameter :: MPI_RTYPE=MPI_REAL4
+      character(len=1), parameter  :: kflag='R'
 #else
       integer, parameter ::     RTYPE=8
       integer, parameter :: MPI_RTYPE=MPI_REAL8
+      character(len=1), parameter  :: kflag='H'
 #endif
  
     real(kind=RTYPE), dimension(:)  , allocatable, save  :: aki,bki

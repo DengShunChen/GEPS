@@ -8,7 +8,7 @@
       use mpe
       use rank
       use index
-      use const ,only:aki,bki,RTYPE
+      use const ,only:aki,bki,RTYPE,kflag
 
       implicit  none
 
@@ -163,7 +163,7 @@
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (pla,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,pla,glob)
-!byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 
 !output Q
@@ -171,14 +171,14 @@
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (oqt,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,oqt,glob)
-!byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 
       write(wtemp,'(a3,a3)')layer(mm),var(6)
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (oqc,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,oqc,glob)
-!byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 
 !output U,V
@@ -186,14 +186,14 @@
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (globu,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,ou,glob)
-!byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 
       write(wtemp,'(a3,a3)')layer(mm),var(4)
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (globv,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,ov,glob)
-!byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 
 !output T
@@ -201,7 +201,7 @@
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (ot,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,ot,glob)
-!byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 !-----------------------------------------------------------------------
       enddo  ! end (mm)
@@ -210,7 +210,7 @@
       write(wtemp,'(a6)')'S00310'
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
       call unify_reduceintp(nx,my,my_max,ss,glob)
-!byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 
 !output RH at bottom level
@@ -229,7 +229,7 @@
       write(wtemp,'(a6)')'B00510'
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
       call unify_reduceintp(nx,my,my_max,rh0,glob)
-!byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 
 !output b00010
@@ -243,7 +243,7 @@
       write(wtemp,'(a6)')'B00010'
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-!byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 !=======================================================================
 !output 6hr prec.
@@ -253,7 +253,7 @@
       call syslbl ('b00633',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,raincu6,glob)
-!byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 
@@ -261,7 +261,7 @@
       call syslbl ('b00643',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob1,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,rainlp6,glob)
-!byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 
@@ -274,14 +274,14 @@
        wrk(i,jj)=raincu6(i,jj)+rainlp6(i,jj)
  98   continue
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-!byl      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!byl      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 
       endif
 !
       if ( myrank .lt. nc )             &
-         call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,mout,istat)
+         call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,mout,istat)
 !
 !=======================================================================
       return

@@ -7,21 +7,19 @@
 
       integer   nx,my,my_max
       integer   i,j,jj,nxj
-      real*8    fp8(nxp,my_max),ff8(nx,my),ffx8(nx,my_max)
+      real*8    fp8(nxp,my_max),ff8(nx,my)
       real(kind=RTYPE) fp(nxp,my_max),ff(nx,my),ffx(nx,my_max)
 
 
 
       fp=fp8
       call mpe2d_unify_nx(ffx,fp)
-      ffx8=ffx
       if( lreduce.eq.1 ) then
         do jj =1, jlistnum
           j=jlist1(jj)
-          call reduceintp(ffx8(1,jj),nxdef(j),nx,1)
+          call reduceintp(ffx(1,jj),nxdef(j),nx,1)
         enddo
       endif
-      ffx=ffx8
       call mpe2d_unify_my(ff,ffx)
       ff8=ff
 !

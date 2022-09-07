@@ -5,14 +5,16 @@
 !
 ! author: hann-ming henry juang 2008
 !
+      use const, only: RTYPE
+!
       implicit none
 
 !
       integer    lonf,latg,j,i,imp,lonfd(latg)
       real       a(lonf,latg)
 !
-      real      old(lonf),new(lonf)
-      real      xpast(lonf+1),xnext(lonf+1)
+      real(kind=RTYPE) old(lonf),new(lonf)
+      real(kind=RTYPE) xpast(lonf+1),xnext(lonf+1)
       real      two_pi,dxp,dxf,hfdxp,hfdxf,sc,pi
 !
 
@@ -44,8 +46,8 @@
 
         old(1:lonf)=a(1:lonf,j)
 !CWB2021 for ndsl single precision test
-!       call cyclic_cell_ppm_intp(xpast,old,xnext,new,lonf,1,lonf,imp,sc)
-        call cyclic_cell_ppm_intp_dp(xpast,old,xnext,new,lonf,1,lonf,imp,sc)
+        call cyclic_cell_ppm_intp(xpast,old,xnext,new,lonf,1,lonf,imp,sc)
+!        call cyclic_cell_ppm_intp_dp(xpast,old,xnext,new,lonf,1,lonf,imp,sc)
 
 !        call cyclic_cell_plm_intp(xpast,old,xnext,new,lonf,1,lonf,imp,sc)
 

@@ -6,6 +6,7 @@
       use mpe
       use rank
       use index
+      use const, only: kflag
 
       implicit  none
 
@@ -40,7 +41,7 @@
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,q2,glob)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
 
 !output fm
 !byl      call mpe2d_unify(glob,fm)
@@ -48,7 +49,7 @@
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,fm,glob)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
 
 !output fm10
 !byl      call mpe2d_unify(glob,fm10)
@@ -56,7 +57,7 @@
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,fm10,glob)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
 
 !output fh
 !byl      call mpe2d_unify(glob,fh)
@@ -64,7 +65,7 @@
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,fh,glob)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
 
 !output fh2
 !byl      call mpe2d_unify(glob,fh2)
@@ -72,7 +73,7 @@
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,fh2,glob)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
 
 !output ustar
 !byl      call mpe2d_unify(glob,ustar)
@@ -80,7 +81,7 @@
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,ustar,glob)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
 
 !output srflag
 !byl      call mpe2d_unify(glob,srflag)
@@ -88,7 +89,7 @@
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,srflag,glob)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
 
 !=======================================================================
       return

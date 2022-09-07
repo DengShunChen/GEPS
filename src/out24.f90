@@ -3,6 +3,7 @@
 !
       use index
       use mpe
+      use const, only: kflag
 
       implicit  none
 
@@ -38,7 +39,7 @@
 !byl      call mpe_unify(glob,nx,my,2,mpe_double)
       call syslbl ('s0043f',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
 !
       do jj=1,jlistnum
          j=jlist1(jj)
@@ -52,7 +53,7 @@
 !byl      call mpe_unify(glob,nx,my,2,mpe_double)
       call syslbl ('s0042f',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
 !
       do jj=1,jlistnum
          j=jlist1(jj)
@@ -66,7 +67,7 @@
 !byl      call mpe_unify(glob,nx,my,2,mpe_double)
       call syslbl ('s0031f',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
 !
       do jj=1,jlistnum
          j=jlist1(jj)
@@ -80,7 +81,7 @@
 !byl      call mpe_unify(glob,nx,my,2,mpe_double)
       call syslbl ('s0032f',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
 !
       do jj=1,jlistnum
          j=jlist1(jj)
@@ -94,7 +95,7 @@
 !byl      call mpe_unify(glob,nx,my,2,mpe_double)
       call syslbl ('b0062f',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
 !
       do jj=1,jlistnum
          j=jlist1(jj)
@@ -108,7 +109,7 @@
 !byl      call mpe_unify(glob,nx,my,2,mpe_double)
       call syslbl ('x0033f',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
 !
       do jj=1,jlistnum
          j=jlist1(jj)
@@ -122,7 +123,7 @@
 !byl      call mpe_unify(glob,nx,my,2,mpe_double)
       call syslbl ('x0034f',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
 !
 !xb110>>
       do jj = 1,jlistnum
@@ -134,7 +135,7 @@
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       call syslbl ('x00999',idtg,itau,ggdef,ihdg)
-      call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
 !xb110<<
       return
       end

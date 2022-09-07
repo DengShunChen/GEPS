@@ -25,7 +25,7 @@
 !  pk: 3-d full level exner func on gaussian grid and sigma coord.
 !  pk2: 3-d half level exner func on gaussian grid and sigma coord.
 !
-      use const, only : RTYPE
+      use const, only : RTYPE,kflag
       use mpe
       use rank
       use index
@@ -534,7 +534,7 @@
 !      call mpe_unify(hld1,nx,my,2,mpe_double)
 !      call syslbl ('x00dif',idtg,itaux,ggdef,lrec)
 !      if( lreduce.eq.1 ) call reduceintp (hld1,nxdef,nx,my)
-!      call dmswrit(nx,my,lrec,lncrec,'H',ifilout,hld1,istat)
+!      call dmswrit(nx,my,lrec,lncrec,kflag,ifilout,hld1,istat)
 !
 !  compute tsave and write out
 !
@@ -551,7 +551,7 @@
 !      call mpe_unify(hld1,nx,my,2,mpe_double)
 !      call syslbl ('x00tsv',idtg,itaux,ggdef,lrec)
 !      if( lreduce.eq.1 ) call reduceintp (hld1,nxdef,nx,my)
-!      call dmswrit (nx,my,lrec,lncrec,'H',ifilout,hld1,istat)
+!      call dmswrit (nx,my,lrec,lncrec,kflag,ifilout,hld1,istat)
 !
       opok  = 1.0/1000.0**capa
       if( cstar ) then

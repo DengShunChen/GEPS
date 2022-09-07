@@ -3,6 +3,7 @@
       use mpe
       use rank
       use index
+      use const, only: kflag
 
       implicit  none
 
@@ -30,13 +31,13 @@
       call syslbl ('b00632',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,raincu3,glob)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
 !
       call syslbl ('b00642',idtg,itau,ggdef,ihdg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob1,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,rainlp3,glob)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
 !
       call syslbl ('b00622',idtg,itau,ggdef,ihdg)
@@ -47,7 +48,7 @@
        wrk(i,jj)=raincu3(i,jj)+rainlp3(i,jj)
  98   continue
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
 
 !=======================================================================

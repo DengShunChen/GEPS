@@ -19,6 +19,7 @@
       use param, only : io_quilting
       use mpe
       use rank
+      use const, only : RTYPE
 !     use index
 
       implicit  none
@@ -27,7 +28,7 @@
       logical   t_flg
       real      z(nx,my)
 !CWB2021
-      real*4    z4(nx,my)
+      real(kind=RTYPE) z4(nx,my)
       character lrec*26,ifile*80,kflag*1
 !
 ! working array
@@ -55,11 +56,11 @@
 
        if(myrank .eq. 0) then
 !CWB2021
-       if(key(27:27).eq.'H')then
-          key(27:27)='R'
+       if(key(27:27).eq.'R')then
           z4=z
           call dmsput(ifile,key//char(0),z4,istat)
-       else
+       endif
+       if(key(27:27).eq.'H')then
           call dmsput(ifile,key//char(0),z,istat)
        endif
        t_flg=.true.
@@ -126,11 +127,11 @@
 
        if(myrank .eq. 0) then
 !CWB2021
-       if(key(27:27).eq.'H')then
-          key(27:27)='R'
+       if(key(27:27).eq.'R')then
           z4=z
           call dmsput(ifile,key//char(0),z4,istat)
-       else
+       endif
+       if(key(27:27).eq.'H')then
           call dmsput(ifile,key//char(0),z,istat)
        endif
        t_flg=.true.
@@ -175,6 +176,7 @@
       use mpe
       use rank
       use index, only : col_rank
+      use const, only : RTYPE
 
       implicit  none
 
@@ -182,7 +184,7 @@
       logical   t_flg
       real      z(nx,my)
 !CWB2021
-      real*4    z4(nx,my)
+      real(kind=RTYPE) z4(nx,my)
       character lrec*26,ifile*80,kflag*1
 !
 ! working array
