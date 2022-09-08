@@ -20,11 +20,12 @@
                 qt(nxp,lev*ncld,my_max),work(nx,my),            &
                 smc(nxp,km,my_max),stc(nxp,km,my_max),          &
                 canopy(nxp,my_max),slc(nxp,km,my_max),          &
-                zice(nxp,my_max),wrk1(nxp,my_max),mout(nx,my)
+                zice(nxp,my_max),wrk1(nxp,my_max)
       real(kind=RTYPE) ut(nxp,lev,my_max),vt(nxp,lev,my_max),   &
                        tt(nxp,lev,my_max),phi(nxp,lev,my_max),  &
                        pt(nxp,my_max),sgeo(nxp,my_max),         &
-                       pk(nxp,lev,my_max),pk2(nxp,lev,my_max)
+                       pk(nxp,lev,my_max),pk2(nxp,lev,my_max),  &
+                       mout(nx,my)
       integer*8 idtg
       character*80 ifilout
       character typ*6,ihdg*26,ihdg2*26,mlayer*1

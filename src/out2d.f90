@@ -9,7 +9,7 @@
       use mpe
       use index
       use mod_outflds
-      use const, only: kflag
+      use const, only: RTYPE,kflag
 !
       implicit  none
 
@@ -31,7 +31,8 @@
       character*4 ggdef
       integer*8 idtg
 !
-      real      glob(nx,my),mout(nx,my)
+      real      glob(nx,my)
+      real(kind=RTYPE) mout(nx,my)
 !
 !  local array
 !
@@ -980,12 +981,13 @@
       subroutine split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 !
       use rank
-      use const, only: kflag
+      use const, only: RTYPE,kflag
 !
       implicit none
 !
       integer   nx,my,nc,istat,lenc,lev
-      real      glob(nx,my),mout(nx,my)
+      real      glob(nx,my)
+      real(kind=RTYPE) mout(nx,my)
       character*26 ihdg,ihdg2
       character*80 ifilout
 

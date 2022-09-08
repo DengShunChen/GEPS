@@ -19,7 +19,8 @@ contains
                 plev(lpout),whtlev(num)
       real(kind=RTYPE) rdiv(nxp,lev,my_max)
       real      tens(lev+1)
-      real      wk1(nx,my),pout(nx,my)
+      real      wk1(nx,my)
+      real(kind=RTYPE) pout(nx,my)
 
 !
       integer*8 idtg
@@ -78,7 +79,7 @@ contains
       use index
       use rank, only : myrank
       use mpe
-      use const, only : kflag
+      use const, only : RTYPE,kflag
 
       implicit  none
 
@@ -88,7 +89,8 @@ contains
                 rdrag(nxp,lev,my_max),rdragb(nxp,my_max),drag(nxp,my_max,lpout),&
                 plev(lpout),whtlev(num)
       real      tens(lev+1)
-      real      wk1(nx,my),pout(nx,my)
+      real      wk1(nx,my)
+      real(kind=RTYPE) pout(nx,my)
 !
       integer*8 idtg
       character*80 ifilout
@@ -168,7 +170,7 @@ contains
 
       use index
       use rank
-      use const, only : kflag
+      use const, only : RTYPE,kflag
 
       implicit  none
 
@@ -179,7 +181,8 @@ contains
                 glob(nx,my),plev(lpout),whtlev(num)
 
       real      tens(lev+1),phistd(lpout),slp(nx,my),h850(nxp,my_max), &
-                h500(nxp,my_max),pout(nx,my),tmp(nxp,my_max)
+                h500(nxp,my_max),tmp(nxp,my_max)
+      real(kind=RTYPE) pout(nx,my)
 !
 
       integer*8    idtg
@@ -295,7 +298,7 @@ contains
 !
       use index
       use rank, only : myrank
-      use const, only : kflag
+      use const, only : RTYPE,kflag
 
       implicit  none
       integer   nx,my,my_max,lpout,lev,itau,num,ncnt
@@ -303,7 +306,8 @@ contains
       real      pkout(lpout),pklp(nxp,my_max)                            &
       , pk(nxp,lev,my_max),dpd(nxp,lev,my_max),dpdb(nxp,my_max)          &
       , dew(nxp,my_max,lpout),glob(nx,my),plev(lpout)                    &
-      , whtlev(num),tens(lev+1),pout(nx,my),tmp(nxp,my_max)
+      , whtlev(num),tens(lev+1),tmp(nxp,my_max)
+      real(kind=RTYPE) pout(nx,my)
 
 
       integer   i,k,lpl,n,lenc,istat,jj,j,nxj
@@ -378,7 +382,7 @@ contains
       use rank, only : myrank
       use radn, only : ntoz
       use param, only : ncld
-      use const, only : kflag
+      use const, only : RTYPE,kflag
 
       implicit  none
 
@@ -387,7 +391,8 @@ contains
       real      pkout(lpout),pklp(nxp,my_max)                        &
       , pk(nxp,lev,my_max),dpd(nxp,lev,my_max),dpdb(nxp,my_max)      &
       , dew(nxp,my_max,lpout),glob(nx,my),plev(lpout)                &
-      , whtlev(num),tens(lev+1),pout(nx,my),tmp(nxp,my_max)
+      , whtlev(num),tens(lev+1),tmp(nxp,my_max)
+      real(kind=RTYPE) pout(nx,my)
 !
 
       integer   i,k,lpl,n,lenc,istat,jj,j,nxj
@@ -590,7 +595,7 @@ contains
 !
       use index
       use rank,   only : myrank
-      use const, only : kflag
+      use const, only : RTYPE,kflag
 
       implicit  none
 
@@ -601,7 +606,8 @@ contains
       real      pkout(lpout),pklp(nxp,my_max),pk(nxp,lev,my_max)        &
       , tt(nxp,lev,my_max),ttbot(nxp,my_max),temp(nxp,my_max,lpout)     &
       , plev(lpout),whtlev(num)
-      real      tens(lev+1),glob(nx,my),slp(nx,my),pout(nx,my)
+      real      tens(lev+1),glob(nx,my),slp(nx,my)
+      real(kind=RTYPE) pout(nx,my)
 
 !
       integer*8 idtg
@@ -686,7 +692,8 @@ contains
       real(kind=RTYPE) rvor(nxp,lev,my_max)
       real      tens(lev+1)
       real      v850(nxp,my_max),v700(nxp,my_max)
-      real      wk1(nx,my),pout(nx,my)
+      real      wk1(nx,my)
+      real(kind=RTYPE) pout(nx,my)
 
 !
       integer*8 idtg
@@ -792,7 +799,8 @@ contains
       real(kind=RTYPE) ut(nxp,lev,my_max),vt(nxp,lev,my_max)              &
       , sdhat(nxp,lev,my_max)
 
-      real      tens(lev+1),wtb(nxp,my_max),pout(nx,my),tmp(nxp,my_max)
+      real      tens(lev+1),wtb(nxp,my_max),tmp(nxp,my_max)
+      real(kind=RTYPE) pout(nx,my)
 !
       integer   nx,my,my_max,lpout,lev,itau,jj,nxj,ncnt
       integer   num,k,lenc,lpl,n,i,j,istat

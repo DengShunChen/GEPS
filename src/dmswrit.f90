@@ -182,9 +182,8 @@
 
       integer   nx,my,lenc,istat
       logical   t_flg
-      real      z(nx,my)
+      real(kind=RTYPE) z(nx,my)
 !CWB2021
-      real(kind=RTYPE) z4(nx,my)
       character lrec*26,ifile*80,kflag*1
 !
 ! working array
@@ -198,13 +197,13 @@
 
 !       if(myrank .eq. iroot) then
 !CWB2021
-       if(key(27:27).eq.'H')then
-          key(27:27)='R'
-          z4=z
-          call dmsput(ifile,key//char(0),z4,istat)
-       else
+!       if(key(27:27).eq.'R')then
+!          z4=z
+!          call dmsput(ifile,key//char(0),z4,istat)
+!       endif
+!       if(key(27:27).eq.'H')then
           call dmsput(ifile,key//char(0),z,istat)
-       endif
+!       endif
        t_flg=.true.
 !       endif
  

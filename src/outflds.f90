@@ -58,7 +58,7 @@
                      , sht(nxp,lev*ncld,my_max),phi(nxp,lev,my_max) &
                      , sgeo(nxp,my_max),ptend(nxp,my_max)           &
                      , pt(nxp,my_max),sd(nxp,lev,my_max)            &
-                     , sigma(lev+1,2),tmpr(nxp,lev)                 &
+                     , sigma(lev+1,2)                               &
                      , pk(nxp,lev,my_max),pk2(nxp,lev,my_max)
 !
       character ifilout*80, ggdef*4

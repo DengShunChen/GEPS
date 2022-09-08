@@ -4,7 +4,7 @@
       use rank
       use mpe
       use index
-      use const,              only:kflag
+      use const,              only:RTYPE,kflag
       use mod_sitgrid
       use mod_sit_control,    only:outsitlev
 
@@ -19,7 +19,8 @@
       integer lenc,n,k,jj,j,nxj,ii,istat
       character*26 ihdg,ihdg2
       character*6 lrec
-      real wk1(nx,my),pout(nx,my)
+      real wk1(nx,my)
+      real(kind=RTYPE) pout(nx,my)
       integer ncnt
  
 
@@ -171,7 +172,7 @@
       use rank
       use mpe
       use index
-      use const,           only:kflag
+      use const,           only:RTYPE,kflag
       use mod_sitgrid,     only:sitwttau,sitwstau,sitwutau,sitwvtau &
                                ,dtsittau
       use mod_sit_control, only: xmissing,outsitlev
@@ -188,7 +189,8 @@
       character*26 ihdg,ihdg2
       character*6 lrec
       real glob2d(nxp,my_max) 
-      real wk1(nx,my),pout(nx,my)
+      real wk1(nx,my)
+      real(kind=RTYPE) pout(nx,my)
       integer ncnt
 
       lenc= nx*my
@@ -226,7 +228,7 @@
       use rank
       use mpe
       use index
-      use const,          only: kflag
+      use const,          only: RTYPE,kflag
       use mod_sitgrid,    only: sitwt24,sitws24,sitwu24,sitwv24 &
                                ,dtsit24,wtfn0,wsfn0,obswt,sitwt
       use mod_sit_control,only: xmissing,outsitlev
@@ -242,7 +244,8 @@
       character*26 ihdg,ihdg2
       character*6 lrec
       real tm1(nxp,my_max),tm2(nxp,my_max),tm3(nxp,my_max)
-      real wk1(nx,my),pout(nx,my)
+      real wk1(nx,my)
+      real(kind=RTYPE) pout(nx,my)
       integer ncnt
 
       tm1=xmissing
@@ -297,7 +300,7 @@
       use rank
       use mpe
       use index
-      use const,              only: kflag
+      use const,              only: RTYPE,kflag
       use mod_sitgrid,        only: dtsitmon,wtfn,wtfns,wsfn,wsfns
       use mod_sit_control,    only: xmissing,outsitlev
   
@@ -314,30 +317,29 @@
       integer lenc,i,j,k,ii,jj,nxj,istat
       character*26 ihdg,ihdg2
       character*6 lrec
-      real glob2d(nxp,my_max),wk1(nx,my),pout(nx,my)
+      real glob2d(nxp,my_max),wk1(nx,my)
+      real(kind=RTYPE) pout(nx,my)
       integer ncnt
 
       lenc= nx*my
   
-      ncnt=-1
+      ncnt=0
       do 10 k = 0, outsitlev+1
-        ncnt=ncnt+1
         write( lrec, '(i3.3,a3)' ) k,'TFM'
         call syslbl (lrec,idtg,itau,ggdef,ihdg)
         glob2d(:,:)=wtfn(:,:,k)/dtsitmon
         call unify_reduceintp(nx,my,my_max,glob2d,wk1) 
-        if ( myrank .eq. ncnt ) then
-          pout=wk1
-          ihdg2=ihdg
-        endif
+        call split(nx,my,outsitlev+1,lenc,ifilout,ncnt,wk1,pout,ihdg,ihdg2)
    10 continue
-      if(myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat) 
+      if(myrank .lt. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat) 
 
         write( lrec, '(i3.3,a3)' ) k,'TFS'
         call syslbl (lrec,idtg,itau,ggdef,ihdg)
         glob2d(:,:)=wtfns(:,:)/dtsitmon
-        call unify_reduceintp(nx,my,my_max,glob2d,wk1) 
+        call unify_reduceintp(nx,my,my_max,glob2d,wk1)
         call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,wk1,istat)
+
+
 
 !reset wtfn,wsfn,wtfns,wsfns
       dtsitmon=0.

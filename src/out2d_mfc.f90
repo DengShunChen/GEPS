@@ -27,7 +27,8 @@
       integer*8 idtg
       character*6 dmskey(num)
 !
-      real      glob(nx,my),mout(nx,my)
+      real      glob(nx,my)
+      real(kind=RTYPE) mout(nx,my)
 !
       character*80 ifilout
       character*26 ihdg,ihdg2
@@ -128,14 +129,14 @@
 !byl      call mpe2d_unify(glob,raintot)
       do n=1,num
         call syslbl (dmskey(n),idtg,ntau,ggdef,ihdg)
-        call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),mout)
+        call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),glob)
         if ( myrank .eq. n-1 ) then
-          glob=mout
+          mout=glob
           ihdg2=ihdg
         endif
       enddo
 !
-      if (myrank .lt. num ) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,glob,istat)
+      if (myrank .lt. num ) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,mout,istat)
 !
 !! rh10
 !!byl      call mpe2d_unify(glob,rh10)

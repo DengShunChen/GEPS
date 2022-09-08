@@ -30,7 +30,8 @@
 !
 ! local work arrays
 !
-      real      glob(nx,my),wrk(nxp,my_max),mout(nx,my)
+      real      glob(nx,my),wrk(nxp,my_max)
+      real(kind=RTYPE) mout(nx,my)
 !
       real      whtlev(100),whtlevq(100),whtlevz(100)
       character*6 labx
