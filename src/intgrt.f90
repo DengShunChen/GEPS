@@ -82,8 +82,8 @@
 
       integer   ierr,itter,ittw,itt,year,yrd
 !
-      real      glob(nx,my), &
-                hf24(nxp,my_max),qf24(nxp,my_max),ss24(nxp,my_max),rs24(nxp,my_max), &
+      real(kind=RTYPE) glob(nx,my)
+      real      hf24(nxp,my_max),qf24(nxp,my_max),ss24(nxp,my_max),rs24(nxp,my_max), &
                 asol24(nxp,my_max),olr24(nxp,my_max),rain24(nxp,my_max),             &
                 drag(nxp,lev,my_max),ugws(nxp,my_max),vgws(nxp,my_max),              &
                 rain1(nxp,my_max),                                                   &

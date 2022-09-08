@@ -35,7 +35,8 @@
 ! local work arrays
 !
       real      slp(nxp,my_max),tmp(nxp,lev,my_max),plog(nxp,lev,my_max) &
-              , pllp(nxp,my_max),glob(nx,my),glob2(nx,my),slmsk(nxp,my_max)
+              , pllp(nxp,my_max),slmsk(nxp,my_max)
+      real(kind=RTYPE) glob(nx,my)
       real      tens(lev+1)             
 !
       integer,  parameter :: lpout = 47 

@@ -146,3 +146,33 @@
       deallocate(tmp)
       return
       end
+!
+      subroutine reducepickr_sp(a,lonfd,lonf,latg)
+!
+! pick the reduce-grid value from the nearest regular grid
+! then fill the tailing points to be the same as the last
+! reduce-grid point.
+!
+      use const, only: RTYPE
+      real(kind=RTYPE) a(lonf,latg)
+      dimension lonfd(latg)
+      real,allocatable:: tmp(:)
+      allocate(tmp(lonf))
+      dg=360./float(lonf)
+      do j=1,latg
+        dr=360./float(lonfd(j))
+        do i=1,lonfd(j)
+          ii=nint((i-1.)*dr/dg + 1.0)
+          tmp(i)=a(ii,j)
+        enddo
+        ii=lonfd(j)
+        do i=1,ii
+          a(i,j)=tmp(i)
+        enddo
+        do i=ii+1,lonf
+          a(i,j)=tmp(ii)
+        enddo
+      enddo
+      deallocate(tmp)
+      return
+      end

@@ -3,10 +3,11 @@
     use mpe
     use rank
     use index
+    use const, only: RTYPE
     use mod_stochastic_physics, only : avevar_sppt2d
     implicit none
 
-    real :: glob(nx,my)
+    real(kind=RTYPE) :: glob(nx,my)
     real :: aves,vars,stds
 
     real, intent(in) :: part(nxp,my_max)

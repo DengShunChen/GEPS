@@ -19,8 +19,7 @@
       integer lenc,n,k,jj,j,nxj,ii,istat
       character*26 ihdg,ihdg2
       character*6 lrec
-      real wk1(nx,my)
-      real(kind=RTYPE) pout(nx,my)
+      real(kind=RTYPE) wk1(nx,my),pout(nx,my)
       integer ncnt
  
 
@@ -189,8 +188,7 @@
       character*26 ihdg,ihdg2
       character*6 lrec
       real glob2d(nxp,my_max) 
-      real wk1(nx,my)
-      real(kind=RTYPE) pout(nx,my)
+      real(kind=RTYPE) wk1(nx,my),pout(nx,my)
       integer ncnt
 
       lenc= nx*my
@@ -244,8 +242,7 @@
       character*26 ihdg,ihdg2
       character*6 lrec
       real tm1(nxp,my_max),tm2(nxp,my_max),tm3(nxp,my_max)
-      real wk1(nx,my)
-      real(kind=RTYPE) pout(nx,my)
+      real(kind=RTYPE) wk1(nx,my),pout(nx,my)
       integer ncnt
 
       tm1=xmissing
@@ -317,8 +314,8 @@
       integer lenc,i,j,k,ii,jj,nxj,istat
       character*26 ihdg,ihdg2
       character*6 lrec
-      real glob2d(nxp,my_max),wk1(nx,my)
-      real(kind=RTYPE) pout(nx,my)
+      real glob2d(nxp,my_max)
+      real(kind=RTYPE) wk1(nx,my),pout(nx,my)
       integer ncnt
 
       lenc= nx*my
@@ -357,13 +354,14 @@
       use mpe
       use const
       use mod_sitgrid
+      use const, only: RTYPE
 
 
-      real, dimension(:,:), allocatable ::     &
+      real(kind=RTYPE), dimension(:,:), allocatable ::     &
                    tmp1,tmp2,tmp3,tmp4,tmp5    &
                   ,tmp6,tmp7,tmp8,tmp9,tmp10   &
                   ,tmp11,tmp12,tmp13,tmp14
-      real, dimension(:,:,:), allocatable::    &
+      real(kind=RTYPE), dimension(:,:,:), allocatable::    &
                    tm12, tm13, tm14
 
 
@@ -452,10 +450,10 @@
       use mod_sitgrid
 
   
-      real, dimension(:,:), allocatable::       &
+      real(kind=RTYPE), dimension(:,:), allocatable::     &
                   tmp11,tmp12,tmp13,tmp14,tmp15,tmp16
 
-      real, dimension(:,:,:), allocatable::       &
+      real(kind=RTYPE), dimension(:,:,:), allocatable::   &
                 tm11,tm12,tm13,tm14,tm15,tm16
    
       integer itau,lphy
@@ -520,8 +518,8 @@
       use mod_sitgrid
 
   
-      real, dimension(:,:), allocatable:: tmp11,tmp12
-      real, dimension(:,:,:), allocatable:: tm11,tm12
+      real(kind=RTYPE), dimension(:,:), allocatable:: tmp11,tmp12
+      real(kind=RTYPE), dimension(:,:,:), allocatable:: tm11,tm12
 
       integer itau,lphy
       character nfs*10, rfile*80
@@ -573,17 +571,17 @@
       use const
       use mod_sitgrid
 
-      real, dimension(:,:), allocatable::             &
+      real(kind=RTYPE), dimension(:,:), allocatable:: &
                           tmp1,tmp2,tmp3,tmp4,tmp5    &
                          ,tmp6,tmp7,tmp8,tmp9,tmp10   &
                          ,tmp11,tmp12,tmp13,tmp14
-      real, dimension(:,:,:), allocatable:: tm12,tm13,tm14
+      real(kind=RTYPE), dimension(:,:,:), allocatable:: tm12,tm13,tm14
 
 
       integer itau,lphy
       character nfs*10, rfile*80  
       logical flag
-      integer i,j,k,ii,jj,nxj
+      integer i,j,k,ii,jj,nxj,mpe_typ
        
 
       allocate( tmp1(nx,my),tmp2(nx,my),tmp3(nx,my),tmp4(nx,my)   &
@@ -607,25 +605,31 @@
       endif
   
       flag=.false.
-      if(myrank .eq. 0) flag=.true. 
-      call mpe_bcast(tmp1,nx*my,0,mpe_double)
-      call mpe_bcast(tmp2,nx*my,0,mpe_double)
-      call mpe_bcast(tmp3,nx*my,0,mpe_double)
-      call mpe_bcast(tmp4,nx*my,0,mpe_double)
-      call mpe_bcast(tmp5,nx*my,0,mpe_double)
-      call mpe_bcast(tmp6,nx*my,0,mpe_double)
-      call mpe_bcast(tmp7,nx*my,0,mpe_double)
-      call mpe_bcast(tmp8,nx*my,0,mpe_double)
-      call mpe_bcast(tmp9,nx*my,0,mpe_double)
-      call mpe_bcast(tmp10,nx*my,0,mpe_double)
-      call mpe_bcast(tmp11,nx*my,0,mpe_double)
+      if(myrank .eq. 0) flag=.true.
+#ifdef SP
+      mpe_typ=mpe_single
+#else 
+      mpe_typ=mpe_double
+#endif
+
+      call mpe_bcast(tmp1,nx*my,0,mpe_typ)
+      call mpe_bcast(tmp2,nx*my,0,mpe_typ)
+      call mpe_bcast(tmp3,nx*my,0,mpe_typ)
+      call mpe_bcast(tmp4,nx*my,0,mpe_typ)
+      call mpe_bcast(tmp5,nx*my,0,mpe_typ)
+      call mpe_bcast(tmp6,nx*my,0,mpe_typ)
+      call mpe_bcast(tmp7,nx*my,0,mpe_typ)
+      call mpe_bcast(tmp8,nx*my,0,mpe_typ)
+      call mpe_bcast(tmp9,nx*my,0,mpe_typ)
+      call mpe_bcast(tmp10,nx*my,0,mpe_typ)
+      call mpe_bcast(tmp11,nx*my,0,mpe_typ)
       do k=0, 3
         if(k .le. 1)then
-          call mpe_bcast(tm12(:,k,:),nx*my,0,mpe_double)
-          call mpe_bcast(tm13(:,k,:),nx*my,0,mpe_double)
-          call mpe_bcast(tm14(:,k,:),nx*my,0,mpe_double)
+          call mpe_bcast(tm12(:,k,:),nx*my,0,mpe_typ)
+          call mpe_bcast(tm13(:,k,:),nx*my,0,mpe_typ)
+          call mpe_bcast(tm14(:,k,:),nx*my,0,mpe_typ)
         elseif(k .ge. 2) then
-          call mpe_bcast(tm14(:,k,:),nx*my,0,mpe_double)
+          call mpe_bcast(tm14(:,k,:),nx*my,0,mpe_typ)
         endif
       enddo
 
@@ -634,24 +638,24 @@
         i=nxjstart(j)
         nxj=nxdef_2d(j)
         if( lreduce.eq.1 ) then
-          call reducepickr (tmp1(1,j),nxdef(j),nx,1)
-          call reducepickr (tmp2(1,j),nxdef(j),nx,1)
-          call reducepickr (tmp3(1,j),nxdef(j),nx,1)
-          call reducepickr (tmp4(1,j),nxdef(j),nx,1)
-          call reducepickr (tmp5(1,j),nxdef(j),nx,1)
-          call reducepickr (tmp6(1,j),nxdef(j),nx,1)
-          call reducepickr (tmp7(1,j),nxdef(j),nx,1)
-          call reducepickr (tmp8(1,j),nxdef(j),nx,1)
-          call reducepickr (tmp9(1,j),nxdef(j),nx,1)
-          call reducepickr (tmp10(1,j),nxdef(j),nx,1)
-          call reducepickr (tmp11(1,j),nxdef(j),nx,1)
+          call reducepickr_sp (tmp1(1,j),nxdef(j),nx,1)
+          call reducepickr_sp (tmp2(1,j),nxdef(j),nx,1)
+          call reducepickr_sp (tmp3(1,j),nxdef(j),nx,1)
+          call reducepickr_sp (tmp4(1,j),nxdef(j),nx,1)
+          call reducepickr_sp (tmp5(1,j),nxdef(j),nx,1)
+          call reducepickr_sp (tmp6(1,j),nxdef(j),nx,1)
+          call reducepickr_sp (tmp7(1,j),nxdef(j),nx,1)
+          call reducepickr_sp (tmp8(1,j),nxdef(j),nx,1)
+          call reducepickr_sp (tmp9(1,j),nxdef(j),nx,1)
+          call reducepickr_sp (tmp10(1,j),nxdef(j),nx,1)
+          call reducepickr_sp (tmp11(1,j),nxdef(j),nx,1)
           do k=0, 3
             if(k .le. 1)then
-              call reducepickr (tm12(1,k,j),nxdef(j),nx,1)
-              call reducepickr (tm13(1,k,j),nxdef(j),nx,1)
-              call reducepickr (tm14(1,k,j),nxdef(j),nx,1)
+              call reducepickr_sp (tm12(1,k,j),nxdef(j),nx,1)
+              call reducepickr_sp (tm13(1,k,j),nxdef(j),nx,1)
+              call reducepickr_sp (tm14(1,k,j),nxdef(j),nx,1)
             elseif(k .ge. 2) then
-              call reducepickr (tm14(1,k,j),nxdef(j),nx,1)
+              call reducepickr_sp (tm14(1,k,j),nxdef(j),nx,1)
             endif
           enddo
         endif

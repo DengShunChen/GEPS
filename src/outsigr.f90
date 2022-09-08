@@ -31,8 +31,8 @@
               , cice(nxp,my_max),xtice(nxp,my_max),snr(nxp,my_max)  &
               , sncover(nxp,my_max),snoalb(nxp,my_max)           &
               , ctot(nxp,my_max),chig(nxp,my_max),cmid(nxp,my_max),clow(nxp,my_max) &
-              , work(nx,my),work1(nxp,my_max)
-      real(kind=RTYPE) sd(nxp,lev,my_max)
+              , work1(nxp,my_max)
+      real(kind=RTYPE) sd(nxp,lev,my_max),work(nx,my)
 
       integer*8 idtg
       character*80 ifilout

@@ -813,13 +813,14 @@
 
       use index 
       use mpe
-      use const, only: kflag
+      use const, only: kflag,RTYPE
 
       implicit none
 
       integer   nx,my,my_max,itau
       real      dt24
-      real wrk(nxp,my_max),glob(nx,my)
+      real wrk(nxp,my_max)
+      real(kind=RTYPE) glob(nx,my)
       integer*8 idtg
       character*80 ifilout
       character*26 ihdg

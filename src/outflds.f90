@@ -66,7 +66,8 @@
 !
 ! local work arrays
 !
-      real      tmp(nxp,lev,my_max),plog(nxp,lev,my_max),pllp(nxp,my_max),glob(nx,my)
+      real      tmp(nxp,lev,my_max),plog(nxp,lev,my_max),pllp(nxp,my_max)
+      real(kind=RTYPE) glob(nx,my)
       real      slp(nxp,my_max)
 !
 !  pout(16) chnaged into pout(26) to increase p output to 26 levels

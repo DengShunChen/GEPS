@@ -3,7 +3,7 @@ module mod_stochastic_physics
   use rank, only : myrank
   use index
   use param
-  use const, only : aki, bki, dosppt, doshum, dossst, poly
+  use const, only : aki, bki, dosppt, doshum, dossst, poly, RTYPE
   use mersenne_twister, only: random_setseed,random_gauss,random_stat
   implicit none
   private 
@@ -645,7 +645,8 @@ contains
 !
   SUBROUTINE avevar_sppt2d(data2d,n,m,ave,var,std)
     INTEGER :: n,m,nmdim
-    REAL :: ave,var,data2d(n,m),data(n*m)
+    REAL :: ave,var,data(n*m)
+    REAL(kind=RTYPE) :: data2d(n,m)
     INTEGER :: i,j
     REAL :: s,ep,std
 
@@ -920,8 +921,8 @@ contains
     integer      :: i, j, k, jj, nxj, ihead, n
     integer      :: nxmy4
     real         :: tau
-    real         :: glob(nx,my),temp(nxp,my_max)
-    real(kind=4) :: glob4(nx,my)
+    real         :: temp(nxp,my_max)
+    real(kind=4) :: glob(nx,my)
 
     ihead=15
     nxmy4=nx*my*4
@@ -932,8 +933,7 @@ contains
     do n=1,nsppt
       call unify_reduceintp(nx,my,my_max,rpattern_sppt(n)%n2d,glob)   
       if ( myrank .eq. 0 ) then
-        glob4=glob
-        write(ihead,rec=recn) glob4
+        write(ihead,rec=recn) glob
         recn=recn+1
       endif
     enddo
@@ -947,8 +947,7 @@ contains
       enddo
       call unify_reduceintp(nx,my,my_max,temp,glob)   
       if ( myrank.eq.0 ) then
-        glob4=glob
-        write(ihead,rec=recn) glob4
+        write(ihead,rec=recn) glob
         recn=recn+1
       endif
     enddo

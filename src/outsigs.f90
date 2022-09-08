@@ -17,7 +17,7 @@
       real      cosl(my),                                       &
                 snr(nxp,my_max),gwr(nxp,my_max),                &
                 tg(nxp,my_max),                                 &
-                qt(nxp,lev*ncld,my_max),work(nx,my),            &
+                qt(nxp,lev*ncld,my_max),                        &
                 smc(nxp,km,my_max),stc(nxp,km,my_max),          &
                 canopy(nxp,my_max),slc(nxp,km,my_max),          &
                 zice(nxp,my_max),wrk1(nxp,my_max)
@@ -25,7 +25,7 @@
                        tt(nxp,lev,my_max),phi(nxp,lev,my_max),  &
                        pt(nxp,my_max),sgeo(nxp,my_max),         &
                        pk(nxp,lev,my_max),pk2(nxp,lev,my_max),  &
-                       mout(nx,my)
+                       mout(nx,my),work(nx,my)
       integer*8 idtg
       character*80 ifilout
       character typ*6,ihdg*26,ihdg2*26,mlayer*1

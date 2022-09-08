@@ -54,7 +54,8 @@
       real      sst(nxp,my_max),ww1(nx,my),ww2(nxp,my_max),     &
                 rh2100(nxp,my_max),rh10100(nxp,my_max),         &
                 wk1(nxp,lev,my_max),pklev(nxp,my_max)
-      real(kind=RTYPE) cc(nx+2,levp,1,my_max),dummy,ww3(nx,my_max)
+      real(kind=RTYPE) cc(nx+2,levp,1,my_max),dummy,ww3(nx,my_max),    &
+                       ww4(nx,my)
 !byl                wss3(levp,2,3,jtrun,jtmax),cc3(nx+2,levp,3,my_max)
 
       character lrec*26,rfile*55,ctau*6,topostd*4,topohgt*4,key*34
@@ -646,8 +647,8 @@
         call transr1(jtrun,jtmax,nx,my,my_max,poly,spgeo,sgeo,nsizey)
         ww2=sgeo
         call mpe2d_unify(ww1,ww2)
-
-        call qmaxn3 (ww1,'sgeo',' ',1,1,1,nx,my,1)
+        ww4=ww1
+        call qmaxn3 (ww4,'sgeo',' ',1,1,1,nx,my,1)
 !dms    istdno=99
 !dms    istdno=0
 !c      topostd='gbkf'   ! responding to istdno=99
@@ -1273,9 +1274,9 @@
             i=ixtyp(1,n)
             j=jytyp(1,n)
           do m=1,5 !(1:slp 2:v850 3:v700 4:h850 5:h500)
-            call unify_reduceintp(nx,my,my_max,typtrk(1,1,m),ww1)
-            tensity(0,m,n)=( ww1(i,j+1)+ww1(i+1,j+1)    &
-                           + ww1(i,j  )+ww1(i+1,j  ) )/4.
+            call unify_reduceintp(nx,my,my_max,typtrk(1,1,m),ww4)
+            tensity(0,m,n)=( ww4(i,j+1)+ww4(i+1,j+1)    &
+                           + ww4(i,j  )+ww4(i+1,j  ) )/4.
           enddo
 !byl            tensity(0,2,n)=( v850(i,j+1)+v850(i+1,j+1)  &
 !byl                           + v850(i,j  )+v850(i+1,j  ) )/4.

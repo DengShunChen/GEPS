@@ -19,8 +19,7 @@ contains
                 plev(lpout),whtlev(num)
       real(kind=RTYPE) rdiv(nxp,lev,my_max)
       real      tens(lev+1)
-      real      wk1(nx,my)
-      real(kind=RTYPE) pout(nx,my)
+      real(kind=RTYPE) wk1(nx,my),pout(nx,my)
 
 !
       integer*8 idtg
@@ -89,8 +88,7 @@ contains
                 rdrag(nxp,lev,my_max),rdragb(nxp,my_max),drag(nxp,my_max,lpout),&
                 plev(lpout),whtlev(num)
       real      tens(lev+1)
-      real      wk1(nx,my)
-      real(kind=RTYPE) pout(nx,my)
+      real(kind=RTYPE) wk1(nx,my),pout(nx,my)
 !
       integer*8 idtg
       character*80 ifilout
@@ -178,11 +176,11 @@ contains
 !
       real      pkout(lpout),pklp(nxp,my_max),pk(nxp,lev,my_max),            &
                 phi(nxp,lev,my_max),phib(nxp,my_max),phips(nxp,my_max,lpout),&
-                glob(nx,my),plev(lpout),whtlev(num)
+                plev(lpout),whtlev(num)
 
-      real      tens(lev+1),phistd(lpout),slp(nx,my),h850(nxp,my_max), &
+      real      tens(lev+1),phistd(lpout),h850(nxp,my_max), &
                 h500(nxp,my_max),tmp(nxp,my_max)
-      real(kind=RTYPE) pout(nx,my)
+      real(kind=RTYPE) pout(nx,my),glob(nx,my),slp(nx,my)
 !
 
       integer*8    idtg
@@ -305,9 +303,9 @@ contains
 
       real      pkout(lpout),pklp(nxp,my_max)                            &
       , pk(nxp,lev,my_max),dpd(nxp,lev,my_max),dpdb(nxp,my_max)          &
-      , dew(nxp,my_max,lpout),glob(nx,my),plev(lpout)                    &
+      , dew(nxp,my_max,lpout),plev(lpout)                                &
       , whtlev(num),tens(lev+1),tmp(nxp,my_max)
-      real(kind=RTYPE) pout(nx,my)
+      real(kind=RTYPE) pout(nx,my),glob(nx,my)
 
 
       integer   i,k,lpl,n,lenc,istat,jj,j,nxj
@@ -390,9 +388,9 @@ contains
 
       real      pkout(lpout),pklp(nxp,my_max)                        &
       , pk(nxp,lev,my_max),dpd(nxp,lev,my_max),dpdb(nxp,my_max)      &
-      , dew(nxp,my_max,lpout),glob(nx,my),plev(lpout)                &
+      , dew(nxp,my_max,lpout),plev(lpout)                            &
       , whtlev(num),tens(lev+1),tmp(nxp,my_max)
-      real(kind=RTYPE) pout(nx,my)
+      real(kind=RTYPE) pout(nx,my),glob(nx,my)
 !
 
       integer   i,k,lpl,n,lenc,istat,jj,j,nxj
@@ -498,9 +496,9 @@ contains
       implicit  none
       integer   nx,my,my_max,i,j,jj,kk,n,lev,nxj,itau,ntau,num,lenc,istat
 
-      real      pdiff(nxp,my_max),slp(nxp,my_max),glob(nx,my)
+      real      pdiff(nxp,my_max),slp(nxp,my_max)
       real      tmp(nxp,my_max)
-      real(kind=RTYPE) ptend(nxp,my_max),pt(nxp,my_max)
+      real(kind=RTYPE) ptend(nxp,my_max),pt(nxp,my_max),glob(nx,my)
       character*16 taudir(ntau)
       character*4 ggdef
 !
@@ -606,8 +604,8 @@ contains
       real      pkout(lpout),pklp(nxp,my_max),pk(nxp,lev,my_max)        &
       , tt(nxp,lev,my_max),ttbot(nxp,my_max),temp(nxp,my_max,lpout)     &
       , plev(lpout),whtlev(num)
-      real      tens(lev+1),glob(nx,my),slp(nx,my)
-      real(kind=RTYPE) pout(nx,my)
+      real      tens(lev+1)
+      real(kind=RTYPE) pout(nx,my),glob(nx,my),slp(nx,my)
 
 !
       integer*8 idtg
@@ -692,8 +690,7 @@ contains
       real(kind=RTYPE) rvor(nxp,lev,my_max)
       real      tens(lev+1)
       real      v850(nxp,my_max),v700(nxp,my_max)
-      real      wk1(nx,my)
-      real(kind=RTYPE) pout(nx,my)
+      real(kind=RTYPE) wk1(nx,my),pout(nx,my)
 
 !
       integer*8 idtg
@@ -795,12 +792,12 @@ contains
       real      pkout(lpout),pklp(nxp,my_max),pk(nxp,lev,my_max)          &
       , rdiv(nxp,lev,my_max),work3d(nxp,lev,my_max)                       &
       , utb(nxp,my_max),vtb(nxp,my_max),wind(nxp,my_max,lpout),cosl(my)   &
-      , glob(nx,my),plev(lpout),whtlev(num)
+      , plev(lpout),whtlev(num)
       real(kind=RTYPE) ut(nxp,lev,my_max),vt(nxp,lev,my_max)              &
       , sdhat(nxp,lev,my_max)
 
       real      tens(lev+1),wtb(nxp,my_max),tmp(nxp,my_max)
-      real(kind=RTYPE) pout(nx,my)
+      real(kind=RTYPE) pout(nx,my),glob(nx,my)
 !
       integer   nx,my,my_max,lpout,lev,itau,jj,nxj,ncnt
       integer   num,k,lenc,lpl,n,i,j,istat

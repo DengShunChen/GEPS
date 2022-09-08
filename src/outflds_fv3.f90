@@ -6,7 +6,7 @@
       use mpe
       use rank
       use index
-      use const, only: kflag
+      use const, only: RTYPE,kflag
 
       implicit  none
 
@@ -22,7 +22,7 @@
 !
 ! local work arrays
 !
-      real      glob(nx,my)
+      real(kind=RTYPE) glob(nx,my)
 !      integer   int_glob(nx,my)
       
 !
@@ -36,58 +36,44 @@
 !----------------------------------------------------------------------
 
 !output q2
-!byl      call mpe2d_unify(glob,q2)
       write(wtemp,'(a6)')'B02500'
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,q2,glob)
       call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
 
 !output fm
-!byl      call mpe2d_unify(glob,fm)
       write(wtemp,'(a6)'),"S004F1"
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,fm,glob)
       call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
 
 !output fm10
-!byl      call mpe2d_unify(glob,fm10)
       write(wtemp,'(a6)'),"S004F2"
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,fm10,glob)
       call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
 
 !output fh
-!byl      call mpe2d_unify(glob,fh)
       write(wtemp,'(a6)'),"S004F3"
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,fh,glob)
       call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
 
 !output fh2
-!byl      call mpe2d_unify(glob,fh2)
       write(wtemp,'(a6)'),"S004F4"
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,fh2,glob)
       call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
 
 !output ustar
-!byl      call mpe2d_unify(glob,ustar)
       write(wtemp,'(a6)'),"S004F5"
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,ustar,glob)
       call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
 
 !output srflag
-!byl      call mpe2d_unify(glob,srflag)
       write(wtemp,'(a6)'),"S001A0"
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
       call unify_reduceintp(nx,my,my_max,srflag,glob)
       call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
 

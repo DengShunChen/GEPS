@@ -27,8 +27,7 @@
       integer*8 idtg
       character*6 dmskey(num)
 !
-      real      glob(nx,my)
-      real(kind=RTYPE) mout(nx,my)
+      real(kind=RTYPE) glob(nx,my),mout(nx,my)
 !
       character*80 ifilout
       character*26 ihdg,ihdg2
