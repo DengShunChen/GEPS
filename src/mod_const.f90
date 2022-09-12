@@ -40,24 +40,24 @@
             nmmiph
  
     real, dimension(:), allocatable, save  ::              &
-         weight,sinl,cosl,cor,onocos,sig,dsig,             &
+         weight,sinl,cosl,cor,onocos,sig,dsig
 !         tmean,spalm,eigval,pmcor,tmeans
-         tmean,spalm,tmeans
  
 !    real, dimension(:,:), allocatable, save  :: evecin,    &
 !         evectr,arrhyd,arsddt,tmcor
 
     real(kind=RTYPE), dimension(:), allocatable, save ::   &
-         eigval,pmcor
+         tmean,spalm,eigval,pmcor,tmeans
     real(kind=RTYPE), dimension(:,:), allocatable, save :: &
          evecin,evectr,arrhyd,arsddt,tmcor
 !
     real ::                                                &
          capa,cp,rad,radsq,grav,omega,rgas,stbo,s0,hltm,   &
-         ptop,ptmean,dt,tau,taui,taue,tauo,                &
+         ptop,dt,tau,taui,taue,tauo,                       &
          hours,frad,evaprh,qgini,                          &
-         tice,hice,cutfreq,taup,hfilt,ptmeans,             &
+         tice,hice,cutfreq,taup,hfilt,                     &
          taureg,cgw,domfc,otgreen,cgwd,cmbk,spl1,spl2
+    real(kind=RTYPE) :: ptmean,ptmeans
     !sit
     real :: fsit         !fsit>0., turn on sit_vdiff when mod(tau/fsit)<0.001
                          !default fsit<=0., turn on sit_vdiff every tau
@@ -145,9 +145,9 @@
     common/dmskey34/ggdef,gmdef,gsdef
 
     real, dimension(:,:,:), allocatable, save  :: poly,dpoly
-    real, dimension(:,:)  , allocatable, save  :: eps4,wdfac,wcfac
+    real(kind=RTYPE), dimension(:,:)  , allocatable, save  :: eps4,wdfac,wcfac
     real, dimension(:)    , allocatable, save  :: cim
-    real, dimension(:)    , allocatable, save  :: eps4L   ! for 2dMPI
+    real(kind=RTYPE), dimension(:)    , allocatable, save  :: eps4L   ! for 2dMPI
 
     contains 
 

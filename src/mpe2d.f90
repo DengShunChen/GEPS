@@ -295,14 +295,15 @@
       use mpi
       use param
       use index
+      use const, only: RTYPE
 
       implicit none
 
       integer i,j,m,mf,nl
 
-      real*8 eps4in(jtrun,jtmax)
-      real*8 eps4out(jtp)
-      real*8 b1(jtf)
+      real(kind=RTYPE) eps4in(jtrun,jtmax)
+      real(kind=RTYPE) eps4out(jtp)
+      real(kind=RTYPE) b1(jtf)
 
       i=1
 

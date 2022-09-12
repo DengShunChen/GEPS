@@ -33,12 +33,12 @@
       use const, only : RTYPE
 
       implicit  none
-      real      cp,ptop,ptmean
+      real      cp,ptop
 !
-      real      tmean(lev),spalm(lev)
       real(kind=RTYPE) eigval(lev),evecin(lev,lev),evectr(lev,lev),    &
                 pmcor(lev),tmcor(lev,lev),arrhyd(lev,lev),             &
-                arsddt(lev,lev),sigma(lev+1,2),dsigma(lev,2)
+                arsddt(lev,lev),sigma(lev+1,2),dsigma(lev,2),          &
+                tmean(lev),spalm(lev),ptmean
 !
       integer   ipp(lev*2),iwk(lev)
       real      phatk(lev+1),pko(lev),thatm(lev),p2(lev+1),            &

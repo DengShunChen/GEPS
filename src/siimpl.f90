@@ -47,7 +47,7 @@
       implicit  none
       integer   jtrun,jtmax,lev
  
-      real*4    dsigma(lev,2),eps4(jtrun,jtmax),eigval(lev),evecin(lev,lev) &
+      real(kind=RTYPE) dsigma(lev,2),eps4(jtrun,jtmax),eigval(lev),evecin(lev,lev) &
       ,     evectr(lev,lev),arrhyd(lev,lev),arsddt(lev,lev),spalm(lev)
  
       real(kind=RTYPE) temold(levp,2,jtrun,jtmax),divold(levp,2,jtrun,jtmax) &
@@ -58,7 +58,8 @@
       real(kind=RTYPE) divavg(lev,2),phiave(lev,2,jtrun),eps4e(lev,jtrun)
  
       integer   m,mf,k,n,l,j
-      real*4    dd,odd,dd2,ptmean,dta,tem,s1,s2,d1,d2,dp,alpha
+      real      dta,alpha
+      real(kind=RTYPE) dd,odd,dd2,ptmean,tem,s1,s2,d1,d2,dp
 
       real(kind=RTYPE) wrk1(lev,2,jtp),wrk2(lev,2,jtp),wrk3(lev,2,jtp),&
                        wrk4(lev,2,jtp),wrk5(lev,2,jtp),wrk6(lev,2,jtp)

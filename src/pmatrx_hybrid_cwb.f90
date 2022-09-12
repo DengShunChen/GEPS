@@ -28,11 +28,13 @@
       implicit  none
   
 !      real      sigma(lev+1,2),tmean(lev),a(lev,lev),b(lev,lev),ai(lev,lev),&
-      real      tmean(lev),phatk(lev),spalm(lev),dcdp(lev)
-      real(kind=RTYPE) a(lev,lev),b(lev,lev),ai(lev,lev),sigma(lev+1,2)
+      real      phatk(lev),dcdp(lev)
+      real(kind=RTYPE) sigma(lev+1,2),tmean(lev),a(lev,lev),b(lev,lev),&
+                       ai(lev,lev),spalm(lev)
 !
       integer   i,j,k
-      real      capa,ps,spamin,ptmean,ptop,cp,tem,tem1,tem2,tem3,phat
+      real      capa,ps,spamin,ptop,cp,tem,tem1,tem2,tem3,phat
+      real(kind=RTYPE) ptmean
 
       capa= 2.0/7.0
       ps= ptmean+ptop

@@ -188,16 +188,6 @@
       real(kind=RTYPE)                                            &
           pdot(nxp,lev+1,latpart)
 
-
-!CWB2021 siimpl single precision test
-      real(kind=RTYPE)                  &
-          dta_r4,                       &
-          ptmeans_r4,                   &
-          alpha_r4,                     &
-          dsigma_r4(lev,2),             &
-          spalm_r4(lev),                &
-          eps4_r4(jtrun,jtmax)
-
 !
 !xb110>
 !byl      real rmr(nxp,lev,my_max),smr(nxp,lev,my_max)
@@ -1182,15 +1172,10 @@
 !     call siimpl ( jtrun,jtmax,lev,dta,ptmeans,dsigma,spalm,eps4,eigval &
 !                 , evecin,evectr,arrhyd,arsddt,temnow,divnow,plnow      &
 !                 , temmid,divmid,plmid,temten,divten,plten,alpha)
-          dta_r4=dta
-      ptmeans_r4=ptmeans
-        spalm_r4=spalm
-         eps4_r4=eps4
-        alpha_r4=alpha
 
-      call siimpl ( jtrun,jtmax,lev,dta_r4,ptmeans_r4,dsigma,spalm_r4,eps4_r4,eigval &
+      call siimpl ( jtrun,jtmax,lev,dta,ptmeans,dsigma,spalm,eps4,eigval &
                   , evecin,evectr,arrhyd,arsddt,temnow,divnow,plnow      &
-                  , temmid,divmid,plmid,temten,divten,plten,alpha_r4)
+                  , temmid,divmid,plmid,temten,divten,plten,alpha)
 
 !
       endif

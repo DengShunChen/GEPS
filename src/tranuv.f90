@@ -42,7 +42,7 @@
 
       real(kind=RTYPE) sa00,sa10,sa20,sa30,dummy
 !
-      real      onocos(my),wcfac(jtrun,jtmax),wdfac(jtrun,jtmax)  &
+      real      onocos(my)                                        &
                ,poly(jtrun,my/2,jtmax),dpoly(jtrun,my/2,jtmax)
 !               ,vor(lev,2,jtrun,jtmax),div(lev,2,jtrun,jtmax)     &
 !
@@ -55,6 +55,7 @@
       real(kind=RTYPE)      tcc(lev,2,2,my)
       real(kind=RTYPE)      ws3(lev,2,2,jtrun)
       real(kind=RTYPE)      ws4(lev,2,2,jtrun)
+      real(kind=RTYPE)      wcfac(jtrun,jtmax),wdfac(jtrun,jtmax)
 !
       real(kind=RTYPE)      tc2(lev,2,2,my)
       real(kind=RTYPE)      wc(jtrun,my/2),wd(jtrun,my/2)
