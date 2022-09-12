@@ -537,7 +537,7 @@
       endif
       if ( dolsp ) then
         if ( ncld .lt. ntrac_req ) then
-           if ( myrank .ge. 0 ) print *,'not enogh number of tracers'
+           if ( myrank .ge. 0 ) print *,'not enough number of tracers'
            call mpe_finalize
            call dmsexit(-1)
         endif

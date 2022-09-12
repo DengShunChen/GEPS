@@ -958,8 +958,7 @@
              tracer(ix,lm,ntrac)
 
 !  ---  outputs: (horizontal dimensioned by ix)
-      real (kind=kind_phys), dimension(ix,lm),intent(out):: htrsw,htrlw!,&
-!             cldcov
+      real (kind=kind_phys), dimension(ix,lm),intent(out):: htrsw,htrlw
 
       real (kind=kind_phys), dimension(im),   intent(out):: tsflw,      &
              sfalb, semis, coszen, coszdg
@@ -984,7 +983,7 @@
 ! --- cmy
 
 !  ---  variables are for both input and output:
-      real (kind=kind_phys), intent(out) :: cldcov(ix,lm)
+      real (kind=kind_phys), intent(inout) :: cldcov(im,lm+ltp)
       real (kind=kind_phys), intent(out) :: fluxr(ix,nfxr)
 
 !! ---  optional outputs:
@@ -1009,8 +1008,6 @@
              olyr, rhly, qstl, vvel, clw, prslk1, tem2da, tem2db, tvly
       real (kind=kind_phys), dimension(im,lm+ltp)  :: qst2, rhly2
       real (kind=kind_phys), dimension(im,lm+ltp)  :: es2, qs2
-!      real (kind=kind_phys), dimension(im,lm+ltp)  :: effrl, effri,     &
-!             effrs, effrr
 
       real (kind=kind_phys), dimension(im) :: tsfa, cvt1, cvb1, tem1d,  &
              sfcemis, tsfg, tskn
@@ -1046,7 +1043,7 @@
              mbota(im,3), mtopa(im,3), lp1, nb, lmk, lmp, kd, lla, llb, &
              lya, lyb, kt, kb
 !effective radius for liquid, ice, snow, rain
-      real (kind=kind_phys), dimension(ix,lm+ltp,5)   :: phy_f3d
+      real (kind=kind_phys), dimension(im,lm+ltp,5)   :: phy_f3d
       logical uni_cloud,lmfshal,lmfdeep2
 
 !  ---  for debug test use
@@ -1655,7 +1652,7 @@
             ntrac,ntcw,ntiw,ntrw,ntsw,ntgl,          &
             im, lmk, lmp,                            &
             uni_cloud,lmfshal,lmfdeep2,              &
-            cldcov(:,1:lmk),phy_f3d(:,:,1),          &
+            cldcov,phy_f3d(:,:,1),                   &
             phy_f3d(:,:,2),phy_f3d(:,:,3),           &
 !   --- outputs:
             clouds,cldsa,mtopa,mbota                 &
@@ -1690,27 +1687,16 @@
 !    ---  inputs:
              ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,clw,cnvw,cnvc,        &
                xlat,xlon,slmsk,im,lmk,lmp,                              &
-               cldcov(:,1:lmk),                                         &
+               cldcov,                                                  &
 !    ---  outputs:
                clouds,cldsa,mtopa,mbota                                 &
               ) 
          else
-!           if ( uni_cloud ) then
-!           call progclduni                                              &
-!    ---  inputs:
-!            ( plyr,plvl,tlyr,tvly,tracer1,ntrac,                        &
-!              xlat,xlon,slmsk,ix,lmk,lmp,cldcov(:,1:lmk),               &
-!              phy_f3d(:,:,1),phy_f3d(:,:,2),phy_f3d(:,:,3),             &
-!              phy_f3d(:,:,4),effr_in,                                   &
-!    ---  outputs:
-!              clouds,cldsa,mtopa,mbota                                  &
-!             )
-!           else
            call progcld5o                                               &
 !    ---  inputs:
              ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,tracer1,              &
                xlat,xlon,slmsk,                                         &
-               ntrac,ntcw,ntiw,ntrw,ntsw,ntgl,cldcov(:,1:lmk),          &
+               ntrac,ntcw,ntiw,ntrw,ntsw,ntgl,cldcov,                   &
                phy_f3d(:,:,1),phy_f3d(:,:,2),phy_f3d(:,:,3),            &
                phy_f3d(:,:,4),effr_in,                                  &
                im,lmk,lmp,                                              &
