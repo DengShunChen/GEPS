@@ -38,10 +38,10 @@
       integer   jtrun,jtmax,nx,my,my_max,lev,nsize
       integer   mlx,myhalf,levp2,jj,i,j,k,nxj,m,mm,mp,mlst,mf,j2,j1
       integer   l,lchk,lle,j_fj,i_fj,jlistnum_fj,l_fj,llistnum_fj
-      real      onocos(my),w(my)
 
       real(kind=RTYPE)      poly(jtrun,my/2,jtmax),                  &
-                            dpoly(jtrun,my/2,jtmax),cim(jtmax)
+                            dpoly(jtrun,my/2,jtmax),cim(jtmax),      &
+                            onocos(my),w(my)
 
       real(kind=RTYPE)      ut(nxp,lev,my_max),vt(nxp,lev,my_max) 
       real(kind=RTYPE)      vor(levp,2,jtrun,jtmax),div(levp,2,jtrun,jtmax)

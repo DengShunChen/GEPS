@@ -47,7 +47,8 @@
       implicit  none
 
       integer   nxj,nx,lev,ncld
-      real      cp,radsq,onocos,cor,sinl
+      real      cp,radsq
+      real(kind=RTYPE) onocos,cor,sinl
 
 !
       real(kind=RTYPE) diveng(nx,lev),vdmerd(nx,lev),vdzonl(nx,lev), &
@@ -193,7 +194,8 @@
       implicit  none
 
       integer   nxj,nx,lev,ncld
-      real      cp,radsq,onocos,cor,sinl
+      real      cp,radsq
+      real(kind=RTYPE) onocos,cor,sinl
 
 !
       real(kind=RTYPE) diveng(nx,lev),vdmerd(nx,lev),vdzonl(nx,lev),   &

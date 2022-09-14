@@ -39,14 +39,15 @@
             ktrop,ncpu,nmcup,nmpbl,nmland,numreduce,nmshl, &
             nmmiph
  
-    real, dimension(:), allocatable, save  ::              &
-         weight,sinl,cosl,cor,onocos
+!    real, dimension(:), allocatable, save  ::              &
+!         weight,sinl,cosl,cor,onocos
 !         tmean,spalm,eigval,pmcor,tmeans
  
 !    real, dimension(:,:), allocatable, save  :: evecin,    &
 !         evectr,arrhyd,arsddt,tmcor
 
     real(kind=RTYPE), dimension(:), allocatable, save ::   &
+         weight,sinl,cosl,cor,onocos,                      &
          tmean,spalm,eigval,pmcor,tmeans
     real(kind=RTYPE), dimension(:,:), allocatable, save :: &
          evecin,evectr,arrhyd,arsddt,tmcor

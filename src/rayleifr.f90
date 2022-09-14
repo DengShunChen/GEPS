@@ -9,7 +9,7 @@
       integer   nx,my,my_max,lev
       real      rad
 
-      real      cosl(my)
+      real(kind=RTYPE) cosl(my)
       real(kind=RTYPE) ut(nxp,lev,my_max),vt(nxp,lev,my_max)
       real      wmax(lev),wmaxtmp
 !

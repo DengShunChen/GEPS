@@ -54,7 +54,7 @@
 
       integer*8 idtg8
 
-      real      pnm(jtrun+1,jtrun+1)
+      real(kind=RTYPE) pnm(jtrun+1,jtrun+1)
 
 !
       namelist /modlst/ ksgeo,ptmean,dt,taui,taue                       &

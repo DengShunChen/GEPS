@@ -19,9 +19,9 @@
 !
       implicit none
 
-      real,intent(in):: coslat(latg)
+      real(kind=RTYPE),intent(in):: coslat(latg)
 !      real(kind=RTYPE)   ,intent(in):: colrad(latg/2)
-      real,intent(in):: wgt   (latg/2)
+      real(kind=RTYPE),intent(in):: wgt   (latg/2)
 !      integer,intent(in):: lats_nodes_a(nsize), lonf, latg, ntrac
       integer,intent(in)::  lonf, latg, ntrac
 !

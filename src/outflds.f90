@@ -35,7 +35,7 @@
               , z0(nxp,my_max),hflux(nxp,my_max),qflux(nxp,my_max),snr(nxp,my_max)  &
               , raincu(nxp,my_max),rainlp(nxp,my_max),plcl(nxp,my_max),cumtop(nxp,my_max) &
               , ss(nxp,my_max),rs(nxp,my_max),alb(nxp,my_max),gwclim(nxp,my_max)    &
-              , acld(lev,my),cosl(my),drag(nxp,lev,my_max)                          &
+              , acld(lev,my),drag(nxp,lev,my_max)                                   &
               , ugws(nxp,my_max),vgws(nxp,my_max),t2(nxp,my_max)                    &
               , q2(nxp,my_max),rh2(nxp,my_max),rh10(nxp,my_max)                     &
               , u10(nxp,my_max),v10(nxp,my_max),gfx(nxp,my_max),rld(nxp,my_max)     &
@@ -59,7 +59,8 @@
                      , sgeo(nxp,my_max),ptend(nxp,my_max)           &
                      , pt(nxp,my_max),sd(nxp,lev,my_max)            &
                      , sigma(lev+1,2)                               &
-                     , pk(nxp,lev,my_max),pk2(nxp,lev,my_max)
+                     , pk(nxp,lev,my_max),pk2(nxp,lev,my_max)       &
+                     , cosl(my)
 !
       character ifilout*80, ggdef*4
       integer*8 idtg

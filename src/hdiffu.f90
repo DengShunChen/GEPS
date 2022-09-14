@@ -13,10 +13,10 @@
       real      rad
       real      dta
 
-      real      cosl(my)
       real(kind=RTYPE) vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),  &
                        temnow(levp,2,jtrun,jtmax),trefs(levp,2,jtrun,jtmax),   &
-                       ut(nxp,lev,my_max),vt(nxp,lev,my_max),eps4(jtrun,jtmax)
+                       ut(nxp,lev,my_max),vt(nxp,lev,my_max),eps4(jtrun,jtmax),&
+                       cosl(my)
 !
 !     parameter ( ktop=4, ktop2=ktop/2 ) ! top "ktop" levels are inhenced
 !
@@ -150,11 +150,10 @@
       integer   my,my_max,nx,jtrun,jtmax,lev,ncld
       real      dta,rad
 
-      real      cosl(my)
       real(kind=RTYPE) vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),  &
                        temnow(levp,2,jtrun,jtmax),trefs(levp,2,jtrun,jtmax),   &
                        ut(nxp,lev,my_max),vt(nxp,lev,my_max),                  &
-                       eps4(jtrun,jtmax)
+                       eps4(jtrun,jtmax),cosl(my)
 !
 !     parameter ( ktop=4, ktop2=ktop/2 ) ! top "ktop" levels are inhenced
 !
@@ -296,11 +295,10 @@
       integer   my,my_max,nx,jtrun,jtmax,lev,ncld
       real      dta,rad
 
-      real      cosl(my)
       real(kind=RTYPE) vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),  &
                        temnow(levp,2,jtrun,jtmax),trefs(levp,2,jtrun,jtmax),   &
                        ut(nxp,lev,my_max),vt(nxp,lev,my_max),                  &
-                       eps4(jtrun,jtmax)
+                       eps4(jtrun,jtmax),cosl(my)
 !
 !     parameter ( ktop=4, ktop2=ktop/2 ) ! top "ktop" levels are inhenced
 !

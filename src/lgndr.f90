@@ -29,8 +29,8 @@
 
       integer  my2,jtrun,jtmax
 
-      real(kind=RTYPE) poly(jtrun,my2,jtmax),dpoly(jtrun,my2,jtmax)
-      real     sinl(my2)
+      real(kind=RTYPE) poly(jtrun,my2,jtmax),dpoly(jtrun,my2,jtmax), &
+                       sinl(my2)
 !
       real     pnm(jtrun+1,jtrun+1),dpnm(jtrun+1,jtrun+1)
 !

@@ -16,9 +16,9 @@
       integer   myhalf,lev2,jj,j,nxj,k,i,m,mm,mp,mlst,mf,j2,j1,l
       integer   lchk,lle,jlistnum_fj,j_fj,l_fj,llistnum_fj
 
-      real      onocos(my),w(my)
       real(kind=RTYPE)      poly(jtrun,my/2,jtmax),                     &
-                            dpoly(jtrun,my/2,jtmax),cim(jtmax)
+                            dpoly(jtrun,my/2,jtmax),cim(jtmax),         &
+                            onocos(my),w(my)
 
       real(kind=RTYPE)      hldten(lev,2,jtrun,jtmax),vorten(lev,2,jtrun,jtmax)
       real(kind=RTYPE)      vdmer(nxp,levf,my_max),vdzon(nxp,levf,my_max),dummy
