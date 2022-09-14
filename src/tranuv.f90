@@ -40,12 +40,11 @@
       integer   kk,ll,jj,jx,j2,i,jtrunj,mchk,mm,mp,mlst
       integer   mm1,mp1,mlst1,mm2,mp2,mlst2,mm3,mp3,mlst3,nxj,ierr
 
-      real(kind=RTYPE) sa00,sa10,sa20,sa30,dummy
+      real      onocos(my) 
+
+      real(kind=RTYPE)      sa00,sa10,sa20,sa30,dummy
 !
-      real      onocos(my)                                        &
-               ,poly(jtrun,my/2,jtmax),dpoly(jtrun,my/2,jtmax)
-!               ,vor(lev,2,jtrun,jtmax),div(lev,2,jtrun,jtmax)     &
-!
+      real(kind=RTYPE)      poly(jtrun,my/2,jtmax),dpoly(jtrun,my/2,jtmax)
       real(kind=RTYPE)      vor(lev,2,jtrun,jtmax),div(lev,2,jtrun,jtmax)
       real(kind=RTYPE)      ut(nxp,levF,my_max),vt(nxp,levF,my_max)
       real(kind=RTYPE)      gwk1(nx+2,lev,2,my_max)

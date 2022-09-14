@@ -37,7 +37,7 @@
 
       real(kind=RTYPE)      sa00,sa10,sb00,sb10
 
-      real      poly(jtrun,my/2,jtmax)
+      real(kind=RTYPE)      poly(jtrun,my/2,jtmax)
       real(kind=RTYPE)      cc(nx+2,lev,num,my_max),wss(lev,2,num,jtrun,jtmax)
 !
       real(kind=RTYPE)      gwk1(nx+2,lev,num,my_max)

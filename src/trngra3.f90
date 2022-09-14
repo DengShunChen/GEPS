@@ -32,9 +32,9 @@
       implicit none
 !
       integer jtrun,jtmax,nx,lev,my,my_max,nsize
-      real poly(jtrun,my/2,jtmax),dpoly(jtrun,my/2,jtmax)
+      real(kind=RTYPE) poly(jtrun,my/2,jtmax),dpoly(jtrun,my/2,jtmax)
       real(kind=RTYPE) s(lev,2,jtrun,jtmax)
-      real cim(jtmax)
+      real(kind=RTYPE) cim(jtmax)
 
       real(kind=RTYPE) dlpl(nxp,levF,my_max),dtpl(nxp,levF,my_max)
 !

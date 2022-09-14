@@ -34,9 +34,9 @@
       integer   jtrun,jtmax,nx,my,my_max,nsize
       integer   myhalf,m,mf,l,j,jj,i,jtrunj,mm,mp,mlst,nxj
 
-      real      poly(jtrun,my/2,jtmax),dpoly(jtrun,my/2,jtmax)
+      real(kind=RTYPE) poly(jtrun,my/2,jtmax),dpoly(jtrun,my/2,jtmax)
       real(kind=RTYPE) s(jtrun,jtmax,2)
-      real      cim(jtmax)
+      real(kind=RTYPE) cim(jtmax)
 !
       real(kind=RTYPE) dlpl(nxp,my_max),dtpl(nxp,my_max)
       real(kind=RTYPE) cc(nx+2,2,my_max)

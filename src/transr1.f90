@@ -39,7 +39,7 @@
       real(kind=RTYPE)      wcc_fk(my_max*nsize,jtmax,2), twcc_fk(my_max,jtmax*nsize,2)
       real                  wss(jtrun,2)
 
-      real                  poly(jtrun,my/2,jtmax)
+      real(kind=RTYPE)      poly(jtrun,my/2,jtmax)
       real(kind=RTYPE)      cc(nx+2,my_max)
       real                  tcc(my,2)
 !

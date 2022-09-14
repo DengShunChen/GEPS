@@ -40,7 +40,7 @@
             nmmiph
  
     real, dimension(:), allocatable, save  ::              &
-         weight,sinl,cosl,cor,onocos,sig,dsig
+         weight,sinl,cosl,cor,onocos
 !         tmean,spalm,eigval,pmcor,tmeans
  
 !    real, dimension(:,:), allocatable, save  :: evecin,    &
@@ -144,10 +144,9 @@
     character(len=4)  ::  ggdef,gmdef,gsdef
     common/dmskey34/ggdef,gmdef,gsdef
 
-    real, dimension(:,:,:), allocatable, save  :: poly,dpoly
+    real(kind=RTYPE), dimension(:,:,:), allocatable, save  :: poly,dpoly
     real(kind=RTYPE), dimension(:,:)  , allocatable, save  :: eps4,wdfac,wcfac
-    real, dimension(:)    , allocatable, save  :: cim
-    real(kind=RTYPE), dimension(:)    , allocatable, save  :: eps4L   ! for 2dMPI
+    real(kind=RTYPE), dimension(:)    , allocatable, save  :: cim,eps4L   ! for 2dMPI
 
     contains 
 
@@ -178,7 +177,7 @@
         end if
 
         allocate (weight(my),sinl(my),cosl(my),           &
-        cor(my),onocos(my),sig(lev+1),dsig(lev),          &
+        cor(my),onocos(my),                               &
         tmean(lev),spalm(lev),eigval(lev),evecin(lev,lev),&
         evectr(lev,lev),arrhyd(lev,lev),arsddt(lev,lev),  &
         pmcor(lev),tmcor(lev,lev),tmeans(lev),            &
@@ -188,7 +187,6 @@
             stop
         end if
 
-        sig=0.
 
         allocate (outdir(nout),stat= ierr)
         if (ierr/= 0) then
@@ -203,7 +201,7 @@
         deallocate(poly,dpoly,eps4,wdfac,wcfac,cim)
         deallocate(aki,bki,sigma,dsigma)
         deallocate(mlsort,msort,lsort)
-        deallocate(weight,sinl,cosl,cor,onocos,sig,dsig,  &
+        deallocate(weight,sinl,cosl,cor,onocos,          &
                    tmean,spalm,eigval,pmcor,tmeans)
         deallocate(outdir)
       end subroutine

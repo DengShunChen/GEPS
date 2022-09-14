@@ -113,12 +113,6 @@
       call inicon
       call set_lookup_tables
 
-      do k = 2, lev
-        dsig(k-1)= sig(k) - sig(k-1)
-      enddo
-
-      dsig(lev)= 1.0 - sig(lev)
-
       capa= 1.0/3.5
       rgas= capa*cp
       pi  = 4.0*atan(1.0)

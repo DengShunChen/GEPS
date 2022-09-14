@@ -31,7 +31,8 @@
       integer mlx,myhalf,jj,j,nxj,i,jtrunj,m,mm,mp,mlst,mf
       integer l,i1,i2,i3,j1,j2
 
-      real                poly(jtrun,my/2,jtmax),w(my)
+      real    w(my)
+      real(kind=RTYPE)    poly(jtrun,my/2,jtmax)
       real(kind=RTYPE)    r(nx,my_max)
       real(kind=RTYPE)    s(jtrun,jtmax,2)
 !

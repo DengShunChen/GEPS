@@ -567,11 +567,11 @@ contains
   subroutine get_legendre_poly(mlmax,jtrun,poly)
     implicit none
     integer, intent(in) :: mlmax,jtrun
-    real,intent(out)   ::  poly(mlmax,my/2) 
+    real(kind=RTYPE),intent(out)   ::  poly(mlmax,my/2) 
 
     !   Spheric Harmonic Constants
     integer ::  msort(mlmax),lsort(mlmax),mlsort(mlmax,jtrun)
-    real :: dpoly(mlmax,my/2),eps4(mlmax),cim(mlmax)
+    real(kind=RTYPE) :: dpoly(mlmax,my/2),eps4(mlmax),cim(mlmax)
     real :: cosl(my),onocos(my)
     real :: weight(my),sinl(my)
     real :: cp,capa,rgas,pi,radsq,rad,one,onem,irad
@@ -732,7 +732,8 @@ contains
 ! 
       integer :: j, n, np, kp, k, mp, m, nps, l, ml, m1, mk
       integer :: my2, jtrun, mlmax, jtrunp
-      real :: poly(mlmax,my2),dpoly(mlmax,my2),sinl(my2)
+      real(kind=RTYPE) :: poly(mlmax,my2),dpoly(mlmax,my2)
+      real    :: sinl(my2)
       integer :: mlsort(jtrun,jtrun)
 ! 
 !       parameter (jtrunx= 100)

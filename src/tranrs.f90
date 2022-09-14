@@ -36,7 +36,8 @@
       integer mlst,ii,k,mm1,mp1,mlst1,mm2,mp2,mlst2,mm3,mp3,mlst3,mf
       integer lchk,lle,jlistnum_fj,j_fj,j1,j2,l,l_fj,llistnum_fj
 
-      real    poly(jtrun,my/2,jtmax),w(my)
+      real    w(my)
+      real(kind=RTYPE)    poly(jtrun,my/2,jtmax)
       real(kind=RTYPE)    wss(lev,2,num,jtrun,jtmax)
 !
       real(kind=RTYPE)    gwk1(nx+2,lev,num,my_max)
