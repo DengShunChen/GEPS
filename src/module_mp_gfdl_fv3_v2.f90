@@ -2001,7 +2001,9 @@ subroutine subgrid_z_proc (ks, ke, p1, den, denfac, dts, rh_adj, tz, qv, ql, qr,
     real :: pssub, pgsub, tsq, qden
     real :: fac_l2v, fac_v2l, fac_g2v, fac_v2g
     integer :: k
-    real, parameter :: qcldmin = 1.e-6
+!    real, parameter :: qcldmin = 1.e-6   ! original
+    real, parameter :: qcldmin = 1.e-8   ! GFDLMP_v1
+!    real, parameter :: qcldmin = 1.e-15  ! GFDLMP_v3
     
     if (do_sat_adj) then
         dt_evap = 0.5 * dts
@@ -2418,6 +2420,8 @@ subroutine subgrid_z_proc (ks, ke, p1, den, denfac, dts, rh_adj, tz, qv, ql, qr,
                 qa10 = - 0.1754 + 0.9811 * gam - 0.2223 * gam ** 2 + 0.0104 * gam ** 3
                 qa10 = max (0.0, min (1., qa10))
             endif
+            sigma = 0.18 + max (0.0, q_cond (k) * 1000.) ** 0.48   !xb141
+            gam = max (0.0, q_cond (k) * 1000.) / sigma            !xb141
             if (gam < 0.12) then
                 qa100 = 0.
             elseif (gam > 1.85) then
