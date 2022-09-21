@@ -41,10 +41,12 @@
                 tmean(lev),spalm(lev),ptmean
 !
       integer   ipp(lev*2),iwk(lev)
-      real      phatk(lev+1),pko(lev),thatm(lev),p2(lev+1),            &
-                wrk(257),sig(lev+1),dsig(lev),dp(lev),dcdp(lev)
+!  in order to keep the stability. two variables below can not be single precision.
+      real      dp(lev),dcdp(lev)
+!
       real(kind=RTYPE) a(lev,lev),b(lev,lev),asd(lev,lev),ai(lev,lev), &
-                csrtn(lev,lev),enorm(lev),tmp(lev)
+                csrtn(lev,lev),enorm(lev),tmp(lev),                    &
+                phatk(lev+1),pko(lev),thatm(lev),p2(lev+1)
 !
 !  compute some pressure related variables from reference atmosphere
 !

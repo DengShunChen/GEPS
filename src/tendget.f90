@@ -41,7 +41,6 @@
       ,qm_sl(nx,levp*ncld,my_max)                          &
       ,pdot(nxp,lev+1,latpart)                             &
       ,vdmerdr(nxp,lev,my_max),vdzonlr(nxp,lev,my_max)     &
-      ,pt_sp(nxp,my_max)                                   &
       ,vdmerd(nxp,lev,my_max),vdzonl(nxp,lev,my_max)       &
       ,ddtemp(nxp,lev,my_max),qvadv(nxp,lev*ncld,my_max)   &
       ,diveng(nxp,lev,my_max),pten(nxp,lev,my_max)
@@ -259,17 +258,13 @@
       call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlr,vdmerdr,dta)
 
 !CWB2021 ndsl single precision test
-      pt_sp=pt
 !
 !
 !       Vertical Advection
 !
-!       call ndslfv_monoadvv(ddtemp,qvadv,vdzonl,vdmerd,pdot,pt        &
-        call ndslfv_monoadvv(ddtemp,qvadv,vdzonl,vdmerd,pdot,pt_sp &
-                            ,nxjp,dta)
+      call ndslfv_monoadvv(ddtemp,qvadv,vdzonl,vdmerd,pdot,pt,nxjp,dta)
 
 !CWB2021 ndsl single precision test
-      pt=pt_sp
 
 !
       do jj = 1, jlistnum

@@ -59,9 +59,6 @@
 !
       integer   nfxr
 !  for Semi-Lagrangian
-      real      ddtemp_r8(nxp,lev,my_max),                         &
-                vdmerd_r8(nxp,lev,my_max),vdzonl_r8(nxp,lev,my_max),&
-                umtmp(nxp,lev,my_max),vmtmp(nxp,lev,my_max)
 !
       real(kind=RTYPE) ndsldta,ndsldtah,facm(2,2),                 &
                 diveng(nxp,lev,my_max),                            &
