@@ -74,8 +74,11 @@
 !  fft for each guassian latitude of 2-d field
 !
       if( lreduce.eq.0 ) then
-!ch   call rfftmlt(cc,gwk1,trigs,ifax,1,nx+2,nx,jlistnum,-1)
+#ifdef SP
       call rfftmlt_sp(cc,gwk1,trigs,ifax,1,nx+2,nx,jlistnum,-1)
+#else
+      call rfftmlt(cc,gwk1,trigs,ifax,1,nx+2,nx,jlistnum,-1)
+#endif
       else
 !$omp  parallel do default(none)                         &
 !$omp  private(jj,j,nxj,gwk1)                            &
@@ -84,8 +87,11 @@
       do jj=1,jlistnum
         j= jlist1(jj)
         nxj=nxdef(j)
-!ch     call rfftmlt(cc(1,jj),gwk1(1,jj),trigsj(1,j),ifaxj(1,j), &
+#ifdef SP
         call rfftmlt_sp(cc(1,jj),gwk1(1,jj),trigsj(1,j),ifaxj(1,j), &
+#else
+        call rfftmlt(cc(1,jj),gwk1(1,jj),trigsj(1,j),ifaxj(1,j), &
+#endif
                      1,nx+2,nxj,1,-1)
       enddo
 !$omp end parallel do
@@ -106,6 +112,7 @@
 
 !ch    call mpe_transpose_rs1(twcc_fk,wcc_fk,jtmax,my_max,2,nsize,col_comm)
        call mpe_transpose_rs1_sp(twcc_fk,wcc_fk,jtmax,my_max,2,nsize,col_comm)
+
 
 !*** r1  end  ***
 !ibm---beg

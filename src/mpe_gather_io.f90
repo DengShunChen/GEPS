@@ -2,7 +2,7 @@
 !     include 'mpif.h'
       use rank, only : MPI_COMM_gfs
       use mpi
-      use const, only: RTYPE
+      use const, only: RTYPE,MPI_RTYPE
 !
       implicit  none
       real(kind=RTYPE) a(len*nsize)
@@ -13,15 +13,9 @@
 !
       call MPI_BARRIER(MPI_COMM_gfs, IERR)
 !
-#ifdef SP
-      call MPI_GATHER( B,LEN,       MPI_REAL4,                &
-                       A,LEN,       MPI_REAL4,                &
+      call MPI_GATHER( B,LEN,       MPI_RTYPE,                &
+                       A,LEN,       MPI_RTYPE,                &
                        IROOT,       MPI_COMM_gfs, IERR )
-#else               
-      call MPI_GATHER( B,LEN,       MPI_DOUBLE_PRECISION,     &
-                       A,LEN,       MPI_DOUBLE_PRECISION,     &
-                       IROOT,       MPI_COMM_gfs, IERR )
-#endif
 !
       return
       end

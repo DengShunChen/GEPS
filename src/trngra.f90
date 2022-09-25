@@ -132,13 +132,8 @@
 
 !      call mpe_transpose_rs1(wcu_fk,twcc_fk,my_max,jtmax,2,nsize)
 !      call mpe_transpose_rs1(wcv_fk,twdd_fk,my_max,jtmax,2,nsize)
-#ifdef SP
        call mpe_transpose_rs1_sp(wcu_fk,twcc_fk,my_max,jtmax,2,nsize,col_comm)
        call mpe_transpose_rs1_sp(wcv_fk,twdd_fk,my_max,jtmax,2,nsize,col_comm)
-#else
-       call mpe_transpose_rs1(wcu_fk,twcc_fk,my_max,jtmax,2,nsize,col_comm)
-       call mpe_transpose_rs1(wcv_fk,twdd_fk,my_max,jtmax,2,nsize,col_comm)
-#endif
 
       do jj=1,jlistnum
       do i=1,nx+2

@@ -139,11 +139,15 @@
 !  evectr in "rg" should be a integer array
 !  1/9/2004
 !err  call rg (lev,lev,evecin,a,eigval,1,b,evectr,enorm,ier)
-!      call rg (lev,lev,evecin,a,eigval,1,b,iwk,enorm,ier)
-!sun  call rg (lev,lev,evecin,eigval,a,1,evectr,b,enorm,ier)
-!fuji      call deig1(evecin,lev,lev,0,a,eigval,b,enorm,ier)
+#ifdef SP
 !sigle precision version in fujitsu
       call eig1(evecin,lev,lev,0,a,eigval,b,enorm,ier)
+#else
+      call rg (lev,lev,evecin,a,eigval,1,b,iwk,enorm,ier)
+#endif
+!sun  call rg (lev,lev,evecin,eigval,a,1,evectr,b,enorm,ier)
+!fuji      call deig1(evecin,lev,lev,0,a,eigval,b,enorm,ier)
+
 !
 !  normalize vertical eigenvector matrix
 !

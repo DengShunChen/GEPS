@@ -146,11 +146,7 @@
 
 !*** r1 start ***
 
-#ifdef SP
       call mpe_transpose_rs1_sp(wcc_fk,twcc_fk,my_max,jtmax,2,nsize,col_comm)
-#else
-      call mpe_transpose_rs1(wcc_fk,twcc_fk,my_max,jtmax,2,nsize,col_comm)
-#endif
 
       do jj =1,jlistnum
       do i=1,nx+2

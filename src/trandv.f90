@@ -129,11 +129,7 @@
       enddo
       enddo
 
-#ifdef SP
       call mpe_transpose_rs_sp(twcc_fk,wcc_fk,levp*2*2,jtmax,my_max,nsize,col_comm)
-#else
-      call mpe_transpose_rs(twcc_fk,wcc_fk,levp*2*2,jtmax,my_max,nsize,col_comm)
-#endif
 
       do m=1,mlistnum
          mf=mlist(m)

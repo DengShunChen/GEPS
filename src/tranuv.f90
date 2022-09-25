@@ -370,11 +370,7 @@
       enddo   ! end of big m loop
 
 
-#ifdef SP
       call mpe_transpose_sr_sp(wcc_fk,twcc_fk,lev*2*2,jtmax,my_max,nsize,col_comm)
-#else
-      call mpe_transpose_sr(wcc_fk,twcc_fk,lev*2*2,jtmax,my_max,nsize,col_comm)
-#endif
 
       do jj=1,jlistnum
 

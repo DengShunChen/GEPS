@@ -362,13 +362,14 @@
       use rank
       use index
       use mpi
+      use const, only: RTYPE,MPI_RTYPE
 
       real work(nx,my)
-      real a(nxp,my_max)
-      real b(nxp,my_max*nsize)
+      real(kind=RTYPE) a(nxp,my_max)
+      real(kind=RTYPE) b(nxp,my_max*nsize)
 
-      call MPI_ALLGATHER( a,nxp*my_max, MPI_DOUBLE_PRECISION, &
-                          b,nxp*my_max, MPI_DOUBLE_PRECISION, &
+      call MPI_ALLGATHER( a,nxp*my_max, MPI_RTYPE, &
+                          b,nxp*my_max, MPI_RTYPE, &
                           MPI_COMM_gfs, IERR )
 
       do j=1,my
