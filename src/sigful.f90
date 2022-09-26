@@ -43,8 +43,7 @@
 
 
       logical cstar
-      real      wk1(nxp,my_max)                                         &
-              , pdiff(nxp,my_max),t1000(nxp,my_max)                     &
+      real      pdiff(nxp,my_max),t1000(nxp,my_max)                     &
               , tsave(nxp,my_max),plt(nxp,lev,my_max)
       real(kind=RTYPE) weight(my),poly(jtrun,jtmax,my/2)                &
               ,        cosl(my),sigma(lev+1,2),pk(nxp,lev,my_max)       &
@@ -54,7 +53,7 @@
 !  local work arrays
 !
       real      preplt(nx,lmax+2),prett(nx,lmax+2),hld1(nx,my)         &
-               ,plog(nx,lev),hld2(nx,my),anlslp(nx,my),hkd1(nx,lev),ut_tmp(nx,lev)
+               ,plog(nx,lev),hkd1(nx,lev),ut_tmp(nx,lev)
       real     tens(lmax+2),tstd(lmax),utmp(nxp,lev),vtmp(nxp,lev)
       real      puvphi(26)
 !
@@ -62,8 +61,10 @@
                ,       ut(nxp,lev,my_max),vt(nxp,lev,my_max)           &
                ,       tt(nxp,lev,my_max),sht(nxp,lev*ncld,my_max)     &
                ,       o3l(nxp,lev,my_max),phi(nxp,lev,my_max)         &
-               ,       pt(nxp,my_max),sgeo(nxp,my_max)
-      real(kind=RTYPE) hld4(nx,levp,ncld,my_max),hld3(nx,levp,my_max)
+               ,       pt(nxp,my_max),sgeo(nxp,my_max)                 &
+               ,       anlslp(nxp,my_max)
+      real(kind=RTYPE) hld4(nx,levp,ncld,my_max),hld3(nx,levp,my_max)  &
+               ,       hld2(nx,my)
       real      wss(levp,2,1+ncld,jtrun,jtmax)
       real      work_pr1(lev), work_pr2(lev), work_pr3(lev)
 !
@@ -362,8 +363,7 @@
 !c
 
 !ch> 
-      wk1=pt
-      call mpe2d_unify(hld2,wk1)
+      call mpe2d_unify(hld2,pt)
 !ch<
 
       do 170 jj = 1, jlistnum
@@ -491,26 +491,26 @@
 !
       do 185 i = 1, nxj
       if( sgeo(i,jj) .lt. 0.1 ) then
-       anlslp(i,j) = pt(i,jj) + ptop
+       anlslp(i,jj) = pt(i,jj) + ptop
 
       elseif( hld1(i,j) .le. 290.5 .and. hld2(i,j) .gt. 290.5 ) then
        apha = rgas*(290.5-hld1(i,j))/sgeo(i,jj)
        ttt = sgeo(i,jj)/(rgas*hld1(i,j))
-       anlslp(i,j) = (pt(i,jj)+ptop)*exp( ttt*(1.0-0.5*apha*ttt+0.333333* &
+       anlslp(i,jj) = (pt(i,jj)+ptop)*exp( ttt*(1.0-0.5*apha*ttt+0.333333* &
                      apha*ttt*apha*ttt) )
 
       elseif( hld1(i,j) .gt. 290.5 .and. hld2(i,j) .gt. 290.5 ) then
        hld1(i,j) = (hld1(i,j)+290.5)*0.5
-       anlslp(i,j) = (pt(i,jj)+ptop)*exp( sgeo(i,jj)/(rgas*hld1(i,j)) )
+       anlslp(i,jj) = (pt(i,jj)+ptop)*exp( sgeo(i,jj)/(rgas*hld1(i,j)) )
 
       elseif( hld1(i,j) .lt. 255.0 .and. hld2(i,j) .lt. 255.0 ) then
        hld1(i,j) = (hld1(i,j)+255.0)*0.5
-       anlslp(i,j) = (pt(i,jj)+ptop)*exp( sgeo(i,jj)/(rgas*hld1(i,j)) )
+       anlslp(i,jj) = (pt(i,jj)+ptop)*exp( sgeo(i,jj)/(rgas*hld1(i,j)) )
 
       else
        apha = alaps * rdg
        ttt = sgeo(i,jj)/(rgas*hld1(i,j))
-       anlslp(i,j) = (pt(i,jj)+ptop)*exp( ttt*(1.0-0.5*apha*ttt+0.333333* &
+       anlslp(i,jj) = (pt(i,jj)+ptop)*exp( ttt*(1.0-0.5*apha*ttt+0.333333* &
                      apha*ttt*apha*ttt) )
       end if
   185 continue
@@ -522,14 +522,14 @@
        nxj=nxdef_2d(j)
       do 195 i = 1, nxj
        hld1(i,j) = pt(i,jj)
-       pdiff(i,jj) = anlslp(i,j) - pt(i,jj)
+       pdiff(i,jj) = anlslp(i,jj) - pt(i,jj)
 !       hld1(i,j) = pdiff(i,jj)
   195 continue
 !
       call mpe_unify(hld1,nx,my,2,mpe_double)
-      call mpe_unify(anlslp,nx,my,2,mpe_double)
+      call mpe2d_unify(hld2,anlslp)
       if(myrank .eq. 0 ) print*,'pt, anlslp at (86,127)= ',hld1(86,127) &
-                        ,anlslp(86,127)
+                        ,hld2(86,127)
 !
 !      call mpe_unify(hld1,nx,my,2,mpe_double)
 !      call syslbl ('x00dif',idtg,itaux,ggdef,lrec)

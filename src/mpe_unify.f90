@@ -173,8 +173,9 @@
       use rank, only : MPI_COMM_gfs
       use index
       use mpi
+      use const, only : RTYPE,MPI_RTYPE
 
-      real*4 a(n,m),b1(nxp,mx),b2(nxp,mx*nsize)
+      real(kind=RTYPE) a(n,m),b1(nxp,mx),b2(nxp,mx*nsize)
 
       do jj=1,jlistnum
          j=jlist1(jj)
@@ -183,8 +184,8 @@
       enddo
       enddo
 
-      call MPI_ALLGATHER( B1,nxp*mx,   MPI_REAL4,    &
-                          B2,nxp*mx,   MPI_REAL4,    &
+      call MPI_ALLGATHER( B1,nxp*mx,   MPI_RTYPE,    &
+                          B2,nxp*mx,   MPI_RTYPE,    &
                           MPI_COMM_gfs,  IERR )
  
       do j=1,m

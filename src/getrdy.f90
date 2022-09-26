@@ -646,8 +646,7 @@
         call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww3,spgeo,nsizey)
         call transr1(jtrun,jtmax,nx,my,my_max,poly,spgeo,sgeo,nsizey)
         ww2=sgeo
-        call mpe2d_unify(ww1,ww2)
-        ww4=ww1
+        call unify_reduceintp(nx,my,my_max,ww2,ww4)
         call qmaxn3 (ww4,'sgeo',' ',1,1,1,nx,my,1)
 !dms    istdno=99
 !dms    istdno=0

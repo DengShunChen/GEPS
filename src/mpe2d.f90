@@ -364,7 +364,7 @@
       use mpi
       use const, only: RTYPE,MPI_RTYPE
 
-      real work(nx,my)
+      real(kind=RTYPE) work(nx,my)
       real(kind=RTYPE) a(nxp,my_max)
       real(kind=RTYPE) b(nxp,my_max*nsize)
 

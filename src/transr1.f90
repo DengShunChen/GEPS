@@ -169,8 +169,11 @@
 
 !
       if( lreduce.eq.0 ) then
-!ch   call rfftmlt(cc,gwk1,trigs,ifax,1,nx+2,nx,jlistnum,1)
+#ifdef SP
       call rfftmlt_sp(cc,gwk1,trigs,ifax,1,nx+2,nx,jlistnum,1)
+#else
+      call rfftmlt(cc,gwk1,trigs,ifax,1,nx+2,nx,jlistnum,1)
+#endif
       else
 !$omp  parallel do default(none)                            &
 !$omp  private(jj,j,nxj,gwk1)                               &
