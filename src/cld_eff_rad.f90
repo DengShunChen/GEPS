@@ -118,7 +118,6 @@ subroutine cld_eff_rad                                       &
     integer :: i, k, ind
     
     real, dimension (is:ie, ks:ke) :: qmw, qmr, qmi, qms, qmg ! mass mixing ratio (kg / kg)
-    real, dimension (is:ie, ks:ke) :: cld0  ! cloud fraction
     
     real :: dpg ! dp / g
     real :: rho ! density (kg / m^3)
@@ -167,11 +166,30 @@ subroutine cld_eff_rad                                       &
     qms = qs
     qmg = qg
 !    cld = cloud
-    cld0 = cld
-    
+
+!>>>xb141
+#ifdef split_cnvw
+    if (present (cnvw)) then
+        if (present (cnvi)) then
+            qmw = qmw + cnvw
+        else
+            do k = ks, ke
+              do i = is, ie
+                if (t (i, k) > t_ice) then
+                  qmw (i, k) = qmw (i, k) + cnvw (i, k)
+                else
+                  qmi (i, k) = qmi (i, k) + cnvw (i, k)
+                endif
+              enddo
+            enddo
+        endif
+    endif
+#else
     if (present (cnvw)) then
         qmw = qmw + cnvw
     endif
+#endif
+!<<<xb141
     if (present (cnvi)) then
         qmi = qmi + cnvi
     endif
