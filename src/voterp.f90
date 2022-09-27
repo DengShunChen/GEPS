@@ -37,13 +37,13 @@
 
 !byl      real      ff(nxp,lev,my_max),t(nx,my,lpout),pkout(lpout)    &
 !byl      , pk(nxp,lev,my_max),tensy(lev+1),pklp(nx,my),flp(nx,my)
-      real      ff(nxp,lev,my_max),t(nxp,my_max,lpout),pkout(lpout)    &
+      real      ff(nxp,lev,my_max),pkout(lpout)                        &
       , pk(nxp,lev,my_max),tensy(lev+1),pklp(nxp,my_max)               &
       , flp(nxp,my_max)
 !
       real(kind=RTYPE) fxx(nxp,lev+1),fyy(nxp,lev+1),pjy(nxp,lpout,4)  &
-      , tp1(nxp,lpout,4),    pkk(nxp,lev+1),f(nxp,lev+1)               &
-      , pout(nxp,lpout)
+      , tp1(nxp,lpout,4),pkk(nxp,lev+1),f(nxp,lev+1)                   &
+      , pout(nxp,lpout),t(nxp,my_max,lpout)
 
       integer   ipt(nxp,lpout)
 !

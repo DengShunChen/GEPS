@@ -25,7 +25,7 @@
 !  pk: 3-d full level exner func on gaussian grid and sigma coord.
 !  pk2: 3-d half level exner func on gaussian grid and sigma coord.
 !
-      use const, only : RTYPE,kflag
+      use const, only : RTYPE,kflag,qmin
       use mpe
       use rank
       use index
@@ -163,7 +163,7 @@
 !
 !  read in q at sigma levels
 !
-      hld4=1.0e-20
+      hld4=qmin
       do 73 k = 1, levp
         KL=lev-Llist(k)+1
       if ( KL .lt. 100 ) then
@@ -237,7 +237,7 @@
                 else
                   ntrac = ntcw
                 endif
-                hld4(i,k,ntrac,jj) = max(hld1(i,j),1.0e-20)
+                hld4(i,k,ntrac,jj) = max(hld1(i,j),qmin)
               end do
             end do
           end do
@@ -260,7 +260,7 @@
                 nxj=nxdef(j)
                 if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
                 do i = 1, nxj
-                  hld4(i,k,ntrac,jj) = max(hld1(i,j),1.0e-20)
+                  hld4(i,k,ntrac,jj) = max(hld1(i,j),qmin)
                 enddo
               enddo
             enddo
@@ -572,7 +572,11 @@
       if (pk(i,k,jj).gt.pk300)  hkd1(i,k)= tt(i,k,jj) -10.0
       if (pk(i,k,jj).gt.pk800)  hkd1(i,k)= tt(i,k,jj) -7.0
  173  continue
-      call qsatq_2d (nxjp(j),nxp,lev,hkd1(1,1),plt(1,1,jj),sht(1,1,jj))
+      call qsatq_2d (nxjp(j),nxp,lev,hkd1(1,1),plt(1,1,jj),vtmp)
+      do 175 k = 1, lev
+      do 175 i = 1, nxj
+       sht(i,k,jj) = vtmp(i,k)
+ 175  continue
  174  continue
 !
       endif

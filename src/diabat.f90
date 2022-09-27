@@ -170,7 +170,7 @@
                                       use_zmtnblck,ldailyFCTsst,ldailyFCTicesndpt, &
                                       ldailyFCTsst,ldailyFCTicesndpt,           &
                                       dailyClm_option,dSITdt_intv,weightSIT,    &
-                                      bckfile,ggdef,doclx,doslavepp,RTYPE
+                                      bckfile,ggdef,doclx,doslavepp,RTYPE,qmin
       use mod_sitgrid
       USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
       USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt &
@@ -323,32 +323,32 @@
                 ctot(nxp,my_max),chig(nxp,my_max),cmid(nxp,my_max),clow(nxp,my_max)
 
       ! for sppt
-      real :: ut_save_sppt(nxp,lev,my_max)     
-      real :: vt_save_sppt(nxp,lev,my_max)        
-      real :: tt_save_sppt(nxp,lev,my_max)        
-      real :: qt_save_sppt(nxp,lev*ncld,my_max)
-     !real :: qt_save_shum(nxp,lev*ncld,my_max)
-      real :: tg_save_ssst(nxp,1,my_max)
+      real(kind=RTYPE) :: ut_save_sppt(nxp,lev,my_max)     
+      real(kind=RTYPE) :: vt_save_sppt(nxp,lev,my_max)        
+      real(kind=RTYPE) :: tt_save_sppt(nxp,lev,my_max)        
+      real(kind=RTYPE) :: qt_save_sppt(nxp,lev*ncld,my_max)
+     !real(kind=RTYPE) :: qt_save_shum(nxp,lev*ncld,my_max)
+      real(kind=RTYPE) :: tg_save_ssst(nxp,1,my_max)
 #ifdef VERBOSE
-      real :: ut_update(nxp,lev,my_max)     
-      real :: vt_update(nxp,lev,my_max)        
-      real :: tt_update(nxp,lev,my_max)        
-      real :: qt_update(nxp,lev*ncld,my_max)
+      real(kind=RTYPE) :: ut_update(nxp,lev,my_max)     
+      real(kind=RTYPE) :: vt_update(nxp,lev,my_max)        
+      real(kind=RTYPE) :: tt_update(nxp,lev,my_max)        
+      real(kind=RTYPE) :: qt_update(nxp,lev*ncld,my_max)
 
-      real :: ut_pbl(nxp,lev,my_max)
-      real :: vt_pbl(nxp,lev,my_max)
-      real :: tt_pbl(nxp,lev,my_max)
-      real :: qt_pbl(nxp,lev*ncld,my_max)
+      real(kind=RTYPE) :: ut_pbl(nxp,lev,my_max)
+      real(kind=RTYPE) :: vt_pbl(nxp,lev,my_max)
+      real(kind=RTYPE) :: tt_pbl(nxp,lev,my_max)
+      real(kind=RTYPE) :: qt_pbl(nxp,lev*ncld,my_max)
 
-      real :: ut_cmls(nxp,lev,my_max)     
-      real :: vt_cmls(nxp,lev,my_max)        
-      real :: tt_cmls(nxp,lev,my_max)        
-      real :: qt_cmls(nxp,lev*ncld,my_max)
+      real(kind=RTYPE) :: ut_cmls(nxp,lev,my_max)     
+      real(kind=RTYPE) :: vt_cmls(nxp,lev,my_max)        
+      real(kind=RTYPE) :: tt_cmls(nxp,lev,my_max)        
+      real(kind=RTYPE) :: qt_cmls(nxp,lev*ncld,my_max)
 
-      real :: ut_sppt(nxp,lev,my_max)     
-      real :: vt_sppt(nxp,lev,my_max)        
-      real :: tt_sppt(nxp,lev,my_max)        
-      real :: qt_sppt(nxp,lev*ncld,my_max)
+      real(kind=RTYPE) :: ut_sppt(nxp,lev,my_max)     
+      real(kind=RTYPE) :: vt_sppt(nxp,lev,my_max)        
+      real(kind=RTYPE) :: tt_sppt(nxp,lev,my_max)        
+      real(kind=RTYPE) :: qt_sppt(nxp,lev*ncld,my_max)
 #endif
       real :: dtradc(nxp,lev,my_max)
       real :: dtradn(nxp,lev)
@@ -434,7 +434,6 @@
       real      rcup2(nxp)
 ! for scale-aware convection
       real      garea(nxp),tpr,tem1,tem2,jup,jdn,tpi
-      real,     parameter :: qmin=1.0e-20
 ! for wsm6 & thompson
       integer   nmmiph
       real      phii(nxp,lev+1)

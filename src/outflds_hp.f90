@@ -16,8 +16,7 @@
 !
 ! local work arrays
 !
-      real      wrk(nxp,my_max)
-      real(kind=RTYPE) glob(nx,my) 
+      real(kind=RTYPE) glob(nx,my),wrk(nxp,my_max)
 
       integer   jj,j,nxj,i
 !
@@ -28,12 +27,14 @@
 !      call mpe_unify_1(glob,raincu3,nx,my,2,mpe_double)
 !      call mpe_unify_1(glob1,rainlp3,nx,my,2,mpe_double)
       call syslbl ('b00632',idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,raincu3,glob)
+      wrk=raincu3
+      call unify_reduceintp(nx,my,my_max,wrk,glob)
       call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
 !
       call syslbl ('b00642',idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,rainlp3,glob)
+      wrk=rainlp3
+      call unify_reduceintp(nx,my,my_max,wrk,glob)
       call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
 !

@@ -42,10 +42,11 @@
 !
       integer,  parameter :: lpout = 47 
       real      wrk1(nxp,lev),pout(lpout),pkout(lpout),phistd(lpout) &
-              , bt1(nxp,my_max),bt2(nxp,my_max)                  &
-              , hld1(nxp,my_max),hld2(nxp,my_max),pres3d(nxp,my_max,lpout)
+              , bt1(nxp,my_max),bt2(nxp,my_max)
+      real(kind=RTYPE) pres3d(nxp,my_max,lpout),hld1(nxp,my_max)     &
+              ,        hld2(nxp,my_max)
 !
-      real      soil_xy(nxp,my_max,8)   ! the last dim is changable
+      real(kind=RTYPE) soil_xy(nxp,my_max,8)   ! the last dim is changable
 !
       integer   nxmy,jj,j,nxj,k,i,n,nk,ngq,ntt,kk,ntrac,ii
       integer   llts
@@ -719,7 +720,8 @@
 ! ***tg***
 !byl      call mpe2d_unify(glob,tg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
-      call unify_reduceintp(nx,my,my_max,tg,glob)
+      hld1=tg
+      call unify_reduceintp(nx,my,my_max,hld1,glob)
       if(myrank.eq.0) then
       call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
                   ,rsmoutp,0,xr,yr,.true.)
@@ -796,7 +798,8 @@
 ! ***snr***
 !byl      call mpe2d_unify(glob,snr)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
-      call unify_reduceintp(nx,my,my_max,snr,glob)
+      hld1=snr
+      call unify_reduceintp(nx,my,my_max,hld1,glob)
       if(myrank.eq.0) then
       call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
                   ,rsmoutp,0,xr,yr,.true.)
@@ -883,7 +886,8 @@
        enddo
 !byl       call mpe2d_unify(glob,slmsk)
 !byl       if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      call unify_reduceintp(nx,my,my_max,slmsk,glob)
+      hld1=slmsk
+      call unify_reduceintp(nx,my,my_max,hld1,glob)
 !yj2019
        if(myrank.eq.0) then
        call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
@@ -913,7 +917,8 @@
       enddo
 !byl      call mpe2d_unify(glob,slmsk)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
-      call unify_reduceintp(nx,my,my_max,slmsk,glob)
+      hld1=slmsk
+      call unify_reduceintp(nx,my,my_max,hld1,glob)
       if(myrank.eq.0) then
       call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
                   ,rsmoutp,0,xr,yr,.true.)

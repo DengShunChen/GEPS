@@ -21,7 +21,7 @@
            rh10(nxp,my_max),tmax(nxp,my_max),tmin(nxp,my_max),        &
            td(nxp,my_max),rld(nxp,my_max),sld(nxp,my_max)
 !
-      real mfcout(nxp,my_max,num)
+      real(kind=RTYPE) mfcout(nxp,my_max,num)
 !
       character*4 ggdef
       integer*8 idtg

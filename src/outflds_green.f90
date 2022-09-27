@@ -18,7 +18,7 @@
 
       real      plt(nxp,lev,my_max)                                    &
               , u10(nxp,my_max),v10(nxp,my_max),t2(nxp,my_max)         &
-              , ss(nxp,my_max),pk(nxp,my_max),rh0(nxp,my_max)          &
+              , ss(nxp,my_max),pk(nxp,my_max)                          &
               , tht(nxp,my_max),raincu6(nxp,my_max),rainlp6(nxp,my_max)
       real(kind=RTYPE) ut(nxp,lev,my_max),vt(nxp,lev,my_max),          &
                        tt(nxp,lev,my_max),qt(nxp,lev*ncld,my_max),     &
@@ -29,8 +29,8 @@
 !
 ! local work arrays
 !
-      real      wrk(nxp,my_max)
-      real(kind=RTYPE) glob(nx,my),mout(nx,my)
+      real(kind=RTYPE) glob(nx,my),mout(nx,my),wrk(nxp,my_max),      &
+                       rh0(nxp,my_max)
 !
       real      whtlev(100),whtlevq(100),whtlevz(100)
       character*6 labx
@@ -161,35 +161,41 @@
 !output P
       write(wtemp,'(a3,a3)')layer(mm),var(1)
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,pla,glob)
+      wrk=pla
+      call unify_reduceintp(nx,my,my_max,wrk,glob)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 
 !output Q
       write(wtemp,'(a3,a3)')layer(mm),var(2)
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,oqt,glob)
+      wrk=oqt
+      call unify_reduceintp(nx,my,my_max,wrk,glob)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 
       write(wtemp,'(a3,a3)')layer(mm),var(6)
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,oqc,glob)
+      wrk=oqc
+      call unify_reduceintp(nx,my,my_max,wrk,glob)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 
 !output U,V
       write(wtemp,'(a3,a3)')layer(mm),var(3)
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,ou,glob)
+      wrk=ou
+      call unify_reduceintp(nx,my,my_max,wrk,glob)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 
       write(wtemp,'(a3,a3)')layer(mm),var(4)
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,ov,glob)
+      wrk=ov
+      call unify_reduceintp(nx,my,my_max,wrk,glob)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 
 !output T
       write(wtemp,'(a3,a3)')layer(mm),var(5)
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,ot,glob)
+      wrk=ot
+      call unify_reduceintp(nx,my,my_max,wrk,glob)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 !-----------------------------------------------------------------------
       enddo  ! end (mm)
@@ -197,7 +203,8 @@
 !output S00310(net SW flux at the surface)
       write(wtemp,'(a6)')'S00310'
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,ss,glob)
+      wrk=ss
+      call unify_reduceintp(nx,my,my_max,wrk,glob)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 
 !output RH at bottom level
@@ -234,13 +241,15 @@
 !output 6hr prec.
       if (mod(float(itau)+0.00001, 6. ) .lt. 0.01) then
       call syslbl ('b00633',idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,raincu6,glob)
+      wrk=raincu6
+      call unify_reduceintp(nx,my,my_max,wrk,glob)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 
 !
       call syslbl ('b00643',idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,rainlp6,glob)
+      wrk=rainlp6
+      call unify_reduceintp(nx,my,my_max,wrk,glob)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 

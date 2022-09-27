@@ -47,11 +47,10 @@
 ! rad-cloud
               , ctot(nxp,my_max),chig(nxp,my_max),cmid(nxp,my_max),clow(nxp,my_max) &
 ! pbl
-              , hpbl(nxp,my_max)                                                    &
+              , hpbl(nxp,my_max) 
 ! river
 !byl              , slptyp(nxp,my_max),v850(nx,my),v700(nx,my),h850(nx,my),h500(nx,my)
 !byl              , slptyp(nx,my),v850(nx,my),v700(nx,my),h850(nx,my),h500(nx,my)
-              , typtrk(nxp,my_max,5)
       real(kind=RTYPE) rdiv(nxp,lev,my_max),rvor(nxp,lev,my_max)    &
                      , ut(nxp,lev,my_max),vt(nxp,lev,my_max)        &
                      , tt(nxp,lev,my_max),qt(nxp,lev*ncld,my_max)   &
@@ -60,7 +59,7 @@
                      , pt(nxp,my_max),sd(nxp,lev,my_max)            &
                      , sigma(lev+1,2)                               &
                      , pk(nxp,lev,my_max),pk2(nxp,lev,my_max)       &
-                     , cosl(my)
+                     , cosl(my),typtrk(nxp,my_max,5)
 !
       character ifilout*80, ggdef*4
       integer*8 idtg
@@ -78,15 +77,14 @@
       real      wrk1(nxp,lev),pout(lpout),pkout(lpout),phistd(lpout) &
 !              , bt1(nx,my),bt2(nx,my)                               &
               , bt1(nxp,my_max),bt2(nxp,my_max)                      &
-              , hld1(nxp,my_max),hld2(nxp,my_max)                    &
-!             , pres3d(nx,my,lpout)
-              , pres3d(nxp,my_max,lpout)
+              , hld1(nxp,my_max),hld2(nxp,my_max) 
 !
-      real(kind=RTYPE) sdhat(nxp,lev,my_max)
+      real(kind=RTYPE) sdhat(nxp,lev,my_max),pres3d(nxp,my_max,lpout)
 !
-      real      wk_xy(nxp,my_max,12)   ! the last dim is changable
+      real(kind=RTYPE) wk_xy(nxp,my_max,12)   ! the last dim is changable
+      real      tmpin(nxp),tmpout(nxp)
 !
-      real      soil_xy(nxp,my_max,12)   ! the last dim is changable
+      real(kind=RTYPE) soil_xy(nxp,my_max,12)   ! the last dim is changable
 !
       real      whtlev(100),whtlevq(100),whtlevz(100)
       character*16 taudir(numout),outdir(numout)
@@ -127,6 +125,8 @@
       endif
 !  
       wk_xy = 0.
+      tmpin = 0.
+      tmpout= 0.
 
       pllp=0.
       bt1=0.
@@ -659,7 +659,9 @@
             enddo
           enddo
         enddo
-        call qsatq(nxj,wk_xy(1,jj,1),plt(1,lev,jj),wk_xy(1,jj,5))
+        tmpin(:)=wk_xy(:,jj,1)
+        call qsatq(nxj,tmpin,plt(1,lev,jj),tmpout)
+        wk_xy(:,jj,5)=tmpout(:)
         do i = 1,nxj
           wk_xy(i,jj,5) = 100.*(qt(i,lev,jj)/wk_xy(i,jj,5))
           wk_xy(i,jj,5) = min( 100., max( 1., wk_xy(i,jj,5) ) )

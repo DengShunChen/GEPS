@@ -58,7 +58,7 @@
          hours,frad,evaprh,qgini,                          &
          tice,hice,cutfreq,taup,hfilt,                     &
          taureg,cgw,domfc,otgreen,cgwd,cmbk,spl1,spl2
-    real(kind=RTYPE) :: ptmean,ptmeans
+    real(kind=RTYPE) :: ptmean,ptmeans,qmin
     !sit
     real :: fsit         !fsit>0., turn on sit_vdiff when mod(tau/fsit)<0.001
                          !default fsit<=0., turn on sit_vdiff every tau

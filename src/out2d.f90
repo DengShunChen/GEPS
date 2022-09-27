@@ -35,11 +35,11 @@
 !
 !  local array
 !
-      real      globp(nxp,my_max)
+      real(kind=RTYPE) globp(nxp,my_max)
 !
-      real      wk_xy(nxp,my_max,12)     
+      real(kind=RTYPE) wk_xy(nxp,my_max,12),soil_xy(nxp,my_max,12)
 !soil
-      real      soil_xy(nxp,my_max,12),canopy(nxp,my_max)
+      real      canopy(nxp,my_max)
 !
       character*80 ifilout
       character*26 ihdg,ihdg2
@@ -89,7 +89,8 @@
       do 30 kk=1,num
 !
       if(label(kk).eq.'s00430') then
-      call unify_reduceintp(nx,my,my_max,qflux,glob)
+      globp=qflux
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s00430',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -97,7 +98,8 @@
       endif
 !
       if(label(kk).eq.'s00420') then
-      call unify_reduceintp(nx,my,my_max,hflux,glob)
+      globp=hflux
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s00420',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -105,7 +107,8 @@
       endif
 !
       if(label(kk).eq.'s00100') then
-      call unify_reduceintp(nx,my,my_max,tg,glob)
+      globp=tg
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s00100',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -113,7 +116,8 @@
       endif
 !
       if(label(kk).eq.'s00030') then
-      call unify_reduceintp(nx,my,my_max,alb,glob)
+      globp=alb
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s00030',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -135,7 +139,8 @@
       endif
 !
       if(label(kk).eq.'s005a1') then
-      call unify_reduceintp(nx,my,my_max,gwet,glob)
+      globp=gwet
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s005a1',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -143,7 +148,8 @@
       endif
 !
       if(label(kk).eq.'b00650') then
-      call unify_reduceintp(nx,my,my_max,snr,glob)
+      globp=snr
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('b00650',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -151,7 +157,8 @@
       endif
 !
       if(label(kk).eq.'s00040') then
-      call unify_reduceintp(nx,my,my_max,z0,glob)
+      globp=z0
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s00040',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -159,16 +166,15 @@
       endif
 !
       if(label(kk).eq.'b00620')then
-!
-
-
-      call unify_reduceintp(nx,my,my_max,raincu,glob)
+      globp=raincu
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('b00630',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
  
 
-      call unify_reduceintp(nx,my,my_max,rainlp,glob)
+      globp=rainlp
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('b00640',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -184,7 +190,8 @@
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 !
-      call unify_reduceintp(nx,my,my_max,raintot,glob)
+      globp=rainlp
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('b0062t',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -192,7 +199,8 @@
       endif
 !
       if(label(kk).eq.'s00310') then
-      call unify_reduceintp(nx,my,my_max,ss,glob)
+      globp=ss
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s00310',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -200,7 +208,8 @@
       endif
 !
       if(label(kk).eq.'s00320') then
-      call unify_reduceintp(nx,my,my_max,rs,glob)
+      globp=rs
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s00320',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -223,7 +232,8 @@
       endif
 !
       if(label(kk).eq.'s003x0') then
-      call unify_reduceintp(nx,my,my_max,rld,glob)
+      globp=rld
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s003x0',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -231,7 +241,8 @@
       endif
 !
       if(label(kk).eq.'s003u0') then
-      call unify_reduceintp(nx,my,my_max,sld,glob)
+      globp=sld
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s003u0',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -239,7 +250,8 @@
       endif
 !
       if(label(kk).eq.'x00330') then
-      call unify_reduceintp(nx,my,my_max,plcl,glob)
+      globp=plcl
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('x00330',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -247,7 +259,8 @@
       endif
 !
       if(label(kk).eq.'x00340') then
-      call unify_reduceintp(nx,my,my_max,cumtop,glob)
+      globp=cumtop
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('x00340',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -255,7 +268,8 @@
       endif
 !
       if(label(kk).eq.'s00440') then
-      call unify_reduceintp(nx,my,my_max,gfx,glob)
+      globp=gfx
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s00440',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -263,7 +277,8 @@
       endif
 !
       if(label(kk).eq.'s00450') then
-      call unify_reduceintp(nx,my,my_max,ugws,glob)
+      globp=ugws
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s00450',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -271,7 +286,8 @@
       endif
 !
       if(label(kk).eq.'s00460') then
-      call unify_reduceintp(nx,my,my_max,vgws,glob)
+      globp=vgws
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s00460',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -338,7 +354,8 @@
 !      endif
 !
       if(label(kk).eq.'b02100') then
-      call unify_reduceintp(nx,my,my_max,t2,glob)
+      globp=t2
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('b02100',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -346,7 +363,8 @@
       endif
 !
       if(label(kk).eq.'b02500') then
-      call unify_reduceintp(nx,my,my_max,q2,glob)
+      globp=q2
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('b02500',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -354,7 +372,8 @@
       endif
 !
       if(label(kk).eq.'b02510') then
-      call unify_reduceintp(nx,my,my_max,rh2,glob)
+      globp=rh2
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('b02510',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -362,7 +381,8 @@
       endif
 !
       if(label(kk).eq.'b10200') then
-      call unify_reduceintp(nx,my,my_max,u10,glob)
+      globp=u10
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('b10200',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -370,7 +390,8 @@
       endif
 !
       if(label(kk).eq.'b10210') then
-      call unify_reduceintp(nx,my,my_max,v10,glob)
+      globp=v10
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('b10210',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -378,7 +399,8 @@
       endif
 !
       if(label(kk).eq.'b10510') then
-      call unify_reduceintp(nx,my,my_max,rh10,glob)
+      globp=rh10
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('b10510',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -386,7 +408,8 @@
       endif
 !
       if(label(kk).eq.'s005c0') then
-      call unify_reduceintp(nx,my,my_max,canopy,glob)
+      globp=canopy
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('s005c0',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)

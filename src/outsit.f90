@@ -19,7 +19,7 @@
       integer lenc,n,k,jj,j,nxj,ii,istat
       character*26 ihdg,ihdg2
       character*6 lrec
-      real(kind=RTYPE) wk1(nx,my),pout(nx,my)
+      real(kind=RTYPE) wk1(nx,my),pout(nx,my),globp(nxp,my_max)
       integer ncnt
  
 
@@ -30,7 +30,8 @@
         ncnt=ncnt+1
         write( lrec, '(i3.3,a3)' ) k,'SWT'         !!sit wt
         call syslbl (lrec,idtg,itau,ggdef,ihdg)
-        call unify_reduceintp(nx,my,my_max,sitwt(1,1,k),wk1)
+        globp=sitwt(:,:,k)
+        call unify_reduceintp(nx,my,my_max,globp,wk1)
         if (myrank .eq. k) then
           pout=wk1
           ihdg2=ihdg
@@ -43,7 +44,8 @@
         ncnt=ncnt+1
         write( lrec, '(i3.3,a3)' ) k,'OWT'        !!sit obswt
         call syslbl (lrec,idtg,itau,ggdef,ihdg)
-        call unify_reduceintp(nx,my,my_max,obswt(1,1,k),wk1) 
+        globp=obswt(:,:,k)
+        call unify_reduceintp(nx,my,my_max,globp,wk1)
         if (myrank .eq. k) then
           pout=wk1
           ihdg2=ihdg
@@ -187,8 +189,7 @@
       integer lenc,k,jj,j,nxj,ii,istat
       character*26 ihdg,ihdg2
       character*6 lrec
-      real glob2d(nxp,my_max) 
-      real(kind=RTYPE) wk1(nx,my),pout(nx,my)
+      real(kind=RTYPE) wk1(nx,my),pout(nx,my),glob2d(nxp,my_max)
       integer ncnt
 
       lenc= nx*my
@@ -241,7 +242,7 @@
       integer lenc,k,jj,j,nxj,ii,istat
       character*26 ihdg,ihdg2
       character*6 lrec
-      real tm1(nxp,my_max),tm2(nxp,my_max),tm3(nxp,my_max)
+      real(kind=RTYPE) tm1(nxp,my_max),tm2(nxp,my_max),tm3(nxp,my_max)
       real(kind=RTYPE) wk1(nx,my),pout(nx,my)
       integer ncnt
 
@@ -314,8 +315,7 @@
       integer lenc,i,j,k,ii,jj,nxj,istat
       character*26 ihdg,ihdg2
       character*6 lrec
-      real glob2d(nxp,my_max)
-      real(kind=RTYPE) wk1(nx,my),pout(nx,my)
+      real(kind=RTYPE) wk1(nx,my),pout(nx,my),glob2d(nxp,my_max)
       integer ncnt
 
       lenc= nx*my
@@ -363,6 +363,7 @@
                   ,tmp11,tmp12,tmp13,tmp14
       real(kind=RTYPE), dimension(:,:,:), allocatable::    &
                    tm12, tm13, tm14
+      real(kind=RTYPE) globp(nxp,my_max)
 
 
       integer itau,lphy
@@ -380,28 +381,46 @@
 
       do k = 0, 3  
         if(k .eq. 0) then
-          call unify_reduceintp(nx,my,my_max,sitcc,tmp1)
-          call unify_reduceintp(nx,my,my_max,sithc,tmp2)
-          call unify_reduceintp(nx,my,my_max,engwac,tmp3)
-          call unify_reduceintp(nx,my,my_max,sc,tmp4)
-          call unify_reduceintp(nx,my,my_max,saltwac,tmp5)
-          call unify_reduceintp(nx,my,my_max,wtfns,tmp6)
-          call unify_reduceintp(nx,my,my_max,wsfns,tmp7)
-          call unify_reduceintp(nx,my,my_max,grndcapc,tmp8)
-          call unify_reduceintp(nx,my,my_max,grndhflx,tmp9)
-          call unify_reduceintp(nx,my,my_max,grndflux,tmp10)
-          call unify_reduceintp(nx,my,my_max,obswtb,tmp11)
-          call unify_reduceintp(nx,my,my_max,zsi,tmp12)
-          call unify_reduceintp(nx,my,my_max,silw,tmp13)
-          call unify_reduceintp(nx,my,my_max,tsnic,tmp14)
+          globp=sitcc
+          call unify_reduceintp(nx,my,my_max,globp,tmp1)
+          globp=sithc
+          call unify_reduceintp(nx,my,my_max,globp,tmp2)
+          globp=engwac
+          call unify_reduceintp(nx,my,my_max,globp,tmp3)
+          globp=sc
+          call unify_reduceintp(nx,my,my_max,globp,tmp4)
+          globp=saltwac
+          call unify_reduceintp(nx,my,my_max,globp,tmp5)
+          globp=wtfns
+          call unify_reduceintp(nx,my,my_max,globp,tmp6)
+          globp=wsfns
+          call unify_reduceintp(nx,my,my_max,globp,tmp7)
+          globp=grndcapc
+          call unify_reduceintp(nx,my,my_max,globp,tmp8)
+          globp=grndhflx
+          call unify_reduceintp(nx,my,my_max,globp,tmp9)
+          globp=grndflux
+          call unify_reduceintp(nx,my,my_max,globp,tmp10)
+          globp=obswtb
+          call unify_reduceintp(nx,my,my_max,globp,tmp11)
+          globp=zsi(:,:,k)
+          call unify_reduceintp(nx,my,my_max,globp,tmp12)
+          globp=silw(:,:,k)
+          call unify_reduceintp(nx,my,my_max,globp,tmp13)
+          globp=tsnic(:,:,k)
+          call unify_reduceintp(nx,my,my_max,globp,tmp14)
         endif
         if(k .eq. 1) then
-          call unify_reduceintp(nx,my,my_max,zsi,tmp12)
-          call unify_reduceintp(nx,my,my_max,silw,tmp13)
-          call unify_reduceintp(nx,my,my_max,tsnic,tmp14)
+          globp=zsi(:,:,k)
+          call unify_reduceintp(nx,my,my_max,globp,tmp12)
+          globp=silw(:,:,k)
+          call unify_reduceintp(nx,my,my_max,globp,tmp13)
+          globp=tsnic(:,:,k)
+          call unify_reduceintp(nx,my,my_max,globp,tmp14)
         endif
         if(k .ge. 2) then
-          call unify_reduceintp(nx,my,my_max,tsnic,tmp14)
+          globp=tsnic(:,:,k)
+          call unify_reduceintp(nx,my,my_max,globp,tmp14)
         endif
 
         do j=1,my
@@ -455,6 +474,7 @@
 
       real(kind=RTYPE), dimension(:,:,:), allocatable::   &
                 tm11,tm12,tm13,tm14,tm15,tm16
+      real(kind=RTYPE) globp(nxp,my_max)
    
       integer itau,lphy
       character nfs*10, rfile*80
@@ -469,12 +489,18 @@
   
   
       do k = 0, lkvl+1
-        call unify_reduceintp(nx,my,my_max,sitwt(1,1,k),tmp11)
-        call unify_reduceintp(nx,my,my_max,sitwu(1,1,k),tmp12)
-        call unify_reduceintp(nx,my,my_max,sitwv(1,1,k),tmp13)
-        call unify_reduceintp(nx,my,my_max,sitww(1,1,k),tmp14)
-        call unify_reduceintp(nx,my,my_max,sitws(1,1,k),tmp15)
-        call unify_reduceintp(nx,my,my_max,sitwtke(1,1,k),tmp16)
+        globp=sitwt(:,:,k)
+        call unify_reduceintp(nx,my,my_max,globp,tmp11)
+        globp=sitwu(:,:,k)
+        call unify_reduceintp(nx,my,my_max,globp,tmp12)
+        globp=sitwv(:,:,k)
+        call unify_reduceintp(nx,my,my_max,globp,tmp13)
+        globp=sitww(:,:,k)
+        call unify_reduceintp(nx,my,my_max,globp,tmp14)
+        globp=sitws(:,:,k)
+        call unify_reduceintp(nx,my,my_max,globp,tmp15)
+        globp=sitwtke(:,:,k)
+        call unify_reduceintp(nx,my,my_max,globp,tmp16)
 
         do j=1,my
           do i=1,nx
@@ -520,6 +546,7 @@
   
       real(kind=RTYPE), dimension(:,:), allocatable:: tmp11,tmp12
       real(kind=RTYPE), dimension(:,:,:), allocatable:: tm11,tm12
+      real(kind=RTYPE) globp(nxp,my_max)
 
       integer itau,lphy
       character nfs*10, rfile*80
@@ -530,8 +557,10 @@
   
   
       do k = 0, lkvl+1
-        call unify_reduceintp(nx,my,my_max,wtfn(1,1,k),tmp11)
-        call unify_reduceintp(nx,my,my_max,wsfn(1,1,k),tmp12)
+        globp=wtfn(:,:,k)
+        call unify_reduceintp(nx,my,my_max,globp,tmp11)
+        globp=wsfn(:,:,k)
+        call unify_reduceintp(nx,my,my_max,globp,tmp12)
 
         do j=1,my
           do i=1,nx
@@ -944,15 +973,15 @@
 
       use mpe
       use index
-      use const,             only: kflag
+      use const,             only: kflag,RTYPE
       use mod_sitgrid,       only: tseadiffSIT24
 
       implicit none
 
       integer   nx,my,my_max,itau
       real      dt24
-      real wrk(nxp,my_max),glob(nx,my)
-      real wrk2(nxp,my_max),ratioSIT(nxp,my_max)
+      real(kind=RTYPE) wrk(nxp,my_max),glob(nx,my),wrk2(nxp,my_max)
+      real      ratioSIT(nxp,my_max)
       integer*8 idtg
       character*80 ifilout
       character*26 ihdg

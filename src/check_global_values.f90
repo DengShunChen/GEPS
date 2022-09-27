@@ -10,7 +10,7 @@
     real(kind=RTYPE) :: glob(nx,my)
     real :: aves,vars,stds
 
-    real, intent(in) :: part(nxp,my_max)
+    real(kind=RTYPE), intent(in) :: part(nxp,my_max)
     integer, intent(in) :: k
     character(len=*), intent(in) :: vname
     character(len=120) :: fml

@@ -819,8 +819,7 @@
 
       integer   nx,my,my_max,itau
       real      dt24
-      real wrk(nxp,my_max)
-      real(kind=RTYPE) glob(nx,my)
+      real(kind=RTYPE) glob(nx,my),wrk(nxp,my_max)
       integer*8 idtg
       character*80 ifilout
       character*26 ihdg

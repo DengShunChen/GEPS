@@ -921,8 +921,7 @@ contains
     integer      :: i, j, k, jj, nxj, ihead, n
     integer      :: nxmy4
     real         :: tau
-    real         :: temp(nxp,my_max)
-    real(kind=4) :: glob(nx,my)
+    real(kind=RTYPE) :: glob(nx,my),temp(nxp,my_max)
 
     ihead=15
     nxmy4=nx*my*4
@@ -931,7 +930,8 @@ contains
     endif
 
     do n=1,nsppt
-      call unify_reduceintp(nx,my,my_max,rpattern_sppt(n)%n2d,glob)   
+      temp=rpattern_sppt(n)%n2d
+      call unify_reduceintp(nx,my,my_max,temp,glob)   
       if ( myrank .eq. 0 ) then
         write(ihead,rec=recn) glob
         recn=recn+1

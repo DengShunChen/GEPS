@@ -22,7 +22,7 @@
 !
 ! local work arrays
 !
-      real(kind=RTYPE) glob(nx,my)
+      real(kind=RTYPE) glob(nx,my),globp(nxp,my_max)
 !      integer   int_glob(nx,my)
       
 !
@@ -38,43 +38,50 @@
 !output q2
       write(wtemp,'(a6)')'B02500'
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,q2,glob)
+      globp=q2
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
 
 !output fm
       write(wtemp,'(a6)'),"S004F1"
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,fm,glob)
+      globp=fm
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
 
 !output fm10
       write(wtemp,'(a6)'),"S004F2"
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,fm10,glob)
+      globp=fm10
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
 
 !output fh
       write(wtemp,'(a6)'),"S004F3"
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,fh,glob)
+      globp=fh
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
 
 !output fh2
       write(wtemp,'(a6)'),"S004F4"
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,fh2,glob)
+      globp=fh2
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
 
 !output ustar
       write(wtemp,'(a6)'),"S004F5"
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,ustar,glob)
+      globp=ustar
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
 
 !output srflag
       write(wtemp,'(a6)'),"S001A0"
       call syslbl(wtemp,idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,srflag,glob)
+      globp=srflag
+      call unify_reduceintp(nx,my,my_max,globp,glob)
       call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
 
 !=======================================================================

@@ -14,8 +14,7 @@
                 asol24(nxp,my_max),olr24(nxp,my_max),rain24(nxp,my_max)              &
                ,flash24(nxp,my_max)
 
-      real      wrk(nxp,my_max)
-      real(kind=RTYPE) glob(nx,my)
+      real(kind=RTYPE) glob(nx,my),wrk(nxp,my_max)
 !
       integer*8 idtg
       character*80 ifilout

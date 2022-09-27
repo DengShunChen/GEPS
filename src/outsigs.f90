@@ -19,12 +19,13 @@
                 qt(nxp,lev*ncld,my_max),                        &
                 smc(nxp,km,my_max),stc(nxp,km,my_max),          &
                 canopy(nxp,my_max),slc(nxp,km,my_max),          &
-                zice(nxp,my_max),wrk1(nxp,my_max)
+                zice(nxp,my_max)
       real(kind=RTYPE) ut(nxp,lev,my_max),vt(nxp,lev,my_max),   &
                        tt(nxp,lev,my_max),phi(nxp,lev,my_max),  &
                        pt(nxp,my_max),sgeo(nxp,my_max),         &
                        pk(nxp,lev,my_max),pk2(nxp,lev,my_max),  &
-                       mout(nx,my),work(nx,my),cosl(my)
+                       mout(nx,my),work(nx,my),cosl(my),        &
+                       wrk1(nxp,my_max)
       integer*8 idtg
       character*80 ifilout
       character typ*6,ihdg*26,ihdg2*26,mlayer*1
@@ -359,32 +360,32 @@
    90 continue
 !--------------
 !
-!      work = snr
+      wrk1 = snr
       call syslbl ('b00650',idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,snr,work)
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
       call split(nx,my,lev,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
 
-!      work = gwr
+      wrk1 = gwr
       call syslbl ('s005a1',idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,gwr,work)
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
       call split(nx,my,lev,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
 
 
-!      work = tg
+      wrk1 = tg
       call syslbl ('s00100',idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,tg,work)
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
       call split(nx,my,lev,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
 !
 ! output canopy
 !
-!      work = canopy
+      wrk1 = canopy
       call syslbl ('s005c0',idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,canopy,work)
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
       call split(nx,my,lev,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
 !
-!      work = zice
+      wrk1 = zice
       call syslbl ('w00092',idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,zice,work)
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
       call split(nx,my,lev,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
 !
 ! s01100 & s015b0
