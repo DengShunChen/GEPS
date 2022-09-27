@@ -30,12 +30,12 @@
       use const, only :RTYPE,MPI_RTYPE
 !
       implicit  none
-      real      a(len*nsize)
+      real(kind=RTYPE) a(len*nsize)
       real(kind=RTYPE) b(len)
       integer   len,nsize,iroot,ierr
 !
       iroot=0
-      call MPI_SCATTER(A,LEN,       MPI_DOUBLE_PRECISION,     &
+      call MPI_SCATTER(A,LEN,       MPI_RTYPE,                &
                        B,LEN,       MPI_RTYPE,                &
                        IROOT,       col_comm,IERR )
 !

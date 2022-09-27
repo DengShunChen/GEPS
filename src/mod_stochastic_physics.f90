@@ -9,7 +9,7 @@ module mod_stochastic_physics
   private 
 
   type random_pattern
-    real, allocatable :: n2d(:,:)
+    real(kind=RTYPE), allocatable :: n2d(:,:)
     real, allocatable :: spec(:,:)
     real, allocatable :: varspec(:)
     real :: stdev ! stochastic physics tendency amplitude
@@ -524,11 +524,10 @@ contains
     use const, only: RTYPE
     implicit none
     type(random_pattern), intent(inout) :: rpattern
-    real, intent(out) :: sppt2d(nxp,my_max)
+    real(kind=RTYPE), intent(out) :: sppt2d(nxp,my_max)
     integer :: ml, ns, ms
-    real, allocatable :: noise(:,:),bufr2d(:,:,:)
-    real(kind=RTYPE) :: sppt2d_sp(nxp,my_max)
-    real(kind=RTYPE), allocatable :: specp(:,:,:)
+    real, allocatable :: noise(:,:)
+    real(kind=RTYPE), allocatable :: specp(:,:,:),bufr2d(:,:,:)
 
     allocate(bufr2d(jtrun,jtmax*nsizey,2)) 
     allocate(specp(jtrun,jtmax,2)) 
@@ -556,8 +555,7 @@ contains
     call mpe_scatter_sppt(bufr2d,specp,2*jtrun*jtmax,nsizey)
 
     ! transform spectral to physical space 
-    call transr1(jtrun,jtmax,nx,my,my_max,poly,specp,sppt2d_sp,nsizey)
-    sppt2d=sppt2d_sp
+    call transr1(jtrun,jtmax,nx,my,my_max,poly,specp,sppt2d,nsizey)
 
     deallocate(bufr2d)
     deallocate(specp)
@@ -1064,7 +1062,7 @@ contains
       implicit none
       integer lev,jtr,jcap1,jtm,ns,ml
       real speci(jcap1*(jcap1+1)/2,2)
-      real speco(jtr,jtm*ns*2)
+      real(kind=RTYPE) speco(jtr,jtm*ns*2)
       integer i,j,k,jj,jp,jr,j1,j2
       integer mlsort(jcap1,jcap1)
 !
