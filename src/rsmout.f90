@@ -1,10 +1,11 @@
-#ifdef RSM
     subroutine rsmout(idtg,itau,nx,my,my_max,lev,ncld            &
              , ptop,cp,rgas,grav,sgeo,pdiff                        &
              , t1000,pt,plt,pk,pk2,phi,ut,vt                       &
              , tt,qt,tg,snr,cosl                                   &
              , km,smc,stc                                          &
              , ice,land,ocean)
+
+#ifdef RSM
 !
 !  output driver subroutine to process sigma level data to standard
 !  pressure surfaces and standard grids
@@ -951,12 +952,5 @@
       deallocate (rsmoutp, stat=ierr)                                
       if (ierr/=0) stop "rsmout: deallocate fail rsmoutp"
 !      
-<<<<<<< HEAD
+#endif
     end subroutine rsmout
-#endif
-=======
-#endif
-      return
-      end
-
->>>>>>> development
