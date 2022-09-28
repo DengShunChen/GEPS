@@ -375,108 +375,31 @@
 
 
       do k = 0, 3  
-        do jj =1, jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
-          do ii = 1, nxj
-            if(k .eq. 0) then
-              tmp1(ii,j)  = sitcc(ii,jj)
-              tmp2(ii,j)  = sithc(ii,jj)
-              tmp3(ii,j)  = engwac(ii,jj)
-              tmp4(ii,j)  = sc(ii,jj)
-              tmp5(ii,j)  = saltwac(ii,jj)
-              tmp6(ii,j)  = wtfns(ii,jj)
-              tmp7(ii,j)  = wsfns(ii,jj)
-              tmp8(ii,j)  = grndcapc(ii,jj)
-              tmp9(ii,j)  = grndhflx(ii,jj)
-              tmp10(ii,j) = grndflux(ii,jj)
-              tmp11(ii,j) = obswtb(ii,jj)
-              tmp12(ii,j) = zsi(ii,jj,k)
-              tmp13(ii,j) = silw(ii,jj,k)
-              tmp14(ii,j) = tsnic(ii,jj,k)
-            endif
-            if(k .eq. 1) then
-              tmp12(ii,j) = zsi(ii,jj,k)
-              tmp13(ii,j) = silw(ii,jj,k)
-              tmp14(ii,j) = tsnic(ii,jj,k)
-            endif
-            if(k .ge. 2) then
-              tmp14(ii,j) = tsnic(ii,jj,k)
-            endif
-
-          enddo
-        enddo
-
         if(k .eq. 0) then
-          call mpe_unify(tmp1,nx,my,2,mpe_double)  
-          call mpe_unify(tmp2,nx,my,2,mpe_double)  
-          call mpe_unify(tmp3,nx,my,2,mpe_double)  
-          call mpe_unify(tmp4,nx,my,2,mpe_double)  
-          call mpe_unify(tmp5,nx,my,2,mpe_double)  
-          call mpe_unify(tmp6,nx,my,2,mpe_double)  
-          call mpe_unify(tmp7,nx,my,2,mpe_double)  
-          call mpe_unify(tmp8,nx,my,2,mpe_double)  
-          call mpe_unify(tmp9,nx,my,2,mpe_double)  
-          call mpe_unify(tmp10,nx,my,2,mpe_double)  
-          call mpe_unify(tmp11,nx,my,2,mpe_double)  
-          call mpe_unify(tmp12,nx,my,2,mpe_double)  
-          call mpe_unify(tmp13,nx,my,2,mpe_double)
-          call mpe_unify(tmp14,nx,my,2,mpe_double)
+          call unify_reduceintp(nx,my,my_max,sitcc,tmp1)
+          call unify_reduceintp(nx,my,my_max,sithc,tmp2)
+          call unify_reduceintp(nx,my,my_max,engwac,tmp3)
+          call unify_reduceintp(nx,my,my_max,sc,tmp4)
+          call unify_reduceintp(nx,my,my_max,saltwac,tmp5)
+          call unify_reduceintp(nx,my,my_max,wtfns,tmp6)
+          call unify_reduceintp(nx,my,my_max,wsfns,tmp7)
+          call unify_reduceintp(nx,my,my_max,grndcapc,tmp8)
+          call unify_reduceintp(nx,my,my_max,grndhflx,tmp9)
+          call unify_reduceintp(nx,my,my_max,grndflux,tmp10)
+          call unify_reduceintp(nx,my,my_max,obswtb,tmp11)
+          call unify_reduceintp(nx,my,my_max,zsi,tmp12)
+          call unify_reduceintp(nx,my,my_max,silw,tmp13)
+          call unify_reduceintp(nx,my,my_max,tsnic,tmp14)
         endif
         if(k .eq. 1) then
-          call mpe_unify(tmp12,nx,my,2,mpe_double)  
-          call mpe_unify(tmp13,nx,my,2,mpe_double)
-          call mpe_unify(tmp14,nx,my,2,mpe_double)
+          call unify_reduceintp(nx,my,my_max,zsi,tmp12)
+          call unify_reduceintp(nx,my,my_max,silw,tmp13)
+          call unify_reduceintp(nx,my,my_max,tsnic,tmp14)
         endif
         if(k .ge. 2) then
-          call mpe_unify(tmp14,nx,my,2,mpe_double)
+          call unify_reduceintp(nx,my,my_max,tsnic,tmp14)
         endif
 
-
-        if( lreduce.eq.1 ) then
-          do jj = 1, jlistnum
-            j=jlist1(jj)
-            if(k .eq. 0) then
-              call reduceintp (tmp1(1,j),nxdef(j),nx,1)
-              call reduceintp (tmp2(1,j),nxdef(j),nx,1)
-              call reduceintp (tmp3(1,j),nxdef(j),nx,1)
-              call reduceintp (tmp4(1,j),nxdef(j),nx,1)
-              call reduceintp (tmp5(1,j),nxdef(j),nx,1)
-              call reduceintp (tmp6(1,j),nxdef(j),nx,1)
-              call reduceintp (tmp7(1,j),nxdef(j),nx,1)
-              call reduceintp (tmp8(1,j),nxdef(j),nx,1)
-              call reduceintp (tmp9(1,j),nxdef(j),nx,1)
-              call reduceintp (tmp10(1,j),nxdef(j),nx,1)
-              call reduceintp (tmp11(1,j),nxdef(j),nx,1)
-              call reduceintp (tmp12(1,j),nxdef(j),nx,1)
-              call reduceintp (tmp13(1,j),nxdef(j),nx,1)
-              call reduceintp (tmp14(1,j),nxdef(j),nx,1)
-            endif
-            if(k .eq. 1) then
-              call reduceintp (tmp12(1,j),nxdef(j),nx,1)
-              call reduceintp (tmp13(1,j),nxdef(j),nx,1)
-              call reduceintp (tmp14(1,j),nxdef(j),nx,1)
-            endif
-            if(k .eq. 2) then
-              call reduceintp (tmp14(1,j),nxdef(j),nx,1)
-            endif
-          enddo
-
-          call mpe_unify(tmp1,nx,my,5,mpe_double)
-          call mpe_unify(tmp2,nx,my,5,mpe_double)
-          call mpe_unify(tmp3,nx,my,5,mpe_double)
-          call mpe_unify(tmp4,nx,my,5,mpe_double)
-          call mpe_unify(tmp5,nx,my,5,mpe_double)
-          call mpe_unify(tmp6,nx,my,5,mpe_double)
-          call mpe_unify(tmp7,nx,my,5,mpe_double)
-          call mpe_unify(tmp8,nx,my,5,mpe_double)
-          call mpe_unify(tmp9,nx,my,5,mpe_double)
-          call mpe_unify(tmp10,nx,my,5,mpe_double)
-          call mpe_unify(tmp11,nx,my,5,mpe_double)
-          call mpe_unify(tmp12,nx,my,5,mpe_double)
-          call mpe_unify(tmp13,nx,my,5,mpe_double)
-        endif
-        
         do j=1,my
           do i=1,nx
             if(k .le. 1) then
@@ -542,45 +465,12 @@
   
   
       do k = 0, lkvl+1
-        do jj =1, jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
-          do ii = 1, nxj
-            tmp11(ii,j) = sitwt(ii,jj,k)
-            tmp12(ii,j) = sitwu(ii,jj,k)
-            tmp13(ii,j) = sitwv(ii,jj,k)
-            tmp14(ii,j) = sitww(ii,jj,k)
-            tmp15(ii,j) = sitws(ii,jj,k)
-            tmp16(ii,j) = sitwtke(ii,jj,k)
-          enddo
-        enddo
-
-        call mpe_unify(tmp11,nx,my,2,mpe_double)  
-        call mpe_unify(tmp12,nx,my,2,mpe_double)  
-        call mpe_unify(tmp13,nx,my,2,mpe_double)  
-        call mpe_unify(tmp14,nx,my,2,mpe_double)
-        call mpe_unify(tmp15,nx,my,2,mpe_double)  
-        call mpe_unify(tmp16,nx,my,2,mpe_double)  
-
-        if( lreduce.eq.1 ) then
-          do jj = 1, jlistnum
-            j=jlist1(jj)
-            call reduceintp (tmp11(1,j),nxdef(j),nx,1)
-            call reduceintp (tmp12(1,j),nxdef(j),nx,1)
-            call reduceintp (tmp13(1,j),nxdef(j),nx,1)
-            call reduceintp (tmp14(1,j),nxdef(j),nx,1)
-            call reduceintp (tmp15(1,j),nxdef(j),nx,1)
-            call reduceintp (tmp16(1,j),nxdef(j),nx,1)
-          enddo
-          call mpe_unify(tmp11,nx,my,5,mpe_double)
-          call mpe_unify(tmp12,nx,my,5,mpe_double)
-          call mpe_unify(tmp13,nx,my,5,mpe_double)
-          call mpe_unify(tmp14,nx,my,5,mpe_double)
-          call mpe_unify(tmp15,nx,my,5,mpe_double)
-          call mpe_unify(tmp16,nx,my,5,mpe_double)
-        endif
-
-
+        call unify_reduceintp(nx,my,my_max,sitwt(1,1,k),tmp11)
+        call unify_reduceintp(nx,my,my_max,sitwu(1,1,k),tmp12)
+        call unify_reduceintp(nx,my,my_max,sitwv(1,1,k),tmp13)
+        call unify_reduceintp(nx,my,my_max,sitww(1,1,k),tmp14)
+        call unify_reduceintp(nx,my,my_max,sitws(1,1,k),tmp15)
+        call unify_reduceintp(nx,my,my_max,sitwtke(1,1,k),tmp16)
 
         do j=1,my
           do i=1,nx
@@ -592,7 +482,6 @@
             tm16(i,k,j)=tmp16(i,j)
           enddo
         enddo
-
       enddo
 
 
@@ -637,27 +526,8 @@
   
   
       do k = 0, lkvl+1
-        do jj =1, jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
-          do ii = 1, nxj
-            tmp11(ii,j) = wtfn(ii,jj,k)
-            tmp12(ii,j) = wsfn(ii,jj,k)
-          enddo
-        enddo
-
-        call mpe_unify(tmp11,nx,my,2,mpe_double)  
-        call mpe_unify(tmp12,nx,my,2,mpe_double)  
-
-        if( lreduce.eq.1 ) then
-          do jj = 1, jlistnum
-            j=jlist1(jj)
-            call reduceintp (tmp11(1,j),nxdef(j),nx,1)
-            call reduceintp (tmp12(1,j),nxdef(j),nx,1)
-          enddo
-          call mpe_unify(tmp11,nx,my,5,mpe_double)
-          call mpe_unify(tmp12,nx,my,5,mpe_double)
-        endif
+        call unify_reduceintp(nx,my,my_max,wtfn(1,1,k),tmp11)
+        call unify_reduceintp(nx,my,my_max,wsfn(1,1,k),tmp12)
 
         do j=1,my
           do i=1,nx
@@ -665,7 +535,6 @@
             tm12(i,k,j)=tmp12(i,j)
           enddo
         enddo
-
       enddo
 
 
@@ -759,24 +628,24 @@
         i=nxjstart(j)
         nxj=nxdef_2d(j)
         if( lreduce.eq.1 ) then
-          call reducepick (tmp1(1,j),nxdef(j),nx,1)
-          call reducepick (tmp2(1,j),nxdef(j),nx,1)
-          call reducepick (tmp3(1,j),nxdef(j),nx,1)
-          call reducepick (tmp4(1,j),nxdef(j),nx,1)
-          call reducepick (tmp5(1,j),nxdef(j),nx,1)
-          call reducepick (tmp6(1,j),nxdef(j),nx,1)
-          call reducepick (tmp7(1,j),nxdef(j),nx,1)
-          call reducepick (tmp8(1,j),nxdef(j),nx,1)
-          call reducepick (tmp9(1,j),nxdef(j),nx,1)
-          call reducepick (tmp10(1,j),nxdef(j),nx,1)
-          call reducepick (tmp11(1,j),nxdef(j),nx,1)
+          call reducepickr (tmp1(1,j),nxdef(j),nx,1)
+          call reducepickr (tmp2(1,j),nxdef(j),nx,1)
+          call reducepickr (tmp3(1,j),nxdef(j),nx,1)
+          call reducepickr (tmp4(1,j),nxdef(j),nx,1)
+          call reducepickr (tmp5(1,j),nxdef(j),nx,1)
+          call reducepickr (tmp6(1,j),nxdef(j),nx,1)
+          call reducepickr (tmp7(1,j),nxdef(j),nx,1)
+          call reducepickr (tmp8(1,j),nxdef(j),nx,1)
+          call reducepickr (tmp9(1,j),nxdef(j),nx,1)
+          call reducepickr (tmp10(1,j),nxdef(j),nx,1)
+          call reducepickr (tmp11(1,j),nxdef(j),nx,1)
           do k=0, 3
             if(k .le. 1)then
-              call reducepick (tm12(1,k,j),nxdef(j),nx,1)
-              call reducepick (tm13(1,k,j),nxdef(j),nx,1)
-              call reducepick (tm14(1,k,j),nxdef(j),nx,1)
+              call reducepickr (tm12(1,k,j),nxdef(j),nx,1)
+              call reducepickr (tm13(1,k,j),nxdef(j),nx,1)
+              call reducepickr (tm14(1,k,j),nxdef(j),nx,1)
             elseif(k .ge. 2) then
-              call reducepick (tm14(1,k,j),nxdef(j),nx,1)
+              call reducepickr (tm14(1,k,j),nxdef(j),nx,1)
             endif
           enddo
         endif
@@ -875,12 +744,12 @@
           i=nxjstart(j)
           nxj=nxdef_2d(j)
           if( lreduce.eq.1 ) then
-            call reducepick (tm11(1,k,j),nxdef(j),nx,1)
-            call reducepick (tm12(1,k,j),nxdef(j),nx,1)
-            call reducepick (tm13(1,k,j),nxdef(j),nx,1)
-            call reducepick (tm14(1,k,j),nxdef(j),nx,1)
-            call reducepick (tm15(1,k,j),nxdef(j),nx,1)
-            call reducepick (tm16(1,k,j),nxdef(j),nx,1)
+            call reducepickr (tm11(1,k,j),nxdef(j),nx,1)
+            call reducepickr (tm12(1,k,j),nxdef(j),nx,1)
+            call reducepickr (tm13(1,k,j),nxdef(j),nx,1)
+            call reducepickr (tm14(1,k,j),nxdef(j),nx,1)
+            call reducepickr (tm15(1,k,j),nxdef(j),nx,1)
+            call reducepickr (tm16(1,k,j),nxdef(j),nx,1)
           endif
   
           do ii = 1, nxj
@@ -948,8 +817,8 @@
           i=nxjstart(j)
           nxj=nxdef_2d(j)
           if(lreduce .eq. 1) then 
-            call reducepick (tm11(1,k,j),nxdef(j),nx,1)
-            call reducepick (tm12(1,k,j),nxdef(j),nx,1)
+            call reducepickr (tm11(1,k,j),nxdef(j),nx,1)
+            call reducepickr (tm12(1,k,j),nxdef(j),nx,1)
           endif
 
           do ii = 1, nxj
@@ -1031,12 +900,12 @@
           i=nxjstart(j)
           nxj=nxdef_2d(j)
           if(lreduce.eq.1 ) then
-            call reducepick (tm1(1,j),nxdef(j),nx,1)
-            call reducepick (tm2(1,j),nxdef(j),nx,1)
-            call reducepick (tm3(1,j),nxdef(j),nx,1)
-            call reducepick (tm4(1,j),nxdef(j),nx,1)
-            call reducepick (tm5(1,j),nxdef(j),nx,1)
-            call reducepick (tm6(1,j),nxdef(j),nx,1)
+            call reducepickr (tm1(1,j),nxdef(j),nx,1)
+            call reducepickr (tm2(1,j),nxdef(j),nx,1)
+            call reducepickr (tm3(1,j),nxdef(j),nx,1)
+            call reducepickr (tm4(1,j),nxdef(j),nx,1)
+            call reducepickr (tm5(1,j),nxdef(j),nx,1)
+            call reducepickr (tm6(1,j),nxdef(j),nx,1)
           endif
           do ii = 1, nxj
             i=nxjstart(j)+ii-1

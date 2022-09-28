@@ -440,7 +440,7 @@
 !2dMPI <
 
 !      wvn_top(1) = jtrun*2./3.
-      wvn_top(1) = max(min(jtrun/3.,155),55)
+      wvn_top(1) = max(min(jtrun/3.,155.),55.)
       wvn_top(ktop+1) = jtrun
 !!      djt = ( wvn_top(ktop) - wvn_top(1) ) / ktopm1
 

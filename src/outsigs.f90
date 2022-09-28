@@ -13,7 +13,7 @@
 
       real      ptop,rad,grav,cp
 
-      real      cosl(my),pt(nx,my_max),sgeo(nxp,my_max),        &
+      real      cosl(my),pt(nxp,my_max),sgeo(nxp,my_max),       &
                 snr(nxp,my_max),gwr(nxp,my_max),                &
                 tg(nxp,my_max),pk(nxp,lev,my_max),              &
                 pk2(nxp,lev,my_max),ut(nxp,lev,my_max),         &
@@ -519,17 +519,7 @@
 !
       call syslbl ('b00650',idtg,itau,ggdef,ihdg)
       call dmsread(nx,my,ihdg,lenc,'H',ifilout,work,istat)
-!byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
-      do jj=1,jlistnum
-         j=jlist1(jj)
-         if( lreduce.eq.1 ) call reducepick (work(1,j),nxdef(j),nx,1)
-         ii=nxjstart(j)
-         nxj=nxdef_2d(j)
-      do i=1,nxj
-         snr(i,jj)=work(ii,j)
-         ii=ii+1
-      enddo
-      enddo
+      call unify_reducepick(nx,my,my_max,work,snr)
 
 !
 !!      call syslbl ('s005a1',idtg,itau,ggdef,ihdg)
@@ -548,31 +538,11 @@
 !
       call syslbl ('s00100',idtg,itau,ggdef,ihdg)
       call dmsread(nx,my,ihdg,lenc,'H',ifilout,work,istat)
-!byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
-      do jj=1,jlistnum
-         j=jlist1(jj)
-         if( lreduce.eq.1 ) call reducepick (work(1,j),nxdef(j),nx,1)
-         ii=nxjstart(j)
-         nxj=nxdef_2d(j)
-      do i=1,nxj
-         tg(i,jj)=work(ii,j)
-         ii=ii+1
-      enddo
-      enddo
+      call unify_reducepick(nx,my,my_max,work,tg)
 !
       call syslbl ('w00092',idtg,itau,ggdef,ihdg)
       call dmsread(nx,my,ihdg,lenc,'H',ifilout,work,istat)
-!byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
-      do jj=1,jlistnum
-         j=jlist1(jj)
-         if( lreduce.eq.1 ) call reducepick (work(1,j),nxdef(j),nx,1)
-         ii=nxjstart(j)
-         nxj=nxdef_2d(j)
-      do i=1,nxj
-         zice(i,jj)=work(ii,j)
-         ii=ii+1
-      enddo
-      enddo
+      call unify_reducepick(nx,my,my_max,work,zice)
 !
       return
       end
@@ -596,7 +566,7 @@
       character*4 ggdef,gmdef
 
       character ifilout*80
-      real      work(nx,my)
+      real      work(nx,my),tmp(nxp,my_max)
       integer*8 idtg
       character typ*6,ihdg*26
 !
@@ -606,17 +576,7 @@
 !
       call syslbl ('s005c0',idtg,itau,ggdef,ihdg)
       call dmsread(nx,my,ihdg,lenc,'H',ifilout,work,istat)
-!byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
-      do jj=1,jlistnum
-         j=jlist1(jj)
-         if( lreduce.eq.1 ) call reducepick (work(1,j),nxdef(j),nx,1)
-         ii=nxjstart(j)
-         nxj=nxdef_2d(j)
-      do i=1,nxj
-         canopy(i,jj)=work(ii,j)
-         ii=ii+1
-      enddo
-      enddo
+      call unify_reducepick(nx,my,my_max,work,canopy)
 
 !
 ! for Noah 4-layer land model
@@ -632,54 +592,25 @@
       write(typ,'("l0",i1.1,"5b0")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
       call dmsread(nx,my,ihdg,lenc,'H',ifilout,work,istat)
-!byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
-!
-      do jj = 1, jlistnum
-       j=jlist1(jj)
-       if( lreduce.eq.1 ) call reducepick (work(1,j),nxdef(j),nx,1)
-       ii=nxjstart(j)
-       nxj=nxdef_2d(j)
-      do i = 1,nxj
-       smc(i,k,jj)=work(ii,j)
-       ii=ii+1
-      enddo
-      enddo
+      call unify_reducepick(nx,my,my_max,work,tmp)
+      smc(:,k,:) = tmp(:,:)
 !
 ! read slc  l015b1
 !
       write(typ,'("l0",i1.1,"5b1")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
       call dmsread(nx,my,ihdg,lenc,'H',ifilout,work,istat)
-!byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
-!
-      do jj = 1, jlistnum
-       j=jlist1(jj)
-       if( lreduce.eq.1 ) call reducepick (work(1,j),nxdef(j),nx,1)
-       ii=nxjstart(j)
-       nxj=nxdef_2d(j)
-      do i = 1,nxj
-       slc(i,k,jj)=work(ii,j)
-       ii=ii+1
-      enddo
-      enddo
+      call unify_reducepick(nx,my,my_max,work,tmp)
+      slc(:,k,:) = tmp(:,:)
 !
 ! read stc  l01100
 !
       write(typ,'("l0",i1.1,"100")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
       call dmsread(nx,my,ihdg,lenc,'H',ifilout,work,istat)
-!byl      if( lreduce.eq.1 ) call reducepick (work,nxdef,nx,my)
+      call unify_reducepick(nx,my,my_max,work,tmp)
+      stc(:,k,:) = tmp(:,:)
 !
-      do jj = 1, jlistnum
-       j=jlist1(jj)
-       if( lreduce.eq.1 ) call reducepick (work(1,j),nxdef(j),nx,1)
-       ii=nxjstart(j)
-       nxj=nxdef_2d(j)
-      do i = 1,nxj
-       stc(i,k,jj)=work(ii,j)
-       ii=ii+1
-      enddo
-      enddo
 !
       enddo
 !

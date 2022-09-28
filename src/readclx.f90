@@ -48,11 +48,6 @@
 !  working array as climt data base
 !
       real    glob(nx,my)
-!byl      real      sstcl(nx,my,2),soltcl(nx,my,2),wetcl(nx,my,2),      &
-!byl                albcl(nx,my,2),z0cl(nx,my,2),                       &
-!byl!soil
-!byl                vfrcl(nx,my,2)
-!byl!soil
       real      sstcl(nxp,my_max,2),soltcl(nxp,my_max,2),    &
                 wetcl(nxp,my_max,2),albcl(nxp,my_max,2),     &
                 z0cl(nxp,my_max,2),                          &
@@ -115,8 +110,6 @@
 !                                -- read dmsfile --
       mm=12
       write(lrec,11)ggdef,mm
-!byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,sstcl(1,1,1),istat)
-!byl      if( lreduce.eq.1 ) call reducepick (sstcl(1,1,1),nxdef,nx,my)
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,sstcl(1,1,1))
 
@@ -125,35 +118,25 @@
 !ch?  if( lreduce.eq.1 ) call reducepick (soltcl(1,1,1),nxdef,nx,my)
 
       write(lrec,14)ggdef,mm
-!byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,albcl(1,1,1),istat)
-!byl      if( lreduce.eq.1 ) call reducepick (albcl(1,1,1),nxdef,nx,my)
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,albcl(1,1,1))
 
       write(lrec,15)ggdef,mm
-!byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,z0cl(1,1,1),istat)
-!byl      if( lreduce.eq.1 ) call reducepick (z0cl(1,1,1),nxdef,nx,my)
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,z0cl(1,1,1))
 
       write(lrec,13)ggdef,mm
-!byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,wetcl(1,1,1),istat)
-!byl      if( lreduce.eq.1 ) call reducepick (wetcl(1,1,1),nxdef,nx,my)
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,wetcl(1,1,1))
 
 !soil
       if(ivegsrc .le. 1)write(lrec,19)ggdef,mm
       if(ivegsrc .eq. 2)write(lrec,33)ggdef,mm
-!byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,vfrcl(1,1,1),istat)
-!byl      if( lreduce.eq.1 ) call reducepick (vfrcl(1,1,1),nxdef,nx,my)
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,vfrcl(1,1,1))
 !soil
       mm=1
       write(lrec,11)ggdef,mm
-!byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,sstcl(1,1,2),istat)
-!byl      if( lreduce.eq.1 ) call reducepick (sstcl(1,1,2),nxdef,nx,my)
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,sstcl(1,1,2))
 
@@ -162,27 +145,19 @@
 !ch?  if( lreduce.eq.1 ) call reducepick (soltcl(1,1,2),nxdef,nx,my)
 
       write(lrec,14)ggdef,mm
-!byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,albcl(1,1,2),istat)
-!byl      if( lreduce.eq.1 ) call reducepick (albcl(1,1,2),nxdef,nx,my)
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,albcl(1,1,2))
 
       write(lrec,15)ggdef,mm
-!byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,z0cl(1,1,2),istat)
-!byl      if( lreduce.eq.1 ) call reducepick (z0cl(1,1,2),nxdef,nx,my)
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,z0cl(1,1,2))
 
       write(lrec,13)ggdef,mm
-!byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,wetcl(1,1,2),istat)
-!byl      if( lreduce.eq.1 ) call reducepick (wetcl(1,1,2),nxdef,nx,my)
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,wetcl(1,1,2))
 !soil
       if(ivegsrc .le. 1)write(lrec,19)ggdef,mm
       if(ivegsrc .eq. 2)write(lrec,33)ggdef,mm
-!byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,vfrcl(1,1,2),istat)
-!byl      if( lreduce.eq.1 ) call reducepick (vfrcl(1,1,2),nxdef,nx,my)
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,vfrcl(1,1,2))
 !soil
@@ -191,7 +166,6 @@
       coef2=1.-coef1
       do jj=1,jlistnum
          j=jlist1(jj)
-!byl         ii=nxjstart(j)
          nxj=nxdef_2d(j)
          do i=1,nxj
             sst(i,jj) =coef1*sstcl(i,jj,2) +coef2*sstcl(i,jj,1)
@@ -202,7 +176,6 @@
 !soil
           sigmaf(i,jj)=coef1*vfrcl(i,jj,2)+coef2*vfrcl(i,jj,1)
 !soil
-!byl            ii=ii+1
         enddo
       enddo
       end if
@@ -211,8 +184,6 @@
       if(jul .gt. mon(k-1) .and. jul .le. mon(k))then
 !                                -- read dmsfile --
       write(lrec,11)ggdef,k-1
-!byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,sstcl(1,1,1),istat)
-!byl      if( lreduce.eq.1 ) call reducepick (sstcl(1,1,1),nxdef,nx,my)
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,sstcl(1,1,1))
 
@@ -221,33 +192,23 @@
 !ch?  if( lreduce.eq.1 ) call reducepick (soltcl(1,1,1),nxdef,nx,my)
 
       write(lrec,14)ggdef,k-1
-!byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,albcl(1,1,1),istat)
-!byl      if( lreduce.eq.1 ) call reducepick (albcl(1,1,1),nxdef,nx,my)
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,albcl(1,1,1))
 
       write(lrec,15)ggdef,k-1
-!byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,z0cl(1,1,1),istat)
-!byl      if( lreduce.eq.1 ) call reducepick (z0cl(1,1,1),nxdef,nx,my)
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,z0cl(1,1,1))
 
       write(lrec,13)ggdef,k-1
-!byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,wetcl(1,1,1),istat)
-!byl      if( lreduce.eq.1 ) call reducepick (wetcl(1,1,1),nxdef,nx,my)
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,wetcl(1,1,1))
 !soil
       if(ivegsrc .le. 1)write(lrec,19)ggdef,k-1
       if(ivegsrc .eq. 2)write(lrec,33)ggdef,k-1
-!byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,vfrcl(1,1,1),istat)
-!byl      if( lreduce.eq.1 ) call reducepick (vfrcl(1,1,1),nxdef,nx,my)
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,vfrcl(1,1,1))
 !soil
       write(lrec,11)ggdef,k
-!byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,sstcl(1,1,2),istat)
-!byl      if( lreduce.eq.1 ) call reducepick (sstcl(1,1,2),nxdef,nx,my)
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,sstcl(1,1,2))
 
@@ -256,27 +217,19 @@
 !ch?  if( lreduce.eq.1 ) call reducepick (soltcl(1,1,2),nxdef,nx,my)
 !
       write(lrec,14)ggdef,k
-!byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,albcl(1,1,2),istat)
-!byl      if( lreduce.eq.1 ) call reducepick (albcl(1,1,2),nxdef,nx,my)
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,albcl(1,1,2))
 
       write(lrec,15)ggdef,k
-!byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,z0cl(1,1,2),istat)
-!byl      if( lreduce.eq.1 ) call reducepick (z0cl(1,1,2),nxdef,nx,my)
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,z0cl(1,1,2))
 
       write(lrec,13)ggdef,k
-!byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,wetcl(1,1,2),istat)
-!byl      if( lreduce.eq.1 ) call reducepick (wetcl(1,1,2),nxdef,nx,my)
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,wetcl(1,1,2))
 !soil
       if(ivegsrc .le. 1)write(lrec,19)ggdef,k
       if(ivegsrc .eq. 2)write(lrec,33)ggdef,k
-!byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,vfrcl(1,1,2),istat)
-!byl      if( lreduce.eq.1 ) call reducepick (vfrcl(1,1,2),nxdef,nx,my)
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,vfrcl(1,1,2))
 !soil
@@ -286,7 +239,6 @@
       coef2=1.-coef1
       do jj=1,jlistnum
          j=jlist1(jj)
-!byl         ii=nxjstart(j)
          nxj=nxdef_2d(j)
          do i=1,nxj
             sst(i,jj) =coef1*sstcl(i,jj,2) +coef2*sstcl(i,jj,1)
@@ -297,7 +249,6 @@
 !soil
             sigmaf(i,jj)=coef1*vfrcl(i,jj,2)+coef2*vfrcl(i,jj,1)
 !soil
-!byl            ii=ii+1
          enddo
       enddo
       end if
@@ -310,31 +261,11 @@
 !                                   -- read dmsflie --
       write(lrec,17)ggdef,monidex
       call dmsreadi(nx,my,lrec,lncrec,'I',bckfile,iglob,istat)
-!byl      if( lreduce.eq.1 ) call reducepicki(iglob,nxdef,nx,my)
-      do jj=1,jlistnum
-         j=jlist1(jj)
-         ii=nxjstart(j)
-         nxj=nxdef_2d(j)
-         if( lreduce.eq.1 ) call reducepicki(iglob(1,j),nxdef(j),nx,1)
-         do i=1,nxj
-            icex(i,jj)=iglob(ii,j)
-            ii=ii+1
-         enddo
-      enddo
+      call unify_reducepicki(nx,my,my_max,iglob,icex)
 
       write(lrec,16)ggdef,blnk
       call dmsreadi(nx,my,lrec,lncrec,'I',bckfile,iglob,istat)
-!byl      if( lreduce.eq.1 ) call reducepicki(iglob,nxdef,nx,my)
-      do jj=1,jlistnum
-         j=jlist1(jj)
-         ii=nxjstart(j)
-         nxj=nxdef_2d(j)
-         if( lreduce.eq.1 ) call reducepicki(iglob(1,j),nxdef(j),nx,1)
-         do i=1,nxj
-            ls(i,jj)=iglob(ii,j)
-            ii=ii+1
-         enddo
-      enddo
+      call unify_reducepicki(nx,my,my_max,iglob,ls)
 
 !soil
 !-- soiltyp
@@ -344,17 +275,7 @@
       if(isot .eq. 2)write(lrec,29)ggdef,blnk
 !
       call dmsreadi(nx,my,lrec,lncrec,'I',bckfile,iglob,istat)
-!byl      if( lreduce.eq.1 ) call reducepicki(iglob,nxdef,nx,my)
-      do jj=1,jlistnum
-         j=jlist1(jj)
-         ii=nxjstart(j)
-         nxj=nxdef_2d(j)
-         if( lreduce.eq.1 ) call reducepicki(iglob(1,j),nxdef(j),nx,1)
-         do i=1,nxj
-            istyp(i,jj)=iglob(ii,j)
-            ii=ii+1
-         enddo
-      enddo
+      call unify_reducepicki(nx,my,my_max,iglob,istyp)
 !-- vegtyp
 !      write(lrec,21)ggdef,blnk
       if(ivegsrc .eq. 0)write(lrec,21)ggdef,blnk
@@ -362,17 +283,7 @@
       if(ivegsrc .eq. 2)write(lrec,32)ggdef,blnk
 !
       call dmsreadi(nx,my,lrec,lncrec,'I',bckfile,iglob,istat)
-!byl      if( lreduce.eq.1 ) call reducepicki(iglob,nxdef,nx,my)
-      do jj=1,jlistnum
-         j=jlist1(jj)
-         ii=nxjstart(j)
-         nxj=nxdef_2d(j)
-         if( lreduce.eq.1 ) call reducepicki(iglob(1,j),nxdef(j),nx,1)
-         do i=1,nxj
-            ivegtyp(i,jj)=iglob(ii,j)
-            ii=ii+1
-         enddo
-      enddo
+      call unify_reducepicki(nx,my,my_max,iglob,ivegtyp)
 ! the value of z0 is followed from new veg.type, read in lookup table.
        if (ivegsrc .ge. 1)then
        do jj=1,jlistnum
@@ -385,8 +296,6 @@
        endif
 !-- annual mean Tg
       write(lrec,22)ggdef,blnk
-!byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,soltcl(1,1,2),istat)
-!byl      if( lreduce.eq.1 ) call reducepick (soltcl(1,1,2),nxdef,nx,my)
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,solt)
 
@@ -394,16 +303,12 @@
 !noah
 !-- shdmax
       write(lrec,23)ggdef,blnk
-!byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,sstcl(1,1,1),istat)
-!byl      if( lreduce.eq.1 ) call reducepick (sstcl(1,1,1),nxdef,nx,my)
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,shdmax)
 !      call dmsread(nx,my,lrec,lncrec,'H',bckfile,shdmax,istat)
 !      if( lreduce.eq.1 ) call reducepick (shdmax,nxdef,nx,my)
 !-- shdmin
       write(lrec,24)ggdef,blnk
-!byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,sstcl(1,1,2),istat)
-!byl      if( lreduce.eq.1 ) call reducepick (sstcl(1,1,2),nxdef,nx,my)
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,shdmin)
 !      call dmsread(nx,my,lrec,lncrec,'H',bckfile,shdmin,istat)
@@ -411,39 +316,14 @@
 !-- slopetyp
       write(lrec,25)ggdef,blnk
       call dmsreadi(nx,my,lrec,lncrec,'I',bckfile,iglob,istat)
-!byl      if( lreduce.eq.1 ) call reducepicki(iglob,nxdef,nx,my)
-      do jj=1,jlistnum
-         j=jlist1(jj)
-         ii=nxjstart(j)
-         nxj=nxdef_2d(j)
-         if( lreduce.eq.1 ) call reducepicki(iglob(1,j),nxdef(j),nx,1)
-         do i=1,nxj
-            slopetyp(i,jj)=iglob(ii,j)
-            ii=ii+1
-         enddo
-      enddo
+      call unify_reducepicki(nx,my,my_max,iglob,slopetyp)
 !-- snoalb
       write(lrec,26)ggdef,blnk
-!byl      call dmsread(nx,my,lrec,lncrec,'H',bckfile,soltcl(1,1,1),istat)
-!byl      if( lreduce.eq.1 ) call reducepick (soltcl(1,1,1),nxdef,nx,my)
       call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
       call unify_reducepick(nx,my,my_max,glob,snoalb)
 !      call dmsread(nx,my,lrec,lncrec,'H',bckfile,snoalb,istat)
 !      if( lreduce.eq.1 ) call reducepick (snoalb,nxdef,nx,my)
 
-!byl      do jj=1,jlistnum
-!byl         j=jlist1(jj)
-!byl         ii=nxjstart(j)
-!byl         nxj=nxdef_2d(j)
-!byl         do i=1,nxj
-!byl            shdmax(i,jj)=sstcl(ii,j,1)
-!byl            shdmin(i,jj)=sstcl(ii,j,2)
-!byl            snoalb(i,jj)=soltcl(ii,j,1)
-!byl            solt(i,jj)=soltcl(ii,j,2)
-!byl            if ( (ls(i,jj).eq.0) .and. (icex(i,jj).eq.1) ) solt(i,jj)=271.2
-!byl            ii=ii+1
-!byl        enddo
-!byl      enddo
 
       do jj=1,jlistnum
          j=jlist1(jj)

@@ -185,8 +185,10 @@
       use module_radiation_surface, only : nf_albd, sfc_init, setalb,   &
      &                                     setemis
       use module_radiation_clouds,  only : nf_clds, cld_init,           &
-     &                                     progcld1, progcld2, progcld3,& 
-     &					   progcld4, diagcld1
+     &                                     progcld1, progcld2, progcld3,&
+     &					   progcld4, diagcld1,          &
+                                           progcld5, progcld5o,         &
+                                           progclduni
 
       use module_radsw_parameters,  only : topfsw_type, sfcfsw_type,    &
      &                                     profsw_type,cmpfsw_type,nbdsw
@@ -650,9 +652,9 @@
              deltaq,sup,cnvw,cnvc,phy_f3d,                              &
 !  ---  outputs:
              htrsw,sfalb,coszen,coszdg,                                 &
-             htrlw,tsflw,semis,cldcov,                                  &
+             htrlw,tsflw,semis,                                         &
 !  ---  input/output:
-             fluxr,                                                     &
+             cldcov,fluxr,                                              &
 !! ---  optional outputs:
              htrsw0,htrlw0,                                             &
              fusl,fdsl,fuir,fdir,                                       &
@@ -956,8 +958,7 @@
              tracer(ix,lm,ntrac)
 
 !  ---  outputs: (horizontal dimensioned by ix)
-      real (kind=kind_phys), dimension(ix,lm),intent(out):: htrsw,htrlw,&
-             cldcov
+      real (kind=kind_phys), dimension(ix,lm),intent(out):: htrsw,htrlw
 
       real (kind=kind_phys), dimension(im),   intent(out):: tsflw,      &
              sfalb, semis, coszen, coszdg
@@ -982,6 +983,7 @@
 ! --- cmy
 
 !  ---  variables are for both input and output:
+      real (kind=kind_phys), intent(inout) :: cldcov(im,lm+ltp)
       real (kind=kind_phys), intent(out) :: fluxr(ix,nfxr)
 
 !! ---  optional outputs:
@@ -1040,8 +1042,8 @@
       integer :: i, j, k, k1, lv, itop, ibtc, nday, idxday(im),         &
              mbota(im,3), mtopa(im,3), lp1, nb, lmk, lmp, kd, lla, llb, &
              lya, lyb, kt, kb
-!
-      real (kind=kind_phys), dimension(ix,lm+ltp,3)   :: phy_f3d
+!effective radius for liquid, ice, snow, rain
+      real (kind=kind_phys), dimension(im,lm+ltp,5)   :: phy_f3d
       logical uni_cloud,lmfshal,lmfdeep2
 
 !  ---  for debug test use
@@ -1650,11 +1652,59 @@
             ntrac,ntcw,ntiw,ntrw,ntsw,ntgl,          &
             im, lmk, lmp,                            &
             uni_cloud,lmfshal,lmfdeep2,              &
-            cldcov(:,1:lmk),phy_f3d(:,:,1),          &
+            cldcov,phy_f3d(:,:,1),                   &
             phy_f3d(:,:,2),phy_f3d(:,:,3),           &
 !   --- outputs:
             clouds,cldsa,mtopa,mbota                 &
            )
+
+       elseif ( icmphys == 11 ) then   ! GFDL MP
+         if ( me == 0 .and. myrank == 0 )                               &
+           print *,'### call GFDL cloud ###'
+
+         clw = 0.0
+         if ( .not. lgfdlmprad ) then
+         do k = 1, lmk
+           do i = 1, im
+             do j = 1, ncld - 1
+               lv = ntcw + j - 1
+               clw(i,k) = clw(i,k) + tracer1(i,k,lv)  ! cloud condensate amount
+             enddo
+             if ( clw(i,k) < epsq ) clw(i,k) = 0.0
+           enddo
+         enddo
+         endif
+
+         if (kdt == 1) then
+           phy_f3d(:,:,1) = 10.
+           phy_f3d(:,:,2) = 50.
+           phy_f3d(:,:,3) = 250.
+           phy_f3d(:,:,4) = 1000.
+         endif
+
+         if ( .not. lgfdlmprad ) then  ! no consistency between GFDLMP and radiation
+           call progcld5                                                &
+!    ---  inputs:
+             ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,clw,cnvw,cnvc,        &
+               xlat,xlon,slmsk,im,lmk,lmp,                              &
+               cldcov,                                                  &
+!    ---  outputs:
+               clouds,cldsa,mtopa,mbota                                 &
+              ) 
+         else
+           call progcld5o                                               &
+!    ---  inputs:
+             ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,tracer1,              &
+               xlat,xlon,slmsk,                                         &
+               ntrac,ntcw,ntiw,ntrw,ntsw,ntgl,cldcov,                   &
+               phy_f3d(:,:,1),phy_f3d(:,:,2),phy_f3d(:,:,3),            &
+               phy_f3d(:,:,4),effr_in,                                  &
+               im,lmk,lmp,                                              &
+!    ---  outputs:
+               clouds,cldsa,mtopa,mbota                                 &
+              ) 
+!           endif
+         endif
 
         endif                            ! end if_icmphys
 

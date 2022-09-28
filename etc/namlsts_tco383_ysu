@@ -36,7 +36,6 @@
  dosppt=f,
  dospptout=f,
  doclx=f,
- doslavepp=t,
  cutfreq=3,
  nnmivm=3,
  doincr=f,
