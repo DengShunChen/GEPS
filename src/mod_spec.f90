@@ -2,6 +2,7 @@
 !
 ! modify to f90 by C-H Lee and sort by River Chen in 2015
 !
+      use const, only : RTYPE
       use param
       use index
 
@@ -11,20 +12,19 @@
 
       integer,dimension(:),allocatable,save :: jtwv,jtwvp
 
-!!      real,dimension(:,:),allocatable,save :: uzm
 
 !byl      real,dimension(:,:,:,:),allocatable,save :: vornow,divnow,temnow,qnow,             &
 !byl                                                  vorold,divold,temold,qold,trefs,       &
-      real,dimension(:,:,:,:),allocatable,save :: vornow,divnow,temnow,                  &
-                                                  vormid,divmid,temmid,                  &
-                                                  vorold,divold,temold,trefs,            &
-                                                  vorten,divten,temten,hldten
-!!                                                vorten,divten,temten,qten,hldten
-
+      real(kind=RTYPE),dimension(:,:,:,:),allocatable,save :: vornow,divnow,temnow,         &
+                                                              vormid,divmid,temmid,         &
+                                                              vorold,divold,temold,trefs,   &
+                                                              vorten,divten,temten,hldten
+!!                                                            vorten,divten,temten,qten,hldten
 !byl      real,dimension(:,:,:),  allocatable,save :: plnow,plold,dsqgeo,spgeo,plten
-      real,dimension(:,:,:),  allocatable,save :: plnow,plmid,plold,plten,spgeo
+      real(kind=RTYPE),dimension(:,:,:),  allocatable,save :: plnow,plmid,plold,plten,spgeo
 
-      real,dimension(:,:),  allocatable,save :: plnowL,ploldL,pltenL   !  for 2dMPI, allocated in cons.f90
+!ch   real,dimension(:,:),  allocatable,save :: plnowL,ploldL,pltenL   !  for 2dMPI, allocated in cons.f90
+      real(kind=RTYPE),dimension(:,:),  allocatable,save :: plnowL,ploldL,pltenL   !  for 2dMPI, allocated in cons.f90
 
 
       contains 
@@ -86,13 +86,6 @@
            spgeo=0.
            jtwv=0.
 
-!!           allocate (uzm(my,lev), stat=ierr)
-!!
-!!           if (ierr/= 0) then
-!!               write(6,*) 'mod_spec : allocate fail 2 '
-!!               stop
-!!           end if
-
            return
 
          end subroutine
@@ -109,7 +102,6 @@
 !byl                       plnow,plold,dsqgeo,spgeo,plten)
                        plnow,plmid,plold,plten,spgeo)
 
-!!           deallocate (uzm)
            deallocate (jtwv,jtwvp)
            deallocate (plnowL,ploldL,pltenL)
 

@@ -27,15 +27,17 @@
 !      use mpe
 !      use rank
       use physcons, only:vtmpc1 => con_fvirt, g => con_g
+      use const,    only:RTYPE
 
       implicit none
       integer jl,jk,klev,klon,nxj
       integer kcbot(klon),kctop(klon)
       integer lndj(klon),kuo(klon)
-      real    ptu(klon,klev)  ,pqu(klon,klev)                           &
-             ,ztenh(klon,klev),zqenh(klon,klev)         &
-             ,pgeo(klon,klev) ,papn(klon,klev)  ,pf(klon,klev)           &
+      real    ptu(klon,klev)  ,pqu(klon,klev)                   &
+             ,ztenh(klon,klev),zqenh(klon,klev)                 &
+             ,papn(klon,klev)  ,pf(klon,klev)                   &
              ,rho(klon,klev),plu(klon,klev), pap(klon,klev)
+      real(kind=RTYPE) pgeo(klon,klev)
       real    qgraup(klon,klev),qsnow(klon,klev)
       real,parameter::  vgraup= 3.0, &     ! typical fall speed for graupel (ms^-1)
                         vsnow = 0.5, &     ! typical fall speed for snow (ms^-1)

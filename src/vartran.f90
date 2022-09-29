@@ -21,13 +21,15 @@
 !  phiten  :  geopotantial tendency(correction) array in spectrum domain
 !************************************
       use index
+      use const, only: RTYPE
 
       implicit none
 
       integer  jtrun,jtmax,lev,k,iflag,m,l,mf
 
-      real vorten(lev,2,jtrun,jtmax),divten(lev,2,jtrun,jtmax), &
-           phiten(lev,2,jtrun,jtmax)
+      real(kind=RTYPE) vorten(lev,2,jtrun,jtmax),   &
+                       divten(lev,2,jtrun,jtmax),   &
+                       phiten(lev,2,jtrun,jtmax)
 !     real h(jtrun,jtmax,lev)
 !byl      real h(jtrun,jtmax,levF) ! 2dMPI
       real h(jtrun,jtmax) ! 2dMPI
