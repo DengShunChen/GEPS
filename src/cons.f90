@@ -54,7 +54,7 @@
 
       integer*8 idtg8
 
-      real      pnm(jtrun+1,jtrun+1)
+      real(kind=RTYPE) pnm(jtrun+1,jtrun+1)
 
 !
       namelist /modlst/ ksgeo,ptmean,dt,taui,taue                       &
@@ -112,12 +112,6 @@
       call cuparam
       call inicon
       call set_lookup_tables
-
-      do k = 2, lev
-        dsig(k-1)= sig(k) - sig(k-1)
-      enddo
-
-      dsig(lev)= 1.0 - sig(lev)
 
       capa= 1.0/3.5
       rgas= capa*cp

@@ -12,6 +12,7 @@
                          , ggdef,gmdef)
       use index
       use mpe
+      use const, only: RTYPE,kflag
 !
       dimension fusl(nxp,lev+1,my_max),fdsl(nxp,lev+1,my_max)    &
               , fuir(nxp,lev+1,my_max),fdir(nxp,lev+1,my_max)    &
@@ -20,17 +21,19 @@
               , asl(nxp,lev,my_max),atl(nxp,lev,my_max)          &
               , asl_clr(nxp,lev,my_max),atl_clr(nxp,lev,my_max)  &
               , dtrad(nxp,lev,my_max),dtrad0(nxp,lev,my_max)     &
-              , cldcov(nxp,lev,my_max),sd(nxp,lev,my_max)        &
+              , cldcov(nxp,lev,my_max)                           &
               , ss(nxp,my_max),rs(nxp,my_max)                    &
               , olr(nxp,my_max),asol(nxp,my_max)                 &
               , sld(nxp,my_max),rld(nxp,my_max)                  &
               , ss_clr(nxp,my_max),rs_clr(nxp,my_max)            &
               , olr_clr(nxp,my_max),asol_clr(nxp,my_max)         &
               , sld_clr(nxp,my_max),rld_clr(nxp,my_max)          &
-              , cice(nxp,my_max),xtice(nxp,my_max),snr(nxp,my_max)  &
-              , sncover(nxp,my_max),snoalb(nxp,my_max)           &
-              , ctot(nxp,my_max),chig(nxp,my_max),cmid(nxp,my_max),clow(nxp,my_max) &
-              , work(nx,my),work1(nxp,my_max)
+              , cice(nxp,my_max),xtice(nxp,my_max)               &
+              , snr(nxp,my_max),sncover(nxp,my_max)              &
+              , snoalb(nxp,my_max),ctot(nxp,my_max)              &
+              , chig(nxp,my_max),cmid(nxp,my_max)                &
+              , clow(nxp,my_max) 
+      real(kind=RTYPE) sd(nxp,lev,my_max),work(nx,my),work1(nxp,my_max)
 
       integer*8 idtg
       character*80 ifilout
@@ -60,7 +63,7 @@
       call unify_reduceintp(nx,my,my_max,work1,work)
       write(typ,'("m",i2.2,"3A0")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 ! 
 !     output downward solar flux for total sky
 !
@@ -74,7 +77,7 @@
       call unify_reduceintp(nx,my,my_max,work1,work)
       write(typ,'("m",i2.2,"3B0")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 !
 !     output upward ir flux for total sky
 ! 
@@ -88,7 +91,7 @@
       call unify_reduceintp(nx,my,my_max,work1,work)
       write(typ,'("m",i2.2,"3C0")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 !
 !     output downward ir flux for total sky
 ! 
@@ -102,7 +105,7 @@
       call unify_reduceintp(nx,my,my_max,work1,work)
       write(typ,'("m",i2.2,"3D0")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 !
 !     output upward solar flux for clear sky
 ! 
@@ -116,7 +119,7 @@
       call unify_reduceintp(nx,my,my_max,work1,work)
       write(typ,'("m",i2.2,"3A1")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 !
 !     output downward solar flux for clear sky
 ! 
@@ -130,7 +133,7 @@
       call unify_reduceintp(nx,my,my_max,work1,work)
       write(typ,'("m",i2.2,"3B1")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 !
 !     output upward ir flux for clear sky
 ! 
@@ -144,7 +147,7 @@
       call unify_reduceintp(nx,my,my_max,work1,work)
       write(typ,'("m",i2.2,"3C1")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 !
 !     output downward ir flux for clear sky
 ! 
@@ -158,7 +161,7 @@
       call unify_reduceintp(nx,my,my_max,work1,work)
       write(typ,'("m",i2.2,"3D1")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 !
 !     output downward net solar flux for total sky
 ! 
@@ -172,7 +175,7 @@
       call unify_reduceintp(nx,my,my_max,work1,work)
       write(typ,'("m",i2.2,"310")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 !
 !     output downward net solar flux for clear sky
 ! 
@@ -186,7 +189,7 @@
       call unify_reduceintp(nx,my,my_max,work1,work)
       write(typ,'("m",i2.2,"311")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 !
 !     output upward net ir flux for total sky
 ! 
@@ -200,7 +203,7 @@
       call unify_reduceintp(nx,my,my_max,work1,work)
       write(typ,'("m",i2.2,"320")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 !
 !     output upward net ir flux for clear sky
 ! 
@@ -214,7 +217,7 @@
       call unify_reduceintp(nx,my,my_max,work1,work)
       write(typ,'("m",i2.2,"321")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 !
 !     output downward net radiation flux for total sky
 ! 
@@ -228,7 +231,7 @@
       call unify_reduceintp(nx,my,my_max,work1,work)
       write(typ,'("m",i2.2,"300")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 !
 !     output downward net radiation flux for clear sky
 ! 
@@ -242,7 +245,7 @@
       call unify_reduceintp(nx,my,my_max,work1,work)
       write(typ,'("m",i2.2,"301")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 
 
  30   continue
@@ -259,7 +262,7 @@
       call unify_reduceintp(nx,my,my_max,work1,work)
       write(typ,'("m",i2.2,"3E0")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 !
       do 42 jj = 1, jlistnum
        j=jlist1(jj)
@@ -271,7 +274,7 @@
       call unify_reduceintp(nx,my,my_max,work1,work)
       write(typ,'("m",i2.2,"3F0")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 !
       do 43 jj = 1, jlistnum
        j=jlist1(jj)
@@ -283,7 +286,7 @@
       call unify_reduceintp(nx,my,my_max,work1,work)
       write(typ,'("m",i2.2,"3E1")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 !
       do 44 jj = 1, jlistnum
        j=jlist1(jj)
@@ -295,7 +298,7 @@
       call unify_reduceintp(nx,my,my_max,work1,work)
       write(typ,'("m",i2.2,"3F1")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 !
       do 45 jj = 1, jlistnum
        j=jlist1(jj)
@@ -307,7 +310,7 @@
       call unify_reduceintp(nx,my,my_max,work1,work)
       write(typ,'("m",i2.2,"3G0")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 !
       do 46 jj = 1, jlistnum
        j=jlist1(jj)
@@ -319,7 +322,7 @@
       call unify_reduceintp(nx,my,my_max,work1,work)
       write(typ,'("m",i2.2,"3G1")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 !
       do 47 jj = 1, jlistnum
        j=jlist1(jj)
@@ -331,7 +334,7 @@
       call unify_reduceintp(nx,my,my_max,work1,work)
       write(typ,'("m",i2.2,"3H0")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 !
       do 48 jj = 1, jlistnum
        j=jlist1(jj)
@@ -343,95 +346,116 @@
       call unify_reduceintp(nx,my,my_max,work1,work)
       write(typ,'("m",i2.2,"220")')k
       call syslbl (typ,idtg,itau,gmdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 !
  40   continue
 !------------------------------------------------------------
 !  write 2D field
 !------------------------------------------------------------
-      call unify_reduceintp(nx,my,my_max,ss,work)
+      work1=ss
+      call unify_reduceintp(nx,my,my_max,work1,work)
       call syslbl ('s00310',idtg,itau,ggdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 
-      call unify_reduceintp(nx,my,my_max,rs,work)
+      work1=rs
+      call unify_reduceintp(nx,my,my_max,work1,work)
       call syslbl ('s00320',idtg,itau,ggdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 
-      call unify_reduceintp(nx,my,my_max,asol,work)
+      work1=asol
+      call unify_reduceintp(nx,my,my_max,work1,work)
       call syslbl ('X00330',idtg,itau,ggdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 
-      call unify_reduceintp(nx,my,my_max,olr,work)
+      work1=olr
+      call unify_reduceintp(nx,my,my_max,work1,work)
       call syslbl ('X00340',idtg,itau,ggdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 
-      call unify_reduceintp(nx,my,my_max,sld,work)
+      work1=sld
+      call unify_reduceintp(nx,my,my_max,work1,work)
       call syslbl ('S003U0',idtg,itau,ggdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 
-      call unify_reduceintp(nx,my,my_max,rld,work)
+      work1=rld
+      call unify_reduceintp(nx,my,my_max,work1,work)
       call syslbl ('S003X0',idtg,itau,ggdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 
-      call unify_reduceintp(nx,my,my_max,ss_clr,work)
+      work1=ss_clr
+      call unify_reduceintp(nx,my,my_max,work1,work)
       call syslbl ('s0031C',idtg,itau,ggdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 
-      call unify_reduceintp(nx,my,my_max,rs_clr,work)
+      work1=rs_clr
+      call unify_reduceintp(nx,my,my_max,work1,work)
       call syslbl ('s0032C',idtg,itau,ggdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 
-      call unify_reduceintp(nx,my,my_max,asol_clr,work)
+      work1=asol_clr
+      call unify_reduceintp(nx,my,my_max,work1,work)
       call syslbl ('X0033C',idtg,itau,ggdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 
-      call unify_reduceintp(nx,my,my_max,olr_clr,work)
+      work1=olr_clr
+      call unify_reduceintp(nx,my,my_max,work1,work)
       call syslbl ('X0034C',idtg,itau,ggdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 
-      call unify_reduceintp(nx,my,my_max,sld_clr,work)
+      work1=sld_clr
+      call unify_reduceintp(nx,my,my_max,work1,work)
       call syslbl ('S003UC',idtg,itau,ggdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 
-      call unify_reduceintp(nx,my,my_max,rld_clr,work)
+      work1=rld_clr
+      call unify_reduceintp(nx,my,my_max,work1,work)
       call syslbl ('S003XC',idtg,itau,ggdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 
-      call unify_reduceintp(nx,my,my_max,ctot,work)
+      work1=ctot
+      call unify_reduceintp(nx,my,my_max,work1,work)
       call syslbl ('X00770',idtg,itau,ggdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 
-      call unify_reduceintp(nx,my,my_max,chig,work)
+      work1=chig
+      call unify_reduceintp(nx,my,my_max,work1,work)
       call syslbl ('X00760',idtg,itau,ggdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 
-      call unify_reduceintp(nx,my,my_max,cmid,work)
+      work1=cmid
+      call unify_reduceintp(nx,my,my_max,work1,work)
       call syslbl ('X00750',idtg,itau,ggdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 
-      call unify_reduceintp(nx,my,my_max,clow,work)
+      work1=clow
+      call unify_reduceintp(nx,my,my_max,work1,work)
       call syslbl ('X00740',idtg,itau,ggdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 
-      call unify_reduceintp(nx,my,my_max,cice,work)
+      work1=cice
+      call unify_reduceintp(nx,my,my_max,work1,work)
       call syslbl ('W00093',idtg,itau,ggdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 
-      call unify_reduceintp(nx,my,my_max,xtice,work)
+      work1=xtice
+      call unify_reduceintp(nx,my,my_max,work1,work)
       call syslbl ('W00094',idtg,itau,ggdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 
-      call unify_reduceintp(nx,my,my_max,snr,work)
+      work1=snr
+      call unify_reduceintp(nx,my,my_max,work1,work)
       call syslbl ('b00650',idtg,itau,ggdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
  
-      call unify_reduceintp(nx,my,my_max,sncover,work)
+      work1=sncover
+      call unify_reduceintp(nx,my,my_max,work1,work)
       call syslbl ('B00651',idtg,itau,ggdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
  
-      call unify_reduceintp(nx,my,my_max,snoalb,work)
+      work1=snoalb
+      call unify_reduceintp(nx,my,my_max,work1,work)
       call syslbl ('S0003X',idtg,itau,ggdef,ihdg)
-      call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 !
       return
       end

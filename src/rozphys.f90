@@ -2,6 +2,7 @@
                          o3l, tt, pp, ps, myrank)
       use physcons, only : grav => con_g
       use ozne_def
+      use const, only : RTYPE
       integer nxj,nx,lev,julian 
       real (kind=kind_phys) ozwk1(latsozp,levozp,pl_coeff)
       real (kind=kind_phys) ozwk2(levozp,pl_coeff)
@@ -14,9 +15,9 @@
       integer pl_coeff2, kmax(pl_coeff),kmin(pl_coeff)
              
 
-      real(kind=kind_phys) o3l(nx,lev),  ps(nx),                 &
-                           pp(nx,lev),  tt(nx,lev),              &
-                           ozp(nx,lev,pl_coeff)
+      real(kind=kind_phys) ps(nx),                               &
+                           pp(nx,lev),ozp(nx,lev,pl_coeff)
+      real(kind=RTYPE)     o3l(nx,lev),tt(nx,lev)
       real(kind=kind_phys) dt
 !
       integer k,i,j

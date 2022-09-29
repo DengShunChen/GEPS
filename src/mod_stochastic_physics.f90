@@ -3,13 +3,13 @@ module mod_stochastic_physics
   use rank, only : myrank
   use index
   use param
-  use const, only : aki, bki, dosppt, doshum, dossst, poly
+  use const, only : aki, bki, dosppt, doshum, dossst, poly, RTYPE
   use mersenne_twister, only: random_setseed,random_gauss,random_stat
   implicit none
   private 
 
   type random_pattern
-    real, allocatable :: n2d(:,:)
+    real(kind=RTYPE), allocatable :: n2d(:,:)
     real, allocatable :: spec(:,:)
     real, allocatable :: varspec(:)
     real :: stdev ! stochastic physics tendency amplitude
@@ -521,11 +521,13 @@ contains
   end subroutine get_noise
 
   subroutine gen_random_pattern_2d(sppt2d,rpattern)
+    use const, only: RTYPE
     implicit none
     type(random_pattern), intent(inout) :: rpattern
-    real, intent(out) :: sppt2d(nxp,my_max)
+    real(kind=RTYPE), intent(out) :: sppt2d(nxp,my_max)
     integer :: ml, ns, ms
-    real, allocatable :: noise(:,:),bufr2d(:,:,:),specp(:,:,:)
+    real, allocatable :: noise(:,:)
+    real(kind=RTYPE), allocatable :: specp(:,:,:),bufr2d(:,:,:)
 
     allocate(bufr2d(jtrun,jtmax*nsizey,2)) 
     allocate(specp(jtrun,jtmax,2)) 
@@ -563,13 +565,13 @@ contains
   subroutine get_legendre_poly(mlmax,jtrun,poly)
     implicit none
     integer, intent(in) :: mlmax,jtrun
-    real,intent(out)   ::  poly(mlmax,my/2) 
+    real(kind=RTYPE),intent(out)   ::  poly(mlmax,my/2) 
 
     !   Spheric Harmonic Constants
     integer ::  msort(mlmax),lsort(mlmax),mlsort(mlmax,jtrun)
-    real :: dpoly(mlmax,my/2),eps4(mlmax),cim(mlmax)
-    real :: cosl(my),onocos(my)
-    real :: weight(my),sinl(my)
+    real(kind=RTYPE) :: dpoly(mlmax,my/2),eps4(mlmax),cim(mlmax)
+    real(kind=RTYPE) :: cosl(my),onocos(my)
+    real(kind=RTYPE) :: weight(my),sinl(my)
     real :: cp,capa,rgas,pi,radsq,rad,one,onem,irad
     integer :: rl,rm,rlm,ml
     integer :: j,my2
@@ -641,7 +643,8 @@ contains
 !
   SUBROUTINE avevar_sppt2d(data2d,n,m,ave,var,std)
     INTEGER :: n,m,nmdim
-    REAL :: ave,var,data2d(n,m),data(n*m)
+    REAL :: ave,var,data(n*m)
+    REAL(kind=RTYPE) :: data2d(n,m)
     INTEGER :: i,j
     REAL :: s,ep,std
 
@@ -727,7 +730,7 @@ contains
 ! 
       integer :: j, n, np, kp, k, mp, m, nps, l, ml, m1, mk
       integer :: my2, jtrun, mlmax, jtrunp
-      real :: poly(mlmax,my2),dpoly(mlmax,my2),sinl(my2)
+      real(kind=RTYPE) :: poly(mlmax,my2),dpoly(mlmax,my2),sinl(my2)
       integer :: mlsort(jtrun,jtrun)
 ! 
 !       parameter (jtrunx= 100)
@@ -916,8 +919,8 @@ contains
     integer      :: i, j, k, jj, nxj, ihead, n
     integer      :: nxmy4
     real         :: tau
-    real         :: glob(nx,my),temp(nxp,my_max)
-    real(kind=4) :: glob4(nx,my)
+    real*4       :: glob4(nx,my)
+    real(kind=RTYPE) :: glob(nx,my),temp(nxp,my_max)
 
     ihead=15
     nxmy4=nx*my*4
@@ -926,7 +929,8 @@ contains
     endif
 
     do n=1,nsppt
-      call unify_reduceintp(nx,my,my_max,rpattern_sppt(n)%n2d,glob)   
+      temp=rpattern_sppt(n)%n2d
+      call unify_reduceintp(nx,my,my_max,temp,glob)   
       if ( myrank .eq. 0 ) then
         glob4=glob
         write(ihead,rec=recn) glob4
@@ -1061,7 +1065,7 @@ contains
       implicit none
       integer lev,jtr,jcap1,jtm,ns,ml
       real speci(jcap1*(jcap1+1)/2,2)
-      real speco(jtr,jtm*ns*2)
+      real(kind=RTYPE) speco(jtr,jtm*ns*2)
       integer i,j,k,jj,jp,jr,j1,j2
       integer mlsort(jcap1,jcap1)
 !

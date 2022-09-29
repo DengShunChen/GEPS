@@ -22,6 +22,8 @@
 !
 !  dout: dependent variable on output grid
 !
+      use const, only: RTYPE
+!
       implicit  none
 
       integer   nx,my,lmaxp,lev
@@ -31,7 +33,7 @@
 !
 !sun  include '../include/paramt.h' .. change im,lm to nx,lev
 !
-      real      fxx(nx,lmaxp),fyy(nx,lmaxp),pjy(nx*lev*4),tp1(nx*lev*4)
+      real(kind=RTYPE) fxx(nx,lmaxp),fyy(nx,lmaxp),pjy(nx*lev*4),tp1(nx*lev*4)
 
       integer   ipt(nx*lev)
 

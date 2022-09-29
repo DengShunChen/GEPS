@@ -49,13 +49,16 @@
 !
 !#####################################################################
 !
+      use const, only: RTYPE
+!
       implicit  none
 
       integer   nxj,mn,kk,ktpbl,kt,kt1,k,i,ik,iksm,iks,iksp
       real      alpha,beta,dt,xx,yy,zz
 
-      real      wktri(mn,kk,4),xkm(mn,kk),hgt(mn,kk),uu(mn,kk)
+      real      wktri(mn,kk,4),xkm(mn,kk),hgt(mn,kk)
       real      dhgt(mn,kk),ro2(mn,kk)
+      real(kind=RTYPE) uu(mn,kk)
 !
       alpha = 1.0 - beta
       kt = kk - ktpbl + 1

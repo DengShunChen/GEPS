@@ -74,6 +74,7 @@
 !
 !
       use rank
+      use const, only : RTYPE
 
 !     implicit real (a-h,o-z)
       implicit none
@@ -83,7 +84,8 @@
 !
 !
       integer  na,nv,n,ier
-      real     a(na,n),v(nv,n),d
+      real(kind=RTYPE) a(na,n),v(nv,n)
+      real     d
 
 !CWB2015 orig
 !     dimension ip(1)

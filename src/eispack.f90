@@ -1,8 +1,10 @@
       SUBROUTINE RG(NM,N,A,WR,WI,MATZ,Z,IV1,FV1,IERR)
+!!
 !
       INTEGER N,NM,IS1,IS2,IERR,MATZ
       REAL A(NM,N),WR(N),WI(N),Z(NM,N),FV1(N)
       INTEGER IV1(N)
+!
 !
       IF (N.LE.NM) GO TO 10
       IERR=10*N
