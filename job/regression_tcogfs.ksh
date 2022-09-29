@@ -97,7 +97,7 @@ EOF
 export GFSDIR DMSPATH
 export NWPETC=${GFSDIR}/etc
 export NWPETCGLB=${GFSWRK}
-export GLB_TYPHINI="/nwp/npcagfs/TYP/M00/dtg/ty"
+export GLB_TYPHINI="/ncs/ncsatyp/TYP/M00/dtg/ty"
 export FIXDIR=${GFSFIX}
 
 export ANADMS=${idmsfile}

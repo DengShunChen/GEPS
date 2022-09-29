@@ -11,7 +11,7 @@ module unuse /data/common/gfs/modulefiles/x86_64
 # Loading gfs modules
 module use /data/common/gfs/modulefiles/fx1000
 module load netcdf/4.1.3
-module load fftw/3.3.10.new
+module load fftw/3.3.10.new_sp
 module load dms/v4
 module load operlib
 module load w3lib/2.0.2
