@@ -60,6 +60,71 @@
       end
 
 !-------------------------------------------------
+      subroutine rfftmlt_sp(a,work,trigs,ifax,inc,jump,n,m,isign)
+
+!CWB2018 for gfs by CH Lee, using fftw-3.3.7
+
+      use, intrinsic :: iso_c_binding
+
+      implicit none
+
+      include "fftw3.f03"
+
+!     real*8 a(jump,m),work(*),trigs(*),scale
+      real*8                   trigs(*)
+      real*4 a(jump,m),work(*),         scale
+
+      integer ifax(*),inc,jump,n,m,isign,i,j,nn
+
+      integer*8 plan_c2r,plan_r2c
+
+!     real*8,pointer :: pa(:,:)
+      real*4,pointer :: pa(:,:)
+      type(c_ptr) :: p
+
+      p=fftw_alloc_real(int(jump*m,c_size_t))
+      call c_f_pointer(p,pa,[jump,m])
+
+      nn=jump/2
+      if(mod(jump,2).eq.0) then  !jump is even 
+         if(isign.eq.1) then     !FFTW_BACKWARD
+            do j=1,m
+            do i = 1, n+2
+               pa(i,j)=a(i,j)
+            enddo
+            enddo
+            call sfftw_plan_many_dft_c2r(plan_c2r,1,n,m,pa,n,inc,nn,a,n,inc,jump,FFTW_ESTIMATE)
+            call sfftw_execute(plan_c2r)
+
+! currently we suffer a little be performance by destroying the plan to avoid memory leak problem,
+! but in the future, the following line could be commentted out if memory is enough.
+            call sfftw_destroy_plan(plan_c2r)
+
+         else                    !FFTW_FORWARD
+!           scale=1.0/dfloat(n)
+            scale=1.0/float(n)
+            call sfftw_plan_many_dft_r2c(plan_r2c,1,n,m,a,n,inc,jump,pa,n,inc,nn,FFTW_ESTIMATE)
+            call sfftw_execute(plan_r2c)
+
+! currently we suffer a little be performance by destroying the plan to avoid memory leak problem,
+! but in the future, the following line could be commentted out if memory is enough.
+            call sfftw_destroy_plan(plan_r2c)
+
+            do j=1,m
+            do i = 1, n+2
+               a(i,j)=pa(i,j)*scale
+            enddo
+            enddo
+         endif
+      else    !jump is odd
+         print *,'fft jump is odd, CWB obsoleted, jump=',jump
+      endif
+
+      call fftw_free(p)
+
+      return
+      end
+!-------------------------------------------------
       subroutine fftfax (n,ifax,trigs)
 
       use rank

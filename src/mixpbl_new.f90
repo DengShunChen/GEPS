@@ -8,6 +8,9 @@
 !     use funcphys , only : fpvs
 !     use physcons, grav => con_g, rd => con_rd, cp => con_cp
 !    &,             hvap => con_hvap, fv => con_fvirt
+!
+      use const, only: RTYPE
+!   
       implicit none
 !
       real grav,cp,hvap,rd,fv,rv
@@ -24,7 +27,7 @@
                            t1(ix,km),     q1(ix,km,ntrac),              &
                            swh(ix,km),    hlw(ix,km),                   &
                            xmu(im),                                     &
-                           psk(im),       rbsoil(im),                   &
+                           rbsoil(im),                                  &
 !                          cd(im),        ch(im),
                            fm(im),        fh(im),                       &
                            tsea(im),      qss(im),                      &
@@ -38,6 +41,7 @@
                            dqsfc(im),     hpbl(im),      hpblx(im),     &
                            hgamt(im),     hgamq(im)
 !                          hgamu(im),     hgamv(im),     hgams(im)
+      real(kind=RTYPE)     psk(im)
 !
 !    locals
 !

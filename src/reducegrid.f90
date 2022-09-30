@@ -21,6 +21,8 @@
 !	lcapd	wave resolution for reduced grid
 !	lonfd	number of reduced grid point for latitude
 !
+      use const, only: RTYPE
+!
       implicit  none
 
       integer, parameter :: nibm=40
@@ -29,7 +31,8 @@
       integer  need,lonfi,lonff,lonfo,ii,lonf,jtime,ktime,ltime,        &
                mtime,ntime
 
-      real     qtt(jtrun+1,jtrun+1),qttcut
+      real(kind=RTYPE) qtt(jtrun+1,jtrun+1)
+      real     qttcut
 !
 !!!      integer  ibmfft(nibm)
       logical octah

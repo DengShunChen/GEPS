@@ -163,6 +163,8 @@ mod_stochastic.f90
 mod_stochastic_physics.f90
 mod_typhoon.f90
 module_bfmicrophysics.f90
+module_mp_gfdl_fv3.f90
+module_mp_gfdl_fv3_v16.f90
 module_mp_radar.f90
 module_mp_thompson_gfs.f90
 module_mp_wsm6_fv3.f90

@@ -68,6 +68,7 @@
       use physcons, only : cp => con_cp, rd => con_rd, eps => con_eps,    &
                            epsm1 => con_epsm1, hvap => con_hvap,          &
                            rvrdm1 => con_fvirt
+      use const,    only : RTYPE
 !
       implicit none
 !
@@ -79,8 +80,9 @@
 !  ---  inputs:
       integer, intent(in) :: im, imj
 
-      real (kind=kind_phys), dimension(im), intent(in) :: ps, u1, v1,     &
-            t1, q1, tskin, cm, ch, prsl1, prslki, ddvel, ssu, ssv
+      real (kind=RTYPE), dimension(im), intent(in) :: u1, v1, t1, q1
+      real (kind=kind_phys), dimension(im), intent(in) :: ps,             &
+            tskin, cm, ch, prsl1, prslki, ddvel
       integer, dimension(im), intent(in):: islimsk
 
       logical, intent(in) :: flag_iter(im)

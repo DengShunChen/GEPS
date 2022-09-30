@@ -30,25 +30,15 @@ else
   echo "Fatal Error : $0: Unknown machine --> ${MACHINE}" ; exit
 fi
 
-if [ "${MACHINE}" == 'fx10' ] ; then 
-  hostnames='login07 login08 login05 login06'
-  [[ $hostnames =~ (^|[[:space:]])$HOSTNAME($|[[:space:]]) ]] && known='True' || known='False' 
+if [ "${MACHINE}" == 'fx1000' ] ; then
+  [[ $HOSTNAME =~ h6ln?? ]] && known='True' || known='False' 
   if [ "${known}" == 'False' ] ; then
-    echo "Fatal Error : Build ${MACHINE} executable, please move to login07/08 for inside HPC, login05/06 for outside HPC !" 
-    exit
-  fi
-fi
-if [ "${MACHINE}" == 'fx100' ] ; then
-  hostnames='login11 login12 login15 login16'
-  [[ $hostnames =~ (^|[[:space:]])$HOSTNAME($|[[:space:]]) ]] && known='True' || known='False' 
-  if [ "${known}" == 'False' ] ; then
-   echo "Fatal Error : Build ${MACHINE} executable, please move to login11/12 for inside HPC, login15/16 for outside HPC !" 
+   echo "Fatal Error : Build ${MACHINE} executable, please move to login node of HPC Gen6 h6ln?? !" 
    exit
   fi
 fi
 if [ "${MACHINE}" == 'fx1000' ] ; then
-  hostnames='h6ln12 h6ln13 h6ln15 h6ln16 h6ln17 h6ln18 h6ln19 h6ln23'
-  [[ $hostnames =~ (^|[[:space:]])$HOSTNAME($|[[:space:]]) ]] && known='True' || known='False'
+  [[ $HOSTNAME =~ h6ln?? ]] && known='True' || known='False'
   if [ "${known}" == 'False' ] ; then
    echo "Fatal Error : Build ${MACHINE} executable, please move to login12/13/15/16/17/18/19 for inside HPC, login23 for outside HPC !"
    exit

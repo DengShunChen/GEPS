@@ -2,9 +2,11 @@
 ! 9-point smoother
 !-----------------------------------------------------------
       subroutine smth9(im,jm,data,sdata,ismth)
+      use const, only: RTYPE
+!
       implicit   none
       integer                   :: im,jm,ismth
-      real,dimension(im,jm)     :: data,sdata
+      real(kind=RTYPE),dimension(im,jm) :: data,sdata
 
       integer                   ::i,j,ip1,im1,jp1,jm1
 

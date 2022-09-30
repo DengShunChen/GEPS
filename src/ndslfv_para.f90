@@ -7,6 +7,7 @@
 ! 2011 02 20 : henry juang, created for ndsl advection
 !
 !
+      use const   , only : RTYPE  ,MPI_RTYPE
       use grid    , only : lonfull,lonhalf,lonpart,lonlenmax,mylonlen, &
                            latfull,lathalf,latpart,latlenmax,mylatlen, &
                            latstr ,latlen ,lonstr ,lonlen
@@ -18,19 +19,15 @@
       implicit none
 !
       integer levs,latg
-      real a(lonfull,levs,latpart)
-      real b(latfull,levs,lonpart)
+      real(kind=RTYPE) a(lonfull,levs,latpart)
+      real(kind=RTYPE) b(latfull,levs,lonpart)
 !      integer global_lats_a(latg)
 !
-!     real (kind=kind_mpi_r) works(2*levs*mylatlen*lonhalf)
-!     real (kind=kind_mpi_r) workr(2*levs*mylonlen*lathalf)
-!ch   real works(2,levs,lonlenmax*latlenmax,nsize)
-      real works(2,levs,lonlenmax*latlenmax,nsizey)
-!ch   real workr(2,levs,lonlenmax*latlenmax,nsize)
-      real workr(2,levs,lonlenmax*latlenmax,nsizey)
-!ch   integer lensend(nsize),lenrecv(nsize)
+!     real(kind=RTYPE) (kind=kind_mpi_r) works(2*levs*mylatlen*lonhalf)
+!     real(kind=RTYPE) (kind=kind_mpi_r) workr(2*levs*mylonlen*lathalf)
+      real(kind=RTYPE) works(2,levs,lonlenmax*latlenmax,nsizey)
+      real(kind=RTYPE) workr(2,levs,lonlenmax*latlenmax,nsizey)
       integer lensend(nsizey),lenrecv(nsizey)
-!ch   integer locsend(nsize),locrecv(nsize)
       integer locsend(nsizey),locrecv(nsizey)
 !      integer i,j,k,n,mn,jj,lat1,lat2,ierr
       integer i,j,k,n,mn,lat1,lat2,ierr
@@ -39,7 +36,6 @@
 
 !$omp parallel do private(n,mn,i,j,k) &
 !$omp schedule(dynamic)
-!ch   do n=1,nsize
       do n=1,nsizey
         mn=0
         do j=1,mylatlen
@@ -58,20 +54,22 @@
       enddo
 !$omp end parallel do
 !
-!ch   call mpi_barrier (MPI_COMM_gfs,ierr)
       call mpi_barrier (col_comm,ierr)
 !
 !     call mpi_alltoallv(works,lensend,locsend,MPI_REAL8_r,
 !    &                   workr,lenrecv,locrecv,MPI_REAL8_r,
-!    &                   MPI_COMM_atm,ierr)
-      call mpi_alltoallv(works,lensend,locsend,MPI_REAL8, &
-                         workr,lenrecv,locrecv,MPI_REAL8, &
-!ch                      MPI_COMM_gfs,ierr)
+!    &                   MPI_COMM_WORLD,ierr)
+
+!     call mpi_alltoallv(works,lensend,locsend,MPI_REAL8, &
+!                        workr,lenrecv,locrecv,MPI_REAL8, &
+!                        col_comm,    ierr)
+
+      call mpi_alltoallv(works,lensend,locsend,MPI_RTYPE, &
+                         workr,lenrecv,locrecv,MPI_RTYPE, &
                          col_comm,    ierr)
 !
 !$omp parallel do private(n,mn,i,j,lat1,lat2,k) &
 !$omp schedule(dynamic)
-!ch   do n=1,nsize
       do n=1,nsizey
         mn=0
         do j=1,latlen(n)
@@ -102,6 +100,7 @@
 ! mpi transport from full dimension of west-east to full dimension of
 ! north-south with latitude shuffl.
 !
+      use const   , only : RTYPE  ,MPI_RTYPE
       use grid    , only : lonfull,lonhalf,lonpart,lonlenmax,mylonlen, &
                            latfull,lathalf,latpart,latlenmax,mylatlen, &
                            latstr ,latlen ,lonstr ,lonlen
@@ -113,19 +112,15 @@
       implicit none
 !
       integer levs,latg
-      real a(latfull,levs,lonpart)
-      real b(lonfull,levs,latpart)
+      real(kind=RTYPE) a(latfull,levs,lonpart)
+      real(kind=RTYPE) b(lonfull,levs,latpart)
 !      integer global_lats_a(latg)
 !
-!     real (kind=kind_mpi_r) works(2*levs*mylonlen*lathalf)
-!     real (kind=kind_mpi_r) workr(2*levs*mylatlen*lonhalf)
-!ch   real works(2,levs,lonlenmax*latlenmax,nsize)
-      real works(2,levs,lonlenmax*latlenmax,nsizey)
-!ch   real workr(2,levs,lonlenmax*latlenmax,nsize)
-      real workr(2,levs,lonlenmax*latlenmax,nsizey)
-!ch   integer lensend(nsize),lenrecv(nsize)
+!     real(kind=RTYPE) (kind=kind_mpi_r) works(2*levs*mylonlen*lathalf)
+!     real(kind=RTYPE) (kind=kind_mpi_r) workr(2*levs*mylatlen*lonhalf)
+      real(kind=RTYPE) works(2,levs,lonlenmax*latlenmax,nsizey)
+      real(kind=RTYPE) workr(2,levs,lonlenmax*latlenmax,nsizey)
       integer lensend(nsizey),lenrecv(nsizey)
-!ch   integer locsend(nsize),locrecv(nsize)
       integer locsend(nsizey),locrecv(nsizey)
 !      integer i,j,k,n,mn,jj,lat1,lat2,ierr
       integer i,j,k,n,mn,lat1,lat2,ierr
@@ -134,7 +129,6 @@
 
 !$omp parallel do private(n,mn,i,j,lat1,lat2,k) &
 !$omp schedule(dynamic)
-!ch   do n=1,nsize
       do n=1,nsizey
         mn=0
         do j=1,latlen(n)
@@ -158,19 +152,21 @@
       enddo
 !$omp end parallel do
 !
-!ch   call mpi_barrier (MPI_COMM_gfs,ierr)
       call mpi_barrier (col_comm,ierr)
 !     call mpi_alltoallv(works,lensend,locsend,MPI_REAL8_r,
 !    &                   workr,lenrecv,locrecv,MPI_REAL8_r,
-!    &                   MPI_COMM_atm,ierr)
-      call mpi_alltoallv(works,lensend,locsend,MPI_REAL8, &
-                         workr,lenrecv,locrecv,MPI_REAL8, &
-!ch                      MPI_COMM_gfs,ierr)
+!    &                   MPI_COMM_WORLD,ierr)
+
+!     call mpi_alltoallv(works,lensend,locsend,MPI_REAL8, &
+!                        workr,lenrecv,locrecv,MPI_REAL8, &
+!                        col_comm,    ierr)
+
+      call mpi_alltoallv(works,lensend,locsend,MPI_RTYPE, &
+                         workr,lenrecv,locrecv,MPI_RTYPE, &
                          col_comm,    ierr)
 !
 !$omp parallel do private(n,mn,i,j,k) &
 !$omp schedule(dynamic)
-!ch   do n=1,nsize
       do n=1,nsizey
         mn=0
         do j=1,mylatlen

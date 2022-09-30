@@ -14,11 +14,12 @@
 !
 
       use rank
+      use const, only : RTYPE
 
       implicit  none
 
       integer   m,n,nx,kk,is,ie,i,j
-      real      a(m,n)
+      real(kind=RTYPE) a(m,n)
       character*8 lab,fmt
       character*16 cfmt
 

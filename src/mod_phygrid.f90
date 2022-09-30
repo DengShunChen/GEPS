@@ -4,6 +4,7 @@
 !
       use param
       use index
+      use const, only: RTYPE
 
       implicit none
 
@@ -38,12 +39,13 @@
  
       real, dimension(:,:),allocatable,save :: fpsp,fpsp1
 
-      real, dimension(:,:,:),allocatable,save :: e,eps,o3l,dtrad,asl,atl
+      real, dimension(:,:,:),allocatable,save :: e,eps,dtrad,asl,atl
       real, dimension(:,:,:),allocatable,save :: ftp,fqp,ftp1,fqp1
       real, dimension(:,:,:),allocatable,save :: deltaq,cnvwr,cnvcr
       real, dimension(:,:,:),allocatable,save :: dtcup,ducup,dvcup,    &
                                                  dtshl,dushl,dvshl,    &
                                                  dtlsp
+      real(kind=RTYPE), dimension(:,:,:),allocatable,save :: o3l
 
       contains 
 

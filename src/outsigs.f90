@@ -1,11 +1,12 @@
       subroutine outsigs ( itau,nx,my,my_max,lev,ncld                &
                          , idtg,ifilout,ptop,rad,grav                &
                          , cp,cosl,pt,sgeo,snr,gwr,tg,pk,pk2         &
-                         , ut,vt,tt,qt,phi,rdiv,km,smc               &
+                         , ut,vt,tt,qt,phi,km,smc                    &
                          , slc,stc,canopy,zice,ggdef,gmdef)
       use index
       use mpe
       use radn, only : ntoz,ntcw,ntrw,ntiw,ntsw,ntgl
+      use const, only : RTYPE,kflag
 
       implicit  none
 
@@ -13,16 +14,18 @@
 
       real      ptop,rad,grav,cp
 
-      real      cosl(my),pt(nxp,my_max),sgeo(nxp,my_max),       &
-                snr(nxp,my_max),gwr(nxp,my_max),                &
-                tg(nxp,my_max),pk(nxp,lev,my_max),              &
-                pk2(nxp,lev,my_max),ut(nxp,lev,my_max),         &
-                vt(nxp,lev,my_max),tt(nxp,lev,my_max),          &
-                qt(nxp,lev*ncld,my_max),phi(nxp,lev,my_max),    &
-                rdiv(nxp,lev,my_max),work(nx,my),               &
+      real      snr(nxp,my_max),gwr(nxp,my_max),                &
+                tg(nxp,my_max),                                 &
+                qt(nxp,lev*ncld,my_max),                        &
                 smc(nxp,km,my_max),stc(nxp,km,my_max),          &
                 canopy(nxp,my_max),slc(nxp,km,my_max),          &
-                zice(nxp,my_max),wrk1(nxp,my_max),mout(nx,my)
+                zice(nxp,my_max)
+      real(kind=RTYPE) ut(nxp,lev,my_max),vt(nxp,lev,my_max),   &
+                       tt(nxp,lev,my_max),phi(nxp,lev,my_max),  &
+                       pt(nxp,my_max),sgeo(nxp,my_max),         &
+                       pk(nxp,lev,my_max),pk2(nxp,lev,my_max),  &
+                       mout(nx,my),work(nx,my),cosl(my),        &
+                       wrk1(nxp,my_max)
       integer*8 idtg
       character*80 ifilout
       character typ*6,ihdg*26,ihdg2*26,mlayer*1
@@ -66,7 +69,7 @@
           write(typ,'("n",i2.2,"100")')mod(k,100)
         endif
         call syslbl (typ,idtg,itau,gmdef,ihdg)
-        call dmswrit_split(nx,my,ihdg,lenc,'H',ifilout,mout,istat)
+        call dmswrit_split(nx,my,ihdg,lenc,kflag,ifilout,mout,istat)
       endif
 
 !
@@ -92,7 +95,7 @@
           write(typ,'("n",i2.2,"200")')mod(k,100)
         endif
         call syslbl (typ,idtg,itau,gmdef,ihdg)
-        call dmswrit_split(nx,my,ihdg,lenc,'H',ifilout,mout,istat)
+        call dmswrit_split(nx,my,ihdg,lenc,kflag,ifilout,mout,istat)
       endif
 !
       do k=1,lev
@@ -115,7 +118,7 @@
           write(typ,'("n",i2.2,"210")')mod(k,100)
         endif
         call syslbl (typ,idtg,itau,gmdef,ihdg)
-        call dmswrit_split(nx,my,ihdg,lenc,'H',ifilout,mout,istat)
+        call dmswrit_split(nx,my,ihdg,lenc,kflag,ifilout,mout,istat)
       endif
 !
       do k=1,lev
@@ -137,7 +140,7 @@
           write(typ,'("n",i2.2,"500")')mod(k,100)
         endif
         call syslbl (typ,idtg,itau,gmdef,ihdg)
-        call dmswrit_split(nx,my,ihdg,lenc,'H',ifilout,mout,istat)
+        call dmswrit_split(nx,my,ihdg,lenc,kflag,ifilout,mout,istat)
       endif
 !
 ! combine cloud water and cloud ice together once there is consideration of 
@@ -166,7 +169,7 @@
           write(typ,'("n",i2.2,"550")')mod(k,100)
         endif
         call syslbl (typ,idtg,itau,gmdef,ihdg)
-        call dmswrit_split(nx,my,ihdg,lenc,'H',ifilout,mout,istat)
+        call dmswrit_split(nx,my,ihdg,lenc,kflag,ifilout,mout,istat)
       endif
 !
 ! output all hydrometeors and ozone one by one
@@ -208,7 +211,7 @@
               goto 27
             endif
             call syslbl (typ,idtg,itau,gmdef,ihdg)
-            call dmswrit_split(nx,my,ihdg,lenc,'H',ifilout,mout,istat)
+            call dmswrit_split(nx,my,ihdg,lenc,kflag,ifilout,mout,istat)
           endif
  27       continue
         enddo
@@ -233,7 +236,7 @@
           k=myrank+1
           write(typ,'("m",i2.2,"560")')k
           call syslbl (typ,idtg,itau,gmdef,ihdg)
-          call dmswrit_split(nx,my,ihdg,lenc,'H',ifilout,mout,istat)
+          call dmswrit_split(nx,my,ihdg,lenc,kflag,ifilout,mout,istat)
         endif
       endif
 
@@ -254,7 +257,7 @@
 !     call syslbl (typ,idtg,itau,gmdef,ihdg)
 !      call unify_reduceintp(nx,my,my_max,wrk1,work)
 !!byl     if( lreduce.eq.1 ) call reduceintp (work,nxdef,nx,my)
-!     call dmswrit(nx,my,ihdg,lenc,'H',ifilout,work,istat)
+!     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
 !ccc
 !
 !
@@ -301,7 +304,7 @@
         k=myrank+1
         write(typ,'("m",i2.2,"000")')k
         call syslbl (typ,idtg,itau,gmdef,ihdg)
-        call dmswrit_split(nx,my,ihdg,lenc,'H',ifilout,mout,istat)
+        call dmswrit_split(nx,my,ihdg,lenc,kflag,ifilout,mout,istat)
       endif
 !
 !----- start to output surface data ------
@@ -357,32 +360,32 @@
    90 continue
 !--------------
 !
-!      work = snr
+      wrk1 = snr
       call syslbl ('b00650',idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,snr,work)
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
       call split(nx,my,lev,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
 
-!      work = gwr
+      wrk1 = gwr
       call syslbl ('s005a1',idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,gwr,work)
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
       call split(nx,my,lev,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
 
 
-!      work = tg
+      wrk1 = tg
       call syslbl ('s00100',idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,tg,work)
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
       call split(nx,my,lev,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
 !
 ! output canopy
 !
-!      work = canopy
+      wrk1 = canopy
       call syslbl ('s005c0',idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,canopy,work)
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
       call split(nx,my,lev,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
 !
-!      work = zice
+      wrk1 = zice
       call syslbl ('w00092',idtg,itau,ggdef,ihdg)
-      call unify_reduceintp(nx,my,my_max,zice,work)
+      call unify_reduceintp(nx,my,my_max,wrk1,work)
       call split(nx,my,lev,lenc,ifilout,nc,work,mout,ihdg,ihdg2)
 !
 ! s01100 & s015b0
@@ -494,7 +497,7 @@
  200  continue
 !
       if ( myrank .lt. nc )             &
-         call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,mout,istat)
+         call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,mout,istat)
 !
       return
       end

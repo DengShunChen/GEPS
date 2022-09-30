@@ -2,7 +2,7 @@
 
 #-- enviornment
  user=`whoami`
- datamv='login11'
+# datamv='login11'
  dmsdb_home=$(cat ~/.dmsrc |xargs | cut -d' ' -f 2)
  DMSPATH=/package/${machine}/dms/dms.v4/bin
  GFSDIR=$MDIR

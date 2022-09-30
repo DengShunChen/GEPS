@@ -146,7 +146,9 @@
 !             and boundary-layer development. Boundary Layer Meteorol.,
 !             38,185-202.
 !#####################################################################
-
+!
+      use const, only : RTYPE
+!
       implicit  none
 !
 ! input & output variable
@@ -155,13 +157,15 @@
       real      dt,g,r,cp,hltm,stbo,dth
 
       real      tg(mn),z0(mn),ps(mn),hgt(mn,kk),                   &
-                u(mn,kk),v(mn,kk),t(mn,kk),q(mn,kk),ut(mn,kk),     &
-                vt(mn,kk),tt(mn,kk),qt(mn,kk),sfcw(mn),ustar(mn),  &
+                u(mn,kk),v(mn,kk),t(mn,kk),                        &
+                sfcw(mn),ustar(mn),                                &
                 tstar(mn),qstar(mn),e(mn,kk),eps(mn,kk),hflux(mn), &
                 qflux(mn),qsfc(mn),zl(mn),ts(mn),                  &
 ! for pm-evap.
-                ss(mn),rld(mn),pk(mn,kk),pk2(mn,kk),gfx(mn),       &
+                ss(mn),rld(mn),gfx(mn),                            &
                 as(mn)
+      real(kind=RTYPE) q(mn,kk),qt(mn,kk),ut(mn,kk),vt(mn,kk),     &
+                       tt(mn,kk),pk(mn,kk),pk2(mn,kk)
       logical   ocean(mn)
 !
       real      phim(mn),phih(mn),zsz0(mn),rosfc(mn),              &
