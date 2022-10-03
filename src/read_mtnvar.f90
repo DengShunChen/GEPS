@@ -44,7 +44,7 @@
  108  format('global_mtnvarw.t',i3.3,'.',i3.3,'.',i3.3,'.f77')
 !xb118
 
-      open(22,file=rfile,form='unformatted',status='old' )
+      open(22,file=rfile,form='unformatted',status='old' ,convert='BIG_ENDIAN')
 !!      open(22,file=rfile,form='unformatted',status='old'         &
 !!          ,access='direct',recl=nrec )
 !
