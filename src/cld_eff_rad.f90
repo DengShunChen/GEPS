@@ -69,7 +69,7 @@ module cld_eff_rad_v2
     ! 1: martin et al., 1994
     ! 2: martin et al., 1994, gfdl revision
     ! 3: kiehl et al., 1994
-    integer :: reiflag = 1
+    integer :: reiflag = 5
     ! 1: heymsfield and mcfarquhar, 1996
     ! 2: donner et al., 1997
     ! 3: fu, 2007
