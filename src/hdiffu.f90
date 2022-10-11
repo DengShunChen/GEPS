@@ -14,7 +14,7 @@
       real      rad
       real      dta
 
-      real      vordiss(levp,2,jtrun,jtmax),divdiss(levp,2,jtrun,jtmax), &
+      real(kind=RTYPE)      vordiss(levp,2,jtrun,jtmax),divdiss(levp,2,jtrun,jtmax), &
                 diss_est(nxp,lev,my_max)
 
       real(kind=RTYPE) vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),  &
@@ -72,8 +72,8 @@
         hfilt  = hfilt/(6.*dta)
         hfilt2 = hfilt2/(6.*dta)
       else
-        hfilt  = 16.*hfilt/dta
-        hfilt2 = 16.*hfilt2/dta
+        hfilt  = hfilt/dta
+        hfilt2 = hfilt2/dta
       endif
 
       do 100 k=1,levp  ! levp -> lev
@@ -374,9 +374,9 @@
         hfilt4 = hfilt4/(6.*dta)
         hfilt2 = hfilt2/(6.*dta)
       else
-        hfilt6 = 16.*hfilt6/dta
-        hfilt4 = 16.*hfilt4/dta
-        hfilt2 = 16.*hfilt2/dta
+        hfilt6 = hfilt6/dta
+        hfilt4 = hfilt4/dta
+        hfilt2 = hfilt2/dta
       endif
 
       do 100 k=1,levp  ! levp -> lev

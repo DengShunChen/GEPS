@@ -11,7 +11,6 @@
       use mod_outflds
       use mod_grb2_param
       use const ,only:outgrb2 ,outdms ,domfc ,RTYPE,kflag
-
 !
       implicit  none
 
