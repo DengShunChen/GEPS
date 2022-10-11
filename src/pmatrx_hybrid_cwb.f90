@@ -23,14 +23,18 @@
 ! *********************************************************************
 !
       use param
+      use const, only : RTYPE
 !
       implicit  none
   
-      real      sigma(lev+1,2),tmean(lev),a(lev,lev),b(lev,lev),ai(lev,lev),&
-                phatk(lev),spalm(lev),dcdp(lev)
+!      real      sigma(lev+1,2),tmean(lev),a(lev,lev),b(lev,lev),ai(lev,lev),&
+      real      dcdp(lev)
+      real(kind=RTYPE) sigma(lev+1,2),tmean(lev),a(lev,lev),b(lev,lev),&
+                       ai(lev,lev),spalm(lev),phatk(lev)
 !
       integer   i,j,k
-      real      capa,ps,spamin,ptmean,ptop,cp,tem,tem1,tem2,tem3,phat
+      real      ptop,cp
+      real(kind=RTYPE) ptmean,capa,ps,spamin,tem,tem1,tem2,tem3,phat
 
       capa= 2.0/7.0
       ps= ptmean+ptop

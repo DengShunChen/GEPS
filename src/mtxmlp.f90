@@ -14,9 +14,11 @@
 !
 ! **************************************************************
 !
+      use const, only : RTYPE
+!
       implicit  none
       integer   lm,j,k,i
-      real      a(lm,lm),b(lm,lm),c(lm,lm)
+      real(kind=RTYPE) a(lm,lm),b(lm,lm),c(lm,lm)
 !
       call zilch(c,lm*lm)
 !

@@ -49,4 +49,34 @@
 !
       return
       end
+!------------------------------------------------------------
+!CWB2021 for single precision test
+      subroutine mpe_transpose_sr_sp(sbuf,rbuf,lev,n,m,nsize,comm)
 !
+      use const, only : RTYPE,MPI_RTYPE
+      use mpi
+
+      implicit none
+      integer  n,m,lev,nsize,i,j,k,ii,len_tr,ierr,comm
+
+      real(kind=RTYPE) sbuf(lev,n,m*nsize),rbuf(lev,n,nsize,m)
+      real(kind=RTYPE) rwork(lev,n,m,nsize)
+ 
+      len_tr=m*n
+
+      call MPI_ALLTOALL( SBUF,  LEN_TR*LEV, MPI_RTYPE,   &
+                         RWORK, LEN_TR*LEV, MPI_RTYPE,   &
+                         comm,              IERR )
+ 
+      do j=1,m
+      do ii=1,nsize
+      do i=1,n
+      do k=1,lev
+        rbuf(k,i,ii,j)=rwork(k,i,j,ii)
+      enddo
+      enddo
+      enddo
+      enddo
+!
+      return
+      end

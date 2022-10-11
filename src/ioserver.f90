@@ -101,7 +101,7 @@
 !-----------------------------
 
 subroutine ioserver_grb2(nx,my)
-use const, only : ifilout_grb
+use const, only : ifilout_grb,RTYPE
 use mod_grb2_param
 implicit none
 integer :: NMAX=500
@@ -109,7 +109,7 @@ integer ::nx,my,nxmy,i,j,ist,ncnt,ntag,itau,istat
 integer*8::idtg
 !integer::ptp0(9,NMAX)
 !real*8   z(nx*my,NMAX)
-real*8::fld(nx*my)
+real(kind=RTYPE)::fld(nx*my)
 integer,allocatable::ptp0(:,:)
 real*4,allocatable ::z(:,:)
 character:: key*34

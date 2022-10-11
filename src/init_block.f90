@@ -42,6 +42,7 @@
       ldiag=1
       idg=16
       jdg=16
+      qmin=1.0e-20
 
 !!      stbo=5.669e-8
 !!      s0=1368.3

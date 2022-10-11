@@ -21,6 +21,8 @@
 !
 !  dout: dependent variable on output grid
 !
+      use const, only: RTYPE
+!
       implicit none
 
       integer   nx,lmaxp,lev
@@ -28,7 +30,7 @@
       real      f(nx,lmaxp),dout(nx*lev),yr(nx,lmaxp)  &
               , yout(nx*lev),tensy(lmaxp)
 !
-      real      fxx(nx,lmaxp),fyy(nx,lmaxp),pjy(nx*lev*4) &
+      real(kind=RTYPE) fxx(nx,lmaxp),fyy(nx,lmaxp),pjy(nx*lev*4) &
               , tp1(nx*lev*4)
 
       integer   ipt(nx*lev)

@@ -32,6 +32,7 @@
 !     external function called:  qsatq
 !
       use paramt
+      use const, only: RTYPE
 
       implicit  none
 
@@ -39,8 +40,8 @@
       integer   lsppt(lev),ipass(lev)
 
       real      g,evaprh,cp,hltm 
-      real      t(nx,lev),q(nx,lev),pl(nx,lev),pst(nx),dsigma(lev,2), &
-                rlsp(nx)
+      real      pl(nx,lev),rlsp(nx),ttmp(nx)
+      real(kind=RTYPE) t(nx,lev),q(nx,lev),pst(nx),dsigma(lev,2)
 !
 !     local work arrays
 !
@@ -71,7 +72,8 @@
 !
 !     set up cloud index array 'cld'
 !
-      call qsatq (nxj,t(1,l), pl(1,l), qs )
+      ttmp(:)=t(:,l)
+      call qsatq (nxj,ttmp, pl(1,l), qs )
       do 200 i = 1, nxj
       cld(i) = q(i,l) .gt. qs(i)
   200 continue
@@ -149,7 +151,8 @@
 !
       if ((nrain.eq.0).or.(evaprh.le.0.0).or.(l.ge.(lev-1))) go to 800
       lp = l + 1
-      call qsatq (nxj,t(1,lp), pl(1,lp), ws )
+      ttmp(:)=t(:,lp)
+      call qsatq (nxj,ttmp, pl(1,lp), ws )
       do 600 i = 1, nxj
       wq(i) = pms(i,lp) * q(i,lp)
       wt(i) = wq(i) + rlsp(i)

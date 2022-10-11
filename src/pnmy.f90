@@ -13,9 +13,13 @@
 ! ******************************************************************
 !
 !
+      use const, only: RTYPE
+!
       implicit  none
+!
       integer   jtrun
-      real      sinlj,pnm(jtrun+1,jtrun+1)
+      real(kind=RTYPE) sinlj
+      real(kind=RTYPE) pnm(jtrun+1,jtrun+1)
 !
 ! sinlj is sin(latitude) = cos(colatitude)
 ! pnm(np,mp) is legendre polynomial p(n,m) with np=n+1, mp=m+1

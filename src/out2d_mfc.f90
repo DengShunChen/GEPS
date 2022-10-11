@@ -5,7 +5,8 @@
       use rank
       use mpe
       use index
-      use const ,only : grav,ptop,rgas,cp ,outdms ,outgrb2 ,ifilout_grb
+      use const ,only : grav,ptop,rgas,cp ,outdms ,outgrb2 ,ifilout_grb, &
+                        RTYPE,kflag
       use grid  ,only : tt,qt,plt,pk,pk2,sgeo
       use mod_grb2_param  !for write grib2 data
 !
@@ -15,14 +16,15 @@
       parameter (num=14)
 
       real      raintot(nxp,my_max),t2(nxp,my_max),u10(nxp,my_max),   &
-                v10(nxp,my_max),ctot(nxp,my_max),pt(nxp,my_max)
+                v10(nxp,my_max),ctot(nxp,my_max)
+      real(kind=RTYPE) pt(nxp,my_max)
 
       real                   q2(nxp,my_max),rh2(nxp,my_max),          &
            rh10(nxp,my_max),tmax(nxp,my_max),tmin(nxp,my_max),        &
                           rld(nxp,my_max),sld(nxp,my_max),            &
            raincu1(nxp,my_max),rainlp1(nxp,my_max)
 !
-      real mfcout(nxp,my_max,num)
+      real(kind=RTYPE) mfcout(nxp,my_max,num)
 !
       character*4 ggdef
       integer*8 idtg
@@ -30,7 +32,7 @@
 
       integer,dimension(num):: ptp0 ,ptp1 ,ptp2 ,ptp3 ,ptp4 ,ptp5
 !
-      real      glob(nx,my),mout(nx,my)
+      real(kind=RTYPE) glob(nx,my),mout(nx,my)
 !
       character*80 ifilout
       character*26 ihdg,ihdg2
@@ -166,21 +168,6 @@
 ! Total Precp.
 !byl      call mpe2d_unify(glob,raintot)
 
-      if(outdms.gt.0)then
-
-        do n=1,num
-          call syslbl (dmskey(n),idtg,ntau,ggdef,ihdg)
-          call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),mout)
-          if ( myrank .eq. n-1 ) then
-            glob=mout
-            ihdg2=ihdg
-          endif
-        enddo
-!
-        if (myrank .lt. num ) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,glob,istat)
-
-      endif ! outdms .gt. 0
-
 !====== grib2 output
       if(outgrb2==1 )then
           n=1
@@ -213,6 +200,18 @@
       endif
 
 
+    if(outdms.gt.0)then
+      do n=1,num
+        call syslbl (dmskey(n),idtg,ntau,ggdef,ihdg)
+        call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),glob)
+        if ( myrank .eq. n-1 ) then
+          mout=glob
+          ihdg2=ihdg
+        endif
+      enddo
+!
+      if (myrank .lt. num ) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,mout,istat)
+    endif ! outdms .gt. 0
 !
 !! rh10
 !!byl      call mpe2d_unify(glob,rh10)
@@ -220,8 +219,8 @@
 !      call unify_reduceintp(nx,my,my_max,rh10,glob)
 !!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
 !      glob=glob*100.0
-!!     call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-!      call dmswrit_mfc(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!!     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
+!      call dmswrit_mfc(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
 
 
       return

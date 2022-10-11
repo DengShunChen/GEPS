@@ -1,4 +1,7 @@
       subroutine dmswrit(nx,my,lrec,lenc,kflag,ifile,z,istat)
+
+!CWB2021 single precision test, writing dms output in 32 bits float format
+
 !
 !  subroutine to read data in pressure level fields
 !
@@ -16,29 +19,28 @@
       use param, only : io_quilting
       use mpe
       use rank
+      use const, only : RTYPE
 !     use index
-      use const, only : outdms 
 
       implicit  none
 
       integer   nx,my,lenc,istat
       logical   t_flg
-      real      z(nx,my)
+!CWB2021
+      real(kind=RTYPE) z(nx,my)
       character lrec*26,ifile*80,kflag*1
-      real*4,allocatable:: r4out(:,:)
-      character::rflag*1
 !
 ! working array
 !
       character key*34
-!   
-      rflag=kflag
-      if (outdms==2)rflag='R' 
-      write(key,1000)lrec,rflag,lenc
+!
+      write(key,1000)lrec,kflag,lenc
  1000 format(a26,a1,i7.7)
 !
       t_flg=.false.
 
+!< remove io_quilting
+!
 !      if(io_quilting)then
 !
 !        if(myrank .eq. 0) then
@@ -52,20 +54,20 @@
 !        endif
 !
 !      else
+!>
 
        if(myrank .eq. 0) then
-         if(outdms==2)then
-           allocate(r4out(nx,my))
-           r4out(:,:)=z(:,:)
-           call dmsput(ifile,key//char(0),r4out,istat)
-           deallocate(r4out)
-         else
-           call dmsput(ifile,key//char(0),z,istat)
-        endif
+!CWB2021
+!       if(key(27:27).eq.'R')then
+!          z4=z
+!          call dmsput(ifile,key//char(0),z4,istat)
+!       endif
+!       if(key(27:27).eq.'H')then
+          call dmsput(ifile,key//char(0),z,istat)
+!       endif
        t_flg=.true.
        endif
  
-!ch    call mpe_broadcast(istat,1,t_flg,mpe_integer)
        call mpe_bcast(istat,1,0,mpe_integer)
 !
        if(istat.ne.0)then
@@ -78,7 +80,7 @@
 #endif
        endif
 
-!       endif
+!       endif  !remove io_quilting
 !
       return
       end
@@ -105,13 +107,15 @@
       use param, only : io_quilting
       use mpe
       use rank
+      use const, only : RTYPE
 !     use index
 
       implicit  none
 
       integer   nx,my,lenc,istat
       logical   t_flg
-      real      z(nx,my)
+      real(kind=RTYPE) z(nx,my)
+!CWB2021
       character lrec*26,ifile*80,kflag*1
 !
 ! working array
@@ -124,11 +128,17 @@
       t_flg=.false.
 
        if(myrank .eq. 0) then
-        call dmsput(ifile,key//char(0),z,istat)
-        t_flg=.true.
+!CWB2021
+!       if(key(27:27).eq.'R')then
+!          z4=z
+!          call dmsput(ifile,key//char(0),z4,istat)
+!       endif
+!       if(key(27:27).eq.'H')then
+          call dmsput(ifile,key//char(0),z,istat)
+!       endif
+       t_flg=.true.
        endif
  
-!ch    call mpe_broadcast(istat,1,t_flg,mpe_integer)
        call mpe_bcast(istat,1,0,mpe_integer)
 !
        if(istat.ne.0)then
@@ -168,42 +178,37 @@
       use mpe
       use rank
       use index, only : col_rank
-      use const, only : outdms 
+      use const, only : RTYPE
 
       implicit  none
 
       integer   nx,my,lenc,istat
       logical   t_flg
-      real      z(nx,my)
+      real(kind=RTYPE) z(nx,my)
+!CWB2021
       character lrec*26,ifile*80,kflag*1
-      real*4,allocatable:: r4out(:,:)
-      character::rflag*1
 !
 ! working array
 !
       character key*34
 !
-!
-      rflag=kflag
-      if (outdms==2)rflag='R' 
-      write(key,1000)lrec,rflag,lenc
+      write(key,1000)lrec,kflag,lenc
  1000 format(a26,a1,i7.7)
 !
       t_flg=.false.
 
 !       if(myrank .eq. iroot) then
-      if(outdms==2)then
-        allocate(r4out(nx,my))
-        r4out(:,:)=z(:,:)
-        call dmsput(ifile,key//char(0),r4out,istat)
-        deallocate(r4out)
-      else
-        call dmsput(ifile,key//char(0),z,istat)
-      endif
+!CWB2021
+!       if(key(27:27).eq.'R')then
+!          z4=z
+!          call dmsput(ifile,key//char(0),z4,istat)
+!       endif
+!       if(key(27:27).eq.'H')then
+          call dmsput(ifile,key//char(0),z,istat)
+!       endif
        t_flg=.true.
 !       endif
  
-!ch    call mpe_broadcast(istat,1,t_flg,mpe_integer)
 !       call mpe_bcast_col(istat,1,0,mpe_integer)
 !
        if(istat.ne.0)then

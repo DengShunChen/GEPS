@@ -4,19 +4,25 @@
 !
       use param
       use index
+      use const, only : RTYPE
 
       implicit none
 
       public
 
-      real, dimension(:,:),allocatable,save :: pt,dlpl,dtpl,sgeo, &
-                           pdiff,ptend,t1000,tsave,std,ptp
+      real, dimension(:,:),allocatable,save ::                      &
+                           pdiff,t1000,tsave,std
+      real(kind=RTYPE),dimension(:,:),allocatable,save :: pt,sgeo,  &
+                           ptend,ptp
 
-      real, dimension(:,:,:),allocatable,save :: ut,vt,sd,rvor,rdiv,&
-                           tt,qt,phi,plt,pk,pk2,up,vp,ttp,qp
+      real, dimension(:,:,:),allocatable,save :: plt
 !! for Semi-Lagrangian
-      real, dimension(:,:,:),allocatable,save :: dlphi,dtphi,     &
-                             ut_sl,vt_sl
+      real(kind=RTYPE), dimension(:,:),allocatable,save :: dlpl,dtpl
+      real(kind=RTYPE), dimension(:,:,:),allocatable,save ::        &
+                           ut,vt,tt,qt,up,vp,ttp,qp,sd,             &
+                           ut_sl,vt_sl,phi,dlphi,dtphi,rvor,rdiv,   &
+                           pk,pk2
+
 !!                             ut_sl,vt_sl,uum_sl,vvm_sl,ttm_sl
 !!      real, dimension(:,:,:,:),allocatable,save :: qm_sl
 !!    real, dimension(:,:),allocatable,save :: pt_sl,ptp_sl
@@ -27,8 +33,8 @@
 
       integer, allocatable :: lonstr(:),lonlen(:)
       integer, allocatable :: latstr(:),latlen(:)
-      real, allocatable :: gslati(:),gglati(:)
-      real, allocatable :: fa1(:),fa2(:),fa3(:),fa4(:)
+      real(kind=RTYPE), allocatable :: gslati(:),gglati(:)
+      real(kind=RTYPE), allocatable :: fa1(:),fa2(:),fa3(:),fa4(:)
       contains 
 
          subroutine allocate_grid_array

@@ -37,7 +37,7 @@
 !       if(myrank .eq. 0) print *,truefile
       endif
 !
-      open (kozpl,file=trim(truefile),form='unformatted')
+    open(kozpl,file=trim(truefile),form='unformatted',convert='BIG_ENDIAN')
 !
         rewind (kozpl)
         read (kozpl) pl_coeff, latsozp, levozp, timeoz

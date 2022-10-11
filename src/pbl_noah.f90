@@ -156,6 +156,7 @@
       use rank
       use index
       use radn,   only:ntcw,ntiw,ntinc,ntoz,ntrw,ntsw,ntgl
+      use const,  only:RTYPE 
 !ch   use paramt
 
 !
@@ -168,14 +169,17 @@
 
       integer  imx(2),itstp
 
-      real     tg(nx),z0(nx),topo(nx),pss(nx),                             &
-               phi(nx,lev),u(nx,lev),v(nx,lev),t(nx,lev),q(nx,lev*ncld),   &
-               ut(nx,lev),vt(nx,lev),tt(nx,lev),qt(nx,lev*ncld),ustar(nx), &
+      real     tg(nx),z0(nx),                                              &
+               u(nx,lev),v(nx,lev),t(nx,lev),                              &
+               ustar(nx),                                                  &
                tstar(nx),qstar(nx),e(nx,lev),eps(nx,lev),hflux(nx),        &
-               qflux(nx),pk(nx,lev),pk2(nx,lev),gwclim(nx),                &
+               qflux(nx),pkd(nx),pk2d(nx),gwclim(nx),                      &
                tgclim(nx),snr(nx),totalp(nx),                              &
                ss(nx),rs(nx),alb(nx),xkmx(2),xkmd(lev),                    &
                t2(nx),u10(nx),v10(nx)
+      real(kind=RTYPE) qt(nx,lev*ncld),q(nx,lev*ncld),phi(nx,lev),         &
+                       topo(nx),pss(nx),ut(nx,lev),vt(nx,lev),tt(nx,lev),  &
+                       pk(nx,lev),pk2(nx,lev)
 !soil
       real     smc(nx,km),stc(nx,km),canopy(nx),sigmaf(nx),                &
                rld(nx),runoff(nx)
@@ -213,8 +217,9 @@
                 prsl(nx,lev),prslk(nx,lev),phil(nx,lev),del(nx,lev),        &
 !byl                prsi(nx,lev+1),phi2(nx,lev+1),phii(nx,lev+1),              &
                 prsi(nx,lev+1),phii(nx,lev+1),                          &
-                dsigma(lev,2),rcl(nx),                                  &
+                rcl(nx),                                                &
                 u1(nx,lev),v1(nx,lev),t1(nx,lev)
+      real(kind=RTYPE) dsigma(lev,2)
       real, dimension(:,:,:), allocatable :: q1
 !
       real      pk2x(nx,lev),pkx(nx,lev)
@@ -274,6 +279,7 @@
       if ( nmmiph .eq. 6 ) ntrac=ncld-3
       if ( nmmiph .eq. 8 ) ntrac=ncld-4
       if ( nmmiph .eq.11 ) ntrac=7
+
       allocate(q1(nx,lev,ntrac))
 !
 ! --- ensure ktpbl selection is greater than 2
@@ -289,8 +295,10 @@
   50  continue
 !
       do k=1,lev
-      call vlog(pk2x(1,k),pk2(1,k),nxj)
-      call vlog(pkx(1,k), pk(1,k), nxj)
+      pkd(:) =pk(:,k)
+      pk2d(:)=pk2(:,k)
+      call vlog(pk2x(1,k),pk2d,nxj)
+      call vlog(pkx(1,k), pkd, nxj)
       do i=1,nxj
         pk2x(i,k)=pk2x(i,k)*(cp/r)
         pkx(i,k) = pkx(i,k)*(cp/r)
@@ -453,7 +461,7 @@
          srflag(i)=1.
        endif
        enddo
-
+    
 !.............................................
 ! loop needed to remove unstable in calm situation (sfcw < 2m/s)
 !............................................
@@ -510,7 +518,7 @@
 !     enddo
 !     endif
 !
-!      call sfc_drv(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev), &
+!      call sfc_drv(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev),&
 !                     sheleg,sncover,snwdph,tg,qsurf,tprcp,SRFLAG,       &
 !                     smc,stc,slc,evapc,istyp,sigmaf,                    &
 !                     ivegtyp,canopy,rld,sld,                            &
@@ -530,7 +538,7 @@
                      drain,qflux,hflux,ep1d,runof,                          &
                      albedo2,jj,io,jo)
 !
-!       call sfc_sice(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev),    &
+!       call sfc_sice(nxj,nx,km,psi,ut(1,lev),vt(1,lev),tt(1,lev),qt(1,lev),   &
 !                      zice,cice,xtice,sld,        &    ! FOR SEA-ICE - XW Nov04
 !                      sheleg,snwdph,tg,qsurf,tprcp,SRFLAG,stc,evapc,    &
 !                      rld,radsl,SNOMT,dth,gfx,cd,cdq,                   &

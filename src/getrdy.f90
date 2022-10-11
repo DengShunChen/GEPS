@@ -52,8 +52,9 @@
 !  local working array
 !
       real      sst(nxp,my_max),ww1(nx,my),ww2(nxp,my_max),     &
-                wk1(nxp,lev,my_max),pklev(nxp,my_max),          &
-                cc(nx+2,levp,1,my_max),ww3(nx,my_max)
+                wk1(nxp,lev,my_max),pklev(nxp,my_max)
+      real(kind=RTYPE) cc(nx+2,levp,1,my_max),dummy,ww3(nx,my_max),    &
+                       ww4(nx,my)
 !byl                wss3(levp,2,3,jtrun,jtmax),cc3(nx+2,levp,3,my_max)
 
       character lrec*26,rfile*55,ctau*6,topostd*4,topohgt*4,key*34
@@ -93,7 +94,7 @@
       integer lmax,nxmy,mlmax2,i,j,jj,k,m,mf,n,nxj,ios,lcwb,lphy,itaui, &
               lncrec,istat,itaup,isnow,njump1,njump2,njump3,lvlw,lvlw1, &
               lvlw2,lvlw3,ii,icwarn
-      real    fact,xxaa,taux,dummy,q1,dsigp,pi,xx,wet
+      real    fact,xxaa,taux,q1,dsigp,pi,xx,wet
 !xb110>
 !      real    flash(nxp,my_max)
 !xb110<
@@ -167,7 +168,7 @@
 !
 !!      call scatter_spec(work_io,vornow,divnow,temnow,qnow,plnow,   &
 !!         vorold,divold,temold,qold,plold,dsqgeo,spgeo,trefs,       &
-!!         uzm,lev,ncld,jtrun,jtmax,my,nsize)
+!!         lev,ncld,jtrun,jtmax,my,nsize)
 !
       rfile = phyout(1:lphy)//ctau
 !
@@ -507,7 +508,7 @@
           do i = 1,nxj
             totalp(i,jj)=0.
 !            flash(i,jj)=0.   !xb110, flash density
-!byl            ustar(i,jj)=0.1
+!            ustar(i,jj)=0.1
             ustar(i,jj)=sqrt(0.14) !make sure z0 will be 0.0002 over ocean
             tstar(i,jj)=0.025
             qstar(i,jj)=0.0
@@ -645,9 +646,8 @@
         call mpe2d_unify_nx(ww3,sgeo)
         call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww3,spgeo,nsizey)
         call transr1(jtrun,jtmax,nx,my,my_max,poly,spgeo,sgeo,nsizey)
-        call mpe2d_unify(ww1,sgeo)
-
-        call qmaxn3 (ww1,'sgeo',' ',1,1,1,nx,my,1)
+        call unify_reduceintp(nx,my,my_max,sgeo,ww4)
+        call qmaxn3 (ww4,'sgeo',' ',1,1,1,nx,my,1)
 !dms    istdno=99
 !dms    istdno=0
 !c      topostd='gbkf'   ! responding to istdno=99
@@ -690,7 +690,7 @@
       call  sigful( nx,my,my_max,lev,ncld,lmax,jtrun,jtmax,ifilin    &
              , ifilout,cstar,ktrop,idtg,ptop,taux,capa,grav,rgas,rad &
              , cp,weight,poly,sigma,cosl,phi,tt,ut,vt,qt,o3l,pt,sgeo &
-             , pdiff,tsave,t1000,plt,pk,pk2,trefs,taup               &
+             , pdiff,tsave,t1000,plt,pk,pk2,taup                     &
              , ggdef,gmdef)
 !
 ! reset update cycle tau,if it is abnormal
@@ -781,7 +781,6 @@
 !!      call tranuv ( jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac &
 !!                   ,poly,dpoly,vornow,divnow,wk1,wk2,nsizey)
 !
-!!      call uzmean ( nx,my,my_max,lev,wk1,uzm )
 !
 !  write initial spectral coefficients to history file
 !
@@ -792,7 +791,7 @@
 !!        allocate (work_io((( (7+2*ncld)*2*lev+8)*jtrun*jtmax+my*lev)*nsize))
 !!        call gather_spec(work_io,vornow,divnow,temnow,qnow,plnow,   &
 !!           vorold,divold,temold,qold,plold,dsqgeo,spgeo,trefs,      &
-!!           uzm,lev,ncld,jtrun,jtmax,my,nsize)
+!!           lev,ncld,jtrun,jtmax,my,nsize)
 !         if(myrank .eq. 0) then
 !           open (unit=7,file=rfile,form='unformatted')
 !cc         write (7) work_io
@@ -1295,9 +1294,9 @@
             i=ixtyp(1,n)
             j=jytyp(1,n)
           do m=1,5 !(1:slp 2:v850 3:v700 4:h850 5:h500)
-            call unify_reduceintp(nx,my,my_max,typtrk(1,1,m),ww1)
-            tensity(0,m,n)=( ww1(i,j+1)+ww1(i+1,j+1)    &
-                           + ww1(i,j  )+ww1(i+1,j  ) )/4.
+            call unify_reduceintp(nx,my,my_max,typtrk(1,1,m),ww4)
+            tensity(0,m,n)=( ww4(i,j+1)+ww4(i+1,j+1)    &
+                           + ww4(i,j  )+ww4(i+1,j  ) )/4.
           enddo
 !byl            tensity(0,2,n)=( v850(i,j+1)+v850(i+1,j+1)  &
 !byl                           + v850(i,j  )+v850(i+1,j  ) )/4.

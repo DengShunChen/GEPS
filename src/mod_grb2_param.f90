@@ -352,11 +352,12 @@ integer*4,parameter :: numcoord=1 !number of values in array
             subroutine wrt_grb2(itau,t0,t1,t2,p3,t10,t11,t12,fld)
             use param, only : io_quilting
             use rank,only:ntag
+            use const, only: RTYPE
             integer::  t0,t1,t2,t10,t11,p3
             real::  t12
             integer::ptp0(9)
             integer::itau,ist
-            real::fld(grbnxmy)
+            real(kind=RTYPE)::fld(grbnxmy)
             real*4::r4out(grbnxmy)
             character:: keydoit*34
             data keydoit/"DOIT..........................DOIT"/
@@ -377,11 +378,12 @@ integer*4,parameter :: numcoord=1 !number of values in array
             subroutine wrt_grb2_accu(itau,t0,t1,t2,p3,t10,t11,t12,t24,t27,fld)
             use param, only : io_quilting
             use rank,only:ntag
+            use const, only: RTYPE
             integer::  t0,t1,t2,t10,t11,p3,t24,t27
             real::  t12
             integer::ptp0(9)
             integer::itau,ist
-            real::fld(grbnxmy)
+            real(kind=RTYPE)::fld(grbnxmy)
             real*4::r4out(grbnxmy)
             character:: keydoit*34
             data keydoit/"DOIT..........................DOIT"/

@@ -1,5 +1,6 @@
       subroutine matrix_hybrid_cwb(cp,sigma,dsigma,ptop,ptmean,tmean,spalm &
-                        ,eigval,evecin,evectr,arrhyd,arsddt,pmcor,tmcor )
+                        ,eigval,evecin,evectr,arrhyd,arsddt                &
+                        ,pmcor,tmcor )
 !
 !  ***input***
 !
@@ -29,25 +30,29 @@
 !  time differencing scheme of the model.
 !
       use param
+      use const, only : RTYPE
 
       implicit  none
-      real      cp,ptop,ptmean
+      real      cp,ptop
 !
-      real      sigma(lev+1,2),dsigma(lev,2),tmean(lev),spalm(lev),     &
-                eigval(lev),evecin(lev,lev),evectr(lev,lev),pmcor(lev), &
-                tmcor(lev,lev),arrhyd(lev,lev),arsddt(lev,lev)
+      real(kind=RTYPE) eigval(lev),evecin(lev,lev),evectr(lev,lev),    &
+                pmcor(lev),tmcor(lev,lev),arrhyd(lev,lev),             &
+                arsddt(lev,lev),sigma(lev+1,2),dsigma(lev,2),          &
+                tmean(lev),spalm(lev),ptmean
 !
       integer   ipp(lev*2),iwk(lev)
-      real      a(lev,lev),b(lev,lev),asd(lev,lev),                    &
-                ai(lev,lev),csrtn(lev,lev),dp(lev),dcdp(lev),          &
-                enorm(lev),phatk(lev+1),pko(lev),thatm(lev),p2(lev+1), &
-                wrk(257),sig(lev+1),dsig(lev)
+!  in order to keep the stability. two variables below can not be single precision.
+      real      dp(lev),dcdp(lev)
+!
+      real(kind=RTYPE) a(lev,lev),b(lev,lev),asd(lev,lev),ai(lev,lev), &
+                csrtn(lev,lev),enorm(lev),tmp(lev),                    &
+                phatk(lev+1),pko(lev),thatm(lev),p2(lev+1)
 !
 !  compute some pressure related variables from reference atmosphere
 !
       integer   k,j,ier,jj,i,l
       real      capa,capap1,at,det
-
+!
       capa= 1.0/3.5
       capap1= 1.0+capa
       do 135 k=1,lev+1
@@ -110,8 +115,10 @@
 !   20 asd(j,i)= (sig(j)-1.0)*dp(i)
       call mtxmlp (a,asd,arsddt,lev)
 #ifdef VERBOSE
-      call mtxprt (dcdp,lev,1,'dcdp    ','f10.4   ')
-      call mtxprt (dp,lev,1,'dp      ','f10.4   ')
+      tmp=dcdp
+      call mtxprt (tmp,lev,1,'dcdp    ','f10.4   ')
+      tmp=dp
+      call mtxprt (tmp,lev,1,'dp      ','f10.4   ')
 #endif
 !
       call mtxmlp (arrhyd,arsddt,a,lev)
@@ -132,9 +139,15 @@
 !  evectr in "rg" should be a integer array
 !  1/9/2004
 !err  call rg (lev,lev,evecin,a,eigval,1,b,evectr,enorm,ier)
+#ifdef SP
+!sigle precision version in fujitsu
+      call eig1(evecin,lev,lev,0,a,eigval,b,enorm,ier)
+#else
       call rg (lev,lev,evecin,a,eigval,1,b,iwk,enorm,ier)
+#endif
 !sun  call rg (lev,lev,evecin,eigval,a,1,evectr,b,enorm,ier)
 !fuji      call deig1(evecin,lev,lev,0,a,eigval,b,enorm,ier)
+
 !
 !  normalize vertical eigenvector matrix
 !

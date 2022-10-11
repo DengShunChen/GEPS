@@ -3,7 +3,7 @@
       use mpe
       use rank
       use index
-      use const ,only: outdms ,outgrb2 ,ifilout_grb
+      use const ,only: outdms ,outgrb2 ,ifilout_grb ,RTYPE,kflag
       use mod_grb2_param  !for write grib2 data
 
       implicit  none
@@ -17,7 +17,7 @@
 !
 ! local work arrays
 !
-      real      glob(nx,my),wrk(nxp,my_max) 
+      real(kind=RTYPE) glob(nx,my),wrk(nxp,my_max)
 
       integer   jj,j,nxj,i
 !
@@ -25,21 +25,19 @@
 !=======================================================================
       if(myrank .eq. 0) print*,'   in outflds_hp for tau= ',itau
 !=======================================================================
-!byl      call mpe2d_unify(glob,raincu3)
-!byl      call mpe2d_unify(glob1,rainlp3)
 !      call mpe_unify_1(glob,raincu3,nx,my,2,mpe_double)
 !      call mpe_unify_1(glob1,rainlp3,nx,my,2,mpe_double)
       call syslbl ('b00632',idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      call unify_reduceintp(nx,my,my_max,raincu3,glob)
-      if(outdms.gt.0)call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      wrk=raincu3
+      call unify_reduceintp(nx,my,my_max,wrk,glob)
+      if(outdms.gt.0)call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,1,10,2,103,0,0.,1,3,glob)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
 !
       call syslbl ('b00642',idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob1,nxdef,nx,my)
-      call unify_reduceintp(nx,my,my_max,rainlp3,glob)
-      if(outdms.gt.0)call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      wrk=rainlp3
+      call unify_reduceintp(nx,my,my_max,wrk,glob)
+      if(outdms.gt.0)call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,1,9,2,103,0,0.,1,3,glob)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
 !
@@ -51,7 +49,7 @@
        wrk(i,jj)=raincu3(i,jj)+rainlp3(i,jj)
  98   continue
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      if(outdms.gt.0)call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+      if(outdms.gt.0)call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,1,7,2,103,0,0.,1,3,glob)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
 

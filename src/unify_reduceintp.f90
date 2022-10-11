@@ -1,13 +1,13 @@
       subroutine unify_reduceintp(nx,my,my_max,fp,ff)
       use mpe
       use index
+      use const, only: RTYPE
 
       implicit none
 
       integer   nx,my,my_max
       integer   i,j,jj,nxj
-      real      fp(nxp,my_max),ff(nx,my),ffx(nx,my_max)
-
+      real(kind=RTYPE) fp(nxp,my_max),ff(nx,my),ffx(nx,my_max)
 
 
 

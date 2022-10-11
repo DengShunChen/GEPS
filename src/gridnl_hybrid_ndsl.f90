@@ -42,25 +42,24 @@
 !
 ! ******************************************************************
 !
+      use const, only : RTYPE
+!
       implicit  none
 
       integer   nxj,nx,lev,ncld
-      real      cp,radsq,onocos,cor,sinl
+      real      cp,radsq
+      real(kind=RTYPE) onocos,cor,sinl
 
-      real      ut(nx,lev),vt(nx,lev),rdiv(nx,lev),tt(nx,lev)     &
-      , qt(nx,lev*ncld),pt(nx),dlpl(nx),dtpl(nx),pk(nx,lev)       &
-      , phi(nx,lev),pk2(nx,lev),dsigma(lev,2),sigma(lev+1,2)      &
-      , sgeo(nx)
-      
 !
-      real      deldm(nx),pten(nx,lev)
-      real      diveng(nx,lev),vdmerd(nx,lev),vdzonl(nx,lev)
+      real(kind=RTYPE) diveng(nx,lev),vdmerd(nx,lev),vdzonl(nx,lev), &
+                pdot(nx,lev+1),pten(nx,lev),dlpl(nx),dtpl(nx),       &
+                rdiv(nx,lev),ut(nx,lev),vt(nx,lev),tt(nx,lev),       &
+                qt(nx,lev*ncld),phi(nx,lev),pt(nx),sgeo(nx),         &
+                deldm(nx),spal(nx,lev),sd(nx,lev),sdpbl(nx),         &
+                dsigma(lev,2),sigma(lev+1,2),pk(nx,lev),pk2(nx,lev)
 !
-      real      sdpbl(nx)
       logical   flag(nx)
 !
-      real      sd(nx,lev),pdot(nx,lev+1),spal(nx,lev),odpsig(nx,lev)
-
       integer   k,i,kbgn,kk
       real      px,px_pbl
 
@@ -133,7 +132,7 @@
 !
 !
       call vstruc_hybrid_cwb(nxj,nx,lev,cp,radsq,sigma,dsigma,pt,tt,qt &
-                   ,pk,pk2,spal,odpsig,phi,ncld)
+                   ,pk,pk2,spal,phi,ncld)
 !
       do 13 k=1,lev
       do 13 i=1,nxj
@@ -191,25 +190,24 @@
 !
 ! ******************************************************************
 !
+      use const, only : RTYPE
       implicit  none
 
       integer   nxj,nx,lev,ncld
-      real      cp,radsq,onocos,cor,sinl
+      real      cp,radsq
+      real(kind=RTYPE) onocos,cor,sinl
 
-      real      ut(nx,lev),vt(nx,lev),rdiv(nx,lev),tt(nx,lev)     &
-      , qt(nx,lev*ncld),pt(nx),dlpl(nx),dtpl(nx),pk(nx,lev)       &
-      , phi(nx,lev),pk2(nx,lev),dsigma(lev,2),sigma(lev+1,2)      &
-      , sgeo(nx)
-      
 !
-      real      deldm(nx),pten(nx,lev)
-      real      diveng(nx,lev),vdmerd(nx,lev),vdzonl(nx,lev)
+      real(kind=RTYPE) diveng(nx,lev),vdmerd(nx,lev),vdzonl(nx,lev),   &
+                       pdot(nx,lev+1),pten(nx,lev),dlpl(nx),dtpl(nx),  &
+                       rdiv(nx,lev),ut(nx,lev),vt(nx,lev),tt(nx,lev),  &
+                       qt(nx,lev*ncld),phi(nx,lev),pt(nx),sgeo(nx),    &
+                       deldm(nx),spal(nx,lev),sd(nx,lev),sdpbl(nx),    &
+                       dsigma(lev,2),sigma(lev+1,2),pk(nx,lev),        &
+                       pk2(nx,lev)
 !
-      real      sdpbl(nx)
       logical   flag(nx)
 !
-      real      sd(nx,lev),pdot(nx,lev+1),spal(nx,lev),odpsig(nx,lev)
-
       integer   k,i,kbgn,kk,step
       real      px,px_pbl
 
@@ -283,7 +281,7 @@
       else
 !
       call vstruc_hybrid_cwb(nxj,nx,lev,cp,radsq,sigma,dsigma,pt,tt,qt &
-                   ,pk,pk2,spal,odpsig,phi,ncld)
+                   ,pk,pk2,spal,phi,ncld)
 !
       do 13 k=1,lev
       do 13 i=1,nxj

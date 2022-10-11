@@ -47,14 +47,16 @@
 !
 
       use paramt
+      use const, only: RTYPE
 
       implicit  none
 
       integer   nxj,nx,lev,ktshl,ncld
 
-      real      dsigma(lev,2),tg(nx),pst(nx),topo(nx),po(nx,lev)    &
-              , tt(nx,lev),qt(nx,lev*ncld),pok(nx,lev),phi(nx,lev)  &
-              , ql(nx,lev)
+      real      tg(nx),po(nx,lev)                                   &
+              , ql(nx,lev),ttmp(nx)
+      real(kind=RTYPE) tt(nx,lev),qt(nx,lev*ncld),phi(nx,lev)       &
+              ,        topo(nx),pst(nx),dsigma(lev,2),pok(nx,lev)
 !
 !     local work arrays
 !
@@ -150,7 +152,8 @@
         enddo
       enddo
 !
-      call qsatq (nxj, tt(1,lev), po(1,lev), wk )
+      ttmp(:)=tt(:,lev)
+      call qsatq (nxj, ttmp, po(1,lev), wk )
 !
       do 200 i = 1, nxj
       rh = qt(i,lev)/wk(i)
