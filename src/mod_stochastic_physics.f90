@@ -12,9 +12,9 @@ module mod_stochastic_physics
     real, allocatable :: n2du(:,:,:)
     real, allocatable :: n2dv(:,:,:)
     real(kind=RTYPE), allocatable :: n2d(:,:)
-    real, allocatable :: spec(:,:)
     real, allocatable :: kenorm(:,:)
-    real, allocatable :: varspec(:)
+    real(kind=RTYPE), allocatable :: spec(:,:)
+    real(kind=RTYPE), allocatable :: varspec(:)
     real :: stdev ! stochastic physics tendency amplitude
     real :: decortau ! time scales
     real :: lenscale ! length scales
@@ -38,7 +38,7 @@ module mod_stochastic_physics
 
   ! SPPT
   integer :: nsppt
-  real, allocatable, save :: sppt3d(:,:,:)
+  real(kind=RTYPE), allocatable, save :: sppt3d(:,:,:)
   real :: sppt(5) = -999.             ! amplitude(0.~1.)
   real :: sppt_seed(5) = -999.        ! random seeds
   real :: sppt_decort(5) = -999.      ! time scales(seconds)
@@ -53,7 +53,7 @@ module mod_stochastic_physics
 
   ! SHUM
   integer :: nshum
-  real, allocatable, save :: shum3d(:,:,:)
+  real(kind=RTYPE), allocatable, save :: shum3d(:,:,:)
   real :: shum(5) = -999.             ! amplitude(0.~1.)
   real :: shum_seed(5) = -999.         ! random seeds
   real :: shum_decort(5) = -999.      ! time scales(seconds)
@@ -63,8 +63,8 @@ module mod_stochastic_physics
 
   ! SKEB
   integer :: nskeb,skeblevs
-  real, allocatable, save :: skeb3du(:,:,:),skeb3dv(:,:,:),diss_est(:,:,:)
-  real, allocatable, save :: kea(:,:,:),keb(:,:,:)
+  real(kind=RTYPE), allocatable, save :: skeb3du(:,:,:),skeb3dv(:,:,:),diss_est(:,:,:)
+  real(kind=RTYPE), allocatable, save :: kea(:,:,:),keb(:,:,:)
   real :: skeb(5) = -999.             ! amplitude(0.~1.)
   real :: skeb_seed(5) = -999.        ! random seeds
   real :: skeb_decort(5) = -999.      ! time scales(seconds)
@@ -81,7 +81,7 @@ module mod_stochastic_physics
 
   ! SSST
   integer :: nssst
-  real, allocatable, save :: ssst3d(:,:,:)
+  real(kind=RTYPE), allocatable, save :: ssst3d(:,:,:)
   real :: ssst(5) = -999.             ! amplitude(0.~1.)
   real :: ssst_seed(5) = -999.         ! random seeds
   real :: ssst_decort(5) = -999.      ! time scales(seconds)
@@ -466,7 +466,7 @@ contains
     type(random_pattern), intent(inout) :: rpattern(nscale)
     integer :: irand, i
     real :: dt
-    real, allocatable :: noise(:,:)
+    real(kind=RTYPE), allocatable :: noise(:,:)
     integer(8) count, count_rate, count_max, count_trunc
     integer(8) :: iscale = 10000000000
     integer :: count4 
@@ -672,7 +672,7 @@ contains
     integer, intent(in) :: nscale
     real, intent(in) :: vfact(nlev) 
     type(random_pattern), intent(inout) :: rpattern(nscale)
-    real, intent(  out) :: n3d(nxp,nlev,my_max) 
+    real(kind=RTYPE), intent(  out) :: n3d(nxp,nlev,my_max) 
  
     n3d = 0.
     do n=1,nscale
@@ -699,7 +699,7 @@ contains
     integer, intent(in) :: nscale
     real, intent(in) :: vfact(nlev) 
     type(random_pattern), intent(inout) :: rpattern(nscale)
-    real, intent(  out) :: n3du(nxp,nlev,my_max),n3dv(nxp,nlev,my_max) 
+    real(kind=RTYPE), intent(  out) :: n3du(nxp,nlev,my_max),n3dv(nxp,nlev,my_max) 
  
     n3du = 0.
     n3dv = 0.
@@ -726,7 +726,7 @@ contains
     implicit none
     integer :: ml, ns, ms
     type(random_pattern), intent(inout) :: rpattern
-    real, intent(out) :: noise(rpattern%mlmax,2)
+    real(kind=RTYPE), intent(out) :: noise(rpattern%mlmax,2)
     real :: noise_gauss(2*rpattern%mlmax)
     real :: ave, var, std
 
@@ -755,7 +755,7 @@ contains
     type(random_pattern), intent(inout) :: rpattern
     !real(kind=RTYPE), intent(out) :: sppt2d(nxp,my_max)
     integer :: ml, ns, ms
-    real, allocatable :: noise(:,:)
+    real(kind=RTYPE), allocatable :: noise(:,:)
     real(kind=RTYPE), allocatable :: specp(:,:,:),bufr2d(:,:,:)
 
     allocate(bufr2d(jtrun,jtmax*nsizey,2)) 
@@ -1210,8 +1210,7 @@ contains
     endif
 
     do n=1,nsppt
-      temp=rpattern_sppt(n)%n2d
-      call unify_reduceintp(nx,my,my_max,temp,glob)   
+      call unify_reduceintp(nx,my,my_max,rpattern_sppt(n)%n2d,glob)   
       if ( myrank .eq. 0 ) then
         glob4=glob
         write(ihead,rec=recn) glob4
@@ -1550,7 +1549,7 @@ contains
 !
       implicit none
       integer lev,jtr,jcap1,jtm,ns,ml
-      real speci(jcap1*(jcap1+1)/2,2)
+      real(kind=RTYPE) speci(jcap1*(jcap1+1)/2,2)
       real(kind=RTYPE) speco(jtr,jtm*ns*2)
       integer i,j,k,jj,jp,jr,j1,j2
       integer mlsort(jcap1,jcap1)
