@@ -555,13 +555,13 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
     dte = 0.0
     
     !! convert to mm / day (original)
-    convt = 86400. * rdt * rgrav
+    ! convt = 86400. * rdt * rgrav
     
     !! convert to mm / s
     ! convt = rdt * rgrav
 
     ! convert to mm
-    !convt = rgrav
+    convt = rgrav
 
     ! -----------------------------------------------------------------------
     ! use local variables

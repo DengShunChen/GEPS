@@ -365,10 +365,10 @@
         enddo
 
         do i = 1, nxj
-          rain0(i)    = rain0(i) * dta / 86400.
-          ice0(i)     = ice0(i) * dta / 86400.
-          snow0(i)    = snow0(i) * dta / 86400.
-          graupel0(i) = graupel0(i) * dta / 86400.
+          rain0(i)    = rain0(i)
+          ice0(i)     = ice0(i)
+          snow0(i)    = snow0(i)
+          graupel0(i) = graupel0(i)
 
           rlsp(i) = rain0(i)+snow0(i)+ice0(i)+graupel0(i)     !total large scale precipitation (mm)
           if ( rlsp(i) .gt. rainmin ) then
