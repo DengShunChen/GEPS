@@ -1872,6 +1872,10 @@
         istep= int(tau/(dt/3600.)+0.01)
         tauleft=float(int((tau-int(tau)+0.001)*3600./dt))*dt
         icurrenttau=int(tau)
+        if(tauleft == 3600.0 )then
+           icurrenttau=icurrenttau+1
+           tauleft=0.0
+        endif
         call dtgfix12(idtg,idtg_sitvdiff,icurrenttau)
         call time_weights(idtg_sitvdiff,tauleft)
         write(cdtg,'(i12)')idtg_sitvdiff

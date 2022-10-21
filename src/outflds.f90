@@ -140,15 +140,14 @@
       if(ntau.eq.0) return
 
 !
-!  save qt into local arrays
+!  copy sht into local qt arrays
 !
       do jj = 1, jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
         do k = 1, lev*ncld
           do i = 1,nxj
-!            sht(i,k,jj) = qt(i,k,jj)
-            qt(i,k,jj) = sht(i,k,jj)  !copy to local variable
+            qt(i,k,jj) = sht(i,k,jj)  
           enddo
         enddo
       enddo
@@ -669,21 +668,6 @@
           wk_xy(i,jj,5) = min( 100., max( 1., wk_xy(i,jj,5) ) )
         enddo
       enddo
-
-!xb119  origin qt rename to sht ,and 
-!     sht copy to local array qt  on line 142
-!
-!  get back original qt
-!
-!      do jj = 1, jlistnum
-!        j=jlist1(jj)
-!        nxj=nxdef_2d(j)
-!        do k = 1, lev*ncld
-!          do i = 1,nxj
-!            qt(i,k,jj) = sht(i,k,jj)
-!          enddo
-!        enddo
-!      enddo
 
 !
       do jj =1,jlistnum

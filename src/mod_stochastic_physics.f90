@@ -796,8 +796,8 @@ contains
     implicit none
     type(random_pattern), intent(inout) :: rpattern
     integer :: ml, ns, ms, k
-    real, allocatable :: noise(:,:),specpv(:,:,:),specpd(:,:,:),specf(:,:)
-    real(kind=RTYPE), allocatable :: bufr2d(:,:,:)
+    real, allocatable ::            specpv(:,:,:),specpd(:,:,:)
+    real(kind=RTYPE), allocatable :: bufr2d(:,:,:) ,noise(:,:) ,specf(:,:)
 
     allocate(bufr2d(jtrun,jtmax*nsizey,2)) 
     allocate(specpd(jtrun,jtmax,2)) !divergence
