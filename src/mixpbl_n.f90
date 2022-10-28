@@ -7,6 +7,8 @@
 !     use machine     , only : kind_phys
 !     use physcons, grav => con_g, rd => con_rd, cp => con_cp
 !     ,             hvap => con_hvap, rog => con_rog, fv => con_fvirt
+      use const, only: RTYPE
+!
       implicit none
 !
       real grav,cp,hvap,rd
@@ -20,7 +22,7 @@
                            tau(im,km),    rtg(im,km,ntrac),             &
                            u1(ix,km),     v1(ix,km),                    &
                            t1(ix,km),     q1(ix,km,ntrac),              &
-                           psk(im),       rbsoil(im),                   &
+                           rbsoil(im),                                  &
 !                          cd(im),        ch(im),
                            fm(im),        fh(im),                       &
                            tsea(im),      qss(im),                      &
@@ -33,6 +35,7 @@
                            dvsfc(im),     dtsfc(im),                    &
                            dqsfc(im),     hpbl(im),                     &
                            hgamt(im),     hgamq(im)
+      real(kind=RTYPE)     psk(im)
 !
 !    locals
 !

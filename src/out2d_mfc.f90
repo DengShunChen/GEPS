@@ -5,7 +5,7 @@
       use rank
       use mpe
       use index
-      use const ,only : grav,ptop,rgas,cp
+      use const ,only : grav,ptop,rgas,cp,RTYPE,kflag
       use grid  ,only : tt,qt,plt,pk,pk2,sgeo
 !
       implicit  none
@@ -14,19 +14,20 @@
       parameter (num=14)
 
       real      raintot(nxp,my_max),t2(nxp,my_max),u10(nxp,my_max),   &
-                v10(nxp,my_max),ctot(nxp,my_max),pt(nxp,my_max)
+                v10(nxp,my_max),ctot(nxp,my_max)
+      real(kind=RTYPE) pt(nxp,my_max)
 
       real rain1(nxp,my_max),q2(nxp,my_max),rh2(nxp,my_max),          &
            rh10(nxp,my_max),tmax(nxp,my_max),tmin(nxp,my_max),        &
            td(nxp,my_max),rld(nxp,my_max),sld(nxp,my_max)
 !
-      real mfcout(nxp,my_max,num)
+      real(kind=RTYPE) mfcout(nxp,my_max,num)
 !
       character*4 ggdef
       integer*8 idtg
       character*6 dmskey(num)
 !
-      real      glob(nx,my),mout(nx,my)
+      real(kind=RTYPE) glob(nx,my),mout(nx,my)
 !
       character*80 ifilout
       character*26 ihdg,ihdg2
@@ -127,22 +128,22 @@
 !byl      call mpe2d_unify(glob,raintot)
       do n=1,num
         call syslbl (dmskey(n),idtg,ntau,ggdef,ihdg)
-        call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),mout)
+        call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),glob)
         if ( myrank .eq. n-1 ) then
-          glob=mout
+          mout=glob
           ihdg2=ihdg
         endif
       enddo
 !
-      if (myrank .lt. num ) call dmswrit_split(nx,my,ihdg2,lenc,'H',ifilout,glob,istat)
+      if (myrank .lt. num ) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,mout,istat)
 !
 !! rh10
 !!byl      call mpe2d_unify(glob,rh10)
 !      call syslbl ('b10510',idtg,ntau,ggdef,ihdg)
 !      call unify_reduceintp(nx,my,my_max,rh10,glob)
 !!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-!!     call dmswrit(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
-!      call dmswrit_mfc(nx,my,ihdg,lenc,'H',ifilout,glob,istat)
+!!     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
+!      call dmswrit_mfc(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
 
 
       return

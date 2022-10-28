@@ -3,15 +3,15 @@ module mod_stochastic_physics
   use rank, only : myrank
   use index
   use param
-  use const, only : aki, bki, dosppt, doshum, dossst, poly
+  use const, only : aki, bki, dosppt, doshum, dossst, poly, RTYPE
   use mersenne_twister, only: random_setseed,random_gauss,random_stat
   implicit none
   private 
 
   type random_pattern
-    real, allocatable :: n2d(:,:)
-    real, allocatable :: spec(:,:)
-    real, allocatable :: varspec(:)
+    real(kind=RTYPE), allocatable :: n2d(:,:)
+    real(kind=RTYPE), allocatable :: spec(:,:)
+    real(kind=RTYPE), allocatable :: varspec(:)
     real :: stdev ! stochastic physics tendency amplitude
     real :: decortau ! time scales
     real :: lenscale ! length scales
@@ -35,7 +35,7 @@ module mod_stochastic_physics
 
   ! SPPT
   integer :: nsppt
-  real, allocatable, save :: sppt3d(:,:,:)
+  real(kind=RTYPE), allocatable, save :: sppt3d(:,:,:)
   real :: sppt(5) = -999.             ! amplitude(0.~1.)
   real :: sppt_seed(5) = -999.        ! random seeds
   real :: sppt_decort(5) = -999.      ! time scales(seconds)
@@ -50,7 +50,7 @@ module mod_stochastic_physics
 
   ! SHUM
   integer :: nshum
-  real, allocatable, save :: shum3d(:,:,:)
+  real(kind=RTYPE), allocatable, save :: shum3d(:,:,:)
   real :: shum(5) = -999.             ! amplitude(0.~1.)
   real :: shum_seed(5) = -999.         ! random seeds
   real :: shum_decort(5) = -999.      ! time scales(seconds)
@@ -60,7 +60,7 @@ module mod_stochastic_physics
 
   ! SKEB
   integer :: nskeb
-  real, allocatable, save :: skeb3d(:,:,:)
+  real(kind=RTYPE), allocatable, save :: skeb3d(:,:,:)
   real :: skeb(5) = -999.             ! amplitude(0.~1.)
   real :: skeb_seed(5) = -999.         ! random seeds
   real :: skeb_decort(5) = -999.      ! time scales(seconds)
@@ -69,7 +69,7 @@ module mod_stochastic_physics
 
   ! SSST
   integer :: nssst
-  real, allocatable, save :: ssst3d(:,:,:)
+  real(kind=RTYPE), allocatable, save :: ssst3d(:,:,:)
   real :: ssst(5) = -999.             ! amplitude(0.~1.)
   real :: ssst_seed(5) = -999.         ! random seeds
   real :: ssst_decort(5) = -999.      ! time scales(seconds)
@@ -322,7 +322,7 @@ contains
     type(random_pattern), intent(inout) :: rpattern(nscale)
     integer :: irand, i
     real :: dt
-    real, allocatable :: noise(:,:)
+    real(kind=RTYPE), allocatable :: noise(:,:)
     integer(8) count, count_rate, count_max, count_trunc
     integer(8) :: iscale = 10000000000
     integer :: count4 
@@ -477,7 +477,7 @@ contains
     integer, intent(in) :: nscale
     real, intent(in) :: vfact(nlev) 
     type(random_pattern), intent(inout) :: rpattern(nscale)
-    real, intent(  out) :: n3d(nxp,nlev,my_max) 
+    real(kind=RTYPE), intent(  out) :: n3d(nxp,nlev,my_max) 
  
     n3d = 0.
     do n=1,nscale
@@ -498,7 +498,7 @@ contains
     implicit none
     integer :: ml, ns, ms
     type(random_pattern), intent(inout) :: rpattern
-    real, intent(out) :: noise(rpattern%mlmax,2)
+    real(kind=RTYPE), intent(out) :: noise(rpattern%mlmax,2)
     real :: noise_gauss(2*rpattern%mlmax)
     real :: ave, var, std
 
@@ -521,11 +521,13 @@ contains
   end subroutine get_noise
 
   subroutine gen_random_pattern_2d(sppt2d,rpattern)
+    use const, only: RTYPE
     implicit none
     type(random_pattern), intent(inout) :: rpattern
-    real, intent(out) :: sppt2d(nxp,my_max)
+    real(kind=RTYPE), intent(out) :: sppt2d(nxp,my_max)
     integer :: ml, ns, ms
-    real, allocatable :: noise(:,:),bufr2d(:,:,:),specp(:,:,:)
+    real(kind=RTYPE), allocatable :: noise(:,:)
+    real(kind=RTYPE), allocatable :: specp(:,:,:),bufr2d(:,:,:)
 
     allocate(bufr2d(jtrun,jtmax*nsizey,2)) 
     allocate(specp(jtrun,jtmax,2)) 
@@ -563,13 +565,13 @@ contains
   subroutine get_legendre_poly(mlmax,jtrun,poly)
     implicit none
     integer, intent(in) :: mlmax,jtrun
-    real,intent(out)   ::  poly(mlmax,my/2) 
+    real(kind=RTYPE),intent(out)   ::  poly(mlmax,my/2) 
 
     !   Spheric Harmonic Constants
     integer ::  msort(mlmax),lsort(mlmax),mlsort(mlmax,jtrun)
-    real :: dpoly(mlmax,my/2),eps4(mlmax),cim(mlmax)
-    real :: cosl(my),onocos(my)
-    real :: weight(my),sinl(my)
+    real(kind=RTYPE) :: dpoly(mlmax,my/2),eps4(mlmax),cim(mlmax)
+    real(kind=RTYPE) :: cosl(my),onocos(my)
+    real(kind=RTYPE) :: weight(my),sinl(my)
     real :: cp,capa,rgas,pi,radsq,rad,one,onem,irad
     integer :: rl,rm,rlm,ml
     integer :: j,my2
@@ -641,7 +643,8 @@ contains
 !
   SUBROUTINE avevar_sppt2d(data2d,n,m,ave,var,std)
     INTEGER :: n,m,nmdim
-    REAL :: ave,var,data2d(n,m),data(n*m)
+    REAL :: ave,var,data(n*m)
+    REAL(kind=RTYPE) :: data2d(n,m)
     INTEGER :: i,j
     REAL :: s,ep,std
 
@@ -727,7 +730,7 @@ contains
 ! 
       integer :: j, n, np, kp, k, mp, m, nps, l, ml, m1, mk
       integer :: my2, jtrun, mlmax, jtrunp
-      real :: poly(mlmax,my2),dpoly(mlmax,my2),sinl(my2)
+      real(kind=RTYPE) :: poly(mlmax,my2),dpoly(mlmax,my2),sinl(my2)
       integer :: mlsort(jtrun,jtrun)
 ! 
 !       parameter (jtrunx= 100)
@@ -916,8 +919,8 @@ contains
     integer      :: i, j, k, jj, nxj, ihead, n
     integer      :: nxmy4
     real         :: tau
-    real         :: glob(nx,my),temp(nxp,my_max)
-    real(kind=4) :: glob4(nx,my)
+    real*4       :: glob4(nx,my)
+    real(kind=RTYPE) :: glob(nx,my),temp(nxp,my_max)
 
     ihead=15
     nxmy4=nx*my*4
@@ -1060,8 +1063,8 @@ contains
 !
       implicit none
       integer lev,jtr,jcap1,jtm,ns,ml
-      real speci(jcap1*(jcap1+1)/2,2)
-      real speco(jtr,jtm*ns*2)
+      real(kind=RTYPE) speci(jcap1*(jcap1+1)/2,2)
+      real(kind=RTYPE) speco(jtr,jtm*ns*2)
       integer i,j,k,jj,jp,jr,j1,j2
       integer mlsort(jcap1,jcap1)
 !

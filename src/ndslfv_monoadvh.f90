@@ -1,12 +1,13 @@
       subroutine ndslfv_monoadvh(ddtemp,qvadv,pten,vdzonl,vdmerd     &
                 , lonsperlat,deltim,xy,levs)
       use param
+      use const, only : RTYPE
       implicit none
-      real pten(nx,levs,my_max)
-      real ddtemp(nx,levs,my_max),qvadv(nx,levs*ncld,my_max)
-      real vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
+      real(kind=RTYPE) pten(nx,levs,my_max)
+      real(kind=RTYPE) ddtemp(nx,levs,my_max),qvadv(nx,levs*ncld,my_max)
+      real(kind=RTYPE) vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
       integer,intent(in):: lonsperlat(my)
-      real,   intent(in):: deltim
+      real(kind=RTYPE),   intent(in):: deltim
       integer xy,levs
       
       if(xy .eq.   0) call ndslfv_monoadvh2(ddtemp,qvadv,pten,vdzonl    &
@@ -22,13 +23,14 @@
       subroutine ndslfv_monoadvh_fgnl(vdzonl,vdmerd,ddtemp            &
                 , lonsperlat,deltim,xy,levs,nvars)
       use param
+      use const, only : RTYPE
       implicit none
-      real vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
-      real ddtemp(nx,levs,my_max)
+      real(kind=RTYPE) vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
+      real(kind=RTYPE) ddtemp(nx,levs,my_max)
       integer,intent(in):: lonsperlat(my)
-      real,   intent(in):: deltim
+      real(kind=RTYPE),   intent(in):: deltim
       integer xy,levs,nvars
-      
+
       if(xy .eq.   0) call ndslfv_monoadvh2_fgnl(vdzonl,vdmerd,ddtemp    &
                              ,lonsperlat,deltim,levs,nvars)
       if(xy .gt. 0.5) call ndslfv_monoadvh2_fgnl_xy(vdzonl,vdmerd,ddtemp &
@@ -57,28 +59,27 @@
 
       implicit none
 
-      real pten(nx,levs,my_max)
-!ch   real ddtemp(nx,levs,my_max),qvadv(nx,levs*ncld,my_max)
-      real ddtemp(nx,levs,my_max),qvadv(nx,levs,ncld,my_max)
-      real vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
-!      real plev(lonfull,lev+1)
+      real(kind=RTYPE) pten(nx,levs,my_max)
+      real(kind=RTYPE) ddtemp(nx,levs,my_max),qvadv(nx,levs,ncld,my_max)
+      real(kind=RTYPE) vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
+!      real(kind=RTYPE) plev(lonfull,lev+1)
 !      integer,intent(in):: global_lats_a(my)
       integer,intent(in):: lonsperlat(my)
-      real,   intent(in):: deltim
+      real(kind=RTYPE),   intent(in):: deltim
 
-      real      uulon(lonfull,levs,latpart)
-      real      vvlon(lonfull,levs,latpart)
-      real      qqlon(lonfull,levs*ndslhvar,latpart)
-      real      rrlon(lonfull,levs*ndslhvar,latpart)
+      real(kind=RTYPE)      uulon(lonfull,levs,latpart)
+      real(kind=RTYPE)      vvlon(lonfull,levs,latpart)
+      real(kind=RTYPE)      qqlon(lonfull,levs*ndslhvar,latpart)
+      real(kind=RTYPE)      rrlon(lonfull,levs*ndslhvar,latpart)
 
-      real      vvlat(latfull,levs,lonpart)
-      real      qqlat(latfull,levs*ndslhvar,lonpart)
-      real      rrlat(latfull,levs*ndslhvar,lonpart)
-      real      xr    (lonfull,levs)
-      real      xcp   (lonfull,levs)
-      real      sumrq (lonfull,levs)
-      real      xkappa(lonfull,levs)
-      real      rdt2, rkt, pi, cons0, cons1, rma, rm2a
+      real(kind=RTYPE)      vvlat(latfull,levs,lonpart)
+      real(kind=RTYPE)      qqlat(latfull,levs*ndslhvar,lonpart)
+      real(kind=RTYPE)      rrlat(latfull,levs*ndslhvar,lonpart)
+      real(kind=RTYPE)      xr    (lonfull,levs)
+      real(kind=RTYPE)      xcp   (lonfull,levs)
+      real(kind=RTYPE)      sumrq (lonfull,levs)
+      real(kind=RTYPE)      xkappa(lonfull,levs)
+      real(kind=RTYPE)      rdt2, rkt, pi, cons0, cons1, rma, rm2a
 
 !      logical   lprint
 
@@ -138,7 +139,7 @@
           do i=1,lons_lat
 !ch         uulon(i,k,lan) = ut(i,kk,lan) * rm2a
             uulon(i,k,lan) = ut_sl(i,k ,lan) * rm2a
-!hmhj use real wind
+!hmhj use real(kind=RTYPE) wind
 !            vvlon(i,k,lan) = grid_gr(ilan,kvg) * rma
 !hmhj use virtual wind
 !            vvlon(i,k,lan) = grid_gr(ilan,kvg) / con_rerth
@@ -593,28 +594,27 @@
 
       implicit none
 
-      real pten(nx,levs,my_max)
-!ch   real ddtemp(nx,levs,my_max),qvadv(nx,levs*ncld,my_max)
-      real ddtemp(nx,levs,my_max),qvadv(nx,levs,ncld,my_max)
-      real vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
-!      real plev(lonfull,lev+1)
+      real(kind=RTYPE) pten(nx,levs,my_max)
+      real(kind=RTYPE) ddtemp(nx,levs,my_max),qvadv(nx,levs,ncld,my_max)
+      real(kind=RTYPE) vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
+!      real(kind=RTYPE) plev(lonfull,lev+1)
 !      integer,intent(in):: global_lats_a(my)
       integer,intent(in):: lonsperlat(my)
-      real,   intent(in):: deltim
+      real(kind=RTYPE),   intent(in):: deltim
 
-      real      uulon(lonfull,levs,latpart)
-      real      vvlon(lonfull,levs,latpart)
-      real      qqlon(lonfull,levs*ndslhvar,latpart)
-!      real      rrlon(lonfull,lev*ndslhvar,latpart)
+      real(kind=RTYPE)      uulon(lonfull,levs,latpart)
+      real(kind=RTYPE)      vvlon(lonfull,levs,latpart)
+      real(kind=RTYPE)      qqlon(lonfull,levs*ndslhvar,latpart)
+!      real(kind=RTYPE)      rrlon(lonfull,lev*ndslhvar,latpart)
 
-      real      vvlat(latfull,levs,lonpart)
-      real      qqlat(latfull,levs*ndslhvar,lonpart)
-!      real      rrlat(latfull,levs*ndslhvar,lonpart)
-      real      xr    (lonfull,levs)
-      real      xcp   (lonfull,levs)
-      real      sumrq (lonfull,levs)
-      real      xkappa(lonfull,levs)
-      real      rdt2, rkt, pi, cons0, cons1, rma, rm2a
+      real(kind=RTYPE)      vvlat(latfull,levs,lonpart)
+      real(kind=RTYPE)      qqlat(latfull,levs*ndslhvar,lonpart)
+!      real(kind=RTYPE)      rrlat(latfull,levs*ndslhvar,lonpart)
+      real(kind=RTYPE)      xr    (lonfull,levs)
+      real(kind=RTYPE)      xcp   (lonfull,levs)
+      real(kind=RTYPE)      sumrq (lonfull,levs)
+      real(kind=RTYPE)      xkappa(lonfull,levs)
+      real(kind=RTYPE)      rdt2, rkt, pi, cons0, cons1, rma, rm2a
 
 !      logical   lprint
 
@@ -674,7 +674,7 @@
           do i=1,lons_lat
 !ch         uulon(i,k,lan) = ut(i,kk,lan) * rm2a
             uulon(i,k,lan) = ut_sl(i,k ,lan) * rm2a
-!hmhj use real wind
+!hmhj use real(kind=RTYPE) wind
 !            vvlon(i,k,lan) = grid_gr(ilan,kvg) * rma
 !hmhj use virtual wind
 !            vvlon(i,k,lan) = grid_gr(ilan,kvg) / con_rerth
@@ -1125,28 +1125,27 @@
 
       implicit none
 
-      real pten(nx,levs,my_max)
-!ch   real ddtemp(nx,levs,my_max),qvadv(nx,levs*ncld,my_max)
-      real ddtemp(nx,levs,my_max),qvadv(nx,levs,ncld,my_max)
-      real vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
-!      real plev(lonfull,levs+1)
+      real(kind=RTYPE) pten(nx,levs,my_max)
+      real(kind=RTYPE) ddtemp(nx,levs,my_max),qvadv(nx,levs,ncld,my_max)
+      real(kind=RTYPE) vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
+!      real(kind=RTYPE) plev(lonfull,levs+1)
 !      integer,intent(in):: global_lats_a(my)
       integer,intent(in):: lonsperlat(my)
-      real,   intent(in):: deltim
+      real(kind=RTYPE),   intent(in):: deltim
 
-      real      uulon(lonfull,levs,latpart)
-      real      vvlon(lonfull,levs,latpart)
-      real      qqlon(lonfull,levs*ndslhvar,latpart)
-!      real      rrlon(lonfull,levs*ndslhvar,latpart)
+      real(kind=RTYPE)      uulon(lonfull,levs,latpart)
+      real(kind=RTYPE)      vvlon(lonfull,levs,latpart)
+      real(kind=RTYPE)      qqlon(lonfull,levs*ndslhvar,latpart)
+!      real(kind=RTYPE)      rrlon(lonfull,levs*ndslhvar,latpart)
 
-      real      vvlat(latfull,levs,lonpart)
-      real      qqlat(latfull,levs*ndslhvar,lonpart)
-!      real      rrlat(latfull,levs*ndslhvar,lonpart)
-      real      xr    (lonfull,levs)
-      real      xcp   (lonfull,levs)
-      real      sumrq (lonfull,levs)
-      real      xkappa(lonfull,levs)
-      real      rdt2, rkt, pi, cons0, cons1, rma, rm2a
+      real(kind=RTYPE)      vvlat(latfull,levs,lonpart)
+      real(kind=RTYPE)      qqlat(latfull,levs*ndslhvar,lonpart)
+!      real(kind=RTYPE)      rrlat(latfull,levs*ndslhvar,lonpart)
+      real(kind=RTYPE)      xr    (lonfull,levs)
+      real(kind=RTYPE)      xcp   (lonfull,levs)
+      real(kind=RTYPE)      sumrq (lonfull,levs)
+      real(kind=RTYPE)      xkappa(lonfull,levs)
+      real(kind=RTYPE)      rdt2, rkt, pi, cons0, cons1, rma, rm2a
 
 !      logical   lprint
 
@@ -1206,7 +1205,7 @@
           do i=1,lons_lat
 !ch         uulon(i,k,lan) = ut(i,kk,lan) * rm2a
             uulon(i,k,lan) = ut_sl(i,k ,lan) * rm2a
-!hmhj use real wind
+!hmhj use real(kind=RTYPE) wind
 !            vvlon(i,k,lan) = grid_gr(ilan,kvg) * rma
 !hmhj use virtual wind
 !            vvlon(i,k,lan) = grid_gr(ilan,kvg) / con_rerth
@@ -1656,26 +1655,25 @@
 
       implicit none
 
-!ch   real ddtemp(nx,levs,my_max),qvadv(nx,levs*ncld,my_max)
       integer nvars
-      real ddtemp(nx,levs,my_max)
-      real vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
+      real(kind=RTYPE) ddtemp(nx,levs,my_max)
+      real(kind=RTYPE) vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
       integer,intent(in):: lonsperlat(my)
-      real,   intent(in):: deltim
+      real(kind=RTYPE),   intent(in):: deltim
 
-      real      uulon(lonfull,levs,latpart)
-      real      vvlon(lonfull,levs,latpart)
-      real      qqlon(lonfull,levs*nvars,latpart)
-      real      rrlon(lonfull,levs*nvars,latpart)
+      real(kind=RTYPE)      uulon(lonfull,levs,latpart)
+      real(kind=RTYPE)      vvlon(lonfull,levs,latpart)
+      real(kind=RTYPE)      qqlon(lonfull,levs*nvars,latpart)
+      real(kind=RTYPE)      rrlon(lonfull,levs*nvars,latpart)
 
-      real      vvlat(latfull,levs,lonpart)
-      real      qqlat(latfull,levs*nvars,lonpart)
-      real      rrlat(latfull,levs*nvars,lonpart)
-      real      xr    (lonfull,levs)
-      real      xcp   (lonfull,levs)
-      real      sumrq (lonfull,levs)
-      real      xkappa(lonfull,levs)
-      real      rdt2, rkt, pi, cons0, cons1, rma, rm2a
+      real(kind=RTYPE)      vvlat(latfull,levs,lonpart)
+      real(kind=RTYPE)      qqlat(latfull,levs*nvars,lonpart)
+      real(kind=RTYPE)      rrlat(latfull,levs*nvars,lonpart)
+      real(kind=RTYPE)      xr    (lonfull,levs)
+      real(kind=RTYPE)      xcp   (lonfull,levs)
+      real(kind=RTYPE)      sumrq (lonfull,levs)
+      real(kind=RTYPE)      xkappa(lonfull,levs)
+      real(kind=RTYPE)      rdt2, rkt, pi, cons0, cons1, rma, rm2a
 
 !      logical   lprint
 
@@ -1733,7 +1731,7 @@
           do i=1,lons_lat
 !ch         uulon(i,k,lan) = ut(i,kk,lan) * rm2a
             uulon(i,k,lan) = ut_sl(i,k ,lan) * rm2a
-!hmhj use real wind
+!hmhj use real(kind=RTYPE) wind
 !            vvlon(i,k,lan) = grid_gr(ilan,kvg) * rma
 !hmhj use virtual wind
 !            vvlon(i,k,lan) = grid_gr(ilan,kvg) / con_rerth
@@ -2162,26 +2160,25 @@
 
       implicit none
 
-!ch   real ddtemp(nx,levs,my_max),qvadv(nx,levs*ncld,my_max)
       integer nvars
-      real ddtemp(nx,levs,my_max)
-      real vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
+      real(kind=RTYPE) ddtemp(nx,levs,my_max)
+      real(kind=RTYPE) vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
       integer,intent(in):: lonsperlat(my)
-      real,   intent(in):: deltim
+      real(kind=RTYPE),   intent(in):: deltim
 
-      real      uulon(lonfull,levs,latpart)
-      real      vvlon(lonfull,levs,latpart)
-      real      qqlon(lonfull,levs*nvars,latpart)
-!      real      rrlon(lonfull,levs*nvars,latpart)
+      real(kind=RTYPE)      uulon(lonfull,levs,latpart)
+      real(kind=RTYPE)      vvlon(lonfull,levs,latpart)
+      real(kind=RTYPE)      qqlon(lonfull,levs*nvars,latpart)
+!      real(kind=RTYPE)      rrlon(lonfull,levs*nvars,latpart)
 
-      real      vvlat(latfull,levs,lonpart)
-      real      qqlat(latfull,levs*nvars,lonpart)
-!      real      rrlat(latfull,levs*nvars,lonpart)
-      real      xr    (lonfull,levs)
-      real      xcp   (lonfull,levs)
-      real      sumrq (lonfull,levs)
-      real      xkappa(lonfull,levs)
-      real      rdt2, rkt, pi, cons0, cons1, rma, rm2a
+      real(kind=RTYPE)      vvlat(latfull,levs,lonpart)
+      real(kind=RTYPE)      qqlat(latfull,levs*nvars,lonpart)
+!      real(kind=RTYPE)      rrlat(latfull,levs*nvars,lonpart)
+      real(kind=RTYPE)      xr    (lonfull,levs)
+      real(kind=RTYPE)      xcp   (lonfull,levs)
+      real(kind=RTYPE)      sumrq (lonfull,levs)
+      real(kind=RTYPE)      xkappa(lonfull,levs)
+      real(kind=RTYPE)      rdt2, rkt, pi, cons0, cons1, rma, rm2a
 
 !      logical   lprint
 
@@ -2239,7 +2236,7 @@
           do i=1,lons_lat
 !ch         uulon(i,k,lan) = ut(i,kk,lan) * rm2a
             uulon(i,k,lan) = ut_sl(i,k ,lan) * rm2a
-!hmhj use real wind
+!hmhj use real(kind=RTYPE) wind
 !            vvlon(i,k,lan) = grid_gr(ilan,kvg) * rma
 !hmhj use virtual wind
 !            vvlon(i,k,lan) = grid_gr(ilan,kvg) / con_rerth
@@ -2668,26 +2665,25 @@
 
       implicit none
 
-!ch   real ddtemp(nx,levs,my_max),qvadv(nx,levs*ncld,my_max)
       integer nvars
-      real ddtemp(nx,levs,my_max)
-      real vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
+      real(kind=RTYPE) ddtemp(nx,levs,my_max)
+      real(kind=RTYPE) vdmerd(nx,levs,my_max),vdzonl(nx,levs,my_max)
       integer,intent(in):: lonsperlat(my)
-      real,   intent(in):: deltim
+      real(kind=RTYPE),   intent(in):: deltim
 
-      real      uulon(lonfull,levs,latpart)
-      real      vvlon(lonfull,levs,latpart)
-      real      qqlon(lonfull,levs*nvars,latpart)
-!      real      rrlon(lonfull,levs*nvars,latpart)
+      real(kind=RTYPE)      uulon(lonfull,levs,latpart)
+      real(kind=RTYPE)      vvlon(lonfull,levs,latpart)
+      real(kind=RTYPE)      qqlon(lonfull,levs*nvars,latpart)
+!      real(kind=RTYPE)      rrlon(lonfull,levs*nvars,latpart)
 
-      real      vvlat(latfull,levs,lonpart)
-      real      qqlat(latfull,levs*nvars,lonpart)
-!      real      rrlat(latfull,levs*nvars,lonpart)
-      real      xr    (lonfull,levs)
-      real      xcp   (lonfull,levs)
-      real      sumrq (lonfull,levs)
-      real      xkappa(lonfull,levs)
-      real      rdt2, rkt, pi, cons0, cons1, rma, rm2a
+      real(kind=RTYPE)      vvlat(latfull,levs,lonpart)
+      real(kind=RTYPE)      qqlat(latfull,levs*nvars,lonpart)
+!      real(kind=RTYPE)      rrlat(latfull,levs*nvars,lonpart)
+      real(kind=RTYPE)      xr    (lonfull,levs)
+      real(kind=RTYPE)      xcp   (lonfull,levs)
+      real(kind=RTYPE)      sumrq (lonfull,levs)
+      real(kind=RTYPE)      xkappa(lonfull,levs)
+      real(kind=RTYPE)      rdt2, rkt, pi, cons0, cons1, rma, rm2a
 
 !      logical   lprint
 
@@ -2745,7 +2741,7 @@
           do i=1,lons_lat
 !ch         uulon(i,k,lan) = ut(i,kk,lan) * rm2a
             uulon(i,k,lan) = ut_sl(i,k ,lan) * rm2a
-!hmhj use real wind
+!hmhj use real(kind=RTYPE) wind
 !            vvlon(i,k,lan) = grid_gr(ilan,kvg) * rma
 !hmhj use virtual wind
 !            vvlon(i,k,lan) = grid_gr(ilan,kvg) / con_rerth

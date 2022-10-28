@@ -25,13 +25,15 @@
 !  x       : vector matrix(when iglag=+2)
 !-----------------------------------------------------------------------
       use index
+      use const, only: RTYPE
 
       implicit none
 
       integer  iflag,isym,nbig,m,k,kk,jtrun,jtmax,nn,l,j,n,i
 
-      real vorten(kk,2,jtrun,jtmax),divten(kk,2,jtrun,jtmax),  &
-           phiten(kk,2,jtrun,jtmax)
+      real(kind=RTYPE) vorten(kk,2,jtrun,jtmax),  &
+                       divten(kk,2,jtrun,jtmax),  &
+                       phiten(kk,2,jtrun,jtmax)
 !
         real x(nn,2)
 !

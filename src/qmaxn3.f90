@@ -18,10 +18,11 @@
 !
       use rank
       use index
+      use const, only: RTYPE
 
       implicit   none
       integer    i1,j1,k1,im,jm,lm
-      real      fld(im,lm,jm)
+      real(kind=RTYPE) fld(im,lm,jm)
 !ch   character*14 t1, t2
       character t1*14, t2*12
 

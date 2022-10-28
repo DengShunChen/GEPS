@@ -1,12 +1,13 @@
-#!/bin/ksh
-#PJM -L "node=48:noncont"
-#PJM -L rscgrp=research
+#!/bin/bash
+#PJM -L "node=80:noncont"
+#PJM -L rscgrp=fujitsu
 #PJM -L elapse=2:00:00
 #PJM -L node-mem=unlimited
 #PJM --no-stging
-#PJM --mpi "proc=768"
+#PJM --mpi "proc=1920"
 #PJM -j
 #PJM -N JTCo639L72
+#PJM -x PJM_CACHE_MODE=4
 
 set -x
 
@@ -18,19 +19,20 @@ machine=fx10
 TERR=GMTED30
 JCAP=383
 
-MPI=768
-OMP=1
+MPI=1920
+OMP=2
 
 if [ $JCAP = 639 ] ; then
-  NPEX=2
-  NPEY=384
+  NPEX=8
+  NPEY=$((${MPI}/${NPEX}))
 elif [ $JCAP = 383 ] ; then
   NPEX=4
-  NPEY=192
+  NPEY=$((${MPI}/${NPEX}))
 fi
-source /users/xa09/sample/setup_mpi+omp.${machine} $OMP
+#source /users/xa09/sample/setup_mpi+omp.${machine} $OMP
+
+source /users/xb80/setup_mpi+omp.${machine} $OMP
 
 #==============================================================================================================#
 
 . ${MDIR}/job/regression.ksh
-#. ${MDIR}/job/regression_stochy_physics.ksh

@@ -82,6 +82,8 @@
 !                                                                      c
 !######################################################################c
 !
+      use const, only: RTYPE
+!
       implicit none
       integer, parameter :: ibsl = 11, ibir = 12 
 !
@@ -89,15 +91,17 @@
       integer nxj,nx,lev,ncld,lvlw,julian
       real    stbo,s0,cp,ptop
 
-      real    dsigma(lev,2),cosz(nx),alb(nx),tg(nx),curate(nx),pst(nx),&
-              pl(nx,lev),tt(nx,lev),qt(nx,lev),o3l(nx,lev),plcl(nx),   &
+      real    cosz(nx),alb(nx),tg(nx),curate(nx),                      &
+              pl(nx,lev),qt(nx,lev),o3l(nx,lev),plcl(nx),              &
               cumtop(nx),ss(nx),rs(nx),dtrad(nx,lev),asr(lev),alr(lev),&
               xsr(lev),xlr(lev),acld(lev),aflxd(lev+2),aflxu(lev+2),   &
-              cof(lvlw,3),sdpbl(nx),ctot(nx),chig(nx),cmid(nx),clow(nx)
+              cof(lvlw,3),ctot(nx),chig(nx),cmid(nx),clow(nx),         &
+              ttmp(nx,lev)
 
       integer il(nx),ib(lvlw)
 
-      real    o3lx(nx,lev),qtx(nx,lev*ncld)
+      real(kind=RTYPE) qtx(nx,lev*ncld),o3lx(nx,lev),pst(nx),sdpbl(nx) &
+              ,        dsigma(lev,2),sigma(lev+1,2),tt(nx,lev)
 !
 !  clear part
 !
@@ -108,7 +112,7 @@
 !
       real    asl(nx,lev),atl(nx,lev),clds(nx,lev),fluxdd(nx,lev+3), &
               fluxuu(nx,lev+2)
-      real    wk1(nx),wk2(nx),sigma(lev+1,2)
+      real    wk1(nx),wk2(nx)
       real    cvclds(nx,lev),cufrac(nx)
 !
 !  working arrays for new radiation scheme
@@ -209,7 +213,8 @@
       nqt=0
 !
       if( nqt .eq. 2 )then
-        call qsatq_2d ( nxj,nx,lev,tt,pl,asl )
+        ttmp(:,:)=tt(:,:)
+        call qsatq_2d ( nxj,nx,lev,ttmp,pl,asl )
         do k = 1, lev/2
         do i = 1, nxj
 !jh          if( pl(i,k) .lt. 150. )then
@@ -269,7 +274,8 @@
 !     diagnose total cloud fraction and cloud optical property
 !     (hold relative humidity in atl, qsat in asl)
 !
-      call qsatq_2d ( nxj,nx,lev,tt,pl,asl )
+      ttmp(:,:)=tt(:,:)
+      call qsatq_2d ( nxj,nx,lev,ttmp,pl,asl )
 !
       do 140 k = 1, lev
       do 140 i = 1, nxj

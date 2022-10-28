@@ -42,6 +42,7 @@
       ldiag=1
       idg=16
       jdg=16
+      qmin=1.0e-20
 
 !!      stbo=5.669e-8
 !!      s0=1368.3
@@ -189,7 +190,7 @@
 !  sponge layer 
       spl1=10.
       spl2=100.
-      vd=0.
+      vd=0.08
       else if ( lev .eq. 72 ) then
 !
 ! L72 hybrid coordinate

@@ -171,7 +171,7 @@
                                       use_zmtnblck,ldailyFCTsst,ldailyFCTicesndpt, &
                                       ldailyFCTsst,ldailyFCTicesndpt,           &
                                       dailyClm_option,dSITdt_intv,weightSIT,    &
-                                      bckfile,ggdef,doclx,doslavepp
+                                      bckfile,ggdef,doclx,doslavepp,RTYPE,qmin
       use mod_sitgrid
       USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
       USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt &
@@ -218,25 +218,20 @@
 
       integer   il(nxp,4),ib(nxp,4)
 
-      real      sigma(lev+1,2),dsigma(lev,2),                             &
-                cof(nxp*3,4),xlat(my),                                     &
-                xlon(nx,my_max),sgeo(nxp,my_max),z0(nxp,my_max),          &
+      real      cof(nxp*3,4),xlat(my),                                    &
+                xlon(nx,my_max),z0(nxp,my_max),                           &
                 alb(nxp,my_max),snr(nxp,my_max),tg(nxp,my_max),           &
                 tgclim(nxp,my_max),curate(nxp,my_max),plcl(nxp,my_max),   &
                 cumtop(nxp,my_max),totalp(nxp,my_max),raincu(nxp,my_max), &
                 hflux(nxp,my_max),qflux(nxp,my_max),ustar(nxp,my_max),    &
                 tstar(nxp,my_max),qstar(nxp,my_max),                      &
                 e(nxp,lev,my_max),eps(nxp,lev,my_max),                    &
-                o3l(nxp,lev,my_max),dtrad(nxp,lev,my_max),ss(nxp,my_max), &
-                rs(nxp,my_max),plt(nxp,lev,my_max),pk(nxp,lev,my_max),    &
-                pk2(nxp,lev,my_max),ps(nxp,my_max),up(nxp,lev,my_max),    &
-                vp(nxp,lev,my_max),ttp(nxp,lev,my_max),                   &
-                qp(nxp,lev*ncld,my_max),rainlp(nxp,my_max),               &
-                pst(nxp,my_max),ut(nxp,lev,my_max),vt(nxp,lev,my_max),    &
-                tt(nxp,lev,my_max),qt(nxp,lev*ncld,my_max),               &
+                dtrad(nxp,lev,my_max),ss(nxp,my_max),                     &
+                rs(nxp,my_max),plt(nxp,lev,my_max),                       &
+                rainlp(nxp,my_max),                                       &
                 gwclim(nxp,my_max),acld(lev,my),std(nxp,my_max),          &
                 asol(nxp,my_max),olr(nxp,my_max),drag(nxp,lev,my_max),    &
-                ugws(nxp,my_max),vgws(nxp,my_max),sdpbl(nxp,my_max),      &
+                ugws(nxp,my_max),vgws(nxp,my_max),                        &
                 raintot(nxp,my_max),t2(nxp,my_max),rh2(nxp,my_max),       &
                 rh10(nxp,my_max),                                         &
                 q2(nxp,my_max),fm(nxp,my_max),fh(nxp,my_max),             &
@@ -245,6 +240,14 @@
                 raincu6(nxp,my_max),rainlp6(nxp,my_max),                  &
                 raincu3(nxp,my_max),rainlp3(nxp,my_max),                  &
                 raincu1(nxp,my_max),rainlp1(nxp,my_max)
+      real(kind=RTYPE) qt(nxp,lev*ncld,my_max),qp(nxp,lev*ncld,my_max),   &
+                       up(nxp,lev,my_max),vp(nxp,lev,my_max),             &
+                       ttp(nxp,lev,my_max),o3l(nxp,lev,my_max),           &
+                       sgeo(nxp,my_max),ps(nxp,my_max),pst(nxp,my_max),   &
+                       sdpbl(nxp,my_max),sigma(lev+1,2),dsigma(lev,2),    &
+                       ut(nxp,lev,my_max),vt(nxp,lev,my_max),             &
+                       tt(nxp,lev,my_max),pk(nxp,lev,my_max),             &
+                       pk2(nxp,lev,my_max)
 !soil (2005/01/12)
       integer,  parameter :: ntype=9, ngrid=22
       integer   istyp(nxp,my_max),ivegtyp(nxp,my_max)
@@ -321,32 +324,32 @@
                 ctot(nxp,my_max),chig(nxp,my_max),cmid(nxp,my_max),clow(nxp,my_max)
 
       ! for sppt
-      real :: ut_save_sppt(nxp,lev,my_max)     
-      real :: vt_save_sppt(nxp,lev,my_max)        
-      real :: tt_save_sppt(nxp,lev,my_max)        
-      real :: qt_save_sppt(nxp,lev*ncld,my_max)
-     !real :: qt_save_shum(nxp,lev*ncld,my_max)
-      real :: tg_save_ssst(nxp,1,my_max)
+      real(kind=RTYPE) :: ut_save_sppt(nxp,lev,my_max)     
+      real(kind=RTYPE) :: vt_save_sppt(nxp,lev,my_max)        
+      real(kind=RTYPE) :: tt_save_sppt(nxp,lev,my_max)        
+      real(kind=RTYPE) :: qt_save_sppt(nxp,lev*ncld,my_max)
+     !real(kind=RTYPE) :: qt_save_shum(nxp,lev*ncld,my_max)
+      real(kind=RTYPE) :: tg_save_ssst(nxp,1,my_max)
 #ifdef VERBOSE
-      real :: ut_update(nxp,lev,my_max)     
-      real :: vt_update(nxp,lev,my_max)        
-      real :: tt_update(nxp,lev,my_max)        
-      real :: qt_update(nxp,lev*ncld,my_max)
+      real(kind=RTYPE) :: ut_update(nxp,lev,my_max)     
+      real(kind=RTYPE) :: vt_update(nxp,lev,my_max)        
+      real(kind=RTYPE) :: tt_update(nxp,lev,my_max)        
+      real(kind=RTYPE) :: qt_update(nxp,lev*ncld,my_max)
 
-      real :: ut_pbl(nxp,lev,my_max)
-      real :: vt_pbl(nxp,lev,my_max)
-      real :: tt_pbl(nxp,lev,my_max)
-      real :: qt_pbl(nxp,lev*ncld,my_max)
+      real(kind=RTYPE) :: ut_pbl(nxp,lev,my_max)
+      real(kind=RTYPE) :: vt_pbl(nxp,lev,my_max)
+      real(kind=RTYPE) :: tt_pbl(nxp,lev,my_max)
+      real(kind=RTYPE) :: qt_pbl(nxp,lev*ncld,my_max)
 
-      real :: ut_cmls(nxp,lev,my_max)     
-      real :: vt_cmls(nxp,lev,my_max)        
-      real :: tt_cmls(nxp,lev,my_max)        
-      real :: qt_cmls(nxp,lev*ncld,my_max)
+      real(kind=RTYPE) :: ut_cmls(nxp,lev,my_max)     
+      real(kind=RTYPE) :: vt_cmls(nxp,lev,my_max)        
+      real(kind=RTYPE) :: tt_cmls(nxp,lev,my_max)        
+      real(kind=RTYPE) :: qt_cmls(nxp,lev*ncld,my_max)
 
-      real :: ut_sppt(nxp,lev,my_max)     
-      real :: vt_sppt(nxp,lev,my_max)        
-      real :: tt_sppt(nxp,lev,my_max)        
-      real :: qt_sppt(nxp,lev*ncld,my_max)
+      real(kind=RTYPE) :: ut_sppt(nxp,lev,my_max)     
+      real(kind=RTYPE) :: vt_sppt(nxp,lev,my_max)        
+      real(kind=RTYPE) :: tt_sppt(nxp,lev,my_max)        
+      real(kind=RTYPE) :: qt_sppt(nxp,lev*ncld,my_max)
 #endif
       real :: dtradc(nxp,lev,my_max)
       real :: dtradn(nxp,lev)
@@ -384,8 +387,8 @@
                 aflxd(lev+2,my),aflxu(lev+2,my),                         &
                 dtcupx(my),dtcupz(lev,my),dqcupz(lev,my),dtcupd(lev),    &
                 dqcupd(lev),dtcupl(lev),dqcupl(lev),xkmx(2,my),xkmd(lev),&
-                phi(nxp,lev),albx(nxp,my_max), &
-                cofx(nxp*3,my_max),dphi(nxp,lev)
+                albx(nxp,my_max),cofx(nxp*3,my_max),dphi(nxp,lev)
+      real(kind=RTYPE) phi(nxp,lev)
 
       real      wkj(4,my),dsigpp(lev),qt_diff(ncld)
 
@@ -423,12 +426,15 @@
                 islimsk(nxp)
       real      sl(lev),delcup(lev),slimsk(nxp)
       real      dotc(nxp,lev),phil(nxp,lev),utc(nxp,lev),vtc(nxp,lev)
-      real      cldwrk(nxp,my_max),sd(nxp,lev+1,my_max),xkt2(nx)
+
+!ch   real      cldwrk(nxp,my_max),sd(nxp,lev+1,my_max),xkt2(nx)
+      real      cldwrk(nxp,my_max),                     xkt2(nx)
+      real(kind=RTYPE) sd(nxp,lev+1,my_max)
+
 ! for new shlcon
       real      rcup2(nxp)
 ! for scale-aware convection
       real      garea(nxp),tpr,tem1,tem2,jup,jdn,tpi
-      real,     parameter :: qmin=1.0e-20
 ! for wsm6 & thompson
       integer   nmmiph
       real      phii(nxp,lev+1)
@@ -465,9 +471,11 @@
 
 !xb110>
 !for new precpd & nTDK
-      real      u0(nxp,lev),v0(nxp,lev),t0(nxp,lev),q0(nxp,lev*ncld)
+      real      u0(nxp,lev),v0(nxp,lev),t0(nxp,lev)
+      real(kind=RTYPE) q0(nxp,lev*ncld)
       real      upp(nxp,lev),vpp(nxp,lev),tpp(nxp,lev),ttpp(nxp,lev)
-      real      pkp(nxp,lev),pk2p(nxp,lev),pltp(nxp,lev)
+      real      pltp(nxp,lev)
+      real(kind=RTYPE) pkp(nxp,lev),pk2p(nxp,lev)
 !for lightning
       real      flash(nxp,my_max)        !flash density (unit in flashes km^-2 day^-1)
       real      ztenh(nxp,lev),zqenh(nxp,lev),rho(nxp,lev)              &
@@ -1217,6 +1225,14 @@
 ! topograpic gravity wave drag
 !=======================================================================
       if(dograv .and. (nmgwor .eq. 1) ) then 
+        do k=1,lev
+          kc=lev-k+1
+          do i=1,nxj
+            tt(i,k,jj) = tt(i,k,jj) + dtdtc(i,kc)*dta
+            ut(i,k,jj) = ut(i,k,jj) + dudtc(i,kc)*dta
+            vt(i,k,jj) = vt(i,k,jj) + dvdtc(i,kc)*dta
+          enddo
+        enddo
         call gwdp (j,nxjp(j),nxp,lev,                                   &
                   ut(1,1,jj),vt(1,1,jj),tt(1,1,jj),qt(1,1,jj),         &
                   plt(1,1,jj),pk(1,1,jj),pk2(1,1,jj),phi,std(1,jj),dta,&
