@@ -1,4 +1,3 @@
-#define GFDLMP_v2
 !CWB2016
 !ocl nosimd
 !!!!!              module_radiation_clouds description             !!!!!

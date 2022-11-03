@@ -1,5 +1,4 @@
-#define GFDLMP_v2
-!!!!  ==========================================================  !!!!!
+!!!!!  ==========================================================  !!!!!
 !!!!!             'module_radiation_driver' descriptions           !!!!!
 !!!!!  ==========================================================  !!!!!
 !                                                                      !
@@ -1678,7 +1677,6 @@
 !    ---  outputs:
                clouds,cldsa,mtopa,mbota                                 &
               ) 
-!         if(myrank == 0) print *, 'tcf=',maxval(cldsa(:,4))
 #else
          clw = 0.0
          if ( .not. lgfdlmprad ) then
