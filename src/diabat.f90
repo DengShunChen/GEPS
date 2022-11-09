@@ -2148,7 +2148,7 @@
             tseadiffFCT(ii,jj)=0.
             if(ocean(ii,jj))then
               obswtbnew(ii,jj)=dta*dFCTsstdt(ii,jj)+obswtbold(ii,jj)
-              obswtbold(ii,jj)=obswtbnow(ii,jj)
+              obswtbold(ii,jj)=obswtbnew(ii,jj)
               obswtbnow(ii,jj)=obswtbnew(ii,jj)
               ! sea surface temperature tendency 
               dtseadt(ii,jj)=dFCTsstdt(ii,jj)

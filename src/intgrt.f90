@@ -1259,7 +1259,7 @@
                   tseanew(ii,jj)=dta*dtseadt(ii,jj)+tseaold(ii,jj)
 !                  tseaold(ii,jj)=tseanow(ii,jj) + tfilt*(tseaold(ii,jj)     &
 !                                 -2.0*tseanow(ii,jj)+tseanew(ii,jj) )
-                  tseaold(ii,jj)=tseanow(ii,jj) 
+                  tseaold(ii,jj)=tseanew(ii,jj) 
                   tseanow(ii,jj)=tseanew(ii,jj)
  
                   dtaup=mod(tau+0.001,updatetg)
