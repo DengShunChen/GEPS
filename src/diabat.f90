@@ -1,4 +1,3 @@
-#define GFDLMP_v2
       subroutine diabat ( docup,dodry,dolsp,dopbl,dorad,doshl,dograv,tofd      &
                     , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw       &
                     , idg,jdg,ldiag,dt,tau,hours,julian,year,yrd               &

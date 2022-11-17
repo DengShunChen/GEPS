@@ -1,5 +1,4 @@
-#define GFDLMP_v2
-!!!!  ==========================================================  !!!!!
+!!!!!  ==========================================================  !!!!!
 !!!!!             'module_radiation_driver' descriptions           !!!!!
 !!!!!  ==========================================================  !!!!!
 !                                                                      !
@@ -1012,6 +1011,7 @@
 #if defined (GFDLMP_v2)
       real (kind=kind_phys), dimension(im,lm+ltp)  :: qa
 #endif
+      real (kind=kind_phys), dimension(im,lm+ltp)  :: cnvw1, cnvc1
 
       real (kind=kind_phys), dimension(im) :: tsfa, cvt1, cvb1, tem1d,  &
              sfcemis, tsfg, tskn
@@ -1247,6 +1247,8 @@
 !         plyr(i,k1)   = 0.01 * prsl(i,k)   ! pa to mb (hpa)
           tlyr(i,k1)   = tgrs(i,k)
           prslk1(i,k1) = prslk(i,k)
+          cnvw1(i,k1)  = cnvw(i,k)
+          cnvc1(i,k1)  = cnvc(i,k)
 
 !  --- ...  compute relative humidity
 !         es  = min( prsl(i,k), 0.001 * fpvs( tgrs(i,k) ) )   ! fpvs in pa
@@ -1670,7 +1672,7 @@
          qa = 0.  !aerosol mixing ratio (kg/kg)
          call progcld6                                                  &
 !    ---  inputs:
-             ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,cnvw,cnvc,            &
+             ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,cnvw1,cnvc1,          &
                tracer1(:,:,ntcw),tracer1(:,:,ntrw),tracer1(:,:,ntiw),   &
                tracer1(:,:,ntsw),tracer1(:,:,ntgl),qa,                  &
                cldcov,slmsk,snowd,                                      &
@@ -1678,7 +1680,6 @@
 !    ---  outputs:
                clouds,cldsa,mtopa,mbota                                 &
               ) 
-!         if(myrank == 0) print *, 'tcf=',maxval(cldsa(:,4))
 #else
          clw = 0.0
          if ( .not. lgfdlmprad ) then
