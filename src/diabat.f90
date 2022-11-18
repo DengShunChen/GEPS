@@ -367,7 +367,7 @@
       data      donor/.true./,fnor/0.5/
 
 ! for GFDL microphysics
-      real area(nxp,1)
+      real area(nxp)
 
 !#######################################################################
 !
@@ -1834,7 +1834,7 @@
 
 ! for GFDL MP
       do i = 1, nxj
-        area(i,1) = tem1*tem2  !area of grid box
+        area(i) = tem1*tem2  !area of grid box
       enddo
 
       call mp_scheme                                                   &
@@ -1842,6 +1842,9 @@
            ( nmmiph,nxp,nxjp(j),lev,ncld,plt(1,1,jj),                  &
              pst(1,jj),dsigma,phii,islimsk,q0,kdt,ntcw,ntrw,ntiw,ntsw, &
              ntgl,ntinc,ntrnc,tpi,me,dta,area,jj,                      &
+#if defined (GFDLMP_v2)
+             sgeo(1,jj),                                               &
+#endif
 !  ---  inputs/outputs:
              tt(1,1,jj),qt(1,1,jj),clds(1,1,jj),                       &
              ut(1,1,jj),vt(1,1,jj),sd(1,1,jj),                         &
