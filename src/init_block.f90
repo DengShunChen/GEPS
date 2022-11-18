@@ -316,7 +316,7 @@
 !  sponge layer 
       spl1=5.
       spl2=50.
-      vd=0.5
+      vd=0.4
       endif
 !
 !      tmeans=300.
