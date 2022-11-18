@@ -281,7 +281,7 @@
       real tt_bfcnv(nxp,lev)
       real prsi(nxp,lev+1)
       real utgwc(nxp,lev),vtgwc(nxp,lev),                                  &
-           dudtc(nxp,lev),dvdtc(nxp,lev),dtdtc(nxp,lev),                   &
+           dudtc(nxp,lev),dvdtc(nxp,lev),dtdtc(nxp,lev),dqdtc(nxp,lev),    &
            prslk(nxp,lev)
       real oc(nxp),theta(nxp),gamma(nxp),sigmaog(nxp),elvmax(nxp),hprime(nxp),    &
            dlength(nxp),cldf(nxp),cumabs(nxp),work3(nxp),tauctx(nxp),taucty(nxp), &
@@ -528,9 +528,6 @@
       rld_adj=0.
       sld_adj=0.
       ss_adj =0.
-      dudtc = 0.
-      dvdtc = 0.
-      dtdtc = 0.
 ! for MP WSM6 & Thompson
       uni_cloud=.false. !if using SHOC scheme, it should be .true.
       lmfshal=( nmshl .eq. 2 .or. nmshl .eq. 3 ) ! .true. if using mass-flux shallow convection
@@ -665,13 +662,15 @@
 !---------------------------------------------------------------------
             if(iceold(i,jj)       .and. .not. ice(i,jj)) then
               zice(i,jj)=0.
-              cice(i,jj)=0.   
+              cice(i,jj)=0.
+              snr(i,jj) =0.
               z0(i,jj)=ustar(i,jj)*ustar(i,jj)*0.014/grav
             endif
             if(.not. iceold(i,jj) .and. ice(i,jj)) then
               xtice(i,jj)=tg(i,jj)
-              zice(i,jj)=0.1 ! from himin in sfc_sice 
+              zice(i,jj)=0.15 ! from himin in sfc_sice 
               cice(i,jj)=0.15 ! from cimin in sfc_sice 
+              snr(i,jj) =15.
               z0(i,jj)=0.0002 ! set new ice point to 0.0002
             endif
           endif ! if(ls(i,jj).eq.0) then
@@ -712,6 +711,7 @@
           dudtc(i,k) = 0.
           dvdtc(i,k) = 0.
           dtdtc(i,k) = 0.
+          dqdtc(i,k) = 0.
         enddo
       enddo
 !
@@ -1200,7 +1200,7 @@
                      , sld_adj,zice(1,jj),cice(1,jj),xtice(1,jj)            &
                      , hpbl(1,jj),asl(1,1,jj),atl(1,1,jj),xmu(1,jj),gfx(1,jj) &
                      , kpbl(1,jj),nmpbl,nmmiph,j,isot,ivegsrc,sfemis(1,jj)    &
-                     , dudtc,dvdtc,dtdtc)
+                     , dudtc,dvdtc,dtdtc,dqdtc)
 
 
 !
@@ -1230,6 +1230,7 @@
             tt(i,k,jj) = tt(i,k,jj) + dtdtc(i,kc)*dta
             ut(i,k,jj) = ut(i,k,jj) + dudtc(i,kc)*dta
             vt(i,k,jj) = vt(i,k,jj) + dvdtc(i,kc)*dta
+            qt(i,k,jj) = qt(i,k,jj) + dqdtc(i,kc)*dta
           enddo
         enddo
         call gwdp (j,nxjp(j),nxp,lev,                                   &
@@ -1302,6 +1303,7 @@
             tt(i,k,jj) = ttc(i,kc) + dtdtc(i,kc)*dta
             ut(i,k,jj) = utc(i,kc) + dudtc(i,kc)*dta
             vt(i,k,jj) = vtc(i,kc) + dvdtc(i,kc)*dta
+            qt(i,k,jj) = qtc(i,kc) + dqdtc(i,kc)*dta
           enddo
         enddo
       endif  !(end of topo dograv and nmgwor=2)
