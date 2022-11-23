@@ -31,10 +31,10 @@ integer*4 :: igds(5),idefnum,ideflist
 integer*4,parameter :: igdstmplen=19 !Max dimension of igdstmpl()
 integer*4 :: igdstmpl(igdstmplen)
 !GRIB2 SECTION 4
-integer*4 :: ipdsnum
-integer*4,parameter :: ipdstmplen=15 !Max dimension of ipdstmpl()
+integer*4 :: ipdsnum ,ipdsnum_acc
+integer*4,parameter :: ipdstmplen=18 !Max dimension of ipdstmpl()
 integer*4 :: ipdstmpl(ipdstmplen)
-integer*4,parameter :: ipdstmplen8=29 !Max dimension of ipdstmpl()
+integer*4,parameter :: ipdstmplen8=32 !Max dimension of ipdstmpl()
 integer*4 :: ipdstmpl8(ipdstmplen8)
 integer*4,parameter :: numcoord=1 !number of values in array
                                       !coordlist.
@@ -65,6 +65,8 @@ integer*4,parameter :: numcoord=1 !number of values in array
       character::grbfile*255
       integer*4::grbid=134
       integer*8::grb_idtg
+      !for ensemble
+      integer::grbmem=-1 ,grbnumm
       !=======================================================================
       !  call baopenw(g2num,g2name,ierr)                                     !
       !=======================================================================
@@ -167,6 +169,7 @@ integer*4,parameter :: numcoord=1 !number of values in array
 
       ! Grib2 section 4
        data ipdsnum/0/
+       data ipdsnum_acc/8/
       !  ipdsnum=0    !Product Definition Template Number ( see Code Table 4.0)
       !  ipdsnum=0  :Analysis or forecast at a horizontal level or in a horizontal layer at a point in time.
       ! Contains the data values for the specified Product Definition Template
@@ -191,7 +194,7 @@ integer*4,parameter :: numcoord=1 !number of values in array
       ! ipdstmpl(15)=0  !Scaled value of second fixed surface
 
        data ipdstmpl8/ -1, -1, -1,  0, 53,  0,  0,  1, -1, -1,  &
-                       -1, -1,255,  0,  0,                       &
+                       -1, -1,255,  0,  0, -1, -1, -1,          &
                        -1, -1, -1, -1, -1,-1,-1,-1,-1,-1,-1,-1,-1,-1/
       !  ipdstmpl(16)= 0 ! Year   | Time of end of overall time interval
       !  ipdstmpl(17)= 0 ! Month  | Time of end of overall time interval
@@ -426,7 +429,7 @@ integer*4,parameter :: numcoord=1 !number of values in array
 
             listsec0(1)=t0   !Product Discipline ( Code Table 0.0 )
       ! Add data info. (section 4)
-            ipdsnum=0  ! Product Definition Template Number (Code Table 4.0)
+      !     ipdsnum=0  ! Product Definition Template Number (Code Table 4.0)
             ipdstmpl(1)=t1   !Parameter category ( See Code Table 4.1 )
             ipdstmpl(2)=t2   !Parameter number ( See Code Table 4.2 )
       !
@@ -442,10 +445,17 @@ integer*4,parameter :: numcoord=1 !number of values in array
             ipdstmpl(13)=255!t13
             ipdstmpl(14)=0  !t14
             ipdstmpl(15)=0  !t15
-            !ipdstmpl(16)=3            !0:hi-res-ctl 1:low-res-ctl 3:member 
-                                       !(Table 4.6) must set ipdsnum=1 and ipdstmplen=17
-            !if(write_mem==0)ipdstmpl(16)=1
-            !ipdstmpl(17)=1 !write_mem !ensembel member 
+            if(ipdsnum==1)then
+             !Type of ensemble forecast (see Code table 4.6)
+             !0:hi-res-ctl 1:low-res-ctl 3:member 
+             if(grbmem==0)then
+               ipdstmpl(16)=1 !control run 
+             else 
+               ipdstmpl(16)=3 
+             endif
+             ipdstmpl(17)=grbmem  !Perturbation number
+             ipdstmpl(18)=grbnumm !Number of forecasts in ensemble
+            endif
       ! Add packing info. (section 5) 
            idrstmpl3=(/0,0,p3,0,0,0,0,0,0,0,0,0,0,0,0,0,2/)
 
@@ -489,7 +499,7 @@ integer*4,parameter :: numcoord=1 !number of values in array
             if( (itau-t27)  <  0 )return
             listsec0(1)=t0   !Product Discipline ( Code Table 0.0 )
       ! Add data info. (section 4)
-            ipdsnum=8  ! Product Definition Template Number (Code Table 4.0)
+      !     ipdsnum_acc=8  ! Product Definition Template Number (Code Table 4.0)
             ipdstmpl8(1)=t1   !Parameter category ( See Code Table 4.1 )
             ipdstmpl8(2)=t2   !Parameter number ( See Code Table 4.2 )
             if(itau.eq.0)then
@@ -507,27 +517,44 @@ integer*4,parameter :: numcoord=1 !number of values in array
             ipdstmpl8(15)=0  !t15
             call dtgfix12(grb_idtg,idtg2 ,itau)
             write(cdtg,'(i12.12)')idtg2
-            read(cdtg,'(i4,i2,i2,i2)')ipdstmpl8(16:19)
-            !ipdstmpl8(16)=listsec1(6)!0 !t16 ! Year   | Time of end of overall time interval
-            !ipdstmpl8(17)=listsec1(7)!0 !t17 ! mon
-            !ipdstmpl8(18)=listsec1(8)!0 !t18 ! day
-            !ipdstmpl8(19)=0 !t19 ! hour
-            ipdstmpl8(20)=0 !t20 ! minute
-            ipdstmpl8(21)=0 !t21 ! Second | Time of end of overall time interval
-            ipdstmpl8(22)=1 !t22
-            ipdstmpl8(23)=0 !t23
-            ipdstmpl8(24)=t24 !t24  0 ave 1 accu
-            ipdstmpl8(25)=2 !t25 code 4.11
-            ipdstmpl8(26)=1 !t26 ! unit of time for time range. 1:hour, 2:day
-            ipdstmpl8(27)=t27  ! time interval value
-            ipdstmpl8(28)=0  !t28 fcst,dt unit 0:minut 1:hour 2:day
-            ipdstmpl8(29)=0  !t29
+            if(ipdsnum_acc==8)then
+              read(cdtg,'(i4,i2,i2,i2)')ipdstmpl8(16:19)!yyyy mm dd hh
+              ipdstmpl8(20)=0 !t20 ! minute
+              ipdstmpl8(21)=0 !t21 ! Second | Time of end of overall time interval
+              ipdstmpl8(22)=1 !t22
+              ipdstmpl8(23)=0 !t23
+              ipdstmpl8(24)=t24 !t24  0 ave 1 accu
+              ipdstmpl8(25)=2 !t25 code 4.11
+              ipdstmpl8(26)=1 !t26 ! unit of time for time range. 1:hour, 2:day
+              ipdstmpl8(27)=t27  ! time interval value
+              ipdstmpl8(28)=0  !t28 fcst,dt unit 0:minut 1:hour 2:day
+              ipdstmpl8(29)=0  !t29
+            elseif(ipdsnum_acc==11)then
+             if(grbmem==0)then
+               ipdstmpl8(16)=1 !control run 
+             else 
+               ipdstmpl8(16)=3 !Type of ensemble forecast (see Code table 4.6)
+             endif
+             ipdstmpl8(17)=grbmem  !Perturbation number
+             ipdstmpl8(18)=grbnumm !Number of forecasts in ensemble
+              read(cdtg,'(i4,i2,i2,i2)')ipdstmpl8(19:22)!yyyy mm dd hh
+              ipdstmpl8(23)=0 !t20 ! minute
+              ipdstmpl8(24)=0 !t21 ! Second | Time of end of overall time interval
+              ipdstmpl8(25)=1 !t22
+              ipdstmpl8(26)=0 !t23
+              ipdstmpl8(27)=t24 !t24  0 ave 1 accu
+              ipdstmpl8(28)=2 !t25 code 4.11
+              ipdstmpl8(29)=1 !t26 ! unit of time for time range. 1:hour, 2:day
+              ipdstmpl8(30)=t27  ! time interval value
+              ipdstmpl8(31)=0  !t28 fcst,dt unit 0:minut 1:hour 2:day
+              ipdstmpl8(32)=0  !t29
+            endif
       ! Add packing info. (section 5) 
            idrstmpl3=(/0,0,p3,0,0,0,0,0,0,0,0,0,0,0,0,0,2/)
 
             call gribcreate(cgrib,lcgrib,listsec0,listsec1,ierr)
             call addgrid(cgrib,lcgrib,igds,igdstmpl,igdstmplen,ideflist,idefnum,ierr)
-            call addfield(cgrib,lcgrib,ipdsnum,ipdstmpl8,ipdstmplen8,    &
+            call addfield(cgrib,lcgrib,ipdsnum_acc,ipdstmpl8,ipdstmplen8,    &
                  coordlist,numcoord,idrsnum3,idrstmpl3,idrstmplen3, &
                  fld,grbnxmy,ibmap,bmap,ierr)
             call gribend(cgrib,lcgrib,lengrib,ierr)
@@ -611,6 +638,10 @@ integer*4,parameter :: numcoord=1 !number of values in array
                  call baopenw(grbid,trim(grbfile),ierr)
                  call latlong(nx,my)
                  call seclist01(idtg,itau)
+                 if(grbmem>=0)then
+                   ipdsnum=1
+                   ipdsnum_acc=11
+                 endif
             end subroutine 
             subroutine cls_grb2 (ierr)
             use grib_mod

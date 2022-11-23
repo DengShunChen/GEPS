@@ -45,6 +45,7 @@
                    skeb_vdof,skebnorm, skebfilt, &
                    ssst, ssst_seed, ssst_decort, ssst_lscale, &
                    init_stochastic_physics
+      use mod_grb2_param, only:grbmem,grbnumm
 
       implicit  none
 
@@ -114,6 +115,7 @@
                    skeb_sigtop1, skeb_sigtop2, skeb_sigbot1, skeb_sigbot2, &
                    skeb_vdof, skebnorm, skebfilt, &
                    ssst, ssst_seed, ssst_decort, ssst_lscale
+      namelist /grb_conf/ grbmem,grbnumm
 
 ! for ECHAM4 Tiedtke cumulus scheme
       call cuparam
@@ -160,6 +162,8 @@
       ! read stochastic_physics
       read (1,stochy_physics,end=122)
   122 continue
+      read (1,grb_conf,end=123)
+  123 continue
       close(1)
 !
       open (unit=1,file=trim(namlsts),form='formatted')

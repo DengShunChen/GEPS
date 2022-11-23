@@ -140,7 +140,7 @@
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       call syslbl ('x00999',idtg,itau,ggdef,ihdg)
       if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
-      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,17,4,9,7,0,0.,0,24,glob)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,17,4,6,7,0,0.,0,24,glob)
 !xb110<<
 
 
