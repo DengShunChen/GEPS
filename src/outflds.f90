@@ -1,7 +1,7 @@
       subroutine outflds( itau,nx,my,my_max,lev,ncld                 &
              , lmax,numout,idtg,ifilout                              &
              , outdir,ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo        &
-             , ptend,pt,plt,pk,pk2,phi,ut,vt,sd                      &
+             , ptend,pt,plt,pk,pk2,phi,ut,vt,vvel                    &
              , tt,qt,rdiv,rvor,tg,gwet,z0,hflux,qflux,snr            &
              , raintot,raincu,rainlp,plcl,cumtop,ss,rs,alb,gwclim    &
              , acld,cosl,drag,ugws,vgws,t2,q2,rh2,rh10,u10,v10,gfx,rld,sld &
@@ -56,7 +56,7 @@
                      , tt(nxp,lev,my_max),qt(nxp,lev*ncld,my_max)   &
                      , sht(nxp,lev*ncld,my_max),phi(nxp,lev,my_max) &
                      , sgeo(nxp,my_max),ptend(nxp,my_max)           &
-                     , pt(nxp,my_max),sd(nxp,lev,my_max)            &
+                     , pt(nxp,my_max),vvel(nxp,lev,my_max)          &
                      , sigma(lev+1,2)                               &
                      , pk(nxp,lev,my_max),pk2(nxp,lev,my_max)       &
                      , cosl(my),typtrk(nxp,my_max,5)
@@ -79,7 +79,7 @@
               , bt1(nxp,my_max),bt2(nxp,my_max)                      &
               , hld1(nxp,my_max),hld2(nxp,my_max) 
 !
-      real(kind=RTYPE) sdhat(nxp,lev,my_max),pres3d(nxp,my_max,lpout)
+      real(kind=RTYPE) pres3d(nxp,my_max,lpout)
 !
       real(kind=RTYPE) wk_xy(nxp,my_max,12)   ! the last dim is changable
       real      tmpin(nxp),tmpout(nxp)
@@ -95,7 +95,6 @@
       real      rad,ograv,alaps,rdg,ttb,ttp,ttt,ttt1,ttt2,anlslp
       real      apha,pl1000,splog,ax,bx,cx,dx,tmid,tsf,tadia,xx,deltap
 !
-      real(kind=RTYPE) dsigma(lev,2)
 !
       logical :: lwrite,lwritesit
 !xb110>
@@ -290,27 +289,6 @@
 !      call mpe_unify(pt,nx,my,2,mpe_double)
 !      call mpe_unify(ptend,nx,my,2,mpe_double)
 !
-! linearly comput vertical velocity on full-level
-!
-      do k=1,lev
-        dsigma(k,1) = sigma(k+1,1) - sigma(k,1)
-        dsigma(k,2) = sigma(k+1,2) - sigma(k,2)
-      enddo
-      do jj = 1, jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-        do k=2,lev-1
-          do i = 1, nxj
-            sdhat(i,k,jj)= 0.5*(sd(i,k+1,jj)+sd(i,k,jj))
-!            sdhat(i,k,jj)= sd(i,k+1,jj)*(pk(i,k,jj)-pk2(i,k-1,jj))/(pk2(i,k,jj)-pk2(i,k-1,jj))  &
-!                          +sd(i,k,jj)  *(pk2(i,k,jj)-pk(i,k,jj))  /(pk2(i,k,jj)-pk2(i,k-1,jj))
-          enddo
-        enddo
-        do i = 1,nxj
-          sdhat(i,1,jj)=0.5*sdhat(i,2,jj)
-          sdhat(i,lev,jj)=0.5*sdhat(i,lev-1,jj)
-        enddo
-      enddo
 !
 ! output surface fields
 !
@@ -602,7 +580,7 @@
 !!        call mpe_unify(bt2,nx,my,2,mpe_double)
         if(myrank.eq.0)print*,' outfld : start windout, lwrite = ',lwrite
         call windout (nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,num &
-           ,whtlev,cosl,pkout,plog,pllp,ut,vt,sdhat,bt1,bt2,pres3d,glob,ggdef,lwrite)
+           ,whtlev,cosl,pkout,plog,pllp,ut,vt,vvel,bt1,bt2,pres3d,glob,ggdef,lwrite)
       endif
 !
       labx='dag   '
