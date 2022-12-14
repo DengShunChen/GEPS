@@ -52,8 +52,8 @@ setenv C_COMP_MP $LANG_HOME/bin/mpifccpx
 #============================================================
 #setenv FFLAGS_COM "-c -X9 -Free -CcdRR8 -Cpp -Kfast,ocl,autoobjstack,preex,simd=2 -SSL2 -x- -xswflux,200 -fw"
 setenv FFLAGS_COM "-c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed"
-setenv DEFINE_FLAGS "-DTIMING -DUSE_FFTW -DW3TAG"
-#setenv DEFINE_FLAGS "-DTIMING -DUSE_FFTW -DW3TAG -DSP"
+#setenv DEFINE_FLAGS "-DTIMING -DUSE_FFTW -DW3TAG"
+setenv DEFINE_FLAGS "-DTIMING -DUSE_FFTW -DW3TAG -DSP"
 setenv MSG_COM "-Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2"
 #setenv MSG_COM "-Ec -Koptmsg=2"
 setenv LIBS_COM "-SSL2BLAMP"
