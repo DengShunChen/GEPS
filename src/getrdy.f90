@@ -1240,7 +1240,7 @@
 
         call outflds ( 0,nx,my,my_max,lev,ncld,lmax,numout,idtg,ifilout &
              , outdir,ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo           &
-             , ptend,pt,plt,pk,pk2,phi,ut,vt,sd                         &
+             , ptend,pt,plt,pk,pk2,phi,ut,vt,vvel                       &
              , tt,qt,rdiv,rvor,tg,gwr,z0,hflux,qflux,snr                &
              , raintot,raincu,rainlp,plcl,cumtop,ss,rs,alb,gwclim       &
              , acld,cosl,wk1,ww2,ww2,t2,q2,rh2,rh10,u10,v10,gfx,rld,sld &

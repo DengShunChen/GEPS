@@ -227,7 +227,8 @@
         , qt(1,1,jj),phi(1,1,jj),pt(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
         , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)         &
         , diveng(1,1,jj),vdmerdr(1,1,jj),vdzonlr(1,1,jj),pten(1,1,jj)  &
-        , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),sgeo(1,jj) )
+        , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),vvel(1,1,jj) &
+        , sgeo(1,jj) )
 
       enddo !jj = 1,jlistnum
 !

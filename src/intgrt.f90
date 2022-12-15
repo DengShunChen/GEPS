@@ -367,7 +367,7 @@
 ! read mountant variables for topographic gravity wave drag
 !
       if(yesdia .and. dograv .and. nmgwor .eq. 2) then
-         call read_mtnvar(nx,my,mtnvar,hprime_b,isot)
+         call read_mtnvar(nx,my,mtnvar,hprime_b)
 !
          if( myrank .eq. 0 ) &
            print*,'read mtnvar=14 hprime_b=',(hprime_b(1,i,1),i=1,mtnvar)
@@ -948,7 +948,8 @@
         , qp(1,1,jj),phi(1,1,jj),ptm(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
         , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)          &
         , diveng(1,1,jj),vdmerdg(1,1,jj),vdzonlg(1,1,jj),pten(1,1,jj)   &
-        , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),sgeo(1,jj) )
+        , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),vvel(1,1,jj)  &
+        , sgeo(1,jj) )
       enddo !jj = 1,jlistnum
 !
       call joinrs(cc,diveng,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
@@ -1112,7 +1113,7 @@
                       , itimestep,lrun_sitvdiff,ic_sit                          &
 !xb110>
 !byl                      , rmr,smr,flash)
-                      , flash,tsflw)
+                      , flash,tsflw,vvel)
 !xb110<
 !--------------------------------------------------------------------------------
 !
@@ -1631,7 +1632,7 @@
                    , fusl,fdsl,fuir,fdir                                       &
                    , fuslr,fdslr,fuirr,fdirr                                   &
                    , asl,atl,asl_clr,atl_clr                                   &
-                   , dtrad,clds,sd                                             &
+                   , dtrad,clds,vvel                                           &
                    , ss,rs,olr,asol,sld,rld                                    &
                    , ss_clr,rs_clr,olr_clr                                     &
                    , asol_clr,sld_clr,rld_clr                                  &
@@ -1651,7 +1652,7 @@
         call  outflds( itau,nx,my,my_max,lev,ncld                              &
                     , lmax,numout,idtg,ifilout,outdir                          &
                     , ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo                  &
-                    , ptend,pt,plt,pk,pk2,phi,ut,vt,sd                         &
+                    , ptend,pt,plt,pk,pk2,phi,ut,vt,vvel                       &
                     , tt,qt,rdiv,rvor,tg,gwr,z0,hflux,qflux,snr              &
                     , raintot,raincu,rainlp,asol,olr,ss,rs,alb,gwclim          &
                     , acld,cosl,drag,ugws,vgws,t2,q2,rh2,rh10,u10,v10,gfx,rld,sld &

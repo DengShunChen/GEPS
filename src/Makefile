@@ -152,6 +152,8 @@ SRCS_f90  = \
   module_mp_thompson_gfs.f90 \
   module_mp_wsm6_fv3.f90 \
   module_mp_gfdl_fv3_v16.f90 \
+  module_mp_gfdl_fv3_v2.f90 \
+  cld_eff_rad.f90 \
   moninedmf.f90 \
   mpe2d.f90 \
   mpe_barrier.f90 \

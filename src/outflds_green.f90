@@ -32,7 +32,6 @@
 !
 ! local work arrays
 !
-      real::rh0_tmp(nxp)
       real(kind=RTYPE) glob(nx,my),mout(nx,my),wrk(nxp,my_max),      &
                        rh0(nxp,my_max)
 !
@@ -43,7 +42,8 @@
 !
       real oqt(nxp,my_max),oqc(nxp,my_max),ou(nxp,my_max),  &
            ov(nxp,my_max),ot(nxp,my_max),pla(nxp,my_max),   &
-           pp(nxp,my_max),p2(nxp,my_max),p10(nxp,my_max)
+           pp(nxp,my_max),p2(nxp,my_max),p10(nxp,my_max),   &
+           rhtmp(nxp)
       real, parameter ::rad=6.371e6
       integer,parameter :: l= 4, m= 2
       real   avett,p(l),hm(m),xxx,temp,tepl(nxp,l,my_max)
@@ -226,10 +226,10 @@
           do i = 1, nxj
           tht(i,jj) =tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt(i,lev,jj))
           enddo
-       call qsatq(nxj,tht(1,jj),plt(1,lev,jj),rh0_tmp)
+       call qsatq(nxj,tht(1,jj),plt(1,lev,jj),rhtmp)
           do i = 1, nxj
-           !rh0(i,jj)=100.*(qt(i,lev,jj)/  rh0(i,jj))
-           rh0(i,jj)=100.*(qt(i,lev,jj)/  rh0_tmp(i))
+           rh0(i,jj)=rhtmp(i)
+           rh0(i,jj)=100.*(qt(i,lev,jj)/rh0(i,jj))
            rh0(i,jj)= min( 100., max( 1., rh0(i,jj) ) )
           enddo
       enddo
@@ -302,8 +302,7 @@
       implicit none
       integer i, layer
       real p(layer)
-      real(kind=RTYPE) psfc
-      real(kind=RTYPE) aki(layer), bki(layer)
+      real(kind=RTYPE) psfc,aki(layer), bki(layer)
 
       do i=1,layer
       p(i)=aki(i)+(bki(i)*psfc)
