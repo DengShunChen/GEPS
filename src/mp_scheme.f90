@@ -128,7 +128,7 @@
                 qv,ql,qr,qi,qs,qg,cldcov,qnl,qni,w,delp,dz,q_con,cappa, &
                 te,pt,uin,vin,prefluxr,prefluxi, prefluxs,prefluxg
       real, dimension(:), allocatable ::                                &
-                gsize,hs,rain0,snow0,ice0,graupel0,                     &
+                gsize,frland,hs,rain0,snow0,ice0,graupel0,              &
                 cond0,dep0,evap0,sub0
       logical   consv_te,last_step,do_inline_mp
 #else
@@ -170,6 +170,7 @@
         allocate                                                        &
          ( hs(nxj),gsize(nxj),rain0(nxj),snow0(nxj),ice0(nxj),          &
            graupel0(nxj),cond0(nxj),dep0(nxj),evap0(nxj),sub0(nxj) )
+        allocate( frland(nxj) )
 #else
         allocate                                                        &
          ( re_graupel(nxj,lev),rew(nxj,lev),                            &
@@ -203,6 +204,7 @@
         sub0  = 0.0
         q_con = 0.0  !not sure
         cappa = 0.0  !not sure
+        frland    = 0.0
         cldcov    = 0.0  !for do_qa=.false.
         prefluxr  = 0.0
         prefluxi  = 0.0
@@ -308,7 +310,8 @@
 
         do i = 1, nxj
           gsize(i) = sqrt(area(i))  !square root of grid area (m)
-          hs(i)    = sgeo(i)        !terrain geopotential (gpm) (not sure)
+          hs(i)    = sgeo(i)        !terrain geopotential (m^2 s^-2)
+          if( islimsk(i) .eq. 1 ) frland(i) = 1.  !land fraction
         enddo
         do k = 1, lev
           kc = lev - k + 1
@@ -339,6 +342,7 @@
         call gfdl_cld_mp_driver                                         &
                 ( qv, ql, qr, qi, qs, qg, cldcov, qnl, qni,             &
                   pt, w, uin, vin, dz, delp, gsize, dta, hs,            &
+                  frland,                                               &
                   rain0, snow0, ice0, graupel0, hydrostatic,            &
                   1, nxj, 1, lev, q_con, cappa, consv_te, te,           &
                   prefluxr, prefluxi, prefluxs, prefluxg,               &
@@ -386,6 +390,7 @@
            prefluxr,prefluxi,prefluxs,prefluxg,q_con,cappa,te)
         deallocate                                                      &
          ( hs,gsize,rain0,snow0,ice0,graupel0,cond0,dep0,evap0,sub0 )
+        deallocate ( frland )
 #else
         do i = 1, nxj
           if( islimsk(i) .eq. 1 ) frland(i,1) = 1.  !land fraction
