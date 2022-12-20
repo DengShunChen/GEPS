@@ -150,7 +150,7 @@
       if(outdms.gt.0)call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,1,8,2,103,0,0.,1,praint,glob)
 !accu. total precipitation from tau 0
-      if( itau==0 .or.  itau .ge. nint(domfc) )then
+      if( itau==0 .or.  itau .gt. nint(domfc) )then
 !
       globp=raintot
       call unify_reduceintp(nx,my,my_max,globp,glob)
@@ -332,7 +332,7 @@
       endif
 ! 2m temerature
       if(label(kk).eq.'b02100') then
-      if( itau==0 .or. itau .ge. nint(domfc) )then
+      if( itau==0 .or. itau .gt. nint(domfc) )then
       globp=t2
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('b02100',idtg,itau,ggdef,ihdg)
@@ -363,7 +363,7 @@
       endif
 !10m u component
       if(label(kk).eq.'b10200') then
-      if( itau==0 .or. itau .ge. nint(domfc) )then
+      if( itau==0 .or. itau .gt. nint(domfc) )then
       globp=u10
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('b10200',idtg,itau,ggdef,ihdg)
@@ -375,7 +375,7 @@
       endif
 !10m v component
       if(label(kk).eq.'b10210') then
-      if( itau==0 .or.  itau .ge. nint(domfc) )then
+      if( itau==0 .or.  itau .gt. nint(domfc) )then
       globp=v10
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('b10210',idtg,itau,ggdef,ihdg)
@@ -397,7 +397,7 @@
       endif
 !2m specific humidity
       if(label(kk).eq.'b02500') then
-      if( itau==0 .or. itau .ge. nint(domfc) )then
+      if( itau==0 .or. itau .gt. nint(domfc) )then
       globp=q2
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('b02500',idtg,itau,ggdef,ihdg)
@@ -409,7 +409,7 @@
       endif
 !2m relative humidity
       if(label(kk).eq.'b02510') then
-      if( itau==0 .or. itau .ge. nint(domfc) )then
+      if( itau==0 .or. itau .gt. nint(domfc) )then
       do 37 jj=1,jlistnum
         j=jlist1(jj)
        nxj=nxdef_2d(j)
