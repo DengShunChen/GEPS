@@ -29,7 +29,7 @@
 ! sit
                     , itimestep,lrun_sitvdiff,ic_sit                           &
 !xb110>
-                    , flash,tsflw,ustress, vstress, ssu, ssv)
+                    , flash,tsflw,vvel,ustress, vstress, ssu, ssv)
 !xb110<
 !--------------------------------------------------------------------------------
 !#######################################################################
@@ -238,11 +238,8 @@
                 u10(nxp,my_max),v10(nxp,my_max),hpbl(nxp,my_max),         &
                 raincu6(nxp,my_max),rainlp6(nxp,my_max),                  &
                 raincu3(nxp,my_max),rainlp3(nxp,my_max),                  &
-<<<<<<< HEAD
-                raincu1(nxp,my_max),rainlp1(nxp,my_max),                  &
+                raincu1(nxp,my_max),rainlp1(nxp,my_max),
                 ustress(nxp,my_max),vstress(nxp,my_max),ssu(nxp,my_max),ssv(nxp,my_max)
-=======
-                raincu1(nxp,my_max),rainlp1(nxp,my_max)
       real(kind=RTYPE) qt(nxp,lev*ncld,my_max),qp(nxp,lev*ncld,my_max),   &
                        up(nxp,lev,my_max),vp(nxp,lev,my_max),             &
                        ttp(nxp,lev,my_max),o3l(nxp,lev,my_max),           &
@@ -251,7 +248,6 @@
                        ut(nxp,lev,my_max),vt(nxp,lev,my_max),             &
                        tt(nxp,lev,my_max),pk(nxp,lev,my_max),             &
                        pk2(nxp,lev,my_max)
->>>>>>> development
 !soil (2005/01/12)
       integer,  parameter :: ntype=9, ngrid=22
       integer   istyp(nxp,my_max),ivegtyp(nxp,my_max)
@@ -286,7 +282,7 @@
       real tt_bfcnv(nxp,lev)
       real prsi(nxp,lev+1)
       real utgwc(nxp,lev),vtgwc(nxp,lev),                                  &
-           dudtc(nxp,lev),dvdtc(nxp,lev),dtdtc(nxp,lev),                   &
+           dudtc(nxp,lev),dvdtc(nxp,lev),dtdtc(nxp,lev),dqdtc(nxp,lev),    &
            prslk(nxp,lev)
       real oc(nxp),theta(nxp),gamma(nxp),sigmaog(nxp),elvmax(nxp),hprime(nxp),    &
            dlength(nxp),cldf(nxp),cumabs(nxp),work3(nxp),tauctx(nxp),taucty(nxp), &
@@ -372,7 +368,7 @@
       data      donor/.true./,fnor/0.5/
 
 ! for GFDL microphysics
-      real area(nxp,1)
+      real area(nxp)
 
 !#######################################################################
 !
@@ -433,7 +429,7 @@
 
 !ch   real      cldwrk(nxp,my_max),sd(nxp,lev+1,my_max),xkt2(nx)
       real      cldwrk(nxp,my_max),                     xkt2(nx)
-      real(kind=RTYPE) sd(nxp,lev+1,my_max)
+      real(kind=RTYPE) sd(nxp,lev+1,my_max),vvel(nxp,lev,my_max)
 
 ! for new shlcon
       real      rcup2(nxp)
@@ -533,9 +529,6 @@
       rld_adj=0.
       sld_adj=0.
       ss_adj =0.
-      dudtc = 0.
-      dvdtc = 0.
-      dtdtc = 0.
 ! for MP WSM6 & Thompson
       uni_cloud=.false. !if using SHOC scheme, it should be .true.
       lmfshal=( nmshl .eq. 2 .or. nmshl .eq. 3 ) ! .true. if using mass-flux shallow convection
@@ -670,13 +663,15 @@
 !---------------------------------------------------------------------
             if(iceold(i,jj)       .and. .not. ice(i,jj)) then
               zice(i,jj)=0.
-              cice(i,jj)=0.   
+              cice(i,jj)=0.
+              snr(i,jj) =0.
               z0(i,jj)=ustar(i,jj)*ustar(i,jj)*0.014/grav
             endif
             if(.not. iceold(i,jj) .and. ice(i,jj)) then
               xtice(i,jj)=tg(i,jj)
-              zice(i,jj)=0.1 ! from himin in sfc_sice 
+              zice(i,jj)=0.15 ! from himin in sfc_sice 
               cice(i,jj)=0.15 ! from cimin in sfc_sice 
+              snr(i,jj) =15.
               z0(i,jj)=0.0002 ! set new ice point to 0.0002
             endif
           endif ! if(ls(i,jj).eq.0) then
@@ -717,6 +712,7 @@
           dudtc(i,k) = 0.
           dvdtc(i,k) = 0.
           dtdtc(i,k) = 0.
+          dqdtc(i,k) = 0.
         enddo
       enddo
 !
@@ -1064,8 +1060,9 @@
 !    
 !
         do k=1,lev
+          kc=lev-k+1
           do i = 1, nxj
-            dotc(i,k)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
+            dotc(i,kc)=vvel(i,k,jj)
           enddo
         enddo
 
@@ -1206,7 +1203,8 @@
                      , hpbl(1,jj),asl(1,1,jj),atl(1,1,jj),xmu(1,jj),gfx(1,jj) &
                      , kpbl(1,jj),nmpbl,nmmiph,j,isot,ivegsrc,sfemis(1,jj)    &
                      , dudtc,dvdtc,dtdtc,ustress(1,jj),vstress(1,jj)          &
-                     , ssu(1,jj),ssv(1,jj))
+                     , ssu(1,jj),ssv(1,jj),dqdtc)
+
 
 !
 !
@@ -1229,6 +1227,16 @@
 ! topograpic gravity wave drag
 !=======================================================================
       if(dograv .and. (nmgwor .eq. 1) ) then 
+        do k=1,lev
+          kc=lev-k+1
+          do i=1,nxj
+            tt(i,k,jj) = tt(i,k,jj) + dtdtc(i,kc)*dta
+            ut(i,k,jj) = ut(i,k,jj) + dudtc(i,kc)*dta
+            vt(i,k,jj) = vt(i,k,jj) + dvdtc(i,kc)*dta
+            qt(i,k,jj) = qt(i,k,jj) + dqdtc(i,kc)*dta
+          enddo
+        enddo
+
         call gwdp (j,nxjp(j),nxp,lev,                                   &
                   ut(1,1,jj),vt(1,1,jj),tt(1,1,jj),qt(1,1,jj),         &
                   plt(1,1,jj),pk(1,1,jj),pk2(1,1,jj),phi,std(1,jj),dta,&
@@ -1299,6 +1307,7 @@
             tt(i,k,jj) = ttc(i,kc) + dtdtc(i,kc)*dta
             ut(i,k,jj) = utc(i,kc) + dudtc(i,kc)*dta
             vt(i,k,jj) = vtc(i,kc) + dvdtc(i,kc)*dta
+            qt(i,k,jj) = qtc(i,kc) + dqdtc(i,kc)*dta
           enddo
         enddo
       endif  !(end of topo dograv and nmgwor=2)
@@ -1348,9 +1357,8 @@
     !c 20120926 for Tiedtke cumulus
       if ( docup .and. (nmcup .eq. 4 .and. ncld .ge. 2) ) then
         do k=1,lev
-          kc=lev-k+1
           do i = 1, nxj
-            dotc(i,kc)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
+            dotc(i,k)=vvel(i,k,jj)
           enddo
         enddo
         call cumastr_driv(nxjp(j),nxp,lev,dt,grav,rgas,cp,hltm,ptop &
@@ -1383,9 +1391,8 @@
 
       if ( docup .and. (nmcup .eq. 5 .and. ncld .ge. 2) ) then
         do k=1,lev
-          kc=lev-k+1
           do i = 1, nxj
-            dotc(i,kc)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
+            dotc(i,k)=vvel(i,k,jj)
           enddo
         enddo
 
@@ -1434,9 +1441,9 @@
           psfc(i)  = pst(i,jj)*0.1        ! change to cb
         enddo
         do k=1,lev
+          kc=lev-k+1
           do i = 1, nxj
-            dotc(i,k)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
-            dotc(i,k)=dotc(i,k)*0.1
+            dotc(i,kc)=vvel(i,k,jj)*0.1
           enddo
         enddo
         do k=1,lev
@@ -1628,9 +1635,9 @@
       ! psfc(1:nxj)  = pst(1:nxj,jj)*0.1 ! change to cb
 
         do k=1,lev
+          kc=lev-k+1
           do i = 1, nxj
-            dotc(i,k)=0.5*(sd(i,k,jj)+sd(i,k+1,jj))
-            dotc(i,k)=dotc(i,k)*0.1
+            dotc(i,kc)=vvel(i,k,jj)*0.1
           enddo
         enddo
 
@@ -1831,7 +1838,7 @@
 
 ! for GFDL MP
       do i = 1, nxj
-        area(i,1) = tem1*tem2  !area of grid box
+        area(i) = tem1*tem2  !area of grid box
       enddo
 
       call mp_scheme                                                   &
@@ -1839,6 +1846,9 @@
            ( nmmiph,nxp,nxjp(j),lev,ncld,plt(1,1,jj),                  &
              pst(1,jj),dsigma,phii,islimsk,q0,kdt,ntcw,ntrw,ntiw,ntsw, &
              ntgl,ntinc,ntrnc,tpi,me,dta,area,jj,                      &
+#if defined (GFDLMP_v2)
+             sgeo(1,jj),                                               &
+#endif
 !  ---  inputs/outputs:
              tt(1,1,jj),qt(1,1,jj),clds(1,1,jj),                       &
              ut(1,1,jj),vt(1,1,jj),sd(1,1,jj),                         &

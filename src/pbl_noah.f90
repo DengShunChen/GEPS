@@ -9,8 +9,8 @@
                         , ncld,dsigma,islopetyp,slc,sncover,snwdph       &
                         , shdmax,shdmin,snoalb,albedo2                  &
                         , sld,zice,cice,xtice,hpbl,asl,atl,xmu,gfx      &
-                        , kpbl,nmpbl,nmmiph,jj,isot,ivegsrc,sfemis_g   &
-                        , dudt,dvdt,dtdt, ustress, vstress, ssu, ssv )
+                        , kpbl,nmpbl,nmmiph,jj,isot,ivegsrc,sfemis_g    &
+                        , dudt,dvdt,dtdt,dqdt, ustress, vstress, ssu, ssv )
 !
 !#######################################################################
 !                     subroutine description
@@ -256,7 +256,7 @@
 
 !----------------------------------------------------
 ! for fractional step:
-      real      dudt(nx,lev),dvdt(nx,lev),dtdt(nx,lev) 
+      real      dudt(nx,lev),dvdt(nx,lev),dtdt(nx,lev),dqdt(nx,lev) 
 
       integer  lsm,i,k,iter,kc,ntrac
       real     ppd,ppp,ttt,ppu,dth,p850,ddd,cc,qqq
@@ -768,7 +768,6 @@
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
-            qt(i,             k) = q1(i,kc,1)
             qt(i,lev*(ntcw-1)+k) = q1(i,kc,2)
             qt(i,lev*(ntiw-1)+k) = q1(i,kc,3)
             qt(i,lev*(ntoz-1)+k) = q1(i,kc,4)
@@ -778,7 +777,6 @@
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
-            qt(i,             k) = q1(i,kc,1)
             qt(i,lev*(ntcw-1)+k) = q1(i,kc,2)
             qt(i,lev*(ntiw-1)+k) = q1(i,kc,3)
             qt(i,lev*(ntinc-1)+k)= q1(i,kc,4)
@@ -789,7 +787,6 @@
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
-            qt(i,             k) = q1(i,kc,1)
             qt(i,lev*(ntcw-1)+k) = q1(i,kc,2)
             qt(i,lev*(ntiw-1)+k) = q1(i,kc,3)
             qt(i,lev*(ntrw-1)+k) = q1(i,kc,4)
@@ -799,7 +796,7 @@
           enddo
         enddo
       else
-        do nc=1,ntrac
+        do nc=2,ntrac
           do k=1,lev
             kc=lev-k+1
             do i=1,nxj
@@ -821,6 +818,7 @@
             dtdt(i,kc) = (t1(i,kc)-tt(i,k))/dt
             dudt(i,kc) = (u1(i,kc)-ut(i,k))/dt
             dvdt(i,kc) = (v1(i,kc)-vt(i,k))/dt
+            dqdt(i,kc) = (q1(i,kc,1)-qt(i,k))/dt
           enddo
        enddo
 !

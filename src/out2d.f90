@@ -190,7 +190,7 @@
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
 !
-      globp=rainlp
+      globp=raintot
       call unify_reduceintp(nx,my,my_max,globp,glob)
       call syslbl ('b0062t',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)

@@ -2,7 +2,7 @@
                         , cp,radsq,ut,vt,rdiv,tt,qt,phi,pt           &
                         , dtpl,dlpl,sinl,pk,pk2,dsigma,sigma,onocos  &
                         , cor,diveng,vdmerd,vdzonl,pten,deldm,sdpbl  &
-                        , sd,pdot,sgeo)
+                        , sd,pdot,vvel,sgeo)
 !
 !  real to spectral transformation, compute non-linear contributions
 !  to spectral tendencies
@@ -34,6 +34,7 @@
 !  deldm: terrain pressure tendency
 !  sd: vertical velocity
 !  pdot: vertical velocity
+!  vvel: vertical velocity at mean layer(Pa/s)
 !  diveng: energy term of divergence equation
 !  vdmerd: meridional advection term of divergence/vorticity tends
 !  vdzonl: zonal advection term of divergence/vorticity tends
@@ -56,33 +57,26 @@
                 rdiv(nx,lev),ut(nx,lev),vt(nx,lev),tt(nx,lev),       &
                 qt(nx,lev*ncld),phi(nx,lev),pt(nx),sgeo(nx),         &
                 deldm(nx),spal(nx,lev),sd(nx,lev),sdpbl(nx),         &
-                dsigma(lev,2),sigma(lev+1,2),pk(nx,lev),pk2(nx,lev)
+                dsigma(lev,2),sigma(lev+1,2),pk(nx,lev),pk2(nx,lev), &
+                cg(nx,lev),vvel(nx,lev)
 !
       logical   flag(nx)
 !
-      integer   k,i,kbgn,kk
+      integer   k,i,kbgn,kk,kkp1
       real      px,px_pbl
 
 
 !CWB2014 fixed undefined value problem in diabat line 665
       sd=0.
+      deldm=0.
 !
 !  surface pressure tendency
 !
-      k= 1
-      do 22 i=1,nxj
-        deldm(i)= -dsigma(k,1)*(ut(i,k)*dlpl(i)*onocos+vt(i,k)*dtpl(i))   &
-                  -rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
-!!        deldm(i)= pten(i,k)-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
-!        deldm(i)= -dsig(k)*(ut(i,k)*dlpl(i)*onocos+vt(i,k)*dtpl(i)
-!     *            +rdiv(i,k)*pt(i))
-        sd(i,k+1)= deldm(i)
-   22 continue
-!
-      do 2 k=2,lev-1
+      do 2 k=1,lev-1
       do 2 i=1,nxj
-        deldm(i)= deldm(i)-dsigma(k,1)*(ut(i,k)*dlpl(i)*onocos            &
-                 +vt(i,k)*dtpl(i))-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
+        cg(i,k) = ut(i,k)*dlpl(i)*onocos+vt(i,k)*dtpl(i)
+        deldm(i)= deldm(i)-dsigma(k,1)*cg(i,k)                        &
+                 -rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
 !!        deldm(i)= deldm(i)+pten(i,k)-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
 !        deldm(i)= deldm(i)-dsig(k)*(ut(i,k)*dlpl(i)*onocos
 !     *           +vt(i,k)*dtpl(i)+rdiv(i,k)*pt(i))
@@ -91,8 +85,9 @@
 !
       k= lev
       do 24 i=1,nxj
-        deldm(i)= deldm(i)-dsigma(k,1)*(ut(i,k)*dlpl(i)*onocos            &
-                 +vt(i,k)*dtpl(i))-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
+        cg(i,k) = ut(i,k)*dlpl(i)*onocos+vt(i,k)*dtpl(i)
+        deldm(i)= deldm(i)-dsigma(k,1)*cg(i,k)                        &
+                 -rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
 !!        deldm(i)= deldm(i)+pten(i,k)-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
 !        deldm(i)= deldm(i)-dsig(k)*(ut(i,k)*dlpl(i)*onocos
 !     *           +vt(i,k)*dtpl(i)+rdiv(i,k)*pt(i))
@@ -110,6 +105,14 @@
 !        sd(i,k)= sd(i,k)-sig(k)*deldm(i)
         pdot(i,kk)=sd(i,k)
     3 continue
+      do k=1,lev
+        kk  =lev-k+1
+        kkp1=lev-k+2
+        do i=1,nxj
+          vvel(i,k)=0.5*((sigma(k,1)+sigma(k+1,1))*(cg(i,k)+deldm(i))  &
+                  + (pdot(i,kk)+pdot(i,kkp1)))
+        enddo
+      enddo
 !
 !  obtain vertical velocity within low layers
 !
