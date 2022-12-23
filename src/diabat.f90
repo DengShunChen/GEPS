@@ -238,7 +238,7 @@
                 u10(nxp,my_max),v10(nxp,my_max),hpbl(nxp,my_max),         &
                 raincu6(nxp,my_max),rainlp6(nxp,my_max),                  &
                 raincu3(nxp,my_max),rainlp3(nxp,my_max),                  &
-                raincu1(nxp,my_max),rainlp1(nxp,my_max),
+                raincu1(nxp,my_max),rainlp1(nxp,my_max),                  &
                 ustress(nxp,my_max),vstress(nxp,my_max),ssu(nxp,my_max),ssv(nxp,my_max)
       real(kind=RTYPE) qt(nxp,lev*ncld,my_max),qp(nxp,lev*ncld,my_max),   &
                        up(nxp,lev,my_max),vp(nxp,lev,my_max),             &

@@ -82,7 +82,7 @@
 
       real (kind=RTYPE), dimension(im), intent(in) :: u1, v1, t1, q1
       real (kind=kind_phys), dimension(im), intent(in) :: ps,             &
-            tskin, cm, ch, prsl1, prslki, ddvel
+            tskin, cm, ch, prsl1, prslki, ddvel, ssu, ssv
       integer, dimension(im), intent(in):: islimsk
 
       logical, intent(in) :: flag_iter(im)

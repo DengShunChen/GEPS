@@ -367,7 +367,7 @@
       real(kind=RTYPE) work(nx,my)
       real(kind=RTYPE) a(nxp,my_max)
       real(kind=RTYPE) b(nxp,my_max*nsize)
-
+      logical, optional :: opt
       call MPI_ALLGATHER( a,nxp*my_max, MPI_RTYPE, &
                           b,nxp*my_max, MPI_RTYPE, &
                           MPI_COMM_gfs, IERR )

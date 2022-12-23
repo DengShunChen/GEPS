@@ -63,3 +63,5 @@ cd src/
 make clean
 make -j24
 
+if [[ $? -ne 0 ]];then exit ;fi
+

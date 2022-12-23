@@ -3,7 +3,7 @@ SHELL = /bin/sh
 RANLIB = ranlib
 AR = ar cq
 RM = rm -f
-TIMCOMCPL = TRUE
+TIMCOMCPL = True
 
 SRCS_f90  = \
   ancrt.f90 \
@@ -392,7 +392,7 @@ INSTALL = /usr/bin/install
  FFLAGS       = ${FFLAGS_COM}       ${LIBS_COM} ${OMP_COM} ${DEFINE_FLAGS} ${MSG_COM} $(INCLUDE) 
  FFLAGS_NOPAR = ${FFLAGS_COM}       ${LIBS_COM} ${DEFINE_FLAGS} ${MSG_COM} $(INCLUDE) 
  FFLAGS_GWDPS = ${FFLAGS_COM_GWDPS} ${LIBS_COM} ${OMP_COM} ${DEFINE_FLAGS} ${MSG_COM} $(INCLUDE)
- CFLAGS       = ${CFLAGS_COM} 
+ CFLAGS       = ${CFLAGS_COM} $(INCLUDE)
 #           -Kfast,parallel,openmp,ocl,autoobjstack -Nquickdbg
 #---------------------------------------------------------------------------------------------
 # For fx10 compiler, some subroutine, such as rcloud, can not use auto-parallel option.
@@ -400,7 +400,7 @@ INSTALL = /usr/bin/install
 # If it's using fx-100 compiler(new version), you probably can get -Kparallel flag back.
 #--------------------------------------------------------------------------------------------
 LDFLAGS = ${OMP_COM} ${LDFLAGS_COM}
-LIBS	= ${NETCDF_LIB} ${W3NCO_LIBd} ${DMS_LIB} ${OPERLIB_LIB} ${FFTW_LIB} ${LIBS_COM} ${MPMD_LIB}
+LIBS	= ${NETCDF_LIB} ${HDF5_LIB} ${W3NCO_LIBd} ${DMS_LIB} ${OPERLIB_LIB} ${FFTW_LIB} ${LIBS_COM} ${MPMD_LIB} $(W3LIB_LIB)
 
 ifeq ($(strip $(TIMCOMCPL)),TRUE)
   FFLAGS := $(FFLAGS) -DTIMCOMCPL
