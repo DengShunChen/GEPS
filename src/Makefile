@@ -403,7 +403,7 @@ LDFLAGS = ${OMP_COM} ${LDFLAGS_COM}
 LIBS	= ${NETCDF_LIB} ${HDF5_LIB} ${W3NCO_LIBd} ${DMS_LIB} ${OPERLIB_LIB} ${FFTW_LIB} ${LIBS_COM} ${MPMD_LIB} $(W3LIB_LIB)
 
 ifeq ($(strip $(TIMCOMCPL)),TRUE)
-  FFLAGS := $(FFLAGS) -DTIMCOMCPL
+  FFLAGS := $(FFLAGS) -DTIMCOMCPL  
   LIBS   := $(LIBS) -L../../TIMCOM_cpl/cpl -lcpl -L/nwpr/gfs/xb124/package/$(MACHINE)/MCT/lib -lmct -lmpeu
 endif
 
@@ -427,7 +427,7 @@ endif
 .f90.o:
 	@echo
 	@echo 'compile --> '$<
-	$(FC90) $(FFLAGS) $<
+	$(FC90) $(FFLAGS) $(LIBS) $<
 
 .c.o:
 	@echo
