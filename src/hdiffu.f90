@@ -4,18 +4,19 @@
       use index
       use mpe
       use rank
-      use const, only : hdk1,hdk2,radsq,hord,vd
+      use const, only : hdk1,hdk2,radsq,hord,vd,RTYPE
       use param, only : octahedral,af
 
       implicit  none
 
       integer   my,my_max,nx,jtrun,jtmax,lev,ncld
-      real      dta,rad
+      real      rad
+      real      dta
 
-      real      cosl(my),ut(nxp,lev,my_max),vt(nxp,lev,my_max),  &
-                vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),   &
-                temnow(levp,2,jtrun,jtmax),eps4(jtrun,jtmax),            &
-                trefs(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),  &
+                       temnow(levp,2,jtrun,jtmax),trefs(levp,2,jtrun,jtmax),   &
+                       ut(nxp,lev,my_max),vt(nxp,lev,my_max),eps4(jtrun,jtmax),&
+                       cosl(my)
 !
 !     parameter ( ktop=4, ktop2=ktop/2 ) ! top "ktop" levels are inhenced
 !
@@ -67,8 +68,8 @@
         hfilt  = hfilt/(6.*dta)
         hfilt2 = hfilt2/(6.*dta)
       else
-        hfilt  = 16.*hfilt/dta
-        hfilt2 = 16.*hfilt2/dta
+        hfilt  = hfilt/dta
+        hfilt2 = hfilt2/dta
       endif
 
       do 100 k=1,levp  ! levp -> lev
@@ -141,7 +142,7 @@
       use index
       use mpe
       use rank
-      use const, only : hdk1,hdk2,radsq
+      use const, only : hdk1,hdk2,radsq,RTYPE
       use param, only : octahedral,af
 
       implicit  none
@@ -149,10 +150,10 @@
       integer   my,my_max,nx,jtrun,jtmax,lev,ncld
       real      dta,rad
 
-      real      cosl(my),ut(nxp,lev,my_max),vt(nxp,lev,my_max),  &
-                vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),   &
-                temnow(levp,2,jtrun,jtmax),eps4(jtrun,jtmax),            &
-                trefs(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),  &
+                       temnow(levp,2,jtrun,jtmax),trefs(levp,2,jtrun,jtmax),   &
+                       ut(nxp,lev,my_max),vt(nxp,lev,my_max),                  &
+                       eps4(jtrun,jtmax),cosl(my)
 !
 !     parameter ( ktop=4, ktop2=ktop/2 ) ! top "ktop" levels are inhenced
 !
@@ -286,7 +287,7 @@
       use index
       use mpe
       use rank
-      use const, only : hdk1,hdk2,radsq,vd
+      use const, only : hdk1,hdk2,radsq,vd,RTYPE
       use param, only : octahedral,af,mwhd
 
       implicit  none
@@ -294,10 +295,10 @@
       integer   my,my_max,nx,jtrun,jtmax,lev,ncld
       real      dta,rad
 
-      real      cosl(my),ut(nxp,lev,my_max),vt(nxp,lev,my_max),  &
-                vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),   &
-                temnow(levp,2,jtrun,jtmax),eps4(jtrun,jtmax),            &
-                trefs(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),  &
+                       temnow(levp,2,jtrun,jtmax),trefs(levp,2,jtrun,jtmax),   &
+                       ut(nxp,lev,my_max),vt(nxp,lev,my_max),                  &
+                       eps4(jtrun,jtmax),cosl(my)
 !
 !     parameter ( ktop=4, ktop2=ktop/2 ) ! top "ktop" levels are inhenced
 !
@@ -341,9 +342,9 @@
         hfilt4 = hfilt4/(6.*dta)
         hfilt2 = hfilt2/(6.*dta)
       else
-        hfilt6 = 16.*hfilt6/dta
-        hfilt4 = 16.*hfilt4/dta
-        hfilt2 = 16.*hfilt2/dta
+        hfilt6 = hfilt6/dta
+        hfilt4 = hfilt4/dta
+        hfilt2 = hfilt2/dta
       endif
 
       do 100 k=1,levp  ! levp -> lev
@@ -412,6 +413,7 @@
 !
       use index
       use mpe
+      use const, only: RTYPE
 !
       implicit  none
 
@@ -422,8 +424,9 @@
 !
       integer   jtrun,jtmax,lev,ncld
 
-      real      temnow(lev,2,jtrun,jtmax),                           &
-                vornow(lev,2,jtrun,jtmax),divnow(lev,2,jtrun,jtmax)
+      real(kind=RTYPE) temnow(lev,2,jtrun,jtmax),  &
+                       vornow(lev,2,jtrun,jtmax),  &
+                       divnow(lev,2,jtrun,jtmax)
 !
       real      wvn_top(ktop+1),djt
 

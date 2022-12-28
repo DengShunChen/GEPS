@@ -15,18 +15,21 @@
 !  phiten : geopotential tendency(correction)array of spectrum coefficients
 !---------------------------------------------------------------------------
       use index
+      use const, only: RTYPE
 
       implicit none
 
       integer  lev,jtrun,jtmax,m,mf,n,j,l,k,KK,KL
 
-      real evec(lev,lev),vorten(levp,2,jtrun,jtmax)
-      real phiten(levp,2,jtrun,jtmax),divten(levp,2,jtrun,jtmax)
-      real vor(lev,2,jtrun,jtmax),div(lev,2,jtrun,jtmax), &
-           phe(lev,2,jtrun,jtmax)
-
+      real(kind=RTYPE) evec(lev,lev)
+      real(kind=RTYPE) vorten(levp,2,jtrun,jtmax),        &
+                       phiten(levp,2,jtrun,jtmax),        &
+                       divten(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) vor(lev,2,jtrun,jtmax),            &
+                       div(lev,2,jtrun,jtmax),            &
+                       phe(lev,2,jtrun,jtmax)
 !2dMPI
-      REAL wrk(lev,2,3,jtrun,jtmax)
+      REAL(kind=RTYPE) wrk(lev,2,3,jtrun,jtmax)
       CALL mpe2d_unify_spec_lev_zx(wrk,vorten,divten,phiten,lev,levp,jtrun,jtmax,mlistnum,nsizex,row_comm)
 
 !

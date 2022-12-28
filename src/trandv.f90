@@ -27,6 +27,7 @@
 !
 ! ********************************************
 !
+      use const, only : RTYPE
       use param, only : ncld
       use index
 !     use paramt
@@ -38,23 +39,25 @@
       integer   mlx,myhalf,levp2,jj,i,j,k,nxj,m,mm,mp,mlst,mf,j2,j1
       integer   l,lchk,lle,j_fj,i_fj,jlistnum_fj,l_fj,llistnum_fj
 
-      real      poly(jtrun,my/2,jtmax),dpoly(jtrun,my/2,jtmax)   &
-               ,cim(jtmax),onocos(my),w(my)
-      real      ut(nxp,lev,my_max),vt(nxp,lev,my_max)              &
-               ,vor(levp,2,jtrun,jtmax),div(levp,2,jtrun,jtmax)
+      real(kind=RTYPE)      poly(jtrun,my/2,jtmax),                  &
+                            dpoly(jtrun,my/2,jtmax),cim(jtmax),      &
+                            onocos(my),w(my)
+
+      real(kind=RTYPE)      ut(nxp,lev,my_max),vt(nxp,lev,my_max) 
+      real(kind=RTYPE)      vor(levp,2,jtrun,jtmax),div(levp,2,jtrun,jtmax)
 !
-      real      gwk1(nx+2,levp,2,my_max)
-      real      wss (levp,2,2,jtrun)
-      real      wcc_fk (levp,2,2,jtmax,my_max*nsize)
-      real      twcc_fk(levp,2,2,jtmax*nsize,my_max)
-      real      cc(nx+2,levp,2,my_max)
+      real(kind=RTYPE)      gwk1(nx+2,levp,2,my_max)
+      real(kind=RTYPE)      wss (levp,2,2,jtrun)
+      real(kind=RTYPE)      wcc_fk (levp,2,2,jtmax,my_max*nsize)
+      real(kind=RTYPE)      twcc_fk(levp,2,2,jtmax*nsize,my_max)
+      real(kind=RTYPE)      cc(nx+2,levp,2,my_max),dummy
 !
-      real      wcc2(levp,2,2,my/2)
-      real      wcc3(levp,2,2,my/2)
-      real      wcc4(levp,2,2,my/2)
-      real      wcc5(levp,2,2,my/2)
+      real(kind=RTYPE)      wcc2(levp,2,2,my/2)
+      real(kind=RTYPE)      wcc3(levp,2,2,my/2)
+      real(kind=RTYPE)      wcc4(levp,2,2,my/2)
+      real(kind=RTYPE)      wcc5(levp,2,2,my/2)
 !
-      real      wp(my/2,jtrun),wd(my/2,jtrun)
+      real(kind=RTYPE)      wp(my/2,jtrun),wd(my/2,jtrun)
 
       real      fj_wcc2(levp*2*2,my/2)
       real      fj_wcc3(levp*2*2,my/2)
@@ -63,12 +66,11 @@
       real      fj_wss23(levp*2*2,jtrun)
       real      fj_wss45(levp*2*2,jtrun)
       real      fj_wd2(my/2,jtrun),fj_wp3(my/2,jtrun)
-      real      fj_wd4(my/2,jtrun),fj_wp5(my/2,jtrun),dummy
+      real      fj_wd4(my/2,jtrun),fj_wp5(my/2,jtrun)
       integer   jlist_fj(my/2)
 !
 !CWBinit
       twcc_fk=0.
-      cc=0.
 
 !CWB2014
       gwk1=0.
@@ -90,7 +92,11 @@
       call joinrs(cc,ut,vt,dummy,dummy,nx,my_max,lev,jlistnum,2,1)
 
       if( length_fft .eq. 0 .and. lreduce.eq.0 )then
+#ifdef SP
+      call rfftmlt_sp(cc,gwk1,trigs,ifax,1,nx+2,nx,levp*jlistnum*2,-1)
+#else
       call rfftmlt(cc,gwk1,trigs,ifax,1,nx+2,nx,levp*jlistnum*2,-1)
+#endif
       else
 !$omp  parallel do default(none)  &
 !$omp  private(jj,j,nxj,gwk1)     &
@@ -99,7 +105,11 @@
       do jj=1,jlistnum
         j= jlist1(jj)
         nxj=nxdef(j)
+#ifdef SP
+        call rfftmlt_sp(cc(1,1,1,jj),gwk1(1,1,1,jj),trigsj(1,j),ifaxj(1,j),  &
+#else
         call rfftmlt(cc(1,1,1,jj),gwk1(1,1,1,jj),trigsj(1,j),ifaxj(1,j),  &
+#endif
                      1,nx+2,nxj,levp*2,-1)
       enddo
 !$omp end parallel do
@@ -119,8 +129,7 @@
       enddo
       enddo
 
-!     call mpe_transpose_rs(twcc_fk,wcc_fk,lev*2*2,jtmax,my_max,nsize)
-      call mpe_transpose_rs(twcc_fk,wcc_fk,levp*2*2,jtmax,my_max,nsize,col_comm)
+      call mpe_transpose_rs_sp(twcc_fk,wcc_fk,levp*2*2,jtmax,my_max,nsize,col_comm)
 
       do m=1,mlistnum
          mf=mlist(m)

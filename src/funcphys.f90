@@ -733,7 +733,7 @@ contains
 !$$$
     implicit none
     real(krealfp) fpvs
-    real(krealfp),intent(in):: t
+    real,intent(in):: t
     integer jx
     real(krealfp) xj
 ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
