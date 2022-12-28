@@ -35,7 +35,7 @@
         write(cidtg,'(I12.12)') idtg
 
         open(nsig,file='rsm_data_'//cidtg//'.f'//cfhour,status='unknown', &
-            form='unformatted',iostat=ios)
+            form='unformatted',convert='little_endian',iostat=ios)
 
         write(nsig) fhour
 
@@ -44,10 +44,10 @@
         write(nsig) spfh_gfs
 
         write(nsig) clwr_gfs
-!       write(nsig) rain_gfs
-!       write(nsig) qice_gfs
-!       write(nsig) snow_gfs
-!       write(nsig) grpl_gfs
+       write(nsig) rain_gfs
+       write(nsig) qice_gfs
+       write(nsig) snow_gfs
+       write(nsig) grpl_gfs
 
         write(nsig) ozon_gfs
 
