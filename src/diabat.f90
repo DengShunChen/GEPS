@@ -359,6 +359,9 @@
 
       ! for MP WSM6 & Thompson
       logical uni_cloud,lmfshal,lmfdeep2
+#ifdef new_Thompson
+      real    gridkm(nxp)
+#endif
       real    sr(nxp,my_max)
 !---------------------------------------------------------------------------
       real      drag_u(lev),drag_v(lev)
@@ -923,6 +926,9 @@
         work1(i)    = max(0.0, min(1.0,work1(i)))
         work2(i)    = 1.0 - work1(i)
         garea(i)    = tem1*tem2
+#ifdef new_Thompson
+        gridkm(i)   = sqrt(tem1*tem2)/1000.
+#endif
         if(land(i,jj))slimsk(i)=1
         if(ocean(i,jj))slimsk(i)=0
         if(ice(i,jj))slimsk(i)=2
@@ -1089,6 +1095,9 @@
              uni_cloud,lmfshal,lmfdeep2,                                   &
              deltaq(1,1,jj),sup,cnvwr(1,1,jj),cnvcr(1,1,jj),               &
              ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),fqp1(1,1,jj),nmmiph,     &
+#ifdef new_Thompson
+             gridkm,                                                       &
+#endif
 !  ---  outputs:
              asol(1,jj),olr(1,jj),ss(1,jj),rs(1,jj),                       &
              sld(1,jj),rld(1,jj),tsflw(1,jj),                              &
@@ -1849,7 +1858,7 @@
 #endif
 !  ---  inputs/outputs:
              tt(1,1,jj),qt(1,1,jj),clds(1,1,jj),                       &
-             ut(1,1,jj),vt(1,1,jj),sd(1,1,jj),                         &
+             ut(1,1,jj),vt(1,1,jj),vvel(1,1,jj),                         &
 !  ---  outputs:
              ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),fqp1(1,1,jj),        &
              rlsp(1,jj),sr(1,jj) )

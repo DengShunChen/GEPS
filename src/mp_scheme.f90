@@ -8,12 +8,19 @@
 ! for WSM6
       use module_mp_wsm6,     only : wsm6init
 ! for Thompson
+#ifdef new_Thompson
+      use module_mp_thompson_new, only : thompson_init
+#else
       use module_mp_thompson, only : thompson_init
+#endif
 ! for GFDLMP
 #if defined (GFDLMP_v2)
       use module_mp_gfdl_v2,  only : gfdl_cld_mp_init
 #else
       use module_mp_gfdl,     only : gfdl_cloud_microphys_init
+#endif
+#ifdef new_Thompson
+      use physpara, only : is_aerosol_aware,merra2_aerosol_aware
 #endif
 
       implicit none
@@ -21,6 +28,10 @@
       integer,  intent(in) :: nmmiph,myrank
 !  ---  local:
       integer   ntrac_req
+#ifdef new_Thompson
+      integer   errflg
+      character errmsg
+#endif
 !-----------------------------------------------------------------------
 !  for cloud microphysics
 !-----------------------------------------------------------------------
@@ -32,9 +43,14 @@
         endif
 ! Thompson
         if ( nmmiph .eq. 8 ) then
+#ifdef new_Thompson
+          call thompson_init ( is_aerosol_aware,merra2_aerosol_aware,   &
+                               myrank, 0, errmsg, errflg )
+#else
           call thompson_init()
           if ( myrank .eq. 0 )                                         &
              print *,'Thompson cloud microphysics initialized'
+#endif
         endif
 ! GFDLMP
         if ( nmmiph .eq. 11 ) then
@@ -62,15 +78,20 @@
              sgeo,                                                     &
 #endif
 !  ---  inputs/outputs:
-             tt,qt,qa,ut,vt,sd,                                        &
+             tt,qt,qa,ut,vt,vvel,                                      &
 !  ---  outputs:
              re_cloud,re_ice,re_snow,re_rain,                          &
              rlsp,sr )
 
+      use rank
 ! for wsm6
       use module_mp_wsm6,      only: wsm6
 ! for thompson
+#ifdef new_Thompson
+      use module_mp_thompson_new,  only: mp_gt_driver
+#else
       use module_mp_thompson,  only: mp_gt_driver
+#endif
 ! for GFDLMP
 #if defined (GFDLMP_v2)
       use module_mp_gfdl_v2,   only: gfdl_cld_mp_driver
@@ -96,7 +117,7 @@
       real,     intent(in)    :: sgeo(nx)
 #endif
 !      real,     intent(in)    :: sd(nx,lev+1)
-      real,     intent(inout) :: sd(nx,lev+1)
+      real,     intent(inout) :: vvel(nx,lev)
       real(kind=RTYPE), intent(in):: q0(nx,lev*ncld),pst(nx),          &
                                      dsigma(lev,2)
 !  ---  inputs/outputs:
@@ -117,6 +138,23 @@
       real      rainncv(nx),snowncv(nx),graupelncv(nx)
       real      icem
       logical   lradar
+#ifdef new_Thompson
+! Thompson MP
+      real,dimension(:,:),allocatable :: nc,nwfa,nifa,pfils,pflls,      &
+              vt_dbz_wt,ni,nr
+      real,dimension(:),allocatable :: nwfa2d,nifa2d,rainnc,snownc,     &
+              icenc,graupelnc,icencv
+      real,dimension(:,:),allocatable :: rand_pert
+      real,dimension(:),allocatable :: spp_prt_list,spp_stddev_cutoff
+      character(len=3),dimension(:),allocatable :: spp_var_list
+      real    dt_inner
+      logical sedi_semi,ext_diag,first_time_step,reset_dBZ,aero_ind_fdb,&
+              diagflag
+      integer do_radar_ref,rand_perturb_on,has_reqc,has_reqi,has_reqs,  &
+              kme_stoch,istep,nsteps,errflg,decfl
+      character errmsg
+      integer, parameter :: n_var_spp=1
+#endif
 ! GFDLMP
       real, parameter ::                                                &
                 rainmin=1.0e-10 !(mm)
@@ -141,6 +179,7 @@
                 ql2,qr2,qi2,qs2,qg2,rho,                                &
                 re_graupel,rew,rei,rer,res,reg
 #endif
+
 !
 ! reset all value to zero
       prsl  = 0.
@@ -158,6 +197,20 @@
       snowncv=0.
       graupelncv=0.
 
+#ifdef new_Thompson
+      if ( nmmiph .eq. 8 ) then
+        allocate                                                        &
+         ( ni(nx,lev),nr(nx,lev),nc(nx,lev),nwfa(nx,lev),nifa(nx,lev),  &
+           w(nx,lev),pfils(nx,lev),pflls(nx,lev),vt_dbz_wt(nx,lev) )
+        allocate                                                        &
+         ( nwfa2d(nx),nifa2d(nx),rainnc(nx),snownc(nx),icenc(nx),       &
+           graupelnc(nx),icencv(nx) )
+        allocate ( rand_pert(nx,1) )
+        allocate ( spp_prt_list(n_var_spp),spp_stddev_cutoff(n_var_spp) )
+        allocate ( spp_var_list(n_var_spp) )
+
+      endif
+#endif
       if ( nmmiph .eq. 11 ) then
 #if defined (GFDLMP_v2)
         allocate                                                        &
@@ -256,6 +309,8 @@
                      1,nx,1,lev,1,nxj,1,lev,snowncv,graupelncv)
 !          Thompson
            if ( nmmiph .eq. 8 )then
+#ifndef new_Thompson
+             ntnc=0.
              do k=1,lev
                kc=lev-k+1
                do i=1,nxj
@@ -264,10 +319,12 @@
                  ntnc(i,kc,2) = qt(i,(ntrnc-1)*lev+k)
                enddo
              enddo
+
              call mp_gt_driver(1,nx,1,lev,1,nxj,1,lev,qtc,qtr,qtrw,    &
                      qti,qtsw,qtgl,ntnc(1,1,1),ntnc(1,1,2),ttc,        &
                      prsl,del,dta,kdt,rainncv,sr,islimsk,refl10,       &
                      lradar,re_cloud,re_ice,re_snow,me,phii)
+
              do k=1,lev
                kc=lev-k+1
                do i=1,nxj
@@ -275,6 +332,108 @@
                  qt(i,(ntrnc-1)*lev+k)=ntnc(i,kc,2)
                enddo
              enddo
+#else
+             sedi_semi=.false.        !use Semi-Lagrangian sedimentation for rain and graupel
+             ext_diag=.false.         !extended diagnostics, array pointers only associated if ext_diag is .true.
+             first_time_step=.false.  ! ???
+             reset_dBZ=.false.        !if true, set melti=.true.
+             aero_ind_fdb=.false.     ! ???
+             diagflag=.false.         !if diagflag=true and do_radar_ref=1, call calc_refl10cm
+             do_radar_ref=0
+             rand_perturb_on=0        !if!=0, use SPP
+             if ( effr_in ) then
+               has_reqc=1             !calculate effective radii of cloud water
+               has_reqi=1             !calculate effective radii of cloud ice
+               has_reqs=1             !calculate effective radii of snow
+             endif
+
+             dt_inner=150.    !inner time step  (not sure)
+             decfl=1          !if .not. sedi_semi
+             kme_stoch=1
+             istep=1          !current step
+             nsteps=1         !maximum number of steps
+             ni=0.            !number concentracion of ice
+             nr=0.            !number concentracion of rain
+             nc=0.            !number concentracion of cloud droplet
+             nwfa=0.          !number concentration of water friendly aerosol
+             nifa=0.          !number concentration of ice friendly aerosol
+             nwfa2d=0.        !at surface
+             nifa2d=0.        !at surface
+             w=0.
+             pfils=0.
+             pflls=0.
+             vt_dbz_wt=0.
+             rainnc=0.        !number concentracion of precipitating rain
+             snownc=0.        !number concentracion of precipitating snow
+             icenc=0.         !number concentracion of precipitating ice
+             graupelnc=0.     !number concentracion of precipitating graupel
+             icencv=0.        !amount of precipitating ice
+             rand_pert=0.
+             spp_stddev_cutoff=0.
+
+             do k = 1, lev
+               kc = lev - k + 1
+               do i = 1, nxj
+                 w(i,kc)   = -vvel(i,k)*(1.+con_fvirt*qt(i,k))*tt(i,k)  &
+                            /prsl(i,k)*con_rd/con_g      !vertical velocity (m/s)
+               enddo
+             enddo
+             do k=1,lev
+               kc=lev-k+1
+               do i=1,nxj
+                 ni(i,k) = qt(i,(ntinc-1)*lev+kc)
+                 nr(i,k) = qt(i,(ntrnc-1)*lev+kc)
+               enddo
+             enddo
+
+             call mp_gt_driver                                          &
+                   ( qtc,qtr,qtrw,qti,qtsw,qtgl,ni,nr,                  &
+                     nc,nwfa,nifa,nwfa2d,nifa2d,                        &!optional
+                     ttc,&!th,pii,                                      &!optional ??
+                     prsl,w,del,dta,dt_inner,                           &
+                     sedi_semi,decfl,islimsk,                           &
+                     rainnc,rainncv,                                    &
+                     snownc,snowncv,icenc,icencv,graupelnc,graupelncv,  &!optional
+                     sr,                                                &
+                     refl10,diagflag,do_radar_ref,                      &!optional
+                     vt_dbz_wt,                                         &!optional
+                     first_time_step,                                   &
+                     re_cloud,re_ice,re_snow,                           &!optional
+                     has_reqc,has_reqi,has_reqs,                        &
+                     aero_ind_fdb,                                      &!optional
+                     rand_perturb_on,                                   &
+                     kme_stoch,                                         &
+                     rand_pert,spp_prt_list,spp_var_list,               &
+                     spp_stddev_cutoff,n_var_spp,                       &
+                     1,nx,1,lev,                                        &
+                     1,nxj,1,lev,                                       &
+                     reset_dBZ,istep,nsteps,                            &
+                     errmsg,errflg,                                     &!optional
+                     ext_diag,                                          &
+#ifdef EXT_DIAG
+                     prw_vcdc,                                          &
+                     prw_vcde, tpri_inu, tpri_ide_d,                    &
+                     tpri_ide_s, tprs_ide, tprs_sde_d,                  &
+                     tprs_sde_s, tprg_gde_d,                            &
+                     tprg_gde_s, tpri_iha, tpri_wfz,                    &
+                     tpri_rfz, tprg_rfz, tprs_scw, tprg_scw,            &
+                     tprg_rcs, tprs_rcs,                                &
+                     tprr_rci, tprg_rcg,                                &
+                     tprw_vcd_c, tprw_vcd_e, tprr_sml,                  &
+                     tprr_gml, tprr_rcg,                                &
+                     tprr_rcs, tprv_rev, tten3, qvten3,                 &
+                     qrten3, qsten3, qgten3, qiten3, niten3,            &
+                     nrten3, ncten3, qcten3,                            &
+#endif
+                     pfils, pflls )
+             do k=1,lev
+               kc=lev-k+1
+               do i=1,nxj
+                 qt(i,(ntinc-1)*lev+k) = ni(i,kc)
+                 qt(i,(ntrnc-1)*lev+k) = nr(i,kc)
+               enddo
+             enddo
+#endif
            endif
 !
         do i=1,nxj
@@ -318,8 +477,8 @@
           do i = 1, nxj
             if ( sedi_w ) then
               prsl(i,k) = 100.0 * plt(i,k)            !layer mean pressure (from mb to Pa)
-              dot(i,k) = 0.5*(sd(i,k)+sd(i,k+1))*100. !vertical velocity (from mb/s to Pa/s)
-              w(i,k)   = -dot(i,k)*(1.+con_fvirt*qt(i,k))*tt(i,k)      &
+!              dot(i,k) = 0.5*(sd(i,k)+sd(i,k+1))*100. !vertical velocity (from mb/s to Pa/s)
+              w(i,k)   = -vvel(i,k)*(1.+con_fvirt*qt(i,k))*tt(i,k)      &
                          /prsl(i,k)*con_rd/con_g      !vertical velocity (m/s)
             else
               w(i,k)   = 0.
@@ -363,9 +522,9 @@
             vt(i,k)  = vin(i,k)
 
             if ( sedi_w ) then
-              dot(i,k)  = -w(i,k)*prsl(i,k)*con_g/con_rd                &
+              vvel(i,k)  = -w(i,k)*prsl(i,k)*con_g/con_rd               &
                           /((1+con_fvirt*qt(i,k))*tt(i,k))
-              sd(i,k+1) = dot(i,k)/100./0.5-sd(i,k)
+!              sd(i,k+1) = dot(i,k)/100./0.5-sd(i,k)
             endif
           enddo
         enddo
@@ -402,7 +561,7 @@
           do i = 1, nxj
             if ( sedi_w ) then
               prsl(i,k) = 100.0 * plt(i,k)             !layer mean pressure (from mb to Pa)
-              dot(i,k)  = 0.5*(sd(i,k)+sd(i,k+1))*100. !vertical velocity (from mb/s to Pa/s)
+!              dot(i,k)  = 0.5*(sd(i,k)+sd(i,k+1))*100. !vertical velocity (from mb/s to Pa/s)
               w(i,1,k)  = -dot(i,k)*(1.+con_fvirt*qt(i,k))*tt(i,k)      &
                           /prsl(i,k)*con_rd/con_g      !vertical velocity (m/s)
             else
@@ -455,9 +614,9 @@
             vt(i,k)  = vin(i,1,k) + vdt(i,1,k)   * dta
 
             if ( sedi_w ) then
-              dot(i,k) = -w(i,1,k)*prsl(i,k)*con_g/con_rd               &
+              vvel(i,k) = -w(i,1,k)*prsl(i,k)*con_g/con_rd               &
                           /((1+con_fvirt*qt(i,k))*tt(i,k))
-              sd(i,k+1)= dot(i,k)/100./0.5-sd(i,k)
+!              sd(i,k+1)= dot(i,k)/100./0.5-sd(i,k)
             endif
 
             if ( effr_in ) then

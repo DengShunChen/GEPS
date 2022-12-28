@@ -6,7 +6,7 @@
                         , t2,q2,rh2,rh10,u10,v10,fm,fh,fm10,fh2,srflag  &
                         , rld,stbo                                      &
                         , km,smc,stc,canopy,runoff,sigmaf,istyp,ivegtyp &
-                        , ncld,dsigma,islopetyp,slc,sncover,snwdph       &
+                        , ncld,dsigma,islopetyp,slc,sncover,snwdph      &
                         , shdmax,shdmin,snoalb,albedo2                  &
                         , sld,zice,cice,xtice,hpbl,asl,atl,xmu,gfx      &
                         , kpbl,nmpbl,nmmiph,jj,isot,ivegsrc,sfemis_g    &
@@ -155,7 +155,7 @@
       use mpe
       use rank
       use index
-      use radn,   only:ntcw,ntiw,ntinc,ntoz,ntrw,ntsw,ntgl
+      use radn,   only:ntcw,ntiw,ntinc,ntrnc,ntoz,ntrw,ntsw,ntgl
       use const,  only:RTYPE 
 !ch   use paramt
 
@@ -277,7 +277,9 @@
 !
       ntrac=ncld
       if ( nmmiph .eq. 6 ) ntrac=ncld-3
+#ifndef new_Thompson
       if ( nmmiph .eq. 8 ) ntrac=ncld-4
+#endif
       if ( nmmiph .eq.11 ) ntrac=7
 
       allocate(q1(nx,lev,ntrac))
@@ -622,11 +624,23 @@
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
+#ifdef new_Thompson
+            q1(i,kc,1) = qt(i,             k)
+            q1(i,kc,2) = qt(i,lev*(ntcw-1)+k)
+            q1(i,kc,3) = qt(i,lev*(ntiw-1)+k)
+            q1(i,kc,4) = qt(i,lev*(ntrw-1)+k)
+            q1(i,kc,5) = qt(i,lev*(ntsw-1)+k)
+            q1(i,kc,6) = qt(i,lev*(ntgl-1)+k)
+            q1(i,kc,7) = qt(i,lev*(ntinc-1)+k)
+            q1(i,kc,8) = qt(i,lev*(ntrnc-1)+k)
+            q1(i,kc,9) = qt(i,lev*(ntoz-1)+k)
+#else
             q1(i,kc,1) = qt(i,             k)
             q1(i,kc,2) = qt(i,lev*(ntcw-1)+k)
             q1(i,kc,3) = qt(i,lev*(ntiw-1)+k)
             q1(i,kc,4) = qt(i,lev*(ntinc-1)+k)
             q1(i,kc,5) = qt(i,lev*(ntoz-1)+k)
+#endif
           enddo
         enddo
       else if ( nmmiph .eq. 11 ) then ! GFDL MP
@@ -777,10 +791,21 @@
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
+#ifdef new_Thompson
+            qt(i,lev*(ntcw-1)+k) = q1(i,kc,2)
+            qt(i,lev*(ntiw-1)+k) = q1(i,kc,3)
+            qt(i,lev*(ntrw-1)+k) = q1(i,kc,4)
+            qt(i,lev*(ntsw-1)+k) = q1(i,kc,5)
+            qt(i,lev*(ntgl-1)+k) = q1(i,kc,6)
+            qt(i,lev*(ntinc-1)+k)= q1(i,kc,7)
+            qt(i,lev*(ntrnc-1)+k)= q1(i,kc,8)
+            qt(i,lev*(ntoz-1)+k) = q1(i,kc,9)
+#else
             qt(i,lev*(ntcw-1)+k) = q1(i,kc,2)
             qt(i,lev*(ntiw-1)+k) = q1(i,kc,3)
             qt(i,lev*(ntinc-1)+k)= q1(i,kc,4)
             qt(i,lev*(ntoz-1)+k) = q1(i,kc,5)
+#endif
           enddo
         enddo
       else if ( nmmiph .eq. 11 ) then ! GFDL MP

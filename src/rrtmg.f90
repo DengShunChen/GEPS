@@ -12,6 +12,9 @@
              uni_cloud,lmfshal,lmfdeep2,                            &
              deltaq,sup,cnvw,cnvc,                                  &
              ftp,ftp1,fqp,fqp1,nmmiph,                              &
+#ifdef new_Thompson
+             gridkm,                                                &
+#endif
 !    -  outputs:
              asol,olr,ss,rs,sld,rld,tsflwr,                         &
              ctot,chig,cmid,clow,                                   &
@@ -87,6 +90,9 @@
 ! --- for MP WSM6 & Thompson & GFDL
       real    ftp(nx,lev),ftp1(nx,lev),fqp(nx,lev),fqp1(nx,lev)
       real    phy3d(nxj,lev,5)
+#ifdef new_Thompson
+      real    gridkm(nxj)
+#endif
 
 ! -------------------------------------------------------------------
 ! --- for rrtmg output:
@@ -452,6 +458,9 @@
              nx,nxj,lev,me,lprnt,ipt,kdt,myrank,                     &
              ntiw,ntrw,ntsw,ntgl,uni_cloud,lmfshal,lmfdeep2,         &
              deltaq,sup,cnvw,cnvc,phy3d,                             &
+#ifdef new_Thompson
+             gridkm,                                                 &
+#endif
 !  ---  outputs:
              dummy1,sfalb,coszen,coszdg,                             &
              dummy2,tsflw,semis,                                     &

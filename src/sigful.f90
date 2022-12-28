@@ -92,6 +92,11 @@
       else
         nclds=ncld
       endif
+
+      !new Thompson MP without reading ice/rain number concentration
+      if ( ncld .eq. 9 ) then
+        nclds = 6
+      endif
 !
 !CWBinit
       plnow=0.
