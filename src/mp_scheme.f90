@@ -62,7 +62,7 @@
              sgeo,                                                     &
 #endif
 !  ---  inputs/outputs:
-             tt,qt,qa,ut,vt,sd,                                        &
+             tt,qt,qa,ut,vt,vvel,                                      &
 !  ---  outputs:
              re_cloud,re_ice,re_snow,re_rain,                          &
              rlsp,sr )
@@ -95,8 +95,7 @@
 #if defined (GFDLMP_v2)
       real,     intent(in)    :: sgeo(nx)
 #endif
-!      real,     intent(in)    :: sd(nx,lev+1)
-      real,     intent(inout) :: sd(nx,lev+1)
+      real,     intent(inout) :: vvel(nx,lev)
       real(kind=RTYPE), intent(in):: q0(nx,lev*ncld),pst(nx),          &
                                      dsigma(lev,2)
 !  ---  inputs/outputs:
@@ -121,7 +120,7 @@
       real, parameter ::                                                &
                 rainmin=1.0e-10 !(mm)
       real, dimension(:,:), allocatable ::                              &
-                dot,dp
+                dp
       logical   hydrostatic,phys_hydrostatic,sedi_w 
 #if defined (GFDLMP_v2)
       real, dimension(:,:), allocatable ::                              &
@@ -200,7 +199,6 @@
            ( dp(nxj,lev),rho(nxj,lev),ql2(nxj,lev),qr2(nxj,lev),        &
              qi2(nxj,lev),qs2(nxj,lev),qg2(nxj,lev) )
 #endif
-        if ( sedi_w ) allocate ( dot(nxj,lev) )
 #if defined (GFDLMP_v2)
         qnl   = 0.0
         qni   = 0.0
@@ -331,8 +329,7 @@
           do i = 1, nxj
             if ( sedi_w ) then
               prsl(i,k) = 100.0 * plt(i,k)            !layer mean pressure (from mb to Pa)
-              dot(i,k) = 0.5*(sd(i,k)+sd(i,k+1))*100. !vertical velocity (from mb/s to Pa/s)
-              w(i,k)   = -dot(i,k)*(1.+con_fvirt*qt(i,k))*tt(i,k)      &
+              w(i,k)   = -vvel(i,k)*(1.+con_fvirt*qt(i,k))*tt(i,k)      &
                          /prsl(i,k)*con_rd/con_g      !vertical velocity (m/s)
             else
               w(i,k)   = 0.
@@ -378,19 +375,13 @@
             vt(i,k)  = vin(i,k)
 
             if ( sedi_w ) then
-              dot(i,k)  = -w(i,k)*prsl(i,k)*con_g/con_rd                &
-                          /((1+con_fvirt*qt(i,k))*tt(i,k))
-              sd(i,k+1) = dot(i,k)/100./0.5-sd(i,k)
+              vvel(i,k)  = -w(i,k)*prsl(i,k)*con_g/con_rd               &
+                           /((1+con_fvirt*qt(i,k))*tt(i,k))
             endif
           enddo
         enddo
 
         do i = 1, nxj
-          rain0(i)    = rain0(i)
-          ice0(i)     = ice0(i)
-          snow0(i)    = snow0(i)
-          graupel0(i) = graupel0(i)
-
           rlsp(i) = rain0(i)+snow0(i)+ice0(i)+graupel0(i)     !total large scale precipitation (mm)
           if ( rlsp(i) .gt. rainmin ) then
             sr(i) = (snow0(i)+ice0(i)+graupel0(i))                      &
@@ -421,8 +412,7 @@
           do i = 1, nxj
             if ( sedi_w ) then
               prsl(i,k) = 100.0 * plt(i,k)             !layer mean pressure (from mb to Pa)
-              dot(i,k)  = 0.5*(sd(i,k)+sd(i,k+1))*100. !vertical velocity (from mb/s to Pa/s)
-              w(i,1,k)  = -dot(i,k)*(1.+con_fvirt*qt(i,k))*tt(i,k)      &
+              w(i,1,k)  = -vvel(i,k)*(1.+con_fvirt*qt(i,k))*tt(i,k)     &
                           /prsl(i,k)*con_rd/con_g      !vertical velocity (m/s)
             else
               w(i,1,k)  = 0.
@@ -474,9 +464,8 @@
             vt(i,k)  = vin(i,1,k) + vdt(i,1,k)   * dta
 
             if ( sedi_w ) then
-              dot(i,k) = -w(i,1,k)*prsl(i,k)*con_g/con_rd               &
+              vvel(i,k) = -w(i,1,k)*prsl(i,k)*con_g/con_rd              &
                           /((1+con_fvirt*qt(i,k))*tt(i,k))
-              sd(i,k+1)= dot(i,k)/100./0.5-sd(i,k)
             endif
 
             if ( effr_in ) then
@@ -527,7 +516,6 @@
             qv_dt,ql_dt,qr_dt,qi_dt,qs_dt,qg_dt,qa_dt,udt,vdt,pt_dt )
         if ( effr_in ) deallocate ( dp,rho,ql2,qi2,qr2,qs2,qg2 )
 #endif
-        if ( sedi_w ) deallocate ( dot )
 
       endif  ! end of nmmiph.eq.11
 

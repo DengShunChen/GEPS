@@ -1849,7 +1849,7 @@
 #endif
 !  ---  inputs/outputs:
              tt(1,1,jj),qt(1,1,jj),clds(1,1,jj),                       &
-             ut(1,1,jj),vt(1,1,jj),sd(1,1,jj),                         &
+             ut(1,1,jj),vt(1,1,jj),vvel(1,1,jj),                       &
 !  ---  outputs:
              ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),fqp1(1,1,jj),        &
              rlsp(1,jj),sr(1,jj) )
