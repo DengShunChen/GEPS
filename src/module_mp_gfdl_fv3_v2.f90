@@ -382,8 +382,10 @@ subroutine gfdl_cld_mp_driver                                              &
               land,                                                        &
               rain, snow, ice, graupel, hydrostatic,                       &
               is, ie, ks, ke, q_con, cappa, consv_te, te,                  &
+#ifdef EXT_DIAG
               prefluxr, prefluxi, prefluxs, prefluxg,                      &
               condensation, deposition, evaporation, sublimation,          &
+#endif
               last_step, do_inline_mp )
     
     implicit none
@@ -406,17 +408,23 @@ subroutine gfdl_cld_mp_driver                                              &
     real, intent (inout), dimension (is:ie, ks:ke) :: delp
     real, intent (inout), dimension (is:ie, ks:ke) :: qv, ql, qr, qi, qs, qg, qa
     real, intent (inout), dimension (is:ie, ks:ke) :: pt, ua, va, w
-    real, intent (inout), dimension (is:ie, ks:ke) :: prefluxr, prefluxi, prefluxs, prefluxg
     real, intent (inout), dimension (is:, ks:) :: q_con, cappa
-    real, intent (inout), dimension (is:ie) :: rain, snow, ice, graupel
+    real, intent (inout), dimension (is:ie, ks:ke) :: te
+#ifdef EXT_DIAG
+    real, intent (inout), dimension (is:ie, ks:ke) :: prefluxr, prefluxi, prefluxs, prefluxg
     real, intent (inout), dimension (is:ie) :: condensation, deposition
     real, intent (inout), dimension (is:ie) :: evaporation, sublimation
-    
-    real, intent (inout), dimension (is:ie, ks:ke) :: te
+#endif
+    real, intent (inout), dimension (is:ie) :: rain, snow, ice, graupel
     ! logical :: used
     real, dimension (is:ie) :: w_var
     real, dimension (is:ie, ks:ke) :: vt_r, vt_s, vt_g, vt_i
     real, dimension (is:ie, ks:ke) :: m2_rain, m2_sol
+#ifndef EXT_DIAG
+    real, dimension (is:ie, ks:ke) :: prefluxr, prefluxi, prefluxs, prefluxg
+    real, dimension (is:ie) :: condensation, deposition
+    real, dimension (is:ie) :: evaporation, sublimation
+#endif
     
     if (last_step) then
         p_min = p0_min ! final clean - up

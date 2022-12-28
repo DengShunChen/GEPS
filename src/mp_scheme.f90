@@ -125,11 +125,16 @@
       logical   hydrostatic,phys_hydrostatic,sedi_w 
 #if defined (GFDLMP_v2)
       real, dimension(:,:), allocatable ::                              &
-                qv,ql,qr,qi,qs,qg,cldcov,qnl,qni,w,delp,dz,q_con,cappa, &
-                te,pt,uin,vin,prefluxr,prefluxi, prefluxs,prefluxg
+                qv,ql,qr,qi,qs,qg,cldcov,qnl,qni,w,delp,dz,pt,uin,vin,  &
+                q_con,cappa,te
+#ifdef EXT_DIAG
       real, dimension(:), allocatable ::                                &
-                gsize,frland,hs,rain0,snow0,ice0,graupel0,              &
                 cond0,dep0,evap0,sub0
+      real, dimension(:,:), allocatable ::                              &
+                prefluxr,prefluxi, prefluxs,prefluxg
+#endif
+      real, dimension(:), allocatable ::                                &
+                gsize,frland,hs,rain0,snow0,ice0,graupel0
       logical   consv_te,last_step,do_inline_mp
 #else
       real, dimension(:,:), allocatable ::                              &
@@ -164,12 +169,18 @@
          ( qv(nxj,lev),ql(nxj,lev),qr(nxj,lev),qi(nxj,lev),qs(nxj,lev), &
            qg(nxj,lev),cldcov(nxj,lev),qnl(nxj,lev),qni(nxj,lev),       &
            w(nxj,lev),pt(nxj,lev),uin(nxj,lev),vin(nxj,lev),            &
-           delp(nxj,lev),dz(nxj,lev),prefluxr(nxj,lev),                 &
-           prefluxi(nxj,lev),prefluxs(nxj,lev),prefluxg(nxj,lev),       &
+           delp(nxj,lev),dz(nxj,lev),                                   &
            q_con(nxj,lev),cappa(nxj,lev),te(nxj,lev) )
+#ifdef EXT_DIAG
+        allocate                                                        &
+         ( prefluxr(nxj,lev),prefluxi(nxj,lev),prefluxs(nxj,lev),       &
+           prefluxg(nxj,lev) )
+        allocate                                                        &
+         ( cond0(nxj),dep0(nxj),evap0(nxj),sub0(nxj) )
+#endif
         allocate                                                        &
          ( hs(nxj),gsize(nxj),rain0(nxj),snow0(nxj),ice0(nxj),          &
-           graupel0(nxj),cond0(nxj),dep0(nxj),evap0(nxj),sub0(nxj) )
+           graupel0(nxj) )
         allocate( frland(nxj) )
 #else
         allocate                                                        &
@@ -197,19 +208,21 @@
         uin   = 0.0
         vin   = 0.0
         te    = 0.0
+        q_con = 0.0  !not sure
+        cappa = 0.0  !not sure
         gsize = 0.0
+        frland    = 0.0
+        cldcov    = 0.0  !for do_qa=.false.
+#ifdef EXT_DIAG
         cond0 = 0.0
         dep0  = 0.0
         evap0 = 0.0
         sub0  = 0.0
-        q_con = 0.0  !not sure
-        cappa = 0.0  !not sure
-        frland    = 0.0
-        cldcov    = 0.0  !for do_qa=.false.
         prefluxr  = 0.0
         prefluxi  = 0.0
         prefluxs  = 0.0
         prefluxg  = 0.0
+#endif
 #else
         frland = 0.
         garea = 0.
@@ -345,8 +358,10 @@
                   frland,                                               &
                   rain0, snow0, ice0, graupel0, hydrostatic,            &
                   1, nxj, 1, lev, q_con, cappa, consv_te, te,           &
+#ifdef EXT_DIAG
                   prefluxr, prefluxi, prefluxs, prefluxg,               &
                   cond0, dep0, evap0, sub0,                             &
+#endif
                   last_step, do_inline_mp )
 
         do k = 1, lev
@@ -387,10 +402,14 @@
 
         deallocate                                                      &
          ( qv,ql,qr,qi,qs,qg,qnl,qni,cldcov,w,pt,uin,vin,delp,dz,       &
-           prefluxr,prefluxi,prefluxs,prefluxg,q_con,cappa,te)
+           q_con,cappa,te )
         deallocate                                                      &
-         ( hs,gsize,rain0,snow0,ice0,graupel0,cond0,dep0,evap0,sub0 )
+         ( hs,gsize,rain0,snow0,ice0,graupel0 )
         deallocate ( frland )
+#ifdef EXT_DIAG
+        deallocate                                                      &
+         ( prefluxr,prefluxi,prefluxs,prefluxg,cond0,dep0,evap0,sub0 )
+#endif
 #else
         do i = 1, nxj
           if( islimsk(i) .eq. 1 ) frland(i,1) = 1.  !land fraction
