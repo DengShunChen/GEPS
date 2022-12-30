@@ -1,4 +1,4 @@
-#define MERRA2_aeroclimfix
+!#define MERRA2_aeroclimfix
 !#define oldmask
 !***********************************************************************
 !*                   GNU Lesser General Public License
@@ -305,6 +305,8 @@ module module_mp_gfdl_v2
     logical :: use_ccn = .false. ! must be true when prog_ccn is false
     logical :: use_ppm = .false. ! use ppm fall scheme
     logical :: use_ppm_ice = .false. ! use ppm fall scheme for cloud ice
+    logical :: use_semi = .false. ! use Semi-Lagrangian sedimentation
+    logical :: use_semi_ice = .false. ! use Semi-Lagrangian sedimentation for cloud ice
     logical :: mono_prof = .true. ! perform terminal fall with mono ppm scheme
     logical :: do_hail = .false. ! use hail parameters instead of graupel
     logical :: hd_icefall = .false. ! use heymsfield and donner, 1990's fall speed of cloud ice
@@ -1146,6 +1148,8 @@ subroutine warm_rain (dt, ks, ke, dp, dz, tz, qv, ql, qr, qi, qs, qg, &
     real, parameter :: normr = 25132741228.7183
     real, parameter :: thr = 1.e-8
     
+    ! for semi_lagrangian sedimension
+    real, dimension (ks:ke) :: dzc, qrc, vtrc, m1_rainc
     real, dimension (ks:ke) :: dl, dm
     real (kind = r8), dimension (ks:ke) :: te1, te2
     real, dimension (ks:ke + 1) :: ze, zt
@@ -1237,6 +1241,20 @@ subroutine warm_rain (dt, ks, ke, dp, dz, tz, qv, ql, qr, qi, qs, qg, &
                 if (zt (k + 1) >= zt (k)) zt (k + 1) = zt (k) - dz_min
             enddo
             call lagrangian_fall_ppm (ks, ke, zs, ze, zt, dp, qr, r1, m1_rain, mono_prof)
+        elseif (use_semi) then
+            do k = ks, ke
+                dzc (k) = dz (ke - k + 1)
+                qrc (k) = qr (ke - k + 1) * den (ke - k + 1)
+                vtrc (k) = vtr (ke - k + 1)
+                m1_rainc (k) = 0.
+            enddo
+            call semi_lagrange_sedim (ke, dzc, vtrc, qrc, r1, m1_rainc, dt, 1.E-12)
+            do k = ks, ke
+                qr (k) = qrc (ke - k + 1) / den (ke - k + 1)
+                m1_rain (k) = m1_rainc (ke - k + 1)
+!                m1_rain (k) = m1_rainc (ke - k + 1) / den (ke - k + 1)
+            enddo
+!            r1 = r1 / den (ke - k + 1)
         else
             call implicit_fall (dt, ks, ke, ze, vtr, dp, qr, r1, m1_rain)
         endif
@@ -2655,6 +2673,8 @@ subroutine terminal_fall (dtm, ks, ke, tz, qv, ql, qr, qg, qs, qi, dz, dp, &
     real :: zs = 0.
     real :: fac_imlt
     
+    ! for semi_lagrangian sedimension
+    real, dimension (ks:ke) :: dzc, m1c, qsc, vtsc, qgc, vtgc
     integer :: k, k0, m
     logical :: no_fall
     
@@ -2889,6 +2909,20 @@ subroutine terminal_fall (dtm, ks, ke, tz, qv, ql, qr, qg, qs, qi, dz, dp, &
         
         if (use_ppm) then
             call lagrangian_fall_ppm (ks, ke, zs, ze, zt, dp, qs, s1, m1, mono_prof)
+        elseif (use_semi) then
+            do k = ks, ke
+                dzc (k) = dz (ke - k + 1)
+                qsc (k) = qs (ke - k + 1) * den (ke - k + 1)
+                vtsc (k) = vts (ke - k + 1)
+                m1c (k) = 0.
+            enddo
+            call semi_lagrange_sedim (ke, dzc, vtsc, qsc, s1, m1c, dtm, 1.E-12)
+            do k = ks, ke
+                qs (k) = qsc (ke - k + 1) / den (ke - k + 1)
+                m1 (k) = m1c (ke - k + 1)
+!                m1 (k) = m1c (ke - k + 1) / den (ke - k + 1)
+            enddo
+!            s1 = s1 / den (ke - k + 1)
         else
             call implicit_fall (dtm, ks, ke, ze, vts, dp, qs, s1, m1)
         endif
@@ -2986,6 +3020,20 @@ subroutine terminal_fall (dtm, ks, ke, tz, qv, ql, qr, qg, qs, qi, dz, dp, &
         
         if (use_ppm) then
             call lagrangian_fall_ppm (ks, ke, zs, ze, zt, dp, qg, g1, m1, mono_prof)
+        elseif (use_semi) then
+            do k = ks, ke
+                dzc (k) = dz (ke - k + 1)
+                qgc (k) = qg (ke - k + 1) * den (ke - k + 1)
+                vtgc (k) = vtg (ke - k + 1)
+                m1c (k) = 0.
+            enddo
+            call semi_lagrange_sedim (ke, dzc, vtgc, qgc, g1, m1c, dtm, 1.E-12)
+            do k = ks, ke
+                qg (k) = qgc (ke - k + 1) / den (ke - k + 1)
+                m1 (k) = m1c (ke - k + 1)
+!                m1 (k) = m1c (ke - k + 1) / den (ke - k + 1)
+            enddo
+!            g1 = g1 / den (ke - k + 1)
         else
             call implicit_fall (dtm, ks, ke, ze, vtg, dp, qg, g1, m1)
         endif
@@ -4722,5 +4770,241 @@ subroutine neg_adj (ks, ke, pt, dp, qv, ql, qr, qi, qs, qg, cond)
     endif
     
 end subroutine neg_adj
+
+!-------------------------------------------------------------------
+      SUBROUTINE semi_lagrange_sedim(km,dzl,wwl,rql,precip,pfsan,dt,R1)
+!-------------------------------------------------------------------
+!
+! This routine is a semi-Lagrangain forward advection for hydrometeors
+! with mass conservation and positive definite advection
+! 2nd order interpolation with monotonic piecewise parabolic method is used.
+! This routine is under assumption of decfl < 1 for semi_Lagrangian
+!
+! km     number of layers
+! dzl    depth of model layer in meter (m)
+! wwl    terminal velocity at model layer (m/s)
+! rql    dry air density*mixing ratio
+! precip precipitation at surface (mm)
+! pfsan  precipitation fluxes (mm?)
+! dt     time step (s)
+! R1     minimum q, =1.E-12 in new Thompson MP
+!
+! author: hann-ming henry juang <henry.juang@noaa.gov>
+!         implemented by song-you hong
+! reference: Juang, H.-M., and S.-Y. Hong, 2010: Forward semi-Lagrangian advection
+!         with mass conservation and positive definiteness for falling
+!         hydrometeors. *Mon.  Wea. Rev.*, *138*, 1778-1791
+!
+      implicit none
+
+      integer, intent(in) :: km
+      real, intent(in) ::  dt, R1
+      real, intent(in) :: dzl(km),wwl(km)
+      real, intent(out) :: precip
+      real, intent(inout) :: rql(km)
+      real, intent(out)  :: pfsan(km)
+      integer  k,m,kk,kb,kt
+      real  tl,tl2,qql,dql,qqd
+      real  th,th2,qqh,dqh
+      real  zsum,qsum,dim,dip,con1,fa1,fa2
+      real  allold, decfl
+      real  dz(km), ww(km), qq(km)
+      real  wi(km+1), zi(km+1), za(km+2)
+      real  qn(km)
+      real  dza(km+1), qa(km+1), qmi(km+1), qpi(km+1)
+      real  net_flx(km)
+!
+      precip = 0.0
+      qa(:) = 0.0
+      qq(:) = 0.0
+      dz(:) = dzl(:)
+      ww(:) = wwl(:)
+      do k = 1,km
+        if(rql(k).gt.R1) then 
+          qq(k) = rql(k) 
+        else 
+          ww(k) = 0.0 
+        endif
+        pfsan(k) = 0.0
+        net_flx(k) = 0.0
+      enddo
+! skip for no precipitation for all layers
+      allold = 0.0
+      do k=1,km
+        allold = allold + qq(k)
+      enddo
+      if(allold.le.0.0) then
+         return 
+      endif
+!
+! compute interface values
+      zi(1)=0.0
+      do k=1,km
+        zi(k+1) = zi(k)+dz(k)
+      enddo
+! plm is 2nd order, we can use 2nd order wi or 3rd order wi
+! 2nd order interpolation to get wi
+      wi(1) = ww(1)
+      wi(km+1) = ww(km)
+      do k=2,km
+        wi(k) = (ww(k)*dz(k-1)+ww(k-1)*dz(k))/(dz(k-1)+dz(k))
+      enddo
+! 3rd order interpolation to get wi
+      fa1 = 9./16.
+      fa2 = 1./16.
+      wi(1) = ww(1)
+      wi(2) = 0.5*(ww(2)+ww(1))
+      do k=3,km-1
+        wi(k) = fa1*(ww(k)+ww(k-1))-fa2*(ww(k+1)+ww(k-2))
+      enddo
+      wi(km) = 0.5*(ww(km)+ww(km-1))
+      wi(km+1) = ww(km)
+
+! terminate of top of raingroup
+      do k=2,km
+        if( ww(k).eq.0.0 ) wi(k)=ww(k-1)
+      enddo
+
+! diffusivity of wi
+      con1 = 0.05
+      do k=km,1,-1
+        decfl = (wi(k+1)-wi(k))*dt/dz(k)
+        if( decfl .gt. con1 ) then
+          wi(k) = wi(k+1) - con1*dz(k)/dt
+        endif
+      enddo
+! compute arrival point
+      do k=1,km+1
+        za(k) = zi(k) - wi(k)*dt
+      enddo
+      za(km+2) = zi(km+1)
+
+      do k=1,km+1
+        dza(k) = za(k+1)-za(k)
+      enddo
+
+! computer deformation at arrival point
+      do k=1,km
+        qa(k) = qq(k)*dz(k)/dza(k)
+      enddo
+      qa(km+1) = 0.0
+
+! estimate values at arrival cell interface with monotone
+      do k=2,km
+        dip=(qa(k+1)-qa(k))/(dza(k+1)+dza(k))
+        dim=(qa(k)-qa(k-1))/(dza(k-1)+dza(k))
+        if( dip*dim.le.0.0 ) then
+          qmi(k)=qa(k)
+          qpi(k)=qa(k)
+        else
+          qpi(k)=qa(k)+0.5*(dip+dim)*dza(k)
+          qmi(k)=2.0*qa(k)-qpi(k)
+          if( qpi(k).lt.0.0 .or. qmi(k).lt.0.0 ) then
+            qpi(k) = qa(k)
+            qmi(k) = qa(k)
+          endif
+        endif
+      enddo
+      qpi(1)=qa(1)
+      qmi(1)=qa(1)
+      qmi(km+1)=qa(km+1)
+      qpi(km+1)=qa(km+1)
+
+! interpolation to regular point
+      qn = 0.0
+      kb=1
+      kt=1
+      intp : do k=1,km
+             kb=max(kb-1,1)
+             kt=max(kt-1,1)
+! find kb and kt
+             if( zi(k).ge.za(km+1) ) then
+               exit intp
+             else
+               find_kb : do kk=kb,km
+                         if( zi(k).le.za(kk+1) ) then
+                           kb = kk
+                           exit find_kb
+                         else
+                           cycle find_kb
+                         endif
+               enddo find_kb
+               find_kt : do kk=kt,km+2
+                         if( zi(k+1).le.za(kk) ) then
+                           kt = kk
+                           exit find_kt
+                         else
+                           cycle find_kt
+                         endif
+               enddo find_kt
+               kt = kt - 1
+! compute q with piecewise constant method
+               if( kt.eq.kb ) then
+                 tl=(zi(k)-za(kb))/dza(kb)
+                 th=(zi(k+1)-za(kb))/dza(kb)
+                 tl2=tl*tl
+                 th2=th*th
+                 qqd=0.5*(qpi(kb)-qmi(kb))
+                 qqh=qqd*th2+qmi(kb)*th
+                 qql=qqd*tl2+qmi(kb)*tl
+                 qn(k) = (qqh-qql)/(th-tl)
+               else if( kt.gt.kb ) then
+                 tl=(zi(k)-za(kb))/dza(kb)
+                 tl2=tl*tl
+                 qqd=0.5*(qpi(kb)-qmi(kb))
+                 qql=qqd*tl2+qmi(kb)*tl
+                 dql = qa(kb)-qql
+                 zsum  = (1.-tl)*dza(kb)
+                 qsum  = dql*dza(kb)
+                 if( kt-kb.gt.1 ) then
+                 do m=kb+1,kt-1
+                   zsum = zsum + dza(m)
+                   qsum = qsum + qa(m) * dza(m)
+                 enddo
+                 endif
+                 th=(zi(k+1)-za(kt))/dza(kt)
+                 th2=th*th
+                 qqd=0.5*(qpi(kt)-qmi(kt))
+                 dqh=qqd*th2+qmi(kt)*th
+                 zsum  = zsum + th*dza(kt)
+                 qsum  = qsum + dqh*dza(kt)
+                 qn(k) = qsum/zsum
+               endif
+               cycle intp
+             endif
+
+       enddo intp
+
+! rain out
+      sum_precip: do k=1,km
+                    if( za(k).lt.0.0 .and. za(k+1).le.0.0 ) then
+                      precip = precip + qa(k)*dza(k)
+                      net_flx(k) =  qa(k)*dza(k)
+                      cycle sum_precip
+                    else if ( za(k).lt.0.0 .and. za(k+1).gt.0.0 ) then
+                      th = (0.0-za(k))/dza(k)
+                      th2 = th*th
+                      qqd = 0.5*(qpi(k)-qmi(k))
+                      qqh = qqd*th2+qmi(k)*th
+                      precip = precip + qqh*dza(k)
+                      net_flx(k) = qqh*dza(k)
+                      exit sum_precip
+                    endif
+                    exit sum_precip
+      enddo sum_precip
+
+! calculating precipitation fluxes
+      do k=km,1,-1
+         if(k == km) then
+           pfsan(k) = net_flx(k)
+         else
+           pfsan(k) = pfsan(k+1) + net_flx(k)
+         end if
+      enddo
+!
+! replace the new values
+      rql(:) = max(qn(:),R1)
+
+      END SUBROUTINE semi_lagrange_sedim
 
 end module module_mp_gfdl_v2
