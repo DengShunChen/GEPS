@@ -49,25 +49,21 @@ contains
       call voterp(nx,my,my_max,lev,lpout,pk,pklp,work3d,rdivb,pkout,div,tens)
 !
       lenc= nx*my
-      ncnt= -1
+      ncnt= 0
 !
       do 20 n=1,num
       do 10 k=1,lpout
       if(plev(k).eq.whtlev(n)) then
-      ncnt=ncnt+1
       call unify_reduceintp(nx,my,my_max,div(1,1,k),wk1)
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,wk1,istat)
       call qmaxn3(wk1,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if ( myrank .eq. ncnt ) then
-        pout=wk1
-        ihdg2=ihdg
-      endif
+      call split(nx,my,lenc,ifilout,ncnt,wk1,pout,ihdg,ihdg2)
       go to 20
       endif
    10 continue
    20 continue
-      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+      if(lwrite .and. myrank .lt. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
 !
       return
   end subroutine divgout
@@ -119,7 +115,7 @@ contains
       call voterp(nx,my,my_max,lev,lpout,pk,pklp,rdrag,rdragb,pkout,drag,tens)
 !
       lenc= nx*my
-      ncnt= -1
+      ncnt= 0
 !
 !!      do jj =1, jlistnum
 !!      j=jlist1(jj)
@@ -136,7 +132,6 @@ contains
 !
       if(plev(k).eq.whtlev(n)) then
 !
-      ncnt=ncnt+1
       do 45 jj=1, jlistnum
       j=jlist1(jj)
       nxj=nxdef_2d(j)
@@ -149,15 +144,12 @@ contains
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,wk1,istat)
       call qmaxn3(wk1,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if ( myrank .eq. ncnt ) then
-        pout=wk1
-        ihdg2=ihdg
-      endif
+      call split(nx,my,lenc,ifilout,ncnt,wk1,pout,ihdg,ihdg2)
       go to 20
       endif
    10 continue
    20 continue
-      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+      if(lwrite .and. myrank .lt. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
 !
       return
   end subroutine dragout
@@ -208,7 +200,7 @@ contains
       call voterp(nx,my,my_max,lev,lpout,pk,pklp,phi,phib,pkout,phips,tens)
 !
       lenc= nx*my
-      ncnt= -1
+      ncnt= 0
 !
       do k=1,lpout
         if(plev(k).eq.850.)then
@@ -256,7 +248,6 @@ contains
 !
       if(plev(k).eq.whtlev(n)) then
 !
-      ncnt=ncnt+1
       do 11 jj=1, jlistnum
       j=jlist1(jj)
       nxj=nxdef_2d(j)
@@ -276,16 +267,13 @@ contains
 !
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call qmaxn3(slp,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if ( myrank .eq. ncnt ) then
-        pout=slp
-        ihdg2=ihdg
-      endif 
+      call split(nx,my,lenc,ifilout,ncnt,slp,pout,ihdg,ihdg2)
 !
       go to 20
       endif
    10 continue
    20 continue
-      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+      if(lwrite .and. myrank .lt. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
 !
       return
   end subroutine geopout
@@ -332,7 +320,7 @@ contains
       call voterp(nx,my,my_max,lev,lpout,pk,pklp,dpd,dpdb,pkout,dew,tens)
 !
       lenc= nx*my
-      ncnt= -1
+      ncnt= 0
 !
       do 30 n=1,num
       do 10 k=1,lpout
@@ -341,7 +329,6 @@ contains
 !
 ! relative humidity must be smaller or equal 1.0
 !
-      ncnt=ncnt+1
 !!      do 20 jj=1, jlistnum
 !!      j=jlist1(jj)
 !!      nxj=nxdef_2d(j)
@@ -370,15 +357,12 @@ contains
 !
 !!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call qmaxn3(glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if ( myrank .eq. ncnt ) then
-        pout=glob
-        ihdg2=ihdg
-      endif
+      call split(nx,my,lenc,ifilout,ncnt,glob,pout,ihdg,ihdg2)
       go to 30
       endif
    10 continue
    30 continue
-      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+      if(lwrite .and. myrank .lt. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
 !
       return
   end subroutine shumout
@@ -454,7 +438,7 @@ contains
       call voterp(nx,my,my_max,lev,lpout,pk,pklp,dpd,dpdb,pkout,dew,tens)
 !
       lenc= nx*my
-      ncnt= -1
+      ncnt= 0
 !
       do 30 n=1,num
       do 10 k=1,lpout
@@ -464,7 +448,6 @@ contains
 !
 ! relative humidity must be smaller or equal 1.0
 !
-      ncnt=ncnt+1
 !      do 20 jj=1, jlistnum
 !      j=jlist1(jj)
 !      nxj=nxdef_2d(j)
@@ -489,15 +472,12 @@ contains
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
 !!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call qmaxn3(glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if ( myrank .eq. ncnt ) then
-        pout=glob
-        ihdg2=ihdg
-      endif
+      call split(nx,my,lenc,ifilout,ncnt,glob,pout,ihdg,ihdg2)
       go to 30
       endif
    10 continue
    30 continue
-      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+      if(lwrite .and. myrank .lt. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
 !
    40 continue
 
@@ -654,14 +634,13 @@ contains
 !
       tnshun= 1.0
 !
-      ncnt=-1
+      ncnt=0
 !
       do 30 n=1,num
       do 10 k=1,lpout
 !
       if(plev(k).eq.whtlev(n)) then  
 !
-      ncnt=ncnt+1
 !
       call unify_reduceintp(nx,my,my_max,temp(1,1,k),glob)
 !!      do 11 i=1,lenc
@@ -679,15 +658,12 @@ contains
 !
 !!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call qmaxn3(slp,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if ( myrank .eq. ncnt ) then
-        pout=slp
-        ihdg2=ihdg
-      endif
+      call split(nx,my,lenc,ifilout,ncnt,slp,pout,ihdg,ihdg2)
       go to 30
       endif
    10 continue
    30 continue
-      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+      if(lwrite .and. myrank .lt. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
 !
       return
   end subroutine tempout
@@ -738,7 +714,7 @@ contains
       call voterp(nx,my,my_max,lev,lpout,pk,pklp,work3d,rvorb,pkout,vor,tens)
 !
       lenc= nx*my
-      ncnt= -1
+      ncnt= 0
 !
       do k=1,lpout
         if(plev(k).eq.850.)then
@@ -777,7 +753,6 @@ contains
       do 20 n=1,num
       do 10 k=1,lpout
       if(plev(k).eq.whtlev(n)) then
-      ncnt=ncnt+1
       call unify_reduceintp(nx,my,my_max,vor(1,1,k),wk1)
       call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
 !
@@ -785,15 +760,12 @@ contains
 !
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,wk1,istat)
       call qmaxn3(wk1,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if ( myrank .eq. ncnt ) then
-        pout=wk1
-        ihdg2=ihdg
-      endif
+      call split(nx,my,lenc,ifilout,ncnt,wk1,pout,ihdg,ihdg2)
       go to 20
       endif
    10 continue
    20 continue
-      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+      if(lwrite .and. myrank .lt. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
 !
       return
   end subroutine vortout
@@ -841,7 +813,7 @@ contains
       tens(lev)= 0.0
       tens(lev+1)= 0.0
       lenc= nx*my
-      ncnt= -1
+      ncnt= 0
 !
       do k = 1, lpout-1
        lpl = int(plev(k)+0.001)
@@ -881,7 +853,6 @@ contains
 !  below ground level extrapolate surface wind downward
 !  deweight wind with cos latitude, earth radius
 !
-        ncnt=ncnt+1
         do jj = 1, jlistnum
           j=jlist1(jj)
           nxj=nxdef_2d(j)
@@ -912,15 +883,12 @@ contains
 !
 !!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call qmaxn3(glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if ( myrank .eq. ncnt ) then
-        pout=glob
-        ihdg2=ihdg
-      endif
+      call split(nx,my,lenc,ifilout,ncnt,glob,pout,ihdg,ihdg2)
       go to 30
       endif
    10 continue
    30 continue
-      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+      if(lwrite .and. myrank .lt. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
 !
 !  now the v components
 !
@@ -942,7 +910,7 @@ contains
 
 !lzl -end================================================================
 !
-      ncnt= -1
+      ncnt= 0
       do 40 n=1,num
       do 20 k=1,lpout
 !
@@ -951,7 +919,6 @@ contains
 !  below ground level extrapolate surface wind downward
 !  deweight wind with cos latitude, earth radius
 !
-        ncnt=ncnt+1
         do jj = 1, jlistnum
           j=jlist1(jj)
           nxj=nxdef_2d(j)
@@ -982,15 +949,12 @@ contains
 !
 !!      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call qmaxn3(glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if ( myrank .eq. ncnt ) then
-        pout=glob
-        ihdg2=ihdg
-      endif
+      call split(nx,my,lenc,ifilout,ncnt,glob,pout,ihdg,ihdg2)
       go to 40
       endif
    20 continue
    40 continue
-      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+      if(lwrite .and. myrank .lt. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
 !
 !  now the w components
 !
@@ -998,13 +962,12 @@ contains
       work3d=sdhat
       call voterp(nx,my,my_max,lev,lpout,pk,pklp,work3d,wtb,pkout,wind,tens)
 !
-      ncnt= -1
+      ncnt= 0
       do 42 n=1,num
       do 22 k=1,lpout
 !
       if(plev(k).eq.whtlev(n)) then
 !
-      ncnt=ncnt+1
       call unify_reduceintp(nx,my,my_max,wind(1,1,k),glob)
 !!      do j=1,my
 !!      do i=1,nx
@@ -1016,15 +979,13 @@ contains
 !
 !      if(lwrite) call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
       call qmaxn3(glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-      if ( myrank .eq. ncnt ) then
-        pout=glob*100.
-        ihdg2=ihdg
-      endif
+      glob=glob*100.
+      call split(nx,my,lenc,ifilout,ncnt,glob,pout,ihdg,ihdg2)
       go to 42
       endif
    22 continue
    42 continue
-      if(lwrite .and. myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+      if(lwrite .and. myrank .lt. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
 !
       return
   end subroutine windout
