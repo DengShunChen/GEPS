@@ -277,9 +277,7 @@
 !
       ntrac=ncld
       if ( nmmiph .eq. 6 ) ntrac=ncld-3
-#ifndef new_Thompson
       if ( nmmiph .eq. 8 ) ntrac=ncld-4
-#endif
       if ( nmmiph .eq.11 ) ntrac=7
 
       allocate(q1(nx,lev,ntrac))
@@ -624,7 +622,17 @@
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
-#ifdef new_Thompson
+            q1(i,kc,1) = qt(i,             k)
+            q1(i,kc,2) = qt(i,lev*(ntcw-1)+k)
+            q1(i,kc,3) = qt(i,lev*(ntiw-1)+k)
+            q1(i,kc,4) = qt(i,lev*(ntinc-1)+k)
+            q1(i,kc,5) = qt(i,lev*(ntoz-1)+k)
+          enddo
+        enddo
+      else if ( nmmiph .eq. 9 ) then ! New Thompson
+        do k=1,lev
+          kc=lev-k+1
+          do i=1,nxj
             q1(i,kc,1) = qt(i,             k)
             q1(i,kc,2) = qt(i,lev*(ntcw-1)+k)
             q1(i,kc,3) = qt(i,lev*(ntiw-1)+k)
@@ -634,13 +642,6 @@
             q1(i,kc,7) = qt(i,lev*(ntinc-1)+k)
             q1(i,kc,8) = qt(i,lev*(ntrnc-1)+k)
             q1(i,kc,9) = qt(i,lev*(ntoz-1)+k)
-#else
-            q1(i,kc,1) = qt(i,             k)
-            q1(i,kc,2) = qt(i,lev*(ntcw-1)+k)
-            q1(i,kc,3) = qt(i,lev*(ntiw-1)+k)
-            q1(i,kc,4) = qt(i,lev*(ntinc-1)+k)
-            q1(i,kc,5) = qt(i,lev*(ntoz-1)+k)
-#endif
           enddo
         enddo
       else if ( nmmiph .eq. 11 ) then ! GFDL MP
@@ -791,7 +792,16 @@
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
-#ifdef new_Thompson
+            qt(i,lev*(ntcw-1)+k) = q1(i,kc,2)
+            qt(i,lev*(ntiw-1)+k) = q1(i,kc,3)
+            qt(i,lev*(ntinc-1)+k)= q1(i,kc,4)
+            qt(i,lev*(ntoz-1)+k) = q1(i,kc,5)
+          enddo
+        enddo
+      else if ( nmmiph .eq. 9 ) then ! New Thompson
+        do k=1,lev
+          kc=lev-k+1
+          do i=1,nxj
             qt(i,lev*(ntcw-1)+k) = q1(i,kc,2)
             qt(i,lev*(ntiw-1)+k) = q1(i,kc,3)
             qt(i,lev*(ntrw-1)+k) = q1(i,kc,4)
@@ -800,12 +810,6 @@
             qt(i,lev*(ntinc-1)+k)= q1(i,kc,7)
             qt(i,lev*(ntrnc-1)+k)= q1(i,kc,8)
             qt(i,lev*(ntoz-1)+k) = q1(i,kc,9)
-#else
-            qt(i,lev*(ntcw-1)+k) = q1(i,kc,2)
-            qt(i,lev*(ntiw-1)+k) = q1(i,kc,3)
-            qt(i,lev*(ntinc-1)+k)= q1(i,kc,4)
-            qt(i,lev*(ntoz-1)+k) = q1(i,kc,5)
-#endif
           enddo
         enddo
       else if ( nmmiph .eq. 11 ) then ! GFDL MP

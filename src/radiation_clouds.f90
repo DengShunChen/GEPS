@@ -331,6 +331,8 @@
             print *,'   --- WSM6 microphysics'
           elseif (icmphys == 8) then
             print *,'   --- Thompson microphysics'
+          elseif (icmphys == 9) then
+            print *,'   --- New Thompson microphysics'
           elseif (icmphys == 11) then
             print *,'   --- GFDL microphysics'
           else

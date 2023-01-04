@@ -8,30 +8,25 @@
 ! for WSM6
       use module_mp_wsm6,     only : wsm6init
 ! for Thompson
-#ifdef new_Thompson
-      use module_mp_thompson_new, only : thompson_init
-#else
-      use module_mp_thompson, only : thompson_init
-#endif
+      use module_mp_thompson, only : thompson_init => thompson_init
+! for New Thompson
+      use module_mp_thompson_new, &
+                              only : new_thompson_init => thompson_init
 ! for GFDLMP
 #if defined (GFDLMP_v2)
       use module_mp_gfdl_v2,  only : gfdl_cld_mp_init
 #else
       use module_mp_gfdl,     only : gfdl_cloud_microphys_init
 #endif
-#ifdef new_Thompson
       use physpara, only : is_aerosol_aware,merra2_aerosol_aware
-#endif
 
       implicit none
 !  ---  input:
       integer,  intent(in) :: nmmiph,myrank
 !  ---  local:
       integer   ntrac_req
-#ifdef new_Thompson
       integer   errflg
       character errmsg
-#endif
 !-----------------------------------------------------------------------
 !  for cloud microphysics
 !-----------------------------------------------------------------------
@@ -43,14 +38,16 @@
         endif
 ! Thompson
         if ( nmmiph .eq. 8 ) then
-#ifdef new_Thompson
-          call thompson_init ( is_aerosol_aware,merra2_aerosol_aware,   &
-                               myrank, 0, errmsg, errflg )
-#else
           call thompson_init()
-          if ( myrank .eq. 0 )                                         &
+          if ( myrank .eq. 0 )                                          &
              print *,'Thompson cloud microphysics initialized'
-#endif
+        endif
+! New Thompson
+        if ( nmmiph .eq. 9 ) then
+          call new_thompson_init ( is_aerosol_aware,                    &
+                   merra2_aerosol_aware, myrank, 0, errmsg, errflg )
+          if ( myrank .eq. 0 )                                          &
+             print *,'New Thompson cloud microphysics initialized'
         endif
 ! GFDLMP
         if ( nmmiph .eq. 11 ) then
@@ -87,11 +84,10 @@
 ! for wsm6
       use module_mp_wsm6,      only: wsm6
 ! for thompson
-#ifdef new_Thompson
-      use module_mp_thompson_new,  only: mp_gt_driver
-#else
-      use module_mp_thompson,  only: mp_gt_driver
-#endif
+      use module_mp_thompson,  only: thompson_driver => mp_gt_driver
+! for New Thompson
+      use module_mp_thompson_new,  &
+                               only: new_thompson_driver => mp_gt_driver
 ! for GFDLMP
 #if defined (GFDLMP_v2)
       use module_mp_gfdl_v2,   only: gfdl_cld_mp_driver
@@ -138,8 +134,7 @@
       real      rainncv(nx),snowncv(nx),graupelncv(nx)
       real      icem
       logical   lradar
-#ifdef new_Thompson
-! Thompson MP
+! New Thompson MP
       real,dimension(:,:),allocatable :: nc,nwfa,nifa,pfils,pflls,      &
               vt_dbz_wt,ni,nr
       real,dimension(:),allocatable :: nwfa2d,nifa2d,rainnc,snownc,     &
@@ -154,7 +149,6 @@
               kme_stoch,istep,nsteps,errflg,decfl
       character errmsg
       integer, parameter :: n_var_spp=1
-#endif
 ! GFDLMP
       real, parameter ::                                                &
                 rainmin=1.0e-10 !(mm)
@@ -197,8 +191,7 @@
       snowncv=0.
       graupelncv=0.
 
-#ifdef new_Thompson
-      if ( nmmiph .eq. 8 ) then
+      if ( nmmiph .eq. 9 ) then
         allocate                                                        &
          ( ni(nx,lev),nr(nx,lev),nc(nx,lev),nwfa(nx,lev),nifa(nx,lev),  &
            w(nx,lev),pfils(nx,lev),pflls(nx,lev),vt_dbz_wt(nx,lev) )
@@ -208,9 +201,8 @@
         allocate ( rand_pert(nx,1) )
         allocate ( spp_prt_list(n_var_spp),spp_stddev_cutoff(n_var_spp) )
         allocate ( spp_var_list(n_var_spp) )
-
       endif
-#endif
+
       if ( nmmiph .eq. 11 ) then
 #if defined (GFDLMP_v2)
         allocate                                                        &
@@ -286,7 +278,7 @@
       lradar= .false.
       icem  =  4./3.*tpi*3.2768*1.e-14*890.
 !
-      if ( nmmiph.eq.6 .or. nmmiph.eq.8 ) then
+      if ( nmmiph.eq.6 .or. nmmiph.eq.8 .or. nmmiph.eq.9 ) then
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
@@ -309,7 +301,6 @@
                      1,nx,1,lev,1,nxj,1,lev,snowncv,graupelncv)
 !          Thompson
            if ( nmmiph .eq. 8 )then
-#ifndef new_Thompson
              ntnc=0.
              do k=1,lev
                kc=lev-k+1
@@ -320,7 +311,7 @@
                enddo
              enddo
 
-             call mp_gt_driver(1,nx,1,lev,1,nxj,1,lev,qtc,qtr,qtrw,    &
+             call thompson_driver(1,nx,1,lev,1,nxj,1,lev,qtc,qtr,qtrw, &
                      qti,qtsw,qtgl,ntnc(1,1,1),ntnc(1,1,2),ttc,        &
                      prsl,del,dta,kdt,rainncv,sr,islimsk,refl10,       &
                      lradar,re_cloud,re_ice,re_snow,me,phii)
@@ -332,7 +323,10 @@
                  qt(i,(ntrnc-1)*lev+k)=ntnc(i,kc,2)
                enddo
              enddo
-#else
+           endif
+
+           ! New Thompson
+           if ( nmmiph .eq. 9 ) then
              sedi_semi=.false.        !use Semi-Lagrangian sedimentation for rain and graupel
              ext_diag=.false.         !extended diagnostics, array pointers only associated if ext_diag is .true.
              first_time_step=.false.  ! ???
@@ -386,7 +380,7 @@
                enddo
              enddo
 
-             call mp_gt_driver                                          &
+             call new_thompson_driver                                   &
                    ( qtc,qtr,qtrw,qti,qtsw,qtgl,ni,nr,                  &
                      nc,nwfa,nifa,nwfa2d,nifa2d,                        &!optional
                      ttc,&!th,pii,                                      &!optional ??
@@ -411,14 +405,12 @@
                      errmsg,errflg,                                     &!optional
                      ext_diag,                                          &
 #ifdef EXT_DIAG
-                     prw_vcdc,                                          &
-                     prw_vcde, tpri_inu, tpri_ide_d,                    &
+                     prw_vcdc, prw_vcde, tpri_inu, tpri_ide_d,          &
                      tpri_ide_s, tprs_ide, tprs_sde_d,                  &
                      tprs_sde_s, tprg_gde_d,                            &
                      tprg_gde_s, tpri_iha, tpri_wfz,                    &
                      tpri_rfz, tprg_rfz, tprs_scw, tprg_scw,            &
-                     tprg_rcs, tprs_rcs,                                &
-                     tprr_rci, tprg_rcg,                                &
+                     tprg_rcs, tprs_rcs, tprr_rci, tprg_rcg,            &
                      tprw_vcd_c, tprw_vcd_e, tprr_sml,                  &
                      tprr_gml, tprr_rcg,                                &
                      tprr_rcs, tprv_rev, tten3, qvten3,                 &
@@ -433,8 +425,29 @@
                  qt(i,(ntrnc-1)*lev+k) = nr(i,kc)
                enddo
              enddo
-#endif
-           endif
+             if(myrank.eq.0) then
+               print *, 'qvmax=',maxval(maxval(qtc,2))*1.E+6
+               print *, 'qcmax=',maxval(maxval(qtr,2))*1.E+6
+               print *, 'qimax=',maxval(maxval(qti,2))*1.E+6
+               print *, 'qrmax=',maxval(maxval(qtrw,2))*1.E+6
+               print *, 'qsmax=',maxval(maxval(qtsw,2))*1.E+6
+               print *, 'qgmax=',maxval(maxval(qtgl,2))*1.E+6
+               print *, 'incmax=',maxval(maxval(ni,2))/1.E+6
+               print *, 'rncmax=',maxval(maxval(nr,2))/1.E+6
+               print *, 'lncmax=',maxval(maxval(nc,2))/1.E+6
+               print *, 'nwfa_max=',maxval(maxval(nwfa,2))/1.E+6
+               print *, 'nifa_max=',maxval(maxval(nifa,2))/1.E+6
+               print *, 'rainnc_max=',maxval(rainnc)
+               print *, 'icenc_max=',maxval(icenc)
+               print *, 'snownc_max=',maxval(snownc)
+               print *, 'graupelnc_max=',maxval(graupelnc)
+               print *, 'rainncv_max=',maxval(rainncv)
+               print *, 'icencv_max=',maxval(icencv)
+               print *, 'snowncv_max=',maxval(snowncv)
+               print *, 'graupelncv_max=',maxval(graupelncv)
+               print *, '---'
+             endif
+           endif  !end of if nmmiph=9
 !
         do i=1,nxj
           rlsp(i) = rainncv(i) + snowncv(i) + graupelncv(i)

@@ -184,6 +184,8 @@
           icmphys = 6                   ! WSM6 microphysics
         elseif ( nmmiph == 8 ) then
           icmphys = 8                   ! Thompson microphysics
+        elseif ( nmmiph == 9 ) then
+          icmphys = 9                   ! new Thompson microphysics
         elseif ( nmmiph == 11 ) then
           icmphys = 11                  ! GFDL microphysics
         endif
