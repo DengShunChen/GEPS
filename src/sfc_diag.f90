@@ -7,10 +7,12 @@
 !     use funcphys, only : fpvs
       use physcons, grav => con_g,  cp => con_cp, &
                     eps => con_eps, epsm1 => con_epsm1
+      use const,    only : RTYPE
       implicit none
 !
       integer              im,imj
-      real, dimension(im) :: ps,   u1,   v1,   t1,  q1,  tskin,  qsurf, &
+      real(kind=RTYPE), dimension(im) :: u1,  v1,  t1,  q1
+      real, dimension(im) :: ps,   tskin,  qsurf,                       &
                              f10m, u10m, v10m, t2m, t10m, q2m, q10m,    &
                              prslki,evap,fm,fh,fh10,fm10,fh2,rh2,rh10
 !

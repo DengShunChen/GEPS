@@ -13,10 +13,12 @@
 ! modify to f90 by C-H Lee and sort by River Chen in 2015
 !
       use rank
+      use const, only: RTYPE
 
       implicit double precision (a-h,o-z)
 !
-      real  ab(n) ,wt(n),xa,xb
+      real  xa,xb
+      real(kind=RTYPE) ab(n),wt(n)
 !
 ! machine dependent constants---
 !  tol - convergence criterion for double precision iteration

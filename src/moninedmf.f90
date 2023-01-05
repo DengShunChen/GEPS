@@ -95,6 +95,7 @@
       use machine  , only : kind_phys
       use physcons, grav => con_g, rd => con_rd, cp => con_cp &
       ,             hvap => con_hvap, fv => con_fvirt
+      use const    , only : RTYPE
       implicit none
 !
 !     arguments
@@ -109,7 +110,7 @@
                            u1(ix,km),     v1(ix,km),                    &
                            t1(ix,km),     q1(ix,km,ntrac),              &
                            swh(ix,km),    hlw(ix,km),                   &
-                           xmu(im),       psk(im),                      &
+                           xmu(im),                                     &
                            rbsoil(im),    zorl(im),                     &
                            u10m(im),      v10m(im),                     &
                            fm(im),        fh(im),                       &
@@ -122,6 +123,7 @@
                            dtsfc(im),     dqsfc(im),                    &
                            hpbl(im),      hpblx(im),                    &
                            hgamt(im),     hgamq(im)
+      real(kind=RTYPE)     psk(im)
 !
       logical dspheat
 !          flag for tke dissipative heating
@@ -723,7 +725,7 @@
 !>  ## Calculate the inverse Prandtl number
 !!  For an unstable PBL, the Prandtl number is calculated according to Hong and Pan (1996) \cite hong_and_pan_1996, equation 10, whereas for a stable boundary layer, the Prandtl number is simply \f$Pr = \frac{\phi_h}{\phi_m}\f$.
       do i = 1, im
-        if(ublflg(i)) then
+        if(pblflg(i)) then
           tem = phih(i)/phim(i)+cfac*vk*sfcfrac
         else
           tem = phih(i)/phim(i)

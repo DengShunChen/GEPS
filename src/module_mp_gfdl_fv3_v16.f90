@@ -140,7 +140,6 @@ module module_mp_gfdl
     integer :: irain_f = 0 !< cloud water to rain auto conversion scheme
     
     logical :: de_ice = .false. !< to prevent excessive build - up of cloud ice from external sources
-!    logical :: de_ice = .true. !< to prevent excessive build - up of cloud ice from external sources
     logical :: sedi_transport = .true. !< transport of momentum in sedimentation
     logical :: do_sedi_w = .false. !< transport of vertical motion in sedimentation
     logical :: do_sedi_heat = .true. !< transport of heat in sedimentation
@@ -149,12 +148,10 @@ module module_mp_gfdl
     logical :: rad_snow = .true. !< consider snow in cloud fraciton calculation
     logical :: rad_graupel = .true. !< consider graupel in cloud fraction calculation
     logical :: rad_rain = .true. !< consider rain in cloud fraction calculation
-!    logical :: fix_negative = .false. !< fix negative water species
-    logical :: fix_negative = .true. !< fix negative water species
+    logical :: fix_negative = .false. !< fix negative water species
     logical :: do_setup = .true. !< setup constants and parameters
     logical :: p_nonhydro = .false. !< perform hydrosatic adjustment on air density
     logical :: do_melt = .false. !< terminal fall with melting
-!    logical :: do_melt = .true. !< terminal fall with melting
     
     real, allocatable :: table (:), table2 (:), table3 (:), tablew (:)
     real, allocatable :: des (:), des2 (:), des3 (:), desw (:)
@@ -292,7 +289,6 @@ module module_mp_gfdl
     logical :: z_slope_ice = .false. !< use linear mono slope for autocconversions
     logical :: use_ccn = .false. !< must be true when prog_ccn is false
     logical :: use_ppm = .false. !< use ppm fall scheme
-!    logical :: use_ppm = .true. !< use piecewise parabolic method (PPM) for the falling condensates
     logical :: mono_prof = .true. !< perform terminal fall with mono ppm scheme
     logical :: mp_print = .false. !< cloud microphysics debugging printout
     
@@ -484,7 +480,7 @@ subroutine gfdl_cloud_microphys_driver                                    &
     ! -----------------------------------------------------------------------
     ! major cloud microphysics
     ! -----------------------------------------------------------------------
-    
+
     do j = js, je
         call mpdrv (hydrostatic, uin, vin, w, delp, pt, qv, ql, qr, qi, qs, qg,&
             qa, qn, dz, is, ie, js, je, ks, ke, ktop, kbot, j, dt_in, ntimes,  &
@@ -4695,13 +4691,16 @@ subroutine cloud_diagnosis                                              &
           qmw, qmi, qmr, qms, qmg, t,                                   &
 !   --- output :
           rew, rei, rer, res, reg)
-    
+!
+    use const, only: RTYPE
+!    
     implicit none
     
     integer, intent (in) :: is, ie, ks, ke
     integer, intent (in), dimension (is:ie) :: lsm ! land sea mask, 0: ocean, 1: land, 2: sea ice
     
-    real, intent (in), dimension (is:ie, ks:ke) :: den, delp, t
+    real(kind=RTYPE), intent (in), dimension (is:ie, ks:ke) :: t
+    real, intent (in), dimension (is:ie, ks:ke) :: den, delp
     real, intent (in), dimension (is:ie, ks:ke) :: qmw, qmi, qmr, qms, qmg !< units: kg / kg
     
     real, intent (out), dimension (is:ie, ks:ke) :: rew, rei, rer, res, reg !< units: micron

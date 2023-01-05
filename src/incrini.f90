@@ -9,17 +9,19 @@
       use grid
       use spec
       use fftcom
+      use const, only: RTYPE
 !
       implicit  none
 
-      real hld1(nx,my),pt1(nx,my_max),hld3(nx,levp,my_max),           &
-           hld4(nx,levp,ncld,my_max)
+      real hld1(nx,my)
+      real(kind=RTYPE) pt1(nx,my_max)
       character typ*6,lrec*26
-      real      cc(nx+2,levp,1,my_max)
+      real(kind=RTYPE) cc(nx+2,levp,1,my_max),dummy,                  &
+                       hld3(nx,levp,my_max),hld4(nx,levp,ncld,my_max)
 !!      real      cc(nx+2,levp,3+ncld,my_max),wss(levp,2,3+ncld,jtrun,jtmax)
 
       integer   k,ii,jj,j,nxj,lmax,itaup,lncrec,istat,i,KL,m,n,mf,ntrac
-      real      fac,dummy
+      real      fac
 !
       lmax=16
 !

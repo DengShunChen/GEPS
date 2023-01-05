@@ -3,6 +3,7 @@
 !
       use index
       use mpe
+      use const, only: RTYPE,kflag
 
       implicit  none
 
@@ -13,7 +14,7 @@
                 asol24(nxp,my_max),olr24(nxp,my_max),rain24(nxp,my_max)              &
                ,flash24(nxp,my_max)
 
-      real      wrk(nxp,my_max),glob(nx,my)
+      real(kind=RTYPE) glob(nx,my),wrk(nxp,my_max)
 !
       integer*8 idtg
       character*80 ifilout
@@ -30,99 +31,78 @@
         j=jlist1(jj)
         nxj=nxdef_2d(j)
         do i=1,nxj
-!byl         glob(i,j)=qf24(i,jj)/dt24
          wrk(i,jj)=qf24(i,jj)/dt24
         enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-!byl      call mpe_unify(glob,nx,my,2,mpe_double)
       call syslbl ('s0043f',idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
 !
       do jj=1,jlistnum
          j=jlist1(jj)
          nxj=nxdef_2d(j)
          do i=1,nxj
-!byl          glob(i,j)=hf24(i,jj)/dt24
           wrk(i,jj)=hf24(i,jj)/dt24
          enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-!byl      call mpe_unify(glob,nx,my,2,mpe_double)
       call syslbl ('s0042f',idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
 !
       do jj=1,jlistnum
          j=jlist1(jj)
          nxj=nxdef_2d(j)
          do i=1,nxj
-!byl          glob(i,j)=ss24(i,jj)/dt24
           wrk(i,jj)=ss24(i,jj)/dt24
          enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-!byl      call mpe_unify(glob,nx,my,2,mpe_double)
       call syslbl ('s0031f',idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
 !
       do jj=1,jlistnum
          j=jlist1(jj)
          nxj=nxdef_2d(j)
          do i=1,nxj
-!byl          glob(i,j)=rs24(i,jj)/dt24
           wrk(i,jj)=rs24(i,jj)/dt24
          enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-!byl      call mpe_unify(glob,nx,my,2,mpe_double)
       call syslbl ('s0032f',idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
 !
       do jj=1,jlistnum
          j=jlist1(jj)
          nxj=nxdef_2d(j)
          do i=1,nxj
-!byl          glob(i,j)=rain24(i,jj)/dt24*2.5e+6
           wrk(i,jj)=rain24(i,jj)/dt24*2.5e+6
          enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-!byl      call mpe_unify(glob,nx,my,2,mpe_double)
       call syslbl ('b0062f',idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
 !
       do jj=1,jlistnum
          j=jlist1(jj)
          nxj=nxdef_2d(j)
          do i=1,nxj
-!byl          glob(i,j)=asol24(i,jj)/dt24
           wrk(i,jj)=asol24(i,jj)/dt24
          enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-!byl      call mpe_unify(glob,nx,my,2,mpe_double)
       call syslbl ('x0033f',idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
 !
       do jj=1,jlistnum
          j=jlist1(jj)
          nxj=nxdef_2d(j)
          do i=1,nxj
-!byl          glob(i,j)=olr24(i,jj)/dt24
           wrk(i,jj)=olr24(i,jj)/dt24
          enddo
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-!byl      call mpe_unify(glob,nx,my,2,mpe_double)
       call syslbl ('x0034f',idtg,itau,ggdef,ihdg)
-!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
 !
 !xb110>>
       do jj = 1,jlistnum
@@ -134,7 +114,7 @@
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       call syslbl ('x00999',idtg,itau,ggdef,ihdg)
-      call dmswrit(imax,jmax,ihdg,lenc,'H',ifilout,glob,istat)
+      call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
 !xb110<<
       return
       end

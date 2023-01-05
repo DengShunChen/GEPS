@@ -34,7 +34,7 @@
 ! developer: shian-jiann lin, linjiong zhou
 ! =======================================================================
 
-module module_mp_gfdl
+module module_mp_gfdl_v15
     
     ! use mpp_mod, only: stdlog, mpp_pe, mpp_root_pe, mpp_clock_id, &
     ! mpp_clock_begin, mpp_clock_end, clock_routine, &
@@ -4617,12 +4617,14 @@ subroutine cloud_diagnosis                                              &
 !   --- output :
           rew, rei, rer, res, reg)
 !         qcw, qci, qcr, qcs, qcg, rew, rei, rer, res, reg)
-    
+    use const, only: RTYPE
+!    
     implicit none
     
     integer, intent (in) :: is, ie, js, je
     
-    real, intent (in), dimension (is:ie, js:je) :: den, t
+    real(kind=RTYPE), intent (in), dimension (is:ie, js:je) :: t
+    real, intent (in), dimension (is:ie, js:je) :: den
     real, intent (in), dimension (is:ie, js:je) :: qw, qi, qr, qs, qg !< units: kg / kg
     
 !   real, intent (out), dimension (is:ie, js:je) :: qcw, qci, qcr, qcs, qcg !< units: kg / m^3
@@ -4742,4 +4744,4 @@ subroutine cloud_diagnosis                                              &
     
 end subroutine cloud_diagnosis
 
-end module module_mp_gfdl
+end module module_mp_gfdl_v15

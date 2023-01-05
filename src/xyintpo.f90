@@ -7,15 +7,17 @@
 !c   gx : the equal distant grid system, but the first point at half
 !c        a grid's distance
 !c
-      dimension ain(im,jm),aout(nx,my),xr(nx),yr(my)
+      use const, only: RTYPE
+      real(kind=RTYPE) ain(im,jm)
+      real(kind=RTYPE) weight0(jm),sinl0(jm),weight(my),sinl(my)
+      dimension aout(nx,my),xr(nx),yr(my)
       character*2 flag0, flag
       integer iwnd
       logical first
 !c
 !c  working arrays
 !c
-      dimension weight0(jm),sinl0(jm),weight(my),sinl(my)   &
-              ,alat0(jm+2),alon0(im+1),alat(my),alon(nx)   
+      dimension alat0(jm+2),alon0(im+1),alat(my),alon(nx)   
       dimension aaa(im+1,jm+2),bbb(nx*my),wkx(nx*my),wky(nx*my)
       integer jend
 !c

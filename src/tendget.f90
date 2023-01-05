@@ -1,4 +1,7 @@
       subroutine tendget (phiten)
+
+!CWB2021 ndsl single precision test
+
 !
 !  purpose : compute tendency of vorticity,divergence and geopotential
 !            using subroutine of forecast model
@@ -21,34 +24,38 @@
       implicit none
 
       integer  m,mf,j,jj,k,n,l,mlst,nxj,nk,kk,kl,i,ii,nl
-      real     sqhaf,dummy
+      real     sqhaf
 
-      real phiten(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) phiten(levp,2,jtrun,jtmax)
 !byl      real tbar(lev),qbar(lev*ncld)
-      real sdpbl(nxp,my_max)
+      real(kind=RTYPE) sdpbl(nxp,my_max)
 
 ! for Semi-Lagrangian
-      real deldm(nxp,my_max),ddtemp(nxp,lev,my_max)        &
-      , pten(nxp,lev,my_max),pdot(nxp,lev+1,latpart)       &
-      , qvadv(nxp,lev*ncld,my_max),diveng(nxp,lev,my_max)  &
-      , vdmerd(nxp,lev,my_max),vdzonl(nxp,lev,my_max)      &
-      , vdmerdr(nxp,lev,my_max),vdzonlr(nxp,lev,my_max)    &
+      real(kind=RTYPE) deldm(nxp,my_max)
+
+!CWB2021 ndsl single precision test
+      real(kind=RTYPE) uum_sl(nx,levp,my_max)              &
+      ,vvm_sl(nx,levp,my_max)                              &
       ,ttm_sl(nx,levp,my_max)                              &
       ,pten_sl(nx,levp,my_max)                             &
       ,qm_sl(nx,levp*ncld,my_max)                          &
-      ,vvm_sl(nx,levp,my_max)                              &
-      ,uum_sl(nx,levp,my_max)
+      ,pdot(nxp,lev+1,latpart)                             &
+      ,vdmerdr(nxp,lev,my_max),vdzonlr(nxp,lev,my_max)     &
+      ,vdmerd(nxp,lev,my_max),vdzonl(nxp,lev,my_max)       &
+      ,ddtemp(nxp,lev,my_max),qvadv(nxp,lev*ncld,my_max)   &
+      ,diveng(nxp,lev,my_max),pten(nxp,lev,my_max)
 
 !byl      real cc(nx+2,levp,1+ncld,my_max)
-      real cc(nx+2,levp,1,my_max)
+      real(kind=RTYPE) cc(nx+2,levp,1,my_max),dummy
 !byl,wss(levp,2,1+ncld,jtrun,jtmax)
 !
       integer   ierr
-      real  dta,ww1(nx,my_max)
+      real(kind=RTYPE) dta
+      real(kind=RTYPE) ww1(nx,my_max)
 
 !for 2dMPI
-      real temten1(lev,2,jtrun,jtmax)
-      real phiten1(lev,2,jtrun,jtmax)
+      real(kind=RTYPE) temten1(lev,2,jtrun,jtmax)
+      real(kind=RTYPE) phiten1(lev,2,jtrun,jtmax)
       phiten1=0.
 
 !
@@ -153,11 +160,11 @@
 !ch>
 ! transpose partial to full: ut -> ut_sl, vt -> vt_sl, ttm -> ttm_sl, qp -> qm_sl
 
-#ifdef MULTIPLE
-      call mpe2d_transpose_ndsl_p2f_multi(ut   ,vt   ,ttp   ,dummy,dummy,qp,    &
-                                    ut_sl,vt_sl,ttm_sl,dummy,dummy,qm_sl, &
-                                    nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm,4)
-#else
+!#ifdef MULTIPLE
+!      call mpe2d_transpose_ndsl_p2f_multi(ut   ,vt   ,ttp   ,dummy,dummy,qp,    &
+!                                    ut_sl,vt_sl,ttm_sl,dummy,dummy,qm_sl, &
+!                                    nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm,4)
+!#else
       call mpe2d_transpose_ndsl_p2f(ut,ut_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f(vt,vt_sl,    &
@@ -166,7 +173,7 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f(qp,qm_sl,    &
                                     nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
-#endif
+!#endif
 
 !!    call mpe2d_unify_nx(pt_sl,pt)
       uum_sl=ut_sl
@@ -177,19 +184,19 @@
 !
 !     Semi-Lagrangian
 !       Horizontal Advection
+
         call ndslfv_monoadvh2(ttm_sl,qm_sl,pten_sl,uum_sl,vvm_sl,nxdef &
                              ,dta,levp)
-
 
 !ch>
 ! transpose full to partial: ttm_sl -> ddtemp,  pten_sl -> pten, uum_sl -> vdzonl
 !                            vvm_sl -> vdmerd,  qm_sl -> qvadv
 
-#ifdef MULTIPLE
-      call mpe2d_transpose_ndsl_f2p_multi(ttm_sl,pten_sl,uum_sl,vvm_sl,qm_sl, &
-                                    ddtemp   ,pten   ,vdzonl   ,vdmerd   ,qvadv   , &
-                                    nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
-#else
+!#ifdef MULTIPLE
+!      call mpe2d_transpose_ndsl_f2p_multi(ttm_sl,pten_sl,uum_sl,vvm_sl,qm_sl, &
+!                                    ddtemp   ,pten   ,vdzonl   ,vdmerd   ,qvadv   , &
+!                                    nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
+!#else
       call mpe2d_transpose_ndsl_f2p(ttm_sl,ddtemp, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_f2p(pten_sl,pten, &
@@ -200,7 +207,7 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_f2p(qm_sl,qvadv,   &
                                     nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
-#endif
+!#endif
 
 !ch<
 
@@ -220,12 +227,12 @@
         , qt(1,1,jj),phi(1,1,jj),pt(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
         , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)         &
         , diveng(1,1,jj),vdmerdr(1,1,jj),vdzonlr(1,1,jj),pten(1,1,jj)  &
-        , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),sgeo(1,jj) )
+        , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),vvel(1,1,jj) &
+        , sgeo(1,jj) )
 
       enddo !jj = 1,jlistnum
 !
-!ch     call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,diveng   &
-!ch                ,hldten,1,nsizey)
+!CWB2021 for single precision test
         call joinrs(cc,diveng,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
         call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc       &
                    ,hldten,1,nsizey)
@@ -249,13 +256,17 @@
             enddo
           enddo
         enddo !jj = 1,jlistnum
-        call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlr,vdmerdr,dta)
+      call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlr,vdmerdr,dta)
+
+!CWB2021 ndsl single precision test
 !
 !
 !       Vertical Advection
 !
-        call ndslfv_monoadvv(ddtemp,qvadv,vdzonl,vdmerd,pdot,pt        &
-                            ,nxjp,dta)
+      call ndslfv_monoadvv(ddtemp,qvadv,vdzonl,vdmerd,pdot,pt,nxjp,dta)
+
+!CWB2021 ndsl single precision test
+
 !
       do jj = 1, jlistnum
         j=jlist1(jj)
@@ -280,12 +291,11 @@
 !!                 ,wss,1+ncld,nsize)
 !!      call ujoinrs(wss,temten,qten,dummy,dummy,jtrun,jtmax,lev        &
 !!                 ,mlistnum,2,ncld)
-!ch   call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,deldm         &
-!ch              ,plten,nsize)
       call mpe2d_unify_nx(ww1,deldm)
       call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1           &
                  ,plten,nsizey)
 !
+!CWB2021 for single precision test
       call rstrandz (jtrun,jtmax,nx,my,my_max,levp,vdmerd,vdzonl      &
                     ,weight,cim,onocos,poly,dpoly,divten,vorten,nsizey)
 !

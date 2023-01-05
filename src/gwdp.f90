@@ -108,6 +108,7 @@
 !=======================================================================
 !
       use paramt
+      use const, only : RTYPE
 
       implicit  none
 
@@ -117,10 +118,12 @@
 
       real      dt,g,r,cp
 
-      real      u(nx,lev),v(nx,lev),t(nx,lev),q(nx,lev),p(nx,lev)
-      real      pk(nx,lev),pk2(nx,lev),hi(nx,lev),var(nx)
+      real      p(nx,lev)
       real      drag(nx,lev)
       real      ugws(nx),vgws(nx)
+      real(kind=RTYPE) u(nx,lev),v(nx,lev),t(nx,lev),q(nx,lev),   &
+                       hi(nx,lev)
+      real(kind=RTYPE) pk(nx,lev),pk2(nx,lev),var(nx)
 !
 ! ... local variable
 !

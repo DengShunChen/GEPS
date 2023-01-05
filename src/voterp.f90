@@ -27,6 +27,7 @@
 !
       use mpe
       use index
+      use const, only: RTYPE
 
       implicit  none
 
@@ -36,13 +37,13 @@
 
 !byl      real      ff(nxp,lev,my_max),t(nx,my,lpout),pkout(lpout)    &
 !byl      , pk(nxp,lev,my_max),tensy(lev+1),pklp(nx,my),flp(nx,my)
-      real      ff(nxp,lev,my_max),t(nxp,my_max,lpout),pkout(lpout) &
-      , pk(nxp,lev,my_max),tensy(lev+1),pklp(nxp,my_max)            &
+      real      ff(nxp,lev,my_max),pkout(lpout)                        &
+      , pk(nxp,lev,my_max),tensy(lev+1),pklp(nxp,my_max)               &
       , flp(nxp,my_max)
 !
-      real      fxx(nxp,lev+1),fyy(nxp,lev+1),pjy(nxp,lpout,4)      &
-      , tp1(nxp,lpout,4),    pkk(nxp,lev+1),f(nxp,lev+1)            &
-      , pout(nxp,lpout)
+      real(kind=RTYPE) fxx(nxp,lev+1),fyy(nxp,lev+1),pjy(nxp,lpout,4)  &
+      , tp1(nxp,lpout,4),pkk(nxp,lev+1),f(nxp,lev+1)                   &
+      , pout(nxp,lpout),t(nxp,my_max,lpout)
 
       integer   ipt(nxp,lpout)
 !
@@ -54,7 +55,7 @@
       jym2=levp1-2
 !
 !$omp parallel do                                                      &
-!$omp private(j,jj,i,ii,pkk,f,pjy,ipt,tp1,fxx,fyy,k,nxj,mn,pout) &
+!$omp private(j,i,ii,pkk,f,pjy,ipt,tp1,fxx,fyy,k,nxj,mn,pout) &
 !$omp schedule(dynamic)
 !
       do 200 jj =1, jlistnum

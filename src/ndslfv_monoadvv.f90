@@ -17,31 +17,31 @@
 
       implicit none
 
-!ch   real pdot(lonfull,lev+1,latpart)
-!ch   real plev(lonfull,lev+1)
-      real pdot(nxp,    lev+1,latpart)
-      real plev(nxp,    lev+1)
-      real pt(nxp,latpart)
+!ch   real(kind=RTYPE) pdot(lonfull,lev+1,latpart)
+!ch   real(kind=RTYPE) plev(lonfull,lev+1)
+      real(kind=RTYPE) pdot(nxp,    lev+1,latpart)
+      real(kind=RTYPE) plev(nxp,    lev+1)
+      real(kind=RTYPE) pt(nxp,latpart)
 !      integer,intent(in):: global_lats_a(my)
       integer,intent(in):: lonsperlat(my)
-      real,   intent(in):: deltim
+      real(kind=RTYPE),   intent(in):: deltim
 
-!ch   real      qqlon(lonfull,lev*ndslvvar,latpart)
-      real      qqlon(nxp,    lev*ndslvvar,latpart)
-      real      ddtemp(nxp,lev,my_max),qvadv(nxp,lev*ncld,my_max),    &
+!ch   real(kind=RTYPE)      qqlon(lonfull,lev*ndslvvar,latpart)
+      real(kind=RTYPE)      qqlon(nxp,    lev*ndslvvar,latpart)
+      real(kind=RTYPE)      ddtemp(nxp,lev,my_max),qvadv(nxp,lev*ncld,my_max),    &
                 vdmerd(nxp,lev,my_max),vdzonl(nxp,lev,my_max)
-      real      rdt2,dt2
+      real(kind=RTYPE)      rdt2,dt2
 
-!     real      xksav(lonfull,levs      ,latpart)
-!     real      stsav(lonfull,levs      ,latpart)
-!     real      ttsav(lonfull,levs      ,latpart)
+!     real(kind=RTYPE)      xksav(lonfull,levs      ,latpart)
+!     real(kind=RTYPE)      stsav(lonfull,levs      ,latpart)
+!     real(kind=RTYPE)      ttsav(lonfull,levs      ,latpart)
 
-!     real      xr    (lonfull,levs)
-!     real      xcp   (lonfull,levs)
-!     real      sumrq (lonfull,levs)
-!     real      xkappa(lonfull,levs)
-!     real      kappa, pi, ply, hh
-!      real      cons0, cons1
+!     real(kind=RTYPE)      xr    (lonfull,levs)
+!     real(kind=RTYPE)      xcp   (lonfull,levs)
+!     real(kind=RTYPE)      sumrq (lonfull,levs)
+!     real(kind=RTYPE)      xkappa(lonfull,levs)
+!     real(kind=RTYPE)      kappa, pi, ply, hh
+!      real(kind=RTYPE)      cons0, cons1
 
 !      logical 	lprint
 
@@ -299,16 +299,16 @@
 
       implicit none
 
-      real pdot(nxp,    lev+1,latpart)
-      real plev(nxp,    lev+1)
-      real pt(nxp,latpart)
+      real(kind=RTYPE) pdot(nxp,    lev+1,latpart)
+      real(kind=RTYPE) plev(nxp,    lev+1)
+      real(kind=RTYPE) pt(nxp,latpart)
       integer,intent(in):: lonsperlat(my)
-      real,   intent(in):: deltim
+      real(kind=RTYPE),   intent(in):: deltim
 
-      real      qqlon(nxp,    lev*nvars,latpart)
-      real      vdmerd(nxp,lev,my_max),vdzonl(nxp,lev,my_max)
-      real      ddtemp(nxp,lev,my_max)
-      real      rdt2,dt2
+      real(kind=RTYPE)      qqlon(nxp,    lev*nvars,latpart)
+      real(kind=RTYPE)      vdmerd(nxp,lev,my_max),vdzonl(nxp,lev,my_max)
+      real(kind=RTYPE)      ddtemp(nxp,lev,my_max)
+      real(kind=RTYPE)      rdt2,dt2
 
       integer mono,mass,nvars
       integer ii,i,n,k,kk,lon,lan,lat,lons_lat

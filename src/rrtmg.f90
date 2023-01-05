@@ -32,6 +32,7 @@
       use rank
       use index
       use radn
+      use const, only: RTYPE
 ! -------------------------------------------------------------------
 ! --- for rrtmg input :
 !
@@ -39,8 +40,10 @@
       integer ntrac,nfxr,nx,nxj,lev,ipt,ncld,kdt,nmmiph,nclds
 ! --- 3d parameters
 !
-      real    sigma(lev+1,2),pst(nx),plt(nx,lev),std(nx),tg(nx),  &
-              tt(nx,lev),qt(nx,lev*ncld),o3l(nx,lev),sd(nx,lev)
+      real    plt(nx,lev),std(nx),tg(nx),                         &
+              tt(nx,lev),sd(nx,lev)
+      real(kind=RTYPE)    qt(nx,lev*ncld),o3l(nx,lev),pst(nx),    &
+                          sigma(lev+1,2)
 !
 ! --- 2d parameters
 !
@@ -83,7 +86,7 @@
       real    deltaq(nx,lev),cnvw(nx,lev),cnvc(nx,lev)
 ! --- for MP WSM6 & Thompson & GFDL
       real    ftp(nx,lev),ftp1(nx,lev),fqp(nx,lev),fqp1(nx,lev)
-      real    phy3d(nx,lev,5)
+      real    phy3d(nxj,lev,5)
 
 ! -------------------------------------------------------------------
 ! --- for rrtmg output:
@@ -107,7 +110,7 @@
 
 ! for GFDL MP
       real    cldcov(nx,lev)   ! input/output layer cloud fraction
-      real    dummy3(nx,lev)
+      real    dummy3(nxj,lev)
       
 
 !

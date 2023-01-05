@@ -42,7 +42,7 @@ else ()
 endif ()
 
 set( FFTW_LIBRARIES )
-foreach( _lib IN ITEMS fftw3 fftw3_threads )
+foreach( _lib IN ITEMS fftw3f fftw3f_threads fftw3 fftw3_threads )
   #find FFTW library
   find_library(FFTW_LIBRARY_${_lib} NAMES ${_lib} PATHS
     ${FFTW_ROOT}/lib
