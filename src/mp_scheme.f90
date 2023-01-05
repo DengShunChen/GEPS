@@ -136,7 +136,7 @@
       logical   lradar
 ! New Thompson MP
       real,dimension(:,:),allocatable :: nc,nwfa,nifa,pfils,pflls,      &
-              vt_dbz_wt,ni,nr
+              vt_dbz_wt,ni,nr,delz
       real,dimension(:),allocatable :: nwfa2d,nifa2d,rainnc,snownc,     &
               icenc,graupelnc,icencv
       real,dimension(:,:),allocatable :: rand_pert
@@ -194,7 +194,8 @@
       if ( nmmiph .eq. 9 ) then
         allocate                                                        &
          ( ni(nx,lev),nr(nx,lev),nc(nx,lev),nwfa(nx,lev),nifa(nx,lev),  &
-           w(nx,lev),pfils(nx,lev),pflls(nx,lev),vt_dbz_wt(nx,lev) )
+           w(nx,lev),pfils(nx,lev),pflls(nx,lev),vt_dbz_wt(nx,lev),     &
+           delz(nx,lev) )
         allocate                                                        &
          ( nwfa2d(nx),nifa2d(nx),rainnc(nx),snownc(nx),icenc(nx),       &
            graupelnc(nx),icencv(nx) )
@@ -354,6 +355,7 @@
              nwfa2d=0.        !at surface
              nifa2d=0.        !at surface
              w=0.
+             delz=0.
              pfils=0.
              pflls=0.
              vt_dbz_wt=0.
@@ -368,15 +370,11 @@
              do k = 1, lev
                kc = lev - k + 1
                do i = 1, nxj
-                 w(i,kc)   = -vvel(i,k)*(1.+con_fvirt*qt(i,k))*tt(i,k)  &
-                            /prsl(i,k)*con_rd/con_g      !vertical velocity (m/s)
-               enddo
-             enddo
-             do k=1,lev
-               kc=lev-k+1
-               do i=1,nxj
+                 w(i,k) = -vvel(i,kc)*(1.+con_fvirt*qt(i,kc))*tt(i,kc)  &
+                          /prsl(i,k)*con_rd/con_g      !vertical velocity (m/s)
                  ni(i,k) = qt(i,(ntinc-1)*lev+kc)
                  nr(i,k) = qt(i,(ntrnc-1)*lev+kc)
+                 delz(i,k) = (phii(i,k+1)-phii(i,k))/con_g  !layer depth (m)
                enddo
              enddo
 
@@ -384,7 +382,7 @@
                    ( qtc,qtr,qtrw,qti,qtsw,qtgl,ni,nr,                  &
                      nc,nwfa,nifa,nwfa2d,nifa2d,                        &!optional
                      ttc,&!th,pii,                                      &!optional ??
-                     prsl,w,del,dta,dt_inner,                           &
+                     prsl,w,delz,dta,dt_inner,                          &
                      sedi_semi,decfl,islimsk,                           &
                      rainnc,rainncv,                                    &
                      snownc,snowncv,icenc,icencv,graupelnc,graupelncv,  &!optional
@@ -421,32 +419,20 @@
              do k=1,lev
                kc=lev-k+1
                do i=1,nxj
-                 qt(i,(ntinc-1)*lev+k) = ni(i,kc)
-                 qt(i,(ntrnc-1)*lev+k) = nr(i,kc)
+                 if ( ni(i,k) .lt. 1.E-10 ) ni(i,k) = 1.E-10
+                 if ( nr(i,k) .lt. 1.E-10 ) nr(i,k) = 1.E-10
+                 qt(i,(ntinc-1)*lev+kc) = ni(i,k)
+                 qt(i,(ntrnc-1)*lev+kc) = nr(i,k)
+                 re_cloud(i,k) = re_cloud(i,k)*1.E+6   ! m to micron
+                 re_ice  (i,k) = re_ice  (i,k)*1.E+6   ! m to micron
+                 re_snow (i,k) = re_snow (i,k)*1.E+6   ! m to micron
                enddo
              enddo
-             if(myrank.eq.0) then
-               print *, 'qvmax=',maxval(maxval(qtc,2))*1.E+6
-               print *, 'qcmax=',maxval(maxval(qtr,2))*1.E+6
-               print *, 'qimax=',maxval(maxval(qti,2))*1.E+6
-               print *, 'qrmax=',maxval(maxval(qtrw,2))*1.E+6
-               print *, 'qsmax=',maxval(maxval(qtsw,2))*1.E+6
-               print *, 'qgmax=',maxval(maxval(qtgl,2))*1.E+6
-               print *, 'incmax=',maxval(maxval(ni,2))/1.E+6
-               print *, 'rncmax=',maxval(maxval(nr,2))/1.E+6
-               print *, 'lncmax=',maxval(maxval(nc,2))/1.E+6
-               print *, 'nwfa_max=',maxval(maxval(nwfa,2))/1.E+6
-               print *, 'nifa_max=',maxval(maxval(nifa,2))/1.E+6
-               print *, 'rainnc_max=',maxval(rainnc)
-               print *, 'icenc_max=',maxval(icenc)
-               print *, 'snownc_max=',maxval(snownc)
-               print *, 'graupelnc_max=',maxval(graupelnc)
-               print *, 'rainncv_max=',maxval(rainncv)
-               print *, 'icencv_max=',maxval(icencv)
-               print *, 'snowncv_max=',maxval(snowncv)
-               print *, 'graupelncv_max=',maxval(graupelncv)
-               print *, '---'
-             endif
+             do i=1,nxj
+               rainncv   (i) = rainncv   (i)/1000.  !m to mm
+               snowncv   (i) = snowncv   (i)/1000.  !m to mm
+               graupelncv(i) = graupelncv(i)/1000.  !m to mm
+             enddo
            endif  !end of if nmmiph=9
 !
         do i=1,nxj
@@ -467,6 +453,10 @@
           enddo
         enddo
 
+        if ( nmmiph .eq. 9 ) deallocate                                 &
+          ( ni,nr,nc,nwfa,nifa,w,pfils,pflls,vt_dbz_wt,nwfa2d,nifa2d,   &
+            rainnc,snownc,icenc,graupelnc,icencv,rand_pert,spp_prt_list,&
+            spp_stddev_cutoff,spp_var_list,delz )
       endif
 
 !     GFDLMP
