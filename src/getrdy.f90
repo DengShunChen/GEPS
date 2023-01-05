@@ -301,6 +301,7 @@
         fqp=0.
         ftp1=0.
         fqp1=0.
+        itaui=0
 !
 ! new start gfcst: read climate data, initialize parameters
 !
@@ -1259,7 +1260,7 @@
 #else
         call wrte_idate(idtgrsm)
 #endif
-        call rsmout_sigp( 0,nx,my,my_max,lev,ncld        &
+        call rsmout_sigp( itaui,nx,my,my_max,lev,ncld        &
                      , idtg,ptop,rad,grav,cosl           &
                      , pt,sgeo,snr,gwr,tg,pk             &
                      , ut,vt,tt,qt,km_soil,smc,stc       &
