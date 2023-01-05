@@ -326,59 +326,59 @@
              enddo
            endif
 
-           ! New Thompson
-           if ( nmmiph .eq. 9 ) then
-             sedi_semi=.false.        !use Semi-Lagrangian sedimentation for rain and graupel
-             ext_diag=.false.         !extended diagnostics, array pointers only associated if ext_diag is .true.
-             first_time_step=.false.  ! ???
-             reset_dBZ=.false.        !if true, set melti=.true.
-             aero_ind_fdb=.false.     ! ???
-             diagflag=.false.         !if diagflag=true and do_radar_ref=1, call calc_refl10cm
-             do_radar_ref=0
-             rand_perturb_on=0        !if!=0, use SPP
-             if ( effr_in ) then
-               has_reqc=1             !calculate effective radii of cloud water
-               has_reqi=1             !calculate effective radii of cloud ice
-               has_reqs=1             !calculate effective radii of snow
-             endif
+        ! New Thompson
+        if ( nmmiph .eq. 9 ) then
+          sedi_semi=.false.        !use Semi-Lagrangian sedimentation for rain and graupel
+          ext_diag=.false.         !extended diagnostics, array pointers only associated if ext_diag is .true.
+          first_time_step=.false.  ! ???
+          reset_dBZ=.false.        !if true, set melti=.true.
+          aero_ind_fdb=.false.     ! ???
+          diagflag=.false.         !if diagflag=true and do_radar_ref=1, call calc_refl10cm
+          do_radar_ref=0
+          rand_perturb_on=0        !if!=0, use SPP
+          if ( effr_in ) then
+            has_reqc=1             !calculate effective radii of cloud water
+            has_reqi=1             !calculate effective radii of cloud ice
+            has_reqs=1             !calculate effective radii of snow
+          endif
 
-             dt_inner=150.    !inner time step  (not sure)
-             decfl=1          !if .not. sedi_semi
-             kme_stoch=1
-             istep=1          !current step
-             nsteps=1         !maximum number of steps
-             ni=0.            !number concentracion of ice
-             nr=0.            !number concentracion of rain
-             nc=0.            !number concentracion of cloud droplet
-             nwfa=0.          !number concentration of water friendly aerosol
-             nifa=0.          !number concentration of ice friendly aerosol
-             nwfa2d=0.        !at surface
-             nifa2d=0.        !at surface
-             w=0.
-             delz=0.
-             pfils=0.
-             pflls=0.
-             vt_dbz_wt=0.
-             rainnc=0.        !number concentracion of precipitating rain
-             snownc=0.        !number concentracion of precipitating snow
-             icenc=0.         !number concentracion of precipitating ice
-             graupelnc=0.     !number concentracion of precipitating graupel
-             icencv=0.        !amount of precipitating ice
-             rand_pert=0.
-             spp_stddev_cutoff=0.
+          dt_inner=150.    !inner time step  (not sure)
+          decfl=1          !if .not. sedi_semi
+          kme_stoch=1
+          istep=1          !current step
+          nsteps=1         !maximum number of steps
+          ni=0.            !number concentracion of ice
+          nr=0.            !number concentracion of rain
+          nc=0.            !number concentracion of cloud droplet
+          nwfa=0.          !number concentration of water friendly aerosol
+          nifa=0.          !number concentration of ice friendly aerosol
+          nwfa2d=0.        !at surface
+          nifa2d=0.        !at surface
+          w=0.
+          delz=0.
+          pfils=0.
+          pflls=0.
+          vt_dbz_wt=0.
+          rainnc=0.        !number concentracion of precipitating rain
+          snownc=0.        !number concentracion of precipitating snow
+          icenc=0.         !number concentracion of precipitating ice
+          graupelnc=0.     !number concentracion of precipitating graupel
+          icencv=0.        !amount of precipitating ice
+          rand_pert=0.
+          spp_stddev_cutoff=0.
 
-             do k = 1, lev
-               kc = lev - k + 1
-               do i = 1, nxj
-                 w(i,k) = -vvel(i,kc)*(1.+con_fvirt*qt(i,kc))*tt(i,kc)  &
+          do k = 1, lev
+            kc = lev - k + 1
+            do i = 1, nxj
+              w(i,k)    = -vvel(i,kc)*(1.+con_fvirt*qt(i,kc))*tt(i,kc)  &
                           /prsl(i,k)*con_rd/con_g      !vertical velocity (m/s)
-                 ni(i,k) = qt(i,(ntinc-1)*lev+kc)
-                 nr(i,k) = qt(i,(ntrnc-1)*lev+kc)
-                 delz(i,k) = (phii(i,k+1)-phii(i,k))/con_g  !layer depth (m)
-               enddo
-             enddo
+              ni(i,k)   = qt(i,(ntinc-1)*lev+kc)
+              nr(i,k)   = qt(i,(ntrnc-1)*lev+kc)
+              delz(i,k) = (phii(i,k+1)-phii(i,k))/con_g  !layer depth (m)
+            enddo
+          enddo
 
-             call new_thompson_driver                                   &
+          call new_thompson_driver                                   &
                    ( qtc,qtr,qtrw,qti,qtsw,qtgl,ni,nr,                  &
                      nc,nwfa,nifa,nwfa2d,nifa2d,                        &!optional
                      ttc,&!th,pii,                                      &!optional ??
@@ -416,24 +416,29 @@
                      nrten3, ncten3, qcten3,                            &
 #endif
                      pfils, pflls )
-             do k=1,lev
-               kc=lev-k+1
-               do i=1,nxj
-                 if ( ni(i,k) .lt. 1.E-10 ) ni(i,k) = 1.E-10
-                 if ( nr(i,k) .lt. 1.E-10 ) nr(i,k) = 1.E-10
-                 qt(i,(ntinc-1)*lev+kc) = ni(i,k)
-                 qt(i,(ntrnc-1)*lev+kc) = nr(i,k)
-                 re_cloud(i,k) = re_cloud(i,k)*1.E+6   ! m to micron
-                 re_ice  (i,k) = re_ice  (i,k)*1.E+6   ! m to micron
-                 re_snow (i,k) = re_snow (i,k)*1.E+6   ! m to micron
-               enddo
-             enddo
-             do i=1,nxj
-               rainncv   (i) = rainncv   (i)/1000.  !m to mm
-               snowncv   (i) = snowncv   (i)/1000.  !m to mm
-               graupelncv(i) = graupelncv(i)/1000.  !m to mm
-             enddo
-           endif  !end of if nmmiph=9
+          do k=1,lev
+            kc=lev-k+1
+            do i=1,nxj
+              if ( ni(i,k) .lt. 1.E-10 ) ni(i,k) = 1.E-10
+              if ( nr(i,k) .lt. 1.E-10 ) nr(i,k) = 1.E-10
+              qt(i,(ntinc-1)*lev+kc) = ni(i,k)
+              qt(i,(ntrnc-1)*lev+kc) = nr(i,k)
+              re_cloud(i,k) = re_cloud(i,k)*1.E+6   ! m to micron
+              re_ice  (i,k) = re_ice  (i,k)*1.E+6   ! m to micron
+              re_snow (i,k) = re_snow (i,k)*1.E+6   ! m to micron
+            enddo
+          enddo
+          do i=1,nxj
+            rainncv   (i) = rainncv   (i)/1000.  !m to mm
+            snowncv   (i) = snowncv   (i)/1000.  !m to mm
+            graupelncv(i) = graupelncv(i)/1000.  !m to mm
+          enddo
+
+          deallocate                                                    &
+           ( ni,nr,nc,nwfa,nifa,w,pfils,pflls,vt_dbz_wt,nwfa2d,nifa2d,  &
+             rainnc,snownc,icenc,graupelnc,icencv,rand_pert,            &
+             spp_prt_list,spp_stddev_cutoff,spp_var_list,delz )
+        endif  !end of if nmmiph=9
 !
         do i=1,nxj
           rlsp(i) = rainncv(i) + snowncv(i) + graupelncv(i)
@@ -453,10 +458,6 @@
           enddo
         enddo
 
-        if ( nmmiph .eq. 9 ) deallocate                                 &
-          ( ni,nr,nc,nwfa,nifa,w,pfils,pflls,vt_dbz_wt,nwfa2d,nifa2d,   &
-            rainnc,snownc,icenc,graupelnc,icencv,rand_pert,spp_prt_list,&
-            spp_stddev_cutoff,spp_var_list,delz )
       endif
 
 !     GFDLMP

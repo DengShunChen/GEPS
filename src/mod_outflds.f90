@@ -1,3 +1,4 @@
+#define shumout_2M
 module mod_outflds
  implicit none
  
@@ -410,17 +411,29 @@ contains
       character*26 ihdg,ihdg2
       character*6 lrec(lpout)
       character*4 ggdef
+#ifdef shumout_2M
       character*3 cspec(8)
-!      character*3 cspec(6)
+#else
+      character*3 cspec(6)
+#endif
       logical :: lwrite
 !
+#ifdef shumout_2M
 !key=571~575 for number concentration of cloud droplet, ice, rain, snow, and graupel
 !key=572 : inc (ntinc=7)
 !key=573 : rnc (ntrnc=8)
       cspec=(/'500','551','553','552','554','555','572','573'/)
-!      cspec=(/'500','551','553','552','554','555'/)
+#else
+      cspec=(/'500','551','553','552','554','555'/)
+#endif
 !
       ntrchk=ncld
+#ifndef shumout_2M
+      if ( ncld .eq. 9 ) then
+        ntrchk = 6
+      endif
+#endif
+
       if ( ntoz .gt. 0 ) ntrchk=ncld-1
 !
       do k = 1, lev+1
