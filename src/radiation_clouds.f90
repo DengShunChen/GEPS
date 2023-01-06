@@ -2873,7 +2873,8 @@
      &       cwp, cip, crp, csp, rew, rei, res, rer
       real (kind=kind_phys), dimension(IX,NLAY) :: dz, delp
       real (kind=kind_phys), dimension(NLAY) :: cldfra1d, qv1d,         &
-     &                                 qc1d, qi1d, qs1d, dz1d, p1d, t1d
+     &                                 qc1d, qi1d, qs1d, dz1d, p1d, t1d,&
+     &                                 rh1d, qst1d
       real (kind=kind_phys), dimension(IX,NK_CLDS+1) :: ptop1
       real (kind=kind_phys) :: clwmin, tem1, tem2
       real (kind=kind_phys) :: corr, xland, snow_mass_factor
@@ -2919,18 +2920,21 @@
 
       do k = 1, NLAY-1
         do i = 1, IX
-          cwp(i,k) = max(0.0, clw(i,k,ntcw) * dz(i,k)*1.E6)
+!          cwp(i,k) = max(0.0, clw(i,k,ntcw) * dz(i,k)*1.E6)
+          cwp(i,k) = max(0.0, clw(i,k,ntcw) * gfac * delp(i,k)) !test
           crp(i,k) = 0.0
           snow_mass_factor = 0.90
           cip(i,k) = max(0.0, (clw(i,k,ntiw)                            &
-     &             + (1.0-snow_mass_factor)*clw(i,k,ntsw))*dz(i,k)*1.E6)
+!     &             + (1.0-snow_mass_factor)*clw(i,k,ntsw))*dz(i,k)*1.E6)
+     &            +(1.0-snow_mass_factor)*clw(i,k,ntsw))*gfac*delp(i,k)) !test
           if (re_snow(i,k) .gt. snow_max_radius)then
              snow_mass_factor = min(snow_mass_factor,                   &
      &                              (snow_max_radius/re_snow(i,k))      &
      &                             *(snow_max_radius/re_snow(i,k)))
              res(i,k) = snow_max_radius
           endif
-          csp(i,k) = max(0.,snow_mass_factor*clw(i,k,ntsw)*dz(i,k)*1.E6)
+!          csp(i,k) = max(0.,snow_mass_factor*clw(i,k,ntsw)*dz(i,k)*1.E6)
+          csp(i,k) = max(0.,snow_mass_factor*clw(i,k,ntsw)*gfac*delp(i,k))
         enddo
       enddo
 !> - Sum the liquid water and ice paths that come from explicit micro
@@ -2964,6 +2968,8 @@
                qi1d(k) = max(0.0, clw(i,k,ntiw))
                qs1d(k) = max(0.0, clw(i,k,ntsw))
                dz1d(k) = dz(i,k)*1.E3
+               rh1d(k) = rhly(i,k) !test
+               qst1d(k)= qstl(i,k) !test
                p1d(k) = plyr(i,k)*100.0
                t1d(k) = tlyr(i,k)
             enddo
@@ -2975,17 +2981,22 @@
                qi1d(k2) = max(0.0, clw(i,k,ntiw))
                qs1d(k2) = max(0.0, clw(i,k,ntsw))
                dz1d(k2) = dz(i,k)*1.E3
+               rh1d(k2) = rhly(i,k) !test
+               qst1d(k2)= qstl(i,k) !test
                p1d(k2) = plyr(i,k)*100.0
                t1d(k2) = tlyr(i,k)
             enddo
          endif
-         call cal_cldfra3(cldfra1d, qv1d, qc1d, qi1d, qs1d, dz1d,       &
-     &                    p1d, t1d, xland, gridkm(i),                   &
-     &                    .false., max_relh, 1, nlay, .false.)
+         call cloud_fraction1d_XuRandall                                &
+               ( NLAY,p1d,qc1d+qi1d+qs1d,rh1d,qst1d,cldfra1d )
+!         call cal_cldfra3(cldfra1d, qv1d, qc1d, qi1d, qs1d, dz1d,       &
+!     &                    p1d, t1d, xland, gridkm(i),                   &
+!     &                    .false., max_relh, 1, nlay, .false.)
          do k = 1, NLAY
             cldtot(i,k) = cldfra1d(k)
             if (qc1d(k).gt.clwmin .and. cldfra1d(k).lt.ovcst) then
-               cwp(i,k) = qc1d(k) * dz1d(k)*1000.
+!               cwp(i,k) = qc1d(k) * dz1d(k)*1000.
+               cwp(i,k) = qc1d(k) * gfac * delp(i,k)
                if ((xland-1.5).GT.0.) then                               !--- Ocean
                   rew(i,k) = 9.5
                else                                                      !--- Land
@@ -2993,7 +3004,8 @@
                endif
             endif
             if (qi1d(k).gt.clwmin .and. cldfra1d(k).lt.ovcst) then
-               cip(i,k) = qi1d(k) * dz1d(k)*1000.
+!               cip(i,k) = qi1d(k) * dz1d(k)*1000.
+               cip(i,k) = qi1d(k) * gfac * delp(i,k)
                idx_rei = int(t1d(k)-179.)
                idx_rei = min(max(idx_rei,1),75)
                corr = t1d(k) - int(t1d(k))
@@ -4844,6 +4856,49 @@
         enddo
 
       end subroutine cloud_fraction_XuRandall
+
+      subroutine cloud_fraction1d_XuRandall                             &
+!  ---  inputs:
+     &     ( NLAY, plyr, clwf, rhly, qstl,                              &
+!  ---  outputs:
+     &       cldtot ) 
+
+!  ---  inputs:
+      integer, intent(in) :: NLAY
+      real (kind=kind_phys), dimension(:), intent(in)   :: plyr, clwf,  &
+     &                                                     rhly, qstl
+
+!  ---  outputs
+      real (kind=kind_phys), dimension(:), intent(inout) :: cldtot
+
+!  ---  local variables:
+
+       real (kind=kind_phys) :: clwmin, clwm, clwt, onemrh, value,      &
+     &       tem1, tem2
+       integer :: k
+
+!> - Compute layer cloud fraction.
+
+        clwmin = 0.0
+        do k = 1, NLAY
+          clwt = 1.0e-6 * (plyr(k)*0.001)
+
+          if (clwf(k) > clwt) then
+
+            onemrh= max( 1.e-10, 1.0-rhly(k) )
+            clwm  = clwmin / max( 0.01, plyr(k)*0.001 )
+
+            tem1  = min(max(sqrt(sqrt(onemrh*qstl(k))),0.0001),1.0)
+            tem1  = 2000.0 / tem1
+
+            value = max( min( tem1*(clwf(k)-clwm), 50.0 ), 0.0 )
+            tem2  = sqrt( sqrt(rhly(k)) )
+
+            cldtot(k) = max( tem2*(1.0-exp(-value)), 0.0 )
+          endif
+        enddo
+
+      end subroutine cloud_fraction1d_XuRandall
 !+---+-----------------------------------------------------------------+
 
 
