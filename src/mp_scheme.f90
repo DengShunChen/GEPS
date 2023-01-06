@@ -136,8 +136,8 @@
       logical   lradar
 ! New Thompson MP
       real,dimension(:,:),allocatable :: nc,nwfa,nifa,pfils,pflls,      &
-              vt_dbz_wt,ni,nr,delz
-      real,dimension(:),allocatable :: nwfa2d,nifa2d,rainnc,snownc,     &
+              vt_dbz_wt,ni,nr,dz2d
+      real,dimension(:),allocatable :: nwfasfc,nifasfc,rainnc,snownc,   &
               icenc,graupelnc,icencv
       real,dimension(:,:),allocatable :: rand_pert
       real,dimension(:),allocatable :: spp_prt_list,spp_stddev_cutoff
@@ -158,7 +158,7 @@
 #if defined (GFDLMP_v2)
       real, dimension(:,:), allocatable ::                              &
                 qv,ql,qr,qi,qs,qg,cldcov,qnl,qni,w,delp,dz,q_con,cappa, &
-                te,pt,uin,vin,prefluxr,prefluxi, prefluxs,prefluxg
+                te,pt,uin,vin,prefluxr,prefluxi,prefluxs,prefluxg
       real, dimension(:), allocatable ::                                &
                 gsize,frland,hs,rain0,snow0,ice0,graupel0,              &
                 cond0,dep0,evap0,sub0
@@ -195,9 +195,9 @@
         allocate                                                        &
          ( ni(nx,lev),nr(nx,lev),nc(nx,lev),nwfa(nx,lev),nifa(nx,lev),  &
            w(nx,lev),pfils(nx,lev),pflls(nx,lev),vt_dbz_wt(nx,lev),     &
-           delz(nx,lev) )
+           dz2d(nx,lev) )
         allocate                                                        &
-         ( nwfa2d(nx),nifa2d(nx),rainnc(nx),snownc(nx),icenc(nx),       &
+         ( nwfasfc(nx),nifasfc(nx),rainnc(nx),snownc(nx),icenc(nx),     &
            graupelnc(nx),icencv(nx) )
         allocate ( rand_pert(nx,1) )
         allocate ( spp_prt_list(n_var_spp),spp_stddev_cutoff(n_var_spp) )
@@ -352,10 +352,10 @@
           nc=0.            !number concentracion of cloud droplet
           nwfa=0.          !number concentration of water friendly aerosol
           nifa=0.          !number concentration of ice friendly aerosol
-          nwfa2d=0.        !at surface
-          nifa2d=0.        !at surface
+          nwfasfc=0.       !nwfa at surface
+          nifasfc=0.       !nifa at surface
           w=0.
-          delz=0.
+          dz2d=0.
           pfils=0.
           pflls=0.
           vt_dbz_wt=0.
@@ -370,19 +370,20 @@
           do k = 1, lev
             kc = lev - k + 1
             do i = 1, nxj
-              w(i,k)    = -vvel(i,kc)*(1.+con_fvirt*qt(i,kc))*tt(i,kc)  &
-                          /prsl(i,k)*con_rd/con_g      !vertical velocity (m/s)
+              w(i,k)    = -vvel(i,kc) * 100. *                          &
+                          (1.+con_fvirt*qt(i,kc))*tt(i,kc)/             &
+                          prsl(i,k)*con_rd/con_g         !vertical velocity (m/s)
               ni(i,k)   = qt(i,(ntinc-1)*lev+kc)
               nr(i,k)   = qt(i,(ntrnc-1)*lev+kc)
-              delz(i,k) = (phii(i,k+1)-phii(i,k))/con_g  !layer depth (m)
+              dz2d(i,k) = (phii(i,k+1)-phii(i,k))/con_g  !layer depth (m)
             enddo
           enddo
 
-          call new_thompson_driver                                   &
+          call new_thompson_driver                                      &
                    ( qtc,qtr,qtrw,qti,qtsw,qtgl,ni,nr,                  &
-                     nc,nwfa,nifa,nwfa2d,nifa2d,                        &!optional
+                     nc,nwfa,nifa,nwfasfc,nifasfc,                      &!optional
                      ttc,&!th,pii,                                      &!optional ??
-                     prsl,w,delz,dta,dt_inner,                          &
+                     prsl,w,dz2d,dta,dt_inner,                          &
                      sedi_semi,decfl,islimsk,                           &
                      rainnc,rainncv,                                    &
                      snownc,snowncv,icenc,icencv,graupelnc,graupelncv,  &!optional
@@ -423,6 +424,7 @@
               if ( nr(i,k) .lt. 1.E-10 ) nr(i,k) = 1.E-10
               qt(i,(ntinc-1)*lev+kc) = ni(i,k)
               qt(i,(ntrnc-1)*lev+kc) = nr(i,k)
+
               re_cloud(i,k) = re_cloud(i,k)*1.E+6   ! m to micron
               re_ice  (i,k) = re_ice  (i,k)*1.E+6   ! m to micron
               re_snow (i,k) = re_snow (i,k)*1.E+6   ! m to micron
@@ -435,9 +437,9 @@
           enddo
 
           deallocate                                                    &
-           ( ni,nr,nc,nwfa,nifa,w,pfils,pflls,vt_dbz_wt,nwfa2d,nifa2d,  &
+           ( ni,nr,nc,nwfa,nifa,w,pfils,pflls,vt_dbz_wt,nwfasfc,nifasfc,&
              rainnc,snownc,icenc,graupelnc,icencv,rand_pert,            &
-             spp_prt_list,spp_stddev_cutoff,spp_var_list,delz )
+             spp_prt_list,spp_stddev_cutoff,spp_var_list,dz2d )
         endif  !end of if nmmiph=9
 !
         do i=1,nxj
