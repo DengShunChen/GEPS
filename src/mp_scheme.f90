@@ -39,7 +39,7 @@
 ! Thompson
         if ( nmmiph .eq. 8 ) then
           call thompson_init()
-          if ( myrank .eq. 0 )                                          &
+          if ( myrank .eq. 0 )                                         &
              print *,'Thompson cloud microphysics initialized'
         endif
 ! New Thompson
@@ -134,9 +134,12 @@
       real      rainncv(nx),snowncv(nx),graupelncv(nx)
       real      icem
       logical   lradar
+      real,dimension(:,:),allocatable ::                                &
+              t2d,qv2d,qc2d,qr2d,qi2d,qs2d,qg2d,qnc2d,qni2d,qnr2d,      &
+              dp2d,dz2d
 ! New Thompson MP
-      real,dimension(:,:),allocatable :: nc,nwfa,nifa,pfils,pflls,      &
-              vt_dbz_wt,ni,nr,dz2d
+      real,dimension(:,:),allocatable ::                                &
+              nwfa,nifa,pfils,pflls,vt_dbz_wt,w2d
       real,dimension(:),allocatable :: nwfasfc,nifasfc,rainnc,snownc,   &
               icenc,graupelnc,icencv
       real,dimension(:,:),allocatable :: rand_pert
@@ -173,7 +176,6 @@
                 ql2,qr2,qi2,qs2,qg2,rho,                                &
                 re_graupel,rew,rei,rer,res,reg
 #endif
-
 !
 ! reset all value to zero
       prsl  = 0.
@@ -190,19 +192,6 @@
       rainncv=0.
       snowncv=0.
       graupelncv=0.
-
-      if ( nmmiph .eq. 9 ) then
-        allocate                                                        &
-         ( ni(nx,lev),nr(nx,lev),nc(nx,lev),nwfa(nx,lev),nifa(nx,lev),  &
-           w(nx,lev),pfils(nx,lev),pflls(nx,lev),vt_dbz_wt(nx,lev),     &
-           dz2d(nx,lev) )
-        allocate                                                        &
-         ( nwfasfc(nx),nifasfc(nx),rainnc(nx),snownc(nx),icenc(nx),     &
-           graupelnc(nx),icencv(nx) )
-        allocate ( rand_pert(nx,1) )
-        allocate ( spp_prt_list(n_var_spp),spp_stddev_cutoff(n_var_spp) )
-        allocate ( spp_var_list(n_var_spp) )
-      endif
 
       if ( nmmiph .eq. 11 ) then
 #if defined (GFDLMP_v2)
@@ -279,7 +268,7 @@
       lradar= .false.
       icem  =  4./3.*tpi*3.2768*1.e-14*890.
 !
-      if ( nmmiph.eq.6 .or. nmmiph.eq.8 .or. nmmiph.eq.9 ) then
+      if ( nmmiph.eq.6 .or. nmmiph.eq.8 ) then
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
@@ -325,65 +314,112 @@
                enddo
              enddo
            endif
+!
+        do i=1,nxj
+          rlsp(i) = rainncv(i) + snowncv(i) + graupelncv(i)
+        enddo
+!
+        do k=1,lev
+          kc=lev-k+1
+          do i=1,nxj
+            qt(i,             k) = qtc(i,kc)
+            qt(i,(ntcw-1)*lev+k) = qtr(i,kc)
+            qt(i,(ntrw-1)*lev+k) = qtrw(i,kc)
+            qt(i,(ntiw-1)*lev+k) = qti(i,kc)
+            qt(i,(ntsw-1)*lev+k) = qtsw(i,kc)
+            qt(i,(ntgl-1)*lev+k) = qtgl(i,kc)
+            tt(i,             k) = ttc(i,kc)
 
-        ! New Thompson
-        if ( nmmiph .eq. 9 ) then
-          sedi_semi=.false.        !use Semi-Lagrangian sedimentation for rain and graupel
-          ext_diag=.false.         !extended diagnostics, array pointers only associated if ext_diag is .true.
-          first_time_step=.false.  ! ???
-          reset_dBZ=.false.        !if true, set melti=.true.
-          aero_ind_fdb=.false.     ! ???
-          diagflag=.false.         !if diagflag=true and do_radar_ref=1, call calc_refl10cm
-          do_radar_ref=0
-          rand_perturb_on=0        !if!=0, use SPP
-          if ( effr_in ) then
-            has_reqc=1             !calculate effective radii of cloud water
-            has_reqi=1             !calculate effective radii of cloud ice
-            has_reqs=1             !calculate effective radii of snow
-          endif
-
-          dt_inner=150.    !inner time step  (not sure)
-          decfl=1          !if .not. sedi_semi
-          kme_stoch=1
-          istep=1          !current step
-          nsteps=1         !maximum number of steps
-          ni=0.            !number concentracion of ice
-          nr=0.            !number concentracion of rain
-          nc=0.            !number concentracion of cloud droplet
-          nwfa=0.          !number concentration of water friendly aerosol
-          nifa=0.          !number concentration of ice friendly aerosol
-          nwfasfc=0.       !nwfa at surface
-          nifasfc=0.       !nifa at surface
-          w=0.
-          dz2d=0.
-          pfils=0.
-          pflls=0.
-          vt_dbz_wt=0.
-          rainnc=0.        !number concentracion of precipitating rain
-          snownc=0.        !number concentracion of precipitating snow
-          icenc=0.         !number concentracion of precipitating ice
-          graupelnc=0.     !number concentracion of precipitating graupel
-          icencv=0.        !amount of precipitating ice
-          rand_pert=0.
-          spp_stddev_cutoff=0.
-
-          do k = 1, lev
-            kc = lev - k + 1
-            do i = 1, nxj
-              w(i,k)    = -vvel(i,kc) * 100. *                          &
-                          (1.+con_fvirt*qt(i,kc))*tt(i,kc)/             &
-                          prsl(i,k)*con_rd/con_g         !vertical velocity (m/s)
-              ni(i,k)   = qt(i,(ntinc-1)*lev+kc)
-              nr(i,k)   = qt(i,(ntrnc-1)*lev+kc)
-              dz2d(i,k) = (phii(i,k+1)-phii(i,k))/con_g  !layer depth (m)
-            enddo
           enddo
+        enddo
 
-          call new_thompson_driver                                      &
-                   ( qtc,qtr,qtrw,qti,qtsw,qtgl,ni,nr,                  &
-                     nc,nwfa,nifa,nwfasfc,nifasfc,                      &!optional
-                     ttc,&!th,pii,                                      &!optional ??
-                     prsl,w,dz2d,dta,dt_inner,                          &
+      endif
+
+!     New Thompson
+      if ( nmmiph .eq. 9 ) then
+        allocate                                                        &
+         ( t2d(nx,lev),qv2d(nx,lev),qc2d(nx,lev),qr2d(nx,lev),          &
+           qi2d(nx,lev),qs2d(nx,lev),qg2d(nx,lev),qni2d(nx,lev),        &
+           qnr2d(nx,lev),qnc2d(nx,lev),                                 &
+           nwfa(nx,lev),nifa(nx,lev),dz2d(nx,lev),                      &
+           w2d(nx,lev),pfils(nx,lev),pflls(nx,lev),vt_dbz_wt(nx,lev),   &
+           nwfasfc(nx),nifasfc(nx),rainnc(nx),snownc(nx),icenc(nx),     &
+           graupelnc(nx),icencv(nx),                                    &
+           rand_pert(nx,1),spp_prt_list(n_var_spp),                     &
+           spp_stddev_cutoff(n_var_spp),spp_var_list(n_var_spp) )
+
+        sedi_semi=.false.        !use Semi-Lagrangian sedimentation for rain and graupel
+        ext_diag=.false.         !extended diagnostics, array pointers only associated if ext_diag is .true.
+        first_time_step=.false.  !(not sure)
+        reset_dBZ=.false.        !if true, set melti=.true.
+        aero_ind_fdb=.false.     !(not sure)
+        diagflag=.false.         !if diagflag=true and do_radar_ref=1, call calc_refl10cm
+        do_radar_ref=0
+        rand_perturb_on=0        !if!=0, use SPP
+        if ( effr_in ) then
+          has_reqc=1             !calculate effective radii of cloud water
+          has_reqi=1             !calculate effective radii of cloud ice
+          has_reqs=1             !calculate effective radii of snow
+        endif
+
+        dt_inner=dta     !inner time step
+        decfl=1          !if .not. sedi_semi
+        kme_stoch=1
+        istep=1          !current step
+        nsteps=1         !maximum number of steps
+
+        t2d=0.
+        qv2d=0.
+        qc2d=0.
+        qr2d=0.
+        qi2d=0.
+        qs2d=0.
+        qg2d=0.
+        qni2d=0.         !number concentracion of ice
+        qnr2d=0.         !number concentracion of rain
+        qnc2d=0.         !number concentracion of cloud droplet
+        nwfa=0.          !number concentration of water friendly aerosol
+        nifa=0.          !number concentration of ice friendly aerosol
+        nwfasfc=0.       !nwfa at surface
+        nifasfc=0.       !nifa at surface
+        w2d=0.
+        dz2d=0.
+        pfils=0.
+        pflls=0.
+        vt_dbz_wt=0.
+        rainnc=0.        !number concentracion of precipitating rain
+        snownc=0.        !number concentracion of precipitating snow
+        icenc=0.         !number concentracion of precipitating ice
+        graupelnc=0.     !number concentracion of precipitating graupel
+        icencv=0.        !amount of precipitating ice
+        rand_pert=0.
+        spp_stddev_cutoff=0.
+
+        do k = 1, lev
+          kc = lev - k + 1
+          do i = 1, nxj
+            qv2d (i,k) = qt(i,              kc)
+            qc2d (i,k) = qt(i,(ntcw-1) *lev+kc)
+            qr2d (i,k) = qt(i,(ntrw-1) *lev+kc)
+            qi2d (i,k) = qt(i,(ntiw-1) *lev+kc)
+            qs2d (i,k) = qt(i,(ntsw-1) *lev+kc)
+            qg2d (i,k) = qt(i,(ntgl-1) *lev+kc)
+            qni2d(i,k) = qt(i,(ntinc-1)*lev+kc)
+            qnr2d(i,k) = qt(i,(ntrnc-1)*lev+kc)
+            prsl (i,k) = plt(i,kc)*100.                 !layer pressure (Pa)
+            t2d  (i,k) = tt(i,kc)
+            w2d  (i,k) = - vvel(i,kc)*100.*                             &
+                         (1.+con_fvirt*qt(i,kc))*tt(i,kc)/              &
+                         prsl(i,k)*con_rd/con_g         !vertical velocity (m/s)
+            dz2d (i,k) = (phii(i,k+1)-phii(i,k))/con_g  !layer depth (m)
+          enddo
+        enddo
+
+        call new_thompson_driver                                        &
+                   ( qv2d,qc2d,qr2d,qi2d,qs2d,qg2d,qni2d,qnr2d,         &
+                     qnc2d,nwfa,nifa,nwfasfc,nifasfc,                   &!optional
+                     t2d,&!th,pii,                                      &!optional ??
+                     prsl,w2d,dz2d,dta,dt_inner,                        &
                      sedi_semi,decfl,islimsk,                           &
                      rainnc,rainncv,                                    &
                      snownc,snowncv,icenc,icencv,graupelnc,graupelncv,  &!optional
@@ -417,50 +453,37 @@
                      nrten3, ncten3, qcten3,                            &
 #endif
                      pfils, pflls )
-          do k=1,lev
-            kc=lev-k+1
-            do i=1,nxj
-              if ( ni(i,k) .lt. 1.E-10 ) ni(i,k) = 1.E-10
-              if ( nr(i,k) .lt. 1.E-10 ) nr(i,k) = 1.E-10
-              qt(i,(ntinc-1)*lev+kc) = ni(i,k)
-              qt(i,(ntrnc-1)*lev+kc) = nr(i,k)
 
-              re_cloud(i,k) = re_cloud(i,k)*1.E+6   ! m to micron
-              re_ice  (i,k) = re_ice  (i,k)*1.E+6   ! m to micron
-              re_snow (i,k) = re_snow (i,k)*1.E+6   ! m to micron
-            enddo
-          enddo
-          do i=1,nxj
-            rainncv   (i) = rainncv   (i)/1000.  !m to mm
-            snowncv   (i) = snowncv   (i)/1000.  !m to mm
-            graupelncv(i) = graupelncv(i)/1000.  !m to mm
-          enddo
+        do k = 1, lev
+          kc = lev - k + 1
+          do i = 1, nxj
+            if ( qni2d(i,k) .lt. 1.E-10 ) qni2d(i,k) = 1.E-10
+            if ( qnr2d(i,k) .lt. 1.E-10 ) qnr2d(i,k) = 1.E-10
+            qt(i,              k) = qv2d (i,kc)
+            qt(i,(ntcw-1) *lev+k) = qc2d (i,kc)
+            qt(i,(ntrw-1) *lev+k) = qr2d (i,kc)
+            qt(i,(ntiw-1) *lev+k) = qi2d (i,kc)
+            qt(i,(ntsw-1) *lev+k) = qs2d (i,kc)
+            qt(i,(ntgl-1) *lev+k) = qg2d (i,kc)
+            qt(i,(ntinc-1)*lev+k) = qni2d(i,kc)
+            qt(i,(ntrnc-1)*lev+k) = qnr2d(i,kc)
+            tt(i,              k) = t2d  (i,kc)
 
-          deallocate                                                    &
-           ( ni,nr,nc,nwfa,nifa,w,pfils,pflls,vt_dbz_wt,nwfasfc,nifasfc,&
-             rainnc,snownc,icenc,graupelnc,icencv,rand_pert,            &
-             spp_prt_list,spp_stddev_cutoff,spp_var_list,dz2d )
-        endif  !end of if nmmiph=9
-!
-        do i=1,nxj
-          rlsp(i) = rainncv(i) + snowncv(i) + graupelncv(i)
-        enddo
-!
-        do k=1,lev
-          kc=lev-k+1
-          do i=1,nxj
-            qt(i,             k) = qtc(i,kc)
-            qt(i,(ntcw-1)*lev+k) = qtr(i,kc)
-            qt(i,(ntrw-1)*lev+k) = qtrw(i,kc)
-            qt(i,(ntiw-1)*lev+k) = qti(i,kc)
-            qt(i,(ntsw-1)*lev+k) = qtsw(i,kc)
-            qt(i,(ntgl-1)*lev+k) = qtgl(i,kc)
-            tt(i,             k) = ttc(i,kc)
-
+            re_cloud(i,k) = re_cloud(i,k)*1.E+6   ! m to micron
+            re_ice  (i,k) = re_ice  (i,k)*1.E+6   ! m to micron
+            re_snow (i,k) = re_snow (i,k)*1.E+6   ! m to micron
           enddo
         enddo
+        do i = 1, nxj
+          rlsp(i) = icencv(i)+rainncv(i)+snowncv(i)+graupelncv(i)  !total large scale precipitation (mm)
+        enddo
 
-      endif
+        deallocate                                                      &
+         ( t2d,qv2d,qc2d,qr2d,qi2d,qs2d,qg2d,qni2d,qnr2d,qnc2d,         &
+           nwfa,nifa,dz2d,w2d,pfils,pflls,vt_dbz_wt,nwfasfc,nifasfc,    &
+           rainnc,snownc,icenc,graupelnc,icencv,rand_pert,              &
+           spp_prt_list,spp_stddev_cutoff,spp_var_list )
+      endif  !end of if nmmiph=9
 
 !     GFDLMP
       if ( nmmiph .eq. 11 ) then
