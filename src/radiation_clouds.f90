@@ -2759,13 +2759,12 @@
 !  --- inputs
            ( plyr,plvl,tlyr,qlyr,qstl,rhly,clw,                         &
              xlat,xlon,slmsk,                                           &
-!             dz,delp,                                                   &
              ntrac,ntcw,ntiw,ntrw,ntsw,ntgl,                            &
              IX, NLAY, NLP1,                                            &
              uni_cld, lmfshal, lmfdeep2, cldcov,                        &
              re_cloud,re_ice,re_snow,                                   &
 !             lwp_ex, iwp_ex, lwp_fc, iwp_fc, dzlay,                    &
-             gridkm,                                                    &
+!             gridkm,                                                    &
 !             cldtot, cldcnv,                                            &
 !   --- outputs:
 !            cld_frac, cld_lwp, cld_reliq, cld_iwp,                     &
@@ -2846,6 +2845,9 @@
 !                                                                       !
 !  ====================    end of description    =====================  !
 !
+      use module_mp_thompson_new, only : cfflag_thom
+      use rank
+
       implicit none
 !  ---  inputs
       integer,  intent(in) :: IX, NLAY, NLP1
@@ -2860,7 +2862,7 @@
       real (kind=kind_phys), dimension(:,:,:), intent(in) :: clw
       real (kind=kind_phys), dimension(:),   intent(in) :: xlat, xlon,  &
      &       slmsk
-      real(kind=kind_phys), dimension(:), intent(in) :: gridkm
+!      real(kind=kind_phys), dimension(:), intent(in) :: gridkm
 !  --- inputs/outputs
 !      real (kind=kind_phys), dimension(:,:), intent(inout) ::            &
 !     &   cld_frac, cld_lwp, cld_reliq, cld_iwp, cld_reice,               &
@@ -2906,34 +2908,29 @@
           do k = 1, NLAY
             do i = 1, IX
               delp(i,k) = plvl(i,k+1) - plvl(i,k)
-              dz(i,k)   = gfac * delp(i,k)
             enddo
           enddo
       else                             ! input data from sfc to toa
           do k = 1, NLAY
             do i = 1, IX
               delp(i,k) = plvl(i,k) - plvl(i,k+1)
-              dz(i,k)   = gfac * delp(i,k)
             enddo
           enddo
       endif
 
       do k = 1, NLAY-1
         do i = 1, IX
-!          cwp(i,k) = max(0.0, clw(i,k,ntcw) * dz(i,k)*1.E6)
-          cwp(i,k) = max(0.0, clw(i,k,ntcw) * gfac * delp(i,k)) !test
+          cwp(i,k) = max(0.0, clw(i,k,ntcw) * gfac * delp(i,k))
           crp(i,k) = 0.0
           snow_mass_factor = 0.90
           cip(i,k) = max(0.0, (clw(i,k,ntiw)                            &
-!     &             + (1.0-snow_mass_factor)*clw(i,k,ntsw))*dz(i,k)*1.E6)
-     &            +(1.0-snow_mass_factor)*clw(i,k,ntsw))*gfac*delp(i,k)) !test
+     &            +(1.0-snow_mass_factor)*clw(i,k,ntsw))*gfac*delp(i,k))
           if (re_snow(i,k) .gt. snow_max_radius)then
              snow_mass_factor = min(snow_mass_factor,                   &
      &                              (snow_max_radius/re_snow(i,k))      &
      &                             *(snow_max_radius/re_snow(i,k)))
              res(i,k) = snow_max_radius
           endif
-!          csp(i,k) = max(0.,snow_mass_factor*clw(i,k,ntsw)*dz(i,k)*1.E6)
           csp(i,k) = max(0.,snow_mass_factor*clw(i,k,ntsw)*gfac*delp(i,k))
         enddo
       enddo
@@ -2967,7 +2964,6 @@
                qc1d(k) = max(0.0, clw(i,k,ntcw))
                qi1d(k) = max(0.0, clw(i,k,ntiw))
                qs1d(k) = max(0.0, clw(i,k,ntsw))
-               dz1d(k) = dz(i,k)*1.E3
                rh1d(k) = rhly(i,k) !test
                qst1d(k)= qstl(i,k) !test
                p1d(k) = plyr(i,k)*100.0
@@ -2980,22 +2976,29 @@
                qc1d(k2) = max(0.0, clw(i,k,ntcw))
                qi1d(k2) = max(0.0, clw(i,k,ntiw))
                qs1d(k2) = max(0.0, clw(i,k,ntsw))
-               dz1d(k2) = dz(i,k)*1.E3
                rh1d(k2) = rhly(i,k) !test
                qst1d(k2)= qstl(i,k) !test
                p1d(k2) = plyr(i,k)*100.0
                t1d(k2) = tlyr(i,k)
             enddo
          endif
-         call cloud_fraction1d_XuRandall                                &
-               ( NLAY,p1d,qc1d+qi1d+qs1d,rh1d,qst1d,cldfra1d )
+
+         if ( cfflag_thom .eq. 1 ) then
+           call cloud_fraction1d_XuRandall                              &
+               ( NLAY, p1d, qc1d+qi1d+qs1d, rh1d, qst1d,                &
+                 lmfshal, lmfdeep2, cldfra1d )
+         elseif ( cfflag_thom .eq. 2 ) then
+           do k = 1, NLAY
+             cldfra1d(k) = cldcov(i,k)  !calculated from new Thompson MP
+           enddo
+         endif
 !         call cal_cldfra3(cldfra1d, qv1d, qc1d, qi1d, qs1d, dz1d,       &
 !     &                    p1d, t1d, xland, gridkm(i),                   &
 !     &                    .false., max_relh, 1, nlay, .false.)
+
          do k = 1, NLAY
             cldtot(i,k) = cldfra1d(k)
             if (qc1d(k).gt.clwmin .and. cldfra1d(k).lt.ovcst) then
-!               cwp(i,k) = qc1d(k) * dz1d(k)*1000.
                cwp(i,k) = qc1d(k) * gfac * delp(i,k)
                if ((xland-1.5).GT.0.) then                               !--- Ocean
                   rew(i,k) = 9.5
@@ -3004,7 +3007,6 @@
                endif
             endif
             if (qi1d(k).gt.clwmin .and. cldfra1d(k).lt.ovcst) then
-!               cip(i,k) = qi1d(k) * dz1d(k)*1000.
                cip(i,k) = qi1d(k) * gfac * delp(i,k)
                idx_rei = int(t1d(k)-179.)
                idx_rei = min(max(idx_rei,1),75)
@@ -4814,7 +4816,7 @@
 !> This subroutine computes the Xu-Randall cloud fraction scheme.
       subroutine cloud_fraction_XuRandall                               &
 !  ---  inputs:
-     &     ( IX, NLAY, plyr, clwf, rhly, qstl,                          &
+     &     ( IX, NLAY, plyr, clwf, rhly, qstl, lmfshal, lmfdeep2,       &
 !  ---  outputs:
      &       cldtot ) 
 
@@ -4822,6 +4824,7 @@
       integer, intent(in) :: IX, NLAY
       real (kind=kind_phys), dimension(:,:), intent(in) :: plyr, clwf,  &
      &                                                     rhly, qstl
+      logical, intent(in) :: lmfshal, lmfdeep2
 
 !  ---  outputs
       real (kind=kind_phys), dimension(:,:), intent(inout) :: cldtot
@@ -4830,11 +4833,13 @@
 
        real (kind=kind_phys) :: clwmin, clwm, clwt, onemrh, value,      &
      &       tem1, tem2
+       real (kind=kind_phys), parameter :: xrc3 = 100.
        integer :: i, k
 
 !> - Compute layer cloud fraction.
 
-        clwmin = 0.0
+      clwmin = 0.0
+      if (.not. lmfshal) then
         do k = 1, NLAY
         do i = 1, IX
           clwt = 1.0e-6 * (plyr(i,k)*0.001)
@@ -4854,12 +4859,36 @@
           endif
         enddo
         enddo
+      else
+        do k = 1, NLAY
+        do i = 1, IX
+          clwt = 1.0e-6 * (plyr(i,k)*0.001)
+
+          if (clwf(i,k) > clwt) then
+            onemrh= max( 1.e-10, 1.0-rhly(i,k) )
+            clwm  = clwmin / max( 0.01, plyr(i,k)*0.001 )
+!
+            tem1  = min(max((onemrh*qstl(i,k))**0.49,0.0001),1.0)  !jhan
+            if (lmfdeep2) then
+              tem1  = xrc3 / tem1
+            else
+              tem1  = 100.0 / tem1
+            endif
+!
+            value = max( min( tem1*(clwf(i,k)-clwm), 50.0 ), 0.0 )
+            tem2  = sqrt( sqrt(rhly(i,k)) )
+
+            cldtot(i,k) = max( tem2*(1.0-exp(-value)), 0.0 )
+          endif
+        enddo
+        enddo
+      endif
 
       end subroutine cloud_fraction_XuRandall
 
       subroutine cloud_fraction1d_XuRandall                             &
 !  ---  inputs:
-     &     ( NLAY, plyr, clwf, rhly, qstl,                              &
+     &     ( NLAY, plyr, clwf, rhly, qstl, lmfshal, lmfdeep2,           &
 !  ---  outputs:
      &       cldtot ) 
 
@@ -4867,6 +4896,7 @@
       integer, intent(in) :: NLAY
       real (kind=kind_phys), dimension(:), intent(in)   :: plyr, clwf,  &
      &                                                     rhly, qstl
+      logical, intent(in) :: lmfshal, lmfdeep2
 
 !  ---  outputs
       real (kind=kind_phys), dimension(:), intent(inout) :: cldtot
@@ -4875,11 +4905,13 @@
 
        real (kind=kind_phys) :: clwmin, clwm, clwt, onemrh, value,      &
      &       tem1, tem2
+       real (kind=kind_phys), parameter :: xrc3 = 100.
        integer :: k
 
 !> - Compute layer cloud fraction.
 
-        clwmin = 0.0
+      clwmin = 0.0
+      if (.not. lmfshal) then
         do k = 1, NLAY
           clwt = 1.0e-6 * (plyr(k)*0.001)
 
@@ -4897,6 +4929,28 @@
             cldtot(k) = max( tem2*(1.0-exp(-value)), 0.0 )
           endif
         enddo
+      else
+        do k = 1, NLAY
+          clwt = 1.0e-6 * (plyr(k)*0.001)
+
+          if (clwf(k) > clwt) then
+            onemrh= max( 1.e-10, 1.0-rhly(k) )
+            clwm  = clwmin / max( 0.01, plyr(k)*0.001 )
+
+            tem1  = min(max((onemrh*qstl(k))**0.49,0.0001),1.0)  !jhan
+            if (lmfdeep2) then
+              tem1  = xrc3 / tem1
+            else
+              tem1  = 100.0 / tem1
+            endif
+
+            value = max( min( tem1*(clwf(k)-clwm), 50.0 ), 0.0 )
+            tem2  = sqrt( sqrt(rhly(k)) )
+
+            cldtot(k) = max( tem2*(1.0-exp(-value)), 0.0 )
+          endif
+        enddo
+      endif
 
       end subroutine cloud_fraction1d_XuRandall
 !+---+-----------------------------------------------------------------+

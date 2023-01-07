@@ -10,7 +10,7 @@
 ! for Thompson
       use module_mp_thompson, only : thompson_init => thompson_init
 ! for New Thompson
-      use module_mp_thompson_new, &
+      use module_mp_thompson_new,                                       &
                               only : new_thompson_init => thompson_init
 ! for GFDLMP
 #if defined (GFDLMP_v2)
@@ -86,8 +86,9 @@
 ! for thompson
       use module_mp_thompson,  only: thompson_driver => mp_gt_driver
 ! for New Thompson
-      use module_mp_thompson_new,  &
-                               only: new_thompson_driver => mp_gt_driver
+      use module_mp_thompson_new,                                       &
+                               only: new_thompson_driver => mp_gt_driver&
+                                     , cal_cldfra3, cfflag_thom
 ! for GFDLMP
 #if defined (GFDLMP_v2)
       use module_mp_gfdl_v2,   only: gfdl_cld_mp_driver
@@ -118,7 +119,7 @@
                                      dsigma(lev,2)
 !  ---  inputs/outputs:
       real(kind=RTYPE), intent(inout) :: tt(nx,lev)
-      real,     intent(inout) :: qa(nx,lev)  ! only changed in GFDL MP
+      real,     intent(inout) :: qa(nx,lev)
       real(kind=RTYPE), intent(inout) :: ut(nx,lev),vt(nx,lev)
       real(kind=RTYPE), intent(inout):: qt(nx,lev*ncld)
 !  ---  outputs:
@@ -134,14 +135,16 @@
       real      rainncv(nx),snowncv(nx),graupelncv(nx)
       real      icem
       logical   lradar
+      real,dimension(:),allocatable :: &
+              land1d
       real,dimension(:,:),allocatable ::                                &
               t2d,qv2d,qc2d,qr2d,qi2d,qs2d,qg2d,qnc2d,qni2d,qnr2d,      &
-              dp2d,dz2d
+              dp2d,dz2d,cld2d
 ! New Thompson MP
       real,dimension(:,:),allocatable ::                                &
               nwfa,nifa,pfils,pflls,vt_dbz_wt,w2d
       real,dimension(:),allocatable :: nwfasfc,nifasfc,rainnc,snownc,   &
-              icenc,graupelnc,icencv
+              icenc,graupelnc,icencv,gridkm
       real,dimension(:,:),allocatable :: rand_pert
       real,dimension(:),allocatable :: spp_prt_list,spp_stddev_cutoff
       character(len=3),dimension(:),allocatable :: spp_var_list
@@ -347,6 +350,8 @@
            graupelnc(nx),icencv(nx),                                    &
            rand_pert(nx,1),spp_prt_list(n_var_spp),                     &
            spp_stddev_cutoff(n_var_spp),spp_var_list(n_var_spp) )
+        if ( cfflag_thom .eq. 2 ) allocate                              &
+         ( cld2d(nx,lev),land1d(nx),gridkm(nx) )
 
         sedi_semi=.false.        !use Semi-Lagrangian sedimentation for rain and graupel
         ext_diag=.false.         !extended diagnostics, array pointers only associated if ext_diag is .true.
@@ -454,6 +459,36 @@
 #endif
                      pfils, pflls )
 
+        if ( cfflag_thom .eq. 2 ) then
+          land1d=0.
+          gridkm=0.
+          cld2d=0.
+          do i = 1, nxj
+            if( islimsk(i) .eq. 1 ) land1d(i) = 1.      !land fraction
+            gridkm(i) = sqrt(area(i))/1000.             !grid length (km)
+          enddo
+          do k = 1, lev
+            kc = lev - k + 1
+            do i = 1, nxj
+              cld2d(i,k) = qa(i,kc)                     !cloud fraction
+              dz2d (i,k) = dz2d(i,k)/1000.              !layer thickness (km)
+            enddo
+          enddo
+
+          call cal_cldfra3                                              &
+                   ( 1, nx, 1, nxj, 1, lev, 1, lev,                     &
+                     cld2d, qv2d, qc2d, qi2d, qs2d, dz2d,               &
+                     prsl, t2d, land1d, gridkm,                         &
+                     .false., 1.5, .false. )
+
+          do k = 1, lev
+            kc = lev - k + 1
+            do i = 1, nxj
+              qa(i,k) = cld2d(i,kc)
+            enddo
+          enddo
+        endif
+
         do k = 1, lev
           kc = lev - k + 1
           do i = 1, nxj
@@ -483,6 +518,7 @@
            nwfa,nifa,dz2d,w2d,pfils,pflls,vt_dbz_wt,nwfasfc,nifasfc,    &
            rainnc,snownc,icenc,graupelnc,icencv,rand_pert,              &
            spp_prt_list,spp_stddev_cutoff,spp_var_list )
+        if ( cfflag_thom .eq. 2 ) deallocate ( cld2d,land1d,gridkm )
       endif  !end of if nmmiph=9
 
 !     GFDLMP

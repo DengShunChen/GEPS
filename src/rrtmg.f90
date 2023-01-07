@@ -12,7 +12,6 @@
              uni_cloud,lmfshal,lmfdeep2,                            &
              deltaq,sup,cnvw,cnvc,                                  &
              ftp,ftp1,fqp,fqp1,nmmiph,                              &
-             gridkm,                                                &
 !    -  outputs:
              asol,olr,ss,rs,sld,rld,tsflwr,                         &
              ctot,chig,cmid,clow,                                   &
@@ -88,7 +87,6 @@
 ! --- for MP WSM6 & Thompson & GFDL
       real    ftp(nx,lev),ftp1(nx,lev),fqp(nx,lev),fqp1(nx,lev)
       real    phy3d(nxj,lev,5)
-      real    gridkm(nxj)
 
 ! -------------------------------------------------------------------
 ! --- for rrtmg output:
@@ -193,7 +191,7 @@
        tracer(i,kc,ntoz) = tracer(i,kc,ntoz)*fac_o3
       end do
       end do
-      if ( nmmiph.eq.6 .or. nmmiph.eq.8 ) then
+      if ( nmmiph.eq.6 .or. nmmiph.eq.8 .or. nmmiph.eq.9 ) then
         nclds=3
 ! for MP WSM6 & Thompson effective radius
         do k = 1, lev
@@ -454,7 +452,6 @@
              nx,nxj,lev,me,lprnt,ipt,kdt,myrank,                     &
              ntiw,ntrw,ntsw,ntgl,uni_cloud,lmfshal,lmfdeep2,         &
              deltaq,sup,cnvw,cnvc,phy3d,                             &
-             gridkm,                                                 &
 !  ---  outputs:
              dummy1,sfalb,coszen,coszdg,                             &
              dummy2,tsflw,semis,                                     &
