@@ -2964,8 +2964,8 @@
                qc1d(k) = max(0.0, clw(i,k,ntcw))
                qi1d(k) = max(0.0, clw(i,k,ntiw))
                qs1d(k) = max(0.0, clw(i,k,ntsw))
-               rh1d(k) = rhly(i,k) !test
-               qst1d(k)= qstl(i,k) !test
+               rh1d(k) = rhly(i,k)
+               qst1d(k)= qstl(i,k)
                p1d(k) = plyr(i,k)*100.0
                t1d(k) = tlyr(i,k)
             enddo
@@ -2976,8 +2976,8 @@
                qc1d(k2) = max(0.0, clw(i,k,ntcw))
                qi1d(k2) = max(0.0, clw(i,k,ntiw))
                qs1d(k2) = max(0.0, clw(i,k,ntsw))
-               rh1d(k2) = rhly(i,k) !test
-               qst1d(k2)= qstl(i,k) !test
+               rh1d(k2) = rhly(i,k)
+               qst1d(k2)= qstl(i,k)
                p1d(k2) = plyr(i,k)*100.0
                t1d(k2) = tlyr(i,k)
             enddo
@@ -2998,22 +2998,22 @@
 
          do k = 1, NLAY
             cldtot(i,k) = cldfra1d(k)
-            if (qc1d(k).gt.clwmin .and. cldfra1d(k).lt.ovcst) then
-               cwp(i,k) = qc1d(k) * gfac * delp(i,k)
-               if ((xland-1.5).GT.0.) then                               !--- Ocean
-                  rew(i,k) = 9.5
-               else                                                      !--- Land
-                  rew(i,k) = 5.5
-               endif
-            endif
-            if (qi1d(k).gt.clwmin .and. cldfra1d(k).lt.ovcst) then
-               cip(i,k) = qi1d(k) * gfac * delp(i,k)
-               idx_rei = int(t1d(k)-179.)
-               idx_rei = min(max(idx_rei,1),75)
-               corr = t1d(k) - int(t1d(k))
-               rei(i,K) = max(5.0, retab(idx_rei)*(1.-corr) +           &
-     &                                 retab(idx_rei+1)*corr)
-            endif
+!            if (qc1d(k).gt.clwmin .and. cldfra1d(k).lt.ovcst) then
+!               cwp(i,k) = qc1d(k) * gfac * delp(i,k)
+!               if ((xland-1.5).GT.0.) then                               !--- Ocean
+!                  rew(i,k) = 9.5
+!               else                                                      !--- Land
+!                  rew(i,k) = 5.5
+!               endif
+!            endif
+!            if (qi1d(k).gt.clwmin .and. cldfra1d(k).lt.ovcst) then
+!               cip(i,k) = qi1d(k) * gfac * delp(i,k)
+!               idx_rei = int(t1d(k)-179.)
+!               idx_rei = min(max(idx_rei,1),75)
+!               corr = t1d(k) - int(t1d(k))
+!               rei(i,K) = max(5.0, retab(idx_rei)*(1.-corr) +           &
+!     &                                 retab(idx_rei+1)*corr)
+!            endif
          enddo
       enddo
 

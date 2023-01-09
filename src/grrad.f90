@@ -1674,7 +1674,6 @@
            phy_f3d(:,:,3) = 250.
          endif
 
-#ifdef thompson_rad_cld
 !         lwp_ex=0.0  !total liquid water path from explicit microphysics
 !         iwp_ex=0.0  !total ice water path from explicit microphysics
 !         lwp_fc=0.0  !total liquid water path from cloud fraction scheme
@@ -1683,10 +1682,9 @@
 !  --- inputs
           ( plyr, plvl, tlyr, qlyr, qstl, rhly, tracer1,                &
             xlat, xlon, slmsk,                                          &
-!            dz, delp,                                                   &
             ntrac, ntcw, ntiw, ntrw, ntsw, ntgl,                        &
             im, lmk, lmp,                                               &
-            uni_cloud, lmfshal, lmfdeep2, cldcov(:,1:lmk),              &
+            uni_cloud, lmfshal, lmfdeep2, cldcov,                       &
             phy_f3d(:,:,1), phy_f3d(:,:,2), phy_f3d(:,:,3),             &
 !            lwp_ex, iwp_ex, lwp_fc, iwp_fc, dzlay,                      &
 !            gridkm,                                                     &
@@ -1694,18 +1692,6 @@
 !            cld_frac, cld_lwp, cld_reliq, cld_iwp,                      &
 !            cld_reice, cld_rwp, cld_rerain, cld_swp, cld_resnow)
             clouds, cldsa, mtopa, mbota )
-#else
-         call progcld4                                                  &
-!  --- inputs
-          ( plyr, plvl, tlyr, qlyr, qstl, rhly, tracer1,                &
-            xlat, xlon, slmsk,                                          &
-            ntrac, ntcw, ntiw, ntrw, ntsw, ntgl,                        &
-            im, lmk, lmp,                                               &
-            uni_cloud, lmfshal, lmfdeep2,                               &
-            cldcov, phy_f3d(:,:,1), phy_f3d(:,:,2), phy_f3d(:,:,3),     &
-!   --- outputs:
-            clouds, cldsa, mtopa, mbota )
-#endif
        elseif ( icmphys == 11 ) then   ! GFDL MP
          if ( me == 0 .and. myrank == 0 )                               &
            print *,'### call GFDL cloud ###'
