@@ -119,12 +119,12 @@
                                      dsigma(lev,2)
 !  ---  inputs/outputs:
       real(kind=RTYPE), intent(inout) :: tt(nx,lev)
-      real,     intent(inout) :: qa(nx,lev)
+      real,     intent(inout) :: qa(nxj,lev)
       real(kind=RTYPE), intent(inout) :: ut(nx,lev),vt(nx,lev)
       real(kind=RTYPE), intent(inout):: qt(nx,lev*ncld)
 !  ---  outputs:
-      real,     intent(inout)   :: re_cloud(nx,lev),re_ice(nx,lev),    &
-                                   re_snow(nx,lev),re_rain(nx,lev)
+      real,     intent(inout)   :: re_cloud(nxj,lev),re_ice(nxj,lev),   &
+                                   re_snow(nxj,lev),re_rain(nxj,lev)
       real,     intent(inout)   :: rlsp(nx),sr(nx)
 !  ---  local arrays:
       integer   kc,k,i
@@ -135,11 +135,12 @@
       real      rainncv(nx),snowncv(nx),graupelncv(nx)
       real      icem
       logical   lradar
-      real,dimension(:),allocatable :: &
+      real,dimension(:),allocatable ::                                  &
               land1d
       real,dimension(:,:),allocatable ::                                &
-              t2d,qv2d,qc2d,qr2d,qi2d,qs2d,qg2d,qnc2d,qni2d,qnr2d,      &
-              dp2d,dz2d,cld2d
+              qv2d,qc2d,qr2d,qi2d,qs2d,qg2d,qnc2d,qni2d,qnr2d,          &
+              rew2d,rer2d,rei2d,res2d,reg2d,                            &
+              t2d,dp2d,dz2d,cld2d
 ! New Thompson MP
       real,dimension(:,:),allocatable ::                                &
               nwfa,nifa,pfils,pflls,vt_dbz_wt,w2d
@@ -344,6 +345,7 @@
          ( t2d(nx,lev),qv2d(nx,lev),qc2d(nx,lev),qr2d(nx,lev),          &
            qi2d(nx,lev),qs2d(nx,lev),qg2d(nx,lev),qni2d(nx,lev),        &
            qnr2d(nx,lev),qnc2d(nx,lev),                                 &
+           rew2d(nx,lev),rei2d(nx,lev),res2d(nx,lev),                   &
            nwfa(nx,lev),nifa(nx,lev),dz2d(nx,lev),                      &
            w2d(nx,lev),pfils(nx,lev),pflls(nx,lev),vt_dbz_wt(nx,lev),   &
            nwfasfc(nx),nifasfc(nx),rainnc(nx),snownc(nx),icenc(nx),     &
@@ -380,6 +382,9 @@
         qi2d=0.
         qs2d=0.
         qg2d=0.
+        rew2d=0.
+        rei2d=0.
+        res2d=0.
         qni2d=0.         !number concentracion of ice
         qnr2d=0.         !number concentracion of rain
         qnc2d=0.         !number concentracion of cloud droplet
@@ -432,7 +437,7 @@
                      refl10,diagflag,do_radar_ref,                      &!optional
                      vt_dbz_wt,                                         &!optional
                      first_time_step,                                   &
-                     re_cloud,re_ice,re_snow,                           &!optional
+                     rew2d,rei2d,res2d,                                 &!optional
                      has_reqc,has_reqi,has_reqs,                        &
                      aero_ind_fdb,                                      &!optional
                      rand_perturb_on,                                   &
@@ -504,9 +509,9 @@
             qt(i,(ntrnc-1)*lev+k) = qnr2d(i,kc)
             tt(i,              k) = t2d  (i,kc)
 
-            re_cloud(i,k) = re_cloud(i,k)*1.E+6   ! m to micron
-            re_ice  (i,k) = re_ice  (i,k)*1.E+6   ! m to micron
-            re_snow (i,k) = re_snow (i,k)*1.E+6   ! m to micron
+            re_cloud(i,k) = rew2d(i,k)*1.E+6   ! m to micron
+            re_ice  (i,k) = rei2d(i,k)*1.E+6   ! m to micron
+            re_snow (i,k) = res2d(i,k)*1.E+6   ! m to micron
           enddo
         enddo
         do i = 1, nxj
@@ -516,8 +521,8 @@
         deallocate                                                      &
          ( t2d,qv2d,qc2d,qr2d,qi2d,qs2d,qg2d,qni2d,qnr2d,qnc2d,         &
            nwfa,nifa,dz2d,w2d,pfils,pflls,vt_dbz_wt,nwfasfc,nifasfc,    &
-           rainnc,snownc,icenc,graupelnc,icencv,rand_pert,              &
-           spp_prt_list,spp_stddev_cutoff,spp_var_list )
+           rew2d,rei2d,res2d,rainnc,snownc,icenc,graupelnc,icencv,      &
+           rand_pert,spp_prt_list,spp_stddev_cutoff,spp_var_list )
         if ( cfflag_thom .eq. 2 ) deallocate ( cld2d,land1d,gridkm )
       endif  !end of if nmmiph=9
 
