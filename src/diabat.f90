@@ -1832,7 +1832,8 @@
         enddo
       endif !( dolsp .and. nmmiph.eq.2 )
 !
-      if ( dolsp .and. (nmmiph.eq.6 .or. nmmiph.eq.8 .or. nmmiph.eq.11) ) then
+      if ( dolsp .and. (nmmiph.eq.6 .or. nmmiph.eq.8 .or.              &
+           nmmiph.eq.9 .or. nmmiph.eq.11) ) then
 
 ! for GFDL MP
       do i = 1, nxj
