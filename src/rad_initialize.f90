@@ -187,7 +187,9 @@
         elseif ( nmmiph == 9 ) then
           icmphys = 9                   ! new Thompson microphysics
         elseif ( nmmiph == 11 ) then
-          icmphys = 11                  ! GFDL microphysics
+          icmphys = 11                  ! GFDL microphysics version 1
+        elseif ( nmmiph == 12 ) then
+          icmphys = 12                  ! GFDL microphysics version 2
         endif
       else
         icldflg = 0                     ! diagnostic cloud optical prop scheme

@@ -278,7 +278,7 @@
       ntrac=ncld
       if ( nmmiph .eq. 6 ) ntrac=ncld-3
       if ( nmmiph .eq. 8 ) ntrac=ncld-4
-      if ( nmmiph .eq.11 ) ntrac=7
+      if ( nmmiph .eq.11 .or. nmmiph.eq.12 ) ntrac=7
 
       allocate(q1(nx,lev,ntrac))
 !
@@ -644,7 +644,7 @@
             q1(i,kc,9) = qt(i,lev*(ntoz-1)+k)
           enddo
         enddo
-      else if ( nmmiph .eq. 11 ) then ! GFDL MP
+      else if ( nmmiph .eq. 11 .or. nmmiph .eq. 12 ) then ! GFDL MP
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
@@ -812,7 +812,7 @@
             qt(i,lev*(ntoz-1)+k) = q1(i,kc,9)
           enddo
         enddo
-      else if ( nmmiph .eq. 11 ) then ! GFDL MP
+      else if ( nmmiph .eq. 11 .or. nmmiph .eq. 12 ) then ! GFDL MP
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj

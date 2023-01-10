@@ -12,12 +12,10 @@
 ! for New Thompson
       use module_mp_thompson_new,                                       &
                               only : new_thompson_init => thompson_init
-! for GFDLMP
-#if defined (GFDLMP_v2)
-      use module_mp_gfdl_v2,  only : gfdl_cld_mp_init
-#else
+! for GFDL MP v1
       use module_mp_gfdl,     only : gfdl_cloud_microphys_init
-#endif
+! for GFDL MP v2
+      use module_mp_gfdl_v2,  only : gfdl_cld_mp_init
       use physpara, only : is_aerosol_aware,merra2_aerosol_aware
 
       implicit none
@@ -49,15 +47,17 @@
           if ( myrank .eq. 0 )                                          &
              print *,'New Thompson cloud microphysics initialized'
         endif
-! GFDLMP
+! GFDL MP v1
         if ( nmmiph .eq. 11 ) then
-#if defined (GFDLMP_v2)
-          call gfdl_cld_mp_init()
-#else
           call gfdl_cloud_microphys_init()
-#endif
           if ( myrank .eq. 0 )                                         &
              print *, 'GFDL cloud microphysics initialized'
+        endif
+! GFDL MP v2
+        if ( nmmiph .eq. 12 ) then
+          call gfdl_cld_mp_init()
+          if ( myrank .eq. 0 )                                         &
+             print *, 'GFDL cloud microphysics version 2 initialized'
         endif
 
       return
@@ -71,9 +71,7 @@
            ( nmmiph,nx,nxj,lev,ncld,plt,&!prsi,                          &
              pst,dsigma,phii,islimsk,q0,kdt,ntcw,ntrw,ntiw,ntsw,       &
              ntgl,ntinc,ntrnc,tpi,me,dta,area,jj,                      &
-#if defined (GFDLMP_v2)
              sgeo,                                                     &
-#endif
 !  ---  inputs/outputs:
              tt,qt,qa,ut,vt,vvel,                                      &
 !  ---  outputs:
@@ -89,13 +87,11 @@
       use module_mp_thompson_new,                                       &
                                only: new_thompson_driver => mp_gt_driver&
                                      , cal_cldfra3, cfflag_thom
-! for GFDLMP
-#if defined (GFDLMP_v2)
-      use module_mp_gfdl_v2,   only: gfdl_cld_mp_driver
-#else
+! for GFDL MP v1
       use module_mp_gfdl,      only: gfdl_cloud_microphys_driver,      &
                                      cloud_diagnosis
-#endif
+! for GFDL MP v2
+      use module_mp_gfdl_v2,   only: gfdl_cld_mp_driver
       use physcons,            only: con_rd,con_fvirt,con_g
       use physpara,            only: effr_in
       use const,               only: RTYPE
@@ -110,9 +106,7 @@
       real,     intent(in)    :: plt(nx,lev),phii(nx,lev+1)!,       &
 !                                 prsi(nx,lev+1)
       real,     intent(in)    :: area(nx)  ! area of grid box (m^2)
-#if defined (GFDLMP_v2)
       real,     intent(in)    :: sgeo(nx)
-#endif
       real,     intent(inout) :: vvel(nx,lev)
       real(kind=RTYPE), intent(in):: q0(nx,lev*ncld),pst(nx),          &
                                      dsigma(lev,2)
@@ -139,10 +133,10 @@
       real,dimension(:,:),allocatable ::                                &
               qv2d,qc2d,qr2d,qi2d,qs2d,qg2d,qnc2d,qni2d,qnr2d,          &
               rew2d,rer2d,rei2d,res2d,reg2d,                            &
-              t2d,dp2d,dz2d,cld2d
+              t2d,dp2d,dz2d,cld2d,w2d,u2d,v2d
 ! New Thompson MP
       real,dimension(:,:),allocatable ::                                &
-              nwfa,nifa,pfils,pflls,vt_dbz_wt,w2d
+              nwfa,nifa,pfils,pflls,vt_dbz_wt
       real,dimension(:),allocatable :: nwfasfc,nifasfc,rainnc,snownc,   &
               icenc,graupelnc,icencv,gridkm
       real,dimension(:,:),allocatable :: rand_pert
@@ -158,12 +152,11 @@
 ! GFDLMP
       real, parameter ::                                                &
                 rainmin=1.0e-10 !(mm)
-      real, dimension(:,:), allocatable ::                              &
-                dp
       logical   hydrostatic,phys_hydrostatic,sedi_w 
-#if defined (GFDLMP_v2)
+     !GFDL MP v2
+      real, dimension(:), allocatable ::                                &
+                gsize,hs,rain1d,snow1d,ice1d,graupel1d
       real, dimension(:,:), allocatable ::                              &
-                qv,ql,qr,qi,qs,qg,cldcov,qnl,qni,w,delp,dz,pt,uin,vin,  &
                 q_con,cappa,te
 #ifdef EXT_DIAG
       real, dimension(:), allocatable ::                                &
@@ -171,19 +164,16 @@
       real, dimension(:,:), allocatable ::                              &
                 prefluxr,prefluxi, prefluxs,prefluxg
 #endif
-      real, dimension(:), allocatable ::                                &
-                gsize,frland,hs,rain0,snow0,ice0,graupel0
       logical   consv_te,last_step,do_inline_mp
-#else
+     !GFDL MP v1
+      integer, dimension(:), allocatable ::                             &
+                mask1d
       real, dimension(:,:), allocatable ::                              &
-                garea,frland,rain0,snow0,ice0,graupel0
+                garea,land2d,rain2d,snow2d,ice2d,graupel2d,rho2d
       real, dimension(:,:,:), allocatable ::                            &
-                qv1,ql1,qr1,qi1,qs1,qg1,qa1,qn1,pt,w,uin,vin,delp,dz,   &
-                qv_dt,ql_dt,qr_dt,qi_dt,qs_dt,qg_dt,qa_dt,udt,vdt,pt_dt
-      real, dimension(:,:), allocatable ::                              &
-                ql2,qr2,qi2,qs2,qg2,rho,                                &
-                re_graupel,rew,rei,rer,res,reg
-#endif
+                qv3d,qc3d,qr3d,qi3d,qs3d,qg3d,cld3d,qnc3d,t3d,w3d,u3d,  &
+                v3d,dp3d,dz3d,qvten3d,qcten3d,qrten3d,qiten3d,qsten3d,  &
+                qgten3d,cldten3d,uten3d,vten3d,tten3d
 !
 ! reset all value to zero
       prsl  = 0.
@@ -200,85 +190,6 @@
       rainncv=0.
       snowncv=0.
       graupelncv=0.
-
-      if ( nmmiph .eq. 11 ) then
-#if defined (GFDLMP_v2)
-        allocate                                                        &
-         ( qv(nxj,lev),ql(nxj,lev),qr(nxj,lev),qi(nxj,lev),qs(nxj,lev), &
-           qg(nxj,lev),cldcov(nxj,lev),qnl(nxj,lev),qni(nxj,lev),       &
-           w(nxj,lev),pt(nxj,lev),uin(nxj,lev),vin(nxj,lev),            &
-           delp(nxj,lev),dz(nxj,lev),                                   &
-           q_con(nxj,lev),cappa(nxj,lev),te(nxj,lev) )
-#ifdef EXT_DIAG
-        allocate                                                        &
-         ( prefluxr(nxj,lev),prefluxi(nxj,lev),prefluxs(nxj,lev),       &
-           prefluxg(nxj,lev) )
-        allocate                                                        &
-         ( cond0(nxj),dep0(nxj),evap0(nxj),sub0(nxj) )
-#endif
-        allocate                                                        &
-         ( hs(nxj),gsize(nxj),rain0(nxj),snow0(nxj),ice0(nxj),          &
-           graupel0(nxj) )
-        allocate( frland(nxj) )
-#else
-        allocate                                                        &
-         ( re_graupel(nxj,lev),rew(nxj,lev),                            &
-           rei(nxj,lev),rer(nxj,lev),res(nxj,lev),reg(nxj,lev),         &
-           frland(nxj,1),rain0(nxj,1),snow0(nxj,1),ice0(nxj,1),         &
-           graupel0(nxj,1),garea(nxj,1),                                &
-           qv1(nxj,1,lev),ql1(nxj,1,lev),qr1(nxj,1,lev),qi1(nxj,1,lev), &
-           qs1(nxj,1,lev),qg1(nxj,1,lev),qa1(nxj,1,lev),qn1(nxj,1,lev), &
-           pt(nxj,1,lev),w(nxj,1,lev),uin(nxj,1,lev),vin(nxj,1,lev),    &
-           delp(nxj,1,lev),dz(nxj,1,lev),                               &
-           qv_dt(nxj,1,lev),ql_dt(nxj,1,lev),qr_dt(nxj,1,lev),          &
-           qi_dt(nxj,1,lev),qs_dt(nxj,1,lev),qg_dt(nxj,1,lev),          &
-           qa_dt(nxj,1,lev),udt(nxj,1,lev),vdt(nxj,1,lev),              &
-           pt_dt(nxj,1,lev) )
-        if ( effr_in ) allocate                                         &
-           ( dp(nxj,lev),rho(nxj,lev),ql2(nxj,lev),qr2(nxj,lev),        &
-             qi2(nxj,lev),qs2(nxj,lev),qg2(nxj,lev) )
-#endif
-#if defined (GFDLMP_v2)
-        qnl   = 0.0
-        qni   = 0.0
-        pt    = 0.0
-        uin   = 0.0
-        vin   = 0.0
-        te    = 0.0
-        q_con = 0.0  !not sure
-        cappa = 0.0  !not sure
-        gsize = 0.0
-        frland    = 0.0
-        cldcov    = 0.0  !for do_qa=.false.
-#ifdef EXT_DIAG
-        cond0 = 0.0
-        dep0  = 0.0
-        evap0 = 0.0
-        sub0  = 0.0
-        prefluxr  = 0.0
-        prefluxi  = 0.0
-        prefluxs  = 0.0
-        prefluxg  = 0.0
-#endif
-#else
-        frland = 0.
-        garea = 0.
-        qv_dt = 0.
-        ql_dt = 0.
-        qr_dt = 0.
-        qi_dt = 0.
-        qs_dt = 0.
-        qg_dt = 0.
-        qa_dt = 0.
-        pt_dt = 0.
-        udt   = 0.
-        vdt   = 0.
-#endif
-        rain0 = 0.
-        snow0 = 0.
-        ice0  = 0.
-        graupel0 = 0.
-      endif
 !
       lradar= .false.
       icem  =  4./3.*tpi*3.2768*1.e-14*890.
@@ -537,52 +448,245 @@
         if ( cfflag_thom .eq. 2 ) deallocate ( cld2d,land1d,gridkm )
       endif  !end of if nmmiph=9
 
-!     GFDLMP
+!     GFDL MP v1
       if ( nmmiph .eq. 11 ) then
+        allocate                                                        &
+         ( qv3d(nxj,1,lev),qc3d(nxj,1,lev),qr3d(nxj,1,lev),             &
+           qi3d(nxj,1,lev),qs3d(nxj,1,lev),qg3d(nxj,1,lev),             &
+           cld3d(nxj,1,lev),qnc3d(nxj,1,lev),t3d(nxj,1,lev),            &
+           w3d(nxj,1,lev),u3d(nxj,1,lev),v3d(nxj,1,lev),                &
+           dp3d(nxj,1,lev),dz3d(nxj,1,lev),                             &
+           qvten3d(nxj,1,lev),qcten3d(nxj,1,lev),qrten3d(nxj,1,lev),    &
+           qiten3d(nxj,1,lev),qsten3d(nxj,1,lev),qgten3d(nxj,1,lev),    &
+           cldten3d(nxj,1,lev),uten3d(nxj,1,lev),vten3d(nxj,1,lev),     &
+           tten3d(nxj,1,lev),                                           &
+           rew2d(nxj,lev),rei2d(nxj,lev),rer2d(nxj,lev),res2d(nxj,lev), &
+           reg2d(nxj,lev),land2d(nxj,1),rain2d(nxj,1),snow2d(nxj,1),    &
+           ice2d(nxj,1),graupel2d(nxj,1),garea(nxj,1) )
+        if ( effr_in ) allocate                                         &
+           ( dp2d(nxj,lev),rho2d(nxj,lev),qc2d(nxj,lev),qr2d(nxj,lev),  &
+             qi2d(nxj,lev),qs2d(nxj,lev),qg2d(nxj,lev),mask1d(nxj) )
+        land2d = 0.
+        garea = 0.
+        qvten3d = 0.
+        qcten3d = 0.
+        qrten3d = 0.
+        qiten3d = 0.
+        qsten3d = 0.
+        qgten3d = 0.
+        cldten3d = 0.
+        tten3d = 0.
+        uten3d = 0.
+        vten3d = 0.
+        rain2d = 0.
+        snow2d = 0.
+        ice2d  = 0.
+        graupel2d = 0.
+
         hydrostatic = .false.       !flag for hydrostatic solver
         phys_hydrostatic = .true.   !flag for hydrostatic heating from physics 
         sedi_w = .false.
 
-#if defined (GFDLMP_v2)
+        do i = 1, nxj
+          if( islimsk(i) .eq. 1 ) land2d(i,1) = 1.  !land fraction
+          if( effr_in ) mask1d(i) = islimsk(i)      !land-sea mask
+          garea(i,1) = area(i)                      !area of grid box (m^-2)
+        enddo
+
+        do k = 1, lev
+          kc = lev - k + 1
+          do i = 1, nxj
+            if ( sedi_w ) then
+              prsl(i,k) = 100.0 * plt(i,k)             !layer mean pressure (from mb to Pa)
+              w3d(i,1,k) = -vvel(i,k)*(1.+con_fvirt*qt(i,k))*tt(i,k)    &
+                          /prsl(i,k)*con_rd/con_g      !vertical velocity (m/s)
+            else
+              w3d(i,1,k) = 0.
+            endif
+
+            qv3d (i,1,k) = qt(i,             k)
+            qc3d (i,1,k) = qt(i,(ntcw-1)*lev+k)
+            qr3d (i,1,k) = qt(i,(ntrw-1)*lev+k)
+            qi3d (i,1,k) = qt(i,(ntiw-1)*lev+k)
+            qs3d (i,1,k) = qt(i,(ntsw-1)*lev+k)
+            qg3d (i,1,k) = qt(i,(ntgl-1)*lev+k)
+            qnc3d(i,1,k) = 0.                      ! =0. for prog_ccn=.false. (cm^-3)
+            cld3d(i,1,k) = 0.                      !layer cloud fraction (=0. for do_qa=.false.)
+            t3d  (i,1,k) = tt(i,k)                 !temperature
+            u3d  (i,1,k) = ut(i,k)                 !zonal wind (m/s)
+            v3d  (i,1,k) = vt(i,k)                 !meridional wind (m/s)
+            dp3d (i,1,k) = (dsigma(k,1)*pst(i)+dsigma(k,2))*100. !difference of interface pressure (Pa)
+            dz3d (i,1,k) = (phii(i,kc)-phii(i,kc+1))/con_g       !differences of height (m), dz<0
+            if ( effr_in ) dp2d(i,k) = dp3d(i,1,k)
+          enddo
+        enddo
+
+        call gfdl_cloud_microphys_driver                                &
+                ( qv3d, qc3d, qr3d, qi3d, qs3d, qg3d, cld3d, qnc3d,     &
+                  qvten3d, qcten3d, qrten3d, qiten3d, qsten3d, qgten3d, &
+                  cldten3d, tten3d, t3d, w3d, u3d, v3d, uten3d, vten3d, &
+                  dz3d, dp3d, garea, dta, land2d,                       &
+                  rain2d, snow2d, ice2d, graupel2d,                     &
+                  hydrostatic, phys_hydrostatic,                        &
+                  1, nxj, 1, 1, 1, lev, 1, lev )
+
+        do k = 1, lev
+          do i = 1, nxj
+            qc2d(i,k) = qc3d(i,1,k) + qcten3d(i,1,k) * dta
+            qr2d(i,k) = qr3d(i,1,k) + qrten3d(i,1,k) * dta
+            qi2d(i,k) = qi3d(i,1,k) + qiten3d(i,1,k) * dta
+            qs2d(i,k) = qs3d(i,1,k) + qsten3d(i,1,k) * dta
+            qg2d(i,k) = qg3d(i,1,k) + qgten3d(i,1,k) * dta
+
+            qt(i,             k) = qv3d(i,1,k) + qvten3d(i,1,k) * dta
+            qt(i,(ntcw-1)*lev+k) = qc2d(i,k)
+            qt(i,(ntrw-1)*lev+k) = qr2d(i,k)
+            qt(i,(ntiw-1)*lev+k) = qi2d(i,k)
+            qt(i,(ntsw-1)*lev+k) = qs2d(i,k)
+            qt(i,(ntgl-1)*lev+k) = qg2d(i,k)
+            qa(i,k)  = cld3d(i,1,k) + cldten3d(i,1,k) * dta
+            tt(i,k)  = t3d(i,1,k) + tten3d(i,1,k) * dta
+            ut(i,k)  = u3d(i,1,k) + uten3d(i,1,k) * dta
+            vt(i,k)  = v3d(i,1,k) + vten3d(i,1,k) * dta
+
+            if ( sedi_w ) then
+              vvel(i,k) = -w3d(i,1,k)*prsl(i,k)*con_g/con_rd            &
+                          /((1+con_fvirt*qt(i,k))*tt(i,k))
+            endif
+
+            if ( effr_in ) then
+              rho2d(i,k) = 0.622*prsl(i,k)                              &
+                          /( con_rd*tt(i,k)*(qt(i,k)+0.622) ) !air density (kg/m^3)
+            endif
+          enddo
+        enddo
+
+        if ( effr_in ) then
+          call cloud_diagnosis                                          &
+!               ( 1, nx, 1, lev, rho, qtr, qti, qtrw, qtsw, qtgl, tt,    &  ! module_mp_gfdl_fv3.f90
+!                 rew, rei, rer, res, reg )
+               ( 1, nxj, 1, lev, rho2d, dp2d, mask1d,                   &  ! module_mp_gfdl_fv3_v16.f90
+                 qc2d, qi2d, qr2d, qs2d, qg2d, tt,                      &
+                 rew2d, rei2d, rer2d, res2d, reg2d )
+          do k = 1, lev
+            kc = lev - k + 1
+            do i = 1, nxj
+              re_cloud(i,k)   = rew2d(i,kc)   !(micron)
+              re_ice(i,k)     = rei2d(i,kc)   !(micron)
+              re_rain(i,k)    = rer2d(i,kc)   !(micron)
+              re_snow(i,k)    = res2d(i,kc)   !(micron)
+            enddo
+          enddo
+        endif
+!
+        do i = 1, nxj
+          if ( rain2d(i,1)    .lt. rainmin ) rain2d(i,1)    = 0.0
+          if ( ice2d(i,1)     .lt. rainmin ) ice2d(i,1)     = 0.0
+          if ( snow2d(i,1)    .lt. rainmin ) snow2d(i,1)    = 0.0
+          if ( graupel2d(i,1) .lt. rainmin ) graupel2d(i,1) = 0.0
+
+          rlsp(i) = rain2d(i,1)+snow2d(i,1)+ice2d(i,1)+graupel2d(i,1)  !total large scale precipitation (mm)
+          if ( rlsp(i) .gt. rainmin ) then
+            sr(i) = (snow2d(i,1)+ice2d(i,1)+graupel2d(i,1))             &
+                   /(rain2d(i,1)+snow2d(i,1)+ice2d(i,1)+graupel2d(i,1))  !snow ratio
+          else
+            sr(i) = 0.0
+          endif
+        enddo
+
+        deallocate                                                      &
+         ( qv3d,qc3d,qr3d,qi3d,qs3d,qg3d,cld3d,qnc3d,t3d,w3d,u3d,v3d,   &
+           dp3d,dz3d,qvten3d,qcten3d,qrten3d,qiten3d,qsten3d,qgten3d,   &
+           cldten3d,uten3d,vten3d,tten3d,rew2d,rei2d,rer2d,res2d,reg2d, &
+           land2d,rain2d,snow2d,ice2d,graupel2d,garea )
+        if ( effr_in ) deallocate                                       &
+           ( dp2d,rho2d,qc2d,qr2d,qi2d,qs2d,qg2d,mask1d )
+      endif  ! end of nmmiph.eq.11
+
+!     GFDL MP v2
+      if ( nmmiph .eq. 12 ) then
+        allocate                                                        &
+         ( qv2d(nxj,lev),qc2d(nxj,lev),qr2d(nxj,lev),qi2d(nxj,lev),     &
+           qs2d(nxj,lev),qg2d(nxj,lev),cld2d(nxj,lev),qnc2d(nxj,lev),   &
+           qni2d(nxj,lev),w2d(nxj,lev),t2d(nxj,lev),u2d(nxj,lev),       &
+           v2d(nxj,lev),dp2d(nxj,lev),dz2d(nxj,lev),                    &
+           q_con(nxj,lev),cappa(nxj,lev),te(nxj,lev),                   &
+           hs(nxj),land1d(nxj),gsize(nxj),rain1d(nxj),snow1d(nxj),      &
+           ice1d(nxj),graupel1d(nxj) )
+#ifdef EXT_DIAG
+        allocate                                                        &
+         ( prefluxr(nxj,lev),prefluxi(nxj,lev),prefluxs(nxj,lev),       &
+           prefluxg(nxj,lev) )
+        allocate                                                        &
+         ( cond0(nxj),dep0(nxj),evap0(nxj),sub0(nxj) )
+#endif
+
+        hydrostatic = .false.       !flag for hydrostatic solver
+        phys_hydrostatic = .true.   !flag for hydrostatic heating from physics 
+        sedi_w = .false.
         consv_te = .false.          !flag for energy conservation
         last_step = .true.          !flag for final clean-up (not sure)
         do_inline_mp = .false.      !flag for inline GFDLMP
 
+        te    = 0.0
+        q_con = 0.0  !not sure
+        cappa = 0.0  !not sure
+        gsize = 0.0
+        land1d = 0.0
+        rain1d = 0.
+        snow1d = 0.
+        ice1d  = 0.
+        graupel1d = 0.
+#ifdef EXT_DIAG
+        cond0 = 0.0
+        dep0  = 0.0
+        evap0 = 0.0
+        sub0  = 0.0
+        prefluxr  = 0.0
+        prefluxi  = 0.0
+        prefluxs  = 0.0
+        prefluxg  = 0.0
+#endif
+
         do i = 1, nxj
           gsize(i) = sqrt(area(i))  !square root of grid area (m)
           hs(i)    = sgeo(i)        !terrain geopotential (m^2 s^-2)
-          if( islimsk(i) .eq. 1 ) frland(i) = 1.  !land fraction
+          if( islimsk(i) .eq. 1 ) land1d(i) = 1.  !land fraction
         enddo
         do k = 1, lev
           kc = lev - k + 1
           do i = 1, nxj
             if ( sedi_w ) then
               prsl(i,k) = 100.0 * plt(i,k)            !layer mean pressure (from mb to Pa)
-              w(i,k)   = -vvel(i,k)*(1.+con_fvirt*qt(i,k))*tt(i,k)      &
+              w2d(i,k)  = -vvel(i,k)*(1.+con_fvirt*qt(i,k))*tt(i,k)     &
                          /prsl(i,k)*con_rd/con_g      !vertical velocity (m/s)
             else
-              w(i,k)   = 0.
+              w2d(i,k)  = 0.
             endif
 
-            qv(i,k)   = qt(i,             k)
-            ql(i,k)   = qt(i,(ntcw-1)*lev+k)
-            qr(i,k)   = qt(i,(ntrw-1)*lev+k)
-            qi(i,k)   = qt(i,(ntiw-1)*lev+k)
-            qs(i,k)   = qt(i,(ntsw-1)*lev+k)
-            qg(i,k)   = qt(i,(ntgl-1)*lev+k)
-            pt(i,k)   = tt(i,k)                 !temperature
-            uin(i,k)  = ut(i,k)                 !zonal wind (m/s)
-            vin(i,k)  = vt(i,k)                 !meridional wind (m/s)
-            delp(i,k) = (dsigma(k,1)*pst(i)+dsigma(k,2))*100. !difference of interface pressure (Pa)
-            dz(i,k)   = (phii(i,kc)-phii(i,kc+1))/con_g       !differences of height (m), dz<0
+            qv2d (i,k) = qt(i,             k)
+            qc2d (i,k) = qt(i,(ntcw-1)*lev+k)
+            qr2d (i,k) = qt(i,(ntrw-1)*lev+k)
+            qi2d (i,k) = qt(i,(ntiw-1)*lev+k)
+            qs2d (i,k) = qt(i,(ntsw-1)*lev+k)
+            qg2d (i,k) = qt(i,(ntgl-1)*lev+k)
+            qnc2d(i,k) = 0.
+            qni2d(i,k) = 0.
+            cld2d(i,k) = 0.                      !layer cloud fracion, =0 for do_qa=.false.
+            t2d  (i,k) = tt(i,k)                 !temperature
+            u2d  (i,k) = ut(i,k)                 !zonal wind (m/s)
+            v2d  (i,k) = vt(i,k)                 !meridional wind (m/s)
+            dp2d (i,k) = (dsigma(k,1)*pst(i)+dsigma(k,2))*100. !difference of interface pressure (Pa)
+            dz2d (i,k) = (phii(i,kc)-phii(i,kc+1))/con_g       !differences of height (m), dz<0
           enddo
         enddo
-          
+
         call gfdl_cld_mp_driver                                         &
-                ( qv, ql, qr, qi, qs, qg, cldcov, qnl, qni,             &
-                  pt, w, uin, vin, dz, delp, gsize, dta, hs,            &
-                  frland,                                               &
-                  rain0, snow0, ice0, graupel0, hydrostatic,            &
+                ( qv2d, qc2d, qr2d, qi2d, qs2d, qg2d,                   &
+                  cld2d, qnc2d,qni2d,                                   &
+                  t2d, w2d, u2d, v2d, dz2d, dp2d, gsize, dta, hs,       &
+                  land1d,                                               &
+                  rain1d, snow1d, ice1d, graupel1d, hydrostatic,        &
                   1, nxj, 1, lev, q_con, cappa, consv_te, te,           &
 #ifdef EXT_DIAG
                   prefluxr, prefluxi, prefluxs, prefluxg,               &
@@ -592,161 +696,44 @@
 
         do k = 1, lev
           do i = 1, nxj
-            qt(i,             k) = qv(i,k)
-            qt(i,(ntcw-1)*lev+k) = ql(i,k)
-            qt(i,(ntrw-1)*lev+k) = qr(i,k)
-            qt(i,(ntiw-1)*lev+k) = qi(i,k)
-            qt(i,(ntsw-1)*lev+k) = qs(i,k)
-            qt(i,(ntgl-1)*lev+k) = qg(i,k)
-            qa(i,k)  = cldcov(i,k)
-            tt(i,k)  = pt (i,k)
-            ut(i,k)  = uin(i,k)
-            vt(i,k)  = vin(i,k)
+            qt(i,             k) = qv2d(i,k)
+            qt(i,(ntcw-1)*lev+k) = qc2d(i,k)
+            qt(i,(ntrw-1)*lev+k) = qr2d(i,k)
+            qt(i,(ntiw-1)*lev+k) = qi2d(i,k)
+            qt(i,(ntsw-1)*lev+k) = qs2d(i,k)
+            qt(i,(ntgl-1)*lev+k) = qg2d(i,k)
+            qa(i,k)  = cld2d(i,k)
+            tt(i,k)  = t2d  (i,k)
+            ut(i,k)  = u2d  (i,k)
+            vt(i,k)  = v2d  (i,k)
 
             if ( sedi_w ) then
-              vvel(i,k)  = -w(i,k)*prsl(i,k)*con_g/con_rd               &
+              vvel(i,k)  = -w2d(i,k)*prsl(i,k)*con_g/con_rd             &
                            /((1+con_fvirt*qt(i,k))*tt(i,k))
             endif
           enddo
         enddo
 
         do i = 1, nxj
-          rlsp(i) = rain0(i)+snow0(i)+ice0(i)+graupel0(i)     !total large scale precipitation (mm)
+          rlsp(i) = rain1d(i)+snow1d(i)+ice1d(i)+graupel1d(i)     !total large scale precipitation (mm)
           if ( rlsp(i) .gt. rainmin ) then
-            sr(i) = (snow0(i)+ice0(i)+graupel0(i))                      &
-                    /(rain0(i)+snow0(i)+ice0(i)+graupel0(i))  !snow ratio
+            sr(i) = (snow1d(i)+ice1d(i)+graupel1d(i))                   &
+                    /(rain1d(i)+snow1d(i)+ice1d(i)+graupel1d(i))  !snow ratio
           else
             sr(i) = 0.0
           endif
         enddo
 
         deallocate                                                      &
-         ( qv,ql,qr,qi,qs,qg,qnl,qni,cldcov,w,pt,uin,vin,delp,dz,       &
-           q_con,cappa,te )
-        deallocate                                                      &
-         ( hs,gsize,rain0,snow0,ice0,graupel0 )
-        deallocate ( frland )
+         ( qv2d,qc2d,qr2d,qi2d,qs2d,qg2d,qnc2d,qni2d,cld2d,w2d,t2d,u2d, &
+           v2d,dp2d,dz2d,q_con,cappa,te,hs,gsize,rain1d,snow1d,ice1d,   &
+           graupel1d,land1d )
 #ifdef EXT_DIAG
         deallocate                                                      &
          ( prefluxr,prefluxi,prefluxs,prefluxg,cond0,dep0,evap0,sub0 )
 #endif
-#else
-        do i = 1, nxj
-          if( islimsk(i) .eq. 1 ) frland(i,1) = 1.  !land fraction
-          garea(i,1) = area(i)                      !area of grid box (m^-2)
-        enddo
-         
-        do k = 1, lev
-          kc = lev - k + 1
-          do i = 1, nxj
-            if ( sedi_w ) then
-              prsl(i,k) = 100.0 * plt(i,k)             !layer mean pressure (from mb to Pa)
-              w(i,1,k)  = -vvel(i,k)*(1.+con_fvirt*qt(i,k))*tt(i,k)     &
-                          /prsl(i,k)*con_rd/con_g      !vertical velocity (m/s)
-            else
-              w(i,1,k)  = 0.
-            endif
+      endif  !end if nmmiph.eq.12
 
-            qv1(i,1,k)  = qt(i,             k)
-            ql1(i,1,k)  = qt(i,(ntcw-1)*lev+k)
-            qr1(i,1,k)  = qt(i,(ntrw-1)*lev+k)
-            qi1(i,1,k)  = qt(i,(ntiw-1)*lev+k)
-            qs1(i,1,k)  = qt(i,(ntsw-1)*lev+k)
-            qg1(i,1,k)  = qt(i,(ntgl-1)*lev+k)
-            qn1(i,1,k)  = 0.                      ! =0. for prog_ccn=.false. (cm^-3)
-            qa1(i,1,k)  = 0.                      !layer cloud fraction (should set to zero for do_qa=.false.)
-            pt(i,1,k)   = tt(i,k)                 !temperature
-            uin(i,1,k)  = ut(i,k)                 !zonal wind (m/s)
-            vin(i,1,k)  = vt(i,k)                 !meridional wind (m/s)
-            delp(i,1,k) = (dsigma(k,1)*pst(i)+dsigma(k,2))*100. !difference of interface pressure (Pa)
-            dz(i,1,k)   = (phii(i,kc)-phii(i,kc+1))/con_g !differences of height (m), dz<0
-            if ( effr_in ) dp(i,k) = delp(i,1,k)
-          enddo
-        enddo
-
-        call gfdl_cloud_microphys_driver                                &
-                ( qv1, ql1, qr1, qi1, qs1, qg1, qa1, qn1,               &
-                  qv_dt, ql_dt, qr_dt, qi_dt, qs_dt, qg_dt, qa_dt,      &
-                  pt_dt, pt, w, uin, vin, udt, vdt,                     &
-                  dz, delp, garea, dta, frland,                         &
-                  rain0, snow0, ice0, graupel0,                         &
-                  hydrostatic, phys_hydrostatic,                        &
-                  1, nxj, 1, 1, 1, lev, 1, lev )
-
-        do k = 1, lev
-          do i = 1, nxj
-            ql2(i,k) = ql1(i,1,k) + ql_dt(i,1,k) * dta
-            qr2(i,k) = qr1(i,1,k) + qr_dt(i,1,k) * dta
-            qi2(i,k) = qi1(i,1,k) + qi_dt(i,1,k) * dta
-            qs2(i,k) = qs1(i,1,k) + qs_dt(i,1,k) * dta
-            qg2(i,k) = qg1(i,1,k) + qg_dt(i,1,k) * dta
-
-            qa(i,k)  = qa1(i,1,k) + qa_dt(i,1,k) * dta
-            qt(i,             k) = qv1(i,1,k) + qv_dt(i,1,k) * dta
-            qt(i,(ntcw-1)*lev+k) = ql2(i,k)
-            qt(i,(ntrw-1)*lev+k) = qr2(i,k)
-            qt(i,(ntiw-1)*lev+k) = qi2(i,k)
-            qt(i,(ntsw-1)*lev+k) = qs2(i,k)
-            qt(i,(ntgl-1)*lev+k) = qg2(i,k)
-            tt(i,k)  = pt(i,1,k)  + pt_dt(i,1,k) * dta
-            ut(i,k)  = uin(i,1,k) + udt(i,1,k)   * dta
-            vt(i,k)  = vin(i,1,k) + vdt(i,1,k)   * dta
-
-            if ( sedi_w ) then
-              vvel(i,k) = -w(i,1,k)*prsl(i,k)*con_g/con_rd              &
-                          /((1+con_fvirt*qt(i,k))*tt(i,k))
-            endif
-
-            if ( effr_in ) then
-              rho(i,k) = 0.622*prsl(i,k)                                &
-                         /( con_rd*tt(i,k)*(qt(i,k)+0.622) ) !air density (kg/m^3)
-            endif
-          enddo
-        enddo
-
-        if ( effr_in ) then
-          call cloud_diagnosis                                          &
-!               ( 1, nx, 1, lev, rho, qtr, qti, qtrw, qtsw, qtgl, tt,    &  ! module_mp_gfdl_fv3.f90
-!                 rew, rei, rer, res, reg )
-               ( 1, nxj, 1, lev, rho, dp, islimsk,                      &  ! module_mp_gfdl_fv3_v16.f90
-                 ql2, qi2, qr2, qs2, qg2, tt,                           &
-                 rew, rei, rer, res, reg )
-          do k = 1, lev
-            kc = lev - k + 1
-            do i = 1, nxj
-              re_cloud(i,k)   = rew(i,kc)   !(micron)
-              re_ice(i,k)     = rei(i,kc)   !(micron)
-              re_rain(i,k)    = rer(i,kc)   !(micron)
-              re_snow(i,k)    = res(i,kc)   !(micron)
-              re_graupel(i,k) = reg(i,kc)   !(micron)
-            enddo
-          enddo
-        endif
-!
-        do i = 1, nxj
-          if ( rain0(i,1)    .lt. rainmin ) rain0(i,1)    = 0.0
-          if ( ice0(i,1)     .lt. rainmin ) ice0(i,1)     = 0.0
-          if ( snow0(i,1)    .lt. rainmin ) snow0(i,1)    = 0.0
-          if ( graupel0(i,1) .lt. rainmin ) graupel0(i,1) = 0.0
-
-          rlsp(i) = rain0(i,1)+snow0(i,1)+ice0(i,1)+graupel0(i,1)  !total large scale precipitation (mm)
-          if ( rlsp(i) .gt. rainmin ) then
-            sr(i) = (snow0(i,1)+ice0(i,1)+graupel0(i,1))                &
-                    /(rain0(i,1)+snow0(i,1)+ice0(i,1)+graupel0(i,1))  !snow ratio
-          else
-            sr(i) = 0.0
-          endif
-        enddo
-
-        deallocate                                                      &
-          ( re_graupel,rew,rei,rer,res,reg,                             &
-            frland,rain0,snow0,ice0,graupel0,garea,                     &
-            qv1,ql1,qr1,qi1,qs1,qg1,qa1,qn1,pt,w,uin,vin,delp,dz,       &
-            qv_dt,ql_dt,qr_dt,qi_dt,qs_dt,qg_dt,qa_dt,udt,vdt,pt_dt )
-        if ( effr_in ) deallocate ( dp,rho,ql2,qi2,qr2,qs2,qg2 )
-#endif
-
-      endif  ! end of nmmiph.eq.11
 
       return
 !--------------------------

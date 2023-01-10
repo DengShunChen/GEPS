@@ -1009,9 +1009,7 @@
              olyr, rhly, qstl, vvel, clw, prslk1, tem2da, tem2db, tvly
       real (kind=kind_phys), dimension(im,lm+ltp)  :: qst2, rhly2
       real (kind=kind_phys), dimension(im,lm+ltp)  :: es2, qs2
-#if defined (GFDLMP_v2)
       real (kind=kind_phys), dimension(im,lm+ltp)  :: qa
-#endif
       real (kind=kind_phys), dimension(im,lm+ltp)  :: cnvw1, cnvc1
 
       real (kind=kind_phys), dimension(im) :: tsfa, cvt1, cvb1, tem1d,  &
@@ -1692,23 +1690,9 @@
 !            cld_frac, cld_lwp, cld_reliq, cld_iwp,                      &
 !            cld_reice, cld_rwp, cld_rerain, cld_swp, cld_resnow)
             clouds, cldsa, mtopa, mbota )
-       elseif ( icmphys == 11 ) then   ! GFDL MP
+       elseif ( icmphys == 11 ) then   ! GFDL MP v1
          if ( me == 0 .and. myrank == 0 )                               &
            print *,'### call GFDL cloud ###'
-
-#if defined (GFDLMP_v2)
-         qa = 0.  !aerosol mixing ratio (kg/kg)
-         call progcld6                                                  &
-!    ---  inputs:
-             ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,cnvw1,cnvc1,          &
-               tracer1(:,:,ntcw),tracer1(:,:,ntrw),tracer1(:,:,ntiw),   &
-               tracer1(:,:,ntsw),tracer1(:,:,ntgl),qa,                  &
-               cldcov,slmsk,snowd,                                      &
-               xlat,xlon,im,lmk,lmp,                                    &
-!    ---  outputs:
-               clouds,cldsa,mtopa,mbota                                 &
-              ) 
-#else
          clw = 0.0
          if ( .not. lgfdlmprad ) then
          do k = 1, lmk
@@ -1751,8 +1735,20 @@
               ) 
 !           endif
          endif
-#endif
-
+       elseif ( icmphys == 12 ) then   ! GFDL MP v2
+         if ( me == 0 .and. myrank == 0 )                               &
+           print *,'### call GFDL v2 cloud ###'
+         qa = 0.  !aerosol mixing ratio (kg/kg)
+         call progcld6                                                  &
+!    ---  inputs:
+             ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,cnvw1,cnvc1,          &
+               tracer1(:,:,ntcw),tracer1(:,:,ntrw),tracer1(:,:,ntiw),   &
+               tracer1(:,:,ntsw),tracer1(:,:,ntgl),qa,                  &
+               cldcov,slmsk,snowd,                                      &
+               xlat,xlon,im,lmk,lmp,                                    &
+!    ---  outputs:
+               clouds,cldsa,mtopa,mbota                                 &
+              ) 
         endif                            ! end if_icmphys
 
       else                                 ! diagnostic cloud scheme

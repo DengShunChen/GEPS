@@ -203,7 +203,7 @@
         enddo
       endif
 
-      if ( nmmiph.eq.11 ) then
+      if ( nmmiph.eq.11 .or. nmmiph.eq.12 ) then
 ! for MP GFDL effective radius
         nclds = 5  ! number of effective cloud condensates used in radiation processes
         do k = 1, lev

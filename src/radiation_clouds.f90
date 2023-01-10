@@ -159,9 +159,7 @@
 !  ---  set constant parameters
       real (kind=kind_phys), parameter :: gfac=1.0e5/con_g              &
      &,                                   gord=con_g/con_rd
-!#if defined (GFDLMP_v2)
 !      integer, parameter, public :: nf_clds = 11  ! number of fields in cloud array
-!#else
       integer, parameter, public :: nf_clds = 9   ! number of fields in cloud array
 !#endif
       integer, parameter, public :: nk_clds = 3   ! number of cloud vertical domains
@@ -334,7 +332,9 @@
           elseif (icmphys == 9) then
             print *,'   --- New Thompson microphysics'
           elseif (icmphys == 11) then
-            print *,'   --- GFDL microphysics'
+            print *,'   --- GFDL microphysics version 1'
+          elseif (icmphys == 12) then
+            print *,'   --- GFDL microphysics version 2'
           else
             print *,'  !!! error in cloud microphysc specification!!!', &
      &              '  icmphys (np3d) =',icmphys
@@ -2627,9 +2627,7 @@
 !                                                                       !
 !  ====================    end of description    =====================  !
 
-#if defined (GFDLMP_v2) 
       use cld_eff_rad_v2,     only : cld_eff_rad
-#endif
 !
       implicit none
 
@@ -2677,7 +2675,6 @@
       enddo
 !     clouds(:,:,:) = 0.0
 
-#if defined (GFDLMP_v2)
 !      call cld_eff_rad (1, IX, 1, NLAY, slmsk, plyr*100,                &
 !     &                  abs(plvl(:,1:NLAY)-plvl(:,2:NLAY+1))*100,       &
 !     &                  tlyr, qw, qi, qr, qs, qg, qa, cwp, cip, crp,    &
@@ -2690,7 +2687,6 @@
      &                  csp, cgp, rew, rei, rer, res, reg, cldtot,      &
      &                  snowd, cnvw=cnvw, cnvc=cnvc)
       cldcnv = 0.0
-#endif
 
 !  ---  find top pressure for each cloud domain for given latitude
 !       ptopc(k,i): top presure of each cld domain (k=1-4 are sfc,L,m,h;
