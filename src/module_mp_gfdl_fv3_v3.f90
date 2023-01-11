@@ -1,3 +1,5 @@
+!#define MERRA2_aeroclimfix
+!#define oldmask
 !***********************************************************************
 !*                   GNU Lesser General Public License
 !*
@@ -352,8 +354,13 @@ module module_mp_gfdl_v3
     real :: dw_land = 0.20 ! base value for subgrid deviation / variability over land
     real :: dw_ocean = 0.10 ! base value for subgrid deviation / variability over ocean
     
+#ifdef MERRA2_aeroclimfix
+    real :: ccn_o = 66. ! ccn over ocean (1/cm^3) from Zhou et al. 2022
+    real :: ccn_l = 159. ! ccn over land (1/cm^3) from Zhou et al. 2022
+#else
     real :: ccn_o = 90.0 ! ccn over ocean (1/cm^3)
     real :: ccn_l = 270.0 ! ccn over land (1/cm^3)
+#endif
     
     real :: rthresh = 10.0e-6 ! critical cloud drop radius (micron) for autoconversion
     
@@ -549,12 +556,14 @@ end subroutine gfdl_cld_mp_init
 subroutine gfdl_cld_mp_driver                                              &
             ( qv, ql, qr, qi, qs, qg, qa, qnl, qni,                        &
               pt, wa, ua, va, delz, delp, gsize, dtm, hs,                  &
+              land,                                                        &
               water,                                                       &
               rain, snow, ice, graupel, hydrostatic,                       &
               is, ie, ks, ke, q_con, cappa, consv_te, te,                  &
-              prefluxw,                                                    &
-              prefluxr, prefluxi, prefluxs, prefluxg,                      &
+#ifdef EXT_DIAG
+              prefluxw, prefluxr, prefluxi, prefluxs, prefluxg,            &
               condensation, deposition, evaporation, sublimation,          &
+#endif
               last_step, do_inline_mp )
     
     implicit none
@@ -569,19 +578,25 @@ subroutine gfdl_cld_mp_driver                                              &
     
     real, intent (in) :: dtm
     
-    real, intent (in), dimension (is:ie) :: hs, gsize
+    real, intent (in), dimension (is:ie) :: hs, gsize, land
     
     real, intent (in), dimension (is:ie, ks:ke) :: delz, qnl, qni
     
     real, intent (inout), dimension (is:ie, ks:ke) :: delp, pt, ua, va, wa, te
     real, intent (inout), dimension (is:ie, ks:ke) :: qv, ql, qr, qi, qs, qg, qa
-    real, intent (inout), dimension (is:ie, ks:ke) :: prefluxw, prefluxr, prefluxi, prefluxs, prefluxg
     
     real, intent (inout), dimension (is:, ks:) :: q_con, cappa
     
     real, intent (inout), dimension (is:ie) :: water, rain, ice, snow, graupel
+#ifdef EXT_DIAG
+    real, intent (inout), dimension (is:ie, ks:ke) :: prefluxw, prefluxr, prefluxi, prefluxs, prefluxg
     real, intent (inout), dimension (is:ie) :: condensation, deposition
     real, intent (inout), dimension (is:ie) :: evaporation, sublimation
+#else
+    real, dimension (is:ie, ks:ke) :: prefluxw, prefluxr, prefluxi, prefluxs, prefluxg
+    real, dimension (is:ie) :: condensation, deposition
+    real, dimension (is:ie) :: evaporation, sublimation
+#endif
     
     ! -----------------------------------------------------------------------
     ! define various heat capacities and latent heat coefficients at 0 deg K
@@ -595,6 +610,9 @@ subroutine gfdl_cld_mp_driver                                              &
     
     call mpdrv (hydrostatic, ua, va, wa, delp, pt, qv, ql, qr, qi, qs, qg, qa, &
         qnl, qni, delz, is, ie, ks, ke, dtm, water, rain, ice, snow, graupel, &
+#ifdef oldmask
+        land, &
+#endif
         gsize, hs, q_con, cappa, consv_te, te, prefluxw, prefluxr, prefluxi, &
         prefluxs, prefluxg, condensation, deposition, evaporation, sublimation, &
         last_step, do_inline_mp, .false., .true.)
@@ -1008,7 +1026,11 @@ end subroutine setup_mhc_lhc
 
 subroutine mpdrv (hydrostatic, ua, va, wa, delp, pt, qv, ql, qr, qi, qs, &
         qg, qa, qnl, qni, delz, is, ie, ks, ke, dtm, water, rain, ice, snow, &
-        graupel, gsize, hs, q_con, cappa, consv_te, te, prefluxw, prefluxr, &
+        graupel, &
+#ifdef oldmask
+        land, &
+#endif
+        gsize, hs, q_con, cappa, consv_te, te, prefluxw, prefluxr, &
         prefluxi, prefluxs, prefluxg, condensation, deposition, evaporation, &
         sublimation, last_step, do_inline_mp, do_mp_fast, do_mp_full)
     
@@ -1026,6 +1048,9 @@ subroutine mpdrv (hydrostatic, ua, va, wa, delp, pt, qv, ql, qr, qi, qs, &
     real, intent (in) :: dtm
     
     real, intent (in), dimension (is:ie) :: gsize, hs
+#ifdef oldmask
+    real, intent (in), dimension (is:ie) :: land
+#endif
     
     real, intent (in), dimension (is:ie, ks:ke) :: delz, qnl, qni
     
@@ -1082,7 +1107,8 @@ subroutine mpdrv (hydrostatic, ua, va, wa, delp, pt, qv, ql, qr, qi, qs, &
     ! unit convert to mm/day
     ! -----------------------------------------------------------------------
     
-    convt = 86400. * rgrav / dts
+!    convt = 86400. * rgrav / dts
+    convt = rgrav
     
     do i = is, ie
         
@@ -1198,19 +1224,31 @@ subroutine mpdrv (hydrostatic, ua, va, wa, delp, pt, qv, ql, qr, qi, qs, &
         if (prog_ccn) then
             do k = ks, ke
                 ! boucher and lohmann (1995)
+#ifdef oldmask
+                nl = land (i) * &
+                     (10. ** 2.24 * (qnl (i, k) * den (k) * 1.e9) ** 0.257) + &
+                     (1. - land (i)) * &
+                     (10. ** 2.06 * (qnl (i, k) * den (k) * 1.e9) ** 0.48)
+                ni = qni (i, k)
+#else
                 nl = min (1., abs (hs (i)) / (10. * grav)) * &
                      (10. ** 2.24 * (qnl (i, k) * den (k) * 1.e9) ** 0.257) + &
                      (1. - min (1., abs (hs (i)) / (10. * grav))) * &
                      (10. ** 2.06 * (qnl (i, k) * den (k) * 1.e9) ** 0.48)
                 ni = qni (i, k)
+#endif
                 ccn (k) = max (10.0, nl) * 1.e6
                 cin (k) = max (10.0, ni) * 1.e6
                 ccn (k) = ccn (k) / den (k)
                 cin (k) = cin (k) / den (k)
             enddo
         else
+#ifdef oldmask
+            ccn0 = (ccn_l * land (i) + ccn_o * (1. - land (i)) )* 1.e6
+#else
             ccn0 = (ccn_l * min (1., abs (hs (i)) / (10. * grav)) + &
                 ccn_o * (1. - min (1., abs (hs (i)) / (10. * grav)))) * 1.e6
+#endif
             cin0 = 0.0
             do k = ks, ke
                 ccn (k) = ccn0 / den (k)
@@ -1225,8 +1263,12 @@ subroutine mpdrv (hydrostatic, ua, va, wa, delp, pt, qv, ql, qr, qi, qs, &
         
         t_lnd = dw_land * sqrt (gsize (i) / 1.e5)
         t_ocn = dw_ocean * sqrt (gsize (i) / 1.e5)
+#ifdef oldmask
+        h_var = t_lnd * land (i) + t_ocn * (1. - land (i))
+#else
         tmp = min (1., abs (hs (i)) / (10. * grav))
         h_var = t_lnd * tmp + t_ocn * (1. - tmp)
+#endif
         h_var = min (0.20, max (0.01, h_var))
         
         ! -----------------------------------------------------------------------

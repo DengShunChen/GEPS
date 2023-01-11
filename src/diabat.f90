@@ -1832,8 +1832,9 @@
         enddo
       endif !( dolsp .and. nmmiph.eq.2 )
 !
-      if ( dolsp .and. (nmmiph.eq.6 .or. nmmiph.eq.8 .or.              &
-           nmmiph.eq.9 .or. nmmiph.eq.11 .or. nmmiph.eq.12) ) then
+      if ( dolsp .and. (nmmiph.eq.6 .or.       & ! WSM6
+           nmmiph.eq.8 .or. nmmiph.eq.9 .or.   & ! Thompson
+           nmmiph.eq.11 .or. nmmiph.eq.12 .or. nmmiph.eq.13) ) then !GFDL MP
 
 ! for GFDL MP
       do i = 1, nxj

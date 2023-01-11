@@ -335,6 +335,8 @@
             print *,'   --- GFDL microphysics version 1'
           elseif (icmphys == 12) then
             print *,'   --- GFDL microphysics version 2'
+          elseif (icmphys == 13) then
+            print *,'   --- GFDL microphysics version 3'
           else
             print *,'  !!! error in cloud microphysc specification!!!', &
      &              '  icmphys (np3d) =',icmphys
@@ -2627,7 +2629,9 @@
 !                                                                       !
 !  ====================    end of description    =====================  !
 
+      use physpara,           only : icmphys
       use cld_eff_rad_v2,     only : cld_eff_rad
+      use module_mp_gfdl_v3,  only : cld_eff_rad_v3
 !
       implicit none
 
@@ -2675,6 +2679,7 @@
       enddo
 !     clouds(:,:,:) = 0.0
 
+      if ( icmphys .eq. 12 ) then
 !      call cld_eff_rad (1, IX, 1, NLAY, slmsk, plyr*100,                &
 !     &                  abs(plvl(:,1:NLAY)-plvl(:,2:NLAY+1))*100,       &
 !     &                  tlyr, qw, qi, qr, qs, qg, qa, cwp, cip, crp,    &
@@ -2687,6 +2692,15 @@
      &                  csp, cgp, rew, rei, rer, res, reg, cldtot,      &
      &                  snowd, cnvw=cnvw, cnvc=cnvc)
       cldcnv = 0.0
+      elseif ( icmphys .eq. 13 ) then
+      call cld_eff_rad_v3 (1, IX, 1, NLAY, slmsk, plyr*100,             &
+     &                  abs(plvl(:,1:NLAY)-plvl(:,2:NLAY+1))*100,       &
+     &                  tlyr, qw, qi, qr, qs, qg, qa, cwp, cip, crp,    &
+     &                  csp, cgp, rew, rei, rer, res, reg, cldtot,      &
+     &                  snowd, cnvw=cnvw, cnvc=cnvc)
+      cldcnv = 0.0
+      endif
+
 
 !  ---  find top pressure for each cloud domain for given latitude
 !       ptopc(k,i): top presure of each cld domain (k=1-4 are sfc,L,m,h;

@@ -1735,9 +1735,11 @@
               ) 
 !           endif
          endif
-       elseif ( icmphys == 12 ) then   ! GFDL MP v2
-         if ( me == 0 .and. myrank == 0 )                               &
+       elseif ( icmphys == 12 .or. icmphys == 13 ) then   ! GFDL MP v2 / v3
+         if ( me == 0 .and. myrank == 0 .and. icmphys == 12 )           &
            print *,'### call GFDL v2 cloud ###'
+         if ( me == 0 .and. myrank == 0 .and. icmphys == 13 )           &
+           print *,'### call GFDL v3 cloud ###'
          qa = 0.  !aerosol mixing ratio (kg/kg)
          call progcld6                                                  &
 !    ---  inputs:

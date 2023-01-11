@@ -520,7 +520,7 @@
 !-----------------------------------------------------------------------
 !  for cloud microphysics initialization
 !-----------------------------------------------------------------------
-      if ( nmmiph .eq. 11 .or. nmmiph .eq. 12 ) then
+      if ( nmmiph .eq. 11 .or. nmmiph .eq. 12 .or. nmmiph .eq. 13 ) then
         ntrac_req = 6   ! only six species of hydrometeors for GFDL MP
       elseif ( nmmiph .eq. 9 ) then
         ntrac_req = 6   ! only six species of hydrometeors for New Thompson MP
@@ -541,7 +541,7 @@
         endif
 !
         if ( nmmiph.eq.6 .or. nmmiph.eq.8 .or. nmmiph.eq.9 .or.         &
-             nmmiph.eq.11 .or. nmmiph.eq.12 )                           &
+             nmmiph.eq.11 .or. nmmiph.eq.12 .or. nmmiph.eq.13 )         &
           call mp_init(nmmiph,myrank)
 !
       endif

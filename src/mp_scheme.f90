@@ -15,7 +15,9 @@
 ! for GFDL MP v1
       use module_mp_gfdl,     only : gfdl_cloud_microphys_init
 ! for GFDL MP v2
-      use module_mp_gfdl_v2,  only : gfdl_cld_mp_init
+      use module_mp_gfdl_v2,  only : gfdlv2_init => gfdl_cld_mp_init
+! for GFDL MP v3
+      use module_mp_gfdl_v3,  only : gfdlv3_init => gfdl_cld_mp_init
       use physpara, only : is_aerosol_aware,merra2_aerosol_aware
 
       implicit none
@@ -55,9 +57,15 @@
         endif
 ! GFDL MP v2
         if ( nmmiph .eq. 12 ) then
-          call gfdl_cld_mp_init()
+          call gfdlv2_init()
           if ( myrank .eq. 0 )                                         &
              print *, 'GFDL cloud microphysics version 2 initialized'
+        endif
+! GFDL MP v3
+        if ( nmmiph .eq. 13 ) then
+          call gfdlv3_init()
+          if ( myrank .eq. 0 )                                         &
+             print *, 'GFDL cloud microphysics version 3 initialized'
         endif
 
       return
@@ -91,7 +99,9 @@
       use module_mp_gfdl,      only: gfdl_cloud_microphys_driver,      &
                                      cloud_diagnosis
 ! for GFDL MP v2
-      use module_mp_gfdl_v2,   only: gfdl_cld_mp_driver
+      use module_mp_gfdl_v2,   only: gfdlv2_driver => gfdl_cld_mp_driver
+! for GFDL MP v3
+      use module_mp_gfdl_v3,   only: gfdlv3_driver => gfdl_cld_mp_driver
       use physcons,            only: con_rd,con_fvirt,con_g
       use physpara,            only: effr_in
       use const,               only: RTYPE
@@ -153,16 +163,16 @@
       real, parameter ::                                                &
                 rainmin=1.0e-10 !(mm)
       logical   hydrostatic,phys_hydrostatic,sedi_w 
-     !GFDL MP v2
+     !GFDL MP v2 & v3
       real, dimension(:), allocatable ::                                &
-                gsize,hs,rain1d,snow1d,ice1d,graupel1d
+                gsize,hs,water1d,rain1d,snow1d,ice1d,graupel1d
       real, dimension(:,:), allocatable ::                              &
                 q_con,cappa,te
 #ifdef EXT_DIAG
       real, dimension(:), allocatable ::                                &
                 cond0,dep0,evap0,sub0
       real, dimension(:,:), allocatable ::                              &
-                prefluxr,prefluxi, prefluxs,prefluxg
+                prefluxw,prefluxr,prefluxi, prefluxs,prefluxg
 #endif
       logical   consv_te,last_step,do_inline_mp
      !GFDL MP v1
@@ -603,8 +613,8 @@
            ( dp2d,rho2d,qc2d,qr2d,qi2d,qs2d,qg2d,mask1d )
       endif  ! end of nmmiph.eq.11
 
-!     GFDL MP v2
-      if ( nmmiph .eq. 12 ) then
+!     GFDL MP v2 & v3
+      if ( nmmiph .eq. 12 .or. nmmiph .eq. 13) then
         allocate                                                        &
          ( qv2d(nxj,lev),qc2d(nxj,lev),qr2d(nxj,lev),qi2d(nxj,lev),     &
            qs2d(nxj,lev),qg2d(nxj,lev),cld2d(nxj,lev),qnc2d(nxj,lev),   &
@@ -612,11 +622,11 @@
            v2d(nxj,lev),dp2d(nxj,lev),dz2d(nxj,lev),                    &
            q_con(nxj,lev),cappa(nxj,lev),te(nxj,lev),                   &
            hs(nxj),land1d(nxj),gsize(nxj),rain1d(nxj),snow1d(nxj),      &
-           ice1d(nxj),graupel1d(nxj) )
+           ice1d(nxj),graupel1d(nxj),water1d(nxj) )
 #ifdef EXT_DIAG
         allocate                                                        &
          ( prefluxr(nxj,lev),prefluxi(nxj,lev),prefluxs(nxj,lev),       &
-           prefluxg(nxj,lev) )
+           prefluxg(nxj,lev),prefluxw(nxj,lev) )
         allocate                                                        &
          ( cond0(nxj),dep0(nxj),evap0(nxj),sub0(nxj) )
 #endif
@@ -637,11 +647,13 @@
         snow1d = 0.
         ice1d  = 0.
         graupel1d = 0.
+        water1d = 0.
 #ifdef EXT_DIAG
         cond0 = 0.0
         dep0  = 0.0
         evap0 = 0.0
         sub0  = 0.0
+        prefluxw  = 0.0
         prefluxr  = 0.0
         prefluxi  = 0.0
         prefluxs  = 0.0
@@ -681,7 +693,9 @@
           enddo
         enddo
 
-        call gfdl_cld_mp_driver                                         &
+        ! GFDL MP v2
+        if ( nmmiph .eq. 12 )                                           &
+          call gfdlv2_driver                                            &
                 ( qv2d, qc2d, qr2d, qi2d, qs2d, qg2d,                   &
                   cld2d, qnc2d,qni2d,                                   &
                   t2d, w2d, u2d, v2d, dz2d, dp2d, gsize, dta, hs,       &
@@ -690,6 +704,21 @@
                   1, nxj, 1, lev, q_con, cappa, consv_te, te,           &
 #ifdef EXT_DIAG
                   prefluxr, prefluxi, prefluxs, prefluxg,               &
+                  cond0, dep0, evap0, sub0,                             &
+#endif
+                  last_step, do_inline_mp )
+
+        ! GFDL MP v3
+        if ( nmmiph .eq. 13 )                                           &
+          call gfdlv3_driver                                            &
+                ( qv2d, qc2d, qr2d, qi2d, qs2d, qg2d,                   &
+                  cld2d, qnc2d, qni2d,                                  &
+                  t2d, w2d, u2d, v2d, dz2d, dp2d, gsize, dta, hs,       &
+                  land1d, water1d,                                      &
+                  rain1d, snow1d, ice1d, graupel1d, hydrostatic,        &
+                  1, nxj, 1, lev, q_con, cappa, consv_te, te,           &
+#ifdef EXT_DIAG
+                  prefluxw, prefluxr, prefluxi, prefluxs, prefluxg,     &
                   cond0, dep0, evap0, sub0,                             &
 #endif
                   last_step, do_inline_mp )
@@ -715,10 +744,10 @@
         enddo
 
         do i = 1, nxj
-          rlsp(i) = rain1d(i)+snow1d(i)+ice1d(i)+graupel1d(i)     !total large scale precipitation (mm)
+          rlsp(i) = water1d(i)+rain1d(i)+snow1d(i)+ice1d(i)+graupel1d(i)     !total large scale precipitation (mm)
           if ( rlsp(i) .gt. rainmin ) then
             sr(i) = (snow1d(i)+ice1d(i)+graupel1d(i))                   &
-                    /(rain1d(i)+snow1d(i)+ice1d(i)+graupel1d(i))  !snow ratio
+                    /(water1d(i)+rain1d(i)+snow1d(i)+ice1d(i)+graupel1d(i))  !snow ratio
           else
             sr(i) = 0.0
           endif
@@ -727,12 +756,13 @@
         deallocate                                                      &
          ( qv2d,qc2d,qr2d,qi2d,qs2d,qg2d,qnc2d,qni2d,cld2d,w2d,t2d,u2d, &
            v2d,dp2d,dz2d,q_con,cappa,te,hs,gsize,rain1d,snow1d,ice1d,   &
-           graupel1d,land1d )
+           graupel1d,water1d,land1d )
 #ifdef EXT_DIAG
         deallocate                                                      &
-         ( prefluxr,prefluxi,prefluxs,prefluxg,cond0,dep0,evap0,sub0 )
+         ( prefluxw,prefluxr,prefluxi,prefluxs,prefluxg,cond0,dep0,     &
+           evap0,sub0 )
 #endif
-      endif  !end if nmmiph.eq.12
+      endif  !end if nmmiph.eq.12 .or nmmiph.eq.13
 
 
       return
