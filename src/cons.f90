@@ -40,7 +40,12 @@
                    sppt_sfclimit, sppt_logit, &
                    shum, shum_seed, shum_decort, shum_lscale, &
                    shum_sigefold, &
-                   ssst, ssst_seed, ssst_decort, ssst_lscale
+                   skeb, skeb_seed, skeb_decort, skeb_lscale, &
+                   skeb_sigtop1, skeb_sigtop2, skeb_sigbot1, skeb_sigbot2, &
+                   skeb_vdof,skebnorm, skebfilt, &
+                   ssst, ssst_seed, ssst_decort, ssst_lscale, &
+                   init_stochastic_physics
+      use mod_grb2_param, only:grbmem,grbnumm
 
       implicit  none
 
@@ -69,15 +74,15 @@
                       , ntoz,iovr_sw,iovr_lw,isubc_sw,isubc_lw          &
                       , sashal,crick_proof,ccnorm,norad_precip,me,doo3l &
                       , ioutsigr,domfc,out_green,isot,ivegsrc           &
-                      , otgreen,out_hp,dosppt,dospptout, doshum, dossst  &
-                      , ndsladvh2,hord                                  &
+                      , otgreen,out_hp,dosppt,dospptout, doshum, dossst &
+                      , doskeb, doskebout, ndsladvh2,hord               &
                       , ldailyFCTsst,ldailyFCTicesndpt,lFCTweight       &
                       , dailyClm_option,lopgsst,do_sit,fsit,pdfcloud,updatetg    &
 ! output data for RSM (Also, RSM compiling flag is necessary)
                       , outrsm,rsmoutinv,rlon1,rlon2,rlat1,rlat2,rgrdsz &
-!
-                      , cmbk,cgwd,nmmiph,spl1,spl2            &
-                      , weightSIT,dSITdt_intv,af,mwhd,doclx,doslavepp
+                      , cmbk,cgwd,nmmiph,spl1,spl2                      &
+                      , weightSIT,dSITdt_intv,af,mwhd,doclx,doslavepp   &
+                      , outdms,outgrb2
 !
       real    si(lev+1)
       logical flag
@@ -95,7 +100,7 @@
       namelist /filst/ ifilin,cwbout,bckfile,namlsts &
                      , ifilout,crdate,ocards,phyout,cntrl &
                      , ifilin_ncep, ifilin_sst, ifilin_nc &
-                     , ifilin_ClmANA,ifilin_ClmFCT
+                     , ifilin_ClmANA,ifilin_ClmFCT,ifilout_grb
 
       namelist /typ/ write_tau, write_mem, trk_intv, min_trk_pres
 
@@ -106,7 +111,11 @@
                    sppt_sfclimit, sppt_logit, &
                    shum, shum_seed, shum_decort, shum_lscale, &
                    shum_sigefold, &
+                   skeb, skeb_seed, skeb_decort, skeb_lscale, &
+                   skeb_sigtop1, skeb_sigtop2, skeb_sigbot1, skeb_sigbot2, &
+                   skeb_vdof, skebnorm, skebfilt, &
                    ssst, ssst_seed, ssst_decort, ssst_lscale
+      namelist /grb_conf/ grbmem,grbnumm
 
 ! for ECHAM4 Tiedtke cumulus scheme
       call cuparam
@@ -153,9 +162,10 @@
       ! read stochastic_physics
       read (1,stochy_physics,end=122)
   122 continue
+      read (1,grb_conf,end=123)
+  123 continue
       close(1)
 !
-      close(1)
       open (unit=1,file=trim(namlsts),form='formatted')
 
       if(do_sit) then
@@ -173,6 +183,7 @@
         endif
   130 continue
       endif
+      close(1)
 
 !
       open (unit=2,file=trim(crdate),form='formatted')
@@ -464,19 +475,16 @@
 ! data
 ! open ncep data dms
 !
+       istat4=0; istat5=0; istat6=0; istat7=0
        if(ldailyFCTsst) then
-          istat4=0
           call dmsopn(ifilin_sst,"r",istat4)
           istat = istat + abs(istat4)
         endif
         if(ldailyFCTicesndpt) then
-          istat5=0
           call dmsopn(ifilin_ncep,"r",istat5)
           istat = istat + abs(istat5)
         endif
         if(dailyClm_option .ge. 1) then
-          istat6=0
-          istat7=0
           call dmsopn(ifilin_ClmANA,"r",istat6)
           if(dailyClm_option .eq. 2) then
             call dmsopn(ifilin_ClmFCT,"r",istat7)
@@ -560,6 +568,10 @@
          ' icliq_sw=',icliq_sw,' icice_sw=', icice_sw,                  &
          ' icliq_lw=',icliq_lw,' icice_lw=', icice_lw
       endif
+!-----------------------------------------------------------------------
+!  for stochastic_physics initialization
+!-----------------------------------------------------------------------
+      call init_stochastic_physics(dt)   
 !-----------------------------------------------------------------------
 !
 ! check if typhoon exit
