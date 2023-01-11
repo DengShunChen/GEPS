@@ -167,10 +167,9 @@
       use index
       use const,                 ONLY:do_sit,ldailyFCTsst,dailyClm_option,      &
                                       pdfcloud,cmbk,cgwd, fsit, dosppt, doshum, dossst, &
-                                      use_zmtnblck,ldailyFCTsst,ldailyFCTicesndpt, &
-                                      ldailyFCTsst,ldailyFCTicesndpt,           &
-                                      dailyClm_option,dSITdt_intv,weightSIT,    &
-                                      bckfile,ggdef,doclx,doslavepp,RTYPE,qmin
+                                      use_zmtnblck,ldailyFCTicesndpt,dSITdt_intv, &
+                                      weightSIT,bckfile,ggdef,doclx,doslavepp,    &
+                                      RTYPE,qmin
       use mod_sitgrid
       USE mod_sit_vdiff,         ONLY:sit_vdiff,ctfreez
       USE mod_sit_control,       ONLY:ftrigsit,ltrigsit,lsitstart,lsftobswt &
@@ -1878,6 +1877,10 @@
         istep= int(tau/(dt/3600.)+0.01)
         tauleft=float(int((tau-int(tau)+0.001)*3600./dt))*dt
         icurrenttau=int(tau)
+        if(tauleft == 3600.0 )then
+           icurrenttau=icurrenttau+1
+           tauleft=0.0
+        endif
         call dtgfix12(idtg,idtg_sitvdiff,icurrenttau)
         call time_weights(idtg_sitvdiff,tauleft)
         write(cdtg,'(i12)')idtg_sitvdiff
@@ -2150,7 +2153,7 @@
             tseadiffFCT(ii,jj)=0.
             if(ocean(ii,jj))then
               obswtbnew(ii,jj)=dta*dFCTsstdt(ii,jj)+obswtbold(ii,jj)
-              obswtbold(ii,jj)=obswtbnow(ii,jj)
+              obswtbold(ii,jj)=obswtbnew(ii,jj)
               obswtbnow(ii,jj)=obswtbnew(ii,jj)
               ! sea surface temperature tendency 
               dtseadt(ii,jj)=dFCTsstdt(ii,jj)

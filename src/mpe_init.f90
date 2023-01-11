@@ -200,7 +200,8 @@
         ! initial block data
         call init_block
       else
-        call ioserver(nx*my)
+!       call ioserver(nx*my)
+        call ioserver_grb2(nx,my)
       endif
     else ! non io_quilting
       nsize=nsize_all

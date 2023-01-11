@@ -6,11 +6,12 @@
       use const, only : ifilin,cwbout,bckfile,namlsts,   &
                         ifilout,crdate,ocards,phyout,cntrl, &
                         ifilin_ncep,ifilin_sst,ifilin_nc,&
-                        ifilin_ClmANA,ifilin_ClmFCT
+                        ifilin_ClmANA,ifilin_ClmFCT,ifilout_grb
 
       use paramt
 
       use rank
+      use mod_grb2_param, only:grbmem,grbnumm
 !
       implicit  none
 
@@ -24,7 +25,10 @@
       namelist /filst/ ifilin,cwbout,bckfile,namlsts &
                      , ifilout,crdate,ocards,phyout,cntrl &
                      , ifilin_ncep,ifilin_sst,ifilin_nc &
-                     , ifilin_ClmANA,ifilin_ClmFCT
+                     , ifilin_ClmANA,ifilin_ClmFCT,ifilout_grb
+
+      namelist /grb_conf/ grbmem,grbnumm
+
       data pathname/'NWPETCGLB'/
       data logicname/'filist'/
 !
@@ -53,7 +57,10 @@
       read (1,model_param,end=120)
 !
   120 continue
+      read (1,grb_conf,end=121)
+  121 continue
       close(1)
+
 
 !     if(myrank .eq. 0) print model_param
       if(myrank_all .eq. 0) print model_param

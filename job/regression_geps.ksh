@@ -19,6 +19,14 @@
  # SIT initial data
  GODASgfsDIR="/nwpr/gfs/xb80/data2/IC_SIT"
 
+ #about grib2 output
+ # grib2 output folder
+ GRBDIR="."
+ #output grib2 0:off 1:on
+ OUTGRB="1"
+ #if use grib2 io_quilting
+ #that turn true and mpi must add one
+
  rm -rf $GFSWRK
  mkdir -p $GFSWRK
 
@@ -206,6 +214,7 @@ cat > ${GFSWRK}/filist << EOF
  ifilin_sst='OCNDMS',
  ifilin_nc='${GFSWRK}',
  ifilin_ClmANA='OCNCLM',
+ ifilout_grb='${GRBDIR}', 
  &end
 EOF
 
@@ -257,7 +266,7 @@ cat > ${GFSWRK}/namlsts << EOF
   lev=72,
   ncld=3,
   octahedral=true,
-  nout=9000,
+  nout=25000,
   io_quilting=false,
   npex=${NPEX},
   npey=${NPEY},
@@ -288,6 +297,7 @@ cat > ${GFSWRK}/namlsts << EOF
   ioutsigr=1,
   ggdef='${DMSFLAG}0G', gmdef='${DMSFLAG}MG',
   domfc=384., out_green=t, otgreen=3., out_hp=false,
+  outdms   =1, outgrb2  =${OUTGRB}, 
   ndsladvh2=false,
   isot=1, ivegsrc=1, cgwd=1.20, cmbk=1.00,
   spl1=5., spl2=50., af=0.1,
@@ -300,7 +310,7 @@ cat > ${GFSWRK}/namlsts << EOF
   trk_intv=3,
   write_tau=6,
  &end
- 
+
  &stochy_physics
   ncep_seeds = true,
   use_zmtnblck = true,
@@ -329,6 +339,10 @@ cat > ${GFSWRK}/namlsts << EOF
    lamip= true, lwoa0= true, ldailysst= true,
  /
 
+ &grb_conf
+  grbmem= -1, !member numberID,deterministic is -1
+  grbnumm=20, !total ensemble size
+ /
 
 EOF
 
