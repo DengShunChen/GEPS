@@ -330,7 +330,7 @@
 !
 ! for forward weighting Semi-Implicit
 !
-      alpha=0.75
+      alpha=0.85
 !
 ! for two time level 
 !

@@ -315,7 +315,8 @@
 !
 !--------------------------------------------------------------------
       subroutine whdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld,amp   &
-                        , rad,cosl,ut,vt,vornow,divnow,eps4,trefs) 
+                        , rad,cosl,ut,vt,vornow,divnow,temnow          &
+                        , eps4,trefs) 
       use index
       use mpe
       use rank
@@ -346,7 +347,7 @@
       data      windmax1/80./, windmax2/100./, windmax3/130./
 !!      data      windmax1/70./, windmax2/100./, windmax3/130./
 !
-      temnow = 0.0
+!      temnow = 0.0
       wmax(1:lev)= 0.0
 !
       do jj =1,jlistnum
@@ -365,7 +366,7 @@
       nf=jtrun-1
 !
       finc = 10.*max(af,0.001)
-      fl   = 150./hdk2(2)-1.
+      fl   = 150./hdk2((1)-1.)
       hfilt6 = (radsq/(nf*(nf+1)))**3.
       hfilt4 = (radsq/(nf*(nf+1)))**2.
       hfilt2 = radsq/(nf*(nf+1))
@@ -386,9 +387,12 @@
 
         KL=Llist(k)
 !
-        kfac = (fl+finc)*max(float(hdk2(2)-KL),0.)
-        facd = mwhd * max(amp,kfac)
-        facv = max(min(amp,1.),kfac)
+        kfac = (fl+finc)*max(float(hdk2(1)-KL),0.)
+!        facd = mwhd * max(amp,kfac)
+!        facv = max(min(amp,1.),kfac)
+        facd =     max(mwhd,kfac)
+        facv = 0.5*max(mwhd,kfac)
+        fact = 0.5*max(mwhd,kfac)
 !!        fact = amp * kfacv 
 !          endif
 
@@ -412,7 +416,7 @@
             endif
 
 !!            c3=1.+dta*fact*hfilt6*eps4(n,m)**3.
-!!            c3=1.+dta*fact*hfilt4*eps4(n,m)**2.
+            c3=1.+dta*fact*hfilt4*eps4(n,m)**2.
 
 
             vornow(k,1,n,m)=vornow(k,1,n,m)/c1
@@ -421,6 +425,8 @@
             divnow(k,2,n,m)=divnow(k,2,n,m)/c2
 !!            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
 !!            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
+            temnow(k,1,n,m)=temnow(k,1,n,m)/c3
+            temnow(k,2,n,m)=temnow(k,2,n,m)/c3
           enddo
         enddo
  100  continue
