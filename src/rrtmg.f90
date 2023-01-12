@@ -85,7 +85,7 @@
       real    sup
       real    deltaq(nx,lev),cnvw(nx,lev),cnvc(nx,lev)
 ! --- for WSM6 & Thompson & GFDL MP
-      real    ftp(nxj,lev),ftp1(nxj,lev),fqp(nxj,lev),fqp1(nxj,lev)
+      real    ftp(nx,lev),ftp1(nx,lev),fqp(nx,lev),fqp1(nx,lev)
       real    phy3d(nxj,lev,5)
 
 ! -------------------------------------------------------------------
@@ -109,7 +109,7 @@
       real    ctot(nx),chig(nx),cmid(nx),clow(nx),csbl(nx)
 
 ! for WSM6 & Thompson & GFDL MP
-      real    cldcov(nxj,lev)   ! input/output layer cloud fraction
+      real    cldcov(nx,lev)   ! input/output layer cloud fraction
       real    dummy3(nxj,lev)
       
 

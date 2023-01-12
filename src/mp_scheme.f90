@@ -102,8 +102,10 @@
       use module_mp_gfdl_v2,   only: gfdlv2_driver => gfdl_cld_mp_driver
 ! for GFDL MP v3
       use module_mp_gfdl_v3,   only: gfdlv3_driver => gfdl_cld_mp_driver
+#ifdef Goddard
 ! for Goddard (GCE) MP
       use module_mp_gce4ice,   only: gsfcgce_4ice_nuwrf
+#endif
       use physcons,            only: con_rd,con_fvirt,con_g
       use physpara,            only: effr_in
       use const,               only: RTYPE
@@ -124,12 +126,12 @@
                                      dsigma(lev,2)
 !  ---  inputs/outputs:
       real(kind=RTYPE), intent(inout) :: tt(nx,lev)
-      real,     intent(inout) :: qa(nxj,lev)
+      real,     intent(inout) :: qa(nx,lev)
       real(kind=RTYPE), intent(inout) :: ut(nx,lev),vt(nx,lev)
       real(kind=RTYPE), intent(inout):: qt(nx,lev*ncld)
 !  ---  outputs:
-      real,     intent(inout)   :: re_cloud(nxj,lev),re_ice(nxj,lev),   &
-                                   re_snow(nxj,lev),re_rain(nxj,lev)
+      real,     intent(inout)   :: re_cloud(nx,lev),re_ice(nx,lev),   &
+                                   re_snow(nx,lev),re_rain(nx,lev)
       real,     intent(inout)   :: rlsp(nx),sr(nx)
 !  ---  local arrays:
       integer   kc,k,i
@@ -191,7 +193,7 @@
       real,dimension(:,:),allocatable ::                                &
               ht,hail2d,rainnc2d,snownc2d,graupelnc2d,hailnc2d,sr2d
       real,dimension(:,:,:),allocatable ::                              &
-              th3d,qh3d,rho3d,pii3d,p3d,z3d,dz8w,w3d,rew3d,rer3d,rei3d, &
+              th3d,qh3d,rho3d,pii3d,p3d,z3d,dz8w,rew3d,rer3d,rei3d,     &
               res3d,reg3d,reh3d,refl_10cm
 #ifdef EXT_DIAG
       real,dimension(:,:,:),allocatable ::                              &
@@ -779,6 +781,7 @@
 #endif
       endif  !end if nmmiph.eq.12 .or nmmiph.eq.13
 
+#ifdef Goddard
 !     Goddard (GCE) MP
       if ( nmmiph .eq. 16 ) then
         allocate                                                        &
@@ -913,6 +916,7 @@
            snow2d,graupel2d,hail2d,sr2d,rew3d,rer3d,rei3d,res3d,reg3d,  &
            reh3d,land2d,refl_10cm )
       endif
+#endif
 
       return
 !--------------------------
