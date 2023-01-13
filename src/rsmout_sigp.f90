@@ -14,7 +14,11 @@
       use index
       use mpe
       use radn, only : ntoz,ntcw,ntrw,ntiw,ntsw,ntgl
+#ifdef CWB_MPMD
       use rank, only : root_rsm,myrank,itag
+#else
+      use rank, only : myrank
+#endif
       use const, only: rlon1, rlon2, rlat1, rlat2, rgrdsz, rsmsfcmgrhr
 
       implicit  none
