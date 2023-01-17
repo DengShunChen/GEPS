@@ -391,7 +391,7 @@ contains
       use rank, only : myrank
       use radn, only : ntoz
       use param, only : ncld
-      use const, only : RTYPE,kflag,qmin
+      use const, only : RTYPE,kflag,qmin,nmmiph
 
       implicit  none
 
@@ -422,7 +422,11 @@ contains
 !key=571~575 for number concentration of cloud droplet, ice, rain, snow, and graupel
 !key=572 : inc (ntinc=7)
 !key=573 : rnc (ntrnc=8)
+      if ( nmmiph .eq. 16 ) then
+      cspec=(/'500','551','553','552','554','555','556','   '/)
+      else
       cspec=(/'500','551','553','552','554','555','572','573'/)
+      endif
 #else
       cspec=(/'500','551','553','552','554','555'/)
 #endif
@@ -430,6 +434,8 @@ contains
       ntrchk=ncld
 #ifndef shumout_2M
       if ( ncld .eq. 9 ) then
+        ntrchk = 6
+      elseif ( ncld .eq. 16 ) then
         ntrchk = 6
       endif
 #endif

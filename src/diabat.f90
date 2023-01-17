@@ -366,8 +366,8 @@
       logical   donor,upnor
       data      donor/.true./,fnor/0.5/
 
-! for GFDL microphysics
-      real area(nxp)
+! for microphysics
+      real area
 
 !#######################################################################
 !
@@ -1834,19 +1834,17 @@
 !
       if ( dolsp .and. (nmmiph.eq.6 .or.       & ! WSM6
            nmmiph.eq.8 .or. nmmiph.eq.9 .or.   & ! Thompson
-           nmmiph.eq.11 .or. nmmiph.eq.12 .or. nmmiph.eq.13) ) then !GFDL MP
+           nmmiph.eq.11 .or. nmmiph.eq.12 .or. nmmiph.eq.13 .or. & !GFDL MP
+           nmmiph.eq.16) ) then !Goddard MP
 
-! for GFDL MP
-      do i = 1, nxj
-        area(i) = tem1*tem2  !area of grid box
-      enddo
+! for microphysics
+      area = tem1*tem2  !area of grid box (m^2)
 
       call mp_scheme                                                   &
 !  ---  inputs:
            ( nmmiph,nxp,nxjp(j),lev,ncld,plt(1,1,jj),                  &
-             pst(1,jj),dsigma,phii,islimsk,q0,kdt,ntcw,ntrw,ntiw,ntsw, &
-             ntgl,ntinc,ntrnc,tpi,me,dta,area,jj,                      &
-             sgeo(1,jj),                                               &
+             pst(1,jj),dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,  &
+             itimestep,sgeo(1,jj),phi,                                 &
 !  ---  inputs/outputs:
              tt(1,1,jj),qt(1,1,jj),clds(1,1,jj),                       &
              ut(1,1,jj),vt(1,1,jj),vvel(1,1,jj),                       &

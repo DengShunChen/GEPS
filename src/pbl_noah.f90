@@ -279,6 +279,7 @@
       if ( nmmiph .eq. 6 ) ntrac=ncld-3
       if ( nmmiph .eq. 8 ) ntrac=ncld-4
       if ( nmmiph .eq.11 .or. nmmiph.eq.12 .or. nmmiph.eq.13 ) ntrac=7
+      if ( nmmiph .eq.16 ) ntrac=8
 
       allocate(q1(nx,lev,ntrac))
 !

@@ -67,6 +67,11 @@
           if ( myrank .eq. 0 )                                         &
              print *, 'GFDL cloud microphysics version 3 initialized'
         endif
+! Goddard (GCE) 4ICE MP
+        if ( nmmiph .eq. 16 ) then
+          if ( myrank .eq. 0 )                                         &
+             print *,'Goddard (GCE) 4ICE cloud microphysics initialized'
+        endif
 
       return
 !--------------------------
@@ -76,10 +81,9 @@
       subroutine mp_scheme                                             &
 !--------------------------
 !  ---  inputs:
-           ( nmmiph,nx,nxj,lev,ncld,plt,&!prsi,                          &
-             pst,dsigma,phii,islimsk,q0,kdt,ntcw,ntrw,ntiw,ntsw,       &
-             ntgl,ntinc,ntrnc,tpi,me,dta,area,jj,                      &
-             sgeo,                                                     &
+           ( nmmiph,nx,nxj,lev,ncld,plt,                               &
+             pst,dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,        &
+             itimestep,sgeo,phi,                                       &
 !  ---  inputs/outputs:
              tt,qt,qa,ut,vt,vvel,                                      &
 !  ---  outputs:
@@ -87,6 +91,8 @@
              rlsp,sr )
 
       use rank
+      use radn,                only: ntcw,ntiw,ntrw,ntsw,ntgl,nthl,     &
+                                     ntinc,ntrnc
 ! for wsm6
       use module_mp_wsm6,      only: wsm6
 ! for thompson
@@ -102,10 +108,8 @@
       use module_mp_gfdl_v2,   only: gfdlv2_driver => gfdl_cld_mp_driver
 ! for GFDL MP v3
       use module_mp_gfdl_v3,   only: gfdlv3_driver => gfdl_cld_mp_driver
-#ifdef Goddard
-! for Goddard (GCE) MP
+! for Goddard (GCE) 4ICE MP
       use module_mp_gce4ice,   only: gsfcgce_4ice_nuwrf
-#endif
       use physcons,            only: con_rd,con_fvirt,con_g
       use physpara,            only: effr_in
       use const,               only: RTYPE
@@ -114,14 +118,14 @@
 
 !  ---  inputs:
       integer,  intent(in)    :: nmmiph,nx,nxj,lev,ncld,kdt,me
-      integer,  intent(in)    :: ntcw,ntrw,ntiw,ntsw,ntgl,ntinc,ntrnc
+!      integer,  intent(in)    :: ntcw,ntrw,ntiw,ntsw,ntgl,ntinc,ntrnc
       integer,  intent(in)    :: islimsk(nx)
+      integer,  intent(in)    :: itimestep
       real,     intent(in)    :: tpi,dta,jj
-      real,     intent(in)    :: plt(nx,lev),phii(nx,lev+1)!,       &
-!                                 prsi(nx,lev+1)
-      real,     intent(in)    :: area(nx)  ! area of grid box (m^2)
+      real,     intent(in)    :: plt(nx,lev),phii(nx,lev+1),phi(nx,lev)
+      real,     intent(in)    :: area
       real,     intent(in)    :: sgeo(nx)
-      real,     intent(inout) :: vvel(nx,lev)
+      real,     intent(inout) :: vvel(nx,lev) !mb/s
       real(kind=RTYPE), intent(in):: q0(nx,lev*ncld),pst(nx),          &
                                      dsigma(lev,2)
 !  ---  inputs/outputs:
@@ -141,7 +145,7 @@
                 refl10(nx,lev)
       real      rainncv(nx),snowncv(nx),graupelncv(nx)
       real      icem
-      logical   lradar
+      logical   lradar,do_virtt
       real,dimension(:),allocatable ::                                  &
               land1d
       real,dimension(:,:),allocatable ::                                &
@@ -188,13 +192,13 @@
                 qv3d,qc3d,qr3d,qi3d,qs3d,qg3d,cld3d,qnc3d,t3d,w3d,u3d,  &
                 v3d,dp3d,dz3d,qvten3d,qcten3d,qrten3d,qiten3d,qsten3d,  &
                 qgten3d,cldten3d,uten3d,vten3d,tten3d
-! Goddard (GCE) MP
+! Goddard (GCE) 4ICE MP
       real    rhowater,rhosnow,dx
       real,dimension(:,:),allocatable ::                                &
               ht,hail2d,rainnc2d,snownc2d,graupelnc2d,hailnc2d,sr2d
       real,dimension(:,:,:),allocatable ::                              &
-              th3d,qh3d,rho3d,pii3d,p3d,z3d,dz8w,rew3d,rer3d,rei3d,     &
-              res3d,reg3d,reh3d,refl_10cm
+              th3d,qh3d,rho3d,pii3d,p3d,z3d,rew3d,rer3d,rei3d,res3d,    &
+              reg3d,reh3d,refl_10cm
 #ifdef EXT_DIAG
       real,dimension(:,:,:),allocatable ::                              &
               physc, physe, physd, physs, physm, physf,                 &
@@ -367,7 +371,7 @@
             qnr2d(i,k) = qt(i,(ntrnc-1)*lev+kc)
             prsl (i,k) = plt(i,kc)*100.                 !layer pressure (Pa)
             t2d  (i,k) = tt(i,kc)
-            w2d  (i,k) = - vvel(i,kc)*100.*                             &
+            w2d  (i,k) = - vvel(i,k)*100.*                              &
                          (1.+con_fvirt*qt(i,kc))*tt(i,kc)/              &
                          prsl(i,k)*con_rd/con_g         !vertical velocity (m/s)
             dz2d (i,k) = (phii(i,k+1)-phii(i,k))/con_g  !layer depth (m)
@@ -419,7 +423,7 @@
           cld2d=0.
           do i = 1, nxj
             if( islimsk(i) .eq. 1 ) land1d(i) = 1.      !land fraction
-            gridkm(i) = sqrt(area(i))/1000.             !grid length (km)
+            gridkm(i) = sqrt(area)/1000.             !grid length (km)
           enddo
           do k = 1, lev
             kc = lev - k + 1
@@ -517,7 +521,7 @@
         do i = 1, nxj
           if( islimsk(i) .eq. 1 ) land2d(i,1) = 1.  !land fraction
           if( effr_in ) mask1d(i) = islimsk(i)      !land-sea mask
-          garea(i,1) = area(i)                      !area of grid box (m^-2)
+          garea(i,1) = area                         !area of grid box (m^-2)
         enddo
 
         do k = 1, lev
@@ -678,7 +682,7 @@
 #endif
 
         do i = 1, nxj
-          gsize(i) = sqrt(area(i))  !square root of grid area (m)
+          gsize(i) = sqrt(area)     !square root of grid area (m)
           hs(i)    = sgeo(i)        !terrain geopotential (m^2 s^-2)
           if( islimsk(i) .eq. 1 ) land1d(i) = 1.  !land fraction
         enddo
@@ -781,14 +785,13 @@
 #endif
       endif  !end if nmmiph.eq.12 .or nmmiph.eq.13
 
-#ifdef Goddard
-!     Goddard (GCE) MP
+!     Goddard (GCE) 4ICE MP
       if ( nmmiph .eq. 16 ) then
         allocate                                                        &
          ( th3d(nx,lev,1),qv3d(nx,lev,1),qc3d(nx,lev,1),qr3d(nx,lev,1), &
-           qs3d(nx,lev,1),qg3d(nx,lev,1),qh3d(nx,lev,1),                &
+           qi3d(nx,lev,1),qs3d(nx,lev,1),qg3d(nx,lev,1),qh3d(nx,lev,1), &
            rho3d(nx,lev,1),pii3d(nx,lev,1),p3d(nx,lev,1),z3d(nx,lev,1), &
-           ht(nx,1),dz8w(nx,1,lev),w3d(nx,1,lev),rainnc2d(nx,1),        &
+           ht(nx,1),dz3d(nx,1,lev),w3d(nx,1,lev),rainnc2d(nx,1),        &
            snownc2d(nx,1),graupelnc2d(nx,1),hailnc2d(nx,1),rain2d(nx,1),&
            snow2d(nx,1),graupel2d(nx,1),hail2d(nx,1),sr2d(nx,1),        &
            rew3d(nx,lev,1),rer3d(nx,lev,1),rei3d(nx,lev,1),             &
@@ -799,6 +802,7 @@
         qv3d = 0.
         qc3d = 0.
         qr3d = 0.
+        qi3d = 0.
         qs3d = 0.
         qg3d = 0.
         qh3d = 0.
@@ -807,7 +811,7 @@
         p3d = 0.
         z3d = 0.
         ht = 0.
-        dz8w = 0.
+        dz3d = 0.
         w3d = 0.
         rain2d = 0.
         snow2d = 0.
@@ -824,49 +828,61 @@
         res3d = 0.
         reg3d = 0.
         reh3d = 0.
+        land2d = 0.
         refl_10cm = 0.
 
         diagflag = .false.          !if diagflag=true and do_radar_ref=1, call calc_refl10cm
         do_radar_ref = 0
+        do_virtt = .true.           !use virtural temperature for rho and w
 
-        dx = sqrt(area(1))/1000.    !grid length (km)
+        dx = sqrt(area)/1000.       !grid length (km)
         rhowater = 1000.            !water density (kg/m^3), but not used
         rhosnow = 100.              !snow density (kg/m^3), but not used
 
         do i = 1, nxj
-!          ht(i,1) = sgeo(i)/con_g   !terrain geopotential height (m)
+          ht(i,1) = sgeo(i)/con_g   !terrain geopotential height above sea level (m)
           if( islimsk(i) .eq. 1 ) then
             land2d(i,1) = 1.        !land
           else
             land2d(i,1) = 2.        !ocean & seaice
           endif
         enddo
+
         do k = 1, lev
           kc = lev - k + 1
           do i = 1, nxj
-            qv3d (i,1,k) = qt(i,             kc)
-            qc3d (i,1,k) = qt(i,(ntcw-1)*lev+kc)
-            qr3d (i,1,k) = qt(i,(ntrw-1)*lev+kc)
-            qi3d (i,1,k) = qt(i,(ntiw-1)*lev+kc)
-            qs3d (i,1,k) = qt(i,(ntsw-1)*lev+kc)
-            qg3d (i,1,k) = qt(i,(ntgl-1)*lev+kc)
-            qh3d (i,1,k) = qt(i,(nthl-1)*lev+kc)
-            th3d (i,1,k) = tt(i,kc)    !not sure
-            pii3d(i,1,k) = 1.          !not sure
-            p3d  (i,1,k) = 100.0*plt(i,kc)                  !layer mean pressure (from mb to Pa)
-            rho3d(i,1,k) = 0.622*p3d(i,1,k)                             &
-                          /(con_rd*tt(i,kc)*qt(i,kc)+0.622) !air density (kg/m^3)
-            w3d(i,1,k)   = -vvel(i,kc)*(1.+con_fvirt*qt(i,kc))*tt(i,kc) &
-                          /p3d(i,1,k)*con_rd/con_g          !vertical velocity (m/s)
-            z3d  (i,1,k) = phil(i,k)                        !layer geopotential (m)
-            dz8w (i,1,k) = (phii(i,k+1)-phii(i,k))/con_g    !layer thickness (m)
+            qv3d (i,k,1) = qt(i,             kc)
+            qc3d (i,k,1) = qt(i,(ntcw-1)*lev+kc)
+            qr3d (i,k,1) = qt(i,(ntrw-1)*lev+kc)
+            qi3d (i,k,1) = qt(i,(ntiw-1)*lev+kc)
+            qs3d (i,k,1) = qt(i,(ntsw-1)*lev+kc)
+            qg3d (i,k,1) = qt(i,(ntgl-1)*lev+kc)
+            qh3d (i,k,1) = qt(i,(nthl-1)*lev+kc)
+            p3d  (i,k,1) = 100.0*plt(i,kc)                   !layer mean pressure (from mb to Pa)
+!            pii3d(i,k,1) = pk(i,kc)                          !exner function, =(p/psfc)**(Rd/cp)
+            pii3d(i,k,1) = 1.                                !exner function, =(p/psfc)**(Rd/cp)
+!            th3d (i,k,1) = tt(i,kc)*pk(i,kc)                 !potential temperature (K)
+            th3d (i,k,1) = tt(i,kc)                          !temperature (K)
+            z3d  (i,k,1) = phi(i,kc)/con_g                   !layer geopotential height above sea level (m)
+            dz3d (i,k,1) = (phii(i,k+1)-phii(i,k))/con_g     !layer thickness (m)
+            if ( do_virtt ) then
+              ! Tv = (1+(Rv/Rd-1)*q)*T = (1+fvirt*q)*T
+              rho3d(i,k,1) = p3d(i,k,1)/con_rd/tt(i,kc)                 &
+                            /(1+con_fvirt*qt(i,kc))            !density of air (kg/m^3)
+              w3d  (i,k,1) = -vvel(i,k)*100.*(1.+con_fvirt*qt(i,kc))    &
+                            *tt(i,kc)/p3d(i,k,1)*con_rd/con_g  !vertical velocity (m/s)
+            else
+              rho3d(i,k,1) = p3d(i,k,1)/(con_rd*tt(i,kc))      !density of air (kg/m^3)
+              w3d  (i,k,1) = -vvel(i,k)*100.*tt(i,kc)/p3d(i,k,1)*con_rd &
+                             /con_g                            !vertical velocity (m/s)
+            endif
           enddo
         enddo
 
         call gsfcgce_4ice_nuwrf                                         &
                  ( th3d, qv3d, qc3d, qr3d, qi3d, qs3d, qh3d, qg3d,      &
                    rho3d, pii3d, p3d, dta, z3d,                         &
-                   ht, dz8w, con_g, w3d,                                &
+                   ht, dz3d, con_g, w3d,                                &
                    rhowater, rhosnow,                                   &
                    itimestep, land2d, dx,                               &
 !                   ids,ide, jds,jde, kds,kde,                           & ! domain dims
@@ -889,34 +905,32 @@
         do k = 1, lev
           kc = lev - k + 1
           do i = 1, nxj
-            qt(i,             k) = qv3d(i,1,kc)
-            qt(i,(ntcw-1)*lev+k) = qc3d(i,1,kc)
-            qt(i,(ntrw-1)*lev+k) = qr3d(i,1,kc)
-            qt(i,(ntiw-1)*lev+k) = qi3d(i,1,kc)
-            qt(i,(ntsw-1)*lev+k) = qs3d(i,1,kc)
-            qt(i,(ntgl-1)*lev+k) = qg3d(i,1,kc)
-            qt(i,(nthl-1)*lev+k) = qh3d(i,1,kc)
-            tt(i,k) = th3d(i,1,kc)   !not sure
+            qt(i,             k) = qv3d(i,kc,1)
+            qt(i,(ntcw-1)*lev+k) = qc3d(i,kc,1)
+            qt(i,(ntrw-1)*lev+k) = qr3d(i,kc,1)
+            qt(i,(ntiw-1)*lev+k) = qi3d(i,kc,1)
+            qt(i,(ntsw-1)*lev+k) = qs3d(i,kc,1)
+            qt(i,(ntgl-1)*lev+k) = qg3d(i,kc,1)
+            qt(i,(nthl-1)*lev+k) = qh3d(i,kc,1)
+            tt(i,k) = th3d(i,kc,1)
 
-            re_cloud(i,k) = rew3d(i,1,k)  !micron
-            re_rain (i,k) = rer3d(i,1,k)  !micron
-            re_ice  (i,k) = rei3d(i,1,k)  !micron
-            re_snow (i,k) = res3d(i,1,k)  !micron
+            re_cloud(i,k) = rew3d(i,k,1)  !micron
+            re_rain (i,k) = rer3d(i,k,1)  !micron
+            re_ice  (i,k) = rei3d(i,k,1)  !micron
+            re_snow (i,k) = res3d(i,k,1)  !micron
           enddo
         enddo
         do i = 1, nxj
-          rlsp(i) = rain2d(i,1)+snow2d(i,1)+(i,1)+graupel2d(i,1)        &
-                   +hail2d(i,1)  !total large scale precipitation (mm)
+          rlsp(i) = rain2d(i,1)+snow2d(i,1)+graupel2d(i,1)+hail2d(i,1)  !total large scale precipitation (mm)
           sr(i)   = sr2d(i,1)
         enddo
 
         deallocate                                                      &
-         ( th3d,qv3d,qc3d,qr3d,qs3d,qg3d,qh3d,rho3d,pii3d,p3d,z3d,ht,   &
-           dz8w,w3d,rainnc2d,snownc2d,graupelnc2d,hailnc2d,rain2d,      &
+         ( th3d,qv3d,qc3d,qr3d,qs3d,qi3d,qg3d,qh3d,rho3d,pii3d,p3d,z3d, &
+           ht,dz3d,w3d,rainnc2d,snownc2d,graupelnc2d,hailnc2d,rain2d,   &
            snow2d,graupel2d,hail2d,sr2d,rew3d,rer3d,rei3d,res3d,reg3d,  &
            reh3d,land2d,refl_10cm )
-      endif
-#endif
+      endif  !end of if nmmiph=16
 
       return
 !--------------------------

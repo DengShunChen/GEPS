@@ -35,7 +35,7 @@
 
       INTEGER, PARAMETER, PRIVATE:: chunk = 16
 
-      LOGICAL, EXTERNAL :: wrf_dm_on_monitor
+!      LOGICAL, EXTERNAL :: wrf_dm_on_monitor
 
 !JJS 20140117 vvvvv
       PRIVATE  ! privatize all variables/subroutines in this module excepting public parameter below
@@ -173,7 +173,7 @@
                   ,ht, dz8w, grav, w                                    &
                   ,rhowater, rhosnow                                    &
                   ,itimestep, xland, dx                                 &
-                  ,ids,ide, jds,jde, kds,kde                            & ! domain dims
+!                  ,ids,ide, jds,jde, kds,kde                            & ! domain dims
                   ,ims,ime, jms,jme, kms,kme                            & ! memory dims
                   ,its,ite, jts,jte, kts,kte                            & ! tile   dims
                   ,rainnc, rainncv                                      &
@@ -206,8 +206,8 @@
 !
 ! JJS 2/15/2005
 !
-      INTEGER, INTENT(IN)  ::   ids,ide, jds,jde, kds,kde ,             &
-                                ims,ime, jms,jme, kms,kme ,             &
+!      INTEGER, INTENT(IN)  ::   ids,ide, jds,jde, kds,kde
+      INTEGER, INTENT(IN)  ::   ims,ime, jms,jme, kms,kme ,             &
                                 its,ite, jts,jte, kts,kte 
       INTEGER, INTENT(IN)  ::   itimestep
   
@@ -472,7 +472,7 @@
              rho2d, pii2d, p2d, w2d,                                    &
              itimestep, xland1d,                                        &
              refl_10cm2d, diagflag, do_radar_ref,                       & ! GT added for reflectivity calcs
-             ids,ide, jds,jde, kds,kde,                                 & ! domain dims
+!             ids,ide, jds,jde, kds,kde,                                 & ! domain dims
              ims,ime, jms,jme, kms,kme,                                 & ! memory dims
              its,ite, jts,jte, kts,kte,                                 & ! tile   dims
 !NUWRF BEGIN
@@ -2038,7 +2038,7 @@
                        rho_mks, pi_mks, p0_mks, w_mks,                  &
                        itimestep, xland,                                &
                        refl_10cm, diagflag, do_radar_ref,               & ! GT added for reflectivity calcs
-                       ids,ide, jds,jde, kds,kde,                       &
+!                       ids,ide, jds,jde, kds,kde,                       &
                        ims,ime, jms,jme, kms,kme,                       &
                        its,ite, jts,jte, kts,kte,                       &
 !NUWRF BEGIN
@@ -2151,7 +2151,7 @@
 !cc
 
 !JJS 20090623 vvvvv
-      integer, intent(in) :: ids,ide,jds,jde,kds,kde
+!      integer, intent(in) :: ids,ide,jds,jde,kds,kde
       integer, intent(in) :: ims,ime,jms,jme,kms,kme
       integer, intent(in) :: its,ite,jts,jte,kts,kte
       integer, intent(in) :: ii,j,irestrict ! global i-index inside local i-loops: ii+i-1
@@ -2402,10 +2402,10 @@
              acphysm(i,k)=0.
        ENDDO
        enddo !k
-      if ( wrf_dm_on_monitor() .and. i.eq.its .and. j.eq.jts ) then
-         write(6, *) '    latent heating variables have been '//        &
-                     'initialized to 0. at timestep = ', itimestep
-      endif
+!      if ( wrf_dm_on_monitor() .and. i.eq.its .and. j.eq.jts ) then
+!         write(6, *) '    latent heating variables have been '//        &
+!                     'initialized to 0. at timestep = ', itimestep
+!      endif
       endif
 
 !JJS  convert from mks to cgs, and move from WRF grid to GCE grid
@@ -2503,12 +2503,12 @@
 
       thresh_evap = -39.974 * exp(-1.194 * dx/1000.)
 
-      if ( wrf_dm_on_monitor() .and. itimestep.eq.1 .and. &
-           i.eq.its .and. j.eq.jts ) then
-         print *,'GSFCGCE 4ice scheme inside satice improve=',improve
-         print *,'dx, thresh_evap = ', dx, thresh_evap  
-         print *,'no reduce suprious evaporation adjustment'
-      endif
+!      if ( wrf_dm_on_monitor() .and. itimestep.eq.1 .and. &
+!           i.eq.its .and. j.eq.jts ) then
+!         print *,'GSFCGCE 4ice scheme inside satice improve=',improve
+!         print *,'dx, thresh_evap = ', dx, thresh_evap  
+!         print *,'no reduce suprious evaporation adjustment'
+!      endif
 
       Rc=1.e-3               ! cloud droplet radius 10 microns
       Ra=1.e-5               ! aerosol radius 0.1 microns
@@ -4369,8 +4369,8 @@
                else
                   print *,' xland is not 1. or 2., run stopped'
                   ! EMK NUWRF
-                  call wrf_error_fatal &
-                       (' xland is not 1. or 2., run stopped')
+!                  call wrf_error_fatal &
+!                       (' xland is not 1. or 2., run stopped')
 !                  stop
                endif
                  ! for cloud water, estimate lambda (slope of gamma distribution)
@@ -4392,8 +4392,8 @@
             else
                print *,' xland is not 1. or 2., run stopped'
                ! EMK NUWRF
-               call wrf_error_fatal &
-                    (' xland is not 1. or 2., run stopped')
+!               call wrf_error_fatal &
+!                    (' xland is not 1. or 2., run stopped')
 !               stop
             endif
            ! for cloud water, estimate lambda (slope of gamma distribution)
@@ -4624,9 +4624,9 @@
         Heaviside_func = 1.e0
       else
       ! NUWRF EMK...User WRF's library to gracefully stop MPI.
-        write(wrf_err_message,*) &
-        'MSG: auto_conversion: Strange value of R6= ',R6
-        call wrf_error_fatal(trim(wrf_err_message))
+!        write(wrf_err_message,*) &
+!        'MSG: auto_conversion: Strange value of R6= ',R6
+!        call wrf_error_fatal(trim(wrf_err_message))
 !   print*, 'MSG: auto_conversion: Strange value of R6= ', R6 ; stop
       endif
 

@@ -337,6 +337,8 @@
             print *,'   --- GFDL microphysics version 2'
           elseif (icmphys == 13) then
             print *,'   --- GFDL microphysics version 3'
+          elseif (icmphys == 16) then
+            print *,'   --- Goddard (GCE) 4ICE microphysics'
           else
             print *,'  !!! error in cloud microphysc specification!!!', &
      &              '  icmphys (np3d) =',icmphys

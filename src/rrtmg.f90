@@ -216,6 +216,19 @@
         enddo
       endif
 
+      if ( nmmiph.eq.16 ) then
+! for MP Goddard (GCE) 4ICE effective radius
+        nclds = 6
+        do k = 1, lev
+          do i = 1, nxj
+            phy3d(i,k,1) = ftp(i,k)    ! effective radius for liquid water (micron)
+            phy3d(i,k,2) = ftp1(i,k)   ! effective radius for ice water    (micron)
+            phy3d(i,k,3) = fqp(i,k)    ! effective radius for snow water   (micron)
+            phy3d(i,k,4) = fqp1(i,k)   ! effective radius for rain water   (micron)
+          enddo
+        enddo
+      endif
+
       if ( nmmiph.eq.2 ) then
         nclds=1
         phy3d=0.

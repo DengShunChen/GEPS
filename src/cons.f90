@@ -526,6 +526,8 @@
         ntrac_req = 6   ! only six species of hydrometeors for New Thompson MP
       elseif ( nmmiph .eq. 8 ) then
         ntrac_req = 6   ! only six species of hydrometeors for Thompson MP
+      elseif ( nmmiph .eq. 16 ) then
+        ntrac_req = 6   ! only six species of hydrometeors for Goddard MP
       else
         ntrac_req = nmmiph
       endif
@@ -541,7 +543,8 @@
         endif
 !
         if ( nmmiph.eq.6 .or. nmmiph.eq.8 .or. nmmiph.eq.9 .or.         &
-             nmmiph.eq.11 .or. nmmiph.eq.12 .or. nmmiph.eq.13 )         &
+             nmmiph.eq.11 .or. nmmiph.eq.12 .or. nmmiph.eq.13 .or.      &
+             nmmiph.eq.16 )                                             &
           call mp_init(nmmiph,myrank)
 !
       endif

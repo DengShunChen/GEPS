@@ -192,6 +192,8 @@
           icmphys = 12                  ! GFDL microphysics version 2
         elseif ( nmmiph == 13 ) then
           icmphys = 13                  ! GFDL microphysics version 3
+        elseif ( nmmiph == 16 ) then
+          icmphys = 16                  ! Goddard (GCE) 4ICE microphysics
         endif
       else
         icldflg = 0                     ! diagnostic cloud optical prop scheme
