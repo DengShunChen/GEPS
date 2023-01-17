@@ -496,7 +496,8 @@
            ice2d(nxj,1),graupel2d(nxj,1),garea(nxj,1) )
         if ( effr_in ) allocate                                         &
            ( dp2d(nxj,lev),rho2d(nxj,lev),qc2d(nxj,lev),qr2d(nxj,lev),  &
-             qi2d(nxj,lev),qs2d(nxj,lev),qg2d(nxj,lev),mask1d(nxj) )
+             qi2d(nxj,lev),qs2d(nxj,lev),qg2d(nxj,lev),mask1d(nxj),     &
+             t2d(nxj,lev) )
         land2d = 0.
         garea = 0.
         qvten3d = 0.
@@ -593,11 +594,14 @@
         enddo
 
         if ( effr_in ) then
+          do k = 1, lev
+            do i = 1, nxj
+              t2d(i,k) = tt(i,k)
+            enddo
+          enddo
           call cloud_diagnosis                                          &
-!               ( 1, nx, 1, lev, rho, qtr, qti, qtrw, qtsw, qtgl, tt,    &  ! module_mp_gfdl_fv3.f90
-!                 rew, rei, rer, res, reg )
-               ( 1, nxj, 1, lev, rho2d, dp2d, mask1d,                   &  ! module_mp_gfdl_fv3_v16.f90
-                 qc2d, qi2d, qr2d, qs2d, qg2d, tt,                      &
+               ( 1, nxj, 1, lev, rho2d, dp2d, mask1d,                   &
+                 qc2d, qi2d, qr2d, qs2d, qg2d, t2d,                     &
                  rew2d, rei2d, rer2d, res2d, reg2d )
           do k = 1, lev
             kc = lev - k + 1
@@ -631,7 +635,7 @@
            cldten3d,uten3d,vten3d,tten3d,rew2d,rei2d,rer2d,res2d,reg2d, &
            land2d,rain2d,snow2d,ice2d,graupel2d,garea )
         if ( effr_in ) deallocate                                       &
-           ( dp2d,rho2d,qc2d,qr2d,qi2d,qs2d,qg2d,mask1d )
+           ( dp2d,rho2d,qc2d,qr2d,qi2d,qs2d,qg2d,mask1d,t2d )
       endif  ! end of nmmiph.eq.11
 
 !     GFDL MP v2 & v3
