@@ -145,7 +145,7 @@
                 refl10(nx,lev)
       real      rainncv(nx),snowncv(nx),graupelncv(nx)
       real      icem
-      logical   lradar,do_virtt
+      logical   lradar
       real,dimension(:),allocatable ::                                  &
               land1d
       real,dimension(:,:),allocatable ::                                &
@@ -837,9 +837,8 @@
 
         diagflag = .false.          !if diagflag=true and do_radar_ref=1, call calc_refl10cm
         do_radar_ref = 0
-        do_virtt = .true.           !use virtural temperature for rho and w
 
-        dx = sqrt(area)/1000.       !grid length (km)
+        dx = sqrt(area)             !grid length (m)
         rhowater = 1000.            !water density (kg/m^3), but not used
         rhosnow = 100.              !snow density (kg/m^3), but not used
 
@@ -864,21 +863,16 @@
             qh3d (i,k,1) = qt(i,(nthl-1)*lev+kc)
             p3d  (i,k,1) = 100.0*plt(i,kc)                   !layer mean pressure (from mb to Pa)
 !            pii3d(i,k,1) = pk(i,kc)                          !exner function, =(p/psfc)**(Rd/cp)
-            pii3d(i,k,1) = 1.                                !exner function, =(p/psfc)**(Rd/cp)
+            pii3d(i,k,1) = 1.
 !            th3d (i,k,1) = tt(i,kc)*pk(i,kc)                 !potential temperature (K)
             th3d (i,k,1) = tt(i,kc)                          !temperature (K)
             z3d  (i,k,1) = phi(i,kc)/con_g                   !layer geopotential height above sea level (m)
             dz3d (i,k,1) = (phii(i,k+1)-phii(i,k))/con_g     !layer thickness (m)
-            if ( do_virtt ) then
-              ! Tv = (1+(Rv/Rd-1)*q)*T = (1+fvirt*q)*T
-              rho3d(i,k,1) = p3d(i,k,1)/con_rd/tt(i,kc)                 &
-                            /(1+con_fvirt*qt(i,kc))            !density of air (kg/m^3)
-              w3d  (i,k,1) = -vvel(i,k)*100.*(1.+con_fvirt*qt(i,kc))    &
-                            *tt(i,kc)/p3d(i,k,1)*con_rd/con_g  !vertical velocity (m/s)
-            else
-              rho3d(i,k,1) = p3d(i,k,1)/(con_rd*tt(i,kc))      !density of air (kg/m^3)
-              w3d  (i,k,1) = -vvel(i,k)*100.*tt(i,kc)/p3d(i,k,1)*con_rd &
-                             /con_g                            !vertical velocity (m/s)
+            ! use virtural temperature : Tv = (1+(Rv/Rd-1)*q)*T = (1+con_fvirt*q)*T
+            rho3d(i,k,1) = p3d(i,k,1)/con_rd/tt(i,kc)                   &
+                          /(1+con_fvirt*qt(i,kc))            !density of air (kg/m^3)
+            w3d  (i,k,1) = -vvel(i,k)*100.*(1.+con_fvirt*qt(i,kc))      &
+                          *tt(i,kc)/p3d(i,k,1)*con_rd/con_g  !vertical velocity (m/s)
             endif
           enddo
         enddo

@@ -189,7 +189,7 @@
      &					   progcld4, diagcld1,          &
                                            progcld5, progcld5o,         &
                                            progclduni, progcld6,        &
-                                           progcld_thompson
+                                           progcld_thompson, progcld_gce
 
       use module_radsw_parameters,  only : topfsw_type, sfcfsw_type,    &
      &                                     profsw_type,cmpfsw_type,nbdsw
@@ -1754,16 +1754,15 @@
        elseif ( icmphys == 16 ) then   ! Goddard (GCE) 4ICE
          if ( me == 0 .and. myrank == 0 )                               &
            print *,'### call Goddard (GCE) 4ICE cloud ###'
-           call progcld5o                                               &
+           call progcld_gce                                             &
 !    ---  inputs:
-             ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,tracer1,              &
-               xlat,xlon,slmsk,                                         &
-               ntrac,ntcw,ntiw,ntrw,ntsw,ntgl,cldcov,                   &
-               phy_f3d(:,:,1),phy_f3d(:,:,2),phy_f3d(:,:,3),            &
-               phy_f3d(:,:,4),effr_in,                                  &
-               im,lmk,lmp,                                              &
+             ( plyr, plvl, tlyr, tvly, qlyr, qstl, rhly, tracer1,       &
+               xlat, xlon, slmsk, ntrac,                                &
+               phy_f3d(:,:,1), phy_f3d(:,:,2), phy_f3d(:,:,3),          &
+               phy_f3d(:,:,4), effr_in,                                 &
+               im, lmk, lmp, lmfshal, lmfdeep2,                         &
 !    ---  outputs:
-               clouds,cldsa,mtopa,mbota                                 &
+               clouds, cldsa, mtopa, mbota, cldcov                      &
               )
         endif                            ! end if_icmphys
 
