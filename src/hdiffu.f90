@@ -121,7 +121,7 @@
             c3=1.+dta*fact*hfilt*eps4(n,m)**powd
 
             if ( KL .le. hdk1 ) then
-              c2=1.+dta*facd*hfilt2*eps4(n,m)+vd*exp(-0.5*(k-1))
+              c2=1.+dta*facd*hfilt2*eps4(n,m)+vd*exp(-0.5*k)
             else
               c2=1.+dta*facd*hfilt*eps4(n,m)**powd
             endif
@@ -366,7 +366,7 @@
       nf=jtrun-1
 !
       finc = 10.*max(af,0.001)
-      fl   = 150./hdk2((1)-1.)
+      fl   = 60./float(hdk2(1)-1)
       hfilt6 = (radsq/(nf*(nf+1)))**3.
       hfilt4 = (radsq/(nf*(nf+1)))**2.
       hfilt2 = radsq/(nf*(nf+1))
@@ -387,12 +387,13 @@
 
         KL=Llist(k)
 !
-        kfac = (fl+finc)*max(float(hdk2(1)-KL),0.)
+        kfac = (fl+finc)*max(float(hdk2(1)-KL),0.)!    &
+!              + min(0.5*max(float(hdk2(3)-KL),0.),3.)
 !        facd = mwhd * max(amp,kfac)
 !        facv = max(min(amp,1.),kfac)
-        facd =     max(mwhd,kfac)
-        facv = 0.5*max(mwhd,kfac)
-        fact = 0.5*max(mwhd,kfac)
+        facd =     max(1.,amp*kfac)*mwhd
+        facv = 0.5*max(1.,amp*kfac)*mwhd
+        fact = 0.5*max(1.,amp*kfac)*mwhd
 !!        fact = amp * kfacv 
 !          endif
 
@@ -410,7 +411,7 @@
 !!            c2=1.+dta*facd*hfilt2*eps4(n,m)
 
             if ( KL .le. hdk1 ) then
-              c2=1.+dta*facd*hfilt2*eps4(n,m)+vd*exp(-0.5*(k-1))
+              c2=1.+dta*facd*hfilt2*eps4(n,m)+vd*exp(-0.5*k)
             else
               c2=1.+dta*facd*hfilt4*eps4(n,m)**2.
             endif

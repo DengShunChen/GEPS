@@ -321,8 +321,8 @@
       vd=0.4
       endif
 !
-!      tmeans=300.
-      tmeans=350.
+      tmeans=300.
+!      tmeans=350.
 
 !-- for hybrid coordinates, ptmeans reset for numerical stability
 !      ptmeans=800.
@@ -330,7 +330,7 @@
 !
 ! for forward weighting Semi-Implicit
 !
-      alpha=0.85
+      alpha=0.7
 !
 ! for two time level 
 !

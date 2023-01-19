@@ -142,7 +142,7 @@
               ntau,itau,lcwb,lphy,ifromtau,itotau,istat,    &
               istst,ii ,n_stable,n_unstable,nc_stable
 
-      real    www,dtx,dta,thdai,tkei,tpei,dsigp,            &
+      real    www,dtx,dta,dth,dtq,thdai,tkei,tpei,dsigp,    &
               cosw,tengi,dt24,tg2,dtx_tau,hfiltx,sqhaf,     &
               dt1,sptend,wmax,xx,facw,dtaup,                &
               sptendmax2,sptendmax1,dt_chg,prslp,alphax
@@ -214,7 +214,7 @@
 !      data facm/1.,0.,1.5,-0.5/
       data facm/ 1.   , 0.  , &
                  1.5  ,-0.5 /
-      alphax=alpha
+
 !
       year = idate(1)
       yrd  = 365
@@ -427,6 +427,8 @@
       itter=1
 !
       dta = dtx
+      dth = 0.5*dta
+      dtq = 0.5*dth
       itter=1
       ndsldta = 0.5*dta
       ndsldtah= ndsldta/float(itter)
@@ -535,28 +537,29 @@
 !
 ! sppt
       itimestep=1
-!      ptm=0.
-!      do jj = 1, jlistnum
-!        j=jlist1(jj)
-!        nxj=nxdef_2d(j)
-!        do i = 1,nxj
-!          ptm(i,jj)= sgeo(i,jj)/(rgas*288.15)
-!          call vexp(ptm(i,jj),ptm(i,jj),1)
-!        enddo
-!      enddo
-!      call mpe2d_unify_nx(ww1,ptm) 
-!      call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1         &
-!                  ,sptm,nsizey)
-!!      call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,spgeo    &
-!!                  ,dlgeo,dtgeo,nsizey)
+      ptm=0.
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        do i = 1,nxj
+          ptm(i,jj)= sgeo(i,jj)/(rgas*288.5)
+          call vexp(ptm(i,jj),ptm(i,jj),1)
+        enddo
+      enddo
+      call mpe2d_unify_nx(ww1,ptm) 
+      call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1         &
+                  ,sptm,nsizey)
+!      call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,spgeo    &
+!                  ,dlgeo,dtgeo,nsizey)
 !
+      alphax=alpha
       n_stable=0
       n_unstable=0
       hfiltx=hfilt
       if(dta.gt.720)then
 !!        dt_chg=1800.
         nc_stable=1
-        sptendmax2=0.3005
+        sptendmax2=0.3405
         sptendmax1=0.2405
       else if(dta.le.720 .and. dta.gt.450 )then
 !!        dt_chg=720.
@@ -669,7 +672,6 @@
         do n=mf,jtrun
           do i = 1, 2
           plten(n,m,i) = 0.0
-          pltemp(n,m,i) = 0.0
           do k = 1, levp
             divten(k,i,n,m) = 0.0
             vorten(k,i,n,m) = 0.0
@@ -734,7 +736,7 @@
 !
 ! Transfer Spectral to Gridpoint for u,v,t,q,ps at n-1
 !
-      call transr1(jtrun,jtmax,nx,my,my_max,poly,plmid,ptm,nsizey)
+!      call transr1(jtrun,jtmax,nx,my,my_max,poly,plmid,ptm,nsizey)
 !      call tranuv(jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac    &
 !                 ,poly,dpoly,vormid,divmid,um,vm,nsizey)
 !      call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divmid,cc,1,nsizey)
@@ -760,9 +762,9 @@
 !
 !     advet grid non-linear forcing from t-dt/2 to t+dt/2 via NDSL advection
 !
-      call mpe2d_transpose_ndsl_p2f(um,ut_sl,    &
+      call mpe2d_transpose_ndsl_p2f(ut,ut_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f(vm,vt_sl,    &
+      call mpe2d_transpose_ndsl_p2f(vt,vt_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 
       call mpe2d_transpose_ndsl_p2f(ut,uum_sl,    &
@@ -774,7 +776,7 @@
 !
 !      do itt = 1,itter
         call ndslfv_monoadvh_fgnl(uum_sl,vvm_sl,ttm_sl     &
-                             ,nxdef,ndsldtah,xy,levp,3)
+                             ,nxdef,dtq,xy,levp,3)
 !      enddo
 !
       call mpe2d_transpose_ndsl_f2p(uum_sl,vdzonl, &
@@ -790,6 +792,11 @@
 !ndy        j=jlist1(jj)
 !ndy        nxj=nxdef_2d(j)
 !
+!   new p**capa quantities were computed in previous diabat call
+!
+!ndy        call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pt(1,jj), &
+!ndy                                pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
+!
 !       Calculate Vertical velocity & Stream Functions
 !
 !ndy        call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld              &
@@ -797,7 +804,7 @@
 !ndy        , qt(1,1,jj),phi(1,1,jj),pt(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
 !ndy        , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)         &
 !ndy        , diveng(1,1,jj),vdmerdr(1,1,jj),vdzonlr(1,1,jj),pten(1,1,jj)  &
-!ndy        , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),sgeo(1,jj),1 )
+!ndy        , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),sgeo(1,jj),2 )
 !
 !ndy      enddo !jj = 1,jlistnum
 !
@@ -806,9 +813,6 @@
 !ndy                 ,hldten,1,nsizey)
 !ndy      call trngra3(jtrun,jtmax,nx,levp,my,my_max,cim,poly,dpoly        &
 !ndy                 ,hldten,dlphi,dtphi,nsizey)
-!!      call mpe2d_unify_nx(ww1,deldm) 
-!!      call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1         &
-!!                  ,plten,nsizey)
 !
 !ndy      do jj = 1, jlistnum
 !ndy        j=jlist1(jj)
@@ -846,8 +850,8 @@
 !
 !     calculate vertical velocity at mid-point
 !
-      call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,plmid      &
-                 ,dlpl,dtpl,nsizey)
+!      call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,plmid      &
+!                 ,dlpl,dtpl,nsizey)
 !
       do jj = 1, jlistnum
         j=jlist1(jj)
@@ -855,14 +859,14 @@
 !
 !   new p**capa quantities were computed in previous diabat call
 !
-        call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,ptm(1,jj), &
+        call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pt(1,jj), &
                                 pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
 !
 !
 !ndy        call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld               &
         call gridnl_hybrid_ndsl (nxjp(j),nxp,lev,ncld                  &
-        , cp,radsq,um(1,1,jj),vm(1,1,jj),rdivm(1,1,jj),tm(1,1,jj)       &
-        , qt(1,1,jj),phi(1,1,jj),ptm(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
+        , cp,radsq,ut(1,1,jj),vt(1,1,jj),rdiv(1,1,jj),tt(1,1,jj)       &
+        , qt(1,1,jj),phi(1,1,jj),pt(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
         , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)         &
         , diveng(1,1,jj),vdmerdg(1,1,jj),vdzonlg(1,1,jj),pten(1,1,jj)  &
 !ndy        , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),sgeo(1,jj),2 )
@@ -895,35 +899,78 @@
 !     call ndslfv_monoadvv_fgnl(vdzonl,vdmerd,ddtemp,pdot,ptm &
 
 !CWB2021 ndsl single precision test
-      call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlrp,vdmerdrp,ndsldta)
-      call ndslfv_monoadvv_fgnl(vdzonl,vdmerd,ddtemp,pdot,ptm &
-                          ,nxjp,ndsldta,3)
+      call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlrp,vdmerdrp,dtq)
+      call ndslfv_monoadvv_fgnl(vdzonl,vdmerd,ddtemp,pdot,pt &
+                          ,nxjp,dtq,3)
 !CWB2021 ndsl single precision test
 
 !
-      call trandv ( jtrun,jtmax,nx,my,my_max,lev,vdzonl,vdmerd,weight,cim &
-                   ,onocos,poly,dpoly,vormid,divmid,nsizey)
-      call joinrs(cc,ddtemp,dummy,dummy,dummy,nx,my_max,lev        &
-                   ,jlistnum,1,1)
-      call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc     &
-                   ,temmid,1,nsizey)
-!
-      call whdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld       &
-                   ,hfiltx,rad,cosl,ut,vt,vormid,divmid,temmid   &
-                   ,eps4,trefs)
-!
-        do m = 1, mlistnum
-          mf=mlist(m)
-          do n = mf, jtrun
-            do i = 1, 2
-              do k = 1, levp
-                vormid(k,i,n,m)= 0.5*(vormid(k,i,n,m)+vornow(k,i,n,m))
-                divmid(k,i,n,m)= 0.5*(divmid(k,i,n,m)+divnow(k,i,n,m))
-                temmid(k,i,n,m)= 0.5*(temmid(k,i,n,m)+temnow(k,i,n,m))
-              enddo
-            enddo
+      call mpe2d_unify_nx(ww1,deldm)
+      call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1         &
+                  ,plten,nsizey)            
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        do k = 1, lev
+          do i = 1,nxj
+            vdzonl(i,k,jj) = ( vdzonl(i,k,jj) - ut(i,k,jj) ) / dth
+            vdmerd(i,k,jj) = ( vt(i,k,jj) - vdmerd(i,k,jj) ) / dth
+            ddtemp(i,k,jj) = ( ddtemp(i,k,jj) - tt(i,k,jj) ) / dth
           enddo
         enddo
+      enddo
+!
+      call joinrs(cc,ddtemp,dummy,dummy,dummy,nx,my_max,lev    &
+               ,jlistnum,1,1)
+      call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc &
+               ,temten,1,nsizey)
+      call rstrandz (jtrun,jtmax,nx,my,my_max,levp,vdmerd,vdzonl   &
+               ,weight,cim,onocos,poly,dpoly,divten,vorten,nsizey)
+      call siimpl ( jtrun,jtmax,lev,dth,ptmeans,dsigma,spalm,eps4,eigval &
+                  , evecin,evectr,arrhyd,arsddt,temnow,divnow,plnow      &
+                  , temnow,divnow,plnow,temten,divten,plten,alphax)
+
+!      call trandv ( jtrun,jtmax,nx,my,my_max,lev,vdzonl,vdmerd,weight,cim &
+!                   ,onocos,poly,dpoly,vormid,divmid,nsizey)
+!      call joinrs(cc,ddtemp,dummy,dummy,dummy,nx,my_max,lev        &
+!                   ,jlistnum,1,1)
+!      call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc     &
+!                   ,temmid,1,nsizey)
+!
+      mlst=ilist(1)
+      if(mlst .ne. 0) then
+        plten(1,mlst,1) = 0.0
+        plten(1,mlst,2) = 0.0
+      endif
+      do m = 1, mlistnum
+         mf=mlist(m)
+         if ( mf.eq.1 ) then
+         do i = 1, 2
+           do k = 1, levp
+             divten(k,i,1,m)= 0.0
+             vorten(k,i,1,m)= 0.0
+           enddo
+         enddo
+         endif
+      enddo
+!          
+      do m = 1, mlistnum
+        mf=mlist(m)
+        do n = mf, jtrun
+          do i = 1, 2
+            do k = 1, levp
+              vormid(k,i,n,m)= dth*vorten(k,i,n,m)+vornow(k,i,n,m)
+              divmid(k,i,n,m)= dth*divten(k,i,n,m)+divnow(k,i,n,m)
+              temmid(k,i,n,m)= dth*temten(k,i,n,m)+temnow(k,i,n,m)
+            enddo
+            plmid(n,m,i)= dth*plten(n,m,i)+plnow(n,m,i)
+          enddo
+        enddo
+      enddo
+!        
+      call whdiffu ( dth,my,my_max,nx,jtrun,jtmax,lev,ncld         &
+                   ,hfiltx,rad,cosl,ut,vt,vormid,divmid,temmid     &
+                   ,eps4,trefs)
 !
 !      call whdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld       &
 !                   ,hfiltx,rad,cosl,ut,vt,vormid,divmid          &
@@ -938,6 +985,9 @@
       call ujoinsr(cc,rdivm,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temmid,cc,1,nsizey)
       call ujoinsr(cc,tm,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+      call transr1(jtrun,jtmax,nx,my,my_max,poly,plmid,ptm,nsizey)
+      call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,plmid      &
+                 ,dlpl,dtpl,nsizey)
 
 !
 !  the gaussian quadrature loop for spectral tendencies.  subroutine
@@ -949,6 +999,11 @@
 
         j=jlist1(jj)
         nxj=nxdef_2d(j)
+!
+!   new p**capa quantities were computed in previous diabat call
+!
+        call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,ptm(1,jj), &
+                                pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )        
 !
 !       Calculate Vertical velocity & Stream Functions
 !
@@ -1246,8 +1301,7 @@
             enddo
           enddo
         enddo
-
-         
+!
 !
       if (hdiff) call hdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld       &
                              , hfiltx,rad,cosl,um,vm,vornow,divnow,temnow  &
