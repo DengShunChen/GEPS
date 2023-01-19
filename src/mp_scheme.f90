@@ -873,7 +873,6 @@
                           /(1+con_fvirt*qt(i,kc))            !density of air (kg/m^3)
             w3d  (i,k,1) = -vvel(i,k)*100.*(1.+con_fvirt*qt(i,kc))      &
                           *tt(i,kc)/p3d(i,k,1)*con_rd/con_g  !vertical velocity (m/s)
-            endif
           enddo
         enddo
 

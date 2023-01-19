@@ -5,8 +5,8 @@
                          , slc,stc,canopy,zice,ggdef,gmdef)
       use index
       use mpe
-      use radn, only : ntoz,ntcw,ntrw,ntiw,ntsw,ntgl
-      use const, only : RTYPE,kflag
+      use radn, only : ntoz,ntcw,ntrw,ntiw,ntsw,ntgl,nthl,ntinc,ntrnc
+      use const, only : RTYPE,kflag,nmmiph
 
       implicit  none
 
@@ -42,8 +42,10 @@
       lenc=nx*my
       if ( ntoz .gt. 0 ) then
         nclds=ntoz-1
+!        if ( nmmiph .eq. 9 ) nclds = 6  !Thompson with single-moment output
       else
         nclds=ncld
+!        if ( nmmiph .eq. 9 ) nclds = 6  !Thompson with single-moment output
       endif
 
 !
@@ -149,6 +151,7 @@
       do k=1,lev
         wrk1=0.
         do ntrac=2,nclds
+          if ( .not. (nmmiph.eq.9 .and. ntrac.gt.6) ) then  !exclude ice&rain concentration for Thompson
           do jj = 1, jlistnum
             j=jlist1(jj)
             nxj=nxdef_2d(j)
@@ -156,6 +159,7 @@
               wrk1(i,jj)=wrk1(i,jj)+qt(i,k+(ntrac-1)*lev,jj)
             enddo
           enddo
+          endif
         enddo
         call unify_reduceintp(nx,my,my_max,wrk1,work)
         if ( myrank .eq. k-1 ) mout=work
@@ -198,15 +202,21 @@
               mlayer = 'n'
             endif
             if(ntrac.eq.ntcw)then
-              write(typ,'(A1,i2.2,"551")')mlayer,kl     ! cloud liquid water content
+              write(typ,'(A1,i2.2,"551")')mlayer,kl     ! cloud water
             else if(ntrac.eq.ntiw)then
-              write(typ,'(A1,i2.2,"552")')mlayer,kl     ! cloud ice content
+              write(typ,'(A1,i2.2,"552")')mlayer,kl     ! cloud ice
             else if(ntrac.eq.ntrw)then
               write(typ,'(A1,i2.2,"553")')mlayer,kl     ! rain
             else if(ntrac.eq.ntsw)then
               write(typ,'(A1,i2.2,"554")')mlayer,kl     ! snow 
             else if(ntrac.eq.ntgl)then
               write(typ,'(A1,i2.2,"555")')mlayer,kl     ! graupel
+            else if(ntrac.eq.nthl .and. nmmiph.eq.16) then
+              write(typ,'(A1,i2.2,"556")')mlayer,kl     ! hail
+            else if(ntrac.eq.ntinc .and. nmmiph.eq.9) then
+              write(typ,'(A1,i2.2,"572")')mlayer,kl     ! ice concentration
+            else if(ntrac.eq.ntrnc .and. nmmiph.eq.9) then
+              write(typ,'(A1,i2.2,"573")')mlayer,kl     ! rain concentration
             else
               goto 27
             endif
