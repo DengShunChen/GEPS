@@ -3317,7 +3317,7 @@
 
 !  --- calculate cloud fraction :
       call cloud_fraction_XuRandall                                     &
-               ( IX, NLAY, plyr*100., qsum, rhly, qstl,                 &
+               ( IX, NLAY, plyr, qsum, rhly, qstl,                      &
                  lmfshal, lmfdeep2, cldcov )
 
 !  ---  find top pressure for each cloud domain for given latitude
@@ -5185,50 +5185,100 @@
 
 !> - Compute layer cloud fraction.
 
-      clwmin = 0.0
-      if (.not. lmfshal) then
-        do k = 1, NLAY
-        do i = 1, IX
-          clwt = 1.0e-6 * (plyr(i,k)*0.001)
+       if ( ivflip == 0 ) then              ! input data from toa to sfc
 
-          if (clwf(i,k) > clwt) then
+         clwmin = 0.0
+         if (.not. lmfshal) then
+           do k = NLAY, 1, -1
+           do i = 1, IX
+             clwt = 1.0e-6 * (plyr(i,k)*0.001)
 
-            onemrh= max( 1.e-10, 1.0-rhly(i,k) )
-            clwm  = clwmin / max( 0.01, plyr(i,k)*0.001 )
+             if (clwf(i,k) > clwt) then
 
-            tem1  = min(max(sqrt(sqrt(onemrh*qstl(i,k))),0.0001),1.0)
-            tem1  = 2000.0 / tem1
+               onemrh= max( 1.e-10, 1.0-rhly(i,k) )
+               clwm  = clwmin / max( 0.01, plyr(i,k)*0.001 )
 
-            value = max( min( tem1*(clwf(i,k)-clwm), 50.0 ), 0.0 )
-            tem2  = sqrt( sqrt(rhly(i,k)) )
+               tem1  = min(max(sqrt(sqrt(onemrh*qstl(i,k))),0.0001),1.0)
+               tem1  = 2000.0 / tem1
 
-            cldtot(i,k) = max( tem2*(1.0-exp(-value)), 0.0 )
-          endif
-        enddo
-        enddo
-      else
-        do k = 1, NLAY
-        do i = 1, IX
-          clwt = 1.0e-6 * (plyr(i,k)*0.001)
+               value = max( min( tem1*(clwf(i,k)-clwm), 50.0 ), 0.0 )
+               tem2  = sqrt( sqrt(rhly(i,k)) )
 
-          if (clwf(i,k) > clwt) then
-            onemrh= max( 1.e-10, 1.0-rhly(i,k) )
-            clwm  = clwmin / max( 0.01, plyr(i,k)*0.001 )
-!
-            tem1  = min(max((onemrh*qstl(i,k))**0.49,0.0001),1.0)  !jhan
-            if (lmfdeep2) then
-              tem1  = xrc3 / tem1
-            else
-              tem1  = 100.0 / tem1
+               cldtot(i,k) = max( tem2*(1.0-exp(-value)), 0.0 )
+             endif
+          enddo
+          enddo
+        else
+          do k = NLAY, 1, -1
+          do i = 1, IX
+            clwt = 1.0e-6 * (plyr(i,k)*0.001)
+
+            if (clwf(i,k) > clwt) then
+              onemrh= max( 1.e-10, 1.0-rhly(i,k) )
+              clwm  = clwmin / max( 0.01, plyr(i,k)*0.001 )
+
+              tem1  = min(max((onemrh*qstl(i,k))**0.49,0.0001),1.0)  !jhan
+              if (lmfdeep2) then
+                tem1  = xrc3 / tem1
+              else
+                tem1  = 100.0 / tem1
+              endif
+
+              value = max( min( tem1*(clwf(i,k)-clwm), 50.0 ), 0.0 )
+              tem2  = sqrt( sqrt(rhly(i,k)) )
+              cldtot(i,k) = max( tem2*(1.0-exp(-value)), 0.0 )
             endif
-!
-            value = max( min( tem1*(clwf(i,k)-clwm), 50.0 ), 0.0 )
-            tem2  = sqrt( sqrt(rhly(i,k)) )
+          enddo
+          enddo
+        endif
 
-            cldtot(i,k) = max( tem2*(1.0-exp(-value)), 0.0 )
-          endif
-        enddo
-        enddo
+      else                                 ! input data from sfc to toa
+
+        clwmin = 0.0
+        if (.not. lmfshal) then
+          do k = 1, NLAY
+          do i = 1, IX
+            clwt = 1.0e-6 * (plyr(i,k)*0.001)
+
+            if (clwf(i,k) > clwt) then
+
+              onemrh= max( 1.e-10, 1.0-rhly(i,k) )
+              clwm  = clwmin / max( 0.01, plyr(i,k)*0.001 )
+
+              tem1  = min(max(sqrt(sqrt(onemrh*qstl(i,k))),0.0001),1.0)
+              tem1  = 2000.0 / tem1
+
+              value = max( min( tem1*(clwf(i,k)-clwm), 50.0 ), 0.0 )
+              tem2  = sqrt( sqrt(rhly(i,k)) )
+
+              cldtot(i,k) = max( tem2*(1.0-exp(-value)), 0.0 )
+            endif
+          enddo
+          enddo
+        else
+          do k = 1, NLAY
+          do i = 1, IX
+            clwt = 1.0e-6 * (plyr(i,k)*0.001)
+
+            if (clwf(i,k) > clwt) then
+              onemrh= max( 1.e-10, 1.0-rhly(i,k) )
+              clwm  = clwmin / max( 0.01, plyr(i,k)*0.001 )
+!
+              tem1  = min(max((onemrh*qstl(i,k))**0.49,0.0001),1.0)  !jhan
+              if (lmfdeep2) then
+                tem1  = xrc3 / tem1
+              else
+                tem1  = 100.0 / tem1
+              endif
+
+              value = max( min( tem1*(clwf(i,k)-clwm), 50.0 ), 0.0 )
+              tem2  = sqrt( sqrt(rhly(i,k)) )
+
+              cldtot(i,k) = max( tem2*(1.0-exp(-value)), 0.0 )
+            endif
+          enddo
+          enddo
+        endif
       endif
 
       end subroutine cloud_fraction_XuRandall
