@@ -422,15 +422,12 @@
           gridkm=0.
           cld2d=0.
           do i = 1, nxj
-            if( islimsk(i) .eq. 1 ) land1d(i) = 1.      !land fraction
-            gridkm(i) = sqrt(area)/1000.             !grid length (km)
-          enddo
-          do k = 1, lev
-            kc = lev - k + 1
-            do i = 1, nxj
-              cld2d(i,k) = qa(i,kc)                     !cloud fraction
-              dz2d (i,k) = dz2d(i,k)/1000.              !layer thickness (km)
-            enddo
+            if ( islimsk(i) .eq. 1 ) then
+              land1d(i) = 1.      !land
+            else
+              land1d(i) = 2.      !ocean or seaice
+            endif
+            gridkm(i) = sqrt(area)/1000.                !grid length (km)
           enddo
 
           call cal_cldfra3                                              &

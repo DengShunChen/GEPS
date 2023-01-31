@@ -2858,7 +2858,6 @@
 !  ====================    end of description    =====================  !
 !
       use module_mp_thompson_new, only : cfflag_thom
-      use rank
 
       implicit none
 !  ---  inputs
@@ -2884,11 +2883,12 @@
       integer,               dimension(:,:),   intent(out) :: mtop,mbot
 !  ---  local variables:
       real (kind=kind_phys), dimension(IX,NLAY) :: cldtot, cldcnv,      &
-     &       cwp, cip, crp, csp, rew, rei, res, rer
+     &       cwp, cip, crp, csp, rew, rei, res, rer, qsum
       real (kind=kind_phys), dimension(IX,NLAY) :: dz, delp
       real (kind=kind_phys), dimension(NLAY) :: cldfra1d, qv1d,         &
      &                                 qc1d, qi1d, qs1d, dz1d, p1d, t1d,&
      &                                 rh1d, qst1d
+      real(kind=kind_phys) :: gridkm
       real (kind=kind_phys), dimension(IX,NK_CLDS+1) :: ptop1
       real (kind=kind_phys) :: clwmin, tem1, tem2
       real (kind=kind_phys) :: corr, xland, snow_mass_factor
@@ -2911,6 +2911,7 @@
           rei   (i,k) = re_ice(i,k)
           rer   (i,k) = rrain_def            ! default rain radius to 1000 micron
           res   (i,k) = re_snow(i,K)
+          qsum  (i,k) = clw(i,k,ntcw) + clw(i,k,ntiw) + clw(i,k,ntsw)
         enddo
       enddo
 !> - Compute cloud liquid/ice condensate path in \f$ g/m^2 \f$ .
@@ -2946,6 +2947,7 @@
           csp(i,k) = max(0.,snow_mass_factor*clw(i,k,ntsw)*gfac*delp(i,k))
         enddo
       enddo
+
 !> - Sum the liquid water and ice paths that come from explicit micro
 !      do i = 1, IX
 !         lwp_ex(i) = 0.0
@@ -2955,6 +2957,7 @@
 !            iwp_ex(i) = iwp_ex(i) + cip(i,k) + csp(i,k)
 !         enddo
 !      enddo
+
 !> - Now determine the cloud fraction.  Here, we will use the scheme of
 !!   G. Thompson that implements a variannt of Mocko and Cotton (1995)
 !!   based on work within HWRF and WRF.  Where the bulk microphysics
@@ -2963,59 +2966,52 @@
 !!   to account for sub-grid-scale clouds, include those in the water
 !!   and ice paths _seen_ by the radiation scheme, but do not actually
 !!   include these fake clouds into anything other than radiation.
-      do i = 1, IX
-         if (slmsk(i)-0.5 .gt. 0.5 .and. slmsk(i)+0.5 .lt. 1.5) then
-            xland = 1.0
-         else
-            xland = 2.0
-         endif
-         cldfra1d(:) = 0.0
-         if (ivflip .eq. 1) then
-            do k = 1, NLAY
-               qv1d(k) = qlyr(i,k)
-               qc1d(k) = max(0.0, clw(i,k,ntcw))
-               qi1d(k) = max(0.0, clw(i,k,ntiw))
-               qs1d(k) = max(0.0, clw(i,k,ntsw))
-               rh1d(k) = rhly(i,k)
-               qst1d(k)= qstl(i,k)
-               p1d(k) = plyr(i,k)*100.0
-               t1d(k) = tlyr(i,k)
-            enddo
-         else
-            do k = NLAY, 1, -1
-               k2 = NLAY - k + 1
-               qv1d(k2) = qlyr(i,k)
-               qc1d(k2) = max(0.0, clw(i,k,ntcw))
-               qi1d(k2) = max(0.0, clw(i,k,ntiw))
-               qs1d(k2) = max(0.0, clw(i,k,ntsw))
-               rh1d(k2) = rhly(i,k)
-               qst1d(k2)= qstl(i,k)
-               p1d(k2) = plyr(i,k)*100.0
-               t1d(k2) = tlyr(i,k)
-            enddo
-         endif
-
-         if ( cfflag_thom .eq. 1 ) then
-           call cloud_fraction1d_XuRandall                              &
-               ( NLAY, p1d, qc1d+qi1d+qs1d, rh1d, qst1d,                &
-                 lmfshal, lmfdeep2, cldfra1d )
-         elseif ( cfflag_thom .eq. 2 ) then
-           do k = 1, NLAY
-             cldfra1d(k) = cldcov(i,k)  !calculated from new Thompson MP
-           enddo
-         endif
-!         call cal_cldfra3(cldfra1d, qv1d, qc1d, qi1d, qs1d, dz1d,       &
-!     &                    p1d, t1d, xland, gridkm(i),                   &
-!     &                    .false., max_relh, 1, nlay, .false.)
-
-         do k = 1, NLAY
-            cldtot(i,k) = cldfra1d(k)
+      if ( cfflag_thom .eq. 1 ) then
+        call cloud_fraction_XuRandall                                   &
+               ( IX, NLAY, plyr, qsum, rhly, qstl,                      &
+                 lmfshal, lmfdeep2, cldtot )
+      elseif ( cfflag_thom .eq. 2 ) then
+!        do i = 1, IX
+!          if (slmsk(i)-0.5 .gt. 0.5 .and. slmsk(i)+0.5 .lt. 1.5) then
+!             xland = 1.0
+!          else
+!             xland = 2.0
+!          endif
+!          if (ivflip .eq. 1) then
+!            do k = 1, NLAY
+!               qv1d(k) = qlyr(i,k)
+!               qc1d(k) = max(0.0, clw(i,k,ntcw))
+!               qi1d(k) = max(0.0, clw(i,k,ntiw))
+!               qs1d(k) = max(0.0, clw(i,k,ntsw))
+!               rh1d(k) = rhly(i,k)
+!               qst1d(k)= qstl(i,k)
+!               p1d(k) = plyr(i,k)*100.0
+!               t1d(k) = tlyr(i,k)
+!            enddo
+!          else
+!            do k = NLAY, 1, -1
+!               k2 = NLAY - k + 1
+!               qv1d(k2) = qlyr(i,k)
+!               qc1d(k2) = max(0.0, clw(i,k,ntcw))
+!               qi1d(k2) = max(0.0, clw(i,k,ntiw))
+!               qs1d(k2) = max(0.0, clw(i,k,ntsw))
+!               rh1d(k2) = rhly(i,k)
+!               qst1d(k2)= qstl(i,k)
+!               p1d(k2) = plyr(i,k)*100.0
+!               t1d(k2) = tlyr(i,k)
+!            enddo
+!          endif
+!          call cal_cldfra3(cldfra1d, qv1d, qc1d, qi1d, qs1d, dz1d,      &
+!     &                     p1d, t1d, xland, gridkm(i),                  &
+!     &                     .false., max_relh, 1, nlay, .false.)
+!          do k = 1, NLAY
+!            cldtot(i,k) = cldfra1d(k)
 !            if (qc1d(k).gt.clwmin .and. cldfra1d(k).lt.ovcst) then
 !               cwp(i,k) = qc1d(k) * gfac * delp(i,k)
-!               if ((xland-1.5).GT.0.) then                               !--- Ocean
-!                  rew(i,k) = 9.5
-!               else                                                      !--- Land
-!                  rew(i,k) = 5.5
+!               if ((xland-1.5).GT.0.) then
+!                  rew(i,k) = 9.5   ! over ocean
+!               else
+!                  rew(i,k) = 5.5   ! over land
 !               endif
 !            endif
 !            if (qi1d(k).gt.clwmin .and. cldfra1d(k).lt.ovcst) then
@@ -3026,8 +3022,14 @@
 !               rei(i,K) = max(5.0, retab(idx_rei)*(1.-corr) +           &
 !     &                                 retab(idx_rei+1)*corr)
 !            endif
-         enddo
-      enddo
+!          enddo
+!        enddo
+        do i = 1, IX
+          do k = 1, NLAY
+            cldtot(i,k) = cldcov(i,k)
+          enddo
+        enddo
+      endif
 
 !  ---  find top pressure for each cloud domain for given latitude
 !       ptopc(k,i): top presure of each cld domain (k=1-4 are sfc,L,m,h;
