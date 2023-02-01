@@ -1202,8 +1202,9 @@
                      , sld_adj,zice(1,jj),cice(1,jj),xtice(1,jj)            &
                      , hpbl(1,jj),asl(1,1,jj),atl(1,1,jj),xmu(1,jj),gfx(1,jj) &
                      , kpbl(1,jj),nmpbl,nmmiph,j,isot,ivegsrc,sfemis(1,jj)    &
-                     , dudtc,dvdtc,dtdtc,ustress(1,jj),vstress(1,jj)          &
-                     , ssu(1,jj),ssv(1,jj),dqdtc)
+                     , dudtc,dvdtc,dtdtc,dqdtc,ustress(1,jj),vstress(1,jj)    &
+                     , ssu(1,jj),ssv(1,jj))
+
 
 
 !

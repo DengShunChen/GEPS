@@ -1,0 +1,46 @@
+#!/bin/ksh
+#PJM -L "node=8:noncont"
+#PJM -L rscgrp=small
+#PJM -x PJM_CACHE_MODE=4
+#PJM -L elapse=64:00:00
+#PJM -L node-mem=unlimited
+#PJM --no-stging
+#PJM --mpi "proc=384"
+#PJM -j
+#PJM -g sum
+#PJM -N TCo383_outRSM
+
+set -x
+
+MDIR=$(cd ..; pwd)
+echo "MDIR=${MDIR}"
+
+machine=fx1000
+JCAP=383
+
+MPI=384
+OMP=1
+
+if [ $JCAP = 639 ] ; then
+  NPEX=4
+  NPEY=192
+elif [ $JCAP = 383 ] ; then
+  NPEX=2
+  NPEY=192
+fi
+
+export r_outrsm=true      # output data for RSM or not
+export r_rsmoutinv=6      # time interval of data for RSM
+export r_rlon1=100.       # west side of domain for RSM
+export r_rlon2=150.       # east side of domain for RSM
+export r_rlat1=5.        # south side of domain for RSM
+export r_rlat2=40.        # north side of domain for RSM
+export r_rgrdsz=0.25      # resoluation of data for RSM (degree)
+sed -e "/modlst/a \ \ outrsm=$r_outrsm,rsmoutinv=$r_rsmoutinv,rlon1=$r_rlon1,rlon2=$r_rlon2,rlat1=$r_rlat1,rlat2=$r_rlat2,rgrdsz=$r_rgrdsz," ${MDIR}/job/regression_383rsm.ksh > ${MDIR}/job/exp_regression_383rsm.ksh
+
+#source /users/fjapl10/GFS/MNH/bin/setup_mpi+omp.fx100 $OMP
+source /users/xa09/sample/setup_mpi+omp.${machine} $OMP
+
+#==============================================================================================================#
+
+. ${MDIR}/job/exp_regression_383rsm.ksh

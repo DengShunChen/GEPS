@@ -198,13 +198,14 @@
 !xb110<
 #ifdef TIMCOMCPL
       real, dimension(nxp, my_max) :: tocn_cpl, uocn_cpl, vocn_cpl, &
-                            prec_cpl, evap_cpl, taux_cpl, tauy_cpl, &
-                            lath_cpl, senh_cpl, lwnt_cpl, swnt_cpl, &
-                            tgfs_cpl
+                            u10m_cpl, v10m_cpl, t02m_cpl, q02m_cpl, &
+                            pslv_cpl, swup_cpl, swdn_cpl, lwdn_cpl, &
+                            rain_cpl, snow_cpl, tgfs_cpl
       real :: dt_cpl
       logical :: cpl_send_init
       integer :: compid
 #endif
+
 #ifdef TIMING
 ! for timing
       real*8 tm_1,tm_2,tm_use,mpi_wtime
@@ -379,14 +380,16 @@
       tocn_cpl = 0.
       uocn_cpl = 0.
       vocn_cpl = 0.
-      prec_cpl = 0.
-      evap_cpl = 0.
-      taux_cpl = 0.
-      tauy_cpl = 0.
-      lath_cpl = 0.
-      senh_cpl = 0.
-      lwnt_cpl = 0.
-      swnt_cpl = 0.
+      u10m_cpl = 0.
+      v10m_cpl = 0.
+      t02m_cpl = 0.
+      q02m_cpl = 0.
+      pslv_cpl = 0.
+      swup_cpl = 0.
+      swdn_cpl = 0.
+      lwdn_cpl = 0.
+      rain_cpl = 0.
+      snow_cpl = 0.
       cpl_send_init = .true.
 #endif
 !
@@ -629,8 +632,16 @@
 !
 #ifdef TIMCOMCPL
       call gfs_cpl_recv4gocn(compid, land, tg, ssu, ssv)
-#endif
-!
+!      if(myrank .eq. 0) then
+!        write(*,*) 'ssstg(max)=', maxval(tg)
+!        write(*,*) 'ssstg(min)=', minval(tg)
+!        write(*,*) 'sssssu(max)=', maxval(ssu) ,'rank=', myrank
+!        write(*,*) 'sssssu(min)=', minval(ssu) ,'rank=', myrank
+!        write(*,*) 'sssssv(max)=', maxval(ssv)
+!        write(*,*) 'sssssv(min)=', minval(ssv)
+!      endif 
+#endif 
+
  10   continue
 
       dtx_tau=dtx/3600.
@@ -1720,18 +1731,30 @@
                     , ctot,chig,cmid,clow,hpbl,histim,do_sit)
 #endif
 !
+!#ifdef RSM_sigp
 #ifdef RSM
-! RSM: output base field ncep-format data for RSM
-      if(outrsm .and. mod(float(itau)+0.00001, float(rsmoutinv) ) .lt. 0.01)then
+       if(outrsm .and. mod(float(itau)+0.00001, float(rsmoutinv) ) .lt. 0.01)then
         if(myrank.eq.0)print*,' call rsmout for rsm output at tau=',itau
-        call rsmout(idtg,itau,nx,my,my_max,lev,ncld   &
-                , ptop,cp,rgas,grav,sgeo,pdiff        &
-                , t1000,pt,plt,pk,pk2,phi,ut,vt       &
-                , tt,qt,tg,snr,cosl                   &
-                , km_soil,smc,stc                     &
-                , ice,land,ocean)
-      endif
+        call rsmout_sigp( itau,nx,my,my_max,lev,ncld     &
+                     , idtg,ptop,rad,grav,cosl           &
+                     , pt,sgeo,snr,gwr,tg,pk             &
+                     , ut,vt,tt,qt,km_soil,smc,stc       &
+                     , ice,land,ocean,xlon,xlat)
+       endif
 #endif
+!
+!#ifdef RSM
+!! RSM: output base field ncep-format data for RSM
+!      if(outrsm .and. mod(float(itau)+0.00001, float(rsmoutinv) ) .lt. 0.01)then
+!        if(myrank.eq.0)print*,' call rsmout for rsm output at tau=',itau
+!        call rsmout(idtg,itau,nx,my,my_max,lev,ncld   &
+!                , ptop,cp,rgas,grav,sgeo,pdiff        &
+!                , t1000,pt,plt,pk,pk2,phi,ut,vt       &
+!                , tt,qt,tg,snr,cosl                   &
+!                , km_soil,smc,stc                     &
+!                , ice,land,ocean)
+!      endif
+!#endif
 !
 !        if(typhoon .and. ltrack)then
          if(typhoon .and. ltrack .and. itau .le. 384 )then
@@ -1903,48 +1926,56 @@
       endif   !end lopgsst
 !
 #ifdef TIMCOMCPL
-      taux_cpl = taux_cpl + ustress*dtx
-      tauy_cpl = tauy_cpl + vstress*dtx
-      lath_cpl = lath_cpl + qflux*dtx
-      senh_cpl = senh_cpl + hflux*dtx
-      swnt_cpl = swnt_cpl + ss*dtx
-      lwnt_cpl = lwnt_cpl + rs*dtx
-      evap_cpl = evap_cpl - qflux/hltm*dtx
-      prec_cpl = prec_cpl + totalp
+      u10m_cpl = u10m_cpl + u10*dtx
+      v10m_cpl = v10m_cpl + v10*dtx
+      t02m_cpl = t02m_cpl +  t2*dtx
+      q02m_cpl = q02m_cpl +  q2*dtx
+      pslv_cpl = pslv_cpl + (pt+pdiff)*dtx
+      swup_cpl = swup_cpl + (ss-sld)*dtx
+      swdn_cpl = swdn_cpl + sld*dtx
+      lwdn_cpl = lwdn_cpl + rld*dtx
+      rain_cpl = rain_cpl + totalp
+      snow_cpl = snow_cpl
       dt_cpl   = dt_cpl + dtx
       if(cpl_send_init)then
-        call gfs_cpl_send2gocn(compid,  taux_cpl/dtx, tauy_cpl/dtx, &
-                                        lath_cpl/dtx, senh_cpl/dtx, &
-                                        swnt_cpl/dtx, lwnt_cpl/dtx, &
-                                        evap_cpl/dtx, prec_cpl/dtx, tg)
+        call gfs_cpl_send2gocn(compid,  u10m_cpl/dtx, v10m_cpl/dtx, &
+                                        t02m_cpl/dtx, q02m_cpl/dtx, &
+                                        pslv_cpl/dtx, swup_cpl/dtx, &
+                                        swdn_cpl/dtx, lwdn_cpl/dtx, &
+                                        rain_cpl/dtx, snow_cpl/dtx, tg)
         cpl_send_init = .false.
       endif
-  
+
       dtaup = mod(tau+0.001, 2.0)
       if( dtaup .lt. dtx_tau ) then
         if(myrank .eq. 0) write(*,*) "TCo time to coupler", tau
 
         call gfs_cpl_recv4gocn(compid, land, tg, ssu, ssv)
-        taux_cpl = taux_cpl/dt_cpl
-        tauy_cpl = tauy_cpl/dt_cpl
-        lath_cpl = lath_cpl/dt_cpl
-        senh_cpl = senh_cpl/dt_cpl
-        swnt_cpl = swnt_cpl/dt_cpl
-        lwnt_cpl = lwnt_cpl/dt_cpl
-        evap_cpl = evap_cpl/dt_cpl
-        prec_cpl = prec_cpl/dt_cpl
-        call gfs_cpl_send2gocn(compid, taux_cpl, tauy_cpl, &
-                                       lath_cpl, senh_cpl, &
-                                       swnt_cpl, lwnt_cpl, &
-                                       evap_cpl, prec_cpl, tg)
-        taux_cpl = 0.
-        tauy_cpl = 0.
-        lath_cpl = 0.
-        senh_cpl = 0.
-        swnt_cpl = 0.
-        lwnt_cpl = 0.
-        evap_cpl = 0.
-        prec_cpl = 0.
+        u10m_cpl = u10m_cpl/dt_cpl
+        v10m_cpl = v10m_cpl/dt_cpl
+        t02m_cpl = t02m_cpl/dt_cpl
+        q02m_cpl = q02m_cpl/dt_cpl
+        pslv_cpl = pslv_cpl/dt_cpl
+        swup_cpl = swup_cpl/dt_cpl
+        swdn_cpl = swdn_cpl/dt_cpl
+        lwdn_cpl = lwdn_cpl/dt_cpl
+        rain_cpl = rain_cpl/dt_cpl
+        snow_cpl = snow_cpl/dt_cpl
+        call gfs_cpl_send2gocn(compid, u10m_cpl, v10m_cpl, &
+                                       t02m_cpl, q02m_cpl, &
+                                       pslv_cpl, swup_cpl, &
+                                       swdn_cpl, lwdn_cpl, &
+                                       rain_cpl, snow_cpl, tg)
+        u10m_cpl = 0.
+        v10m_cpl = 0.
+        t02m_cpl = 0.
+        q02m_cpl = 0.
+        pslv_cpl = 0.
+        swup_cpl = 0.
+        swdn_cpl = 0.
+        lwdn_cpl = 0.
+        rain_cpl = 0.
+        snow_cpl = 0.
         dt_cpl   = 0.
       end if
 #endif

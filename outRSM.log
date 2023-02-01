@@ -1,0 +1,1794 @@
+h6ln16 : Build fx1000 executable
+++ pwd
++ export MDIR=/nwpr/gfs/xb157/CWBSUMc2/components/tco639l72
++ MDIR=/nwpr/gfs/xb157/CWBSUMc2/components/tco639l72
++ . /usr/share/Modules/init/bash
+++ unset _mlshdbg
+++ '[' 0 = 1 ']'
+++ export 'MODULES_RUN_QUARANTINE=LD_LIBRARY_PATH LD_PRELOAD'
+++ MODULES_RUN_QUARANTINE='LD_LIBRARY_PATH LD_PRELOAD'
+++ unset _mlre _mlIFS
+++ '[' -n x ']'
+++ _mlIFS=' 	
+'
+++ IFS=' '
+++ for _mlv in ${MODULES_RUN_QUARANTINE:-}
+++ '[' LD_LIBRARY_PATH = LD_LIBRARY_PATH -a LD_LIBRARY_PATH = LD_LIBRARY_PATH ']'
++++ eval 'echo ${LD_LIBRARY_PATH+x}'
+++++ echo x
+++ '[' -n x ']'
++++ eval 'echo ${LD_LIBRARY_PATH}'
+++++ echo /package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64
+++ _mlre='LD_LIBRARY_PATH_modquar='\''/package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' '
+++ _mlrv=MODULES_RUNENV_LD_LIBRARY_PATH
++++ eval 'echo ${MODULES_RUNENV_LD_LIBRARY_PATH:-}'
+++++ echo
+++ _mlre='LD_LIBRARY_PATH_modquar='\''/package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' LD_LIBRARY_PATH='\'''\'' '
+++ for _mlv in ${MODULES_RUN_QUARANTINE:-}
+++ '[' LD_PRELOAD = LD_PRELOAD -a LD_PRELOAD = LD_PRELOAD ']'
++++ eval 'echo ${LD_PRELOAD+x}'
+++++ echo
+++ '[' -n '' ']'
+++ _mlrv=MODULES_RUNENV_LD_PRELOAD
++++ eval 'echo ${MODULES_RUNENV_LD_PRELOAD:-}'
+++++ echo
+++ _mlre='LD_LIBRARY_PATH_modquar='\''/package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' LD_LIBRARY_PATH='\'''\'' LD_PRELOAD='\'''\'' '
+++ '[' -n 'LD_LIBRARY_PATH_modquar='\''/package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' LD_LIBRARY_PATH='\'''\'' LD_PRELOAD='\'''\'' ' ']'
+++ _mlre='eval LD_LIBRARY_PATH_modquar='\''/package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' LD_LIBRARY_PATH='\'''\'' LD_PRELOAD='\'''\'' '
++++ eval 'LD_LIBRARY_PATH_modquar='\''/package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\''' 'LD_LIBRARY_PATH='\'''\''' 'LD_PRELOAD='\'''\''' /usr/bin/tclsh /usr/share/Modules/libexec/modulecmd.tcl bash autoinit
+++++ LD_LIBRARY_PATH_modquar=/package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64
+++++ LD_LIBRARY_PATH=
+++++ LD_PRELOAD=
+++++ /usr/bin/tclsh /usr/share/Modules/libexec/modulecmd.tcl bash autoinit
+++ _mlcode='module() {
+   unset _mlshdbg;
+   if [ "${MODULES_SILENT_SHELL_DEBUG:-0}" = '\''1'\'' ]; then
+      case "$-" in
+         *v*x*) set +vx; _mlshdbg='\''vx'\'' ;;
+         *v*) set +v; _mlshdbg='\''v'\'' ;;
+         *x*) set +x; _mlshdbg='\''x'\'' ;;
+         *) _mlshdbg='\'''\'' ;;
+      esac;
+   fi;
+   unset _mlre _mlIFS;
+   if [ -n "${IFS+x}" ]; then
+      _mlIFS=$IFS;
+   fi;
+   IFS='\'' '\'';
+   for _mlv in ${MODULES_RUN_QUARANTINE:-}; do
+      if [ "${_mlv}" = "${_mlv##*[!A-Za-z0-9_]}" -a "${_mlv}" = "${_mlv#[0-9]}" ]; then
+         if [ -n "`eval '\''echo ${'\''$_mlv'\''+x}'\''`" ]; then
+            _mlre="${_mlre:-}${_mlv}_modquar='\''`eval '\''echo ${'\''$_mlv'\''}'\''`'\'' ";
+         fi;
+         _mlrv="MODULES_RUNENV_${_mlv}";
+         _mlre="${_mlre:-}${_mlv}='\''`eval '\''echo ${'\''$_mlrv'\'':-}'\''`'\'' ";
+      fi;
+   done;
+   if [ -n "${_mlre:-}" ]; then
+      eval `eval ${_mlre} /usr/bin/tclsh /usr/share/Modules/libexec/modulecmd.tcl bash '\''"$@"'\''`;
+   else
+      eval `/usr/bin/tclsh /usr/share/Modules/libexec/modulecmd.tcl bash "$@"`;
+   fi;
+   _mlstatus=$?;
+   if [ -n "${_mlIFS+x}" ]; then
+      IFS=$_mlIFS;
+   else
+      unset IFS;
+   fi;
+   unset _mlre _mlv _mlrv _mlIFS;
+   if [ -n "${_mlshdbg:-}" ]; then
+      set -$_mlshdbg;
+   fi;
+   unset _mlshdbg;
+   return $_mlstatus;
+};
+ml() { module ml "$@"; };
+MODULES_CMD=/usr/share/Modules/libexec/modulecmd.tcl; export MODULES_CMD;
+MODULESHOME=/usr/share/Modules; export MODULESHOME;
+test 0;'
+++ _mlret=0
+++ '[' -n x ']'
+++ IFS=' 	
+'
+++ unset _mlIFS
+++ unset _mlre _mlv _mlrv
+++ '[' 0 -eq 0 ']'
+++ eval 'module() {
+   unset _mlshdbg;
+   if [ "${MODULES_SILENT_SHELL_DEBUG:-0}" = '\''1'\'' ]; then
+      case "$-" in
+         *v*x*) set +vx; _mlshdbg='\''vx'\'' ;;
+         *v*) set +v; _mlshdbg='\''v'\'' ;;
+         *x*) set +x; _mlshdbg='\''x'\'' ;;
+         *) _mlshdbg='\'''\'' ;;
+      esac;
+   fi;
+   unset _mlre _mlIFS;
+   if [ -n "${IFS+x}" ]; then
+      _mlIFS=$IFS;
+   fi;
+   IFS='\'' '\'';
+   for _mlv in ${MODULES_RUN_QUARANTINE:-}; do
+      if [ "${_mlv}" = "${_mlv##*[!A-Za-z0-9_]}" -a "${_mlv}" = "${_mlv#[0-9]}" ]; then
+         if [ -n "`eval '\''echo ${'\''$_mlv'\''+x}'\''`" ]; then
+            _mlre="${_mlre:-}${_mlv}_modquar='\''`eval '\''echo ${'\''$_mlv'\''}'\''`'\'' ";
+         fi;
+         _mlrv="MODULES_RUNENV_${_mlv}";
+         _mlre="${_mlre:-}${_mlv}='\''`eval '\''echo ${'\''$_mlrv'\'':-}'\''`'\'' ";
+      fi;
+   done;
+   if [ -n "${_mlre:-}" ]; then
+      eval `eval ${_mlre} /usr/bin/tclsh /usr/share/Modules/libexec/modulecmd.tcl bash '\''"$@"'\''`;
+   else
+      eval `/usr/bin/tclsh /usr/share/Modules/libexec/modulecmd.tcl bash "$@"`;
+   fi;
+   _mlstatus=$?;
+   if [ -n "${_mlIFS+x}" ]; then
+      IFS=$_mlIFS;
+   else
+      unset IFS;
+   fi;
+   unset _mlre _mlv _mlrv _mlIFS;
+   if [ -n "${_mlshdbg:-}" ]; then
+      set -$_mlshdbg;
+   fi;
+   unset _mlshdbg;
+   return $_mlstatus;
+};
+ml() { module ml "$@"; };
+MODULES_CMD=/usr/share/Modules/libexec/modulecmd.tcl; export MODULES_CMD;
+MODULESHOME=/usr/share/Modules; export MODULESHOME;
+test 0;'
++++ MODULES_CMD=/usr/share/Modules/libexec/modulecmd.tcl
++++ export MODULES_CMD
++++ MODULESHOME=/usr/share/Modules
++++ export MODULESHOME
++++ test 0
+++ '[' 0 = 1 ']'
+++ '[' -t 2 ']'
+++ export -f module
++++ type -t ml
+++ '[' function = function ']'
+++ export -f ml
+++ export -f switchml
+++ '[' 4 -ge 3 ']'
+++ [[ hxB =~ i ]]
+++ [[ ! :/package/fx1000/dms/bin:/package/x86_64/udunits-1.12.11/bin:/package/x86_64/dms/bin:/package/x86_64/ncl-6.6.2/bin:/package/x86_64/grads-2.2.1/bin:/package/local/bin:/usr/share/Modules/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/FJSVxtclanga/tcsds-1.2.33/bin:/package/x86_64/ncl-6.6.2/bin:/package/x86_64/dms/bin:/users/xa09/quota:.: =~ :/usr/share/Modules/bin: ]]
+++ '[' '!' -n x ']'
++++ manpath
+++ [[ ! :/package/x86_64/udunits-1.12.11/man:/package/x86_64/ncl-6.6.2/man:/usr/local/share/man:/usr/share/man:/opt/FJSVxtclanga/tcsds-1.2.33/man:/users/xa09/man:: =~ :/usr/share/man: ]]
+++ unset _mlcode _mlret
+++ '[' -n '' ']'
++ module purge
++ unset _mlshdbg
++ '[' 0 = 1 ']'
++ unset _mlre _mlIFS
++ '[' -n x ']'
++ _mlIFS=' 	
+'
++ IFS=' '
++ for _mlv in ${MODULES_RUN_QUARANTINE:-}
++ '[' LD_LIBRARY_PATH = LD_LIBRARY_PATH -a LD_LIBRARY_PATH = LD_LIBRARY_PATH ']'
+++ eval 'echo ${LD_LIBRARY_PATH+x}'
++++ echo x
++ '[' -n x ']'
+++ eval 'echo ${LD_LIBRARY_PATH}'
++++ echo /package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64
++ _mlre='LD_LIBRARY_PATH_modquar='\''/package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' '
++ _mlrv=MODULES_RUNENV_LD_LIBRARY_PATH
+++ eval 'echo ${MODULES_RUNENV_LD_LIBRARY_PATH:-}'
++++ echo
++ _mlre='LD_LIBRARY_PATH_modquar='\''/package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' LD_LIBRARY_PATH='\'''\'' '
++ for _mlv in ${MODULES_RUN_QUARANTINE:-}
++ '[' LD_PRELOAD = LD_PRELOAD -a LD_PRELOAD = LD_PRELOAD ']'
+++ eval 'echo ${LD_PRELOAD+x}'
++++ echo
++ '[' -n '' ']'
++ _mlrv=MODULES_RUNENV_LD_PRELOAD
+++ eval 'echo ${MODULES_RUNENV_LD_PRELOAD:-}'
++++ echo
++ _mlre='LD_LIBRARY_PATH_modquar='\''/package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' LD_LIBRARY_PATH='\'''\'' LD_PRELOAD='\'''\'' '
++ '[' -n 'LD_LIBRARY_PATH_modquar='\''/package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' LD_LIBRARY_PATH='\'''\'' LD_PRELOAD='\'''\'' ' ']'
+++ eval 'LD_LIBRARY_PATH_modquar='\''/package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\''' 'LD_LIBRARY_PATH='\'''\''' 'LD_PRELOAD='\'''\''' /usr/bin/tclsh /usr/share/Modules/libexec/modulecmd.tcl bash '"$@"'
++++ LD_LIBRARY_PATH_modquar=/package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64
++++ LD_LIBRARY_PATH=
++++ LD_PRELOAD=
++++ /usr/bin/tclsh /usr/share/Modules/libexec/modulecmd.tcl bash purge
+ZLIB/1.2.8 loaded/unloaded
+pnetcdf/1.12.3 loaded/unloaded
+MCT/2.11 loaded/unloaded
+hdf5/1.8.22 loaded/unloaded
+w3lib/2.0.2 loaded/unloaded
+operlib/None loaded/unloaded
+netcdf/4.7.4 loaded/unloaded
+fftw/3.3.10 loaded/unloaded
+dms/v4 loaded/unloaded
+tcsds/1.2.33 loaded/unloaded
++ eval 'LD_LIBRARY_PATH=:/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64;' export 'LD_LIBRARY_PATH;
+unset' 'FFTW3_DIR;
+unset' 'W3LIB;
+unset' 'DMS_LIB;
+unset' 'FFTW3;
+unset' 'NETCDF_DIR;
+unset' 'MCT_LIB;
+unset' 'LOADEDMODULES;
+unset' '_LMFILES_;
+unset' 'MODULES_LMCONFLICT;
+unset' 'NETCDF;
+unset' 'PNETCDF;
+unset' 'FFTW_DIR;
+unset' 'NETCDF_INC;
+unset' 'MODULES_LMCONFLICT_modshare;
+unset' 'PNETCDF_INC;
+unset' 'FFTW;
+unset' 'W3LIB_LIB;
+unset' 'HDF5;
+unset' 'FFTW_INC;
+unset' 'HDF5_INC;
+LD_LIBRARY_PATH_modshare=:1:/package/x86_64/dms/lib:1:/opt/FJSVxtclanga/tcsds-1.2.33/lib64:1;' export 'LD_LIBRARY_PATH_modshare;
+unset' 'NETCDF_LIB;
+unset' 'ZLIB_INC;
+unset' 'PNETCDF_LIB;
+unset' 'OPERLIB_LIB;
+unset' 'DMS;
+unset' 'LOADEDMODULES_modshare;
+unset' '_LMFILES__modshare;
+PATH=/package/x86_64/udunits-1.12.11/bin:/package/x86_64/dms/bin:/package/x86_64/ncl-6.6.2/bin:/package/x86_64/grads-2.2.1/bin:/package/local/bin:/usr/share/Modules/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/FJSVxtclanga/tcsds-1.2.33/bin:/package/x86_64/ncl-6.6.2/bin:/package/x86_64/dms/bin:/users/xa09/quota:.;' export 'PATH;
+unset' 'FFTW_LIB;
+unset' 'HDF5_LIB;
+unset' 'MCT_INC;
+PATH_modshare=/usr/bin:1:/usr/share/Modules/bin:1:/usr/local/bin:1:/users/xa09/quota:1:/package/x86_64/ncl-6.6.2/bin:1:/package/local/bin:1:/package/x86_64/grads-2.2.1/bin:1:/package/x86_64/udunits-1.12.11/bin:1:/package/x86_64/dms/bin:1:/usr/sbin:1:/opt/FJSVxtclanga/tcsds-1.2.33/bin:1:.:1:/usr/local/sbin:1;' export 'PATH_modshare;
+unset' 'ZLIB_LIB;
+test' '0;'
+++ LD_LIBRARY_PATH=:/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64
+++ export LD_LIBRARY_PATH
+++ unset FFTW3_DIR
+++ unset W3LIB
+++ unset DMS_LIB
+++ unset FFTW3
+++ unset NETCDF_DIR
+++ unset MCT_LIB
+++ unset LOADEDMODULES
+++ unset _LMFILES_
+++ unset MODULES_LMCONFLICT
+++ unset NETCDF
+++ unset PNETCDF
+++ unset FFTW_DIR
+++ unset NETCDF_INC
+++ unset MODULES_LMCONFLICT_modshare
+++ unset PNETCDF_INC
+++ unset FFTW
+++ unset W3LIB_LIB
+++ unset HDF5
+++ unset FFTW_INC
+++ unset HDF5_INC
+++ LD_LIBRARY_PATH_modshare=:1:/package/x86_64/dms/lib:1:/opt/FJSVxtclanga/tcsds-1.2.33/lib64:1
+++ export LD_LIBRARY_PATH_modshare
+++ unset NETCDF_LIB
+++ unset ZLIB_INC
+++ unset PNETCDF_LIB
+++ unset OPERLIB_LIB
+++ unset DMS
+++ unset LOADEDMODULES_modshare
+++ unset _LMFILES__modshare
+++ PATH=/package/x86_64/udunits-1.12.11/bin:/package/x86_64/dms/bin:/package/x86_64/ncl-6.6.2/bin:/package/x86_64/grads-2.2.1/bin:/package/local/bin:/usr/share/Modules/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/FJSVxtclanga/tcsds-1.2.33/bin:/package/x86_64/ncl-6.6.2/bin:/package/x86_64/dms/bin:/users/xa09/quota:.
+++ export PATH
+++ unset FFTW_LIB
+++ unset HDF5_LIB
+++ unset MCT_INC
+++ PATH_modshare=/usr/bin:1:/usr/share/Modules/bin:1:/usr/local/bin:1:/users/xa09/quota:1:/package/x86_64/ncl-6.6.2/bin:1:/package/local/bin:1:/package/x86_64/grads-2.2.1/bin:1:/package/x86_64/udunits-1.12.11/bin:1:/package/x86_64/dms/bin:1:/usr/sbin:1:/opt/FJSVxtclanga/tcsds-1.2.33/bin:1:.:1:/usr/local/sbin:1
+++ export PATH_modshare
+++ unset ZLIB_LIB
+++ test 0
++ _mlstatus=0
++ '[' -n x ']'
++ IFS=' 	
+'
++ unset _mlre _mlv _mlrv _mlIFS
++ '[' -n '' ']'
++ unset _mlshdbg
++ return 0
++ module use /nwpr/gfs/xb157/CWBSUMc2/components/tco639l72/modulefiles
++ unset _mlshdbg
++ '[' 0 = 1 ']'
++ unset _mlre _mlIFS
++ '[' -n x ']'
++ _mlIFS=' 	
+'
++ IFS=' '
++ for _mlv in ${MODULES_RUN_QUARANTINE:-}
++ '[' LD_LIBRARY_PATH = LD_LIBRARY_PATH -a LD_LIBRARY_PATH = LD_LIBRARY_PATH ']'
+++ eval 'echo ${LD_LIBRARY_PATH+x}'
++++ echo x
++ '[' -n x ']'
+++ eval 'echo ${LD_LIBRARY_PATH}'
++++ echo :/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64
++ _mlre='LD_LIBRARY_PATH_modquar='\'':/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' '
++ _mlrv=MODULES_RUNENV_LD_LIBRARY_PATH
+++ eval 'echo ${MODULES_RUNENV_LD_LIBRARY_PATH:-}'
++++ echo
++ _mlre='LD_LIBRARY_PATH_modquar='\'':/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' LD_LIBRARY_PATH='\'''\'' '
++ for _mlv in ${MODULES_RUN_QUARANTINE:-}
++ '[' LD_PRELOAD = LD_PRELOAD -a LD_PRELOAD = LD_PRELOAD ']'
+++ eval 'echo ${LD_PRELOAD+x}'
++++ echo
++ '[' -n '' ']'
++ _mlrv=MODULES_RUNENV_LD_PRELOAD
+++ eval 'echo ${MODULES_RUNENV_LD_PRELOAD:-}'
++++ echo
++ _mlre='LD_LIBRARY_PATH_modquar='\'':/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' LD_LIBRARY_PATH='\'''\'' LD_PRELOAD='\'''\'' '
++ '[' -n 'LD_LIBRARY_PATH_modquar='\'':/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' LD_LIBRARY_PATH='\'''\'' LD_PRELOAD='\'''\'' ' ']'
+++ eval 'LD_LIBRARY_PATH_modquar='\'':/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\''' 'LD_LIBRARY_PATH='\'''\''' 'LD_PRELOAD='\'''\''' /usr/bin/tclsh /usr/share/Modules/libexec/modulecmd.tcl bash '"$@"'
++++ LD_LIBRARY_PATH_modquar=:/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64
++++ LD_LIBRARY_PATH=
++++ LD_PRELOAD=
++++ /usr/bin/tclsh /usr/share/Modules/libexec/modulecmd.tcl bash use /nwpr/gfs/xb157/CWBSUMc2/components/tco639l72/modulefiles
++ eval 'MODULEPATH_modshare=/nwpr/gfs/xb157/CWBSUMc2/components/tco639l72/modulefiles:1:/data/common/gfs/modulefiles/fx1000:1:/data/common/gfs/modulefiles/x86_64:1:/nwpr/gfs/xb124/modulefiles/fx1000:1:/usr/share/Modules/modulefiles:1:/etc/modulefiles:1:/usr/share/modulefiles:1;' export 'MODULEPATH_modshare;
+MODULEPATH=/nwpr/gfs/xb157/CWBSUMc2/components/tco639l72/modulefiles:/nwpr/gfs/xb124/modulefiles/fx1000:/data/common/gfs/modulefiles/fx1000:/data/common/gfs/modulefiles/x86_64:/usr/share/Modules/modulefiles:/etc/modulefiles:/usr/share/modulefiles;' export 'MODULEPATH;
+test' '0;'
+++ MODULEPATH_modshare=/nwpr/gfs/xb157/CWBSUMc2/components/tco639l72/modulefiles:1:/data/common/gfs/modulefiles/fx1000:1:/data/common/gfs/modulefiles/x86_64:1:/nwpr/gfs/xb124/modulefiles/fx1000:1:/usr/share/Modules/modulefiles:1:/etc/modulefiles:1:/usr/share/modulefiles:1
+++ export MODULEPATH_modshare
+++ MODULEPATH=/nwpr/gfs/xb157/CWBSUMc2/components/tco639l72/modulefiles:/nwpr/gfs/xb124/modulefiles/fx1000:/data/common/gfs/modulefiles/fx1000:/data/common/gfs/modulefiles/x86_64:/usr/share/Modules/modulefiles:/etc/modulefiles:/usr/share/modulefiles
+++ export MODULEPATH
+++ test 0
++ _mlstatus=0
++ '[' -n x ']'
++ IFS=' 	
+'
++ unset _mlre _mlv _mlrv _mlIFS
++ '[' -n '' ']'
++ unset _mlshdbg
++ return 0
++ module av
++ unset _mlshdbg
++ '[' 0 = 1 ']'
++ unset _mlre _mlIFS
++ '[' -n x ']'
++ _mlIFS=' 	
+'
++ IFS=' '
++ for _mlv in ${MODULES_RUN_QUARANTINE:-}
++ '[' LD_LIBRARY_PATH = LD_LIBRARY_PATH -a LD_LIBRARY_PATH = LD_LIBRARY_PATH ']'
+++ eval 'echo ${LD_LIBRARY_PATH+x}'
++++ echo x
++ '[' -n x ']'
+++ eval 'echo ${LD_LIBRARY_PATH}'
++++ echo :/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64
++ _mlre='LD_LIBRARY_PATH_modquar='\'':/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' '
++ _mlrv=MODULES_RUNENV_LD_LIBRARY_PATH
+++ eval 'echo ${MODULES_RUNENV_LD_LIBRARY_PATH:-}'
++++ echo
++ _mlre='LD_LIBRARY_PATH_modquar='\'':/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' LD_LIBRARY_PATH='\'''\'' '
++ for _mlv in ${MODULES_RUN_QUARANTINE:-}
++ '[' LD_PRELOAD = LD_PRELOAD -a LD_PRELOAD = LD_PRELOAD ']'
+++ eval 'echo ${LD_PRELOAD+x}'
++++ echo
++ '[' -n '' ']'
++ _mlrv=MODULES_RUNENV_LD_PRELOAD
+++ eval 'echo ${MODULES_RUNENV_LD_PRELOAD:-}'
++++ echo
++ _mlre='LD_LIBRARY_PATH_modquar='\'':/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' LD_LIBRARY_PATH='\'''\'' LD_PRELOAD='\'''\'' '
++ '[' -n 'LD_LIBRARY_PATH_modquar='\'':/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' LD_LIBRARY_PATH='\'''\'' LD_PRELOAD='\'''\'' ' ']'
+++ eval 'LD_LIBRARY_PATH_modquar='\'':/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\''' 'LD_LIBRARY_PATH='\'''\''' 'LD_PRELOAD='\'''\''' /usr/bin/tclsh /usr/share/Modules/libexec/modulecmd.tcl bash '"$@"'
++++ LD_LIBRARY_PATH_modquar=:/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64
++++ LD_LIBRARY_PATH=
++++ LD_PRELOAD=
++++ /usr/bin/tclsh /usr/share/Modules/libexec/modulecmd.tcl bash av
+----------------------------------------------------------------- /nwpr/gfs/xb157/CWBSUMc2/components/tco639l72/modulefiles -----------------------------------------------------------------
+modulefile.tcogfs.fx10      modulefile.tcogfs.fx100      modulefile.tcogfs.fx1000      modulefile.tcogfs.fx1000_old      modulefile.tcogfs.pcc      
+modulefile.tcogfs.fx10.rsm  modulefile.tcogfs.fx100.rsm  modulefile.tcogfs.fx1000.rsm  modulefile.tcogfs.fx1000_onlyATM  modulefile.tcogfs.pcc.rsm  
+
+---------------------------------------------------------------------------- /nwpr/gfs/xb124/modulefiles/fx1000 -----------------------------------------------------------------------------
+hdf5/1.8.22  hdf5/1.10.7  mct/2.11  pnetcdf/1.12.3  zlib/1.2.7  zlib/1.2.8  
+
+---------------------------------------------------------------------------- /data/common/gfs/modulefiles/fx1000 ----------------------------------------------------------------------------
+dms/v4      fftw/3.3.10      fftw/3.3.10.new_sp  netcdf/4.1.3(default)  operlib        python/3.6.8   tcsds/1.2.33  
+fftw/3.3.7  fftw/3.3.10.new  netcdf/3.6.3        netcdf/4.7.4           python/2.7.17  python/3.9.13  w3lib/2.0.2   
+
+---------------------------------------------------------------------------- /data/common/gfs/modulefiles/x86_64 ----------------------------------------------------------------------------
+a2ps/4.14  cdo/2.0.0  cmake/3.21.4  dms/v4  ferret/7.6.0  grads/2.2.1  htop/3.1.2  ncl/6.6.2  p7zip/16.02  python/3.6.8  system  tcsds/1.2.33  template  vim/8.2.4065  
+
+------------------------------------------------------------------------------ /usr/share/Modules/modulefiles -------------------------------------------------------------------------------
+dot  module-git  module-info  modules  null  use.own  
+
+------------------------------------------------------------------------------------- /etc/modulefiles --------------------------------------------------------------------------------------
+a2ps/4.14  cdo/1.9.3  cdo/2.0.0  cmake/3.21.4  dms/v4  eccodes/2.7.0  eccodes/2.24.2  ferret/7.6.0  grads/2.2.1  mpi/openmpi-x86_64  ncl/6.6.2  tcsds/1.2.33  
+
+---------------------------------------------------------------------------------- /usr/share/modulefiles -----------------------------------------------------------------------------------
+pmi/pmix-x86_64  
++ eval
++ _mlstatus=0
++ '[' -n x ']'
++ IFS=' 	
+'
++ unset _mlre _mlv _mlrv _mlIFS
++ '[' -n '' ']'
++ unset _mlshdbg
++ return 0
++ module show modulefile.tcogfs.fx1000.rsm
++ unset _mlshdbg
++ '[' 0 = 1 ']'
++ unset _mlre _mlIFS
++ '[' -n x ']'
++ _mlIFS=' 	
+'
++ IFS=' '
++ for _mlv in ${MODULES_RUN_QUARANTINE:-}
++ '[' LD_LIBRARY_PATH = LD_LIBRARY_PATH -a LD_LIBRARY_PATH = LD_LIBRARY_PATH ']'
+++ eval 'echo ${LD_LIBRARY_PATH+x}'
++++ echo x
++ '[' -n x ']'
+++ eval 'echo ${LD_LIBRARY_PATH}'
++++ echo :/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64
++ _mlre='LD_LIBRARY_PATH_modquar='\'':/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' '
++ _mlrv=MODULES_RUNENV_LD_LIBRARY_PATH
+++ eval 'echo ${MODULES_RUNENV_LD_LIBRARY_PATH:-}'
++++ echo
++ _mlre='LD_LIBRARY_PATH_modquar='\'':/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' LD_LIBRARY_PATH='\'''\'' '
++ for _mlv in ${MODULES_RUN_QUARANTINE:-}
++ '[' LD_PRELOAD = LD_PRELOAD -a LD_PRELOAD = LD_PRELOAD ']'
+++ eval 'echo ${LD_PRELOAD+x}'
++++ echo
++ '[' -n '' ']'
++ _mlrv=MODULES_RUNENV_LD_PRELOAD
+++ eval 'echo ${MODULES_RUNENV_LD_PRELOAD:-}'
++++ echo
++ _mlre='LD_LIBRARY_PATH_modquar='\'':/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' LD_LIBRARY_PATH='\'''\'' LD_PRELOAD='\'''\'' '
++ '[' -n 'LD_LIBRARY_PATH_modquar='\'':/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' LD_LIBRARY_PATH='\'''\'' LD_PRELOAD='\'''\'' ' ']'
+++ eval 'LD_LIBRARY_PATH_modquar='\'':/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\''' 'LD_LIBRARY_PATH='\'''\''' 'LD_PRELOAD='\'''\''' /usr/bin/tclsh /usr/share/Modules/libexec/modulecmd.tcl bash '"$@"'
++++ LD_LIBRARY_PATH_modquar=:/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64
++++ LD_LIBRARY_PATH=
++++ LD_PRELOAD=
++++ /usr/bin/tclsh /usr/share/Modules/libexec/modulecmd.tcl bash show modulefile.tcogfs.fx1000.rsm
+-------------------------------------------------------------------
+/nwpr/gfs/xb157/CWBSUMc2/components/tco639l72/modulefiles/modulefile.tcogfs.fx1000.rsm:
+
+module-whatis	{ TCoGFS whatis description}
+setenv		COMP /opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx
+setenv		COMP_MP /opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx
+setenv		COMP_MPI /opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx
+setenv		C_COMP /opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifccpx
+setenv		C_COMP_MP /opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifccpx
+setenv		FFLAGS_COM {-c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed}
+setenv		FFLAGS_COM {-c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw}
+setenv		MSG_COM {-Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2}
+setenv		LIBS_COM -SSL2BLAMP
+setenv		OMP_COM -Kopenmp,parallel
+setenv		CFLAGS_COM {-c -Xg}
+module		use /data/common/gfs/modulefiles/x86_64
+module		load tcsds
+module		unuse /data/common/gfs/modulefiles/x86_64
+module		use /data/common/gfs/modulefiles/fx1000
+module		av
+module		load netcdf/3.6.3
+module		load fftw/3.3.10.new_sp
+module		load dms/v4
+module		load operlib
+module		load w3lib/2.0.2
+module		unuse /data/common/gfs/modulefiles/fx1000
+-------------------------------------------------------------------
++ eval
++ _mlstatus=0
++ '[' -n x ']'
++ IFS=' 	
+'
++ unset _mlre _mlv _mlrv _mlIFS
++ '[' -n '' ']'
++ unset _mlshdbg
++ return 0
++ module load modulefile.tcogfs.fx1000.rsm
++ unset _mlshdbg
++ '[' 0 = 1 ']'
++ unset _mlre _mlIFS
++ '[' -n x ']'
++ _mlIFS=' 	
+'
++ IFS=' '
++ for _mlv in ${MODULES_RUN_QUARANTINE:-}
++ '[' LD_LIBRARY_PATH = LD_LIBRARY_PATH -a LD_LIBRARY_PATH = LD_LIBRARY_PATH ']'
+++ eval 'echo ${LD_LIBRARY_PATH+x}'
++++ echo x
++ '[' -n x ']'
+++ eval 'echo ${LD_LIBRARY_PATH}'
++++ echo :/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64
++ _mlre='LD_LIBRARY_PATH_modquar='\'':/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' '
++ _mlrv=MODULES_RUNENV_LD_LIBRARY_PATH
+++ eval 'echo ${MODULES_RUNENV_LD_LIBRARY_PATH:-}'
++++ echo
++ _mlre='LD_LIBRARY_PATH_modquar='\'':/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' LD_LIBRARY_PATH='\'''\'' '
++ for _mlv in ${MODULES_RUN_QUARANTINE:-}
++ '[' LD_PRELOAD = LD_PRELOAD -a LD_PRELOAD = LD_PRELOAD ']'
+++ eval 'echo ${LD_PRELOAD+x}'
++++ echo
++ '[' -n '' ']'
++ _mlrv=MODULES_RUNENV_LD_PRELOAD
+++ eval 'echo ${MODULES_RUNENV_LD_PRELOAD:-}'
++++ echo
++ _mlre='LD_LIBRARY_PATH_modquar='\'':/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' LD_LIBRARY_PATH='\'''\'' LD_PRELOAD='\'''\'' '
++ '[' -n 'LD_LIBRARY_PATH_modquar='\'':/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' LD_LIBRARY_PATH='\'''\'' LD_PRELOAD='\'''\'' ' ']'
+++ eval 'LD_LIBRARY_PATH_modquar='\'':/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\''' 'LD_LIBRARY_PATH='\'''\''' 'LD_PRELOAD='\'''\''' /usr/bin/tclsh /usr/share/Modules/libexec/modulecmd.tcl bash '"$@"'
++++ LD_LIBRARY_PATH_modquar=:/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64
++++ LD_LIBRARY_PATH=
++++ LD_PRELOAD=
++++ /usr/bin/tclsh /usr/share/Modules/libexec/modulecmd.tcl bash load modulefile.tcogfs.fx1000.rsm
+tcsds/1.2.33 loaded/unloaded
+----------------------------------------------------------------- /nwpr/gfs/xb157/CWBSUMc2/components/tco639l72/modulefiles -----------------------------------------------------------------
+modulefile.tcogfs.fx10      modulefile.tcogfs.fx100      modulefile.tcogfs.fx1000      modulefile.tcogfs.fx1000_old      modulefile.tcogfs.pcc      
+modulefile.tcogfs.fx10.rsm  modulefile.tcogfs.fx100.rsm  modulefile.tcogfs.fx1000.rsm  modulefile.tcogfs.fx1000_onlyATM  modulefile.tcogfs.pcc.rsm  
+
+---------------------------------------------------------------------------- /nwpr/gfs/xb124/modulefiles/fx1000 -----------------------------------------------------------------------------
+hdf5/1.8.22  hdf5/1.10.7  mct/2.11  pnetcdf/1.12.3  zlib/1.2.7  zlib/1.2.8  
+
+---------------------------------------------------------------------------- /data/common/gfs/modulefiles/fx1000 ----------------------------------------------------------------------------
+dms/v4      fftw/3.3.10      fftw/3.3.10.new_sp  netcdf/4.1.3(default)  operlib        python/3.6.8   tcsds/1.2.33  
+fftw/3.3.7  fftw/3.3.10.new  netcdf/3.6.3        netcdf/4.7.4           python/2.7.17  python/3.9.13  w3lib/2.0.2   
+
+---------------------------------------------------------------------------- /data/common/gfs/modulefiles/x86_64 ----------------------------------------------------------------------------
+a2ps/4.14  cdo/2.0.0  cmake/3.21.4  dms/v4  ferret/7.6.0  grads/2.2.1  htop/3.1.2  ncl/6.6.2  p7zip/16.02  python/3.6.8  system  tcsds/1.2.33  template  vim/8.2.4065  
+
+------------------------------------------------------------------------------ /usr/share/Modules/modulefiles -------------------------------------------------------------------------------
+dot  module-git  module-info  modules  null  use.own  
+
+------------------------------------------------------------------------------------- /etc/modulefiles --------------------------------------------------------------------------------------
+a2ps/4.14  cdo/1.9.3  cdo/2.0.0  cmake/3.21.4  dms/v4  eccodes/2.7.0  eccodes/2.24.2  ferret/7.6.0  grads/2.2.1  mpi/openmpi-x86_64  ncl/6.6.2  tcsds/1.2.33  
+
+---------------------------------------------------------------------------------- /usr/share/modulefiles -----------------------------------------------------------------------------------
+pmi/pmix-x86_64  
+
+netcdf/3.6.3 loaded/unloaded
+fftw/3.3.10 loaded/unloaded
+dms/v4 loaded/unloaded
+operlib/None loaded/unloaded
+w3lib/2.0.2 loaded/unloaded
+
+Loading modulefile.tcogfs.fx1000.rsm
+  WARNING: Did not unuse /data/common/gfs/modulefiles/x86_64
+  WARNING: Did not unuse /data/common/gfs/modulefiles/fx1000
+  Loading requirement: tcsds/1.2.33 netcdf/3.6.3 fftw/3.3.10.new_sp dms/v4 operlib w3lib/2.0.2
++ eval 'MODULES_LMPREREQ=modulefile.tcogfs.fx1000.rsm\&tcsds\&netcdf/3.6.3\&fftw/3.3.10.new_sp\&dms/v4\&operlib\&w3lib/2.0.2;' export 'MODULES_LMPREREQ;
+FFTW3_DIR=/users/xa09/pkg/fx1000/fftw-3.3.10/lib/cmake/fftw3;' export 'FFTW3_DIR;
+LD_LIBRARY_PATH=/package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64;' export 'LD_LIBRARY_PATH;
+W3LIB=/package/fx1000/w3lib-2.0.2;' export 'W3LIB;
+DMS_LIB=-L/package/fx1000/dms/lib\' '-lrdms\' '-lgdbm;' export 'DMS_LIB;
+FFTW3=/users/xa09/pkg/fx1000/fftw-3.3.10;' export 'FFTW3;
+_LMFILES_=/data/common/gfs/modulefiles/fx1000/tcsds/1.2.33:/data/common/gfs/modulefiles/fx1000/netcdf/3.6.3:/data/common/gfs/modulefiles/fx1000/fftw/3.3.10.new_sp:/data/common/gfs/modulefiles/fx1000/dms/v4:/data/common/gfs/modulefiles/fx1000/operlib:/data/common/gfs/modulefiles/fx1000/w3lib/2.0.2:/nwpr/gfs/xb157/CWBSUMc2/components/tco639l72/modulefiles/modulefile.tcogfs.fx1000.rsm;' export '_LMFILES_;
+LOADEDMODULES=tcsds/1.2.33:netcdf/3.6.3:fftw/3.3.10.new_sp:dms/v4:operlib:w3lib/2.0.2:modulefile.tcogfs.fx1000.rsm;' export 'LOADEDMODULES;
+LANG=C;' export 'LANG;
+OMP_COM=-Kopenmp,parallel;' export 'OMP_COM;
+MODULES_LMCONFLICT=netcdf/3.6.3\&netcdf:fftw/3.3.10.new_sp\&fftw:w3lib/2.0.2\&w3lib;' export 'MODULES_LMCONFLICT;
+NETCDF=/package/fx1000/netcdf-3.6.3;' export 'NETCDF;
+FFTW_DIR=/users/xa09/pkg/fx1000/fftw-3.3.10;' export 'FFTW_DIR;
+MODULES_LMCONFLICT_modshare=fftw/3.3.10.new_sp\&fftw:1:netcdf/3.6.3\&netcdf:1:w3lib/2.0.2\&w3lib:1;' export 'MODULES_LMCONFLICT_modshare;
+NETCDF_INC=/package/fx1000/netcdf-3.6.3/include;' export 'NETCDF_INC;
+C_COMP_MP=/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifccpx;' export 'C_COMP_MP;
+W3LIB_LIB=/package/fx1000/w3lib-2.0.2/lib/libw3.a;' export 'W3LIB_LIB;
+FFTW=/users/xa09/pkg/fx1000/fftw-3.3.10;' export 'FFTW;
+MODULES_LMNOTUASKED=tcsds/1.2.33:netcdf/3.6.3:fftw/3.3.10.new_sp:dms/v4:operlib:w3lib/2.0.2;' export 'MODULES_LMNOTUASKED;
+FFTW_INC=/users/xa09/pkg/fx1000/fftw-3.3.10/include;' export 'FFTW_INC;
+LIBS_COM=-SSL2BLAMP;' export 'LIBS_COM;
+MODULES_LMNOTUASKED_modshare=w3lib/2.0.2:1:tcsds/1.2.33:1:dms/v4:1:operlib:1:netcdf/3.6.3:1:fftw/3.3.10.new_sp:1;' export 'MODULES_LMNOTUASKED_modshare;
+C_COMP=/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifccpx;' export 'C_COMP;
+FFLAGS_COM=-c\' '-X9\' '-Free\' '-CcdRR8\' '-Cpp\' '-Kfast,parallel,openmp,ocl,autoobjstack\' '-x-\' '-fw;' export 'FFLAGS_COM;
+MODULES_LMPREREQ_modshare=modulefile.tcogfs.fx1000.rsm\&tcsds\&netcdf/3.6.3\&fftw/3.3.10.new_sp\&dms/v4\&operlib\&w3lib/2.0.2:1;' export 'MODULES_LMPREREQ_modshare;
+NETCDF_LIB=-L/package/fx1000/netcdf-3.6.3/lib\' '\' '-lnetcdf;' export 'NETCDF_LIB;
+LD_LIBRARY_PATH_modshare=:1:/package/fx1000/dms/lib:1:/package/x86_64/dms/lib:1:/opt/FJSVxtclanga/tcsds-1.2.33/lib64:2;' export 'LD_LIBRARY_PATH_modshare;
+OPERLIB_LIB=-L/package/fx1000/operlib/lib\' '-lnwp;' export 'OPERLIB_LIB;
+COMP_MP=/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx;' export 'COMP_MP;
+MODULEPATH=/nwpr/gfs/xb157/CWBSUMc2/components/tco639l72/modulefiles:/nwpr/gfs/xb124/modulefiles/fx1000:/data/common/gfs/modulefiles/fx1000:/data/common/gfs/modulefiles/x86_64:/usr/share/Modules/modulefiles:/etc/modulefiles:/usr/share/modulefiles;' export 'MODULEPATH;
+DMS=/package/fx1000/dms;' export 'DMS;
+_LMFILES__modshare=/data/common/gfs/modulefiles/fx1000/netcdf/3.6.3:1:/data/common/gfs/modulefiles/fx1000/fftw/3.3.10.new_sp:1:/data/common/gfs/modulefiles/fx1000/w3lib/2.0.2:1:/data/common/gfs/modulefiles/fx1000/tcsds/1.2.33:1:/data/common/gfs/modulefiles/fx1000/dms/v4:1:/data/common/gfs/modulefiles/fx1000/operlib:1:/nwpr/gfs/xb157/CWBSUMc2/components/tco639l72/modulefiles/modulefile.tcogfs.fx1000.rsm:1;' export '_LMFILES__modshare;
+LOADEDMODULES_modshare=w3lib/2.0.2:1:tcsds/1.2.33:1:dms/v4:1:operlib:1:modulefile.tcogfs.fx1000.rsm:1:netcdf/3.6.3:1:fftw/3.3.10.new_sp:1;' export 'LOADEDMODULES_modshare;
+COMP_MPI=/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx;' export 'COMP_MPI;
+FFTW_LIB=-L/users/xa09/pkg/fx1000/fftw-3.3.10/lib\' '-lfftw3f_threads\' '-lfftw3f\' '-lfftw3_threads\' '-lfftw3;' export 'FFTW_LIB;
+PATH=/package/fx1000/dms/bin:/package/x86_64/udunits-1.12.11/bin:/package/x86_64/dms/bin:/package/x86_64/ncl-6.6.2/bin:/package/x86_64/grads-2.2.1/bin:/package/local/bin:/usr/share/Modules/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/FJSVxtclanga/tcsds-1.2.33/bin:/package/x86_64/ncl-6.6.2/bin:/package/x86_64/dms/bin:/users/xa09/quota:.;' export 'PATH;
+MSG_COM=-Ec\' '-Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x\' '-Koptmsg=2;' export 'MSG_COM;
+MODULEPATH_modshare=/nwpr/gfs/xb157/CWBSUMc2/components/tco639l72/modulefiles:1:/data/common/gfs/modulefiles/fx1000:1:/data/common/gfs/modulefiles/x86_64:1:/nwpr/gfs/xb124/modulefiles/fx1000:1:/usr/share/Modules/modulefiles:1:/etc/modulefiles:1:/usr/share/modulefiles:1;' export 'MODULEPATH_modshare;
+CFLAGS_COM=-c\' '-Xg;' export 'CFLAGS_COM;
+PATH_modshare=/usr/bin:1:/usr/share/Modules/bin:1:/usr/local/bin:1:/users/xa09/quota:1:/package/fx1000/dms/bin:1:/package/x86_64/ncl-6.6.2/bin:1:/package/local/bin:1:/package/x86_64/grads-2.2.1/bin:1:/package/x86_64/udunits-1.12.11/bin:1:/package/x86_64/dms/bin:1:/usr/sbin:1:/opt/FJSVxtclanga/tcsds-1.2.33/bin:2:.:1:/usr/local/sbin:1;' export 'PATH_modshare;
+COMP=/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx;' export 'COMP;
+test' '0;'
+++ MODULES_LMPREREQ='modulefile.tcogfs.fx1000.rsm&tcsds&netcdf/3.6.3&fftw/3.3.10.new_sp&dms/v4&operlib&w3lib/2.0.2'
+++ export MODULES_LMPREREQ
+++ FFTW3_DIR=/users/xa09/pkg/fx1000/fftw-3.3.10/lib/cmake/fftw3
+++ export FFTW3_DIR
+++ LD_LIBRARY_PATH=/package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64
+++ export LD_LIBRARY_PATH
+++ W3LIB=/package/fx1000/w3lib-2.0.2
+++ export W3LIB
+++ DMS_LIB='-L/package/fx1000/dms/lib -lrdms -lgdbm'
+++ export DMS_LIB
+++ FFTW3=/users/xa09/pkg/fx1000/fftw-3.3.10
+++ export FFTW3
+++ _LMFILES_=/data/common/gfs/modulefiles/fx1000/tcsds/1.2.33:/data/common/gfs/modulefiles/fx1000/netcdf/3.6.3:/data/common/gfs/modulefiles/fx1000/fftw/3.3.10.new_sp:/data/common/gfs/modulefiles/fx1000/dms/v4:/data/common/gfs/modulefiles/fx1000/operlib:/data/common/gfs/modulefiles/fx1000/w3lib/2.0.2:/nwpr/gfs/xb157/CWBSUMc2/components/tco639l72/modulefiles/modulefile.tcogfs.fx1000.rsm
+++ export _LMFILES_
+++ LOADEDMODULES=tcsds/1.2.33:netcdf/3.6.3:fftw/3.3.10.new_sp:dms/v4:operlib:w3lib/2.0.2:modulefile.tcogfs.fx1000.rsm
+++ export LOADEDMODULES
+++ LANG=C
+++ export LANG
+++ OMP_COM=-Kopenmp,parallel
+++ export OMP_COM
+++ MODULES_LMCONFLICT='netcdf/3.6.3&netcdf:fftw/3.3.10.new_sp&fftw:w3lib/2.0.2&w3lib'
+++ export MODULES_LMCONFLICT
+++ NETCDF=/package/fx1000/netcdf-3.6.3
+++ export NETCDF
+++ FFTW_DIR=/users/xa09/pkg/fx1000/fftw-3.3.10
+++ export FFTW_DIR
+++ MODULES_LMCONFLICT_modshare='fftw/3.3.10.new_sp&fftw:1:netcdf/3.6.3&netcdf:1:w3lib/2.0.2&w3lib:1'
+++ export MODULES_LMCONFLICT_modshare
+++ NETCDF_INC=/package/fx1000/netcdf-3.6.3/include
+++ export NETCDF_INC
+++ C_COMP_MP=/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifccpx
+++ export C_COMP_MP
+++ W3LIB_LIB=/package/fx1000/w3lib-2.0.2/lib/libw3.a
+++ export W3LIB_LIB
+++ FFTW=/users/xa09/pkg/fx1000/fftw-3.3.10
+++ export FFTW
+++ MODULES_LMNOTUASKED=tcsds/1.2.33:netcdf/3.6.3:fftw/3.3.10.new_sp:dms/v4:operlib:w3lib/2.0.2
+++ export MODULES_LMNOTUASKED
+++ FFTW_INC=/users/xa09/pkg/fx1000/fftw-3.3.10/include
+++ export FFTW_INC
+++ LIBS_COM=-SSL2BLAMP
+++ export LIBS_COM
+++ MODULES_LMNOTUASKED_modshare=w3lib/2.0.2:1:tcsds/1.2.33:1:dms/v4:1:operlib:1:netcdf/3.6.3:1:fftw/3.3.10.new_sp:1
+++ export MODULES_LMNOTUASKED_modshare
+++ C_COMP=/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifccpx
+++ export C_COMP
+++ FFLAGS_COM='-c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw'
+++ export FFLAGS_COM
+++ MODULES_LMPREREQ_modshare='modulefile.tcogfs.fx1000.rsm&tcsds&netcdf/3.6.3&fftw/3.3.10.new_sp&dms/v4&operlib&w3lib/2.0.2:1'
+++ export MODULES_LMPREREQ_modshare
+++ NETCDF_LIB='-L/package/fx1000/netcdf-3.6.3/lib  -lnetcdf'
+++ export NETCDF_LIB
+++ LD_LIBRARY_PATH_modshare=:1:/package/fx1000/dms/lib:1:/package/x86_64/dms/lib:1:/opt/FJSVxtclanga/tcsds-1.2.33/lib64:2
+++ export LD_LIBRARY_PATH_modshare
+++ OPERLIB_LIB='-L/package/fx1000/operlib/lib -lnwp'
+++ export OPERLIB_LIB
+++ COMP_MP=/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx
+++ export COMP_MP
+++ MODULEPATH=/nwpr/gfs/xb157/CWBSUMc2/components/tco639l72/modulefiles:/nwpr/gfs/xb124/modulefiles/fx1000:/data/common/gfs/modulefiles/fx1000:/data/common/gfs/modulefiles/x86_64:/usr/share/Modules/modulefiles:/etc/modulefiles:/usr/share/modulefiles
+++ export MODULEPATH
+++ DMS=/package/fx1000/dms
+++ export DMS
+++ _LMFILES__modshare=/data/common/gfs/modulefiles/fx1000/netcdf/3.6.3:1:/data/common/gfs/modulefiles/fx1000/fftw/3.3.10.new_sp:1:/data/common/gfs/modulefiles/fx1000/w3lib/2.0.2:1:/data/common/gfs/modulefiles/fx1000/tcsds/1.2.33:1:/data/common/gfs/modulefiles/fx1000/dms/v4:1:/data/common/gfs/modulefiles/fx1000/operlib:1:/nwpr/gfs/xb157/CWBSUMc2/components/tco639l72/modulefiles/modulefile.tcogfs.fx1000.rsm:1
+++ export _LMFILES__modshare
+++ LOADEDMODULES_modshare=w3lib/2.0.2:1:tcsds/1.2.33:1:dms/v4:1:operlib:1:modulefile.tcogfs.fx1000.rsm:1:netcdf/3.6.3:1:fftw/3.3.10.new_sp:1
+++ export LOADEDMODULES_modshare
+++ COMP_MPI=/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx
+++ export COMP_MPI
+++ FFTW_LIB='-L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3'
+++ export FFTW_LIB
+++ PATH=/package/fx1000/dms/bin:/package/x86_64/udunits-1.12.11/bin:/package/x86_64/dms/bin:/package/x86_64/ncl-6.6.2/bin:/package/x86_64/grads-2.2.1/bin:/package/local/bin:/usr/share/Modules/bin:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/opt/FJSVxtclanga/tcsds-1.2.33/bin:/package/x86_64/ncl-6.6.2/bin:/package/x86_64/dms/bin:/users/xa09/quota:.
+++ export PATH
+++ MSG_COM='-Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2'
+++ export MSG_COM
+++ MODULEPATH_modshare=/nwpr/gfs/xb157/CWBSUMc2/components/tco639l72/modulefiles:1:/data/common/gfs/modulefiles/fx1000:1:/data/common/gfs/modulefiles/x86_64:1:/nwpr/gfs/xb124/modulefiles/fx1000:1:/usr/share/Modules/modulefiles:1:/etc/modulefiles:1:/usr/share/modulefiles:1
+++ export MODULEPATH_modshare
+++ CFLAGS_COM='-c -Xg'
+++ export CFLAGS_COM
+++ PATH_modshare=/usr/bin:1:/usr/share/Modules/bin:1:/usr/local/bin:1:/users/xa09/quota:1:/package/fx1000/dms/bin:1:/package/x86_64/ncl-6.6.2/bin:1:/package/local/bin:1:/package/x86_64/grads-2.2.1/bin:1:/package/x86_64/udunits-1.12.11/bin:1:/package/x86_64/dms/bin:1:/usr/sbin:1:/opt/FJSVxtclanga/tcsds-1.2.33/bin:2:.:1:/usr/local/sbin:1
+++ export PATH_modshare
+++ COMP=/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx
+++ export COMP
+++ test 0
++ _mlstatus=0
++ '[' -n x ']'
++ IFS=' 	
+'
++ unset _mlre _mlv _mlrv _mlIFS
++ '[' -n '' ']'
++ unset _mlshdbg
++ return 0
++ module list
++ unset _mlshdbg
++ '[' 0 = 1 ']'
++ unset _mlre _mlIFS
++ '[' -n x ']'
++ _mlIFS=' 	
+'
++ IFS=' '
++ for _mlv in ${MODULES_RUN_QUARANTINE:-}
++ '[' LD_LIBRARY_PATH = LD_LIBRARY_PATH -a LD_LIBRARY_PATH = LD_LIBRARY_PATH ']'
+++ eval 'echo ${LD_LIBRARY_PATH+x}'
++++ echo x
++ '[' -n x ']'
+++ eval 'echo ${LD_LIBRARY_PATH}'
++++ echo /package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64
++ _mlre='LD_LIBRARY_PATH_modquar='\''/package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' '
++ _mlrv=MODULES_RUNENV_LD_LIBRARY_PATH
+++ eval 'echo ${MODULES_RUNENV_LD_LIBRARY_PATH:-}'
++++ echo
++ _mlre='LD_LIBRARY_PATH_modquar='\''/package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' LD_LIBRARY_PATH='\'''\'' '
++ for _mlv in ${MODULES_RUN_QUARANTINE:-}
++ '[' LD_PRELOAD = LD_PRELOAD -a LD_PRELOAD = LD_PRELOAD ']'
+++ eval 'echo ${LD_PRELOAD+x}'
++++ echo
++ '[' -n '' ']'
++ _mlrv=MODULES_RUNENV_LD_PRELOAD
+++ eval 'echo ${MODULES_RUNENV_LD_PRELOAD:-}'
++++ echo
++ _mlre='LD_LIBRARY_PATH_modquar='\''/package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' LD_LIBRARY_PATH='\'''\'' LD_PRELOAD='\'''\'' '
++ '[' -n 'LD_LIBRARY_PATH_modquar='\''/package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' LD_LIBRARY_PATH='\'''\'' LD_PRELOAD='\'''\'' ' ']'
+++ eval 'LD_LIBRARY_PATH_modquar='\''/package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\''' 'LD_LIBRARY_PATH='\'''\''' 'LD_PRELOAD='\'''\''' /usr/bin/tclsh /usr/share/Modules/libexec/modulecmd.tcl bash '"$@"'
++++ LD_LIBRARY_PATH_modquar=/package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64
++++ LD_LIBRARY_PATH=
++++ LD_PRELOAD=
++++ /usr/bin/tclsh /usr/share/Modules/libexec/modulecmd.tcl bash list
+Currently Loaded Modulefiles:
+ 1) tcsds/1.2.33   2) netcdf/3.6.3   3) fftw/3.3.10.new_sp   4) dms/v4   5) operlib   6) w3lib/2.0.2   7) modulefile.tcogfs.fx1000.rsm  
++ eval
++ _mlstatus=0
++ '[' -n x ']'
++ IFS=' 	
+'
++ unset _mlre _mlv _mlrv _mlIFS
++ '[' -n '' ']'
++ unset _mlshdbg
++ return 0
++ module unuse /nwpr/gfs/xb157/CWBSUMc2/components/tco639l72/modulefiles
++ unset _mlshdbg
++ '[' 0 = 1 ']'
++ unset _mlre _mlIFS
++ '[' -n x ']'
++ _mlIFS=' 	
+'
++ IFS=' '
++ for _mlv in ${MODULES_RUN_QUARANTINE:-}
++ '[' LD_LIBRARY_PATH = LD_LIBRARY_PATH -a LD_LIBRARY_PATH = LD_LIBRARY_PATH ']'
+++ eval 'echo ${LD_LIBRARY_PATH+x}'
++++ echo x
++ '[' -n x ']'
+++ eval 'echo ${LD_LIBRARY_PATH}'
++++ echo /package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64
++ _mlre='LD_LIBRARY_PATH_modquar='\''/package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' '
++ _mlrv=MODULES_RUNENV_LD_LIBRARY_PATH
+++ eval 'echo ${MODULES_RUNENV_LD_LIBRARY_PATH:-}'
++++ echo
++ _mlre='LD_LIBRARY_PATH_modquar='\''/package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' LD_LIBRARY_PATH='\'''\'' '
++ for _mlv in ${MODULES_RUN_QUARANTINE:-}
++ '[' LD_PRELOAD = LD_PRELOAD -a LD_PRELOAD = LD_PRELOAD ']'
+++ eval 'echo ${LD_PRELOAD+x}'
++++ echo
++ '[' -n '' ']'
++ _mlrv=MODULES_RUNENV_LD_PRELOAD
+++ eval 'echo ${MODULES_RUNENV_LD_PRELOAD:-}'
++++ echo
++ _mlre='LD_LIBRARY_PATH_modquar='\''/package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' LD_LIBRARY_PATH='\'''\'' LD_PRELOAD='\'''\'' '
++ '[' -n 'LD_LIBRARY_PATH_modquar='\''/package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\'' LD_LIBRARY_PATH='\'''\'' LD_PRELOAD='\'''\'' ' ']'
+++ eval 'LD_LIBRARY_PATH_modquar='\''/package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64'\''' 'LD_LIBRARY_PATH='\'''\''' 'LD_PRELOAD='\'''\''' /usr/bin/tclsh /usr/share/Modules/libexec/modulecmd.tcl bash '"$@"'
++++ LD_LIBRARY_PATH_modquar=/package/fx1000/dms/lib::/package/x86_64/dms/lib:/opt/FJSVxtclanga/tcsds-1.2.33/lib64
++++ LD_LIBRARY_PATH=
++++ LD_PRELOAD=
++++ /usr/bin/tclsh /usr/share/Modules/libexec/modulecmd.tcl bash unuse /nwpr/gfs/xb157/CWBSUMc2/components/tco639l72/modulefiles
++ eval 'MODULEPATH_modshare=/data/common/gfs/modulefiles/fx1000:1:/data/common/gfs/modulefiles/x86_64:1:/nwpr/gfs/xb124/modulefiles/fx1000:1:/usr/share/Modules/modulefiles:1:/etc/modulefiles:1:/usr/share/modulefiles:1;' export 'MODULEPATH_modshare;
+MODULEPATH=/nwpr/gfs/xb124/modulefiles/fx1000:/data/common/gfs/modulefiles/fx1000:/data/common/gfs/modulefiles/x86_64:/usr/share/Modules/modulefiles:/etc/modulefiles:/usr/share/modulefiles;' export 'MODULEPATH;
+test' '0;'
+++ MODULEPATH_modshare=/data/common/gfs/modulefiles/fx1000:1:/data/common/gfs/modulefiles/x86_64:1:/nwpr/gfs/xb124/modulefiles/fx1000:1:/usr/share/Modules/modulefiles:1:/etc/modulefiles:1:/usr/share/modulefiles:1
+++ export MODULEPATH_modshare
+++ MODULEPATH=/nwpr/gfs/xb124/modulefiles/fx1000:/data/common/gfs/modulefiles/fx1000:/data/common/gfs/modulefiles/x86_64:/usr/share/Modules/modulefiles:/etc/modulefiles:/usr/share/modulefiles
+++ export MODULEPATH
+++ test 0
++ _mlstatus=0
++ '[' -n x ']'
++ IFS=' 	
+'
++ unset _mlre _mlv _mlrv _mlIFS
++ '[' -n '' ']'
++ unset _mlshdbg
++ return 0
++ cd src_rsm/
++ make clean
+
+==== CLEAN ====================================================
+rm -f *.o *.lst *.mod depend MTCo639L72_fx1000
++ make -j24
+==== Building dependencies for TCoGFS =====
+
+
+
+
+
+
+compile --> ancrt.f90
+compile --> mod_rank.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  ancrt.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mod_rank.f90
+compile --> mod_param.f90
+compile --> mod_paramt.f90
+compile --> mod_fftcom.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mod_param.f90
+compile --> mersenne_twister.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mod_paramt.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mod_fftcom.f90
+
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mersenne_twister.f90
+
+compile --> chlen.f90
+
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  chlen.f90
+compile --> coftrix.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  coftrix.f90
+
+
+compile --> shr_kind_mod.f90
+compile --> mod_radn.f90
+compile --> mod_sit_control.f90
+
+
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  shr_kind_mod.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mod_radn.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mod_sit_control.f90
+compile --> cplxmtl.f90
+compile --> crayfun.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cplxmtl.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  crayfun.f90
+
+
+
+
+
+
+compile --> cwb.f90
+compile --> days.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cwb.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  days.f90
+
+compile --> dcbase.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  dcbase.f90
+
+compile --> machine.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  machine.f90
+
+compile --> mod_eos_ocean.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mod_eos_ocean.f90
+
+compile --> namelist_soilveg.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  namelist_soilveg.f90
+
+compile --> drycon.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  drycon.f90
+compile --> eigen.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  eigen.f90
+compile --> eigenlib.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  eigenlib.f90
+compile --> eigrs.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  eigrs.f90
+compile --> eispack.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  eispack.f90
+
+
+compile --> geostd.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  geostd.f90
+compile --> fpvs.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  fpvs.f90
+
+
+
+compile --> grdcon.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  grdcon.f90
+compile --> gpvs.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  gpvs.f90
+compile --> getphi.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  getphi.f90
+
+
+
+compile --> gridnl_hybrid.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  gridnl_hybrid.f90
+compile --> grdtpw.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  grdtpw.f90
+compile --> iounitdef.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  iounitdef.f90
+
+compile --> module_mp_gfdl_fv3_v2.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  module_mp_gfdl_fv3_v2.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  -Knosimd gscond.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  -Knosimd gscondp.f90
+
+compile --> iw3jdn.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  iw3jdn.f90
+
+compile --> joinsr.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  joinsr.f90
+
+compile --> landpack.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  landpack.f90
+
+compile --> landsmc.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  landsmc.f90
+
+compile --> mod_fj_pad.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mod_fj_pad.f90
+
+compile --> mod_stochastic.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mod_stochastic.f90
+
+compile --> module_mp_radar.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  module_mp_radar.f90
+
+compile --> mpe_barrier.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mpe_barrier.f90
+
+compile --> mpe_recv_data.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mpe_recv_data.f90
+
+compile --> mpe_recv_key.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mpe_recv_key.f90
+
+compile --> mpe_send_data.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mpe_send_data.f90
+
+compile --> mpe_send_key.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mpe_send_key.f90
+
+compile --> mpe_transpose_sr1.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mpe_transpose_sr1.f90
+
+compile --> mxslvc.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mxslvc.f90
+
+compile --> nnmi.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  nnmi.f90
+
+compile --> normalize.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  normalize.f90
+
+compile --> postq.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  postq.f90
+
+
+
+
+
+compile --> precpd.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  precpd.f90
+compile --> qsatq.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  qsatq.f90
+
+compile --> precpdp.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  precpdp.f90
+compile --> qprint.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  qprint.f90
+compile --> precpd_n.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  precpd_n.f90
+compile --> radir99.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  radir99.f90
+
+compile --> radsl99.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  radsl99.f90
+
+compile --> rcmpir24c.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  rcmpir24c.f90
+
+compile --> rcmpir24.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  rcmpir24.f90
+
+compile --> rcmpsl2c.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  rcmpsl2c.f90
+
+
+compile --> rcmpsl2.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  rcmpsl2.f90
+compile --> rkdisir.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  rkdisir.f90
+
+compile --> roptir.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  roptir.f90
+
+compile --> rqkir.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  rqkir.f90
+
+compile --> sascnv.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  sascnv.f90
+
+compile --> sascnv_n.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  sascnv_n.f90
+
+compile --> sascnv_sa.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  sascnv_sa.f90
+
+compile --> send_data.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  send_data.f90
+
+compile --> send_idate.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  send_idate.f90
+Fortran diagnostic messages:
+  jwd1039i-w  "send_data.f90", line 1: Corresponding END statement missing.
+
+
+compile --> set_soilveg.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  set_soilveg.f90
+compile --> sfcpbl.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  sfcpbl.f90
+Fortran diagnostic messages:
+  jwd1039i-w  "send_idate.f90", line 1: Corresponding END statement missing.
+
+compile --> sfcuvt.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  sfcuvt.f90
+
+compile --> shalcnv_new.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  shalcnv_new.f90
+
+compile --> shalcnv_sa.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  shalcnv_sa.f90
+
+compile --> sortml.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  sortml.f90
+
+compile --> splin1.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  splin1.f90
+
+compile --> splinc.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  splinc.f90
+
+compile --> stemp.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  stemp.f90
+
+compile --> structrn.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  structrn.f90
+
+compile --> stupij.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  stupij.f90
+
+compile --> stupiy.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  stupiy.f90
+
+compile --> syslbl.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  syslbl.f90
+
+compile --> trdih.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  trdih.f90
+
+compile --> trdiv2.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  trdiv2.f90
+
+compile --> triadj.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  triadj.f90
+
+compile --> trigau.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  trigau.f90
+
+compile --> ttstd.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  ttstd.f90
+
+compile --> ujoinrs.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  ujoinrs.f90
+
+compile --> vstruc_hybrid.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  vstruc_hybrid.f90
+
+compile --> w3fs26.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  w3fs26.f90
+
+compile --> whtrec.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  whtrec.f90
+
+compile --> whttau.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  whttau.f90
+
+
+compile --> wrte_data.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  wrte_data.f90
+
+compile --> wrte_idate.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  wrte_idate.f90
+compile -->cwb_fftw.c
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifccpx -c -Xg  cwb_fftw.c
+
+compile --> mod_const.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mod_const.f90
+fccpx: warning: -Xg option is obsolete. GNU C/C++ compatible mode is active.
+Fortran diagnostic messages:
+Fortran diagnostic messages:
+  jwd1039i-w  "wrte_idate.f90", line 1: Corresponding END statement missing.
+  jwd1039i-w  "wrte_data.f90", line 1: Corresponding END statement missing.
+"cwb_fftw.c", line 15: warning: function "fftw_init_threads" declared implicitly
+    fftw_init_threads( );
+    ^
+
+"cwb_fftw.c", line 23: warning: function "fftw_plan_with_nthreads" declared implicitly
+    fftw_plan_with_nthreads(omp_get_max_threads());
+    ^
+
+"cwb_fftw.c", line 33: warning: function "fftw_make_planner_thread_safe" declared implicitly
+    fftw_make_planner_thread_safe( );
+    ^
+
+"cwb_fftw.c", line 41: warning: function "fftw_import_wisdom_from_filename" declared implicitly
+     is=fftw_import_wisdom_from_filename(cwbfile);
+        ^
+
+"cwb_fftw.c", line 52: warning: function "fftw_export_wisdom_to_filename" declared implicitly
+     is=fftw_export_wisdom_to_filename(cwbfile);
+        ^
+
+"cwb_fftw.c", line 62: warning: function "fftw_cleanup_threads" declared implicitly
+    fftw_cleanup_threads( );
+    ^
+
+
+
+compile --> mod_index.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mod_index.f90
+compile --> cem1.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cem1.f90
+
+compile --> mo_constants.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mo_constants.f90
+
+compile --> mo_cumulus_flux.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mo_cumulus_flux.f90
+
+compile --> ctemp2.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  ctemp2.f90
+
+compile --> cup92.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cup92.f90
+
+compile --> dayfil.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  dayfil.f90
+
+compile --> physcons.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  physcons.f90
+
+compile --> physpara.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  physpara.f90
+
+
+compile --> eeps.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  eeps.f90
+compile --> evpcup.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  evpcup.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  -Knoparallel fftx.f90
+
+compile --> funcphys.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  funcphys.f90
+
+compile --> gauslv.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  gauslv.f90
+
+compile --> mod_albn.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mod_albn.f90
+
+compile --> mod_ozne_def.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mod_ozne_def.f90
+
+compile --> gfcst.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  gfcst.f90
+
+compile --> gridnl_hybrid_ndsl.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  gridnl_hybrid_ndsl.f90
+
+compile --> radlw_param.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  radlw_param.f90
+
+compile --> radiation_surface.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  radiation_surface.f90
+
+compile --> radsw_param.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  radsw_param.f90
+
+compile --> radlw_datatb.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  radlw_datatb.f90
+
+compile --> radiation_aerosols.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  radiation_aerosols.f90
+
+compile --> radiation_astronomy.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  radiation_astronomy.f90
+
+compile --> gwdp.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  gwdp.f90
+
+
+compile --> inicons.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  inicons.f90
+compile --> indexx.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  indexx.f90
+
+
+compile --> mod_raddiag.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mod_raddiag.f90
+compile --> invmtx.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  invmtx.f90
+
+
+
+
+
+
+compile --> landsfc_n.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  landsfc_n.f90
+compile --> lgndr.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  lgndr.f90
+compile --> ioserver.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  ioserver.f90
+compile --> joinrs.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  joinrs.f90
+compile --> lightning_ec.f90
+compile --> landsfc.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  lightning_ec.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  landsfc.f90
+
+
+compile --> lsp.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  lsp.f90
+
+compile --> matrix_hybrid_cwb.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  matrix_hybrid_cwb.f90
+compile --> mfpbl.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mfpbl.f90
+
+compile --> mixpbl.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mixpbl.f90
+
+
+
+
+compile --> mixpbl_new.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mixpbl_new.f90
+compile --> mixpbl_n.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mixpbl_n.f90
+compile --> module_mp_thompson_gfs.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  module_mp_thompson_gfs.f90
+
+compile --> module_mp_wsm6_fv3.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  module_mp_wsm6_fv3.f90
+compile --> module_mp_gfdl_fv3_v16.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  module_mp_gfdl_fv3_v16.f90
+
+compile --> moninedmf.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  moninedmf.f90
+
+compile --> mpe2d.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mpe2d.f90
+
+compile --> mpe_gather_io.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mpe_gather_io.f90
+
+compile --> mpe_scatter_io.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mpe_scatter_io.f90
+
+compile --> mpe_transpose_rs1.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mpe_transpose_rs1.f90
+
+compile --> mpe_transpose_rs.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mpe_transpose_rs.f90
+
+compile --> mpe_transpose_sr.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mpe_transpose_sr.f90
+
+compile --> mtxmlp.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mtxmlp.f90
+
+compile --> mtxprt.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mtxprt.f90
+
+compile --> nor_gwdp.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  nor_gwdp.f90
+
+compile --> ntke_func.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  ntke_func.f90
+
+
+compile --> pbltke_n.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  pbltke_n.f90
+compile --> pbltke.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  pbltke.f90
+
+compile --> pmatrx_hybrid_cwb.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  pmatrx_hybrid_cwb.f90
+
+compile --> pnmy.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  pnmy.f90
+
+compile --> prexp_hybrid_cwb.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  prexp_hybrid_cwb.f90
+
+compile --> qmax2d.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  qmax2d.f90
+
+
+compile --> qmaxn3.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  qmaxn3.f90
+compile --> radtn99.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  radtn99.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  -Knosimd rcloud.f90
+
+compile --> readclx.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  readclx.f90
+
+
+compile --> read_mtnvar.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  read_mtnvar.f90
+compile --> readozpl.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  readozpl.f90
+
+compile --> reducegrid.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  reducegrid.f90
+
+compile --> reduceintp.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  reduceintp.f90
+
+compile --> reducepick.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  reducepick.f90
+
+compile --> rozone.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  rozone.f90
+
+compile --> rozphys.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  rozphys.f90
+
+compile --> rstrandz.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  rstrandz.f90
+
+compile --> rstrantq.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  rstrantq.f90
+
+compile --> samfdeepcnv.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  samfdeepcnv.f90
+
+compile --> samfshalcnv.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  samfshalcnv.f90
+
+compile --> scatter_spec.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  scatter_spec.f90
+
+compile --> setupv.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  setupv.f90
+
+compile --> sfc_diag.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  sfc_diag.f90
+
+compile --> sfc_diff.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  sfc_diff.f90
+
+compile --> sfc_drv.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  sfc_drv.f90
+
+compile --> sfc_ocean.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  sfc_ocean.f90
+
+compile --> sfc_sice.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  sfc_sice.f90
+
+compile --> sflx.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  sflx.f90
+
+compile --> shlcon.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  shlcon.f90
+
+compile --> smth9.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  smth9.f90
+
+compile --> trandv.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  trandv.f90
+
+compile --> tranrs1.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  tranrs1.f90
+
+compile --> tranrs.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  tranrs.f90
+
+compile --> transr1.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  transr1.f90
+
+compile --> transr.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  transr.f90
+
+compile --> tranuv.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  tranuv.f90
+
+compile --> trdivv.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  trdivv.f90
+
+compile --> trngra3.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  trngra3.f90
+
+compile --> trngra.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  trngra.f90
+
+compile --> ujoinsr.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  ujoinsr.f90
+
+
+compile --> vartran.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  vartran.f90
+compile --> vartrix.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  vartrix.f90
+
+compile --> vstruc_hybrid_cwb.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  vstruc_hybrid_cwb.f90
+
+compile --> vterp.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  vterp.f90
+
+compile --> vterpj.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  vterpj.f90
+
+compile --> xyintpo.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  xyintpo.f90
+
+compile --> zilch.f90
+
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  zilch.f90
+
+compile --> zimadv.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  zimadv.f90
+compile --> zx.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  zx.f90
+
+compile --> bl_ysu.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  bl_ysu.f90
+
+
+compile --> ccoszen.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  ccoszen.f90
+compile --> mod_mpe.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mod_mpe.f90
+
+compile --> mod_typhoon.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mod_typhoon.f90
+
+compile --> mo_convect_tables.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mo_convect_tables.f90
+
+compile --> mod_spec.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mod_spec.f90
+
+compile --> mod_noah.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mod_noah.f90
+
+compile --> correct.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  correct.f90
+
+compile --> coszenpm.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  coszenpm.f90
+
+compile --> couvtq.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  couvtq.f90
+
+compile --> creeve.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  creeve.f90
+
+compile --> cuadjtq.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cuadjtq.f90
+
+compile --> cuadjtq_n.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cuadjtq_n.f90
+
+compile --> cuasc.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cuasc.f90
+
+compile --> cuasc_n.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cuasc_n.f90
+
+compile --> cubase.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cubase.f90
+
+compile --> cubasmc.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cubasmc.f90
+
+compile --> cubasmc_n.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cubasmc_n.f90
+
+compile --> cuddraf.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cuddraf.f90
+
+compile --> cuddraf_n.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cuddraf_n.f90
+
+compile --> cudlfs.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cudlfs.f90
+
+compile --> cudlfs_n.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cudlfs_n.f90
+
+compile --> cudtdq.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cudtdq.f90
+
+compile --> cudtdq_n.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cudtdq_n.f90
+
+compile --> cududv.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cududv.f90
+
+compile --> cududv_n.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cududv_n.f90
+
+compile --> cuentr.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cuentr.f90
+
+compile --> cuentr_n.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cuentr_n.f90
+
+compile --> cuflx.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cuflx.f90
+
+compile --> cuflx_n.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cuflx_n.f90
+
+compile --> cuini.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cuini.f90
+
+compile --> cuini_n.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cuini_n.f90
+
+compile --> cumastr.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cumastr.f90
+
+compile --> cupcwb.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cupcwb.f90
+
+compile --> cutype_n.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cutype_n.f90
+
+compile --> dcyc2.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  dcyc2.f90
+
+compile --> mod_phygrid.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mod_phygrid.f90
+
+
+
+
+compile --> drychk.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  drychk.f90
+compile --> gather_spec.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  gather_spec.f90
+compile --> gathv.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  gathv.f90
+compile --> gausl3.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  gausl3.f90
+
+compile --> get_model_param.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  get_model_param.f90
+
+compile --> get_phi.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  get_phi.f90
+
+compile --> mod_grid.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mod_grid.f90
+
+
+
+
+compile --> radsw_datatb.f90
+
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  radsw_datatb.f90
+compile --> module_bfmicrophysics.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  module_bfmicrophysics.f90
+compile --> init_block.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  init_block.f90
+
+compile --> radlw_main.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  radlw_main.f90
+compile --> radiation_gases.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  radiation_gases.f90
+compile --> siimpl.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  siimpl.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  -Knoparallel ndslfv_pack.f90
+
+
+
+compile --> incrini.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  incrini.f90
+compile --> ndslfv_para.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  ndslfv_para.f90
+compile --> ndslfv_monoadvv.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  ndslfv_monoadvv.f90
+
+compile --> ndslfv_monoadvh.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  ndslfv_monoadvh.f90
+
+
+compile --> mpe_finalize.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mpe_finalize.f90
+compile --> mpe_init.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mpe_init.f90
+
+compile --> radsw_main.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  radsw_main.f90
+Fortran diagnostic messages: program name(module_mp_gfdl)
+ Module subprogram name(qs_table3)
+  jwd2207i-w  "module_mp_gfdl_fv3_v16.f90", line 4320, column 29: Invalid type of actual argument for intrinsic function 'ALOG10'.
+  jwd2207i-w  "module_mp_gfdl_fv3_v16.f90", line 4322, column 17: Invalid type of actual argument for intrinsic function 'ALOG10'.
+  jwd2207i-w  "module_mp_gfdl_fv3_v16.f90", line 4330, column 27: Invalid type of actual argument for intrinsic function 'ALOG10'.
+  jwd2207i-w  "module_mp_gfdl_fv3_v16.f90", line 4333, column 17: Invalid type of actual argument for intrinsic function 'ALOG10'.
+
+compile --> cld_eff_rad.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cld_eff_rad.f90
+
+compile --> radiation_clouds.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  radiation_clouds.f90
+
+compile --> mp_scheme.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mp_scheme.f90
+Fortran diagnostic messages: program name(module_radiation_clouds)
+ Module subprogram name(progcld6)
+  jwd2005i-w  "radiation_clouds.f90", line 2691: 'cwp' is used but never set.
+  jwd2005i-w  "radiation_clouds.f90", line 2692: 'rew' is used but never set.
+  jwd2005i-w  "radiation_clouds.f90", line 2693: 'cip' is used but never set.
+  jwd2005i-w  "radiation_clouds.f90", line 2694: 'rei' is used but never set.
+  jwd2005i-w  "radiation_clouds.f90", line 2695: 'crp' is used but never set.
+  jwd2005i-w  "radiation_clouds.f90", line 2696: 'rer' is used but never set.
+  jwd2005i-w  "radiation_clouds.f90", line 2697: 'csp' is used but never set.
+  jwd2005i-w  "radiation_clouds.f90", line 2698: 'res' is used but never set.
+
+compile --> grrad.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  grrad.f90
+
+
+
+
+
+
+
+
+compile --> check.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  check.f90
+
+
+
+
+
+compile --> diagrd.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  diagrd.f90
+
+
+compile --> cumastr_n.f90
+
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cumastr_n.f90
+
+
+compile --> minp.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  minp.f90
+compile --> dmswrit.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  dmswrit.f90
+compile --> hdiffu.f90
+compile --> gwdps.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  hdiffu.f90
+compile --> cumastr_driv_n.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  gwdps.f90
+
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cumastr_driv_n.f90
+
+compile --> mpe_unify.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mpe_unify.f90
+
+compile --> outflds_fv3.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  outflds_fv3.f90
+
+compile --> out2d_mfc.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  out2d_mfc.f90
+compile --> glbmean.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  glbmean.f90
+compile --> dmsread.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  dmsread.f90
+
+compile --> mod_stochastic_physics.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mod_stochastic_physics.f90
+compile --> mod_outflds.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mod_outflds.f90
+compile --> mod_netcdf.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mod_netcdf.f90
+compile --> make_list.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  make_list.f90
+compile --> initial.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  initial.f90
+compile --> maxp.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  maxp.f90
+compile --> out24.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  out24.f90
+compile --> cumastr_driv.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cumastr_driv.f90
+compile --> ncoling.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  ncoling.f90
+compile --> gwdc.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  gwdc.f90
+
+compile --> outflds_green.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  outflds_green.f90
+
+compile --> outflds_hp.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  outflds_hp.f90
+
+
+compile --> outsigr.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  outsigr.f90
+compile --> outsigs.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  outsigs.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  -Knosimd pbl_noah.f90
+
+compile --> qmaxn3p.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  qmaxn3p.f90
+
+compile --> qprnt3.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  qprnt3.f90
+
+compile --> rayleifr.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  rayleifr.f90
+
+compile --> readalb.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  readalb.f90
+
+compile --> rsmout.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  rsmout.f90
+
+compile --> rsmout_sigp.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  rsmout_sigp.f90
+
+compile --> sigful.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  sigful.f90
+
+compile --> srms.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  srms.f90
+
+compile --> tendget.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  tendget.f90
+
+compile --> tracking.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  tracking.f90
+
+compile --> unify_reduceintp.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  unify_reduceintp.f90
+
+
+compile --> unify_reducepick.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  unify_reducepick.f90
+compile --> uzmean.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  uzmean.f90
+
+compile --> varpht.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  varpht.f90
+
+compile --> voterp.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  voterp.f90
+
+
+compile --> mod_sst.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mod_sst.f90
+compile --> mod_sitgrid.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mod_sitgrid.f90
+
+
+compile --> out2d.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  out2d.f90
+compile --> outflds.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  outflds.f90
+Fortran diagnostic messages: program name(mod_stochastic_physics)
+ Module subprogram name(get_random_pattern_init)
+  jwd2005i-w  "mod_stochastic_physics.f90", line 353: 'i' is used but never set.
+
+
+compile --> check_global_values.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  check_global_values.f90
+compile --> cons.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  cons.f90
+
+
+
+compile --> rad_initialize.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  rad_initialize.f90
+compile --> rrtmg.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  rrtmg.f90
+compile --> prerrtmg.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  prerrtmg.f90
+
+compile --> outsit.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  outsit.f90
+
+compile --> mod_sit_vdiff.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  mod_sit_vdiff.f90
+
+
+compile --> intgrt.f90
+compile --> diabat.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  intgrt.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  diabat.f90
+
+compile --> getrdy.f90
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw       -SSL2BLAMP -Kopenmp,parallel  -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include  getrdy.f90
+
+==== LINK ====================================================
+/opt/FJSVxtclanga/tcsds-1.2.33/bin/mpifrtpx -o MTCo639L72_fx1000   ancrt.o bl_ysu.o ccoszen.o cem1.o check.o check_global_values.o chlen.o coftrix.o cons.o correct.o coszenpm.o couvtq.o cplxmtl.o crayfun.o creeve.o ctemp2.o cuadjtq.o cuadjtq_n.o cuasc.o cuasc_n.o cubase.o cubasmc.o cubasmc_n.o cuddraf.o cuddraf_n.o cudlfs.o cudlfs_n.o cudtdq.o cudtdq_n.o cududv.o cududv_n.o cuentr.o cuentr_n.o cuflx.o cuflx_n.o cuini.o cuini_n.o cumastr_driv.o cumastr_driv_n.o cumastr.o cumastr_n.o cup92.o cupcwb.o cutype_n.o cwb.o dayfil.o days.o dcbase.o dcyc2.o diabat.o diagrd.o dmsread.o dmswrit.o drychk.o drycon.o eeps.o eigen.o eigenlib.o eigrs.o eispack.o evpcup.o fftx.o fpvs.o funcphys.o gather_spec.o gathv.o gausl3.o gauslv.o geostd.o get_model_param.o get_phi.o getphi.o getrdy.o gfcst.o glbmean.o gpvs.o grdcon.o grdtpw.o gridnl_hybrid.o gridnl_hybrid_ndsl.o grrad.o gscond.o gscondp.o gwdc.o gwdp.o gwdps.o hdiffu.o incrini.o indexx.o inicons.o init_block.o initial.o intgrt.o invmtx.o ioserver.o iounitdef.o iw3jdn.o joinrs.o joinsr.o landpack.o landsfc.o landsfc_n.o landsmc.o lgndr.o lightning_ec.o lsp.o machine.o make_list.o matrix_hybrid_cwb.o maxp.o mersenne_twister.o mfpbl.o minp.o mixpbl.o mixpbl_new.o mixpbl_n.o mo_constants.o mo_convect_tables.o mo_cumulus_flux.o mod_albn.o mod_const.o mod_eos_ocean.o mod_fftcom.o mod_fj_pad.o mod_grid.o mod_index.o mod_mpe.o mod_netcdf.o mod_noah.o mod_outflds.o mod_ozne_def.o mod_param.o mod_paramt.o mod_phygrid.o mod_raddiag.o mod_radn.o mod_rank.o mod_sit_control.o mod_sitgrid.o mod_sit_vdiff.o mod_spec.o mod_sst.o mod_stochastic.o mod_stochastic_physics.o mod_typhoon.o module_bfmicrophysics.o module_mp_radar.o module_mp_thompson_gfs.o module_mp_wsm6_fv3.o module_mp_gfdl_fv3_v16.o module_mp_gfdl_fv3_v2.o cld_eff_rad.o moninedmf.o mpe2d.o mpe_barrier.o mpe_finalize.o mpe_gather_io.o mpe_init.o mpe_recv_data.o mpe_recv_key.o mpe_scatter_io.o mpe_send_data.o mpe_send_key.o mpe_transpose_rs1.o mpe_transpose_rs.o mpe_transpose_sr1.o mpe_transpose_sr.o mpe_unify.o mp_scheme.o mtxmlp.o mtxprt.o mxslvc.o namelist_soilveg.o ncoling.o ndslfv_monoadvh.o ndslfv_monoadvv.o ndslfv_pack.o ndslfv_para.o nnmi.o nor_gwdp.o normalize.o ntke_func.o out24.o out2d.o out2d_mfc.o outflds.o outflds_fv3.o outflds_green.o outflds_hp.o outsigr.o outsigs.o outsit.o pbl_noah.o pbltke.o pbltke_n.o physcons.o physpara.o pmatrx_hybrid_cwb.o pnmy.o postq.o precpd.o precpd_n.o precpdp.o prerrtmg.o prexp_hybrid_cwb.o qmax2d.o qmaxn3.o qmaxn3p.o qprint.o qprnt3.o qsatq.o radiation_aerosols.o radiation_astronomy.o radiation_clouds.o radiation_gases.o radiation_surface.o rad_initialize.o radir99.o radlw_datatb.o radlw_main.o radlw_param.o radsl99.o radsw_datatb.o radsw_main.o radsw_param.o radtn99.o rayleifr.o rcloud.o rcmpir24c.o rcmpir24.o rcmpsl2c.o rcmpsl2.o readalb.o readclx.o read_mtnvar.o readozpl.o reducegrid.o reduceintp.o reducepick.o rkdisir.o roptir.o rozone.o rozphys.o rqkir.o rrtmg.o rsmout.o rsmout_sigp.o rstrandz.o rstrantq.o samfdeepcnv.o samfshalcnv.o sascnv.o sascnv_n.o sascnv_sa.o scatter_spec.o send_data.o send_idate.o set_soilveg.o setupv.o sfc_diag.o sfc_diff.o sfc_drv.o sfc_ocean.o sfcpbl.o sfc_sice.o sfcuvt.o sflx.o shalcnv_new.o shalcnv_sa.o shlcon.o shr_kind_mod.o sigful.o siimpl.o smth9.o sortml.o splin1.o splinc.o srms.o stemp.o structrn.o stupij.o stupiy.o syslbl.o tendget.o tracking.o trandv.o tranrs1.o tranrs.o transr1.o transr.o tranuv.o trdih.o trdiv2.o trdivv.o triadj.o trigau.o trngra3.o trngra.o ttstd.o ujoinrs.o ujoinsr.o unify_reduceintp.o unify_reducepick.o uzmean.o varpht.o vartran.o vartrix.o voterp.o vstruc_hybrid_cwb.o vstruc_hybrid.o vterp.o vterpj.o w3fs26.o whtrec.o whttau.o wrte_data.o wrte_idate.o xyintpo.o zilch.o zimadv.o zx.o   cwb_fftw.o  -Kopenmp,parallel  -L/package/fx1000/netcdf-3.6.3/lib  -lnetcdf /package/fx1000/w3lib-2.0.2/lib/libw3.a -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP 
++ [[ 0 -ne 0 ]]

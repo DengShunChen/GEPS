@@ -3,7 +3,7 @@ SHELL = /bin/sh
 RANLIB = ranlib
 AR = ar cq
 RM = rm -f
-TIMCOMCPL = True
+TIMCOMCPL = TRUE
 
 SRCS_f90  = \
   ancrt.f90 \
@@ -252,6 +252,7 @@ SRCS_f90  = \
   rqkir.f90 \
   rrtmg.f90 \
   rsmout.f90 \
+  rsmout_sigp.f90 \
   rstrandz.f90 \
   rstrantq.f90 \
   samfdeepcnv.f90 \
@@ -327,6 +328,7 @@ SRCS_f90  = \
   zimadv.f90 \
   zx.f90 
 
+CPL = /nwpr/gfs/xb157/CWBSUMc2/components/coupler
 ifeq ($(strip $(TIMCOMCPL)),TRUE)
   SRCS_f90 := $(SRCS_f90) mod_gfscpl.f90
 endif
@@ -347,14 +349,12 @@ CC   =	${C_COMP}
 FC90 =  ${COMP_MPI}
 
 INCLUDE = -I. -I${FFTW_INC} -I${NETCDF_INC}
-#INCLUDE = -I${FFTW_INC} -I${NETCDF_INC}
 
 
 CMD  =  MTCo639L72_${MACHINE}
 
 ifeq ($(strip $(TIMCOMCPL)), TRUE)
-  INCLUDE := $(INCLUDE) -I../../timcomg/cpl -I/nwpr/gfs/xb124/package/$(MACHINE)/MCT/include
-#  INCLUDE := -I../../timcomg/cpl -I/nwpr/gfs/xb124/package/$(MACHINE)/MCT/include
+  INCLUDE := $(INCLUDE) -I$(CPL) -I/nwpr/gfs/xb124/package/$(MACHINE)/MCT/include
   CMD = libtco.a
 endif
 
@@ -404,7 +404,7 @@ LIBS	= ${NETCDF_LIB} ${HDF5_LIB} ${W3NCO_LIBd} ${DMS_LIB} ${OPERLIB_LIB} ${FFTW_
 
 ifeq ($(strip $(TIMCOMCPL)),TRUE)
   FFLAGS := $(FFLAGS) -DTIMCOMCPL
-  LIBS   := $(LIBS) -L../../TIMCOM_cpl/cpl -lcpl -L/nwpr/gfs/xb124/package/$(MACHINE)/MCT/lib -lmct -lmpeu
+  LIBS   := $(LIBS) -L$(CPL) -lcpl -L/nwpr/gfs/xb124/package/$(MACHINE)/MCT/lib -lmct -lmpeu
 endif
 
 .SUFFIXES: .o .mod .f90 .c

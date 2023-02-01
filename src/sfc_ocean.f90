@@ -112,7 +112,7 @@
 
         if ( flag(i) ) then
 
-          wind     = max(sqrt((u1(i)-ssu(i))**2 + (v1(i)-ssv(i))**2)                  &
+          wind     = max(sqrt((u1(i)-ssu(i))**2 + (v1(i)-ssv(i))**2)          &
                        + max( 0.0, min( ddvel(i), 30.0 ) ), 1.0)
 
           q0       = max( q1(i), 1.0e-8 )

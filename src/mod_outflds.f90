@@ -585,6 +585,12 @@ contains
           enddo
         enddo
         call unify_reduceintp(nx,my,my_max,tmp,glob)
+!     if(myrank.eq.0) then
+!       open(30,file='sfc_pres.bin',status='unknown', &
+!           form='unformatted',access='direct',recl=262656)
+!       write(30,rec=1) ((glob(i,j),i=432,647),j=410,561)
+!       close(30)
+!     endif
 !byl        call mpe_unify(glob,nx,my,2,mpe_double)
         call syslbl('b00010',idtg,itau,ggdef,lrec)
 !byl        if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)

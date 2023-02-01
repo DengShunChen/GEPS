@@ -10,7 +10,7 @@
                         , shdmax,shdmin,snoalb,albedo2                  &
                         , sld,zice,cice,xtice,hpbl,asl,atl,xmu,gfx      &
                         , kpbl,nmpbl,nmmiph,jj,isot,ivegsrc,sfemis_g    &
-                        , dudt,dvdt,dtdt,dqdt, ustress, vstress, ssu, ssv )
+                        , dudt,dvdt,dtdt,dqdt,ustress,vstress,ssu, ssv)
 !
 !#######################################################################
 !                     subroutine description
@@ -177,7 +177,6 @@
                tgclim(nx),snr(nx),totalp(nx),                              &
                ss(nx),rs(nx),alb(nx),xkmx(2),xkmd(lev),                    &
                t2(nx),u10(nx),v10(nx),ustress(nx),vstress(nx),ssu(nx),ssv(nx)
-
       real(kind=RTYPE) qt(nx,lev*ncld),q(nx,lev*ncld),phi(nx,lev),         &
                        topo(nx),pss(nx),ut(nx,lev),vt(nx,lev),tt(nx,lev),  &
                        pk(nx,lev),pk2(nx,lev)

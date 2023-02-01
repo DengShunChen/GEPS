@@ -17,6 +17,7 @@
 #ifdef TIMCOMCPL
       integer, intent(in) :: compid, mpi_comm_mct
 #endif
+
 !
 !  logical io units:
 !
@@ -27,6 +28,7 @@
 !  output model history for diabatic variables='phyout'
 !  input file of path/file names='filist'
 !
+
 #ifdef TIMCOMCPL
       call mpe_init(mpi_comm_mct)
 #else

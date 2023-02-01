@@ -36,6 +36,7 @@
       real, dimension(:,:),allocatable,save :: u10,v10,t2,rh2,rh10,q2  &
                                               ,fm,fm10,fh,fh2,srflag   &
                                               ,ustress,vstress,ssu,ssv
+
  
       real, dimension(:,:),allocatable,save :: fpsp,fpsp1
 
@@ -137,8 +138,7 @@
                      ,q2(nxp,my_max),fm(nxp,my_max),fm10(nxp,my_max)    &
                      ,fh(nxp,my_max),fh2(nxp,my_max)                    &
                      ,ustress(nxp,my_max),vstress(nxp,my_max)           &
-                     ,ssu(nxp,my_max),ssv(nxp,my_max),stat=ierr)
-
+                     ,ssu(nxp,my_max),ssv(nxp,my_max), stat=ierr)
 
            if (ierr/= 0) then
                write(6,*) 'mod_phygrid : allocate fail 6 '
@@ -192,7 +192,6 @@
            deallocate (il,ib)
            deallocate (cof,xlon,xlat)
            deallocate (u10,v10,t2,rh2,rh10,srflag,q2,fm,fm10,fh,fh2)
-           deallocate (ustress, vstress)
            deallocate (fpsp,fpsp1)
            deallocate (rainlp6,raincu6,rainlp3,raincu3,rainlp1,raincu1)
            deallocate (tsflw)
