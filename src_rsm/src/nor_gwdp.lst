@@ -1,0 +1,1432 @@
+
+ Fujitsu Fortran Version 4.6.1  Wed Jan 11 10:52:23 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/tco639l72/src
+   Source file       : nor_gwdp.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "nor_gwdp"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine nor_gwdp(j,nxj,nx,lev,u,v,t,q,plt,pk,pk2,hi,dt,grav,rgas,sinl &
+               2                           ,                   cosl,avgdrag_u,avgdrag_v,cp,ptop)
+               3                     !
+               4                     ! reference : Scinocca(2002,2003) JAS and Andrew Orr(2010) J. of Climate
+               5                     !
+               6                     !---- input:
+               7                     !---- nxj    : number of point in lontitude of reduced gauslian grid.
+               8                     !---- nx     : dimension of lontitude.
+               9                     !---- lev    : dimension of vertical.
+              10                     !---- dt     : 2.*dt dt: time step of model integration
+              11                     !---- grav   : gravity of earth
+              12                     !     rgas   : dry gas constant (=287.)
+              13                     !---- sinl   : sin of latitude
+              14                     !     t     : temperature  (k)
+              15                     !     q     : specific humidity (kg/kg)
+              16                     !     plt   : pressure at odd-level (mb)
+              17                     !     pk    : p**kcapa at odd-level ((=p/1000.)**0.286)
+              18                     !     pk2   : p**kcapa at even-level ((=p/1000.)**0.286)
+              19                     !     hi    : geopotential height (m2/s2)
+              20                     !---- u      : velocity of x-component
+              21                     !---- v      : velocity of y-component
+              22                     !---- output:
+              23                     !---  u,v
+              24                     !-----------------------------------------
+              25                     !---- den    : density of atmosphere
+              26                     !---- sn2    : Brunt-Vasisla frequency
+              27                     !---- p2     : pressure at even-level (mb)
+              28                     !---- nc        : number of spectral elements of the gravity wave phase speed.
+              29                     !---- nphi      : number of azimuths of the gravity waves.
+              30                     !---- cmin      : minimun phase speed of the gravity waves(m/s).
+              31                     !---- cmax      : the maximun phase speed of the gravity waves(m/s).
+              32                     !---- taul      : constant=0.6 s/m
+              33                     !---- cstar     : constant=1.
+              34                     !---- pw        : constant=1.5 exponent power of gravity wave frequency
+              35                     !---- s         : constant=1. low-m exponent
+              36                     !---- lunch_lev     : lunch level of gravity wave
+              37                     !---- wavelenth : characteric vertical wave-length
+              38                     !---- fluxtoatl : total lunch E-P flux in each nc direction
+              39                     !
+              40                     !  modify to f90 by C-H Lee and sort by River Chen in 2015
+              41                     !
+              42                     
+              43                     !ch>
+              44                           use index, only : nxdef
+              45                           use const, only : RTYPE
+              46                     !ch<
+              47                     
+              48                           implicit  none
+              49                     
+              50                           integer   j,nxj,nx,lev
+              51                           real      dt,grav,rgas,sinl,cosl,cp
+              52                     
+              53                           real      plt(nx,lev),                                  &
+              54                                     avgdrag_u(lev),avgdrag_v(lev)
+              55                           real(kind=RTYPE) u(nx,lev),v(nx,lev),t(nx,lev),         &
+              56                                            q(nx,lev),hi(nx,lev),pk(nx,lev),       &
+              57                                            pk2(nx,lev)
+              58                     
+              59                     ! local array
+              60                           integer,  parameter :: nc=20,nphi=4
+              61                           real      p2(nx,lev),den(nx,lev),sn2(nx,lev),pt(nx,lev)
+              62                           real      fluxsat(nc,nx,lev,nphi),flux(nc,nx,lev,nphi),dflux(nx,lev,nphi),&
+              63                                     fluxsat_nc(nx,lev,nphi),flux_nc(nx,lev,nphi),           &
+              64                                     dflux_u(nx,lev),dflux_v(nx,lev),                        &
+              65                                     a(nx),cn(nc),uv_lunch(nx,nphi),uv(nx,lev,nphi),         &
+              66                                     fxin(nc,nphi),fxout(nc),drag_u(nx,lev),drag_v(nx,lev)
+              67                           real      mstar
+              68                     !
+              69                           integer   ilon,jlat,kk,lunch_lev,ltop,i,k,nc1,n,nn,ndir
+              70                           real      cmin,cmax,taul,cstar,pw,s,wavelenth,fluxtotal,ptop
+              71                           real      pi,omega,acor,cor,wtcosl,dz1,s1,s2,p,corp,xmin,xmax
+              72                           real      b1,b2,dc,xbar,x,s3,uhat,fxtotal,chat,flux1,flux2,dflux1
+              73                           real      uhat_z0,uhat_z1,dpk,wsold,wsnew
+              74                     
+              75                           data cmin/0.25/, cmax/2000./ taul/0.6/
+              76                           data cstar/1./, pw/1./, s/1./, wavelenth/2000./
+              77                           data fluxtotal/3.75e-4/, lunch_lev/44/, ltop/1/
+              78                     !
+              79                           ilon=1142
+              80                           jlat=nx/4
+              81                           kk=31
+              82                     !
+              83                           pi=4.*atan(1.)
+              84                           omega=7.292e-5
+              85                           cor=2.*omega*sinl
+              86                           acor=abs(cor)
+              87                     !
+              88                     !ch   wtcosl=nxj*cosl
+              89                           wtcosl=nxdef(j)*cosl
+              90                     !
+              91                     ! ... pressure at even-level (p2)
+              92                     ! ... potential temperature (pt)
+              93                     ! ... density (den)
+              94                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pk2, t, plt, pk, q, den, pt, p2
+                                   <<< Loop-information  End >>>
+              95     1  pp                 do k=1,lunch_lev+1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.34, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      t, plt, pk, q, pk2, den, pt, p2
+                                   <<< Loop-information  End >>>
+              96     2   p    v            do i=1,nxj
+              97     2   p    v              p2(i,k)=1000.0*pk2(i,k)*pk2(i,k)*pk2(i,k)*sqrt(pk2(i,k))
+              98     2   p    v              pt(i,k)=t(i,k)*(1.0+0.608*q(i,k))/pk(i,k)
+              99     2   p    v              den(i,k)=plt(i,k)*100./(rgas*t(i,k))
+             100     2   p    v            enddo
+             101     1   p                 enddo
+             102                     !
+             103                     ! ... brunt-vaisala frequency (sn2)
+             104                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      hi, pt, sn2
+                                   <<< Loop-information  End >>>
+             105     1  pp                 do k=1,lunch_lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.48, ITR: 32, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      hi, pt, sn2
+                                   <<< Loop-information  End >>>
+             106     2   p    v            do i=1,nxj
+             107     2   p    v              dz1=(hi(i,k)-hi(i,k+1))/grav
+             108     2   p    v              s1=pt(i,k)-pt(i,k+1)
+             109     2   p    v              s2=(pt(i,k)+pt(i,k+1))/2.
+             110     2   p    v              sn2(i,k)=grav*s1/(s2*dz1)
+             111     2   p    v              if(sn2(i,k) .le. acor)sn2(i,k)=acor
+             112     2   p    v            enddo
+             113     1   p                 enddo
+             114                     !      do i=1,nxj
+             115                     !        sn2(i,lev)=sn2(i,lev-1)
+             116                     !      enddo
+             117                     !      if(j.eq.jlat)then
+             118                     !          call findmaxf(nxj,nx,lev,sn2,vmax,iv,kv,vmin,ivm,kvm)
+             119                     !          print *,' sn2=',vmax,iv,kv,' vmin=',vmin,ivm,kvm
+             120                     !          call findmaxf(nxj,nx,lev,den,vmax,iv,kv,vmin,ivm,kvm)
+             121                     !          print *,' den=',vmax,iv,kv,' vmin=',vmin,ivm,kvm
+             122                     !      endif
+             123                     !
+             124                     !  coefficient of A(indepedent of height) in eq-(4) (Orr,2010)
+             125                     !
+             126                           mstar=2.*pi/wavelenth
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2286
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      a
+                                   <<< Loop-information  End >>>
+             127        pp   4v            a=0.
+             128                           p=2.-pw
+             129                           corp=acor**p
+             130                     !      if(j.eq.jlat)print *,'mstar,p,cor,corp=',mstar,p,cor,corp
+             131                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 889
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.83, ITR: 144, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      a, sn2
+                                   <<< Loop-information  End >>>
+             132     1  pp   2v            do i=1,nxj
+             133     1   p   2v              a(i)=cstar*mstar**3*(sn2(i,lunch_lev)**p-corp)/p
+             134     1   p   2v              if(a(i).le.0.)a(i)=0.
+             135     1   p   2v            enddo
+             136                     !      if(j.eq.jlat)then
+             137                     !          call findmaxf(nxj,nx,1,a,vmax,iv,kv,vmin,ivm,kvm)
+             138                     !          print *,' a=',vmax,iv,kv,' vmin=',vmin,ivm,kvm
+             139                     !      endif
+             140                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      uv_lunch
+                                   <<< Loop-information  End >>>
+             141        pp   4v            uv_lunch=0.
+             142                           k=lunch_lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 433
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.33, ITR: 40, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      uv, uv_lunch, v, u
+                                   <<< Loop-information  End >>>
+             143     1  pp    v            do i=1,nxj
+             144     1   p    v              uv_lunch(i,1)=u(i,k)
+             145     1   p    v              uv_lunch(i,2)=u(i,k)
+             146     1   p    v              uv_lunch(i,3)=v(i,k)
+             147     1   p    v              uv_lunch(i,4)=v(i,k)
+             148     1   p    v              uv(i,k,1)=uv_lunch(i,1)
+             149     1   p    v              uv(i,k,2)=uv_lunch(i,2)
+             150     1   p    v              uv(i,k,3)=uv_lunch(i,3)
+             151     1   p    v              uv(i,k,4)=uv_lunch(i,4)
+             152     1   p    v            enddo
+             153                     !      if(j.eq.jlat)then
+             154                     !        do nn=1,nphi
+             155                     !          print *,' lunch nn,u,v=',nn,uv_lunch(ilon,nn)
+             156                     !        enddo
+             157                     !      endif
+             158                     !
+             159                     ! do coordinate stretch, eq-(28),(29),(30) (Scinocca,2003)
+             160                     ! cn: transformed wave phase speed
+             161                     !
+             162                           xmin=1./cmin
+             163                           xmax=1./cmax
+             164                           b1=(xmax-xmin)/(exp((xmax-xmin)/taul)-1)
+             165                           b2=xmin-b1
+             166                     !
+             167                           dc=xmax-xmin
+             168                           nc1=nc-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 43
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             169     1   s   fv            do n=1,nc
+             170     1   p   fv              xbar=xmin+dc*(n-1)/nc1
+             171     1   p   fv              x=b1*exp((xbar-xmin)/taul)+b2
+             172     1   p   fv              cn(n)=1./x
+             173     1   p   fv            enddo
+             174                     !
+             175                     !      if(j.eq.jlat)then
+             176                     !          print *,' b1,b2=',b1,b2
+             177                     !          print *,' cn=',(cn(n),n=1,nc)
+             178                     !      endif
+             179                     !
+             180                           s3=s+3
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED(lines: 181,183)
+                                   <<<    SIMD(VL: 8)
+                                   <<<    FULL UNROLLING
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      flux, dflux, fluxsat_nc, flux_nc
+                                   <<<      fluxsat
+                                   <<< Loop-information  End >>>
+             181        pp   2v            fluxsat=0.
+             182         p   2v            flux=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED
+                                   <<< Loop-information  End >>>
+             183         p                 dflux=0.
+             184         p                 fluxsat_nc=0.
+             185         p                 flux_nc=0.
+             186                     !
+             187                     !  for lunch level, assign fluxtotal value to spectral flux density and
+             188                     !  saturate flux density and assign u,v at lunch  level to variable 'uv'
+             189                     !  for pw=1,p=2-pw=1 and uhat=0, the formula of flux density is simply rewriten.
+             190                     !
+             191                           k=lunch_lev
+             192                           uhat=0.
+             193     1                     do nn=1,nphi
+             194     1                       ndir=1.
+             195     1                       if(nn.eq.2 .or. nn.eq.4)ndir=-1.
+             196     1                       fxtotal=fluxtotal*ndir
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sn2, den, a, fluxsat, flux_nc
+                                   <<<      fluxsat_nc, flux
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 1  FILL 5
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 1
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             197     2                       do i=1,nxj
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 572
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             198     3   s   fv                do n=1,nc
+             199     3   p   fv                  chat=cn(n)*ndir
+             200     3   p   fv                  flux1=cstar*den(i,k)*a(i)*(chat-uhat)/sn2(i,k) &
+             201     3               !    &           *abs((chat-uhat)/chat)**p
+             202     3                                *abs((chat-uhat)/chat)
+             203     3   p   fv                  flux2=1./(1.+(mstar*(chat-uhat)/sn2(i,k))**s3)
+             204     3   p   fv                  fluxsat(n,i,k,nn)=flux1
+             205     3   p   fv                  fxin(n,nn)=flux1*flux2
+             206     3   p   fv                enddo
+             207     2               !
+             208     2               !          if(j.eq.jlat .and. i.eq.ilon)then
+             209     2               !          if(nn.eq.1)then
+             210     2               !            print *,'bef norm fxin at lunch=',(fxin(n,nn),n=1,nc)
+             211     2               !          endif
+             212     2               !          endif
+             213     2               !
+             214     2                         call normalize(fxtotal,nc,fxin(1,nn),flux(1,i,k,nn))
+             215     2               !
+             216     2               !          if(j.eq.jlat .and. i.eq.ilon)then
+             217     2               !          if(nn.eq.1)then
+             218     2               !            print *,'aft norm fxin at lunch=',(flux(n,i,k,nn),n=1,nc)
+             219     2               !          endif
+             220     2               !          endif
+             221     2               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 640
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             222     3   s   fv                do n=1,nc
+             223     3   p   fv                  fluxsat_nc(i,k,nn)=fluxsat_nc(i,k,nn)+fluxsat(n,i,k,nn)
+             224     3   p   fv                  flux_nc(i,k,nn)=flux_nc(i,k,nn)+flux(n,i,k,nn)
+             225     3   p   fv                enddo
+             226     2                       enddo
+             227     1                     enddo
+             228                     !
+             229                     !CWB2015 turn off for reproducible
+             230                     !!$omp  parallel do default(none) &
+             231                     !!$omp  private(nn,ndir,k,i,uv,uhat_z1,uhat_z0,n,chat,flux1,flux2,   &
+             232                     !!$omp  fxout,dflux1,fxtotal) &
+             233                     !!$omp  shared(ltop,lunch_lev,nxj,p,fxin, &
+             234                     !!$omp  u,v,uv_lunch,cn,cstar,den,a,sn2,s3,mstar,fluxsat,flux,dflux, &
+             235                     !!$omp  fluxsat_nc,flux_nc)
+             236     1                     do nn=1,nphi
+             237     1                       ndir=1.
+             238     1                       if(nn.eq.2 .or. nn.eq.4)ndir=-1.
+             239     2                       do k=lunch_lev-1,ltop,-1
+             240     3                         do i=1,nxj
+             241     3                           uv(i,k,1)=u(i,k)
+             242     3                           uv(i,k,2)=u(i,k)
+             243     3                           uv(i,k,3)=v(i,k)
+             244     3                           uv(i,k,4)=v(i,k)
+             245     3               !
+             246     3               ! compute spectral flux(eq-4) and saturated spectral flux(eq-6) Orr(2010)
+             247     3               ! uhat_z1: upper level, uhat_z0: below level.
+             248     3               ! for pw=1,p=2-pw=1, the formula of flux density is simply rewriten.
+             249     3               !
+             250     3                           uhat_z1=uv(i,k,nn)-uv_lunch(i,nn)
+             251     3                           uhat_z0=uv(i,k+1,nn)-uv_lunch(i,nn)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 458
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             252     4   s   fv                  do n=1,nc
+             253     4   p   fv                    chat=cn(n)*ndir
+             254     4   p   fv                    flux1=cstar*den(i,k)*a(i)*(chat-uhat_z1)/sn2(i,k) &
+             255     4               !    &             *abs((chat-uhat_z1)/chat)**p
+             256     4                                  *abs((chat-uhat_z1)/chat)
+             257     4   p   fv                    flux2=1./(1.+(mstar*(chat-uhat_z1)/sn2(i,k))**s3)
+             258     4   p   fv                    fluxsat(n,i,k,nn)=flux1
+             259     4   p   fv                    fxin(n,nn)=flux1*flux2
+             260     4   p   fv                  enddo
+             261     3               !
+             262     3                           fxtotal=flux_nc(i,k+1,nn)
+             263     3                           call normalize(fxtotal,nc,fxin(1,nn),flux(1,i,k,nn))
+             264     3               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 236
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cn
+                                   <<< Loop-information  End >>>
+             265     4   s    s                  do n=1,nc
+             266     4               !
+             267     4               ! encounter critical level and do critical level filtering
+             268     4               !
+             269     4   p    m                    chat=cn(n)*ndir
+             270     5   p    v                    if(chat.le.uhat_z1 .and. chat.ge.uhat_z0)then
+             271     5   p    s                      dflux1=flux(n,i,k,nn)-flux(n,i,k+1,nn)
+             272     5   p    m                      dflux(i,k,nn)=dflux(i,k,nn)+dflux1
+             273     5   p    s                      fluxsat(n,i,k,nn)=fluxsat(n,i,k,nn)-dflux1
+             274     5   p    s                      flux(n,i,k,nn)=flux(n,i,k,nn)-dflux1
+             275     5   p    m                    else
+             276     5   p    m                      flux(n,i,k,nn)=flux(n,i,k+1,nn)
+             277     5   p    v                    endif
+             278     4   p    v                  enddo
+             279     3                         enddo
+             280     2                       enddo
+             281     2                       if(nn.eq.1 .or. nn.eq.3)then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+             282     3  pp                   do k=lunch_lev-1,ltop,-1
+             283     4   p                     do i=1,nxj
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      flux, fluxsat
+                                   <<< Loop-information  End >>>
+             284     5   p   2s                  do n=1,nc
+             285     5               !
+             286     5               ! nonlinear dispersion mechanism (saturation theorey)
+             287     5               !
+             288     6   p   2m                    if( flux(n,i,k,nn) .gt. fluxsat(n,i,k,nn) )then
+             289     6   p   2s                      dflux1=flux(n,i,k,nn)-fluxsat(n,i,k,nn)
+             290     6   p   2s                      dflux(i,k,nn)=dflux(i,k,nn)+dflux1
+             291     6   p   2v                      flux(n,i,k,nn)=fluxsat(n,i,k,nn)
+             292     6   p   2v                    endif
+             293     5   p   2v                  enddo
+             294     4   p                     enddo
+             295     3   p                   enddo
+             296     2                       else
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+             297     3  pp                   do k=lunch_lev-1,ltop,-1
+             298     4   p                     do i=1,nxj
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      flux, fluxsat
+                                   <<< Loop-information  End >>>
+             299     5   p   2s                  do n=1,nc
+             300     5               !
+             301     5               ! nonlinear dispersion mechanism (saturation theorey)
+             302     5               !
+             303     6   p   2m                    if( flux(n,i,k,nn) .lt. fluxsat(n,i,k,nn) )then
+             304     6   p   2s                      dflux1=flux(n,i,k,nn)-fluxsat(n,i,k,nn)
+             305     6   p   2s                      dflux(i,k,nn)=dflux(i,k,nn)+dflux1
+             306     6   p   2v                      flux(n,i,k,nn)=fluxsat(n,i,k,nn)
+             307     6   p   2v                    endif
+             308     5   p   2v                  enddo
+             309     4   p                     enddo
+             310     3   p                   enddo
+             311     2                       endif
+             312     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fluxsat, flux, flux_nc, fluxsat_nc
+                                   <<< Loop-information  End >>>
+             313     2  pp                   do k=lunch_lev-1,ltop,-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.64, ITR: 72, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fluxsat, flux_nc, fluxsat_nc, flux
+                                   <<< Loop-information  End >>>
+             314     3   p                     do i=1,nxj
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             315     4   p   fv                  do n=1,nc
+             316     4   p   fv                    fluxsat_nc(i,k,nn)=fluxsat_nc(i,k,nn)+fluxsat(n,i,k,nn)
+             317     4   p   fv                    flux_nc(i,k,nn)=flux_nc(i,k,nn)+flux(n,i,k,nn)
+             318     4   p   fv                  enddo
+             319     3   p                     enddo
+             320     2   p                   enddo
+             321     1                     enddo
+             322                     !!$omp end parallel do
+             323                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      dflux_v, dflux_u
+                                   <<< Loop-information  End >>>
+             324        pp   2v            dflux_u=0.
+             325         p   2v            dflux_v=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      dflux, dflux_v, dflux_u
+                                   <<< Loop-information  End >>>
+             326     1  pp                 do k=lunch_lev-1,ltop,-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 80, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      dflux, dflux_v, dflux_u
+                                   <<< Loop-information  End >>>
+             327     2   p   2v              do i=1,nxj
+             328     2   p   2v                dflux_u(i,k)=dflux(i,k,1)+dflux(i,k,2)
+             329     2   p   2v                dflux_v(i,k)=dflux(i,k,3)+dflux(i,k,4)
+             330     2   p   2v              enddo
+             331     1   p                 enddo
+             332                     !      if(j.eq.jlat)then
+             333                     !          call findmaxf(nxj,nx,lev,dflux_u,vmax,iv,kv,vmin,ivm,kvm)
+             334                     !          print *,' dflux_u=',vmax,iv,kv,' vmin=',vmin,ivm,kvm
+             335                     !          call findmaxf(nxj,nx,lev,dflux_v,vmax,iv,kv,vmin,ivm,kvm)
+             336                     !          print *,' dflux_v=',vmax,iv,kv,' vmin=',vmin,ivm,kvm
+             337                     !      endif
+             338                     !
+             339                     !      if(j.eq.jlat)then
+             340                     !        print *,' orig u,v'
+             341                     !        call findmaxf(nxj,nx,lev,u,umax,iu,ku,umin,ium,kum)
+             342                     !        call findmaxf(nxj,nx,lev,v,vmax,iv,kv,vmin,ivm,kvm)
+             343                     !        print *,' max_u=',umax,iu,ku,' umin=',umin,ium,kum
+             344                     !        print *,' max_v=',vmax,iv,kv,' vmin=',vmin,ivm,kvm
+             345                     !      endif
+             346                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED(lines: 347,349)
+                                   <<< Loop-information  End >>>
+             347         p                 avgdrag_u=0.
+             348         p                 avgdrag_v=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      drag_v, drag_u
+                                   <<< Loop-information  End >>>
+             349        pp   2v            drag_u=0.
+             350         p   2v            drag_v=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      p2, dflux_v, dflux_u, u, v, drag_v, t
+                                   <<<      drag_u
+                                   <<< Loop-information  End >>>
+             351     1  pp                 do k=ltop+1,lunch_lev-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.12, ITR: 32, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      dflux_v, p2, dflux_u, t, u, v, drag_v
+                                   <<<      drag_u
+                                   <<< Loop-information  End >>>
+             352     2   p    v            do i=1,nxj
+             353     2   p    v              dpk=(p2(i,k-1)-p2(i,k))*100.
+             354     2   p    v              drag_u(i,k)=-grav*(dflux_u(i,k-1)-dflux_u(i,k))/dpk
+             355     2   p    v              drag_v(i,k)=-grav*(dflux_v(i,k-1)-dflux_v(i,k))/dpk
+             356     2   p    v              wsold=u(i,k)*u(i,k)+v(i,k)*v(i,k)
+             357     2   p    v              u(i,k)=u(i,k)+dt*drag_u(i,k)
+             358     2   p    v              v(i,k)=v(i,k)+dt*drag_v(i,k)
+             359     2   p    v              wsnew=u(i,k)*u(i,k)+v(i,k)*v(i,k)
+             360     2   p    v              t(i,k)=t(i,k)+dt*(wsold-wsnew)/(4.*cp*dt)
+             361     2   p    v              avgdrag_u(k)=avgdrag_u(k)+drag_u(i,k)*cosl
+             362     2   p    v              avgdrag_v(k)=avgdrag_v(k)+drag_v(i,k)*cosl
+             363     2   p    v            enddo
+             364     1   p                   avgdrag_u(k)=avgdrag_u(k)/wtcosl
+             365     1   p                   avgdrag_v(k)=avgdrag_v(k)/wtcosl
+             366     1   p                 enddo
+             367                           k=1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 193
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             368     1  pp    v            do i=1,nxj
+             369     1   p    v              wsold=u(i,k)*u(i,k)+v(i,k)*v(i,k)
+             370     1   p    v              dpk=(ptop-p2(i,k))*100.
+             371     1   p    v              drag_u(i,k)=grav*dflux_u(i,k)/dpk
+             372     1   p    v              drag_v(i,k)=grav*dflux_v(i,k)/dpk
+             373     1   p    v              u(i,k)=u(i,k)+dt*drag_u(i,k)
+             374     1   p    v              v(i,k)=v(i,k)+dt*drag_v(i,k)
+             375     1               !        u(i,k)=u(i,k)+dt*drag_u(i,k+1)*2.
+             376     1               !        v(i,k)=v(i,k)+dt*drag_v(i,k+1)*2.
+             377     1   p    v              wsnew=u(i,k)*u(i,k)+v(i,k)*v(i,k)
+             378     1   p    v              t(i,k)=t(i,k)+dt*(wsold-wsnew)/(4.*cp*dt)
+             379     1   p    v              avgdrag_u(k)=avgdrag_u(k)+drag_u(i,k+1)*2.*cosl
+             380     1   p    v              avgdrag_v(k)=avgdrag_v(k)+drag_v(i,k+1)*2.*cosl
+             381     1   p    v            enddo
+             382                           avgdrag_u(k)=avgdrag_u(k)/wtcosl
+             383                           avgdrag_v(k)=avgdrag_v(k)/wtcosl
+             384                     !
+             385                     !      if(j.eq.jlat)then
+             386                     !          print *,' drag u,v'
+             387                     !          call findmaxf(nxj,nx,lev,u,umax,iu,ku,umin,ium,kum)
+             388                     !          call findmaxf(nxj,nx,lev,v,vmax,iv,kv,vmin,ivm,kvm)
+             389                     !          print *,' max_u=',umax,iu,ku,' umin=',umin,ium,kum
+             390                     !          print *,' max_v=',vmax,iv,kv,' vmin=',vmin,ivm,kvm
+             391                     !      endif
+             392                     !
+             393                           return
+             394                           end
+
+ Procedure information
+   Lines      : 394
+   Statements : 214
+   Stack(byte): 31792
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : nor_gwdp
+   Attribute and Cross reference of name
+     a
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 62
+      |(Definition)     : 127  133  134
+      |(Reference)      : 134  200  254
+     abs
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 86  200  254
+     acor
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 71
+      |(Definition)     : 86
+      |(Reference)      : 111  111  129
+     atan
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 83
+     avgdrag_u
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  53
+      |(Definition)     : 347  361  364  379  382
+      |(Reference)      : 361  364  379  382
+     avgdrag_v
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  53
+      |(Definition)     : 348  362  365  380  383
+      |(Reference)      : 362  365  380  383
+     b1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 72
+      |(Definition)     : 164
+      |(Reference)      : 165  171
+     b2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 72
+      |(Definition)     : 165
+      |(Reference)      : 171
+     chat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 72
+      |(Definition)     : 199  253  269
+      |(Reference)      : 200  200  200  203  254  254  254  257  270  270
+     cmax
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : initialized
+      |(Declaration)    : 70  75
+      |(Definition)     : 
+      |(Reference)      : 163
+     cmin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : initialized
+      |(Declaration)    : 70  75
+      |(Definition)     : 
+      |(Reference)      : 162
+     cn
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 62
+      |(Definition)     : 172
+      |(Reference)      : 199  253  269
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 45
+     cor
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 71
+      |(Definition)     : 85
+      |(Reference)      : 86
+     corp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 71
+      |(Definition)     : 129
+      |(Reference)      : 133
+     cosl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  51
+      |(Definition)     : 
+      |(Reference)      : 89  361  362  379  380
+     cp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  51
+      |(Definition)     : 
+      |(Reference)      : 360  378
+     cstar
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : initialized
+      |(Declaration)    : 70  76
+      |(Definition)     : 
+      |(Reference)      : 133  200  254
+     dc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 72
+      |(Definition)     : 167
+      |(Reference)      : 170
+     den
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 61
+      |(Definition)     : 99
+      |(Reference)      : 200  254
+     dflux
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 62
+      |(Definition)     : 183  272  290  305
+      |(Reference)      : 272  290  305  328  328  329  329
+     dflux1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 72
+      |(Definition)     : 271  289  304
+      |(Reference)      : 272  273  274  290  305
+     dflux_u
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 62
+      |(Definition)     : 324  328
+      |(Reference)      : 354  354  371
+     dflux_v
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 62
+      |(Definition)     : 325  329
+      |(Reference)      : 355  355  372
+     dpk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 73
+      |(Definition)     : 353  370
+      |(Reference)      : 354  355  371  372
+     drag_u
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 62
+      |(Definition)     : 349  354  371
+      |(Reference)      : 357  361  373  379
+     drag_v
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 62
+      |(Definition)     : 350  355  372
+      |(Reference)      : 358  362  374  380
+     dt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  51
+      |(Definition)     : 
+      |(Reference)      : 357  358  360  360  373  374  378  378
+     dz1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 71
+      |(Definition)     : 107
+      |(Reference)      : 110
+     exp
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 164  171
+     flux
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 62
+      |(Definition)     : 182  214  263  274  276  291  306
+      |(Reference)      : 224  271  271  274  276  288  289  303  304  317
+     flux1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 72
+      |(Definition)     : 200  254
+      |(Reference)      : 204  205  258  259
+     flux2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 72
+      |(Definition)     : 203  257
+      |(Reference)      : 205  259
+     flux_nc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 62
+      |(Definition)     : 185  224  317
+      |(Reference)      : 224  262  317
+     fluxsat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 62
+      |(Definition)     : 181  204  258  273
+      |(Reference)      : 223  273  288  289  291  303  304  306  316
+     fluxsat_nc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 62
+      |(Definition)     : 184  223  316
+      |(Reference)      : 223  316
+     fluxtotal
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : initialized
+      |(Declaration)    : 70  77
+      |(Definition)     : 
+      |(Reference)      : 196
+     fxin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 62
+      |(Definition)     : 205  214  259  263
+      |(Reference)      : 
+     fxout
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 62
+      |(Definition)     : 
+      |(Reference)      : 
+     fxtotal
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 72
+      |(Definition)     : 196  214  262  263
+      |(Reference)      : 
+     grav
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  51
+      |(Definition)     : 
+      |(Reference)      : 107  110  354  355  371  372
+     hi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 107  107
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 69
+      |(Definition)     : 96  106  132  143  197  240  283  298  314  327  352  368
+      |(Reference)      : 97  97  97  97  97  98  98  98  98  99  99  99  107  107  108  108  109  109  110  111  111  133  133  134  134  144  144  145  145  146  146  147  147  148  148  149  149  150  150  151  151  200  200  200  203  204  214  223  223  223  224  224  224  241  241  242  242  243  243  244  244  250  250  251  251  254  254  254  257  258  262  263  271  271  272  272  273  273  274  274  276  276  288  288  289  289  290  290  291  291  303  303  304  304  305  305  306  306  316  316  316  317  317  317  328  328  328  329  329  329  353  353  354  354  354  355  355  355  356  356  356  356  357  357  357  358  358  358  359  359  359  359  360  360  361  362  369  369  369  369  370  371  371  372  372  373  373  373  374  374  374  377  377  377  377  378  378  379  380
+     ilon
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 69
+      |(Definition)     : 79
+      |(Reference)      : 
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 44
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  50
+      |(Definition)     : 
+      |(Reference)      : 89
+     jlat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 69
+      |(Definition)     : 80
+      |(Reference)      : 
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 69
+      |(Definition)     : 95  105  142  191  239  282  297  313  326  351  367
+      |(Reference)      : 97  97  97  97  97  98  98  98  98  99  99  99  107  107  108  108  109  109  110  111  111  144  145  146  147  148  149  150  151  200  200  203  204  214  223  223  223  224  224  224  241  241  242  242  243  243  244  244  250  251  254  254  257  258  262  263  271  271  272  272  273  273  274  274  276  276  288  288  289  289  290  290  291  291  303  303  304  304  305  305  306  306  316  316  316  317  317  317  328  328  328  329  329  329  353  353  354  354  354  355  355  355  356  356  356  356  357  357  357  358  358  358  359  359  359  359  360  360  361  361  361  362  362  362  364  364  365  365  369  369  369  369  370  371  371  372  372  373  373  373  374  374  374  377  377  377  377  378  378  379  379  379  380  380  380  382  382  383  383
+     kk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 69
+      |(Definition)     : 81
+      |(Reference)      : 
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  50
+      |(Definition)     : 
+      |(Reference)      : 53  53  53  55  55  55  55  55  55  55  61  61  61  61  62  62  62  62  62  62  62  62  62  62
+     ltop
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : initialized
+      |(Declaration)    : 69  77
+      |(Definition)     : 
+      |(Reference)      : 239  282  297  313  326  351
+     lunch_lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : initialized
+      |(Declaration)    : 69  77
+      |(Definition)     : 
+      |(Reference)      : 95  105  133  142  191  239  282  297  313  326  351
+     mstar
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 67
+      |(Definition)     : 126
+      |(Reference)      : 133  203  257
+     n
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 69
+      |(Definition)     : 169  198  222  252  265  284  299  315
+      |(Reference)      : 170  172  199  204  205  223  224  253  258  259  269  271  271  273  273  274  274  276  276  288  288  289  289  291  291  303  303  304  304  306  306  316  317
+     nc
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 60
+      |(Definition)     : 
+      |(Reference)      : 62  62  62  62  62  168  169  198  214  222  252  263  265  284  299  315
+     nc1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 69
+      |(Definition)     : 168
+      |(Reference)      : 170
+     ndir
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 69
+      |(Definition)     : 194  195  237  238
+      |(Reference)      : 196  199  253  269
+     nn
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 69
+      |(Definition)     : 193  236
+      |(Reference)      : 195  195  204  205  214  214  223  223  223  224  224  224  238  238  250  250  251  251  258  259  262  263  263  271  271  272  272  273  273  274  274  276  276  281  281  288  288  289  289  290  290  291  291  303  303  304  304  305  305  306  306  316  316  316  317  317  317
+     nor_gwdp
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     normalize
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 214  263
+     nphi
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 60
+      |(Definition)     : 
+      |(Reference)      : 62  62  62  62  62  62  62  62  193  236
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  50
+      |(Definition)     : 
+      |(Reference)      : 53  55  55  55  55  55  55  55  61  61  61  61  62  62  62  62  62  62  62  62  62  62  62  62  80
+     nxdef
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 44  89
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  50
+      |(Definition)     : 
+      |(Reference)      : 96  106  132  143  197  240  283  298  314  327  352  368
+     omega
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 71
+      |(Definition)     : 84
+      |(Reference)      : 85
+     p
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 71
+      |(Definition)     : 128
+      |(Reference)      : 129  133  133
+     p2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 61
+      |(Definition)     : 97
+      |(Reference)      : 353  353  370
+     pi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 71
+      |(Definition)     : 83
+      |(Reference)      : 126
+     pk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 98
+     pk2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 97  97  97  97
+     plt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  53
+      |(Definition)     : 
+      |(Reference)      : 99
+     pt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 61
+      |(Definition)     : 98
+      |(Reference)      : 108  108  109  109
+     ptop
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  70
+      |(Definition)     : 
+      |(Reference)      : 370
+     pw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : initialized
+      |(Declaration)    : 70  76
+      |(Definition)     : 
+      |(Reference)      : 128
+     q
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 98
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 45  55
+     rgas
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  51
+      |(Definition)     : 
+      |(Reference)      : 99
+     s
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : initialized
+      |(Declaration)    : 70  76
+      |(Definition)     : 
+      |(Reference)      : 180
+     s1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 71
+      |(Definition)     : 108
+      |(Reference)      : 110
+     s2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 71
+      |(Definition)     : 109
+      |(Reference)      : 110
+     s3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 72
+      |(Definition)     : 180
+      |(Reference)      : 203  257
+     sinl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  51
+      |(Definition)     : 
+      |(Reference)      : 85
+     sn2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 61
+      |(Definition)     : 110  111
+      |(Reference)      : 111  133  200  203  254  257
+     sqrt
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 97
+     t
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 360  378
+      |(Reference)      : 98  99  360  378
+     taul
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : initialized
+      |(Declaration)    : 70  75
+      |(Definition)     : 
+      |(Reference)      : 164  171
+     u
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 357  373
+      |(Reference)      : 144  145  241  242  356  356  357  359  359  369  369  373  377  377
+     uhat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 72
+      |(Definition)     : 192
+      |(Reference)      : 200  200  203
+     uhat_z0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 73
+      |(Definition)     : 251
+      |(Reference)      : 270
+     uhat_z1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 73
+      |(Definition)     : 250
+      |(Reference)      : 254  254  257  270
+     uv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 62
+      |(Definition)     : 148  149  150  151  241  242  243  244
+      |(Reference)      : 250  251
+     uv_lunch
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 62
+      |(Definition)     : 141  144  145  146  147
+      |(Reference)      : 148  149  150  151  250  251
+     v
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 358  374
+      |(Reference)      : 146  147  243  244  356  356  358  359  359  369  369  374  377  377
+     wavelenth
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : initialized
+      |(Declaration)    : 70  76
+      |(Definition)     : 
+      |(Reference)      : 126
+     wsnew
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 73
+      |(Definition)     : 359  377
+      |(Reference)      : 360  378
+     wsold
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 73
+      |(Definition)     : 356  369
+      |(Reference)      : 360  378
+     wtcosl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 71
+      |(Definition)     : 89
+      |(Reference)      : 364  365  382  383
+     x
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 72
+      |(Definition)     : 171
+      |(Reference)      : 172
+     xbar
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 72
+      |(Definition)     : 170
+      |(Reference)      : 171
+     xmax
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 71
+      |(Definition)     : 163
+      |(Reference)      : 164  164  167
+     xmin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 71
+      |(Definition)     : 162
+      |(Reference)      : 164  164  165  167  170  171
+
+ External subroutine subprogram "findmaxf"
+  (inc)(line-no.)(nest)(optimize)
+             395                     !
+             396                           subroutine findmaxf(nxj,nx,lev,f,fmax,i1,k1,fmin,i1m,k1m)
+             397                           implicit  none
+             398                           integer   nxj,nx,lev,i1,k1,i1m,k1m
+             399                           real      f(nx,lev),fmax,fmin
+             400                           integer   k,i
+             401                     
+             402                           fmax=-99999.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<< Loop-information  End >>>
+             403     1  pp                 do k=1,lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      f
+                                   <<< Loop-information  End >>>
+             404     2   p   4s              do i=1,nxj
+             405     3   p   4v                if(f(i,k).ge.fmax)then
+             406     3   p   4s                  fmax=f(i,k)
+             407     3   p   4m                  i1=i
+             408     3   p   4v                  k1=k
+             409     3   p   4m                endif
+             410     2   p   4s              enddo
+             411     1   p                 enddo
+             412                           fmin=99999.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<< Loop-information  End >>>
+             413     1  pp                 do k=1,lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      f
+                                   <<< Loop-information  End >>>
+             414     2   p   4s              do i=1,nxj
+             415     3   p   4v                if(f(i,k).le.fmin)then
+             416     3   p   4s                  fmin=f(i,k)
+             417     3   p   4m                  i1m=i
+             418     3   p   4v                  k1m=k
+             419     3   p   4m                endif
+             420     2   p   4s              enddo
+             421     1   p                 enddo
+             422                           return
+             423                           end
+
+ Procedure information
+   Lines      : 29
+   Statements : 27
+   Stack(byte): 80992
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : findmaxf
+   Attribute and Cross reference of name
+     f
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 396  399
+      |(Definition)     : 
+      |(Reference)      : 405  406  415  416
+     findmaxf
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 396
+      |(Reference)      : 
+     fmax
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 396  399
+      |(Definition)     : 402  406
+      |(Reference)      : 405
+     fmin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 396  399
+      |(Definition)     : 412  416
+      |(Reference)      : 415
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 400
+      |(Definition)     : 404  414
+      |(Reference)      : 405  406  407  415  416  417
+     i1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 396  398
+      |(Definition)     : 407
+      |(Reference)      : 
+     i1m
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 396  398
+      |(Definition)     : 417
+      |(Reference)      : 
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 400
+      |(Definition)     : 403  413
+      |(Reference)      : 405  406  408  415  416  418
+     k1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 396  398
+      |(Definition)     : 408
+      |(Reference)      : 
+     k1m
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 396  398
+      |(Definition)     : 418
+      |(Reference)      : 
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 396  398
+      |(Definition)     : 
+      |(Reference)      : 399  403  413
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 396  398
+      |(Definition)     : 
+      |(Reference)      : 399
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 396  398
+      |(Definition)     : 
+      |(Reference)      : 404  414
+
+ Total information
+   Procedures       : 2
+   Total lines      : 423
+   Total statements : 241
+   Total stack(byte): 112784
+   Total prefetch num: 0
+

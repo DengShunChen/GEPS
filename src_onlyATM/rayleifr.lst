@@ -1,0 +1,477 @@
+
+ Fujitsu Fortran Version 4.6.1  Wed Jan 11 10:53:10 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/tco639l72/src
+   Source file       : rayleifr.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "rayleifr"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine rayleifr(nx,my,my_max,lev,rad,cosl,dt,ut,vt)
+               2                     
+               3                           use mpe
+               4                           use rank
+               5                           use index
+               6                           use const, only: RTYPE
+               7                     
+               8                           implicit  none
+               9                           integer   nx,my,my_max,lev
+              10                           real      rad
+              11                     
+              12                           real(kind=RTYPE) cosl(my)
+              13                           real(kind=RTYPE) ut(nxp,lev,my_max),vt(nxp,lev,my_max)
+              14                           real      wmax(lev),wmaxtmp
+              15                     !
+              16                           integer, parameter :: levtop=6,lev2=3
+              17                     
+              18                           real     ckdx,day,windmax
+              19                     !     data ckdx/20./, day/1./
+              20                           data ckdx/40./, day/1./
+              21                     
+              22                           data windmax/140./
+              23                     !     data windmax/130./
+              24                     
+              25                           logical dofric
+              26                     
+              27                           integer jj,j,nxj,k,i
+              28                           real    xx,dt,ckdy,frictime,fac,fricd,cdx,cdy
+              29                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2286
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wmax
+                                   <<< Loop-information  End >>>
+              30        pp   4v            wmax(1:lev)=0.
+              31                           wmaxtmp=windmax
+              32     1                     do 10 jj =1,jlistnum
+              33     1                       j=jlist1(jj)
+              34     1               !ch     nxj=nxdef(j)
+              35     1                       nxj=nxdef_2d(j)
+              36     1                       xx=rad/cosl(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ut, vt
+                                   <<< Loop-information  End >>>
+              37     2  pp                 do 10 k=1,lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.43, ITR: 64, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ut, vt
+                                   <<< Loop-information  End >>>
+              38     3   p   2v            do 10 i=1,nxj
+              39     3   p   2v              wmax(k)= max(wmax(k),xx*sqrt(ut(i,k,jj)**2+vt(i,k,jj)**2))
+              40     1   p   2v       10   continue
+              41                           call mpe_global_max(wmax,lev,mpe_double)
+              42                           dofric=.false.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1231
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    UNSWITCHING
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wmax
+                                   <<< Loop-information  End >>>
+              43     1   s    m            do k=1,levtop
+              44     1   p    v              wmaxtmp=max(wmax(k),wmaxtmp)
+              45     2   p    m              if( wmax(k) .gt. windmax )then
+              46     2               !          dofric=.true.
+              47     2   p    s                if(myrank.eq.0)print *,' rayleifr k=',k,' wmax=',wmax(k)
+              48     2               !           ' dofric=',dofric
+              49     2   p    v              endif
+              50     1   p    v            enddo
+              51                           if(wmaxtmp.gt.windmax)  dofric=.true.
+              52                           if(myrank.eq.0)print *,' rayleifr  dofric=',dofric
+              53                     !
+              54                           ckdy=ckdx
+              55                           frictime=1./(day*86400.)
+              56     1                     if(dofric)then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+              57     2  pp                   do k=1,levtop
+              58     2   p                     fac=1.+exp(-1.0*(k-lev2)/lev2)
+              59     2   p                     if(fac.gt.3.)fac=3.
+              60     2   p                     fricd=frictime*fac
+              61     2   p                     cdx=ckdx*fricd
+              62     2   p                     cdy=ckdy*fricd
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ut, vt
+                                   <<< Loop-information  End >>>
+              63     3   p                     do jj = 1, jlistnum
+              64     3   p                       j=jlist1(jj)
+              65     3               !ch         nxj=nxdef(j)
+              66     3   p                       nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.66, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ut, vt
+                                   <<< Loop-information  End >>>
+              67     4   p   2v                do i = 1, nxj
+              68     4   p   2v                  ut(i,k,jj)=ut(i,k,jj)-cdx*ut(i,k,jj)
+              69     4   p   2v                  vt(i,k,jj)=vt(i,k,jj)-cdy*vt(i,k,jj)
+              70     4   p   2v                enddo
+              71     3   p                     enddo
+              72     2   p                   enddo
+              73     1                     endif
+              74                     !
+              75                           return
+              76                           end
+
+ Procedure information
+   Lines      : 76
+   Statements : 59
+   Stack(byte): 1808
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : rayleifr
+   Attribute and Cross reference of name
+     cdx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 61
+      |(Reference)      : 68
+     cdy
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 62
+      |(Reference)      : 69
+     ckdx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : initialized
+      |(Declaration)    : 18  20
+      |(Definition)     : 
+      |(Reference)      : 54  61
+     ckdy
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 54
+      |(Reference)      : 62
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 6
+     cosl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  12
+      |(Definition)     : 
+      |(Reference)      : 36
+     day
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : initialized
+      |(Declaration)    : 18  20
+      |(Definition)     : 
+      |(Reference)      : 55
+     dofric
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 25
+      |(Definition)     : 42  51
+      |(Reference)      : 52  56
+     dt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  28
+      |(Definition)     : 
+      |(Reference)      : 
+     exp
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 58
+     fac
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 58  59
+      |(Reference)      : 59  60
+     fricd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 60
+      |(Reference)      : 61  62
+     frictime
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 55
+      |(Reference)      : 60
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 27
+      |(Definition)     : 38  67
+      |(Reference)      : 39  39  68  68  68  69  69  69
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 5
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 27
+      |(Definition)     : 33  64
+      |(Reference)      : 35  36  66
+     jj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 27
+      |(Definition)     : 32  63
+      |(Reference)      : 33  39  39  64  68  68  68  69  69  69
+     jlist1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 33  64
+     jlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 32  63
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 27
+      |(Definition)     : 37  43  57
+      |(Reference)      : 39  39  39  39  44  45  47  47  58  68  68  68  69  69  69
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  9
+      |(Definition)     : 41
+      |(Reference)      : 13  13  14  30  37
+     lev2
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 16
+      |(Definition)     : 
+      |(Reference)      : 58  58
+     levtop
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 16
+      |(Definition)     : 
+      |(Reference)      : 43  57
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 39  44
+     mpe
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 3
+     mpe_double
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 41
+     mpe_global_max
+      |(Class and Type) : generic name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 41
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  9
+      |(Definition)     : 
+      |(Reference)      : 12
+     my_max
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  9
+      |(Definition)     : 
+      |(Reference)      : 13  13
+     myrank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 47  52
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  9
+      |(Definition)     : 
+      |(Reference)      : 
+     nxdef_2d
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 35  66
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 27
+      |(Definition)     : 35  66
+      |(Reference)      : 38  67
+     nxp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 13  13
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 6  12  13
+     rad
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  10
+      |(Definition)     : 
+      |(Reference)      : 36
+     rank
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 4
+     rayleifr
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     sqrt
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 39
+     ut
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  13
+      |(Definition)     : 68
+      |(Reference)      : 39  68  68
+     vt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  13
+      |(Definition)     : 69
+      |(Reference)      : 39  69  69
+     windmax
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : initialized
+      |(Declaration)    : 18  22
+      |(Definition)     : 
+      |(Reference)      : 31  45  51
+     wmax
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 14
+      |(Definition)     : 30  39  41
+      |(Reference)      : 39  44  45  47
+     wmaxtmp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 14
+      |(Definition)     : 31  44
+      |(Reference)      : 44  51
+     xx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 36
+      |(Reference)      : 39
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+         10  execution     (Definition) 40  
+                           (Reference)  32  37  38
+
+ Total information
+   Procedures       : 1
+   Total lines      : 76
+   Total statements : 59
+   Total stack(byte): 1808
+   Total prefetch num: 0
+

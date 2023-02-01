@@ -1,0 +1,1045 @@
+
+ Fujitsu Fortran Version 4.6.1  Wed Jan 11 10:52:19 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/tco639l72/src
+   Source file       : eeps.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "eeps"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine eeps ( nxj,mn,kk,ktpbl,g,dt,ec1,ec2,ec3,ec4,ec5,u,v,t &
+               2                                           , hgt,zl,e,eps,xkm,xkh,shr,wkk2,wktri,dhgt )
+               3                     !##################################################################
+               4                     !                     subroutine description
+               5                     !
+               6                     ! 1. function description
+               7                     !
+               8                     !       this subroutine predicts e and eps in the future time level
+               9                     !       for vertical levels from kk-1 to ktpbl.
+              10                     !       ( e and eps at kk levels are diagnosed in sfcpbl )
+              11                     !
+              12                     ! 2. common block specification
+              13                     !
+              14                     !
+              15                     ! 3. parameter specification
+              16                     !
+              17                     !     mn : dimension of horizontal direction
+              18                     !     kk : dimension of vertical direction
+              19                     !  ktpbl : starting level to consider vertical mixing effects
+              20                     !     dt : time step for e and eps updates
+              21                     !      g : gravity                                               (m/s2)
+              22                     !     ec1: coef for   e-prediction equation, eq. (15) of gerber (1989)
+              23                     !     ec2: constant to compute xkm from e**2/eps
+              24                     ! ec3,4,5: coef for eps-prediction equation, eq. (16) of gerber (1989)
+              25                     !      u : x-direction velocity (m,n,kk) at the current time lvl (m/s)
+              26                     !      v : y-direction velocity (m,n,kk) at the current time lvl (m/s)
+              27                     !      t : temp.     on odd lvl (m,n,kk) at the current time lvl (k)
+              28                     !    hgt : heigh above ground   (m,n,kk) at the current time lvl (m)
+              29                     !     zl : lowest sigma level height over mixing length  (mn)
+              30                     !     e  : turbulence kinetic energy (mn,kk) at current/future   (m2/s2)
+              31                     !    eps : tke dissipation           (mn,kk) at current/future   (m2/s2)
+              32                     !    xkm : momentum transport coef   (mn,kk) at current time lvl (m2/s2)
+              33                     !    xkh : heat/moist transpt coef   (mn,kk) at current time lvl (m2/s2)
+              34                     !
+              35                     ! 4. work arrays
+              36                     !    shr : working array for coef. calculation            (mn,kk)
+              37                     !   wkk2 : working array for coef. calculation            (mn,kk)
+              38                     !  wktri : working array for tri-diagonal system solver   (mn,kk,4)
+              39                     !
+              40                     ! 4.1 local work array
+              41                     !     eo : working array to save e at previous time lvl   (mn,kk)
+              42                     !
+              43                     ! 5. calling modules
+              44                     !
+              45                     !      mixpbl
+              46                     !
+              47                     ! 6. usage
+              48                     !
+              49                     !     call eeps ( mn,kk,ktpbl,g,dt,ec1,ec2,ec3,ec4,ec5,u,v,t
+              50                     !    1          , hgt,zl,e,eps,xkm,xkh,wkk1,wkk2,wktri )
+              51                     !
+              52                     ! 7. modules called
+              53                     !
+              54                     !     trigau
+              55                     !
+              56                     ! 8. limitation
+              57                     !
+              58                     !         e   >= 1.0e-04, e   <= 250.0
+              59                     !         eps >= 1.0e-07, eps <= 1.0
+              60                     !
+              61                     ! 9. date
+              62                     !
+              63                     !     created              10/01/1989
+              64                     !     rewritten            nov.  1991
+              65                     !
+              66                     !
+              67                     ! 10. author
+              68                     !
+              69                     !      c. liou / f. wang / c. chang
+              70                     !      modify to f90 by C-H Lee and sort by River Chen in 2015
+              71                     !
+              72                     ! 11. reference
+              73                     !       detering h.,w., and d. etling, 1984: application of the
+              74                     !            e-eps turbulence model to the atmospheric boundary
+              75                     !            layer. boundary-layer meteorol., 33, 113-133.
+              76                     !
+              77                     !#####################################################################
+              78                     !
+              79                           use paramt
+              80                     
+              81                           implicit  none
+              82                           integer   nxj,mn,kk,ktpbl
+              83                           real      g,dt,ec1,ec2,ec3,ec4,ec5
+              84                     
+              85                     !  input & output variable (including work arrays)
+              86                           real      u(mn,kk),v(mn,kk),t(mn,kk),hgt(mn,kk),zl(mn), &
+              87                                     e(mn,kk),eps(mn,kk),xkm(mn,kk),xkh(mn,kk),    &
+              88                                     shr(mn,kk),wkk2(mn,kk),wktri(mn,kk,4)
+              89                           real      dhgt(mn,kk)
+              90                     !
+              91                     !  local work array
+              92                     !
+              93                           real      eo(im,lm)
+              94                           real      vdiff,tflt
+              95                           data      vdiff /0.1/, tflt /0.2/
+              96                     
+              97                           integer   kk1,kt1,kt2,mnkt1,kpp1,kpm1,ik,iksp,iks,iksm, &
+              98                                     k,i,ktpbx,kppx,kpmx
+              99                           real      duu,dvv,dzz,dzzu,dzzup,buoy,eee,xkmnew,factor
+             100                     
+             101                     !
+             102                     ! *note: e, eps prediction are only from ktpbl to kk-1 levels
+             103                     !
+             104                           kk1   = kk - 1
+             105                           kt1   = kk1 - ktpbl + 1
+             106                           kt2   = kt1 - 1
+             107                           mnkt1 = mn*kt1
+             108                           kpp1  = ktpbl + 1
+             109                           kpm1  = ktpbl - 1
+             110                     !
+             111                     !-----------------------------------------------------------------
+             112                     ! (1) prepare tri-diagonal system coef for e-prediction equation -
+             113                     !-----------------------------------------------------------------
+             114                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 136
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.07, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      u, xkm, xkh, t, v, dhgt, hgt, wktri
+                                   <<<    PREFETCH(SOFT) : 18
+                                   <<<     SEQUENTIAL : 18
+                                   <<<      eps: 4, e: 4, wktri: 4, shr: 4, t: 2
+                                   <<< Loop-information  End >>>
+             115     1  pp    v            do ik = 1, nxj
+             116     1   p    v            iksp=(ktpbl  )*mn+ik
+             117     1   p    v            iks =(ktpbl-1)*mn+ik
+             118     1   p    v            iksm=(ktpbl-2)*mn+ik
+             119     1   p    v            duu = u(iks,1) - u(iksp,1)
+             120     1   p    v            dvv = v(iks,1) - v(iksp,1)
+             121     1   p    v            dzz = hgt(iks,1) - hgt(iksp,1)
+             122     1               !cc   dzzu = 0.5*( hgt(iksm,1) - hgt(iksp,1) )
+             123     1   p    v            dzzu = dhgt(iks,1)
+             124     1   p    v            dzzup= dhgt(iksp,1)
+             125     1   p    v            shr(ik,1) = (duu*duu+dvv*dvv)*xkm(iks,1)/dzz
+             126     1   p    v            buoy= -g*xkh(iks,1)*(t(iks,1)-t(iksp,1))/(0.5*(t(iks,1) &
+             127     1                           +t(iksp,1)))
+             128     1   p    v            wktri(ik,1,1) = - dt*ec1*0.5*(xkm(iks,1)+xkm(iksm,1))/dzzu
+             129     1   p    v            wktri(ik,1,3) = - dt*ec1*0.5*(xkm(iks,1)+xkm(iksp,1)) &
+             130     1                                     /dzzup
+             131     1   p    v            wktri(ik,1,2) = dzz - wktri(ik,1,1) - wktri(ik,1,3)
+             132     1   p    v            wktri(ik,1,4) = dzz*(e(iks,1)-dt*eps(iks,1)) &
+             133     1                           + dt*(shr(ik,1)+buoy)
+             134     1   p    v            enddo
+             135                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      hgt, xkm, xkh, t, dhgt, u, v, wktri, shr
+                                   <<<    PREFETCH(SOFT) : 8
+                                   <<<     SEQUENTIAL : 8
+                                   <<<      e: 2, eps: 2, wktri: 4
+                                   <<< Loop-information  End >>>
+             136     1                     do 120 k = 2, kt1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.86, ITR: 3, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      u, v, xkm, hgt, wktri, shr, t, xkh, dhgt
+                                   <<<    PREFETCH(SOFT) : 12
+                                   <<<     SEQUENTIAL : 12
+                                   <<<      wktri: 8, e: 2, eps: 2
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 3  FILL 2
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             137     2   s    s            do 120 i = 1, nxj
+             138     2   p    v            ik = (k-1)*mn + i
+             139     2   p    v            iksp=(ktpbl  )*mn+ik
+             140     2   p    v            iks =(ktpbl-1)*mn+ik
+             141     2   p    v            iksm=(ktpbl-2)*mn+ik
+             142     2   p    v            duu = u(iks,1) - u(iksp,1)
+             143     2   p    v            dvv = v(iks,1) - v(iksp,1)
+             144     2   p    v            dzz = hgt(iks,1) - hgt(iksp,1)
+             145     2               !cc   dzzu = 0.5*( hgt(iksm,1) - hgt(iksp,1) )
+             146     2   p    v            dzzu = dhgt(iks,1)
+             147     2   p    v            dzzup= dhgt(iksp,1)
+             148     2   p    v            shr(ik,1) = (duu*duu+dvv*dvv)*xkm(iks,1)/dzz
+             149     2   p    v            buoy= -g*xkh(iks,1)*(t(iks,1)-t(iksp,1))/(0.5*(t(iks,1) &
+             150     2                           +t(iksp,1)))
+             151     2   s    s            wktri(ik,1,1) = wktri(ik-mn,1,3)
+             152     2   m    m            wktri(ik,1,3) = - dt*ec1*0.5*(xkm(iks,1)+xkm(iksp,1)) &
+             153     2                                     /dzzup
+             154     2   p    v            wktri(ik,1,2) = dzz - wktri(ik,1,1) - wktri(ik,1,3)
+             155     2   p    v            wktri(ik,1,4) = dzz*(e(iks,1)-dt*eps(iks,1)) &
+             156     2                           + dt*(shr(ik,1)+buoy)
+             157     1   p    v        120 continue
+             158                     !
+             159                     !     -- do not allow   dt*(total damping) < e(t)   --
+             160                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wktri
+                                   <<< Loop-information  End >>>
+             161     1  pp                 do 140 k = 1, kt1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.25, ITR: 160, MVE: 6, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wktri
+                                   <<< Loop-information  End >>>
+             162     2   p   2v            do 140 i = 1, nxj
+             163     2   p   2v            if ( wktri(i,k,4) .lt. 0.0 )  wktri(i,k,4) = 0.0
+             164     1   p   2v        140 continue
+             165                     !
+             166                     !
+             167                     !     fix upper b.c (move -e(ktpbl-1)*wktri(1,1) to forcing term)
+             168                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 433
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED(lines: 169,175)
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wktri, e
+                                   <<< Loop-information  End >>>
+             169     1  pp    v            do 150 i = 1, nxj
+             170     1   p    v            wktri(i,1,4) = wktri(i,1,4) - e(i,ktpbl-1)*wktri(i,1,1)
+             171     1   p    v        150 continue
+             172                     !
+             173                     !     put surface forcing to kk level
+             174                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED
+                                   <<< Loop-information  End >>>
+             175     1                     do 160 i = 1, nxj
+             176     1                     wktri(i,kt1,4) = wktri(i,kt1,4) - e(i,kk)*wktri(i,kt1,3)
+             177     1                 160 continue
+             178                     !
+             179                     !     update e to future time level by backward time scheme
+             180                     !
+             181                           call trigau ( wktri, mn, nxj, kk, kt1, 0 )
+             182                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wktri, e, eo
+                                   <<< Loop-information  End >>>
+             183     1  pp                 do 180 k = 1, kt1
+             184     1   p                 ktpbx=ktpbl+k-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.50, ITR: 80, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wktri, e, eo
+                                   <<< Loop-information  End >>>
+             185     2   p   2v            do 180 i = 1, nxj
+             186     2   p   2v            eo(i,ktpbx) = e(i,ktpbx)
+             187     2   p   2v            e(i,ktpbx)  = wktri(i,k,4)
+             188     1   p   2v        180 continue
+             189                     !
+             190                     !     apply vertical diffusion to e
+             191                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      e, wktri
+                                   <<< Loop-information  End >>>
+             192     1  pp                 do 185 k = 1, kt1
+             193     1   p                 kppx=kpp1+k-1
+             194     1   p                 kpmx=kpm1+k-1
+             195     1   p                 ktpbx=ktpbl+k-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.87, ITR: 112, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      e, wktri
+                                   <<< Loop-information  End >>>
+             196     2   p   2v            do 185 i = 1, nxj
+             197     2   p   2v            wktri(i,k,4) = 0.5*vdiff*(e(i,kppx)-2.0*e(i,ktpbx)+e(i,kpmx))
+             198     1   p   2v        185 continue
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wktri, e
+                                   <<< Loop-information  End >>>
+             199     1  pp                 do 187 k = 1, kt1
+             200     1   p                 ktpbx=ktpbl+k-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 192, MVE: 7, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wktri, e
+                                   <<< Loop-information  End >>>
+             201     2   p   2v            do 187 i = 1, nxj
+             202     2   p   2v            e(i,ktpbx) = e(i,ktpbx) + wktri(i,k,4)
+             203     1   p   2v        187 continue
+             204                     !
+             205                     !     limit e to 1.0e-04 and 250.0
+             206                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      e
+                                   <<< Loop-information  End >>>
+             207     1  pp                 do 190 k = 1, kt1
+             208     1   p                 ktpbx=ktpbl+k-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.87, ITR: 176, MVE: 6, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      e
+                                   <<< Loop-information  End >>>
+             209     2   p   2v            do 190 i = 1, nxj
+             210     2   p   2v            if ( e(i,ktpbx) .lt. 1.0e-04 )  e(i,ktpbx)  = 1.0e-04
+             211     2   p   2v            if ( e(i,ktpbx) .gt. 250.0   )  e(i,ktpbx)  = 250.0
+             212     1   p   2v        190 continue
+             213                     !
+             214                     !---------------------------------------------------------------------
+             215                     ! (2) prepare tri-diagonal system coef for eps-prediction equation   -
+             216                     !---------------------------------------------------------------------
+             217                     !
+             218                     !     enhance shear effects, if buoyance > 0
+             219                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      t, xkh, shr
+                                   <<< Loop-information  End >>>
+             220     1                     do 220 k = 1, kt1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 458
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.41, ITR: 32, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      xkh, shr, t
+                                   <<< Loop-information  End >>>
+             221     2  pp    v            do 220 i = 1, nxj
+             222     2   p    v            ik = (k-1)*mn + i
+             223     2   p    v            iks =(ktpbl-1)*mn+ik
+             224     2   p    v            iksp=(ktpbl  )*mn+ik
+             225     2   p    v            if( t(iks,1).lt.t(iksp,1) )  shr(ik,1) = shr(ik,1) +  &
+             226     2                       (-g)*xkh(iks,1)*(t(iks,1)-t(iksp,1))                &
+             227     2                       /(0.5*(t(iks,1)+t(iksp,1)))
+             228     1   p    v        220 continue
+             229                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 173
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.70, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      xkm, shr, dhgt, eps, hgt, e, eo, wktri
+                                   <<< Loop-information  End >>>
+             230     1  pp    v            do ik = 1, nxj
+             231     1   p    v            iks =(ktpbl-1)*mn+ik
+             232     1   p    v            iksp=(ktpbl  )*mn+ik
+             233     1   p    v            iksm=(ktpbl-2)*mn+ik
+             234     1   p    v            dzz = hgt(iks,1) - hgt(iksp,1)
+             235     1               !cc   dzzu = 0.5*( hgt(iksm,1) - hgt(iksp,1) )
+             236     1   p    v            dzzu = dhgt(iks,1)
+             237     1   p    v            dzzup= dhgt(iksp,1)
+             238     1   p    v            eee  = 0.5*( e(iks,1) + eo(iks,1) )
+             239     1   p    v            wktri(ik,1,1) = - dt*ec5*0.5*(xkm(iks,1)+xkm(iksm,1)) &
+             240     1                                     /dzzu
+             241     1   p    v            wktri(ik,1,3) = - dt*ec5*0.5*(xkm(iks,1)+xkm(iksp,1)) &
+             242     1                                     /dzzup
+             243     1   p    v            wktri(ik,1,2) = dzz + dzz*dt*ec4*eps(iks,1)/eee &
+             244     1                                    - wktri(ik,1,1) - wktri(ik,1,3)
+             245     1   p    v            wktri(ik,1,4) = eps(iks,1)*dzz +                &
+             246     1                                          dt*ec3*ec2*eee*shr(ik,1)/xkm(iks,1)
+             247     1   p    v            enddo
+             248                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      xkm, hgt, shr, e, eo, dhgt, eps, wktri
+                                   <<< Loop-information  End >>>
+             249     1                     do 240 k = 2, kt1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.56, ITR: 3, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      eps, xkm, shr, wktri, hgt, e, eo, dhgt
+                                   <<< Loop-information  End >>>
+             250     2   s    s            do 240 i = 1, nxj
+             251     2   p    v            ik = (k-1)*mn + i
+             252     2   p    v            iks =(ktpbl-1)*mn+ik
+             253     2   p    v            iksp=(ktpbl  )*mn+ik
+             254     2   p    v            iksm=(ktpbl-2)*mn+ik
+             255     2   p    v            dzz = hgt(iks,1) - hgt(iksp,1)
+             256     2               !cc   dzzu = 0.5*( hgt(iksm,1) - hgt(iksp,1) )
+             257     2   p    v            dzzu = dhgt(iks,1)
+             258     2   p    v            dzzup= dhgt(iksp,1)
+             259     2   p    v            eee  = 0.5*( e(iks,1) + eo(iks,1) )
+             260     2   s    s            wktri(ik,1,1) = wktri(ik-mn,1,3)
+             261     2   m    m            wktri(ik,1,3) = - dt*ec5*0.5*(xkm(iks,1)+xkm(iksp,1)) &
+             262     2                                     /dzzup
+             263     2   p    v            wktri(ik,1,2) = dzz + dzz*dt*ec4*eps(iks,1)/eee &
+             264     2                                    - wktri(ik,1,1) - wktri(ik,1,3)
+             265     2   p    v            wktri(ik,1,4) = eps(iks,1)*dzz +                &
+             266     2                                          dt*ec3*ec2*eee*shr(ik,1)/xkm(iks,1)
+             267     1   p    v        240 continue
+             268                     !
+             269                     !     fix upper b.c (move -eps(ktpbl-1)*wktri(1,1) to forcing term)
+             270                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 433
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED(lines: 271,277)
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wktri, eps
+                                   <<< Loop-information  End >>>
+             271     1  pp    v            do 250 i = 1, nxj
+             272     1   p    v            wktri(i,1,4) = wktri(i,1,4) - eps(i,ktpbl-1)*wktri(i,1,1)
+             273     1   p    v        250 continue
+             274                     !
+             275                     !     put surface forcing to kk level
+             276                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED
+                                   <<< Loop-information  End >>>
+             277     1                     do 260 i = 1, nxj
+             278     1                     wktri(i,kt1,4) = wktri(i,kt1,4) - wktri(i,kt1,3)*eps(i,kk)
+             279     1                 260 continue
+             280                     !
+             281                     !     update eps to future time level by backward time scheme
+             282                     !
+             283                           call trigau ( wktri, mn, nxj, kk, kt1, 0 )
+             284                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wktri, eps, wkk2
+                                   <<< Loop-information  End >>>
+             285     1  pp                 do 280 k = 1, kt1
+             286     1   p                 ktpbx=ktpbl+k-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.33, ITR: 80, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wktri, eps, wkk2
+                                   <<< Loop-information  End >>>
+             287     2   p   2v            do 280 i = 1, nxj
+             288     2   p   2v            wkk2(i,ktpbx) = eps(i,ktpbx)
+             289     2   p   2v            eps(i,ktpbx)  = wktri(i,k,4)
+             290     1   p   2v        280 continue
+             291                     !
+             292                     !     apply vertical diffusion to eps
+             293                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      eps, wktri
+                                   <<< Loop-information  End >>>
+             294     1  pp                 do 285 k = 1, kt1
+             295     1   p                 kppx=kpp1+k-1
+             296     1   p                 kpmx=kpm1+k-1
+             297     1   p                 ktpbx=ktpbl+k-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.87, ITR: 112, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      eps, wktri
+                                   <<< Loop-information  End >>>
+             298     2   p   2v            do 285 i = 1, nxj
+             299     2   p   2v            wktri(i,k,4) = 0.5*vdiff*(eps(i,kppx)-2.0*eps(i,ktpbx) &
+             300     2                                                              +eps(i,kpmx))
+             301     1   p   2v        285 continue
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wktri, eps
+                                   <<< Loop-information  End >>>
+             302     1  pp                 do 287 k = 1, kt1
+             303     1   p                 ktpbx=ktpbl+k-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 192, MVE: 7, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wktri, eps
+                                   <<< Loop-information  End >>>
+             304     2   p   2v            do 287 i = 1, nxj
+             305     2   p   2v            eps(i,ktpbx) = eps(i,ktpbx) + wktri(i,k,4)
+             306     1   p   2v        287 continue
+             307                     !
+             308                     !     limit eps to 1.0e-07 and 1.0
+             309                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      eps
+                                   <<< Loop-information  End >>>
+             310     1  pp                 do 290 k = 1, kt1
+             311     1   p                 ktpbx=ktpbl+k-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.87, ITR: 176, MVE: 6, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      eps
+                                   <<< Loop-information  End >>>
+             312     2   p   2v            do 290 i = 1, nxj
+             313     2   p   2v            if ( eps(i,ktpbx) .lt. 1.0e-07 )  eps(i,ktpbx) = 1.0e-07
+             314     2   p   2v            if ( eps(i,ktpbx) .gt. 1.0     )  eps(i,ktpbx) = 1.0
+             315     1   p   2v        290 continue
+             316                     !
+             317                     !     apply two level time filter on e and eps to avoid oscillation
+             318                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      eps, e, wkk2, eo
+                                   <<< Loop-information  End >>>
+             319     1  pp                 do 300 k = 1, kt1
+             320     1   p                 ktpbx=ktpbl+k-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.75, ITR: 152, MVE: 10, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      eps, e, wkk2, eo
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 0
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 21
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             321     2   p    v            do 300 i = 1, nxj
+             322     2   p    v            e(i,ktpbx)   = (1.0-tflt)*e(i,ktpbx)   + tflt*eo(i,ktpbx)
+             323     2   p    v            eps(i,ktpbx) = (1.0-tflt)*eps(i,ktpbx) + tflt*wkk2(i,ktpbx)
+             324     1   p    v        300 continue
+             325                     !
+             326                     !     re-define xkm, xkh
+             327                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      e, eps, xkm, xkh
+                                   <<< Loop-information  End >>>
+             328     1  pp                 do 400 k = 1, kt1
+             329     1   p                 ktpbx=ktpbl+k-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.43, ITR: 32, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      e, eps, xkm, xkh
+                                   <<< Loop-information  End >>>
+             330     2   p    v            do 400 i = 1, nxj
+             331     2   p    v            xkmnew = ec2*e(i,ktpbx)*e(i,ktpbx)/eps(i,ktpbx)
+             332     2   p    v            if ( xkmnew .gt. 1200.0 )  xkmnew = 1200.0
+             333     2   p    v            factor = xkmnew / xkm(i,ktpbx)
+             334     2   p    v            xkm(i,ktpbx) = xkmnew
+             335     2   p    v            xkh(i,ktpbx) = xkh(i,ktpbx) * factor
+             336     1   p    v        400 continue
+             337                           return
+             338                           end
+
+ Procedure information
+   Lines      : 338
+   Statements : 170
+   Stack(byte): 4016
+   Prefetch num: 58
+
+ Scoping unit of external sub-program : eeps
+   Attribute and Cross reference of name
+     buoy
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 99
+      |(Definition)     : 126  149
+      |(Reference)      : 132  155
+     dhgt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  89
+      |(Definition)     : 
+      |(Reference)      : 123  124  146  147  236  237  257  258
+     dt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  83
+      |(Definition)     : 
+      |(Reference)      : 128  129  132  132  152  155  155  239  241  243  245  261  263  265
+     duu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 99
+      |(Definition)     : 119  142
+      |(Reference)      : 125  125  148  148
+     dvv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 99
+      |(Definition)     : 120  143
+      |(Reference)      : 125  125  148  148
+     dzz
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 99
+      |(Definition)     : 121  144  234  255
+      |(Reference)      : 125  131  132  148  154  155  243  243  245  263  263  265
+     dzzu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 99
+      |(Definition)     : 123  146  236  257
+      |(Reference)      : 128  239
+     dzzup
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 99
+      |(Definition)     : 124  147  237  258
+      |(Reference)      : 129  152  241  261
+     e
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  86
+      |(Definition)     : 187  202  210  211  322
+      |(Reference)      : 132  155  170  176  186  197  197  197  202  210  211  238  259  322  331  331
+     ec1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  83
+      |(Definition)     : 
+      |(Reference)      : 128  129  152
+     ec2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  83
+      |(Definition)     : 
+      |(Reference)      : 245  265  331
+     ec3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  83
+      |(Definition)     : 
+      |(Reference)      : 245  265
+     ec4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  83
+      |(Definition)     : 
+      |(Reference)      : 243  263
+     ec5
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  83
+      |(Definition)     : 
+      |(Reference)      : 239  241  261
+     eee
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 99
+      |(Definition)     : 238  259
+      |(Reference)      : 243  245  263  265
+     eeps
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     eo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 93
+      |(Definition)     : 186
+      |(Reference)      : 238  259  322
+     eps
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  86
+      |(Definition)     : 289  305  313  314  323
+      |(Reference)      : 132  155  243  245  263  265  272  278  288  299  299  299  305  313  314  323  331
+     factor
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 99
+      |(Definition)     : 333
+      |(Reference)      : 335
+     g
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  83
+      |(Definition)     : 
+      |(Reference)      : 126  149  225
+     hgt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  86
+      |(Definition)     : 
+      |(Reference)      : 121  121  144  144  234  234  255  255
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 97
+      |(Definition)     : 137  162  169  175  185  196  201  209  221  250  271  277  287  298  304  312  321  330
+      |(Reference)      : 138  163  163  170  170  170  170  176  176  176  176  186  186  187  187  197  197  197  197  202  202  202  210  210  211  211  222  251  272  272  272  272  278  278  278  278  288  288  289  289  299  299  299  299  305  305  305  313  313  314  314  322  322  322  323  323  323  331  331  331  333  334  335  335
+     ik
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 97
+      |(Definition)     : 115  138  222  230  251
+      |(Reference)      : 116  117  118  125  128  129  131  131  131  132  132  139  140  141  148  151  151  152  154  154  154  155  155  223  224  225  225  231  232  233  239  241  243  243  243  245  245  252  253  254  260  260  261  263  263  263  265  265
+     iks
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 97
+      |(Definition)     : 117  140  223  231  252
+      |(Reference)      : 119  120  121  123  125  126  126  126  128  129  132  132  142  143  144  146  148  149  149  149  152  155  155  225  225  225  225  234  236  238  238  239  241  243  245  245  255  257  259  259  261  263  265  265
+     iksm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 97
+      |(Definition)     : 118  141  233  254
+      |(Reference)      : 128  239
+     iksp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 97
+      |(Definition)     : 116  139  224  232  253
+      |(Reference)      : 119  120  121  124  126  126  129  142  143  144  147  149  149  152  225  225  225  234  237  241  255  258  261
+     im
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 93
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 97
+      |(Definition)     : 136  161  183  192  199  207  220  249  285  294  302  310  319  328
+      |(Reference)      : 138  163  163  184  187  193  194  195  197  200  202  208  222  251  286  289  295  296  297  299  303  305  311  320  329
+     kk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  82
+      |(Definition)     : 181  283
+      |(Reference)      : 86  86  86  86  86  86  86  86  86  86  86  89  104  176  278
+     kk1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 97
+      |(Definition)     : 104
+      |(Reference)      : 105
+     kpm1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 97
+      |(Definition)     : 109
+      |(Reference)      : 194  296
+     kpmx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 97
+      |(Definition)     : 194  296
+      |(Reference)      : 197  299
+     kpp1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 97
+      |(Definition)     : 108
+      |(Reference)      : 193  295
+     kppx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 97
+      |(Definition)     : 193  295
+      |(Reference)      : 197  299
+     kt1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 97
+      |(Definition)     : 105  181  283
+      |(Reference)      : 106  107  136  161  176  176  176  183  192  199  207  220  249  278  278  278  285  294  302  310  319  328
+     kt2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 97
+      |(Definition)     : 106
+      |(Reference)      : 
+     ktpbl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  82
+      |(Definition)     : 
+      |(Reference)      : 105  108  109  116  117  118  139  140  141  170  184  195  200  208  223  224  231  232  233  252  253  254  272  286  297  303  311  320  329
+     ktpbx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 97
+      |(Definition)     : 184  195  200  208  286  297  303  311  320  329
+      |(Reference)      : 186  186  187  197  202  202  210  210  211  211  288  288  289  299  305  305  313  313  314  314  322  322  322  323  323  323  331  331  331  333  334  335  335
+     lm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 93
+     mn
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  82
+      |(Definition)     : 181  283
+      |(Reference)      : 86  86  86  86  86  86  86  86  86  86  86  86  89  107  116  117  118  138  139  140  141  151  222  223  224  231  232  233  251  252  253  254  260
+     mnkt1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 97
+      |(Definition)     : 107
+      |(Reference)      : 
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  82
+      |(Definition)     : 181  283
+      |(Reference)      : 115  137  162  169  175  185  196  201  209  221  230  250  271  277  287  298  304  312  321  330
+     paramt
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 79
+     shr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  86
+      |(Definition)     : 125  148  225
+      |(Reference)      : 132  155  225  245  265
+     t
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  86
+      |(Definition)     : 
+      |(Reference)      : 126  126  126  126  149  149  149  149  225  225  225  225  225  225
+     tflt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : initialized
+      |(Declaration)    : 94  95
+      |(Definition)     : 
+      |(Reference)      : 322  322  323  323
+     trigau
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 181  283
+     u
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  86
+      |(Definition)     : 
+      |(Reference)      : 119  119  142  142
+     v
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  86
+      |(Definition)     : 
+      |(Reference)      : 120  120  143  143
+     vdiff
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : initialized
+      |(Declaration)    : 94  95
+      |(Definition)     : 
+      |(Reference)      : 197  299
+     wkk2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  86
+      |(Definition)     : 288
+      |(Reference)      : 323
+     wktri
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  86
+      |(Definition)     : 128  129  131  132  151  152  154  155  163  170  176  181  197  239  241  243  245  260  261  263  265  272  278  283  299
+      |(Reference)      : 131  131  151  154  154  163  170  170  176  176  187  202  243  243  260  263  263  272  272  278  278  289  305
+     xkh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  86
+      |(Definition)     : 335
+      |(Reference)      : 126  149  225  335
+     xkm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  86
+      |(Definition)     : 334
+      |(Reference)      : 125  128  128  129  129  148  152  152  239  239  241  241  245  261  261  265  333
+     xkmnew
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 99
+      |(Definition)     : 331  332
+      |(Reference)      : 332  333  334
+     zl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  86
+      |(Definition)     : 
+      |(Reference)      : 
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+        120  execution     (Definition) 157  
+                           (Reference)  136  137
+        140  execution     (Definition) 164  
+                           (Reference)  161  162
+        150  execution     (Definition) 171  
+                           (Reference)  169
+        160  execution     (Definition) 177  
+                           (Reference)  175
+        180  execution     (Definition) 188  
+                           (Reference)  183  185
+        185  execution     (Definition) 198  
+                           (Reference)  192  196
+        187  execution     (Definition) 203  
+                           (Reference)  199  201
+        190  execution     (Definition) 212  
+                           (Reference)  207  209
+        220  execution     (Definition) 228  
+                           (Reference)  220  221
+        240  execution     (Definition) 267  
+                           (Reference)  249  250
+        250  execution     (Definition) 273  
+                           (Reference)  271
+        260  execution     (Definition) 279  
+                           (Reference)  277
+        280  execution     (Definition) 290  
+                           (Reference)  285  287
+        285  execution     (Definition) 301  
+                           (Reference)  294  298
+        287  execution     (Definition) 306  
+                           (Reference)  302  304
+        290  execution     (Definition) 315  
+                           (Reference)  310  312
+        300  execution     (Definition) 324  
+                           (Reference)  319  321
+        400  execution     (Definition) 336  
+                           (Reference)  328  330
+
+ Total information
+   Procedures       : 1
+   Total lines      : 338
+   Total statements : 170
+   Total stack(byte): 4016
+   Total prefetch num: 58
+

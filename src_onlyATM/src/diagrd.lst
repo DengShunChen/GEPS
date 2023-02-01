@@ -1,0 +1,727 @@
+
+ Fujitsu Fortran Version 4.6.1  Wed Jan 11 10:53:10 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/tco639l72/src
+   Source file       : diagrd.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "diagrd"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine diagrd (ozon,nx,lev,my,my_max,njump,julian,stbo,s0,cosl &
+               2                                   ,tt,qt,plcl,cumtop,ss,rs,asr,alr,xsr,xlr,acld,aflxd,aflxu  &
+               3                                   ,ncld)
+               4                           use mpe
+               5                           use rank
+               6                           use index
+               7                     !######################################################################c
+               8                     !                                                                      c
+               9                     ! a. function:                                                         c
+              10                     !  print radiation diagnoses when raddia=.true.                        c
+              11                     !                                                                      c
+              12                     ! b. common block specification:                                       c
+              13                     !  none                                                                c
+              14                     !                                                                      c
+              15                     ! c. parameter specification:                                          c
+              16                     !  none                                                                c
+              17                     !                                                                      c
+              18                     ! d. input/output variables                                            c
+              19                     !  (1) input variables:                                                c
+              20                     !  ozon  : logical constant to include ozon in sw/lw rad calculation   c
+              21                     !  nx    : i-direction horizontal dimension of the model               c
+              22                     !  lev    : vertical layers of the model                               c
+              23                     !  my    : j-direction horizontal dimension of the model               c
+              24                     !  njump : grid interval for long wave radiative calculation           c
+              25                     !  julian: julian day ( julian = 1 for january 1 )                     c
+              26                     !  stbo  : stefan-boltzman constant (5.669e-8)                         c
+              27                     !  s0    : solar constant (1368.3)                                     c
+              28                     !  cosl  : cos(lat)                                                    c
+              29                     !  tt(nx,lev,my) : real temperature at prediction levels (k)           c
+              30                     !  qt(nx,lev,my) : specific humidity at prediction levels (kg/kg)      c
+              31                     !  plcl(nx,my)  : total column solar radiation absorption              c
+              32                     !  cumtop(nx,my): outgoing long wave radiation at model top            c
+              33                     !  ss(nx,my): net short wave flux down to ground surface (wat/m**2)    c
+              34                     !  rs(nx,my): net long  wave flux up from ground surface (wat/m**2)    c
+              35                     !  asr(lev,my): lat-mean temp change due to short wave radtn (k/day)   c
+              36                     !  alr(lev,my): lat-maen temp change due to long  wave radtn (k/day)   c
+              37                     !  xsr(lev,my): maxnxum short wave heating for each lat. ring (k/day)  c
+              38                     !  xlr(lev,my): maxnxum long  wave colling for each lat. ring (k/day)  c
+              39                     !  acld(lev,my): lat-mean total cloud fraction assuming random overlap c
+              40                     !  aflxd(lev+2,my): lat-mean downward long wave flux (wat/m**2)        c
+              41                     !  aflxu(lev+2,my): lat-mean upward   long wave flux (wat/m**2)        c
+              42                     !                                                                      c
+              43                     ! e. calling modules:                                                  c
+              44                     !    diabat                                                            c
+              45                     !                                                                      c
+              46                     ! f. usage:                                                            c
+              47                     !     call diagrd ( ozon,nx,lev,my,njump,julian,stbo,s0,cosl,tt,qt     c
+              48                     !    1       , plcl,cumtop,ss,rs,asr,alr,xsr,xlr,acld,aflxd,aflxu )    c
+              49                     !                                                                      c
+              50                     ! g. modules called:                                                   c
+              51                     !  none                                                                c
+              52                     !                                                                      c
+              53                     ! h. lnxitation:                                                       c
+              54                     !  no                                                                  c
+              55                     !                                                                      c
+              56                     ! i. date:                                                             c
+              57                     !  created: oct 5 , 1992                                               c
+              58                     !                                                                      c
+              59                     ! j. author:                                                           c
+              60                     !  c.-s. liou, c. fong                                                 c
+              61                     !  modify to f90 by C-H Lee and sort by River Chen in 2015
+              62                     !                                                                      c
+              63                     !######################################################################c
+              64                     !
+              65                     !      use index, only : nxp
+              66                     
+              67                           implicit  none
+              68                     
+              69                           integer   nx,lev,my,my_max,njump,julian,ncld
+              70                     
+              71                           real      stbo,s0
+              72                     
+              73                           logical ozon
+              74                     !
+              75                           real      cosl(my),tt(nxp,lev,my_max),qt(nxp,lev*ncld,my_max),&
+              76                                     plcl(nxp,my_max),cumtop(nxp,my_max),ss(nxp,my_max),rs(nxp,my_max),    &
+              77                                     asr(lev,my),alr(lev,my),xsr(lev,my),xlr(lev,my),  &
+              78                                     acld(lev,my),aflxd(lev+2,my),aflxu(lev+2,my)
+              79                     
+              80                           logical flag
+              81                     !
+              82                     
+              83                           integer   i,j,k,jj,nxj,levp1
+              84                           real      xmy,xstop,xltop,xssfc,xlsfc,zfluxu,zfluxd,zasr,zalr, &
+              85                                     zclds,ztt,zqt,xmsr,xnlr,zttj,zqtj,ztadd
+              86                     !
+              87                           if(myrank .eq. 0) print 900, ozon,nx,lev,my,njump,julian,stbo,s0
+              88                       900 format (1h0,15x,'-------layer-mean radtn diagnosis : ---------'  &
+              89                                  , //,2x, 'ozon =',l2,';  nx,lev,my =',3i4                 &
+              90                                  , '; njump =', i3,';  julian =', i3                       &
+              91                                  , ';  stbo,s0 =', 2e14.6 )
+              92                     !
+              93                           levp1 = lev + 1
+              94                           xmy = 1./float(my)
+              95                     !
+              96                           call glbmean_2d ( cosl,plcl,  xstop )
+              97                           call glbmean_2d ( cosl,cumtop,xltop )
+              98                           call glbmean_2d ( cosl,ss, xssfc )
+              99                           call glbmean_2d ( cosl,rs, xlsfc )
+             100                     !
+             101                           if(myrank .eq. 0) print 910, xstop, xltop, xssfc, xlsfc
+             102                       910 format( 2x, 'top:  down-sw, upward-lw flux =', 2f7.2            &
+             103                                 , ';   sfc:  down-sw, upward-lw flux =', 2f7.2, //        &
+             104                                 , 4x, '   asl     atl     tadd    clds     tt      qt  '  &
+             105                                 ,     '  mxasl   mnatl   fluxu   fluxd ')
+             106                     !
+             107                           xmy = 0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1778
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             108     1  pp    v            do 100 j = 1, my
+             109     1   p    v            xmy = xmy + cosl(j)
+             110     1   p    v        100 continue
+             111                           xmy = 1.0/xmy
+             112                     !     ximy= xmy/float(nx)
+             113                     !
+             114                           zfluxu = 0.0
+             115                           zfluxd = 0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 640
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             116     1  pp    v            do 810 jj  = 1, jlistnum
+             117     1   p    v            j=jlist1(jj)
+             118     1   p    v            zfluxu = zfluxu + aflxu(1,j)*cosl(j)
+             119     1   p    v            zfluxd = zfluxd + aflxd(1,j)*cosl(j)
+             120     1   p    v        810 continue
+             121                     !
+             122                           call mpe_global_sum(zfluxu,1,mpe_double)
+             123                           call mpe_global_sum(zfluxd,1,mpe_double)
+             124                     !
+             125                           zfluxu = zfluxu * xmy
+             126                           zfluxd = zfluxd * xmy
+             127                           if(myrank .eq. 0) print 915, zfluxu,zfluxd
+             128                       915 format( 67x, 2f8.2 )
+             129     1                     do 890 k = 1, lev
+             130     1                     zasr = 0.0
+             131     1                     zalr = 0.0
+             132     1                     zclds = 0.0
+             133     1                     ztt = 0.0
+             134     1                     zqt = 0.0
+             135     1                     zfluxu = 0.0
+             136     1                     zfluxd = 0.0
+             137     1               !
+             138     1               !     xmsr = xsr(k,1)
+             139     1               !     xnlr = xlr(k,1)
+             140     1                     xmsr =-1.797693134862316d+308
+             141     1                     xnlr = 1.797693134862316d+308
+             142     1               !
+             143     2                     do 840 jj  = 1, jlistnum
+             144     2                     j=jlist1(jj)
+             145     2                     zasr  = zasr  + asr(k,j)*cosl(j)
+             146     2                     zalr  = zalr  + alr(k,j)*cosl(j)
+             147     2                     zclds = zclds + acld(k,j)*cosl(j)
+             148     2                     zfluxu = zfluxu + aflxu(k+1,j)*cosl(j)
+             149     2                     zfluxd = zfluxd + aflxd(k+1,j)*cosl(j)
+             150     2                     xmsr = max( xmsr, xsr(k,j) )
+             151     2                     xnlr = min( xnlr, xlr(k,j) )
+             152     2                     zttj = 0.0
+             153     2                     zqtj = 0.0
+             154     2                     nxj=nxdef(j)
+             155     2               !     do 845 i = 1,   nxj
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             156     3  pp    v            do 845 i = 1, nxdef_2d(j)
+             157     3   p    v            zttj  = zttj  + tt(i,k,jj)*cosl(j)
+             158     3   p    v            zqtj  = zqtj  + qt(i,k,jj)*cosl(j)
+             159     3   p    v        845 continue
+             160     2                     ztt = ztt + zttj/float(nxj)
+             161     2                     zqt = zqt + zqtj/float(nxj)
+             162     2                 840 continue
+             163     1               !
+             164     1                     call mpe_global_sum(zasr,1,mpe_double)
+             165     1                     call mpe_global_sum(zalr,1,mpe_double)
+             166     1                     call mpe_global_sum(zclds,1,mpe_double)
+             167     1                     call mpe_global_sum(zfluxu,1,mpe_double)
+             168     1                     call mpe_global_sum(zfluxd,1,mpe_double)
+             169     1                     call mpe_global_sum(ztt,1,mpe_double)
+             170     1                     call mpe_global_sum(zqt,1,mpe_double)
+             171     1                     call mpe_global_max(xmsr,1,mpe_double)
+             172     1                     call mpe_global_min(xnlr,1,mpe_double)
+             173     1               !
+             174     1                     zasr = zasr * xmy
+             175     1                     zalr = zalr * xmy
+             176     1                     ztadd = zasr + zalr
+             177     1                     zclds = zclds * 100.0 * xmy
+             178     1               !x    ztt = ztt * ximy
+             179     1               !x    zqt = zqt * ximy * 1000.0
+             180     1                     ztt = ztt * xmy
+             181     1                     zqt = zqt * xmy * 1000.0
+             182     1                     zfluxu = zfluxu * xmy
+             183     1                     zfluxd = zfluxd * xmy
+             184     1                     if(myrank .eq. 0) print 920,k,zasr,zalr,ztadd,zclds,ztt,zqt,xmsr, &
+             185     1                                       xnlr,zfluxu,zfluxd
+             186     1                 920 format ( 1x, i2, 10f8.2 )
+             187     1                 890 continue
+             188                     !
+             189                           zfluxu = 0.0
+             190                           zfluxd = 0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 616
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             191     1  pp    v            do 895 jj  = 1, jlistnum
+             192     1   p    v            j=jlist1(jj)
+             193     1   p    v            zfluxu = zfluxu + aflxu(lev+2,j)*cosl(j)
+             194     1   p    v            zfluxd = zfluxd + aflxd(lev+2,j)*cosl(j)
+             195     1   p    v        895 continue
+             196                     !
+             197                           call mpe_global_sum(zfluxu,1,mpe_double)
+             198                           call mpe_global_sum(zfluxd,1,mpe_double)
+             199                     !
+             200                           zfluxu = zfluxu * xmy
+             201                           zfluxd = zfluxd * xmy
+             202                           if(myrank .eq. 0) print 915, zfluxu,zfluxd
+             203                     !
+             204                           return
+             205                           end
+
+ Procedure information
+   Lines      : 205
+   Statements : 103
+   Stack(byte): 96496
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : diagrd
+   Attribute and Cross reference of name
+     acld
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  75
+      |(Definition)     : 
+      |(Reference)      : 147
+     aflxd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  75
+      |(Definition)     : 
+      |(Reference)      : 119  149  194
+     aflxu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  75
+      |(Definition)     : 
+      |(Reference)      : 118  148  193
+     alr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  75
+      |(Definition)     : 
+      |(Reference)      : 146
+     asr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  75
+      |(Definition)     : 
+      |(Reference)      : 145
+     cosl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  75
+      |(Definition)     : 96  97  98  99
+      |(Reference)      : 109  118  119  145  146  147  148  149  157  158  193  194
+     cumtop
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  75
+      |(Definition)     : 97
+      |(Reference)      : 
+     diagrd
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     flag
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 80
+      |(Definition)     : 
+      |(Reference)      : 
+     float
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 94  160  161
+     glbmean_2d
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 96  97  98  99
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 83
+      |(Definition)     : 156
+      |(Reference)      : 157  158
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 6
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 83
+      |(Definition)     : 108  117  144  192
+      |(Reference)      : 109  118  118  119  119  145  145  146  146  147  147  148  148  149  149  150  151  154  156  157  158  193  193  194  194
+     jj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 83
+      |(Definition)     : 116  143  191
+      |(Reference)      : 117  144  157  158  192
+     jlist1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 117  144  192
+     jlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 116  143  191
+     julian
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  69
+      |(Definition)     : 
+      |(Reference)      : 87
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 83
+      |(Definition)     : 129
+      |(Reference)      : 145  146  147  148  149  150  151  157  158  184
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  69
+      |(Definition)     : 
+      |(Reference)      : 75  75  75  75  75  75  75  75  75  87  93  129  193  194
+     levp1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 83
+      |(Definition)     : 93
+      |(Reference)      : 
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 150
+     min
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 151
+     mpe
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 4
+     mpe_double
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 122  123  164  165  166  167  168  169  170  171  172  197  198
+     mpe_global_max
+      |(Class and Type) : generic name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 171
+     mpe_global_min
+      |(Class and Type) : generic name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 172
+     mpe_global_sum
+      |(Class and Type) : generic name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 122  123  164  165  166  167  168  169  170  197  198
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  69
+      |(Definition)     : 
+      |(Reference)      : 75  75  75  75  75  75  75  75  87  94  108
+     my_max
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  69
+      |(Definition)     : 
+      |(Reference)      : 75  75  75  75  75  75
+     myrank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 87  101  127  184  202
+     ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  69
+      |(Definition)     : 
+      |(Reference)      : 75
+     njump
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  69
+      |(Definition)     : 
+      |(Reference)      : 87
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  69
+      |(Definition)     : 
+      |(Reference)      : 87
+     nxdef
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 154
+     nxdef_2d
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 156
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 83
+      |(Definition)     : 154
+      |(Reference)      : 160  161
+     nxp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 75  75  75  75  75  75
+     ozon
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  73
+      |(Definition)     : 
+      |(Reference)      : 87
+     plcl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  75
+      |(Definition)     : 96
+      |(Reference)      : 
+     qt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  75
+      |(Definition)     : 
+      |(Reference)      : 158
+     rank
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 5
+     rs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  75
+      |(Definition)     : 99
+      |(Reference)      : 
+     s0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  71
+      |(Definition)     : 
+      |(Reference)      : 87
+     ss
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  75
+      |(Definition)     : 98
+      |(Reference)      : 
+     stbo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  71
+      |(Definition)     : 
+      |(Reference)      : 87
+     tt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  75
+      |(Definition)     : 
+      |(Reference)      : 157
+     xlr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  75
+      |(Definition)     : 
+      |(Reference)      : 151
+     xlsfc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 84
+      |(Definition)     : 99
+      |(Reference)      : 101
+     xltop
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 84
+      |(Definition)     : 97
+      |(Reference)      : 101
+     xmsr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 84
+      |(Definition)     : 140  150  171
+      |(Reference)      : 150  184
+     xmy
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 84
+      |(Definition)     : 94  107  109  111
+      |(Reference)      : 109  111  125  126  174  175  177  180  181  182  183  200  201
+     xnlr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 84
+      |(Definition)     : 141  151  172
+      |(Reference)      : 151  184
+     xsr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  75
+      |(Definition)     : 
+      |(Reference)      : 150
+     xssfc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 84
+      |(Definition)     : 98
+      |(Reference)      : 101
+     xstop
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 84
+      |(Definition)     : 96
+      |(Reference)      : 101
+     zalr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 84
+      |(Definition)     : 131  146  165  175
+      |(Reference)      : 146  175  176  184
+     zasr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 84
+      |(Definition)     : 130  145  164  174
+      |(Reference)      : 145  174  176  184
+     zclds
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 84
+      |(Definition)     : 132  147  166  177
+      |(Reference)      : 147  177  184
+     zfluxd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 84
+      |(Definition)     : 115  119  123  126  136  149  168  183  190  194  198  201
+      |(Reference)      : 119  126  127  149  183  184  194  201  202
+     zfluxu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 84
+      |(Definition)     : 114  118  122  125  135  148  167  182  189  193  197  200
+      |(Reference)      : 118  125  127  148  182  184  193  200  202
+     zqt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 84
+      |(Definition)     : 134  161  170  181
+      |(Reference)      : 161  181  184
+     zqtj
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 84
+      |(Definition)     : 153  158
+      |(Reference)      : 158  161
+     ztadd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 84
+      |(Definition)     : 176
+      |(Reference)      : 184
+     ztt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 84
+      |(Definition)     : 133  160  169  180
+      |(Reference)      : 160  180  184
+     zttj
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 84
+      |(Definition)     : 152  157
+      |(Reference)      : 157  160
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+        100  execution     (Definition) 110  
+                           (Reference)  108
+        810  execution     (Definition) 120  
+                           (Reference)  116
+        840  execution     (Definition) 162  
+                           (Reference)  143
+        845  execution     (Definition) 159  
+                           (Reference)  156
+        890  execution     (Definition) 187  
+                           (Reference)  129
+        895  execution     (Definition) 195  
+                           (Reference)  191
+        900  format        (Definition) 88  
+                           (Reference)  87
+        910  format        (Definition) 102  
+                           (Reference)  101
+        915  format        (Definition) 128  
+                           (Reference)  127  202
+        920  format        (Definition) 186  
+                           (Reference)  184
+
+ Total information
+   Procedures       : 1
+   Total lines      : 205
+   Total statements : 103
+   Total stack(byte): 96496
+   Total prefetch num: 0
+

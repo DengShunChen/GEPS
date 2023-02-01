@@ -1,0 +1,1516 @@
+
+ Fujitsu Fortran Version 4.6.1  Wed Jan 11 10:53:14 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/tco639l72/src
+   Source file       : outsigr.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "outsigr"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine outsigr ( itau,nx,my,my_max,lev                         &
+               2                                              , idtg,ifilout                                  &
+               3                                              , fusl,fdsl,fuir,fdir                           &
+               4                                              , fuslr,fdslr,fuirr,fdirr                       &
+               5                                              , asl,atl,asl_clr,atl_clr                       &
+               6                                              , dtrad,cldcov,sd                               &
+               7                                              , ss,rs,olr,asol,sld,rld                        &
+               8                                              , ss_clr,rs_clr,olr_clr                         &
+               9                                              , asol_clr,sld_clr,rld_clr                      &
+              10                                              , cice,xtice,snr,sncover,snoalb                 &
+              11                                              , ctot,chig,cmid,clow                           &
+              12                                              , ggdef,gmdef)
+              13                           use index
+              14                           use mpe
+              15                           use const, only: RTYPE,kflag
+              16                     !
+              17                           dimension fusl(nxp,lev+1,my_max),fdsl(nxp,lev+1,my_max)    &
+              18                                   , fuir(nxp,lev+1,my_max),fdir(nxp,lev+1,my_max)    &
+              19                                   , fuslr(nxp,lev+1,my_max),fdslr(nxp,lev+1,my_max)  &
+              20                                   , fuirr(nxp,lev+1,my_max),fdirr(nxp,lev+1,my_max)  &
+              21                                   , asl(nxp,lev,my_max),atl(nxp,lev,my_max)          &
+              22                                   , asl_clr(nxp,lev,my_max),atl_clr(nxp,lev,my_max)  &
+              23                                   , dtrad(nxp,lev,my_max),dtrad0(nxp,lev,my_max)     &
+              24                                   , cldcov(nxp,lev,my_max)                           &
+              25                                   , ss(nxp,my_max),rs(nxp,my_max)                    &
+              26                                   , olr(nxp,my_max),asol(nxp,my_max)                 &
+              27                                   , sld(nxp,my_max),rld(nxp,my_max)                  &
+              28                                   , ss_clr(nxp,my_max),rs_clr(nxp,my_max)            &
+              29                                   , olr_clr(nxp,my_max),asol_clr(nxp,my_max)         &
+              30                                   , sld_clr(nxp,my_max),rld_clr(nxp,my_max)          &
+              31                                   , cice(nxp,my_max),xtice(nxp,my_max)               &
+              32                                   , snr(nxp,my_max),sncover(nxp,my_max)              &
+              33                                   , snoalb(nxp,my_max),ctot(nxp,my_max)              &
+              34                                   , chig(nxp,my_max),cmid(nxp,my_max)                &
+              35                                   , clow(nxp,my_max)
+              36                           real(kind=RTYPE) sd(nxp,lev,my_max),work(nx,my),work1(nxp,my_max)
+              37                     
+              38                           integer*8 idtg
+              39                           character*80 ifilout
+              40                           character typ*6,ihdg*26
+              41                           character*4 ggdef,gmdef
+              42                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      work
+                                   <<< Loop-information  End >>>
+              43     1  pp   4v            do i = 1, nx*my
+              44     1   p   4v               work(i,1) = 0.
+              45     1   p   4v            enddo
+              46                     !
+              47                           lenc=nx*my
+              48                     !
+              49                     !------------------------------------------------------------
+              50                     ! write 3D radiation flux
+              51                     !------------------------------------------------------------
+              52     1                     do 30 k=1,lev+1
+              53     1               !
+              54     1               !     output upward solar flux for total sky
+              55     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fusl, work1
+                                   <<< Loop-information  End >>>
+              56     2  pp                 do 20 jj = 1, jlistnum
+              57     2   p                  j=jlist1(jj)
+              58     2   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fusl, work1
+                                   <<< Loop-information  End >>>
+              59     3   p   2v            do 20 i = 1,nxj
+              60     3   p   2v             work1(i,jj)=fusl(i,k,jj)
+              61     2   p   2v       20   continue
+              62     1               
+              63     1                     call unify_reduceintp(nx,my,my_max,work1,work)
+              64     1                     write(typ,'("m",i2.2,"3A0")')k
+              65     1                     call syslbl (typ,idtg,itau,gmdef,ihdg)
+              66     1                     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+              67     1               !
+              68     1               !     output downward solar flux for total sky
+              69     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fdsl, work1
+                                   <<< Loop-information  End >>>
+              70     2  pp                 do 21 jj = 1, jlistnum
+              71     2   p                  j=jlist1(jj)
+              72     2   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fdsl, work1
+                                   <<< Loop-information  End >>>
+              73     3   p   2v            do 21 i = 1,nxj
+              74     3   p   2v             work1(i,jj)=fdsl(i,k,jj)
+              75     2   p   2v       21   continue
+              76     1               
+              77     1                     call unify_reduceintp(nx,my,my_max,work1,work)
+              78     1                     write(typ,'("m",i2.2,"3B0")')k
+              79     1                     call syslbl (typ,idtg,itau,gmdef,ihdg)
+              80     1                     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+              81     1               !
+              82     1               !     output upward ir flux for total sky
+              83     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fuir, work1
+                                   <<< Loop-information  End >>>
+              84     2  pp                 do 22 jj = 1, jlistnum
+              85     2   p                  j=jlist1(jj)
+              86     2   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fuir, work1
+                                   <<< Loop-information  End >>>
+              87     3   p   2v            do 22 i = 1,nxj
+              88     3   p   2v             work1(i,jj)=fuir(i,k,jj)
+              89     2   p   2v       22   continue
+              90     1               
+              91     1                     call unify_reduceintp(nx,my,my_max,work1,work)
+              92     1                     write(typ,'("m",i2.2,"3C0")')k
+              93     1                     call syslbl (typ,idtg,itau,gmdef,ihdg)
+              94     1                     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+              95     1               !
+              96     1               !     output downward ir flux for total sky
+              97     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fdir, work1
+                                   <<< Loop-information  End >>>
+              98     2  pp                 do 23 jj = 1, jlistnum
+              99     2   p                  j=jlist1(jj)
+             100     2   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fdir, work1
+                                   <<< Loop-information  End >>>
+             101     3   p   2v            do 23 i = 1,nxj
+             102     3   p   2v             work1(i,jj)=fdir(i,k,jj)
+             103     2   p   2v       23   continue
+             104     1               
+             105     1                     call unify_reduceintp(nx,my,my_max,work1,work)
+             106     1                     write(typ,'("m",i2.2,"3D0")')k
+             107     1                     call syslbl (typ,idtg,itau,gmdef,ihdg)
+             108     1                     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             109     1               !
+             110     1               !     output upward solar flux for clear sky
+             111     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fuslr, work1
+                                   <<< Loop-information  End >>>
+             112     2  pp                 do 24 jj = 1, jlistnum
+             113     2   p                  j=jlist1(jj)
+             114     2   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fuslr, work1
+                                   <<< Loop-information  End >>>
+             115     3   p   2v            do 24 i = 1,nxj
+             116     3   p   2v             work1(i,jj)=fuslr(i,k,jj)
+             117     2   p   2v       24   continue
+             118     1               
+             119     1                     call unify_reduceintp(nx,my,my_max,work1,work)
+             120     1                     write(typ,'("m",i2.2,"3A1")')k
+             121     1                     call syslbl (typ,idtg,itau,gmdef,ihdg)
+             122     1                     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             123     1               !
+             124     1               !     output downward solar flux for clear sky
+             125     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fdslr, work1
+                                   <<< Loop-information  End >>>
+             126     2  pp                 do 25 jj = 1, jlistnum
+             127     2   p                  j=jlist1(jj)
+             128     2   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fdslr, work1
+                                   <<< Loop-information  End >>>
+             129     3   p   2v            do 25 i = 1,nxj
+             130     3   p   2v             work1(i,jj)=fdslr(i,k,jj)
+             131     2   p   2v       25   continue
+             132     1               
+             133     1                     call unify_reduceintp(nx,my,my_max,work1,work)
+             134     1                     write(typ,'("m",i2.2,"3B1")')k
+             135     1                     call syslbl (typ,idtg,itau,gmdef,ihdg)
+             136     1                     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             137     1               !
+             138     1               !     output upward ir flux for clear sky
+             139     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fuirr, work1
+                                   <<< Loop-information  End >>>
+             140     2  pp                 do 26 jj = 1, jlistnum
+             141     2   p                  j=jlist1(jj)
+             142     2   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fuirr, work1
+                                   <<< Loop-information  End >>>
+             143     3   p   2v            do 26 i = 1,nxj
+             144     3   p   2v             work1(i,jj)=fuirr(i,k,jj)
+             145     2   p   2v       26   continue
+             146     1               
+             147     1                     call unify_reduceintp(nx,my,my_max,work1,work)
+             148     1                     write(typ,'("m",i2.2,"3C1")')k
+             149     1                     call syslbl (typ,idtg,itau,gmdef,ihdg)
+             150     1                     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             151     1               !
+             152     1               !     output downward ir flux for clear sky
+             153     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fdirr, work1
+                                   <<< Loop-information  End >>>
+             154     2  pp                 do 27 jj = 1, jlistnum
+             155     2   p                  j=jlist1(jj)
+             156     2   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fdirr, work1
+                                   <<< Loop-information  End >>>
+             157     3   p   2v            do 27 i = 1,nxj
+             158     3   p   2v             work1(i,jj)=fdirr(i,k,jj)
+             159     2   p   2v       27   continue
+             160     1               
+             161     1                     call unify_reduceintp(nx,my,my_max,work1,work)
+             162     1                     write(typ,'("m",i2.2,"3D1")')k
+             163     1                     call syslbl (typ,idtg,itau,gmdef,ihdg)
+             164     1                     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             165     1               !
+             166     1               !     output downward net solar flux for total sky
+             167     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fdsl, fusl, work1
+                                   <<< Loop-information  End >>>
+             168     2  pp                 do 281 jj = 1, jlistnum
+             169     2   p                  j=jlist1(jj)
+             170     2   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.50, ITR: 144, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fdsl, fusl, work1
+                                   <<< Loop-information  End >>>
+             171     3   p   2v            do 281 i = 1,nxj
+             172     3   p   2v             work1(i,jj)=fdsl(i,k,jj)-fusl(i,k,jj)
+             173     2   p   2v       281   continue
+             174     1               
+             175     1                     call unify_reduceintp(nx,my,my_max,work1,work)
+             176     1                     write(typ,'("m",i2.2,"310")')k
+             177     1                     call syslbl (typ,idtg,itau,gmdef,ihdg)
+             178     1                     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             179     1               !
+             180     1               !     output downward net solar flux for clear sky
+             181     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fdslr, fuslr, work1
+                                   <<< Loop-information  End >>>
+             182     2  pp                 do 282 jj = 1, jlistnum
+             183     2   p                  j=jlist1(jj)
+             184     2   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.50, ITR: 144, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fdslr, fuslr, work1
+                                   <<< Loop-information  End >>>
+             185     3   p   2v            do 282 i = 1,nxj
+             186     3   p   2v             work1(i,jj)=fdslr(i,k,jj)-fuslr(i,k,jj)
+             187     2   p   2v       282   continue
+             188     1               
+             189     1                     call unify_reduceintp(nx,my,my_max,work1,work)
+             190     1                     write(typ,'("m",i2.2,"311")')k
+             191     1                     call syslbl (typ,idtg,itau,gmdef,ihdg)
+             192     1                     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             193     1               !
+             194     1               !     output upward net ir flux for total sky
+             195     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fuir, fdir, work1
+                                   <<< Loop-information  End >>>
+             196     2  pp                 do 283 jj = 1, jlistnum
+             197     2   p                  j=jlist1(jj)
+             198     2   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.50, ITR: 144, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fuir, fdir, work1
+                                   <<< Loop-information  End >>>
+             199     3   p   2v            do 283 i = 1,nxj
+             200     3   p   2v             work1(i,jj)=fuir(i,k,jj)-fdir(i,k,jj)
+             201     2   p   2v       283   continue
+             202     1               
+             203     1                     call unify_reduceintp(nx,my,my_max,work1,work)
+             204     1                     write(typ,'("m",i2.2,"320")')k
+             205     1                     call syslbl (typ,idtg,itau,gmdef,ihdg)
+             206     1                     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             207     1               !
+             208     1               !     output upward net ir flux for clear sky
+             209     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fuirr, fdirr, work1
+                                   <<< Loop-information  End >>>
+             210     2  pp                 do 284 jj = 1, jlistnum
+             211     2   p                  j=jlist1(jj)
+             212     2   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.50, ITR: 144, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fuirr, fdirr, work1
+                                   <<< Loop-information  End >>>
+             213     3   p   2v            do 284 i = 1,nxj
+             214     3   p   2v             work1(i,jj)=fuirr(i,k,jj)-fdirr(i,k,jj)
+             215     2   p   2v       284   continue
+             216     1               
+             217     1                     call unify_reduceintp(nx,my,my_max,work1,work)
+             218     1                     write(typ,'("m",i2.2,"321")')k
+             219     1                     call syslbl (typ,idtg,itau,gmdef,ihdg)
+             220     1                     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             221     1               !
+             222     1               !     output downward net radiation flux for total sky
+             223     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fdir, fuir, fusl, fdsl, work1
+                                   <<< Loop-information  End >>>
+             224     2  pp                 do 285 jj = 1, jlistnum
+             225     2   p                  j=jlist1(jj)
+             226     2   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 96, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fdir, fuir, fusl, fdsl, work1
+                                   <<< Loop-information  End >>>
+             227     3   p   2v            do 285 i = 1,nxj
+             228     3   p   2v             work1(i,jj)=fdsl(i,k,jj)-fusl(i,k,jj)+fdir(i,k,jj)-fuir(i,k,jj)
+             229     2   p   2v       285   continue
+             230     1               
+             231     1                     call unify_reduceintp(nx,my,my_max,work1,work)
+             232     1                     write(typ,'("m",i2.2,"300")')k
+             233     1                     call syslbl (typ,idtg,itau,gmdef,ihdg)
+             234     1                     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             235     1               !
+             236     1               !     output downward net radiation flux for clear sky
+             237     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fdirr, fuirr, fuslr, fdslr, work1
+                                   <<< Loop-information  End >>>
+             238     2  pp                 do 286 jj = 1, jlistnum
+             239     2   p                  j=jlist1(jj)
+             240     2   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 96, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fdirr, fuirr, fuslr, fdslr, work1
+                                   <<< Loop-information  End >>>
+             241     3   p   2v            do 286 i = 1,nxj
+             242     3   p   2v             work1(i,jj)=fdslr(i,k,jj)-fuslr(i,k,jj)+fdirr(i,k,jj)-fuirr(i,k,jj)
+             243     2   p   2v       286   continue
+             244     1               
+             245     1                     call unify_reduceintp(nx,my,my_max,work1,work)
+             246     1                     write(typ,'("m",i2.2,"301")')k
+             247     1                     call syslbl (typ,idtg,itau,gmdef,ihdg)
+             248     1                     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             249     1               
+             250     1               
+             251     1                30   continue
+             252                     
+             253                     !
+             254     1                     do 40 k  = 1, lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      asl, work1
+                                   <<< Loop-information  End >>>
+             255     2  pp                 do 41 jj = 1, jlistnum
+             256     2   p                  j=jlist1(jj)
+             257     2   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      asl, work1
+                                   <<< Loop-information  End >>>
+             258     3   p   2v            do 41 i = 1,nxj
+             259     3   p   2v             work1(i,jj)=asl(i,k,jj)
+             260     2   p   2v       41   continue
+             261     1               
+             262     1                     call unify_reduceintp(nx,my,my_max,work1,work)
+             263     1                     write(typ,'("m",i2.2,"3E0")')k
+             264     1                     call syslbl (typ,idtg,itau,gmdef,ihdg)
+             265     1                     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             266     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      atl, work1
+                                   <<< Loop-information  End >>>
+             267     2  pp                 do 42 jj = 1, jlistnum
+             268     2   p                  j=jlist1(jj)
+             269     2   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      atl, work1
+                                   <<< Loop-information  End >>>
+             270     3   p   2v            do 42 i = 1,nxj
+             271     3   p   2v             work1(i,jj)=atl(i,k,jj)
+             272     2   p   2v       42   continue
+             273     1               
+             274     1                     call unify_reduceintp(nx,my,my_max,work1,work)
+             275     1                     write(typ,'("m",i2.2,"3F0")')k
+             276     1                     call syslbl (typ,idtg,itau,gmdef,ihdg)
+             277     1                     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             278     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      asl_clr, work1
+                                   <<< Loop-information  End >>>
+             279     2  pp                 do 43 jj = 1, jlistnum
+             280     2   p                  j=jlist1(jj)
+             281     2   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      asl_clr, work1
+                                   <<< Loop-information  End >>>
+             282     3   p   2v            do 43 i = 1,nxj
+             283     3   p   2v             work1(i,jj)=asl_clr(i,k,jj)
+             284     2   p   2v       43   continue
+             285     1               
+             286     1                     call unify_reduceintp(nx,my,my_max,work1,work)
+             287     1                     write(typ,'("m",i2.2,"3E1")')k
+             288     1                     call syslbl (typ,idtg,itau,gmdef,ihdg)
+             289     1                     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             290     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      atl_clr, work1
+                                   <<< Loop-information  End >>>
+             291     2  pp                 do 44 jj = 1, jlistnum
+             292     2   p                  j=jlist1(jj)
+             293     2   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      atl_clr, work1
+                                   <<< Loop-information  End >>>
+             294     3   p   2v            do 44 i = 1,nxj
+             295     3   p   2v             work1(i,jj)=atl_clr(i,k,jj)
+             296     2   p   2v       44   continue
+             297     1               
+             298     1                     call unify_reduceintp(nx,my,my_max,work1,work)
+             299     1                     write(typ,'("m",i2.2,"3F1")')k
+             300     1                     call syslbl (typ,idtg,itau,gmdef,ihdg)
+             301     1                     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             302     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      dtrad, work1
+                                   <<< Loop-information  End >>>
+             303     2  pp                 do 45 jj = 1, jlistnum
+             304     2   p                  j=jlist1(jj)
+             305     2   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      dtrad, work1
+                                   <<< Loop-information  End >>>
+             306     3   p   2v            do 45 i = 1,nxj
+             307     3   p   2v             work1(i,jj)=dtrad(i,k,jj)
+             308     2   p   2v       45   continue
+             309     1               
+             310     1                     call unify_reduceintp(nx,my,my_max,work1,work)
+             311     1                     write(typ,'("m",i2.2,"3G0")')k
+             312     1                     call syslbl (typ,idtg,itau,gmdef,ihdg)
+             313     1                     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             314     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      asl_clr, atl_clr, work1
+                                   <<< Loop-information  End >>>
+             315     2  pp                 do 46 jj = 1, jlistnum
+             316     2   p                  j=jlist1(jj)
+             317     2   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.50, ITR: 144, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      asl_clr, atl_clr, work1
+                                   <<< Loop-information  End >>>
+             318     3   p   2v            do 46 i = 1,nxj
+             319     3   p   2v             work1(i,jj)=asl_clr(i,k,jj)+atl_clr(i,k,jj)
+             320     2   p   2v       46   continue
+             321     1               
+             322     1                     call unify_reduceintp(nx,my,my_max,work1,work)
+             323     1                     write(typ,'("m",i2.2,"3G1")')k
+             324     1                     call syslbl (typ,idtg,itau,gmdef,ihdg)
+             325     1                     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             326     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cldcov, work1
+                                   <<< Loop-information  End >>>
+             327     2  pp                 do 47 jj = 1, jlistnum
+             328     2   p                  j=jlist1(jj)
+             329     2   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cldcov, work1
+                                   <<< Loop-information  End >>>
+             330     3   p   2v            do 47 i = 1,nxj
+             331     3   p   2v             work1(i,jj)=cldcov(i,k,jj)
+             332     2   p   2v       47   continue
+             333     1               
+             334     1                     call unify_reduceintp(nx,my,my_max,work1,work)
+             335     1                     write(typ,'("m",i2.2,"3H0")')k
+             336     1                     call syslbl (typ,idtg,itau,gmdef,ihdg)
+             337     1                     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             338     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sd, work1
+                                   <<< Loop-information  End >>>
+             339     2  pp                 do 48 jj = 1, jlistnum
+             340     2   p                  j=jlist1(jj)
+             341     2   p                  nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sd, work1
+                                   <<< Loop-information  End >>>
+             342     3   p   2v            do 48 i = 1,nxj
+             343     3   p   2v             work1(i,jj)=sd(i,k,jj)
+             344     2   p   2v       48   continue
+             345     1               
+             346     1                     call unify_reduceintp(nx,my,my_max,work1,work)
+             347     1                     write(typ,'("m",i2.2,"220")')k
+             348     1                     call syslbl (typ,idtg,itau,gmdef,ihdg)
+             349     1                     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             350     1               !
+             351     1                40   continue
+             352                     !------------------------------------------------------------
+             353                     !  write 2D field
+             354                     !------------------------------------------------------------
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ss, work1
+                                   <<< Loop-information  End >>>
+             355        pp   4v            work1=ss
+             356                           call unify_reduceintp(nx,my,my_max,work1,work)
+             357                           call syslbl ('s00310',idtg,itau,ggdef,ihdg)
+             358                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             359                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rs, work1
+                                   <<< Loop-information  End >>>
+             360        pp   4v            work1=rs
+             361                           call unify_reduceintp(nx,my,my_max,work1,work)
+             362                           call syslbl ('s00320',idtg,itau,ggdef,ihdg)
+             363                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             364                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      asol, work1
+                                   <<< Loop-information  End >>>
+             365        pp   4v            work1=asol
+             366                           call unify_reduceintp(nx,my,my_max,work1,work)
+             367                           call syslbl ('X00330',idtg,itau,ggdef,ihdg)
+             368                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             369                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      olr, work1
+                                   <<< Loop-information  End >>>
+             370        pp   4v            work1=olr
+             371                           call unify_reduceintp(nx,my,my_max,work1,work)
+             372                           call syslbl ('X00340',idtg,itau,ggdef,ihdg)
+             373                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             374                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sld, work1
+                                   <<< Loop-information  End >>>
+             375        pp   4v            work1=sld
+             376                           call unify_reduceintp(nx,my,my_max,work1,work)
+             377                           call syslbl ('S003U0',idtg,itau,ggdef,ihdg)
+             378                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             379                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rld, work1
+                                   <<< Loop-information  End >>>
+             380        pp   4v            work1=rld
+             381                           call unify_reduceintp(nx,my,my_max,work1,work)
+             382                           call syslbl ('S003X0',idtg,itau,ggdef,ihdg)
+             383                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             384                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ss_clr, work1
+                                   <<< Loop-information  End >>>
+             385        pp   4v            work1=ss_clr
+             386                           call unify_reduceintp(nx,my,my_max,work1,work)
+             387                           call syslbl ('s0031C',idtg,itau,ggdef,ihdg)
+             388                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             389                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rs_clr, work1
+                                   <<< Loop-information  End >>>
+             390        pp   4v            work1=rs_clr
+             391                           call unify_reduceintp(nx,my,my_max,work1,work)
+             392                           call syslbl ('s0032C',idtg,itau,ggdef,ihdg)
+             393                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             394                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      asol_clr, work1
+                                   <<< Loop-information  End >>>
+             395        pp   4v            work1=asol_clr
+             396                           call unify_reduceintp(nx,my,my_max,work1,work)
+             397                           call syslbl ('X0033C',idtg,itau,ggdef,ihdg)
+             398                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             399                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      olr_clr, work1
+                                   <<< Loop-information  End >>>
+             400        pp   4v            work1=olr_clr
+             401                           call unify_reduceintp(nx,my,my_max,work1,work)
+             402                           call syslbl ('X0034C',idtg,itau,ggdef,ihdg)
+             403                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             404                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sld_clr, work1
+                                   <<< Loop-information  End >>>
+             405        pp   4v            work1=sld_clr
+             406                           call unify_reduceintp(nx,my,my_max,work1,work)
+             407                           call syslbl ('S003UC',idtg,itau,ggdef,ihdg)
+             408                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             409                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rld_clr, work1
+                                   <<< Loop-information  End >>>
+             410        pp   4v            work1=rld_clr
+             411                           call unify_reduceintp(nx,my,my_max,work1,work)
+             412                           call syslbl ('S003XC',idtg,itau,ggdef,ihdg)
+             413                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             414                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ctot, work1
+                                   <<< Loop-information  End >>>
+             415        pp   4v            work1=ctot
+             416                           call unify_reduceintp(nx,my,my_max,work1,work)
+             417                           call syslbl ('X00770',idtg,itau,ggdef,ihdg)
+             418                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             419                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      chig, work1
+                                   <<< Loop-information  End >>>
+             420        pp   4v            work1=chig
+             421                           call unify_reduceintp(nx,my,my_max,work1,work)
+             422                           call syslbl ('X00760',idtg,itau,ggdef,ihdg)
+             423                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             424                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cmid, work1
+                                   <<< Loop-information  End >>>
+             425        pp   4v            work1=cmid
+             426                           call unify_reduceintp(nx,my,my_max,work1,work)
+             427                           call syslbl ('X00750',idtg,itau,ggdef,ihdg)
+             428                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             429                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      clow, work1
+                                   <<< Loop-information  End >>>
+             430        pp   4v            work1=clow
+             431                           call unify_reduceintp(nx,my,my_max,work1,work)
+             432                           call syslbl ('X00740',idtg,itau,ggdef,ihdg)
+             433                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             434                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cice, work1
+                                   <<< Loop-information  End >>>
+             435        pp   4v            work1=cice
+             436                           call unify_reduceintp(nx,my,my_max,work1,work)
+             437                           call syslbl ('W00093',idtg,itau,ggdef,ihdg)
+             438                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             439                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      xtice, work1
+                                   <<< Loop-information  End >>>
+             440        pp   4v            work1=xtice
+             441                           call unify_reduceintp(nx,my,my_max,work1,work)
+             442                           call syslbl ('W00094',idtg,itau,ggdef,ihdg)
+             443                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             444                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      snr, work1
+                                   <<< Loop-information  End >>>
+             445        pp   4v            work1=snr
+             446                           call unify_reduceintp(nx,my,my_max,work1,work)
+             447                           call syslbl ('b00650',idtg,itau,ggdef,ihdg)
+             448                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             449                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sncover, work1
+                                   <<< Loop-information  End >>>
+             450        pp   4v            work1=sncover
+             451                           call unify_reduceintp(nx,my,my_max,work1,work)
+             452                           call syslbl ('B00651',idtg,itau,ggdef,ihdg)
+             453                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             454                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      snoalb, work1
+                                   <<< Loop-information  End >>>
+             455        pp   4v            work1=snoalb
+             456                           call unify_reduceintp(nx,my,my_max,work1,work)
+             457                           call syslbl ('S0003X',idtg,itau,ggdef,ihdg)
+             458                           call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,work,istat)
+             459                     !
+             460                           return
+             461                           end
+
+ Procedure information
+   Lines      : 461
+   Statements : 324
+   Stack(byte): 19680
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : outsigr
+   Attribute and Cross reference of name
+     asl
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 259
+     asl_clr
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 283  319
+     asol
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 365
+     asol_clr
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 395
+     atl
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 271
+     atl_clr
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 295  319
+     chig
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 420
+     cice
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 435
+     cldcov
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 331
+     clow
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 430
+     cmid
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 425
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 15
+     ctot
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 415
+     dmswrit
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 66  80  94  108  122  136  150  164  178  192  206  220  234  248  265  277  289  301  313  325  337  349  358  363  368  373  378  383  388  393  398  403  408  413  418  423  428  433  438  443  448  453  458
+     dtrad
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 307
+     dtrad0
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 17
+      |(Definition)     : 
+      |(Reference)      : 
+     fdir
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 102  200  228
+     fdirr
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 158  214  242
+     fdsl
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 74  172  228
+     fdslr
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 130  186  242
+     fuir
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 88  200  228
+     fuirr
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 144  214  242
+     fusl
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 60  172  228
+     fuslr
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 116  186  242
+     ggdef
+      |(Class and Type) : variable name, CHARACTER(4,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  41
+      |(Definition)     : 357  362  367  372  377  382  387  392  397  402  407  412  417  422  427  432  437  442  447  452  457
+      |(Reference)      : 
+     gmdef
+      |(Class and Type) : variable name, CHARACTER(4,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  41
+      |(Definition)     : 65  79  93  107  121  135  149  163  177  191  205  219  233  247  264  276  288  300  312  324  336  348
+      |(Reference)      : 
+     i
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 43  59  73  87  101  115  129  143  157  171  185  199  213  227  241  258  270  282  294  306  318  330  342
+      |(Reference)      : 44  60  60  74  74  88  88  102  102  116  116  130  130  144  144  158  158  172  172  172  186  186  186  200  200  200  214  214  214  228  228  228  228  228  242  242  242  242  242  259  259  271  271  283  283  295  295  307  307  319  319  319  331  331  343  343
+     idtg
+      |(Class and Type) : variable name, INTEGER(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  38
+      |(Definition)     : 65  79  93  107  121  135  149  163  177  191  205  219  233  247  264  276  288  300  312  324  336  348  357  362  367  372  377  382  387  392  397  402  407  412  417  422  427  432  437  442  447  452  457
+      |(Reference)      : 
+     ifilout
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  39
+      |(Definition)     : 66  80  94  108  122  136  150  164  178  192  206  220  234  248  265  277  289  301  313  325  337  349  358  363  368  373  378  383  388  393  398  403  408  413  418  423  428  433  438  443  448  453  458
+      |(Reference)      : 
+     ihdg
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : 
+      |(Declaration)    : 40
+      |(Definition)     : 65  66  79  80  93  94  107  108  121  122  135  136  149  150  163  164  177  178  191  192  205  206  219  220  233  234  247  248  264  265  276  277  288  289  300  301  312  313  324  325  336  337  348  349  357  358  362  363  367  368  372  373  377  378  382  383  387  388  392  393  397  398  402  403  407  408  412  413  417  418  422  423  427  428  432  433  437  438  442  443  447  448  452  453  457  458
+      |(Reference)      : 
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 13
+     istat
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 66  80  94  108  122  136  150  164  178  192  206  220  234  248  265  277  289  301  313  325  337  349  358  363  368  373  378  383  388  393  398  403  408  413  418  423  428  433  438  443  448  453  458
+      |(Reference)      : 
+     itau
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 65  79  93  107  121  135  149  163  177  191  205  219  233  247  264  276  288  300  312  324  336  348  357  362  367  372  377  382  387  392  397  402  407  412  417  422  427  432  437  442  447  452  457
+      |(Reference)      : 
+     j
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 57  71  85  99  113  127  141  155  169  183  197  211  225  239  256  268  280  292  304  316  328  340
+      |(Reference)      : 58  72  86  100  114  128  142  156  170  184  198  212  226  240  257  269  281  293  305  317  329  341
+     jj
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 56  70  84  98  112  126  140  154  168  182  196  210  224  238  255  267  279  291  303  315  327  339
+      |(Reference)      : 57  60  60  71  74  74  85  88  88  99  102  102  113  116  116  127  130  130  141  144  144  155  158  158  169  172  172  172  183  186  186  186  197  200  200  200  211  214  214  214  225  228  228  228  228  228  239  242  242  242  242  242  256  259  259  268  271  271  280  283  283  292  295  295  304  307  307  316  319  319  319  328  331  331  340  343  343
+     jlist1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 57  71  85  99  113  127  141  155  169  183  197  211  225  239  256  268  280  292  304  316  328  340
+     jlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 56  70  84  98  112  126  140  154  168  182  196  210  224  238  255  267  279  291  303  315  327  339
+     k
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 52  254
+      |(Reference)      : 60  64  74  78  88  92  102  106  116  120  130  134  144  148  158  162  172  172  176  186  186  190  200  200  204  214  214  218  228  228  228  228  232  242  242  242  242  246  259  263  271  275  283  287  295  299  307  311  319  319  323  331  335  343  347
+     kflag
+      |(Class and Type) : named constant, CHARACTER(1,1)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 15  66  80  94  108  122  136  150  164  178  192  206  220  234  248  265  277  289  301  313  325  337  349  358  363  368  373  378  383  388  393  398  403  408  413  418  423  428  433  438  443  448  453  458
+     lenc
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 47  66  80  94  108  122  136  150  164  178  192  206  220  234  248  265  277  289  301  313  325  337  349  358  363  368  373  378  383  388  393  398  403  408  413  418  423  428  433  438  443  448  453  458
+      |(Reference)      : 
+     lev
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  36  52  254
+     mpe
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 14
+     my
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 63  66  77  80  91  94  105  108  119  122  133  136  147  150  161  164  175  178  189  192  203  206  217  220  231  234  245  248  262  265  274  277  286  289  298  301  310  313  322  325  334  337  346  349  356  358  361  363  366  368  371  373  376  378  381  383  386  388  391  393  396  398  401  403  406  408  411  413  416  418  421  423  426  428  431  433  436  438  441  443  446  448  451  453  456  458
+      |(Reference)      : 36  43  47
+     my_max
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 63  77  91  105  119  133  147  161  175  189  203  217  231  245  262  274  286  298  310  322  334  346  356  361  366  371  376  381  386  391  396  401  406  411  416  421  426  431  436  441  446  451  456
+      |(Reference)      : 17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  36  36
+     nx
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 63  66  77  80  91  94  105  108  119  122  133  136  147  150  161  164  175  178  189  192  203  206  217  220  231  234  245  248  262  265  274  277  286  289  298  301  310  313  322  325  334  337  346  349  356  358  361  363  366  368  371  373  376  378  381  383  386  388  391  393  396  398  401  403  406  408  411  413  416  418  421  423  426  428  431  433  436  438  441  443  446  448  451  453  456  458
+      |(Reference)      : 36  43  47
+     nxdef_2d
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 58  72  86  100  114  128  142  156  170  184  198  212  226  240  257  269  281  293  305  317  329  341
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 58  72  86  100  114  128  142  156  170  184  198  212  226  240  257  269  281  293  305  317  329  341
+      |(Reference)      : 59  73  87  101  115  129  143  157  171  185  199  213  227  241  258  270  282  294  306  318  330  342
+     nxp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  17  36  36
+     olr
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 370
+     olr_clr
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 400
+     outsigr
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 15  36
+     rld
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 380
+     rld_clr
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 410
+     rs
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 360
+     rs_clr
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 390
+     sd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  36
+      |(Definition)     : 
+      |(Reference)      : 343
+     sld
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 375
+     sld_clr
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 405
+     sncover
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 450
+     snoalb
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 455
+     snr
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 445
+     ss
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 355
+     ss_clr
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 385
+     syslbl
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 65  79  93  107  121  135  149  163  177  191  205  219  233  247  264  276  288  300  312  324  336  348  357  362  367  372  377  382  387  392  397  402  407  412  417  422  427  432  437  442  447  452  457
+     typ
+      |(Class and Type) : variable name, CHARACTER(6,1)
+      |(Attributes)     : 
+      |(Declaration)    : 40
+      |(Definition)     : 64  65  78  79  92  93  106  107  120  121  134  135  148  149  162  163  176  177  190  191  204  205  218  219  232  233  246  247  263  264  275  276  287  288  299  300  311  312  323  324  335  336  347  348
+      |(Reference)      : 
+     unify_reduceintp
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 63  77  91  105  119  133  147  161  175  189  203  217  231  245  262  274  286  298  310  322  334  346  356  361  366  371  376  381  386  391  396  401  406  411  416  421  426  431  436  441  446  451  456
+     work
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 36
+      |(Definition)     : 44  63  66  77  80  91  94  105  108  119  122  133  136  147  150  161  164  175  178  189  192  203  206  217  220  231  234  245  248  262  265  274  277  286  289  298  301  310  313  322  325  334  337  346  349  356  358  361  363  366  368  371  373  376  378  381  383  386  388  391  393  396  398  401  403  406  408  411  413  416  418  421  423  426  428  431  433  436  438  441  443  446  448  451  453  456  458
+      |(Reference)      : 
+     work1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 36
+      |(Definition)     : 60  63  74  77  88  91  102  105  116  119  130  133  144  147  158  161  172  175  186  189  200  203  214  217  228  231  242  245  259  262  271  274  283  286  295  298  307  310  319  322  331  334  343  346  355  356  360  361  365  366  370  371  375  376  380  381  385  386  390  391  395  396  400  401  405  406  410  411  415  416  420  421  425  426  430  431  435  436  440  441  445  446  450  451  455  456
+      |(Reference)      : 
+     xtice
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  17
+      |(Definition)     : 
+      |(Reference)      : 440
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+         20  execution     (Definition) 61  
+                           (Reference)  56  59
+         21  execution     (Definition) 75  
+                           (Reference)  70  73
+         22  execution     (Definition) 89  
+                           (Reference)  84  87
+         23  execution     (Definition) 103  
+                           (Reference)  98  101
+         24  execution     (Definition) 117  
+                           (Reference)  112  115
+         25  execution     (Definition) 131  
+                           (Reference)  126  129
+         26  execution     (Definition) 145  
+                           (Reference)  140  143
+         27  execution     (Definition) 159  
+                           (Reference)  154  157
+         30  execution     (Definition) 251  
+                           (Reference)  52
+         40  execution     (Definition) 351  
+                           (Reference)  254
+         41  execution     (Definition) 260  
+                           (Reference)  255  258
+         42  execution     (Definition) 272  
+                           (Reference)  267  270
+         43  execution     (Definition) 284  
+                           (Reference)  279  282
+         44  execution     (Definition) 296  
+                           (Reference)  291  294
+         45  execution     (Definition) 308  
+                           (Reference)  303  306
+         46  execution     (Definition) 320  
+                           (Reference)  315  318
+         47  execution     (Definition) 332  
+                           (Reference)  327  330
+         48  execution     (Definition) 344  
+                           (Reference)  339  342
+        281  execution     (Definition) 173  
+                           (Reference)  168  171
+        282  execution     (Definition) 187  
+                           (Reference)  182  185
+        283  execution     (Definition) 201  
+                           (Reference)  196  199
+        284  execution     (Definition) 215  
+                           (Reference)  210  213
+        285  execution     (Definition) 229  
+                           (Reference)  224  227
+        286  execution     (Definition) 243  
+                           (Reference)  238  241
+
+ Total information
+   Procedures       : 1
+   Total lines      : 461
+   Total statements : 324
+   Total stack(byte): 19680
+   Total prefetch num: 0
+

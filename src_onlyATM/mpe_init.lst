@@ -1,0 +1,959 @@
+
+ Fujitsu Fortran Version 4.6.1  Wed Jan 11 10:52:29 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/tco639l72/src
+   Source file       : mpe_init.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "mpe_init"
+  (inc)(line-no.)(nest)(optimize)
+               1                       subroutine mpe_init
+               2                     
+               3                     ! CWB2016 io_quilting version
+               4                     
+               5                     ! CWB2017 2dMPI  V1   version
+               6                     ! 1. grid dimension is (isd:ied,lev,my_max)
+               7                     ! 2. nx should be devided by npex, i.e. mod(nx,npex) = 0
+               8                     ! 3. i direction loop example : do i=isd, nxj
+               9                     
+              10                     ! CWB2018/06/12 2dMPI  V2   version
+              11                     ! 1. grid dimension is (nxp,lev,my_max), 'nxp' means nx partial
+              12                     ! 2. nx is no longer needed to be devided by npex, i.e. mod(nx,npex) >= 0
+              13                     ! 3. i direction loop example : do i=1, nxj
+              14                     
+              15                         use mpi
+              16                     
+              17                         use param
+              18                         use index
+              19                         use rank
+              20                         use const, only : allocate_const_array
+              21                         use grid, only : allocate_grid_array
+              22                         use spec, only : allocate_spec_array
+              23                         use phygrid, only : allocate_phygrid_array
+              24                         use noah, only : allocate_noah_array
+              25                         use mod_typhoon, only : allocate_typhoon_array
+              26                         !>>>rad------------------------------------------------------------------
+              27                         use radn
+              28                         use ozne_def
+              29                         use albn, only : allocate_alb_array
+              30                         use raddiag, only : allocate_raddiag_array
+              31                         !<<<rad------------------------------------------------------------------
+              32                     
+              33                         implicit none
+              34                     
+              35                         integer i,ierr,istat,iworld,igfs,iio,mini,m,n
+              36                     
+              37                         integer,dimension(:),allocatable :: ranks_gfs,ranks_io
+              38                     
+              39                     #if defined(RSM) && defined(CWB_MPMD)
+              40                         !for MPMD mode
+              41                           call mpmd_init(nsize_all,  myrank_all , MPI_COMM_gfs_all, root_rsm, istat)
+              42                           if(istat.ne.0)stop'mpmd_init fail !'
+              43                     #else
+              44                         ! the whole group, (gfs + io)
+              45                         call MPI_INIT( ierr )
+              46                         call MPI_COMM_RANK( MPI_COMM_WORLD, myrank_all, ierr )
+              47                         call MPI_COMM_SIZE( MPI_COMM_WORLD, nsize_all,  ierr )
+              48                     #endif
+              49                     #ifdef W3TAG
+              50                           if (myrank_all==0) call w3tagb('TCoGFS',2021,1721,067,'GFS')
+              51                     #endif
+              52                         call get_model_param
+              53                     
+              54     1                   if(io_quilting) then
+              55     1                     Ngfs=nsize_all-1
+              56     1                     Nio =1
+              57     1               
+              58     1                     allocate (ranks_gfs(Ngfs) ,ranks_io(Nio) ,stat=ierr)
+              59     2                     if (ierr/= 0) then
+              60     2                        write(6,*) 'mpe_init : allocate fail 1 '
+              61     2                        stop
+              62     2                     end if
+              63     1               
+              64     1                     ! gfs     : 0,1,2 .....nsize_all-1
+              65     1                     ! io      : nsize_all
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1600
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.75, ITR: 192, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ranks_gfs
+                                   <<< Loop-information  End >>>
+              66     2  pp   2v            do i=1,Ngfs
+              67     2   p   2v               ranks_gfs(i)=i-1
+              68     2   p   2v            enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1600
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.75, ITR: 192, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ranks_io
+                                   <<< Loop-information  End >>>
+              69     2  pp   2v            do i=1,Nio
+              70     2   p   2v               ranks_io(i)=(i-1)+Ngfs
+              71     2   p   2v            enddo
+              72     1               
+              73     1               #if defined(RSM) && defined(CWB_MPMD)
+              74     1                     call MPI_COMM_GROUP( MPI_COMM_gfs_all, iworld, ierr )
+              75     1               #else
+              76     1                     call MPI_COMM_GROUP( MPI_COMM_WORLD, iworld, ierr )
+              77     1               #endif
+              78     1                     call MPI_GROUP_excl( iworld, Nio,  ranks_io,  igfs, ierr )
+              79     1                     call MPI_GROUP_excl( iworld, Ngfs ,ranks_gfs, iio, ierr )
+              80     1               
+              81     1               #if defined(RSM) && defined(CWB_MPMD)
+              82     1                     ! create the sub_group(gfs)
+              83     1                     call MPI_COMM_create( MPI_COMM_gfs_all,igfs,MPI_COMM_gfs,ierr )
+              84     1                     ! create the sub_group(io)
+              85     1                     call MPI_COMM_create( MPI_COMM_gfs_all,iio, MPI_COMM_io,ierr )
+              86     1               #else
+              87     1                     ! create the sub_group(gfs)
+              88     1                     call MPI_COMM_create( MPI_COMM_WORLD,igfs,MPI_COMM_gfs,ierr )
+              89     1                     ! create the sub_group(io)
+              90     1                     call MPI_COMM_create( MPI_COMM_WORLD,iio, MPI_COMM_io,ierr )
+              91     1               #endif
+              92     1               
+              93     2                     if(myrank_all .le. Ngfs-1)then
+              94     2                       ! gfs group goes here
+              95     2                        call MPI_COMM_RANK( MPI_COMM_gfs, myrank_gfs, ierr )
+              96     2                        call MPI_COMM_SIZE( MPI_COMM_gfs, nsize_gfs,  ierr )
+              97     2                        myrank=myrank_gfs
+              98     2                        nsize=nsize_gfs
+              99     2                     else
+             100     2                       ! io  group goes here
+             101     2                        call MPI_COMM_SIZE( MPI_COMM_io, nsize_io, ierr )
+             102     2                        call MPI_COMM_RANK( MPI_COMM_io, myrank_io,ierr )
+             103     2                        myrank=myrank_io
+             104     2                        nsize=nsize_io
+             105     2                     endif
+             106     1               
+             107     1                     root_gfs=0
+             108     1                     root_io=Ngfs
+             109     1               
+             110     1                     call MPI_GROUP_free( iworld, IERR )
+             111     1                     call MPI_GROUP_free( igfs,  IERR )
+             112     1                     call MPI_GROUP_free( iio  ,  IERR )
+             113     1               
+             114     1                     deallocate (ranks_gfs,ranks_io)
+             115     1               
+             116     1                     ! from now on, gfs and io groups can
+             117     1                     !              communicate with whole group through MPI_COMM_WORLD, or
+             118     1                     !              communicate with gfs  group through MPI_COMM_gfs,  or
+             119     1                     !              communicate with io    group through MPI_COMM_io
+             120     1                     npe=nsize
+             121     1                     ntag=0
+             122     1               
+             123     2                     if(myrank_all .le. Ngfs-1)then
+             124     3                       if(npex .eq. -1 .or. npey .eq. -1 ) then
+             125     3                         ! get number of procs in i and j directions
+             126     3                         mini = 2*nsize
+             127     3                         nsizex = 1
+             128     3                         nsizey = nsize
+             129     4   s   2s                do m = 1, nsize
+             130     5   p   2v                  if ( mod( nsize, m ) == 0 ) then
+             131     5   p   2v                    n = nsize / m
+             132     6   m   2m                    if ( abs(m-n) < mini  ) then
+             133     6   s   2s                      mini = abs(m-n)
+             134     6   p   2v                      nsizex = m
+             135     6   p   2v                      nsizey = n
+             136     6   p   2v                    end if
+             137     5   p   2v                  end if
+             138     4   p   2v                end do
+             139     3                       else
+             140     3                         ! using namlsts setting
+             141     3                         nsizex=npex
+             142     3                         nsizey=npey
+             143     3                     endif
+             144     3                     if ( npe .lt. lev ) then
+             145     3                        if(myrank == 0)print *,'fatal error : npe  .lt. lev !'
+             146     3               !        call MPI_FINALIZE(IERR)
+             147     3                        stop ! force abort
+             148     3                     endif
+             149     2               
+             150     3                     if ( (nsizex*nsizey) /= npe ) then
+             151     3                       if(myrank == 0)print *,'fatal error : npex*npey  .ne. npe !'
+             152     3               !       call MPI_FINALIZE(IERR)
+             153     3                       stop ! force abort
+             154     3                     endif
+             155     2                       mrow = myrank/nsizex
+             156     2                       ncol = mod(myrank, nsizex)
+             157     2                       call MPI_Comm_split(MPI_COMM_gfs, mrow, ncol, row_comm, ierr)
+             158     2                       call MPI_Comm_split(MPI_COMM_gfs, ncol, mrow, col_comm, ierr)
+             159     2                       call MPI_Comm_rank(row_comm, row_rank, ierr)
+             160     2                       call MPI_Comm_rank(col_comm, col_rank, ierr)
+             161     2               
+             162     2                       nxp=nx/nsizex       !nx partial
+             163     2                       n=mod(nx,nsizex)
+             164     2                       if(n.ne.0)nxp=nxp+1
+             165     2               
+             166     2                       my_max=my/nsizey+1
+             167     2                       jtmax=jtrun/nsizey+1
+             168     2               
+             169     2                       nxf=nx       !nx full
+             170     2                       myf=my       !my full
+             171     2                       jlen=my_max
+             172     2               
+             173     3                       if ( mod( lev, nsizex ) /= 0 ) then
+             174     3                          if(myrank == 0)print *,'fatal error : lev not devided by nsizex !'
+             175     3               !          call MPI_FINALIZE(IERR)
+             176     3                          stop
+             177     3                       else
+             178     3                          levf=lev  !lev full
+             179     3                          Llen=lev/nsizex
+             180     3                          levp=Llen
+             181     3                          Lstart=row_rank*Llen+1
+             182     3                          Lend=Lstart+Llen-1
+             183     3               
+             184     3                         ! for lev*ncld array
+             185     3                          Lstart_ncld=row_rank*((lev*ncld)/nsizex)+1
+             186     3                          Lend_ncld=Lstart_ncld+((lev*ncld)/nsizex)-1
+             187     3                       endif
+             188     2               
+             189     2                       ! allocate dynamic arrays
+             190     2                       call allocate_grid_array
+             191     2                       call allocate_phygrid_array
+             192     2                       call allocate_noah_array
+             193     2                       call allocate_const_array
+             194     2                       call allocate_spec_array
+             195     2                       call allocate_typhoon_array
+             196     2                       call allocate_index_array
+             197     2                       !rad
+             198     2                       call allocate_alb_array
+             199     2                       call allocate_raddiag_array
+             200     2                       ! initial block data
+             201     2                       call init_block
+             202     2                     else
+             203     2                       call ioserver(nx*my)
+             204     2                     endif
+             205     1                   else ! non io_quilting
+             206     1                     nsize=nsize_all
+             207     1                     myrank=myrank_all
+             208     1               #if defined(RSM) && defined(CWB_MPMD)
+             209     1                     MPI_COMM_gfs=MPI_COMM_gfs_all
+             210     1               #else
+             211     1                     MPI_COMM_gfs=MPI_COMM_WORLD
+             212     1               #endif
+             213     1               
+             214     1                     npe=nsize
+             215     2                     if(npex .eq. -1 .or. npey .eq. -1 ) then
+             216     2                       ! get number of procs in i and j directions
+             217     2                       mini = 2*nsize
+             218     2                       nsizex = 1
+             219     2                       nsizey = nsize
+             220     3   s   2s              do m = 1, nsize
+             221     4   p   2v                if ( mod( nsize, m ) == 0 ) then
+             222     4   p   2v                  n = nsize / m
+             223     5   m   2m                  if ( abs(m-n) < mini  ) then
+             224     5   s   2s                    mini = abs(m-n)
+             225     5   p   2v                    nsizex = m
+             226     5   p   2v                    nsizey = n
+             227     5   p   2v                  end if
+             228     4   p   2v                end if
+             229     3   p   2v              end do
+             230     2                     else
+             231     2                       ! using namlsts setting
+             232     2                       nsizex=npex
+             233     2                       nsizey=npey
+             234     2                     endif
+             235     1               
+             236     2                     if ( (nsizex*nsizey) /= npe ) then
+             237     2                        if(myrank == 0)print *,'fatal error : npex*npey  .ne. npe !'
+             238     2               !        call MPI_FINALIZE(IERR)
+             239     2                        stop ! force abort
+             240     2                     endif
+             241     1               
+             242     1                     mrow = myrank/nsizex
+             243     1                     ncol = mod(myrank, nsizex)
+             244     1                     call MPI_Comm_split(MPI_COMM_gfs  , mrow, ncol, row_comm, ierr)
+             245     1                     call MPI_Comm_split(MPI_COMM_gfs  , ncol, mrow, col_comm, ierr)
+             246     1               
+             247     1                     call MPI_Comm_rank(row_comm, row_rank, ierr)
+             248     1                     call MPI_Comm_rank(col_comm, col_rank, ierr)
+             249     1               
+             250     1                     nxp=nx/nsizex       !nx partial
+             251     1                     n=mod(nx,nsizex)
+             252     1                     if(n.ne.0)nxp=nxp+1
+             253     1               
+             254     1                     my_max=my/nsizey+1
+             255     1                     jtmax=jtrun/nsizey+1
+             256     1               
+             257     1                     nxf=nx       !nx full
+             258     1                     myf=my       !my full
+             259     1                     jlen=my_max
+             260     1               
+             261     2                     if ( mod( lev, nsizex ) /= 0 ) then
+             262     2                        if(myrank == 0)print *,'fatal error : lev not devided by nsizex !'
+             263     2               !        call MPI_FINALIZE(IERR)
+             264     2                        stop
+             265     2                     else
+             266     2                        levf=lev  !lev full
+             267     2                        Llen=lev/nsizex
+             268     2                        levp=Llen
+             269     2                        Lstart=row_rank*Llen+1
+             270     2                        Lend=Lstart+Llen-1
+             271     2               
+             272     2                       ! for lev*ncld array
+             273     2                        Lstart_ncld=row_rank*((lev*ncld)/nsizex)+1
+             274     2                        Lend_ncld=Lstart_ncld+((lev*ncld)/nsizex)-1
+             275     2                     endif
+             276     1               
+             277     1                     ! allocate dynamic arrays
+             278     1                     call allocate_grid_array
+             279     1                     call allocate_phygrid_array
+             280     1                     call allocate_noah_array
+             281     1                     call allocate_const_array
+             282     1                     call allocate_spec_array
+             283     1                     call allocate_typhoon_array
+             284     1                     call allocate_index_array
+             285     1                     !rad
+             286     1                     call allocate_alb_array
+             287     1                     call allocate_raddiag_array
+             288     1                     ! initial block data
+             289     1                     call init_block
+             290     1                   endif
+             291                     
+             292                       end subroutine mpe_init
+
+ Procedure information
+   Lines      : 292
+   Statements : 192
+   Stack(byte): 2128
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : mpe_init
+   Attribute and Cross reference of name
+     abs
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 132  133  223  224
+     albn
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 29
+     allocate_alb_array
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 29  198  286
+     allocate_const_array
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 20  193  281
+     allocate_grid_array
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 21  190  278
+     allocate_index_array
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 196  284
+     allocate_noah_array
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 24  192  280
+     allocate_phygrid_array
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 23  191  279
+     allocate_raddiag_array
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 30  199  287
+     allocate_spec_array
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 22  194  282
+     allocate_typhoon_array
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 25  195  283
+     col_comm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 158  245
+      |(Reference)      : 160  248
+     col_rank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 160  248
+      |(Reference)      : 
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 20
+     get_model_param
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 52
+     grid
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 21
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 35
+      |(Definition)     : 66  69
+      |(Reference)      : 67  67  70  70
+     ierr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 35
+      |(Definition)     : 45  46  47  58  76  78  79  88  90  95  96  101  102  110  111  112  157  158  159  160  244  245  247  248
+      |(Reference)      : 59
+     igfs
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 35
+      |(Definition)     : 78  111
+      |(Reference)      : 88
+     iio
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 35
+      |(Definition)     : 79  112
+      |(Reference)      : 90
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 18
+     init_block
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 201  289
+     io_quilting
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 54
+     ioserver
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 203
+     istat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 35
+      |(Definition)     : 
+      |(Reference)      : 
+     iworld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 35
+      |(Definition)     : 76  110
+      |(Reference)      : 78  79
+     jlen
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 171  259
+      |(Reference)      : 
+     jtmax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 167  255
+      |(Reference)      : 
+     jtrun
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 167  255
+     Lend
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 182  270
+      |(Reference)      : 
+     Lend_ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 186  274
+      |(Reference)      : 
+     Llen
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 179  267
+      |(Reference)      : 180  181  182  268  269  270
+     Lstart
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 181  269
+      |(Reference)      : 182  270
+     Lstart_ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 185  273
+      |(Reference)      : 186  274
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 144  173  178  179  185  186  261  266  267  273  274
+     levf
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 178  266
+      |(Reference)      : 
+     levp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 180  268
+      |(Reference)      : 
+     MPI_COMM_gfs
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 88  211
+      |(Reference)      : 95  96  157  158  244  245
+     MPI_COMM_io
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 90
+      |(Reference)      : 101  102
+     m
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 35
+      |(Definition)     : 129  220
+      |(Reference)      : 130  131  132  133  134  221  222  223  224  225
+     mini
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 35
+      |(Definition)     : 126  133  217  224
+      |(Reference)      : 132  223
+     mod
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 130  156  163  173  221  243  251  261
+     mod_typhoon
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 25
+     mpe_init
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 292
+     mpi
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 15
+     mpi_comm_create
+      |(Class and Type) : generic name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 88  90
+     mpi_comm_group
+      |(Class and Type) : generic name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 76
+     mpi_comm_rank
+      |(Class and Type) : generic name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 46  95  102  159  160  247  248
+     mpi_comm_size
+      |(Class and Type) : generic name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 47  96  101
+     mpi_comm_split
+      |(Class and Type) : generic name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 157  158  244  245
+     mpi_comm_world
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 46  47  76  88  90  211
+     mpi_group_excl
+      |(Class and Type) : generic name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 78  79
+     mpi_group_free
+      |(Class and Type) : generic name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 110  111  112
+     mpi_init
+      |(Class and Type) : generic name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 45
+     mrow
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 155  242
+      |(Reference)      : 157  158  244  245
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 166  170  203  254  258
+     my_max
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 166  254
+      |(Reference)      : 171  259
+     myf
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 170  258
+      |(Reference)      : 
+     myrank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 97  103  207
+      |(Reference)      : 145  151  155  156  174  237  242  243  262
+     myrank_all
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 46
+      |(Reference)      : 50  93  123  207
+     myrank_gfs
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 95
+      |(Reference)      : 97
+     myrank_io
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 102
+      |(Reference)      : 103
+     Ngfs
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 55
+      |(Reference)      : 58  66  70  79  93  108  123
+     Nio
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 56
+      |(Reference)      : 58  69  78
+     n
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 35
+      |(Definition)     : 131  163  222  251
+      |(Reference)      : 132  133  135  164  223  224  226  252
+     ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 185  186  273  274
+     ncol
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 156  243
+      |(Reference)      : 157  158  244  245
+     noah
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 24
+     npe
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 120  214
+      |(Reference)      : 144  150  236
+     npex
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 124  141  215  232
+     npey
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 124  142  215  233
+     nsize
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 98  104  206
+      |(Reference)      : 120  126  128  129  130  131  214  217  219  220  221  222
+     nsize_all
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 47
+      |(Reference)      : 55  206
+     nsize_gfs
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 96
+      |(Reference)      : 98
+     nsize_io
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 101
+      |(Reference)      : 104
+     nsizex
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 127  134  141  218  225  232
+      |(Reference)      : 150  155  156  162  163  173  179  185  186  236  242  243  250  251  261  267  273  274
+     nsizey
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 128  135  142  219  226  233
+      |(Reference)      : 150  166  167  236  254  255
+     ntag
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 121
+      |(Reference)      : 
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 162  163  169  203  250  251  257
+     nxf
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 169  257
+      |(Reference)      : 
+     nxp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 162  164  250  252
+      |(Reference)      : 164  252
+     ozne_def
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 28
+     param
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 17
+     phygrid
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 23
+     raddiag
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 30
+     radn
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 27
+     rank
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 19
+     ranks_gfs
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 37
+      |(Definition)     : 58  67  114
+      |(Reference)      : 79
+     ranks_io
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 37
+      |(Definition)     : 58  70  114
+      |(Reference)      : 78
+     root_gfs
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 107
+      |(Reference)      : 
+     root_io
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 108
+      |(Reference)      : 
+     row_comm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 157  244
+      |(Reference)      : 159  247
+     row_rank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 159  247
+      |(Reference)      : 181  185  269  273
+     spec
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 22
+     w3tagb
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 50
+
+ Total information
+   Procedures       : 1
+   Total lines      : 292
+   Total statements : 192
+   Total stack(byte): 2128
+   Total prefetch num: 0
+

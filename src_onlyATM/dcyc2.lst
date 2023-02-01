@@ -1,0 +1,600 @@
+
+ Fujitsu Fortran Version 4.6.1  Wed Jan 11 10:52:29 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/tco639l72/src
+   Source file       : dcyc2.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "dcyc2t3"
+  (inc)(line-no.)(nest)(optimize)
+               1                     ! ===================================================================== !
+               2                     !  description:                                                         !
+               3                     !                                                                       !
+               4                     !    dcyc2t3 fits radiative fluxes and heating rates from a coarse      !
+               5                     !    radiation calc time interval into model's more frequent time steps.!
+               6                     !    solar heating rates and fluxes are scaled by the ratio of cosine   !
+               7                     !    of zenith angle at the current time to the mean value used in      !
+               8                     !    radiation calc.  surface downward lw flux is scaled by the ratio   !
+               9                     !    of current surface air temperature (temp**4) to the corresponding  !
+              10                     !    temperature saved during lw radiation calculation. upward lw flux  !
+              11                     !    at the surface is computed by current ground surface temperature.  !
+              12                     !    surface emissivity effect will be taken in other part of the model.!
+              13                     !                                                                       !
+              14                     !  usage:                                                               !
+              15                     !                                                                       !
+              16                     !    call dcyc2t3                                                       !
+              17                     !      inputs:                                                          !
+              18                     !          ( solhr,slag,sdec,cdec,sinlat,coslat,                        !
+              19                     !            xlon,coszen,tsea,tf,tsflw,                                 !
+              20                     !            sfcdsw,sfcnsw,sfcdlw,swh,hlw,swhc,hlwc,                    !
+              21                     !            ix, im, levs,                                              !
+              22                     !      input/output:                                                    !
+              23                     !            dtrad,dtradc,                                              !
+              24                     !      outputs:                                                         !
+              25                     !            adjsfcdsw,adjsfcnsw,adjsfcdlw,adjsfculw,xmu,xcosz)         !
+              26                     !                                                                       !
+              27                     !                                                                       !
+              28                     !  program history:                                                     !
+              29                     !          198?  nmc mrf    - created, similar as treatment in gfdl     !
+              30                     !                             radiation treatment                       !
+              31                     !          1994  y. hou     - modified solar zenith angle calculation   !
+              32                     !     nov  2004  x. wu      - add sfc sw downward flux to the variable  !
+              33                     !                             list for sea-ice model                    !
+              34                     !     mar  2008  y. hou     - add cosine of zenith angle as output for  !
+              35                     !                             sunshine duration time calc.              !
+              36                     !     sep  2008  y. hou     - separate net sw and downward lw in slrad, !
+              37                     !                 changed the sign of sfc net sw to consistent with     !
+              38                     !                 other parts of the mdl (positive value defines from   !
+              39                     !                 atmos to the ground). rename output fluxes as adjusted!
+              40                     !                 fluxes. other minor changes such as renaming some of  !
+              41                     !                 passing argument names to be consistent with calling  !
+              42                     !                 program.                                              !
+              43                     !     apr  2009  y. hou     - integrated with the new parallel model    !
+              44                     !                 along with other modifications                        !
+              45                     !                                                                       !
+              46                     !  subprograms called:  none                                            !
+              47                     !                                                                       !
+              48                     !                                                                       !
+              49                     !  ====================  defination of variables  ====================  !
+              50                     !                                                                       !
+              51                     !  inputs:                                                              !
+              52                     !     solhr        - real, forecast time in 24-hour form (hr)           !
+              53                     !     slag         - real, equation of time in radians                  !
+              54                     !     sdec, cdec   - real, sin and cos of the solar declination angle   !
+              55                     !     sinlat(im), coslat(im):                                           !
+              56                     !                  - real, sin and cos of latitude                      !
+              57                     !     xlon   (im)  - real, longitude in radians                         !
+              58                     !     coszen (im)  - real, avg of cosz over daytime sw call interval    !
+              59                     !     tsea   (im)  - real, ground surface temperature (k)               !
+              60                     !     tf     (im)  - real, surface air (layer 1) temperature (k)        !
+              61                     !     tsflw  (im)  - real, sfc air (layer 1) temp in k saved in lw call !
+              62                     !     sfcdsw (im)  - real, total sky sfc downward sw flux ( w/m**2 )    !
+              63                     !     sfcnsw (im)  - real, total sky sfc net sw into ground (w/m**2)    !
+              64                     !     sfcdlw (im)  - real, total sky sfc downward lw flux ( w/m**2 )    !
+              65                     !     swh(ix,levs) - real, total sky sw heating rates ( k/s )           !
+              66                     !     hlw(ix,levs) - real, total sky lw heating rates ( k/s )           !
+              67                     !     swhc(ix,levs)- real, clear sky sw heating rates ( k/s )           !
+              68                     !     hlwc(ix,levs)- real, clear sky lw heating rates ( k/s )           !
+              69                     !     ix, im       - integer, horiz. dimention and num of used points   !
+              70                     !     levs         - integer, vertical layer dimension                  !
+              71                     !                                                                       !
+              72                     !  input/output:                                                        !
+              73                     !     dtrad(im,levs)- real, model time step adjusted total radiation    !
+              74                     !                          heating rates ( k/s )                        !
+              75                     !     dtradc(im,levs)-real, model time step adjusted clear sky radiation!
+              76                     !                          heating rates ( k/s )                        !
+              77                     !                                                                       !
+              78                     !  outputs:                                                             !
+              79                     !     adjsfcdsw(im)- real, time step adjusted sfc dn sw flux (w/m**2)   !
+              80                     !     adjsfcnsw(im)- real, time step adj sfc net sw into ground (w/m**2)!
+              81                     !     adjsfcdlw(im)- real, time step adjusted sfc dn lw flux (w/m**2)   !
+              82                     !     adjsfcnlw(im)- real, time step adj sfc net lw into atmospher (w/m**2)!
+              83                     !     xmu   (im)   - real, time step zenith angle adjust factor for sw  !
+              84                     !     xcosz (im)   - real, cosine of zenith angle at current time step  !
+              85                     !                                                                       !
+              86                     !  ====================    end of description    =====================  !
+              87                     
+              88                     !-----------------------------------
+              89                           subroutine dcyc2t3                                               &
+              90                     !...................................
+              91                     !  ---  inputs:
+              92                               ( solhr,slag,sdec,cdec,sinlat,coslat,                        &
+              93                                 xlon,coszen,tsea,tf,tsflw,                                 &
+              94                                 sfcdsw,sfcnsw,sfcdlw,swh,hlw,                              &
+              95                                 swhc,hlwc,ix, im, levs,                                    &
+              96                     !  ---  output:
+              97                                 dtrad,dtradc,                                              &
+              98                     !  ---  outputs:
+              99                                 adjsfcdsw,adjsfcnsw,adjsfcdlw,adjsfcnlw,xmu                &
+             100                               )
+             101                     !
+             102                           use machine,         only : kind_phys
+             103                           use physcons,        only : con_pi, con_sbc
+             104                     
+             105                           implicit none
+             106                     !
+             107                     !  ---  constant parameters:
+             108                           real(kind=kind_phys), parameter :: f_eps  = 0.0001
+             109                           real(kind=kind_phys), parameter :: hour12 = 12.0
+             110                     
+             111                     !  ---  inputs:
+             112                           integer, intent(in) :: ix, im, levs
+             113                     
+             114                           real(kind=kind_phys), intent(in) :: solhr, slag, cdec, sdec,     &
+             115                                sinlat, coslat
+             116                     
+             117                     
+             118                           real(kind=kind_phys), dimension(ix), intent(in) ::               &
+             119                                xlon, coszen, tsea, tf, tsflw, sfcdlw,                      &
+             120                                sfcdsw, sfcnsw
+             121                     
+             122                           real(kind=kind_phys), dimension(ix,levs), intent(in) :: swh, hlw
+             123                           real(kind=kind_phys), dimension(ix,levs), intent(in) :: swhc, hlwc
+             124                     
+             125                     !  ---  input/output:
+             126                           real(kind=kind_phys), dimension(ix,levs), intent(inout) :: dtrad &
+             127                                                                                     ,dtradc
+             128                     
+             129                     !  ---  outputs:
+             130                           real(kind=kind_phys), dimension(ix), intent(out) ::              &
+             131                                adjsfcdsw, adjsfcnsw, adjsfcdlw, adjsfcnlw, xmu
+             132                     
+             133                     !  ---  locals:
+             134                           integer :: i, k
+             135                           real(kind=kind_phys) :: cns, ss, cc, ch, tem1, tem2, xlw(im)
+             136                     !
+             137                     !     adjsfculw(im)- real, sfc upward lw flux at current time (w/m**2)  !
+             138                           real(kind=kind_phys), dimension(ix) :: adjsfculw
+             139                     !===> ...  begin here
+             140                     !
+             141                     !  --- ...  compute cosine of solar zenith angle for both hemispheres.
+             142                     
+             143                           cns = con_pi * (solhr - hour12) / hour12 + slag
+             144                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 43
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.80, ITR: 64, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tsflw, tf, xlw, xlon, xmu
+                                   <<< Loop-information  End >>>
+             145     1  pp    v            do i = 1, im
+             146     1   p    v              ss     = sinlat * sdec
+             147     1   p    v              cc     = coslat * cdec
+             148     1   p    v              ch     = cc * cos( xlon(i)+cns )
+             149     1   p    v              xmu(i) = ch + ss
+             150     1               
+             151     1               !  --- ...  for lw time-step adjustment: compute 4th power of the ratio of
+             152     1               !           layer 1 temperature over the value during radiation calculation
+             153     1               
+             154     1   p    v              tem1   = tf(i) / tsflw(i)
+             155     1   p    v              xlw(i) = tem1 * tem1
+             156     1   p    v            enddo
+             157                     
+             158                     !  --- ...  normalize by average value over radiation period for daytime.
+             159                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 247
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED(lines: 160,169)
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.04, ITR: 32, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      coszen, xmu, sfcdsw, sfcnsw, tsea
+                                   <<<      adjsfculw, adjsfcnlw, xlw, sfcdlw
+                                   <<<      adjsfcdlw, adjsfcdsw, adjsfcnsw
+                                   <<< Loop-information  End >>>
+             160     1  pp    v            do i = 1, im
+             161     1               !        xcosz(i) = xmu(i)
+             162     2   p    v              if ( xmu(i) > f_eps .and. coszen(i) > f_eps ) then
+             163     2   p    v                xmu(i) = xmu(i) / coszen(i)
+             164     2   p    v              else
+             165     2   p    v                xmu(i) = 0.0
+             166     2   p    v              endif
+             167     1   p    v            enddo
+             168                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED
+                                   <<< Loop-information  End >>>
+             169     1                     do i = 1, im
+             170     1               !  --- ...  adjust sfc downward lw flux to account for t changes in layer 1.
+             171     1               !           1st line is for original version, 2nd one is for updated version
+             172     1                       adjsfcdlw(i) = sfcdlw(i) * xlw(i) * xlw(i)
+             173     1               
+             174     1               !  --- ...  compute sfc upward lw flux from current temp,
+             175     1               !      note: sfc emiss effect is not appied at this time
+             176     1                       tem1         = tsea(i) * tsea(i)
+             177     1                       adjsfculw(i) =  con_sbc * tem1 * tem1
+             178     1               
+             179     1                       adjsfcnlw(i) = adjsfculw(i)-adjsfcdlw(i)
+             180     1               
+             181     1               !  --- ...  adjust sfc net and downward sw fluxes for zenith angle changes
+             182     1                       adjsfcnsw(i) = sfcnsw(i) * xmu(i)
+             183     1                       adjsfcdsw(i) = sfcdsw(i) * xmu(i)
+             184     1                     enddo
+             185                     
+             186                     !  --- ...  adjust sw heating rates with zenith angle change and
+             187                     !           add with lw heating to temperature tendency
+             188                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      swhc, swh, xmu, hlwc, hlw, dtradc, dtrad
+                                   <<< Loop-information  End >>>
+             189     1  pp                 do k = 1, levs
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.40, ITR: 56, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      swhc, xmu, hlwc, dtradc, swh, hlw, dtrad
+                                   <<< Loop-information  End >>>
+             190     2   p    v              do i = 1, im
+             191     2   p    v                dtrad(i,k) = swh(i,k)*xmu(i) + hlw(i,k)
+             192     2   p    v                dtradc(i,k) = swhc(i,k)*xmu(i) + hlwc(i,k)
+             193     2   p    v              enddo
+             194     1   p                 enddo
+             195                     !
+             196                           return
+             197                     !...................................
+             198                           end subroutine dcyc2t3
+             199                     !-----------------------------------
+             200                     
+
+ Procedure information
+   Lines      : 200
+   Statements : 48
+   Stack(byte): 1344
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : dcyc2t3
+   Attribute and Cross reference of name
+     adjsfcdlw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(OUT), dummy-argument
+      |(Declaration)    : 89  130
+      |(Definition)     : 172
+      |(Reference)      : 179
+     adjsfcdsw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(OUT), dummy-argument
+      |(Declaration)    : 89  130
+      |(Definition)     : 183
+      |(Reference)      : 
+     adjsfcnlw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(OUT), dummy-argument
+      |(Declaration)    : 89  130
+      |(Definition)     : 179
+      |(Reference)      : 
+     adjsfcnsw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(OUT), dummy-argument
+      |(Declaration)    : 89  130
+      |(Definition)     : 182
+      |(Reference)      : 
+     adjsfculw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 138
+      |(Definition)     : 177
+      |(Reference)      : 179
+     cc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 135
+      |(Definition)     : 147
+      |(Reference)      : 148
+     cdec
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 89  114
+      |(Definition)     : 
+      |(Reference)      : 147
+     ch
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 135
+      |(Definition)     : 148
+      |(Reference)      : 149
+     cns
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 135
+      |(Definition)     : 143
+      |(Reference)      : 148
+     con_pi
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 103  143
+     con_sbc
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 103  177
+     cos
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 148
+     coslat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 89  114
+      |(Definition)     : 
+      |(Reference)      : 147
+     coszen
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 89  118
+      |(Definition)     : 
+      |(Reference)      : 162  163
+     dcyc2t3
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 89
+      |(Reference)      : 198
+     dtrad
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 89  126
+      |(Definition)     : 191
+      |(Reference)      : 
+     dtradc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 89  126
+      |(Definition)     : 192
+      |(Reference)      : 
+     f_eps
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 108
+      |(Definition)     : 
+      |(Reference)      : 162  162
+     hlw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 89  122
+      |(Definition)     : 
+      |(Reference)      : 191
+     hlwc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 89  123
+      |(Definition)     : 
+      |(Reference)      : 192
+     hour12
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 
+      |(Reference)      : 143  143
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 134
+      |(Definition)     : 145  160  169  190
+      |(Reference)      : 148  149  154  154  155  162  162  163  163  163  165  172  172  172  172  176  176  177  179  179  179  182  182  182  183  183  183  191  191  191  191  192  192  192  192
+     im
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 89  112
+      |(Definition)     : 
+      |(Reference)      : 135  145  160  169  190
+     ix
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 89  112
+      |(Definition)     : 
+      |(Reference)      : 118  118  118  118  118  118  118  118  122  122  123  123  126  126  130  130  130  130  130  138
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 134
+      |(Definition)     : 189
+      |(Reference)      : 191  191  191  192  192  192
+     kind_phys
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 102  108  109  114  118  122  123  126  130  135  138
+     levs
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 89  112
+      |(Definition)     : 
+      |(Reference)      : 122  122  123  123  126  126  189
+     machine
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 102
+     physcons
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 103
+     sdec
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 89  114
+      |(Definition)     : 
+      |(Reference)      : 146
+     sfcdlw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 89  118
+      |(Definition)     : 
+      |(Reference)      : 172
+     sfcdsw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 89  118
+      |(Definition)     : 
+      |(Reference)      : 183
+     sfcnsw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 89  118
+      |(Definition)     : 
+      |(Reference)      : 182
+     sinlat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 89  114
+      |(Definition)     : 
+      |(Reference)      : 146
+     slag
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 89  114
+      |(Definition)     : 
+      |(Reference)      : 143
+     solhr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 89  114
+      |(Definition)     : 
+      |(Reference)      : 143
+     ss
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 135
+      |(Definition)     : 146
+      |(Reference)      : 149
+     swh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 89  122
+      |(Definition)     : 
+      |(Reference)      : 191
+     swhc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 89  123
+      |(Definition)     : 
+      |(Reference)      : 192
+     tem1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 135
+      |(Definition)     : 154  176
+      |(Reference)      : 155  155  177  177
+     tem2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 135
+      |(Definition)     : 
+      |(Reference)      : 
+     tf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 89  118
+      |(Definition)     : 
+      |(Reference)      : 154
+     tsea
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 89  118
+      |(Definition)     : 
+      |(Reference)      : 176  176
+     tsflw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 89  118
+      |(Definition)     : 
+      |(Reference)      : 154
+     xlon
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 89  118
+      |(Definition)     : 
+      |(Reference)      : 148
+     xlw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 135
+      |(Definition)     : 155
+      |(Reference)      : 172  172
+     xmu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(OUT), dummy-argument
+      |(Declaration)    : 89  130
+      |(Definition)     : 149  163  165
+      |(Reference)      : 162  163  182  183  191  192
+
+ Total information
+   Procedures       : 1
+   Total lines      : 200
+   Total statements : 48
+   Total stack(byte): 1344
+   Total prefetch num: 0
+

@@ -1,0 +1,454 @@
+
+ Fujitsu Fortran Version 4.6.1  Wed Jan 11 10:52:14 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/tco639l72/src
+   Source file       : gpvs.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "gpvs"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine gpvs
+               2                     !
+               3                     ! Abstract: Computes saturation vapor pressure table as a function of
+               4                     !   temperature for the table lookup function fpvs.
+               5                     !   Exact saturation vapor pressures are calculated in subprogram fpvsx.
+               6                     !   The current implementation computes a table with a length
+               7                     !   of 7501 for temperatures ranging from 180. to 330. Kelvin.
+               8                     !
+               9                           implicit none
+              10                           integer jx
+              11                           real xmin,xmax,xinc,x,t
+              12                           integer nxpvs
+              13                           real c1xpvs,c2xpvs,tbpvs,fpvsx
+              14                           parameter(nxpvs=7501)
+              15                           common/fpvscom/ c1xpvs,c2xpvs,tbpvs(nxpvs)
+              16                     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+              17                           xmin=180.0
+              18                           xmax=330.0
+              19                           xinc=(xmax-xmin)/(nxpvs-1)
+              20                     !   c1xpvs=1.-xmin/xinc
+              21                           c2xpvs=1./xinc
+              22                           c1xpvs=1.-xmin*c2xpvs
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 889
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tbpvs, (unknown)
+                                   <<< Loop-information  End >>>
+              23     1   m   2v            do jx=1,nxpvs
+              24     1   m   2s              x=xmin+(jx-1)*xinc
+              25     1   s   2s              t=x
+              26     1   s   2s              tbpvs(jx)=fpvsx(t)
+              27     1   p   2v            enddo
+              28                     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+              29                           end subroutine
+
+ Procedure information
+   Lines      : 29
+   Statements : 19
+   Stack(byte): 60736
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : gpvs
+   Attribute and Cross reference of name
+     c1xpvs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object
+      |(Declaration)    : 13  15
+      |(Definition)     : 22
+      |(Reference)      : 
+     c2xpvs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object
+      |(Declaration)    : 13  15
+      |(Definition)     : 21
+      |(Reference)      : 22
+     fpvscom
+      |(Class and Type) : common name
+      |(Attributes)     : 
+      |(Declaration)    : 15
+      |(Definition)     : 
+      |(Reference)      : 
+     fpvsx
+      |(Class and Type) : external function name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 26
+     fpvsx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 13
+      |(Definition)     : 
+      |(Reference)      : 
+     gpvs
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     jx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 10
+      |(Definition)     : 23
+      |(Reference)      : 24  26
+     nxpvs
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 12  14
+      |(Definition)     : 
+      |(Reference)      : 15  19  23
+     t
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 11
+      |(Definition)     : 25  26
+      |(Reference)      : 
+     tbpvs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object
+      |(Declaration)    : 13  15
+      |(Definition)     : 26
+      |(Reference)      : 
+     x
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 11
+      |(Definition)     : 24
+      |(Reference)      : 25
+     xinc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 11
+      |(Definition)     : 19
+      |(Reference)      : 21  24
+     xmax
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 11
+      |(Definition)     : 18
+      |(Reference)      : 19
+     xmin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 11
+      |(Definition)     : 17
+      |(Reference)      : 19  22  24
+
+ External function subprogram "fpvsx"
+  (inc)(line-no.)(nest)(optimize)
+              30                     
+              31                           function fpvsx(t)
+              32                     !
+              33                     ! Abstract: Exactly compute saturation vapor pressure from temperature.
+              34                     !   The saturation vapor pressure over either liquid and ice is computed
+              35                     !   over liquid for temperatures above the triple point,
+              36                     !   over ice for temperatures 20 degress below the triple point,
+              37                     !   and a linear combination of the two for temperatures in between.
+              38                     !   The water model assumes a perfect gas, constant specific heats
+              39                     !   for gas, liquid and ice, and neglects the volume of the condensate.
+              40                     !   The model does account for the variation of the latent heat
+              41                     !   of condensation and sublimation with temperature.
+              42                     !   The Clausius-Clapeyron equation is integrated from the triple point
+              43                     !   to get the formula
+              44                     !         pvsl=psat*(tr**xa)*exp(xb*(1.-tr))
+              45                     !   where tr is ttp/t and other values are physical constants.
+              46                     !   The reference for this computation is Emanuel(1994), pages 116-117.
+              47                     !   This function should be expanded inline in the calling routine.
+              48                     !
+              49                     !   Input argument list:
+              50                     !       t              Real temperature in Kelvin
+              51                     !
+              52                     !   Output argument list:
+              53                     !       fpvsx        Real saturation vapor pressure in Pascals
+              54                     !
+              55                           implicit none
+              56                           real fpvsx
+              57                           real t
+              58                           real psat,hvap,cvap,cliq,csol,grav,hfus,ttp,rd,rv,cp
+              59                           parameter(  psat = 6.1078e+2 )
+              60                           parameter(  hvap = 2.5000e+6 )
+              61                           parameter(  cvap = 1.8460e+3 )
+              62                           parameter(  cliq = 4.1855e+3 )
+              63                           parameter(  csol = 2.1060e+3 )
+              64                           parameter(  grav = 9.80665e+0 )
+              65                           parameter(  hfus = 3.3358e+5 )
+              66                           parameter(   ttp = 2.7316e+2 )
+              67                           parameter(    rd = 2.8705e+2 )
+              68                           parameter(    rv = 4.6150e+2 )
+              69                           parameter(    cp = 1.0046e+3 )
+              70                           real tliq,tice,dldtl,heatl,xponal,xponbl,dldti,heati,xponai,xponbi
+              71                           parameter( tliq=ttp )
+              72                           parameter( tice=ttp-20.0 )
+              73                           parameter( dldtl=cvap-cliq )
+              74                           parameter( heatl=hvap )
+              75                           parameter( xponal=-dldtl/rv )
+              76                           parameter( xponbl=xponal+heatl/(rv*ttp) )
+              77                           parameter( dldti=cvap-csol )
+              78                           parameter( heati=hvap+hfus )
+              79                           parameter( xponai=-dldti/rv )
+              80                           parameter( xponbi=xponai+heati/(rv*ttp) )
+              81                           real tr,w,pvl,pvi
+              82                     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+              83                           tr=ttp/t
+              84     1                     if(t.ge.tliq) then
+              85     1                       fpvsx=psat*(tr**xponal)*exp(xponbl*(1.-tr))
+              86     1                     elseif(t.lt.tice) then
+              87     1                       fpvsx=psat*(tr**xponai)*exp(xponbi*(1.-tr))
+              88     1                     else
+              89     1                       w=(t-tice)/(tliq-tice)
+              90     1                       pvl=psat*(tr**xponal)*exp(xponbl*(1.-tr))
+              91     1                       pvi=psat*(tr**xponai)*exp(xponbi*(1.-tr))
+              92     1                       fpvsx=w*pvl+(1.-w)*pvi
+              93     1                     endif
+              94                     ! - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+              95                           end function
+              96                     
+
+ Procedure information
+   Lines      : 67
+   Statements : 40
+   Stack(byte): 368
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : fpvsx
+   Attribute and Cross reference of name
+     cliq
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 58  62
+      |(Definition)     : 
+      |(Reference)      : 73
+     cp
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 58  69
+      |(Definition)     : 
+      |(Reference)      : 
+     csol
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 58  63
+      |(Definition)     : 
+      |(Reference)      : 77
+     cvap
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 58  61
+      |(Definition)     : 
+      |(Reference)      : 73  77
+     dldti
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 70  77
+      |(Definition)     : 
+      |(Reference)      : 79
+     dldtl
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 70  73
+      |(Definition)     : 
+      |(Reference)      : 75
+     exp
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 85  87  90  91
+     fpvsx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : result-value
+      |(Declaration)    : 56
+      |(Definition)     : 85  87  92
+      |(Reference)      : 
+     fpvsx
+      |(Class and Type) : external function name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 31
+      |(Reference)      : 
+     grav
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 58  64
+      |(Definition)     : 
+      |(Reference)      : 
+     heati
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 70  78
+      |(Definition)     : 
+      |(Reference)      : 80
+     heatl
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 70  74
+      |(Definition)     : 
+      |(Reference)      : 76
+     hfus
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 58  65
+      |(Definition)     : 
+      |(Reference)      : 78
+     hvap
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 58  60
+      |(Definition)     : 
+      |(Reference)      : 74  78
+     psat
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 58  59
+      |(Definition)     : 
+      |(Reference)      : 85  87  90  91
+     pvi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 81
+      |(Definition)     : 91
+      |(Reference)      : 92
+     pvl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 81
+      |(Definition)     : 90
+      |(Reference)      : 92
+     rd
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 58  67
+      |(Definition)     : 
+      |(Reference)      : 
+     rv
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 58  68
+      |(Definition)     : 
+      |(Reference)      : 75  76  79  80
+     t
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 31  57
+      |(Definition)     : 
+      |(Reference)      : 83  84  86  89
+     tice
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 70  72
+      |(Definition)     : 
+      |(Reference)      : 86  89
+     tliq
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 70  71
+      |(Definition)     : 
+      |(Reference)      : 84  89  89
+     tr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 81
+      |(Definition)     : 83
+      |(Reference)      : 85  85  87  87  90  90  91  91
+     ttp
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 58  66
+      |(Definition)     : 
+      |(Reference)      : 71  72  76  80  83
+     w
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 81
+      |(Definition)     : 89
+      |(Reference)      : 92  92
+     xponai
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 70  79
+      |(Definition)     : 
+      |(Reference)      : 80  87  91
+     xponal
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 70  75
+      |(Definition)     : 
+      |(Reference)      : 76  85  90
+     xponbi
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 70  80
+      |(Definition)     : 
+      |(Reference)      : 87  91
+     xponbl
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 70  76
+      |(Definition)     : 
+      |(Reference)      : 85  90
+
+ Total information
+   Procedures       : 2
+   Total lines      : 96
+   Total statements : 59
+   Total stack(byte): 61104
+   Total prefetch num: 0
+

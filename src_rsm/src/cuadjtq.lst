@@ -1,0 +1,600 @@
+
+ Fujitsu Fortran Version 4.6.1  Wed Jan 11 10:52:28 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/tco639l72/src
+   Source file       : cuadjtq.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "cuadjtq"
+  (inc)(line-no.)(nest)(optimize)
+               1                     !+ produce t,q and l values for cloud ascent
+               2                     !+ $Id: cuadjtq.f90,v 1.14 2000/09/14 13:14:12 m214003 Exp $
+               3                     
+               4                     !SUBROUTINE cuadjtq(klon,klev,kk,pp,pt,pq,ldflag,kcall)
+               5                     SUBROUTINE cuadjtq(nxj,klon,klev,kk,pp,pt,pq,ldflag,kcall)
+               6                     
+               7                       ! Description:
+               8                       !
+               9                       ! Produce t,q and l values for cloud ascent
+              10                       !
+              11                       ! Method:
+              12                       !
+              13                       ! This routine is called from subroutines:
+              14                       !    *cubase*   (t and q at condenstion level)
+              15                       !    *cuasc*    (t and q at cloud levels)
+              16                       !    *cuini*    (environmental t and qs values at half levels)
+              17                       ! input are unadjusted t and q values,
+              18                       ! it returns adjusted values of t and q
+              19                       ! note: input parameter kcall defines calculation as
+              20                       !    kcall=0    env. t and qs in*cuini*
+              21                       !    kcall=1    condensation in updrafts  (e.g. cubase, cuasc)
+              22                       !    kcall=2    evaporation in downdrafts (e.g. cudlfs,cuddraf)
+              23                       !
+              24                       ! Externals:
+              25                       ! 3 lookup tables ( tlucua, tlucub, tlucuc )
+              26                       ! for condensation calculations.
+              27                       ! the tables are initialised in *setphys*.
+              28                       !
+              29                       ! Authors:
+              30                       !
+              31                       ! M. Tiedtke, ECMWF, December 1989, original source
+              32                       ! D. Salmond, CRAY(UK), August 1991, changed
+              33                       ! L. Kornblueh, MPI, May 1998, f90 rewrite
+              34                       ! U. Schulzweida, MPI, May 1998, f90 rewrite
+              35                       ! A. Rhodin, MPI, December 1998, lookup tables removed
+              36                       !
+              37                       ! for more details see file AUTHORS
+              38                       !
+              39                     
+              40                       USE shr_kind_mod, only: r8 => shr_kind_r8
+              41                       USE mo_constants,      ONLY: vtmpc1
+              42                       USE mo_convect_tables, ONLY: tlucua,   & ! table a
+              43                                                    tlucub,   & ! table b
+              44                                                    tlucuc,   & ! table c
+              45                                                    jptlucu1, jptlucu2, &
+              46                                                    lookuperror, lookupoverflow
+              47                     
+              48                       IMPLICIT NONE
+              49                     
+              50                       !  Scalar arguments with intent(In):
+              51                     !  INTEGER, INTENT (IN) :: kcall, kk, klev, klon
+              52                       INTEGER, INTENT (IN) :: kcall, kk, klev, klon, nxj
+              53                     
+              54                       !  Array arguments with intent(In):
+              55                       REAL(r8), INTENT (IN) :: pp(klon)
+              56                       LOGICAL, INTENT (IN) :: ldflag(klon)
+              57                     
+              58                       !  Array arguments with intent(InOut):
+              59                       REAL(r8), INTENT (INOUT) :: pq(klon,klev), pt(klon,klev)
+              60                     
+              61                       !  Local scalars:
+              62                       REAL(r8)    :: zcond1, zcor, zqsat
+              63                       INTEGER :: isum, jl
+              64                       INTEGER :: it
+              65                     
+              66                       !  Local arrays:
+              67                       REAL(r8) :: zcond(klon), zqp(klon)
+              68                     
+              69                       !  Intrinsic functions
+              70                       INTRINSIC MAX, MIN
+              71                       INTRINSIC INT
+              72                     
+              73                       !  Executable statements
+              74                     
+              75                       ! 1.  Calculate condensation and adjust t and q accordingly
+              76                     
+              77                       lookupoverflow = .FALSE.
+              78                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2286
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      zcond
+                                   <<< Loop-information  End >>>
+              79        pp   4v        zcond(:) = 0.
+              80                     
+              81     1                 IF (kcall==1) THEN
+              82     1               
+              83     1                   isum = 0
+              84     1               !DIR$ IVDEP
+              85     1               !OCL NOVREC
+              86     1               !    DO jl = 1, klon
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 111
+                                   <<< Loop-information  End >>>
+              87     2  pp    s          DO jl = 1, nxj
+              88     3   p    v            IF (ldflag(jl)) THEN
+              89     3   p    v              zqp(jl) = 1./pp(jl)
+              90     3   p    m              it = INT(pt(jl,kk)*1000.)
+              91     3   p    s              IF (it<jptlucu1 .OR. it>jptlucu2) lookupoverflow = .TRUE.
+              92     3   p    m              it = MAX(MIN(it,jptlucu2),jptlucu1)
+              93     3   p    v              zqsat = tlucua(it)*zqp(jl)
+              94     3   p    v              zqsat = MIN(0.5,zqsat)
+              95     3   p    v              zcor  = 1./(1.-vtmpc1*zqsat)
+              96     3   p    v              zqsat = zqsat*zcor
+              97     3   p    v              zcond(jl) = (pq(jl,kk)-zqsat)/(1.+zqsat*zcor*tlucub(it))
+              98     3   p    v              zcond(jl) = MAX(zcond(jl),0.)
+              99     3   p    v              pt(jl,kk) = pt(jl,kk) + tlucuc(it)*zcond(jl)
+             100     3   p    m              pq(jl,kk) = pq(jl,kk) - zcond(jl)
+             101     3   p    v              IF (ABS(zcond(jl)) > 0.) isum = isum + 1
+             102     3   p    v            END IF
+             103     2   p    v          END DO
+             104     1                   IF (lookupoverflow) CALL lookuperror ('cuadjtq (1) ')
+             105     1               
+             106     2                   IF (isum/=0) THEN
+             107     2               !DIR$ IVDEP
+             108     2               !OCL NOVREC
+             109     2               !      DO jl = 1, klon
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 125
+                                   <<< Loop-information  End >>>
+             110     3  pp    s            DO jl = 1, nxj
+             111     4   p    m              IF (ldflag(jl) .AND. ABS(zcond(jl)) > 0.) THEN
+             112     4   p    s                it = INT(pt(jl,kk)*1000.)
+             113     4   p    s                IF (it<jptlucu1 .OR. it>jptlucu2) lookupoverflow = .TRUE.
+             114     4   p    m                it = MAX(MIN(it,jptlucu2),jptlucu1)
+             115     4   p    s                zqsat = tlucua(it)*zqp(jl)
+             116     4   p    s                zqsat = MIN(0.5,zqsat)
+             117     4   p    s                zcor = 1./(1.-vtmpc1*zqsat)
+             118     4   p    s                zqsat = zqsat*zcor
+             119     4   p    s                zcond1 = (pq(jl,kk)-zqsat)/(1.+zqsat*zcor*tlucub(it))
+             120     4   p    s                pt(jl,kk) = pt(jl,kk) + tlucuc(it)*zcond1
+             121     4   p    s                pq(jl,kk) = pq(jl,kk) - zcond1
+             122     4   p    v              END IF
+             123     3   p    v            END DO
+             124     2                     IF (lookupoverflow) CALL lookuperror ('cuadjtq (2) ')
+             125     2                   END IF
+             126     1               
+             127     1                 END IF
+             128                     
+             129     1                 IF (kcall==2) THEN
+             130     1               
+             131     1                   isum = 0
+             132     1               !DIR$ IVDEP
+             133     1               !OCL NOVREC
+             134     1               !    DO jl = 1, klon
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 111
+                                   <<< Loop-information  End >>>
+             135     2  pp    s          DO jl = 1, nxj
+             136     3   p    v            IF (ldflag(jl)) THEN
+             137     3   p    v              zqp(jl) = 1./pp(jl)
+             138     3   p    m              it = INT(pt(jl,kk)*1000.)
+             139     3   p    s              IF (it<jptlucu1 .OR. it>jptlucu2) lookupoverflow = .TRUE.
+             140     3   p    m              it = MAX(MIN(it,jptlucu2),jptlucu1)
+             141     3   p    v              zqsat = tlucua(it)*zqp(jl)
+             142     3   p    v              zqsat = MIN(0.5,zqsat)
+             143     3   p    v              zcor = 1./(1.-vtmpc1*zqsat)
+             144     3   p    v              zqsat = zqsat*zcor
+             145     3   p    v              zcond(jl) = (pq(jl,kk)-zqsat)/(1.+zqsat*zcor*tlucub(it))
+             146     3   p    v              zcond(jl) = MIN(zcond(jl),0.)
+             147     3   p    v              pt(jl,kk) = pt(jl,kk) + tlucuc(it)*zcond(jl)
+             148     3   p    m              pq(jl,kk) = pq(jl,kk) - zcond(jl)
+             149     3   p    v              IF (ABS(zcond(jl)) > 0.) isum = isum + 1
+             150     3   p    v            END IF
+             151     2   p    v          END DO
+             152     1                   IF (lookupoverflow) CALL lookuperror ('cuadjtq (3) ')
+             153     1               
+             154     2                   IF (isum/=0) THEN
+             155     2               !DIR$ IVDEP
+             156     2               !OCL NOVREC
+             157     2               !      DO jl = 1, klon
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 125
+                                   <<< Loop-information  End >>>
+             158     3  pp    s            DO jl = 1, nxj
+             159     4   p    m              IF (ldflag(jl) .AND. ABS(zcond(jl)) > 0.) THEN
+             160     4   p    s                it = INT(pt(jl,kk)*1000.)
+             161     4   p    s                IF (it<jptlucu1 .OR. it>jptlucu2) lookupoverflow = .TRUE.
+             162     4   p    m                it = MAX(MIN(it,jptlucu2),jptlucu1)
+             163     4   p    s                zqsat = tlucua(it)*zqp(jl)
+             164     4   p    s                zqsat = MIN(0.5,zqsat)
+             165     4   p    s                zcor = 1./(1.-vtmpc1*zqsat)
+             166     4   p    s                zqsat = zqsat*zcor
+             167     4   p    s                zcond1 = (pq(jl,kk)-zqsat)/(1.+zqsat*zcor*tlucub(it))
+             168     4   p    s                pt(jl,kk) = pt(jl,kk) + tlucuc(it)*zcond1
+             169     4   p    s                pq(jl,kk) = pq(jl,kk) - zcond1
+             170     4   p    v              END IF
+             171     3   p    v            END DO
+             172     2                     IF (lookupoverflow) CALL lookuperror ('cuadjtq (4) ')
+             173     2               
+             174     2                   END IF
+             175     1               
+             176     1                 END IF
+             177                     
+             178     1                 IF (kcall==0) THEN
+             179     1               
+             180     1                   isum = 0
+             181     1               !DIR$ IVDEP
+             182     1               !OCL NOVREC
+             183     1               !    DO jl = 1, klon
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 132
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             184     2  pp    v          DO jl = 1, nxj
+             185     2   p    v            zqp(jl) = 1./pp(jl)
+             186     2   p    v            it = INT(pt(jl,kk)*1000.)
+             187     2   p                 IF (it<jptlucu1 .OR. it>jptlucu2) lookupoverflow = .TRUE.
+             188     2   p    v            it = MAX(MIN(it,jptlucu2),jptlucu1)
+             189     2   p    v            zqsat = tlucua(it)*zqp(jl)
+             190     2   p    v            zqsat = MIN(0.5,zqsat)
+             191     2   p    v            zcor = 1./(1.-vtmpc1*zqsat)
+             192     2   p    v            zqsat = zqsat*zcor
+             193     2   p    v            zcond(jl) = (pq(jl,kk)-zqsat)/(1.+zqsat*zcor*tlucub(it))
+             194     2   p    v            pt(jl,kk) = pt(jl,kk) + tlucuc(it)*zcond(jl)
+             195     2   p    v            pq(jl,kk) = pq(jl,kk) - zcond(jl)
+             196     2   p                 IF (ABS(zcond(jl)) > 0.) isum = isum + 1
+             197     2   p    v          END DO
+             198     1                   IF (lookupoverflow) CALL lookuperror ('cuadjtq (5) ')
+             199     1               
+             200     2                   IF (isum/=0) THEN
+             201     2               !DIR$ IVDEP
+             202     2               !OCL NOVREC
+             203     2               !      DO jl = 1, klon
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 154
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             204     3  pp    v            DO jl = 1, nxj
+             205     3   p    v              it = INT(pt(jl,kk)*1000.)
+             206     3   p                   IF (it<jptlucu1 .OR. it>jptlucu2) lookupoverflow = .TRUE.
+             207     3   p    v              it = MAX(MIN(it,jptlucu2),jptlucu1)
+             208     3   p    v              zqsat = tlucua(it)*zqp(jl)
+             209     3   p    v              zqsat = MIN(0.5,zqsat)
+             210     3   p    v              zcor = 1./(1.-vtmpc1*zqsat)
+             211     3   p    v              zqsat = zqsat*zcor
+             212     3   p    v              zcond1 = (pq(jl,kk)-zqsat)/(1.+zqsat*zcor*tlucub(it))
+             213     3   p    v              pt(jl,kk) = pt(jl,kk) + tlucuc(it)*zcond1
+             214     3   p    v              pq(jl,kk) = pq(jl,kk) - zcond1
+             215     3   p    v            END DO
+             216     2                     IF (lookupoverflow) CALL lookuperror ('cuadjtq (6) ')
+             217     2               
+             218     2                   END IF
+             219     1               
+             220     1                 END IF
+             221                     
+             222     1                 IF (kcall==4) THEN
+             223     1               
+             224     1               !DIR$ IVDEP
+             225     1               !OCL NOVREC
+             226     1               !    DO jl = 1, klon
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 141
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             227     2  pp    v          DO jl = 1, nxj
+             228     2   p    v            zqp(jl) = 1./pp(jl)
+             229     2   p    v            it = INT(pt(jl,kk)*1000.)
+             230     2   p                 IF (it<jptlucu1 .OR. it>jptlucu2) lookupoverflow = .TRUE.
+             231     2   p    v            it = MAX(MIN(it,jptlucu2),jptlucu1)
+             232     2   p    v            zqsat = tlucua(it)*zqp(jl)
+             233     2   p    v            zqsat = MIN(0.5,zqsat)
+             234     2   p    v            zcor = 1./(1.-vtmpc1*zqsat)
+             235     2   p    v            zqsat = zqsat*zcor
+             236     2   p    v            zcond(jl) = (pq(jl,kk)-zqsat)/(1.+zqsat*zcor*tlucub(it))
+             237     2   p    v            pt(jl,kk) = pt(jl,kk) + tlucuc(it)*zcond(jl)
+             238     2   p    v            pq(jl,kk) = pq(jl,kk) - zcond(jl)
+             239     2   p    v          END DO
+             240     1                   IF (lookupoverflow) CALL lookuperror ('cuadjtq (7) ')
+             241     1               
+             242     1               !DIR$ IVDEP
+             243     1               !OCL NOVREC
+             244     1               !    DO jl = 1, klon
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 154
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             245     2  pp    v          DO jl = 1, nxj
+             246     2   p    v            it = INT(pt(jl,kk)*1000.)
+             247     2   p                 IF (it<jptlucu1 .OR. it>jptlucu2) lookupoverflow = .TRUE.
+             248     2   p    v            it = MAX(MIN(it,jptlucu2),jptlucu1)
+             249     2   p    v            zqsat = tlucua(it)*zqp(jl)
+             250     2   p    v            zqsat = MIN(0.5,zqsat)
+             251     2   p    v            zcor = 1./(1.-vtmpc1*zqsat)
+             252     2   p    v            zqsat = zqsat*zcor
+             253     2   p    v            zcond1 = (pq(jl,kk)-zqsat)/(1.+zqsat*zcor*tlucub(it))
+             254     2   p    v            pt(jl,kk) = pt(jl,kk) + tlucuc(it)*zcond1
+             255     2   p    v            pq(jl,kk) = pq(jl,kk) - zcond1
+             256     2   p    v          END DO
+             257     1               
+             258     1                   IF (lookupoverflow) CALL lookuperror ('cuadjtq (8) ')
+             259     1               
+             260     1                 END IF
+             261                     
+             262                       RETURN
+             263                     END SUBROUTINE cuadjtq
+
+ Procedure information
+   Lines      : 263
+   Statements : 157
+   Stack(byte): 283488
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : cuadjtq
+   Attribute and Cross reference of name
+     ABS
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 101  111  149  159  196
+     cuadjtq
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 5
+      |(Reference)      : 263
+     INT
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : INTRINSIC, PURE, ELEMENTAL
+      |(Declaration)    : 71
+      |(Definition)     : 
+      |(Reference)      : 90  112  138  160  186  205  229  246
+     isum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 63
+      |(Definition)     : 83  101  131  149  180  196
+      |(Reference)      : 101  106  149  154  196  200
+     it
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 64
+      |(Definition)     : 90  92  112  114  138  140  160  162  186  188  205  207  229  231  246  248
+      |(Reference)      : 91  91  92  93  97  99  113  113  114  115  119  120  139  139  140  141  145  147  161  161  162  163  167  168  187  187  188  189  193  194  206  206  207  208  212  213  230  230  231  232  236  237  247  247  248  249  253  254
+     jl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 63
+      |(Definition)     : 87  110  135  158  184  204  227  245
+      |(Reference)      : 88  89  89  90  93  97  97  98  98  99  99  99  100  100  100  101  111  111  112  115  119  120  120  121  121  136  137  137  138  141  145  145  146  146  147  147  147  148  148  148  149  159  159  160  163  167  168  168  169  169  185  185  186  189  193  193  194  194  194  195  195  195  196  205  208  212  213  213  214  214  228  228  229  232  236  236  237  237  237  238  238  238  246  249  253  254  254  255  255
+     jptlucu1
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 42  91  92  113  114  139  140  161  162  187  188  206  207  230  231  247  248
+     jptlucu2
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 42  91  92  113  114  139  140  161  162  187  188  206  207  230  231  247  248
+     kcall
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 5  52
+      |(Definition)     : 
+      |(Reference)      : 81  129  178  222
+     kk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 5  52
+      |(Definition)     : 
+      |(Reference)      : 90  97  99  99  100  100  112  119  120  120  121  121  138  145  147  147  148  148  160  167  168  168  169  169  186  193  194  194  195  195  205  212  213  213  214  214  229  236  237  237  238  238  246  253  254  254  255  255
+     klev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 5  52
+      |(Definition)     : 
+      |(Reference)      : 59  59
+     klon
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 5  52
+      |(Definition)     : 
+      |(Reference)      : 55  56  59  59  67  67
+     ldflag
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 5  56
+      |(Definition)     : 
+      |(Reference)      : 88  111  136  159
+     lookuperror
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 42  104  124  152  172  198  216  240  258
+     lookupoverflow
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 77  91  113  139  161  187  206  230  247
+      |(Reference)      : 42  104  124  152  172  198  216  240  258
+     MAX
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : INTRINSIC, PURE, ELEMENTAL
+      |(Declaration)    : 70
+      |(Definition)     : 
+      |(Reference)      : 92  98  114  140  162  188  207  231  248
+     MIN
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : INTRINSIC, PURE, ELEMENTAL
+      |(Declaration)    : 70
+      |(Definition)     : 
+      |(Reference)      : 92  94  114  116  140  142  146  162  164  188  190  207  209  231  233  248  250
+     mo_constants
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 41
+     mo_convect_tables
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 42
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 5  52
+      |(Definition)     : 
+      |(Reference)      : 87  110  135  158  184  204  227  245
+     pp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 5  55
+      |(Definition)     : 
+      |(Reference)      : 89  137  185  228
+     pq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  59
+      |(Definition)     : 100  121  148  169  195  214  238  255
+      |(Reference)      : 97  100  119  121  145  148  167  169  193  195  212  214  236  238  253  255
+     pt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  59
+      |(Definition)     : 99  120  147  168  194  213  237  254
+      |(Reference)      : 90  99  112  120  138  147  160  168  186  194  205  213  229  237  246  254
+     r8
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 40  55  59  62  67
+     shr_kind_mod
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 40
+     shr_kind_r8
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 40
+     tlucua
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 42  93  115  141  163  189  208  232  249
+     tlucub
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 42  97  119  145  167  193  212  236  253
+     tlucuc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 42  99  120  147  168  194  213  237  254
+     vtmpc1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 41  95  117  143  165  191  210  234  251
+     zcond
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 67
+      |(Definition)     : 79  97  98  145  146  193  236
+      |(Reference)      : 98  99  100  101  111  146  147  148  149  159  194  195  196  237  238
+     zcond1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 62
+      |(Definition)     : 119  167  212  253
+      |(Reference)      : 120  121  168  169  213  214  254  255
+     zcor
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 62
+      |(Definition)     : 95  117  143  165  191  210  234  251
+      |(Reference)      : 96  97  118  119  144  145  166  167  192  193  211  212  235  236  252  253
+     zqp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 67
+      |(Definition)     : 89  137  185  228
+      |(Reference)      : 93  115  141  163  189  208  232  249
+     zqsat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 62
+      |(Definition)     : 93  94  96  115  116  118  141  142  144  163  164  166  189  190  192  208  209  211  232  233  235  249  250  252
+      |(Reference)      : 94  95  96  97  97  116  117  118  119  119  142  143  144  145  145  164  165  166  167  167  190  191  192  193  193  209  210  211  212  212  233  234  235  236  236  250  251  252  253  253
+
+ Total information
+   Procedures       : 1
+   Total lines      : 263
+   Total statements : 157
+   Total stack(byte): 283488
+   Total prefetch num: 0
+

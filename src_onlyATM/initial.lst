@@ -1,0 +1,1227 @@
+
+ Fujitsu Fortran Version 4.6.1  Wed Jan 11 10:53:10 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/tco639l72/src
+   Source file       : initial.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "initial"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine initial(no,jtrun,jtmax,lev,nx,my,my_max,mlmax)
+               2                     
+               3                     !
+               4                     !  purpose : do nonlinear normal mode initialization
+               5                     !  modify to f90 by C-H Lee and sort by River Chen in 2015
+               6                     !-----------------------------------------------------------
+               7                           use param, only : ncld
+               8                           use mpe
+               9                           use rank
+              10                           use index
+              11                           use const, only : eigval,omega,rad,nnmiit,doincr,evecin,nnmivm,   &
+              12                                             cutfreq,evectr,pmcor,tmcor,poly,dpoly,cim,      &
+              13                                             wdfac,wcfac,onocos,RTYPE
+              14                           use spec,  only : temold,vorten,vorold,divten,divold,plnow,temnow,&
+              15                                             divnow,vornow,plold
+              16                     !byl                        divnow,vornow,qold,qnow,plold
+              17                           use grid,  only : pt,tt,rdiv,rvor,dtpl,dlpl,ut,vt
+              18                           use fftcom
+              19                     
+              20                           implicit none
+              21                           integer  no,jtrun,jtmax,lev,nx,my,my_max,mlmax
+              22                     !
+              23                     !  working array
+              24                     !
+              25                     !     integer, parameter ::  no=2*((jtrun+1)/2)+(jtrun/2)+10
+              26                           real      eval(no),evec(no*no),epos(no*no),x(no*2)
+              27                     !byl      real      a(jtrun,jtrun,lev),b(jtrun,jtrun,lev)
+              28                           real      a(jtrun,jtrun,nnmivm),b(jtrun,jtrun,nnmivm)
+              29                           real      mx(no*no),h(jtrun,jtmax,nnmivm),c(jtrun,jtrun,nnmivm)
+              30                           integer   nw(jtrun,jtmax)
+              31                           real(kind=RTYPE) phiten(levp,2,jtrun,jtmax),dummy
+              32                           real      wk(no*no),wc(no*2),wd(no*2),ew(no*no)
+              33                           real(kind=RTYPE) cc(nx+2,levp,1,my_max)
+              34                     !byl      real      cc(nx+2,levp,3,my_max),wss(levp,2,3,jtrun,jtmax)
+              35                           real      bal_tmp(jtrun)
+              36                           character lab*10,lrec*16
+              37                     
+              38                           integer   mlmax2,j,k,l,ic,m,mf,n,ns,na,nbig,kk,kL
+              39                           real      bal
+              40                           logical   nnmical
+              41                           integer   brank   !root rank of row_broadcast
+              42                     !
+              43                           mlmax2 = mlmax*2
+              44                           if(myrank .eq. 0) print *,'jrtun=',jtrun,' mlmax=',mlmax
+              45                           lab='pt'
+              46                           call  check(pt,nx,my,my_max,lab)
+              47                     !
+              48                     !  define constants and comput coefficients for initializatin
+              49                     !
+              50                           call  inicons (rad,omega,eigval,lev,jtrun,jtmax, &
+              51                                          nw,a,b,c,h,nnmivm)
+              52                     !
+              53                     !  begin to iterration, now doing 3 iterrations
+              54                     !
+              55     1                     do 120 ic=1,nnmiit
+              56     1               !
+              57     1                       if(myrank .eq. 0) print *,'iteration=',ic
+              58     1               !
+              59     1               !  get tendency of vorticity,divergence,geopotential
+              60     1               !
+              61     1                       call tendget (phiten)
+              62     1               !
+              63     1               !--------------------------------------------------------
+              64     1               !  incremental initialization
+              65     1               !
+              66     2                       if(doincr)then
+              67     3                         do m=1,mlistnum
+              68     3                           mf=mlist(m)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+              69     4  pp                       do n=mf,jtrun
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      phiten, divold, divten, vorold, vorten
+                                   <<<      temold
+                                   <<< Loop-information  End >>>
+              70     5   p                         do j =1,2
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.42, ITR: 64, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      temold, phiten, divold, divten, vorold
+                                   <<<      vorten
+                                   <<< Loop-information  End >>>
+              71     6   p    v                      do k =1,levp
+              72     6   p    v                        phiten(k,j,n,m)=phiten(k,j,n,m)-temold(k,j,n,m)
+              73     6   p    v                        vorten(k,j,n,m)=vorten(k,j,n,m)-vorold(k,j,n,m)
+              74     6   p    v                        divten(k,j,n,m)=divten(k,j,n,m)-divold(k,j,n,m)
+              75     6   p    v                      enddo
+              76     5   p                         enddo
+              77     4   p                       enddo
+              78     3                         enddo
+              79     2                       endif
+              80     1               !
+              81     1               !--------------------------------------------------------
+              82     1               !
+              83     1               !  do vertical transform
+              84     1               !
+              85     1                       call zx (evecin,vorten,divten,phiten,jtrun,jtmax,lev)
+              86     1               !
+              87     1               !     conversion  structure of variables from forecast model to
+              88     1               !     initialization
+              89     1               !     model
+              90     1               !
+              91     1               !   begin initialize the first liz (now,liz=3) modes.
+              92     1               !
+              93     1               
+              94     2                       do 110 L=1,nnmivm
+              95     2                         nnmical=.false.
+              96     2                         brank=0
+              97     3                         if( (L .ge. Lstart) .and. (L .le. Lend)) then
+              98     3                           k=L-Lstart+1
+              99     3                           nnmical=.true.
+             100     3                           brank=row_rank
+             101     3                         endif
+             102     2               !
+             103     2                         if(myrank .eq. 0) print *,'vertical mode l=',L
+             104     2               !
+             105     2               ! set convergence variable
+             106     2               !
+             107     2                         bal=0.
+             108     2               !
+             109     2               !   do nondimensionalize of the variables
+             110     2               !         +2:nondimensionalize
+             111     2               !
+             112     2               !      if(L.eq.Llist(L)) &
+             113     2                     if(nnmical) &
+             114     2                         call vartran (vorten,divten,phiten,nw,jtrun,jtmax,levp,k, &
+             115     2                                      rad,omega,h(1,1,L),+2)
+             116     2               !
+             117     2               !   begin to initialize horizontal modes
+             118     2               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 4  FILL 29
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             119     3                         do 100 m=1,mlistnum
+             120     3                           mf=mlist(m)
+             121     3               !
+             122     3               !  calculate the size of symmetric and antisymmetric matrix which
+             123     3               !  include the gravity and rossby wave
+             124     3               !
+             125     3                           nbig = jtrun-mf+1
+             126     3                           ns   = 2*int((nbig+1)/2)+int(nbig/2)
+             127     3                           na   = 2*int(nbig/2)+int((nbig+1)/2)
+             128     3               !
+             129     3               !  do symmetric case
+             130     3               !
+             131     3               !  create variable vector
+             132     3               !       +1:symmetric, +2:creation
+             133     3               !
+             134     3               !      if(L.eq.Llist(L)) &
+             135     3                     if(nnmical) &
+             136     3                           call vartrix (vorten,divten,phiten,levp, &
+             137     3                                        k,x,ns,m,nbig,jtrun,jtmax,+1,+2)
+             138     3               
+             139     3                     call mpe2d_row_broadcast(x,no*2,brank)
+             140     3               
+             141     3               !
+             142     3               !  construct coefficient matrix
+             143     3               !       +1:symmetric
+             144     3               !
+             145     3               !      if(L.eq.Llist(L)) &
+             146     3                     if(nnmical) &
+             147     3                           call coftrix (mf,L,mx,ns,a(1,1,L),b(1,1,L),c(1,1,L),jtrun,lev,+1)
+             148     3               
+             149     3                     call mpe2d_row_broadcast(mx,no*no,brank)
+             150     3               !
+             151     3               !   fine the eigenvector and eigenvalues of the symmetric matrix
+             152     3               !
+             153     3                           call eigen (mx,ns,eval,evec,epos,wk)
+             154     3               !
+             155     3               !   perform nonlinear normal mode initialization
+             156     3               !
+             157     3                           call nnmi (no,x,epos,eval,evec,ns,wc,wd,bal,cutfreq)
+             158     3               !
+             159     3               !   decompose the variable vector back to 3 individual variable
+             160     3               !       +1:symmetric , -2:decompose
+             161     3               !
+             162     3               !      if(L.eq.Llist(L)) &
+             163     3                     if(nnmical) &
+             164     3                           call vartrix (vorten,divten,phiten,levp, &
+             165     3                                         k,x,ns,m,nbig,jtrun,jtmax,+1,-2)
+             166     3               !
+             167     3               !   do antisymmtric case
+             168     3               !
+             169     3               !   construct variable vector from 3 individual variable
+             170     3               !       -1:antisymmetric , +2 : creation
+             171     3               !
+             172     3               !      if(L.eq.Llist(L)) &
+             173     3                     if(nnmical) &
+             174     3                           call vartrix (vorten,divten,phiten,levp, &
+             175     3                                         k,x,na,m,nbig,jtrun,jtmax,-1,+2)
+             176     3               
+             177     3                     call mpe2d_row_broadcast(x,no*2,brank)
+             178     3               !
+             179     3               !  construct coefficient matrix
+             180     3               !       -1:antisymmetric
+             181     3               !
+             182     3               !      if(L.eq.Llist(L)) &
+             183     3                     if(nnmical) &
+             184     3                           call coftrix (mf,L,mx,na,a(1,1,L),b(1,1,L),c(1,1,L),jtrun,lev,-1)
+             185     3               
+             186     3                     call mpe2d_row_broadcast(mx,no*no,brank)
+             187     3               !
+             188     3               !   fine the eigenvector and eigenvalues of the antisymmetric matrix
+             189     3               !
+             190     3                           call eigen (mx,na,eval,evec,epos,wk)
+             191     3               !
+             192     3               !   perform nonlinear normal mode initialization
+             193     3               !
+             194     3                           call nnmi (no,x,epos,eval,evec,na,wc,wd,bal,cutfreq)
+             195     3               !
+             196     3               !   decompose the variable vector back to 3 individual variable
+             197     3               !       +1:symmetric , -2:decompose
+             198     3               !
+             199     3               !      if(L.eq.Llist(L)) &
+             200     3                     if(nnmical) &
+             201     3                           call vartrix (vorten,divten,phiten,levp, &
+             202     3                                         k,x,na,m,nbig,jtrun,jtmax,-1,-2)
+             203     3                           bal_tmp(mf) = bal
+             204     3                           bal = 0.
+             205     3               !
+             206     3                100      continue
+             207     2               !
+             208     2                         call mpe_unify(bal_tmp,1,jtrun,3,mpe_double)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1778
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             209     3  pp    v                do mf = 1, jtrun
+             210     3   p    v                  bal = bal + bal_tmp(mf)
+             211     3   p    v                enddo
+             212     2               !
+             213     2                         if(myrank .eq. 0) print *,'bal=',bal
+             214     2               !
+             215     2               !   dimensionlize the variables
+             216     2               !     -2:dimensionalize
+             217     2               !
+             218     2               !      if(L.eq.Llist(L)) &
+             219     2                     if(nnmical) &
+             220     2                         call vartran (vorten,divten,phiten,nw,jtrun,jtmax,levp,k, &
+             221     2                                       rad,omega,h(1,1,L),-2)
+             222     2               !
+             223     2                110    continue
+             224     1               !
+             225     1               !   initial none initialized mode
+             226     1               !
+             227     1               
+             228     1               !2dMPI>
+             229     1               !!         kL=1
+             230     1               !!         kk=Llist(nnmivm+1)
+             231     1               !!         if(kk .le.levp)then
+             232     1               !!            kL=nnmivm+1
+             233     1               !!         endif
+             234     1               !2dMPI<
+             235     1               
+             236     2                        do m=1,mlistnum
+             237     2                          mf=mlist(m)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+             238     3  pp                      do n=mf,jtrun
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      Llist, vorten, divten, phiten
+                                   <<< Loop-information  End >>>
+             239     4   p                        do j = 1, 2
+             240     4               !              do k = nnmivm+1,lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.37, ITR: 80, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      vorten, Llist, divten, phiten
+                                   <<< Loop-information  End >>>
+             241     5   p   2v                     do k = 1,levp
+             242     5   p   2v                       kk=Llist(k)
+             243     6   p   2v                       if ( kk .gt. nnmivm ) then
+             244     6   p   2v                         vorten(k,j,n,m)= 0.
+             245     6   p   2v                         divten(k,j,n,m)= 0.
+             246     6   p   2v                         phiten(k,j,n,m)= 0.
+             247     6   p   2v                       endif
+             248     5   p   2v                     enddo
+             249     4   p                        enddo
+             250     3   p                      enddo
+             251     2                        enddo
+             252     1               !
+             253     1               !  conversion  structure of variables ( phiten,vorten,divten)
+             254     1               !
+             255     1               !   vertical transform back
+             256     1               !
+             257     1                       call zx (evectr,vorten,divten,phiten,jtrun,jtmax,lev)
+             258     1               !
+             259     1               !   add the correction to variables
+             260     1               !
+             261     1                       call correct (vorten,divten,phiten,tmcor,pmcor,vornow, &
+             262     1                                    divnow,temnow,plnow,jtrun,jtmax,lev)
+             263     1               !
+             264     2                       do m=1,mlistnum
+             265     2                         mf=mlist(m)
+             266     3                         if (mf.eq.1) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 889
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      vornow, divnow
+                                   <<< Loop-information  End >>>
+             267     4  pp   2v                  do k = 1, levp
+             268     4   p   2v                    vornow(k,1,1,m)= 0.
+             269     4   p   2v                    vornow(k,2,1,m)= 0.
+             270     4   p   2v                    divnow(k,1,1,m)= 0.
+             271     4   p   2v                    divnow(k,2,1,m)= 0.
+             272     4   p   2v                  enddo
+             273     3                         endif
+             274     2                       enddo
+             275     1               !
+             276     1               !   transform back to phyical space
+             277     1               !
+             278     1               !!        call joinsr(wss,vornow,divnow,temnow,dummy,jtrun,jtmax,levp &
+             279     1               !!                   ,mlistnum,3,1)
+             280     1               !!        call transr(jtrun,jtmax,nx,my,my_max,levp,poly,wss,cc,3,nsizey)
+             281     1               !!        call ujoinsr(cc,rvor,rdiv,tt,dummy,nx,my_max,lev,jlistnum,3,1)
+             282     1                       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,vornow,cc,1,nsizey)
+             283     1                       call ujoinsr(cc,rvor,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+             284     1                       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,divnow,cc,1,nsizey)
+             285     1                       call ujoinsr(cc,rdiv,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+             286     1                       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temnow,cc,1,nsizey)
+             287     1                       call ujoinsr(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+             288     1                       call transr1(jtrun,jtmax,nx,my,my_max,poly,plnow,pt,nsizey)
+             289     1               !
+             290     1               !  compute zonal and meridional gradients of terrain pressure
+             291     1               !
+             292     1                       call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,plnow, &
+             293     1                                   dlpl,dtpl,nsizey)
+             294     1               !
+             295     1               !   transform spectrum vorticity , divergence to physical u , v
+             296     1               !
+             297     1                       call tranuv (jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac &
+             298     1                                  ,poly,dpoly,vornow,divnow,ut,vt,nsizey)
+             299     1               !
+             300     1                       lab='pt '
+             301     1                       call  check (pt,nx,my,my_max,lab)
+             302     1                120  continue
+             303                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+             304     1  pp                 do m=1,mlistnum
+             305     1   p                   mf=mlist(m)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      temnow, divnow, vornow, temold, divold
+                                   <<<      vorold
+                                   <<< Loop-information  End >>>
+             306     2   p                   do n=mf,jtrun
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.10, ITR: 32, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      temnow, temold, divnow, divold, vornow
+                                   <<<      vorold
+                                   <<< Loop-information  End >>>
+             307     3   p    v                do k= 1, levp
+             308     3   p    v                  vorold(k,1,n,m)= vornow(k,1,n,m)
+             309     3   p    v                  vorold(k,2,n,m)= vornow(k,2,n,m)
+             310     3   p    v                  divold(k,1,n,m)= divnow(k,1,n,m)
+             311     3   p    v                  divold(k,2,n,m)= divnow(k,2,n,m)
+             312     3   p    v                  temold(k,1,n,m)= temnow(k,1,n,m)
+             313     3   p    v                  temold(k,2,n,m)= temnow(k,2,n,m)
+             314     3   p    v                enddo
+             315     2   p                   enddo
+             316     1   p                 enddo
+             317                     !
+             318                     !byl      do m=1,mlistnum
+             319                     !        mf=mlist(m)
+             320                     !        do n=mf,jtrun
+             321                     !          do k= 1, levp*ncld
+             322                     !            qold(k,1,n,m)= qnow(k,1,n,m)
+             323                     !            qold(k,2,n,m)= qnow(k,2,n,m)
+             324                     !          enddo
+             325                     !        enddo
+             326                     !byl      enddo
+             327                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      plnow, plold
+                                   <<< Loop-information  End >>>
+             328     1  pp                 do m=1,mlistnum
+             329     1   p                   mf=mlist(m)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.50, ITR: 80, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      plnow, plold
+                                   <<< Loop-information  End >>>
+             330     2   p   2v              do n=mf,jtrun
+             331     2   p   2v                plold(n,m,1)= plnow(n,m,1)
+             332     2   p   2v                plold(n,m,2)= plnow(n,m,2)
+             333     2   p   2v              enddo
+             334     1   p                 enddo
+             335                     !
+             336                           return
+             337                           end
+
+ Procedure information
+   Lines      : 337
+   Statements : 149
+   Stack(byte): 17568
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : initial
+   Attribute and Cross reference of name
+     a
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 28
+      |(Definition)     : 50  146  183
+      |(Reference)      : 
+     b
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 28
+      |(Definition)     : 50  146  183
+      |(Reference)      : 
+     bal
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 39
+      |(Definition)     : 107  157  194  204  210
+      |(Reference)      : 203  210  213
+     bal_tmp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 35
+      |(Definition)     : 203  208
+      |(Reference)      : 210
+     brank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 41
+      |(Definition)     : 96  100  139  149  177  186
+      |(Reference)      : 
+     c
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 29
+      |(Definition)     : 50  146  183
+      |(Reference)      : 
+     cc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 33
+      |(Definition)     : 282  283  284  285  286  287
+      |(Reference)      : 
+     check
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 46  301
+     cim
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 292
+      |(Reference)      : 11
+     coftrix
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 146  183
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 11
+     correct
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 261
+     cutfreq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 157  194
+      |(Reference)      : 11
+     divnow
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 261  270  271  284  297
+      |(Reference)      : 14  310  311
+     divold
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 310  311
+      |(Reference)      : 14  74
+     divten
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 74  85  113  135  163  173  200  219  245  257  261
+      |(Reference)      : 14  74
+     dlpl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 292
+      |(Reference)      : 17
+     doincr
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 11  66
+     dpoly
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 292  297
+      |(Reference)      : 11
+     dtpl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 292
+      |(Reference)      : 17
+     dummy
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 283  283  283  285  285  285  287  287  287
+      |(Reference)      : 
+     eigen
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 153  190
+     eigval
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 50
+      |(Reference)      : 11
+     epos
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 26
+      |(Definition)     : 153  157  190  194
+      |(Reference)      : 
+     eval
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 26
+      |(Definition)     : 153  157  190  194
+      |(Reference)      : 
+     evec
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 26
+      |(Definition)     : 153  157  190  194
+      |(Reference)      : 
+     evecin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 85
+      |(Reference)      : 11
+     evectr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 257
+      |(Reference)      : 11
+     ew
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 32
+      |(Definition)     : 
+      |(Reference)      : 
+     fftcom
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 18
+     grid
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 17
+     h
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 29
+      |(Definition)     : 50  113  219
+      |(Reference)      : 
+     ic
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 38
+      |(Definition)     : 55
+      |(Reference)      : 57
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 10
+     inicons
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 50
+     initial
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     int
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 126  126  127  127
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 38
+      |(Definition)     : 70  239
+      |(Reference)      : 72  72  72  73  73  73  74  74  74  244  245  246
+     jlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 283  285  287
+      |(Reference)      : 
+     jtmax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  21
+      |(Definition)     : 50  85  113  135  163  173  200  219  257  261  282  284  286  288  292  297
+      |(Reference)      : 29  30  31
+     jtrun
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  21
+      |(Definition)     : 50  85  113  135  146  163  173  183  200  208  219  257  261  282  284  286  288  292  297
+      |(Reference)      : 28  28  28  28  29  29  29  30  31  35  44  69  125  209  238  306  330
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 38
+      |(Definition)     : 71  98  113  135  163  173  200  219  241  267  307
+      |(Reference)      : 72  72  72  73  73  73  74  74  74  242  244  245  246  268  269  270  271  308  308  309  309  310  310  311  311  312  312  313  313
+     kL
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 38
+      |(Definition)     : 
+      |(Reference)      : 
+     kk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 38
+      |(Definition)     : 242
+      |(Reference)      : 243
+     Lend
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 97
+     Llist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 242
+     Lstart
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 97  98
+     l
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 38
+      |(Definition)     : 94  146  183
+      |(Reference)      : 97  97  98  103  113  146  146  146  183  183  183  219
+     lab
+      |(Class and Type) : variable name, CHARACTER(10,1)
+      |(Attributes)     : 
+      |(Declaration)    : 36
+      |(Definition)     : 45  46  300  301
+      |(Reference)      : 
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  21
+      |(Definition)     : 50  85  146  183  257  261  283  285  287
+      |(Reference)      : 
+     levp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 113  135  163  173  200  219  282  284  286  297
+      |(Reference)      : 31  33  71  241  267  307
+     lrec
+      |(Class and Type) : variable name, CHARACTER(16,1)
+      |(Attributes)     : 
+      |(Declaration)    : 36
+      |(Definition)     : 
+      |(Reference)      : 
+     m
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 38
+      |(Definition)     : 67  119  135  163  173  200  236  264  304  328
+      |(Reference)      : 68  72  72  72  73  73  73  74  74  74  120  237  244  245  246  265  268  269  270  271  305  308  308  309  309  310  310  311  311  312  312  313  313  329  331  331  332  332
+     mf
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 38
+      |(Definition)     : 68  120  146  183  209  237  265  305  329
+      |(Reference)      : 69  125  203  210  238  266  306  330
+     mlist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 68  120  237  265  305  329
+     mlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 67  119  236  264  304  328
+     mlmax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  21
+      |(Definition)     : 
+      |(Reference)      : 43  44
+     mlmax2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 38
+      |(Definition)     : 43
+      |(Reference)      : 
+     mpe
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8
+     mpe2d_row_broadcast
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 139  149  177  186
+     mpe_double
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 208
+     mpe_unify
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 208
+     mx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 29
+      |(Definition)     : 146  149  153  183  186  190
+      |(Reference)      : 
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  21
+      |(Definition)     : 46  282  284  286  288  292  297  301
+      |(Reference)      : 
+     my_max
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  21
+      |(Definition)     : 46  282  283  284  285  286  287  288  292  297  301
+      |(Reference)      : 33
+     myrank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 44  57  103  213
+     n
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 38
+      |(Definition)     : 69  238  306  330
+      |(Reference)      : 72  72  72  73  73  73  74  74  74  244  245  246  308  308  309  309  310  310  311  311  312  312  313  313  331  331  332  332
+     na
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 38
+      |(Definition)     : 127  173  183  190  194  200
+      |(Reference)      : 
+     nbig
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 38
+      |(Definition)     : 125  135  163  173  200
+      |(Reference)      : 126  126  127  127
+     ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 7
+     nnmi
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 157  194
+     nnmical
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 40
+      |(Definition)     : 95  99
+      |(Reference)      : 113  135  146  163  173  183  200  219
+     nnmiit
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 11  55
+     nnmivm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 50
+      |(Reference)      : 11  28  28  29  29  94  243
+     no
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  21
+      |(Definition)     : 157  194
+      |(Reference)      : 26  26  26  26  26  26  29  29  32  32  32  32  32  32  139  149  149  177  186  186
+     ns
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 38
+      |(Definition)     : 126  135  146  153  157  163
+      |(Reference)      : 
+     nsizey
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 282  284  286  288  292  297
+      |(Reference)      : 
+     nw
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 30
+      |(Definition)     : 50  113  219
+      |(Reference)      : 
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  21
+      |(Definition)     : 46  282  283  284  285  286  287  288  292  297  301
+      |(Reference)      : 33
+     omega
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 50  113  219
+      |(Reference)      : 11
+     onocos
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 297
+      |(Reference)      : 11
+     param
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 7
+     phiten
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 31
+      |(Definition)     : 61  72  85  113  135  163  173  200  219  246  257  261
+      |(Reference)      : 72
+     plnow
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 261  288  292
+      |(Reference)      : 14  331  332
+     plold
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 331  332
+      |(Reference)      : 14
+     pmcor
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 261
+      |(Reference)      : 11
+     poly
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 282  284  286  288  292  297
+      |(Reference)      : 11
+     pt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 46  288  301
+      |(Reference)      : 17
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 11  31  33
+     rad
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 50  113  219
+      |(Reference)      : 11
+     rank
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 9
+     rdiv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 285
+      |(Reference)      : 17
+     row_rank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 100
+     rvor
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 283
+      |(Reference)      : 17
+     spec
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 14
+     temnow
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 261  286
+      |(Reference)      : 14  312  313
+     temold
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 312  313
+      |(Reference)      : 14  72
+     tendget
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 61
+     tmcor
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 261
+      |(Reference)      : 11
+     transr
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 282  284  286
+     transr1
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 288
+     tranuv
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 297
+     trngra
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 292
+     tt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 287
+      |(Reference)      : 17
+     ujoinsr
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 283  285  287
+     ut
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 297
+      |(Reference)      : 17
+     vartran
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 113  219
+     vartrix
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 135  163  173  200
+     vornow
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 261  268  269  282  297
+      |(Reference)      : 14  308  309
+     vorold
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 308  309
+      |(Reference)      : 14  73
+     vorten
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 73  85  113  135  163  173  200  219  244  257  261
+      |(Reference)      : 14  73
+     vt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 297
+      |(Reference)      : 17
+     wc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 32
+      |(Definition)     : 157  194
+      |(Reference)      : 
+     wcfac
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 297
+      |(Reference)      : 11
+     wd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 32
+      |(Definition)     : 157  194
+      |(Reference)      : 
+     wdfac
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 297
+      |(Reference)      : 11
+     wk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 32
+      |(Definition)     : 153  190
+      |(Reference)      : 
+     x
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 26
+      |(Definition)     : 135  139  157  163  173  177  194  200
+      |(Reference)      : 
+     zx
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 85  257
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+        100  execution     (Definition) 206  
+                           (Reference)  119
+        110  execution     (Definition) 223  
+                           (Reference)  94
+        120  execution     (Definition) 302  
+                           (Reference)  55
+
+ Total information
+   Procedures       : 1
+   Total lines      : 337
+   Total statements : 149
+   Total stack(byte): 17568
+   Total prefetch num: 0
+

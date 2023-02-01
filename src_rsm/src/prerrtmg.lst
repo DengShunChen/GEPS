@@ -1,0 +1,672 @@
+
+ Fujitsu Fortran Version 4.6.1  Wed Jan 11 10:53:16 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/tco639l72/src
+   Source file       : prerrtmg.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "prerrtmg"
+  (inc)(line-no.)(nest)(optimize)
+               1                            subroutine prerrtmg(                                       &
+               2                     !    for input :                                                  &
+               3                                     nx,my,my_max,idtg,tau,dt,hours,frad,uprad,        &
+               4                                     isubc_sw,isubc_lw,d2r,xlon,myrank,me,             &
+               5                     !    for output
+               6                                     idat,jdat,solhr,dtsw,dtlw,lsswr,lslwr,            &
+               7                                     slag,sdec,cdec,solcon,                            &
+               8                                     xlonr,ixseed)
+               9                     
+              10                     !--------------------------------------------------------------------
+              11                     !   Prepare for RRTMG scheme
+              12                     !--------------------------------------------------------------------
+              13                           use module_radiation_driver, only :radupdate
+              14                     
+              15                           use mersenne_twister, only : random_setseed, random_index, &
+              16                                                        random_stat
+              17                           use index
+              18                     
+              19                           implicit none
+              20                     
+              21                     
+              22                           integer i,j,jj,nxj,nx,my,my_max,me,k
+              23                           integer numrdm(nx*my*2),ixseed(nx,my,2),ipsdlim
+              24                           type (random_stat)::stat
+              25                     !
+              26                           integer idat(8),jdat(8)
+              27                           integer*8 idtg,idtg2
+              28                           character cdtg*12
+              29                           integer itau,isubc_sw,isubc_lw,myrank,ii,ipsd0,ipseed
+              30                           logical uprad,lsswr,lslwr
+              31                           real tau,slag,sdec,cdec,solcon,frad,dt,d2r
+              32                           real solhr,dtsw,dtlw,hours
+              33                           real xlon(nx,my_max),xlonr(nxp,my_max)
+              34                           parameter(ipsdlim=100000000)!upper limit for random seed
+              35                     
+              36                     ! CWB2016
+              37                           ipsd0=0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2286
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      numrdm
+                                   <<< Loop-information  End >>>
+              38        pp   4v            numrdm=0
+              39                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1455
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+              40     1   s    v            do i=1,8
+              41     1   p    v               idat(i)=0
+              42     1   p    v               jdat(i)=0
+              43     1   p    v            enddO
+              44                     !
+              45                     ! --- get initial time : idat
+              46                     !
+              47                           write(cdtg,900)idtg
+              48                      900  format(i12.12)
+              49                           read(cdtg,'(i4,i2,i2,i2,i2)') idat(1),idat(2),idat(3),idat(5) &
+              50                                                        ,ii
+              51                     !
+              52                     ! --- get forecast time : jdat
+              53                     !
+              54                           itau=int(tau+0.001) ! tau from intgrt.f
+              55                     !      if (myrank .eq. 0) print *,'+itau=',itau,' tau=',tau
+              56                     !!      call dtgfix12(idtg,idtg2,itau)
+              57                     !!      write(cdtg,900)idtg2
+              58                     !!      read(cdtg,'(i4,i2,i2,i2,i2)') jdat(1),jdat(2),jdat(3),jdat(5) &
+              59                     !!                                    ,ii
+              60                           call dtgfix12_new(idtg,jdat(1),jdat(2),jdat(3),jdat(5),ii,itau)
+              61                     !
+              62                     ! --- set solhr = forecast hours if not at initial time
+              63                     !
+              64                     !        if (hours .gt. 0.0) then
+              65                                solhr = hours
+              66                     !        else
+              67                     !           solhr = idat(5)  !initial time
+              68                     !        endif
+              69                     
+              70                     !        if (myrank .eq. 0) print *,'solhr=',solhr
+              71                     !
+              72                     ! --- set dtsw, dtlw, lsswr, lslwr
+              73                     !
+              74                           dtsw  = 3600.0 * frad ! sw freq =3600s (frad=1 hr)
+              75                           dtlw  = 3600.0 * frad
+              76                           lsswr = uprad
+              77                           lslwr = uprad
+              78                     !
+              79                     !---------------------------------------------------------------------
+              80                     !     uprad = T : run radiation scheme
+              81                     !---------------------------------------------------------------------
+              82                     !      if (myrank .eq. 0) print *,'*** for uprad = T'
+              83                     !
+              84                     ! --- run radupdate
+              85                     !
+              86     1                     if ( uprad ) then
+              87     1                     call radupdate                                                 &
+              88     1               ! --- inputs:                                                        &
+              89     1                       ( idat, jdat, dtsw, dt, lsswr, me, myrank,                   &
+              90     1               ! --- outputs:                                                       &
+              91     1                        slag, sdec, cdec, solcon)
+              92     1               !
+              93     1               !      if (myrank .eq. 0) then
+              94     1               !          print *,'cdtg=',cdtg
+              95     1               !          print *,'idtg=',idtg
+              96     1               !          print *,'idtg2=',idtg2
+              97     1               !          print *,'idat(1)=',idat(1)
+              98     1               !          print *,'idat(2)=',idat(2)
+              99     1               !          print *,'idat(3)=',idat(3)
+             100     1               !          print *,'idat(5)=',idat(5)
+             101     1               !          print *,'jdat(1)=',jdat(1)
+             102     1               !          print *,'jdat(2)=',jdat(2)
+             103     1               !          print *,'jdat(3)=',jdat(3)
+             104     1               !          print *,'jdat(5)=',jdat(5)
+             105     1               !      endif
+             106     1               
+             107     1               !       if (myrank .eq.0 )print *,'*** radupdate ok ! ***'
+             108     1               !       if (myrank .eq.0 )print *,'slag=',slag,' solcon=',solcon
+             109     1               !       if (myrank .eq.0 )print *,'sdec=',sdec,' cdec=',cdec
+             110     1               !       if (myrank .eq.0 )print *,'uprad=',uprad
+             111     1               !       if (myrank .eq.0 )print *,'solhr=',solhr
+             112     1               
+             113     1               !---------------------------------------------------------------------
+             114     1               !      generate initial permutation seed for random number generator
+             115     1               !---------------------------------------------------------------------
+             116     1               ! --- set isubc_sw/isubc_lw for radn.h and block.f
+             117     1               !
+             118     2                     if ( (isubc_lw .eq. 2) .or. (isubc_sw .eq. 2) ) then
+             119     2                         ipsd0 = 17*idat(5) + 43*idat(2) + 37*idat(3) + 23*idat(1)
+             120     2                     endif
+             121     1               
+             122     1               ! --- set initial seed ipsd0 by initial time
+             123     1               !      if (myrank .eq. 0) then
+             124     1               !           print *,'  Radiation sub-cloud initial seed =',ipsd0
+             125     1               !      endif
+             126     1               
+             127     1               
+             128     1               ! --- generate 2-d random seeds array for sub-grid cloud-radiation
+             129     1               !
+             130     2                     if ( (isubc_lw .eq. 2) .or. (isubc_sw .eq. 2) ) then
+             131     2                     ipseed = mod(nint(100.0*sqrt(tau*3600)), ipsdlim) + 1 + ipsd0
+             132     2               
+             133     2                     call random_setseed                                            &
+             134     2               !  ---  inputs:                                                      &
+             135     2                          ( ipseed,                                                 &
+             136     2               !  ---  outputs:
+             137     2                            stat)
+             138     2               
+             139     2                       call random_index                                            &
+             140     2               !  ---  inputs:                                                      &
+             141     2                          ( ipsdlim,                                                &
+             142     2               !  ---  outputs:
+             143     2                            numrdm, stat)
+             144     2               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+             145     3  pp                   do k = 1, 2
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      numrdm, ixseed
+                                   <<< Loop-information  End >>>
+             146     4   p                     do j = 1, my
+             147     4   p                       nxj=nxdef(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      numrdm, ixseed
+                                   <<< Loop-information  End >>>
+             148     5   p   2v                  do i = 1, nxj
+             149     5               !            do i = 1, nx
+             150     5   p   2v                    ixseed(i,j,k) = numrdm(i+(j-1)*nx+(k-1)*my*nx)
+             151     5               !              ixseed(i,j,k) = numrdm(i+(j-1)*nxj+(k-1)*my*nxj)
+             152     5   p   2v                  enddo
+             153     4   p                     enddo
+             154     3   p                   enddo
+             155     2               
+             156     2                     endif ! for isub_lw=2 .or isub_sw=2
+             157     1                     endif ! if ( uprad )
+             158                     
+             159                     !      if (myrank .eq. 0) print *,'random_index ok!'
+             160                     
+             161                     !--------------------------------------------------------------------
+             162                     !    setting xlonr for grrad : input
+             163                     !--------------------------------------------------------------------
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      xlon, xlonr
+                                   <<< Loop-information  End >>>
+             164     1  pp                 do jj = 1, jlistnum
+             165     1   p                  j=jlist1(jj)
+             166     1   p                  nxj=nxdef_2d(j)
+             167     1   p                  ii=nxjstart(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.16, ITR: 192, MVE: 6, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      xlon, xlonr
+                                   <<< Loop-information  End >>>
+             168     2   p   2v            do i = 1, nxj
+             169     2   p   2v               xlonr(i,jj)=xlon(ii,jj)*d2r
+             170     2   p   2v               if (xlon(ii,jj).lt. 0) xlonr(i,jj)=(xlon(ii,jj)+360.)*d2r
+             171     2   p   2v               ii=ii+1
+             172     2   p   2v            enddo
+             173     1   p                 enddo
+             174                     !      if (myrank .eq. 0) print *,'for xlonr setting ok!'
+             175                     !--------------------------------------------------------------------
+             176                           return
+             177                           end
+             178                     
+
+ Procedure information
+   Lines      : 178
+   Statements : 64
+   Stack(byte): 4576
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : prerrtmg
+   Attribute and Cross reference of name
+     cdec
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  31
+      |(Definition)     : 87
+      |(Reference)      : 
+     cdtg
+      |(Class and Type) : variable name, CHARACTER(12,1)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 47
+      |(Reference)      : 49
+     d2r
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  31
+      |(Definition)     : 
+      |(Reference)      : 169  170
+     dt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  31
+      |(Definition)     : 
+      |(Reference)      : 87
+     dtgfix12_new
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 60
+     dtlw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  32
+      |(Definition)     : 75
+      |(Reference)      : 
+     dtsw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  32
+      |(Definition)     : 74
+      |(Reference)      : 87
+     frad
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  31
+      |(Definition)     : 
+      |(Reference)      : 74  75
+     hours
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  32
+      |(Definition)     : 
+      |(Reference)      : 65
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 22
+      |(Definition)     : 40  148  168
+      |(Reference)      : 41  42  150  150  169  170
+     idat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  26
+      |(Definition)     : 41  49  49  49  49
+      |(Reference)      : 87  119  119  119  119
+     idtg
+      |(Class and Type) : variable name, INTEGER(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  27
+      |(Definition)     : 60
+      |(Reference)      : 47
+     idtg2
+      |(Class and Type) : variable name, INTEGER(8)
+      |(Attributes)     : 
+      |(Declaration)    : 27
+      |(Definition)     : 
+      |(Reference)      : 
+     ii
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 29
+      |(Definition)     : 49  60  167  171
+      |(Reference)      : 169  170  170  171
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 17
+     int
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 54
+     ipsd0
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 29
+      |(Definition)     : 37  119
+      |(Reference)      : 131
+     ipsdlim
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 23  34
+      |(Definition)     : 
+      |(Reference)      : 131  139
+     ipseed
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 29
+      |(Definition)     : 131
+      |(Reference)      : 133
+     isubc_lw
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  29
+      |(Definition)     : 
+      |(Reference)      : 118  130
+     isubc_sw
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  29
+      |(Definition)     : 
+      |(Reference)      : 118  130
+     itau
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 29
+      |(Definition)     : 54  60
+      |(Reference)      : 
+     ixseed
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  23
+      |(Definition)     : 150
+      |(Reference)      : 
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 22
+      |(Definition)     : 146  165
+      |(Reference)      : 147  150  150  166  167
+     jdat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  26
+      |(Definition)     : 42  60  60  60  60
+      |(Reference)      : 87
+     jj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 22
+      |(Definition)     : 164
+      |(Reference)      : 165  169  169  170  170  170
+     jlist1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 165
+     jlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 164
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 22
+      |(Definition)     : 145
+      |(Reference)      : 150  150
+     lslwr
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  30
+      |(Definition)     : 77
+      |(Reference)      : 
+     lsswr
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  30
+      |(Definition)     : 76
+      |(Reference)      : 87
+     me
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  22
+      |(Definition)     : 
+      |(Reference)      : 87
+     mersenne_twister
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 15
+     mod
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 131
+     module_radiation_driver
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 13
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  22
+      |(Definition)     : 
+      |(Reference)      : 23  23  146  150
+     my_max
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  22
+      |(Definition)     : 
+      |(Reference)      : 33  33
+     myrank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  29
+      |(Definition)     : 
+      |(Reference)      : 87
+     nint
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 131
+     numrdm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 23
+      |(Definition)     : 38  139
+      |(Reference)      : 150
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  22
+      |(Definition)     : 
+      |(Reference)      : 23  23  33  150  150
+     nxdef
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 147
+     nxdef_2d
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 166
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 22
+      |(Definition)     : 147  166
+      |(Reference)      : 148  168
+     nxjstart
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 167
+     nxp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 33
+     prerrtmg
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     radupdate
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 13  87
+     random_index
+      |(Class and Type) : generic name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 15  139
+     random_setseed
+      |(Class and Type) : generic name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 15  133
+     random_stat
+      |(Class and Type) : type name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 15  24
+     sdec
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  31
+      |(Definition)     : 87
+      |(Reference)      : 
+     slag
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  31
+      |(Definition)     : 87
+      |(Reference)      : 
+     solcon
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  31
+      |(Definition)     : 87
+      |(Reference)      : 
+     solhr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  32
+      |(Definition)     : 65
+      |(Reference)      : 
+     sqrt
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 131
+     stat
+      |(Class and Type) : variable name, TYPE(random_stat)
+      |(Attributes)     : 
+      |(Declaration)    : 24
+      |(Definition)     : 133  139
+      |(Reference)      : 
+     tau
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  31
+      |(Definition)     : 
+      |(Reference)      : 54  131
+     uprad
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  30
+      |(Definition)     : 
+      |(Reference)      : 76  77  86
+     xlon
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  33
+      |(Definition)     : 
+      |(Reference)      : 169  170  170
+     xlonr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  33
+      |(Definition)     : 169  170
+      |(Reference)      : 
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+        900  format        (Definition) 48  
+                           (Reference)  47
+
+ Total information
+   Procedures       : 1
+   Total lines      : 178
+   Total statements : 64
+   Total stack(byte): 4576
+   Total prefetch num: 0
+

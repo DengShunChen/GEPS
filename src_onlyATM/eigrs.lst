@@ -1,0 +1,309 @@
+
+ Fujitsu Fortran Version 4.6.1  Wed Jan 11 10:52:14 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/tco639l72/src
+   Source file       : eigrs.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "eigrs"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine eigrs (rx,ir,idum,eval,evec,ix,wrk,ier)
+               2                     !
+               3                           dimension rx(ir,ir),eval(ir),evec(ir,ir),wrk(ir,ir)
+               4                     !
+               5                     !tom  double precision xx(500),eig(150),vec(150*150),work(500)
+               6                     !cjh      dimension        xx(500),eig(150),vec(150*150),work(500)
+               7                     !jh      dimension        xx(1000),eig(300),vec(300*300),work(1000)
+               8                     !jh      dimension        xx(2000),eig(800),vec(800*800),work(2000)
+               9                     !ch   dimension        xx(8000),eig(3200),vec(3200*3200),work(8000)
+              10                           dimension        xx(8000),eig(ir),vec(ir*ir),work(8000)
+              11                     !
+              12     1                     if(ir.gt.2) then
+              13     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1143
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.87, ITR: 256, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      xx
+                                   <<< Loop-information  End >>>
+              14     2  pp   4v            do 10 i=1,ir
+              15     2   p   4v            xx(i+2*ir)= dble(rx(i,i))
+              16     2   p   4v         10 continue
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1143
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.87, ITR: 256, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      xx
+                                   <<< Loop-information  End >>>
+              17     2  pp   4v            do 20 i=2,ir
+              18     2   p   4v            xx(i+ir)= dble(rx(i-1,i))
+              19     2   p   4v         20 continue
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1334
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.87, ITR: 256, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      xx
+                                   <<< Loop-information  End >>>
+              20     2  pp   4v            do 30 i=3,ir
+              21     2   p   4v            xx(i)= dble(rx(i-2,i))
+              22     2   p   4v         30 continue
+              23     1                     xx(1)= 0.d0
+              24     1                     xx(2)= 0.d0
+              25     1                     xx(1+ir)= 0.d0
+              26     1               !
+              27     1               !  find eigenvalues and eigenvectors for coefficient matrix
+              28     1               !
+              29     1                     call rsb (ir,ir,3,xx,eig,1,vec,work,work(ir+1),ier)
+              30     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1455
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      vec, evec
+                                   <<< Loop-information  End >>>
+              31     2  pp   4v            do 40 i=1,ir*ir
+              32     2   p   4v            evec(i,1)= real(vec(i))
+              33     2   p   4v         40 continue
+              34     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1455
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      eig, eval
+                                   <<< Loop-information  End >>>
+              35     2  pp   4v            do 50 i=1,ir
+              36     2   p   4v            eval(i)= real(eig(i))
+              37     2   p   4v         50 continue
+              38     1               !
+              39     1                     else
+              40     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      eval
+                                   <<< Loop-information  End >>>
+              41     2  pp   4v            do 35 i=1,ir
+              42     2   p   4v            eval(i)= 0.0
+              43     2   p   4v         35 continue
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      evec
+                                   <<< Loop-information  End >>>
+              44     2  pp   4v            do 37 i=1,ir*ir
+              45     2   p   4v            evec(i,1)= 0.0
+              46     2   p   4v         37 continue
+              47     1                     endif
+              48                     !
+              49                           return
+              50                           end
+
+ Procedure information
+   Lines      : 50
+   Statements : 33
+   Stack(byte): 130272
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : eigrs
+   Attribute and Cross reference of name
+     dble
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 15  18  21
+     eig
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 10
+      |(Definition)     : 29
+      |(Reference)      : 36
+     eigrs
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     eval
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  3
+      |(Definition)     : 36  42
+      |(Reference)      : 
+     evec
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  3
+      |(Definition)     : 32  45
+      |(Reference)      : 
+     i
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 14  17  20  31  35  41  44
+      |(Reference)      : 15  15  15  18  18  18  21  21  21  32  32  36  36  42  45
+     idum
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     ier
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 29
+      |(Reference)      : 
+     ir
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 29  29
+      |(Reference)      : 3  3  3  3  3  3  3  10  10  10  12  14  15  17  18  20  25  29  31  31  35  41  44  44
+     ix
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 
+     real
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 32  36
+     rsb
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 29
+     rx
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  3
+      |(Definition)     : 
+      |(Reference)      : 15  18  21
+     vec
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 10
+      |(Definition)     : 29
+      |(Reference)      : 32
+     work
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 10
+      |(Definition)     : 29  29
+      |(Reference)      : 
+     wrk
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  3
+      |(Definition)     : 
+      |(Reference)      : 
+     xx
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 10
+      |(Definition)     : 15  18  21  23  24  25  29
+      |(Reference)      : 
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+         10  execution     (Definition) 16  
+                           (Reference)  14
+         20  execution     (Definition) 19  
+                           (Reference)  17
+         30  execution     (Definition) 22  
+                           (Reference)  20
+         35  execution     (Definition) 43  
+                           (Reference)  41
+         37  execution     (Definition) 46  
+                           (Reference)  44
+         40  execution     (Definition) 33  
+                           (Reference)  31
+         50  execution     (Definition) 37  
+                           (Reference)  35
+
+ Total information
+   Procedures       : 1
+   Total lines      : 50
+   Total statements : 33
+   Total stack(byte): 130272
+   Total prefetch num: 0
+

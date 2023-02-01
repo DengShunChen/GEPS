@@ -1,0 +1,545 @@
+
+ Fujitsu Fortran Version 4.6.1  Wed Jan 11 10:52:16 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/tco639l72/src
+   Source file       : stemp.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "stemp"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine stemp(incrup,nx,lev,cp,grav,sgeo,pk,pk2,phi,tt)
+               2                     !
+               3                     !  stemp computes approximatly hydrostatically consistent thickness
+               4                     !  tempratures from analysis heights.  algorithm prevents buckling
+               5                     !  of the temperature soundings
+               6                     !
+               7                     
+               8                           implicit  none
+               9                     
+              10                           integer   nx,lev,lm2,l,l1,l2,i,ll,l3,jj,jim
+              11                     
+              12                           real      phi(nx,lev),tt(nx,lev),pk(nx,lev),pk2(nx,lev)  &
+              13                           , sgeo(nx)
+              14                     !
+              15                           logical incrup
+              16                     !
+              17                           real      phidif(nx),that(nx,lev)
+              18                           real      pexp(nx),xlaps(14),tempps(nx,2*lev-1)
+              19                     !
+              20                           data xlaps/.002,.002,.00175,.0015,.001625,.00175,.0018   &
+              21                           ,   .0019,.002,.0021,.0022,.0023,.0024,.0025/
+              22                     
+              23                           real      dkapa,capa,pratio,rgas,ocp,grav,cp,wrk,pp,xl1,xl2,phimax
+              24                     !
+              25                     !  thickness temps on half levels
+              26                     !
+              27                     !
+              28                     !  pressure at full and half levels
+              29                     !
+              30                           lm2= 2*lev-1
+              31                           dkapa= 3.5
+              32                           capa= 1.0/dkapa
+              33                           pratio=1.4142
+              34                           rgas=287.04
+              35                           ocp= 1.0/cp
+              36                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 534
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.60, ITR: 48, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      phi, pk, that
+                                   <<< Loop-information  End >>>
+              37     1  pp   2v            do 5 l=1,lev-1
+              38     1       2             l1=2*l-1
+              39     1       2             l2=l1+1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<< Loop-information  End >>>
+              40     2   p   2             do 55 i=1,nx
+              41     2   p   2v            that(i,l)= ocp*(phi(i,l)-phi(i,l+1))/    &
+              42     2                      (pk(i,l+1)-pk(i,l))
+              43     2   p   2v         55 continue
+              44     1   p               5 continue
+              45                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 281
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.87, ITR: 128, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pk2, that, pexp
+                                   <<< Loop-information  End >>>
+              46     1  pp    v            do 201 i=1,nx
+              47     1   p    v            wrk=that(i,1)*pk2(i,1)-that(i,2)*pk2(i,2)+0.5
+              48     1   p    v            jj=int(wrk)+1
+              49     1   p    v            jj= max(1,jj)
+              50     1   p    v            jj= min(14,jj)
+              51     1   p    v            pp= xlaps(jj)
+              52     1   p    v            pexp(i)=rgas*pp/grav
+              53     1   p    v        201 continue
+              54                     !
+              55                     !  begin interation
+              56                     !
+              57     1                     do 100 jim=1,10
+              58     1               !
+              59     1               !  analysis temps match co-located thickness temps at half levels
+              60     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      that, tempps
+                                   <<< Loop-information  End >>>
+              61     2  pp                 do 6 l=1,lev-1
+              62     2   p                 l1= 2*l
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      that, tempps
+                                   <<< Loop-information  End >>>
+              63     3   p   2v            do 66 i=1,nx
+              64     3   p   2v            tempps(i,l1)=that(i,l)
+              65     3   p   2v         66 continue
+              66     2   p               6 continue
+              67     1               !
+              68     1               !  interpolate to full levels for analysis temps
+              69     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pk, pk2, that, tempps
+                                   <<< Loop-information  End >>>
+              70     2  pp                 do 7 l=1,lev-2
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.43, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pk2, pk, that, tempps
+                                   <<< Loop-information  End >>>
+              71     3   p    v            do 7 i=1,nx
+              72     3   p    v            xl1=(pk(i,l+1)-pk2(i,l))/(pk2(i,l+1)-pk2(i,l))
+              73     3   p    v            tempps(i,2*l+1)=that(i,l)+(that(i,l+1)-that(i,l))*xl1
+              74     2   p    v          7 continue
+              75     1               !
+              76     1               !
+              77     1               !  temperature boundary conditions at top and bottom
+              78     1               !
+              79     1               !      if(incrup) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 259
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.54, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tempps, pk, pk2
+                                   <<< Loop-information  End >>>
+              80     2  pp    v            do 56 i=1,nx
+              81     2   p    v            xl1=(pk(i,lev)-pk(i,lev-1))/(pk2(i,lev-1)-pk(i,lev-1))
+              82     2   p    v            xl2=(pk(i,2)-pk(i,1))/(pk(i,2)-pk2(i,1))
+              83     2   p    v            tempps(i,lm2)= tempps(i,lm2-2)+xl1*(tempps(i,lm2-1) &
+              84     2                      -tempps(i,lm2-2))
+              85     2   p    v            tempps(i,1)= tempps(i,3)+xl2*(tempps(i,2)-tempps(i,3))
+              86     2   p    v         56 continue
+              87     1               !
+              88     1               !      else
+              89     1               !
+              90     1               !      do 78 i=1,nx
+              91     1               !      tempps(i,1)=that(i,1)*(pk2(i,2)/pk(i,1))*pratio**pexp(i)
+              92     1               !      tempps(i,lm2)= ocp*(phi(i,lev)-sgeo(i))/(pk2(i,lev)-pk(i,lev))
+              93     1               !   78 continue
+              94     1               !      endif
+              95     1               !
+              96     1               !  adjust thickness temperatures to be consistent with both analysis
+              97     1               !  temperatures and geopotentials
+              98     1               !
+              99     1                     phimax= 0.0
+             100     2                     do 8 l=lev-1,1,-1
+             101     2                     l1=2*l-1
+             102     2                     l2=l1+1
+             103     2                     l3=l2+1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 243
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             104     3  pp    v            do 88 i=1,nx
+             105     3   p    v            xl1=cp*(pk2(i,l)-pk(i,l))
+             106     3   p    v            xl2=cp*(pk(i,l+1)-pk2(i,l))
+             107     3   p    v            phidif(i)= (tempps(i,l1)+tempps(i,l2))*xl1     &
+             108     3                       +(tempps(i,l2)+tempps(i,l3))*xl2
+             109     3   p    v            phidif(i)= 0.5*phidif(i)-phi(i,l)+phi(i,l+1)
+             110     3   p    v            that(i,l)= that(i,l)-phidif(i)/(xl1+xl2)
+             111     3   p    v            phimax= max(phimax,abs(phidif(i)))
+             112     3   p    v         88 continue
+             113     2                   8 continue
+             114     1                     if(phimax.lt.1.0) go to 110
+             115     1                 100 continue
+             116                       110 continue
+             117                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pk, tempps, tt
+                                   <<< Loop-information  End >>>
+             118     1  pp                 do 13 l=1,lev
+             119     1   p                 ll= 2*l-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.50, ITR: 160, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tempps, pk, tt
+                                   <<< Loop-information  End >>>
+             120     2   p   2v            do 13 i=1,nx
+             121     2   p   2v            tt(i,l)= tempps(i,ll)*pk(i,l)
+             122     1   p   2v         13 continue
+             123                     !
+             124                           return
+             125                           end
+
+ Procedure information
+   Lines      : 125
+   Statements : 72
+   Stack(byte): 15344
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : stemp
+   Attribute and Cross reference of name
+     abs
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 111
+     capa
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 23
+      |(Definition)     : 32
+      |(Reference)      : 
+     cp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  23
+      |(Definition)     : 
+      |(Reference)      : 35  105  106
+     dkapa
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 23
+      |(Definition)     : 31
+      |(Reference)      : 32
+     grav
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  23
+      |(Definition)     : 
+      |(Reference)      : 52
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 10
+      |(Definition)     : 40  46  63  71  80  104  120
+      |(Reference)      : 41  41  41  41  41  47  47  47  47  52  64  64  72  72  72  72  73  73  73  73  81  81  81  81  82  82  82  82  83  83  83  83  85  85  85  85  105  105  106  106  107  107  107  107  107  109  109  109  109  110  110  110  111  121  121  121
+     incrup
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  15
+      |(Definition)     : 
+      |(Reference)      : 
+     int
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 48
+     jim
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 10
+      |(Definition)     : 57
+      |(Reference)      : 
+     jj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 10
+      |(Definition)     : 48  49  50
+      |(Reference)      : 49  50  51
+     l
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 10
+      |(Definition)     : 37  61  70  100  118
+      |(Reference)      : 38  41  41  41  41  41  62  64  72  72  72  72  73  73  73  73  101  105  105  106  106  109  109  110  110  119  121  121
+     l1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 10
+      |(Definition)     : 38  62  101
+      |(Reference)      : 39  64  102  107
+     l2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 10
+      |(Definition)     : 39  102
+      |(Reference)      : 103  107  107
+     l3
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 10
+      |(Definition)     : 103
+      |(Reference)      : 107
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  10
+      |(Definition)     : 
+      |(Reference)      : 12  12  12  12  17  18  30  37  61  70  81  81  81  81  100  118
+     ll
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 10
+      |(Definition)     : 119
+      |(Reference)      : 121
+     lm2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 10
+      |(Definition)     : 30
+      |(Reference)      : 83  83  83  83
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 49  111
+     min
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 50
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  10
+      |(Definition)     : 
+      |(Reference)      : 12  12  12  12  12  17  17  18  18  40  46  63  71  80  104  120
+     ocp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 23
+      |(Definition)     : 35
+      |(Reference)      : 41
+     pexp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 18
+      |(Definition)     : 52
+      |(Reference)      : 
+     phi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  12
+      |(Definition)     : 
+      |(Reference)      : 41  41  109  109
+     phidif
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 17
+      |(Definition)     : 107  109
+      |(Reference)      : 109  110  111
+     phimax
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 23
+      |(Definition)     : 99  111
+      |(Reference)      : 111  114
+     pk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  12
+      |(Definition)     : 
+      |(Reference)      : 41  41  72  81  81  81  82  82  82  105  106  121
+     pk2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  12
+      |(Definition)     : 
+      |(Reference)      : 47  47  72  72  72  81  82  105  106
+     pp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 23
+      |(Definition)     : 51
+      |(Reference)      : 52
+     pratio
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 23
+      |(Definition)     : 33
+      |(Reference)      : 
+     rgas
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 23
+      |(Definition)     : 34
+      |(Reference)      : 52
+     sgeo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  12
+      |(Definition)     : 
+      |(Reference)      : 
+     stemp
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     tempps
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 18
+      |(Definition)     : 64  73  83  85
+      |(Reference)      : 83  83  83  85  85  85  107  107  107  107  121
+     that
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 17
+      |(Definition)     : 41  110
+      |(Reference)      : 47  47  64  73  73  73  110
+     tt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  12
+      |(Definition)     : 121
+      |(Reference)      : 
+     wrk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 23
+      |(Definition)     : 47
+      |(Reference)      : 48
+     xl1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 23
+      |(Definition)     : 72  81  105
+      |(Reference)      : 73  83  107  110
+     xl2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 23
+      |(Definition)     : 82  106
+      |(Reference)      : 85  107  110
+     xlaps
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, initialized
+      |(Declaration)    : 18  20
+      |(Definition)     : 
+      |(Reference)      : 51
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+          5  execution     (Definition) 44  
+                           (Reference)  37
+          6  execution     (Definition) 66  
+                           (Reference)  61
+          7  execution     (Definition) 74  
+                           (Reference)  70  71
+          8  execution     (Definition) 113  
+                           (Reference)  100
+         13  execution     (Definition) 122  
+                           (Reference)  118  120
+         55  execution     (Definition) 43  
+                           (Reference)  40
+         56  execution     (Definition) 86  
+                           (Reference)  80
+         66  execution     (Definition) 65  
+                           (Reference)  63
+         88  execution     (Definition) 112  
+                           (Reference)  104
+        100  execution     (Definition) 115  
+                           (Reference)  57
+        110  execution     (Definition) 116  
+                           (Reference)  114
+        201  execution     (Definition) 53  
+                           (Reference)  46
+
+ Total information
+   Procedures       : 1
+   Total lines      : 125
+   Total statements : 72
+   Total stack(byte): 15344
+   Total prefetch num: 0
+

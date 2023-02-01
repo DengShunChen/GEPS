@@ -1,0 +1,323 @@
+
+ Fujitsu Fortran Version 4.6.1  Wed Jan 11 10:52:14 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/tco639l72/src
+   Source file       : iounitdef.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ Module "module_iounitdef"
+  (inc)(line-no.)(nest)(optimize)
+               1                     !!!!!  ==========================================================  !!!!!
+               2                     !!!!!             module "module_iounitdef description             !!!!!
+               3                     !!!!!  ==========================================================  !!!!!
+               4                     !                                                                      !
+               5                     !     this module defines fortran unit numbers for input/output data   !
+               6                     !     files for the ncep gfs model.                                    !
+               7                     !                                                                      !
+               8                     !      name      type    description                         unit no.  !
+               9                     !     ---------------------------------------------------------------  !
+              10                     !     NISIGI  - input,  sigma file 1                            11     !
+              11                     !     NISIGI2 - input,  sigma file 2                            12     !
+              12                     !     NISFCI  - input,  surface initial data                    14     !
+              13                     !                                                                      !
+              14                     !     NIMTNVR - input,  montain variance file                   24     !
+              15                     !     NIDTBTH - input,  equivalent potential temperature file   27     !
+              16                     !     NICO2TR - input,  co2 transm table for gfdl-lw only       15     !
+              17                     !     NICO2CN - input,  monthly/yearly 2-d co2 data   (shared)  102    !
+              18                     !     NIO3PRD - input,  ozone production climatology            28     !
+              19                     !     NIO3LOS - input,  ozone destruction climatology           29     !
+              20                     !     NIO3CLM - input,  ozone climatology distribution          48     !
+              21                     !     NINAMSF - input,  namelist for surface file               35     !
+              22                     !     NISFCYC - input,  surface cycle files                     101    !
+              23                     !     NIRADSF - input,  radiation surface data files  (shared)  102    !
+              24                     !     NICLTUN - input,  cloud tuning table                      43     !
+              25                     !     NIMICPH - input,  micro physics data file                 31     !
+              26                     !     NIAERCM - input,  aerosols climatology          (shared)  102    !
+              27                     !                                                                      !
+              28                     !     NOSIGR1 - output, first time level sigma restart file     51     !
+              29                     !     NOSIGR2 - output, second time level sigma restart file    52     !
+              30                     !     NOSFCR  - output, surface restart file                    53     !
+              31                     !     NOSIGF  - output, sigma file for post process             61     !
+              32                     !     NOSFCF  - output, surface file for post process           62     !
+              33                     !     NOFLXF  - output, flux file for post process              63     !
+              34                     !     NOD3DF  - output, 3-d  file for post process              64     !
+              35                     !     NOLOGF  - output, log  file                               99     !
+              36                     !                                                                      !
+              37                     !     NIOFRAD - in/out, temperary radiation data file (shared)  16     !
+              38                     !                                                                      !
+              39                     !!!!!  ==========================================================  !!!!!
+              40                     !!!!!                       end descriptions                       !!!!!
+              41                     !!!!!  ==========================================================  !!!!!
+              42                     
+              43                     !========================================!
+              44                           module module_iounitdef            !
+              45                     !........................................!
+              46                     !
+              47                           implicit   none
+              48                     !
+              49                           public
+              50                     
+              51                     !  --- ...  input units
+              52                     
+              53                           integer, parameter :: NISIGI  = 11
+              54                           integer, parameter :: NISIGI2 = 12
+              55                           integer, parameter :: NISFCI  = 14
+              56                           integer, parameter :: NICO2TR = 15
+              57                           integer, parameter :: NICO2CN = 102
+              58                           integer, parameter :: NIMTNVR = 24
+              59                           integer, parameter :: NIDTBTH = 27
+              60                           integer, parameter :: NIO3PRD = 28
+              61                           integer, parameter :: NIO3LOS = 29
+              62                           integer, parameter :: NINAMSF = 35
+              63                           integer, parameter :: NICLTUN = 43
+              64                           integer, parameter :: NIO3CLM = 48
+              65                           integer, parameter :: NIMICPH = 31
+              66                           integer, parameter :: NISFCYC = 101
+              67                           integer, parameter :: NIAERCM = 102
+              68                           integer, parameter :: NIRADSF = 102
+              69                     
+              70                     !  --- ... output units
+              71                     
+              72                           integer, parameter :: NOSIGR1 = 51
+              73                           integer, parameter :: NOSIGR2 = 52
+              74                           integer, parameter :: NOSFCR  = 53
+              75                           integer, parameter :: NOSIGF  = 61
+              76                           integer, parameter :: NOSFCF  = 62
+              77                           integer, parameter :: NOFLXF  = 63
+              78                           integer, parameter :: NOD3DF  = 64
+              79                           integer, parameter :: NOLOGF  = 99
+              80                     
+              81                     !  --- ...  in/out units
+              82                     
+              83                           integer, parameter :: NIOFRAD = 16
+              84                     
+              85                     !
+              86                     !........................................!
+              87                           end module module_iounitdef        !
+              88                     !========================================!
+
+ Procedure information
+   Lines      : 88
+   Statements : 29
+   Stack(byte): 352
+   Prefetch num: 0
+
+ Scoping unit of module : module_iounitdef
+   Attribute and Cross reference of name
+     module_iounitdef
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 44
+      |(Definition)     : 
+      |(Reference)      : 87
+     NIAERCM
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 67
+      |(Definition)     : 
+      |(Reference)      : 
+     NICLTUN
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 63
+      |(Definition)     : 
+      |(Reference)      : 
+     NICO2CN
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 57
+      |(Definition)     : 
+      |(Reference)      : 
+     NICO2TR
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 56
+      |(Definition)     : 
+      |(Reference)      : 
+     NIDTBTH
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 59
+      |(Definition)     : 
+      |(Reference)      : 
+     NIMICPH
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     NIMTNVR
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 58
+      |(Definition)     : 
+      |(Reference)      : 
+     NINAMSF
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 62
+      |(Definition)     : 
+      |(Reference)      : 
+     NIO3CLM
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 64
+      |(Definition)     : 
+      |(Reference)      : 
+     NIO3LOS
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 61
+      |(Definition)     : 
+      |(Reference)      : 
+     NIO3PRD
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 60
+      |(Definition)     : 
+      |(Reference)      : 
+     NIOFRAD
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 83
+      |(Definition)     : 
+      |(Reference)      : 
+     NIRADSF
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 68
+      |(Definition)     : 
+      |(Reference)      : 
+     NISFCI
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 55
+      |(Definition)     : 
+      |(Reference)      : 
+     NISFCYC
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 66
+      |(Definition)     : 
+      |(Reference)      : 
+     NISIGI
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 53
+      |(Definition)     : 
+      |(Reference)      : 
+     NISIGI2
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 54
+      |(Definition)     : 
+      |(Reference)      : 
+     NOD3DF
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 78
+      |(Definition)     : 
+      |(Reference)      : 
+     NOFLXF
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 77
+      |(Definition)     : 
+      |(Reference)      : 
+     NOLOGF
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 79
+      |(Definition)     : 
+      |(Reference)      : 
+     NOSFCF
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 76
+      |(Definition)     : 
+      |(Reference)      : 
+     NOSFCR
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 74
+      |(Definition)     : 
+      |(Reference)      : 
+     NOSIGF
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 75
+      |(Definition)     : 
+      |(Reference)      : 
+     NOSIGR1
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 72
+      |(Definition)     : 
+      |(Reference)      : 
+     NOSIGR2
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 73
+      |(Definition)     : 
+      |(Reference)      : 
+
+ Total information
+   Procedures       : 1
+   Total lines      : 88
+   Total statements : 29
+   Total stack(byte): 352
+   Total prefetch num: 0
+

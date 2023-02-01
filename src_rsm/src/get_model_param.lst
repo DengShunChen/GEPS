@@ -1,0 +1,537 @@
+
+ Fujitsu Fortran Version 4.6.1  Wed Jan 11 10:52:18 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/tco639l72/src
+   Source file       : get_model_param.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "get_model_param"
+  (inc)(line-no.)(nest)(optimize)
+               1                     
+               2                           subroutine get_model_param
+               3                     !
+               4                           use param
+               5                     
+               6                           use const, only : ifilin,cwbout,bckfile,namlsts,   &
+               7                                             ifilout,crdate,ocards,phyout,cntrl, &
+               8                                             ifilin_ncep,ifilin_sst,ifilin_nc,&
+               9                                             ifilin_ClmANA,ifilin_ClmFCT
+              10                     
+              11                           use paramt
+              12                     
+              13                           use rank
+              14                     !
+              15                           implicit  none
+              16                     
+              17                     !
+              18                           namelist /model_param/nco,lev,ncld,octahedral,nout &
+              19                                                ,io_quilting,npex,npey !2dMPI
+              20                     !
+              21                           integer istat
+              22                           character*80 filist
+              23                           character*80 pathname,logicname,truefile
+              24                           namelist /filst/ ifilin,cwbout,bckfile,namlsts &
+              25                                          , ifilout,crdate,ocards,phyout,cntrl &
+              26                                          , ifilin_ncep,ifilin_sst,ifilin_nc &
+              27                                          , ifilin_ClmANA,ifilin_ClmFCT
+              28                           data pathname/'NWPETCGLB'/
+              29                           data logicname/'filist'/
+              30                     !
+              31                     !  read namlist of path/file name(operation)
+              32                     !
+              33                           call getfname(pathname,logicname,truefile,istat)
+              34     1                     if(istat.ne.0)then
+              35     1                       print *,'getfname : error','RANK=',myrank
+              36     1                       call mpe_finalize
+              37     1                       call dmsexit(-1)
+              38     1               !     else
+              39     1               !       if(myrank .eq. 0) print *,truefile
+              40     1                     endif
+              41                     !
+              42                           open (unit=12,file=trim(truefile),form='formatted')
+              43                     !
+              44                           read (12,filst,end=110)
+              45                     !
+              46                       110 continue
+              47                           close(12)
+              48                     !
+              49                     !  read namelist for model parameters
+              50                     !
+              51                           open (unit=1,file=trim(namlsts),form='formatted')
+              52                     !
+              53                           read (1,model_param,end=120)
+              54                     !
+              55                       120 continue
+              56                           close(1)
+              57                     
+              58                     !     if(myrank .eq. 0) print model_param
+              59                           if(myrank_all .eq. 0) print model_param
+              60                     
+              61     1                     if ( octahedral ) then
+              62     1                       my=2*nco
+              63     1                       nx=16+4*nco
+              64     1                       jtrun= 2*((1+(4*nco-1)/4)/2)
+              65     1               
+              66     1                       im=16+4*nco
+              67     1                       jm=2*nco
+              68     1                       jtr= 2*((1+(4*nco-1)/4)/2)
+              69     1                     else
+              70     1                       nx=4*nco
+              71     1                       my=nx/2
+              72     1                       jtrun= 2*((1+(nx-1)/2)/2)
+              73     1               
+              74     1                       im=nx
+              75     1                       jm=im/2
+              76     1                       jtr= 2*((1+(im-1)/2)/2)
+              77     1                     endif
+              78                           mlmax= jtrun*(jtrun+1)/2
+              79                     
+              80                           lm=lev
+              81                           mlm=jtr*(jtr+1)/2
+              82                     
+              83                           imax=nx
+              84                           jmax=imax/2
+              85                           lpx=26
+              86                           kvkw=im/2
+              87                     
+              88                           ilm=im*lm
+              89                           im2=kvkw*(lm+1)
+              90                     
+              91                           jmhalf=jm/2
+              92                           lmX2=lm*2
+              93                           lmX4=lm*4
+              94                           lmX10=lm*10
+              95                     
+              96                           return
+              97                           end
+
+ Procedure information
+   Lines      : 97
+   Statements : 58
+   Stack(byte): 3680
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : get_model_param
+   Attribute and Cross reference of name
+     bckfile
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 24
+      |(Definition)     : 
+      |(Reference)      : 6
+     cntrl
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 24
+      |(Definition)     : 
+      |(Reference)      : 6
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 6
+     crdate
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 24
+      |(Definition)     : 
+      |(Reference)      : 6
+     cwbout
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 24
+      |(Definition)     : 
+      |(Reference)      : 6
+     dmsexit
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 37
+     filist
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : 
+      |(Declaration)    : 22
+      |(Definition)     : 
+      |(Reference)      : 
+     filst
+      |(Class and Type) : namelist name
+      |(Attributes)     : 
+      |(Declaration)    : 24
+      |(Definition)     : 
+      |(Reference)      : 44
+     get_model_param
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 2
+      |(Reference)      : 
+     getfname
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 33
+     ifilin
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 24
+      |(Definition)     : 
+      |(Reference)      : 6
+     ifilin_ClmANA
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 24
+      |(Definition)     : 
+      |(Reference)      : 6
+     ifilin_ClmFCT
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 24
+      |(Definition)     : 
+      |(Reference)      : 6
+     ifilin_nc
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 24
+      |(Definition)     : 
+      |(Reference)      : 6
+     ifilin_ncep
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 24
+      |(Definition)     : 
+      |(Reference)      : 6
+     ifilin_sst
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 24
+      |(Definition)     : 
+      |(Reference)      : 6
+     ifilout
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 24
+      |(Definition)     : 
+      |(Reference)      : 6
+     ilm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 88
+      |(Reference)      : 
+     im
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 66  74
+      |(Reference)      : 75  76  86  88
+     im2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 89
+      |(Reference)      : 
+     imax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 83
+      |(Reference)      : 84
+     io_quilting
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 18
+      |(Definition)     : 
+      |(Reference)      : 
+     istat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 21
+      |(Definition)     : 33
+      |(Reference)      : 34
+     jm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 67  75
+      |(Reference)      : 91
+     jmax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 84
+      |(Reference)      : 
+     jmhalf
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 91
+      |(Reference)      : 
+     jtr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 68  76
+      |(Reference)      : 81  81
+     jtrun
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 64  72
+      |(Reference)      : 78  78
+     kvkw
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 86
+      |(Reference)      : 89
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 18
+      |(Definition)     : 
+      |(Reference)      : 80
+     lm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 80
+      |(Reference)      : 88  89  92  93  94
+     lmX10
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 94
+      |(Reference)      : 
+     lmX2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 92
+      |(Reference)      : 
+     lmX4
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 93
+      |(Reference)      : 
+     logicname
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : initialized
+      |(Declaration)    : 23  29
+      |(Definition)     : 33
+      |(Reference)      : 
+     lpx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 85
+      |(Reference)      : 
+     mlm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 81
+      |(Reference)      : 
+     mlmax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 78
+      |(Reference)      : 
+     model_param
+      |(Class and Type) : namelist name
+      |(Attributes)     : 
+      |(Declaration)    : 18
+      |(Definition)     : 
+      |(Reference)      : 53  59
+     mpe_finalize
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 36
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 62  71
+      |(Reference)      : 
+     myrank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 35
+     myrank_all
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 59
+     namlsts
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 24
+      |(Definition)     : 
+      |(Reference)      : 6  51
+     ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 18
+      |(Definition)     : 
+      |(Reference)      : 
+     nco
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 18
+      |(Definition)     : 
+      |(Reference)      : 62  63  64  66  67  68  70
+     nout
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 18
+      |(Definition)     : 
+      |(Reference)      : 
+     npex
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 18
+      |(Definition)     : 
+      |(Reference)      : 
+     npey
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 18
+      |(Definition)     : 
+      |(Reference)      : 
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 63  70
+      |(Reference)      : 71  72  74  83
+     ocards
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 24
+      |(Definition)     : 
+      |(Reference)      : 6
+     octahedral
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 18
+      |(Definition)     : 
+      |(Reference)      : 61
+     param
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 4
+     paramt
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 11
+     pathname
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : initialized
+      |(Declaration)    : 23  28
+      |(Definition)     : 33
+      |(Reference)      : 
+     phyout
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 24
+      |(Definition)     : 
+      |(Reference)      : 6
+     rank
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 13
+     trim
+      |(Class and Type) : intrinsic function name, CHARACTER((unknown),1)
+      |(Attributes)     : PURE
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 42  51
+     truefile
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : 
+      |(Declaration)    : 23
+      |(Definition)     : 33
+      |(Reference)      : 42
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+        110  execution     (Definition) 46  
+                           (Reference)  44
+        120  execution     (Definition) 55  
+                           (Reference)  53
+
+ Total information
+   Procedures       : 1
+   Total lines      : 97
+   Total statements : 58
+   Total stack(byte): 3680
+   Total prefetch num: 0
+

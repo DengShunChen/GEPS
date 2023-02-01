@@ -1,0 +1,747 @@
+
+ Fujitsu Fortran Version 4.6.1  Wed Jan 11 10:52:15 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/tco639l72/src
+   Source file       : joinsr.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "joinsr"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine joinsr(wss,s1,s2,s3,s4,jtrun,jtmax,lev                 &
+               2                                            ,mlistnum,num,ncld)
+               3                     !
+               4                           implicit  none
+               5                           real      wss(*), s1(*), s2(*), s3(*), s4(*)
+               6                           integer   jtrun,jtmax,lev,mlistnum,num,ncld
+               7                     !
+               8                           if(num .eq. 2) call join2sr(wss,s1,s2,jtrun,jtmax,lev             &
+               9                                                      ,mlistnum,ncld)
+              10                           if(num .eq. 3) call join3sr(wss,s1,s2,s3,jtrun,jtmax,lev          &
+              11                                                      ,mlistnum,ncld)
+              12                           if(num .eq. 4) call join4sr(wss,s1,s2,s3,s4,jtrun,jtmax,lev       &
+              13                                                      ,mlistnum,ncld)
+              14                     !
+              15                           return
+              16                           end
+
+ Procedure information
+   Lines      : 16
+   Statements : 9
+   Stack(byte): 368
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : joinsr
+   Attribute and Cross reference of name
+     join2sr
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8
+     join3sr
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 10
+     join4sr
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 12
+     joinsr
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     jtmax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  6
+      |(Definition)     : 8  10  12
+      |(Reference)      : 
+     jtrun
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  6
+      |(Definition)     : 8  10  12
+      |(Reference)      : 
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  6
+      |(Definition)     : 8  10  12
+      |(Reference)      : 
+     mlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  6
+      |(Definition)     : 8  10  12
+      |(Reference)      : 
+     ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  6
+      |(Definition)     : 8  10  12
+      |(Reference)      : 
+     num
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  6
+      |(Definition)     : 
+      |(Reference)      : 8  10  12
+     s1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  5
+      |(Definition)     : 8  10  12
+      |(Reference)      : 
+     s2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  5
+      |(Definition)     : 8  10  12
+      |(Reference)      : 
+     s3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  5
+      |(Definition)     : 10  12
+      |(Reference)      : 
+     s4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  5
+      |(Definition)     : 12
+      |(Reference)      : 
+     wss
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  5
+      |(Definition)     : 8  10  12
+      |(Reference)      : 
+
+ External subroutine subprogram "join2sr"
+  (inc)(line-no.)(nest)(optimize)
+              17                     !
+              18                           subroutine join2sr(wss,s1,s2,jtrun,jtmax,lev,mlistnum,ncld)
+              19                     !
+              20                           implicit  none
+              21                           real      wss (lev,2,1+ncld,jtrun,jtmax)
+              22                           real      s1(lev,2,jtrun,jtmax)
+              23                           real      s2(lev*ncld,2,jtrun,jtmax)
+              24                           integer   jtrun,jtmax,lev,mlistnum,ncld
+              25                           integer   m,l,k,n,nk,kk
+              26                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wss
+                                   <<< Loop-information  End >>>
+              27        pp   4v            wss=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+              28     1  pp                 do 10 m=1,mlistnum
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      s1, wss
+                                   <<< Loop-information  End >>>
+              29     2   p                 do 10 l=1,jtrun
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      s1, wss
+                                   <<< Loop-information  End >>>
+              30     3   p   2v            do 10 k = 1, lev*2
+              31     3   p   2v               wss(k,1,1,l,m) = s1(k,1,l,m)
+              32     1   p   2v        10  continue
+              33                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+              34     1  pp                 do 20 m=1,mlistnum
+              35     2   p                 do 20 l=1,jtrun
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      s2, wss
+                                   <<< Loop-information  End >>>
+              36     3   p                 do 20 n=1,ncld
+              37     3   p                 nk=(n-1)*lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.50, ITR: 80, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      s2, wss
+                                   <<< Loop-information  End >>>
+              38     4   p   2v            do 20 k = 1, lev
+              39     4   p   2v               kk=nk+k
+              40     4   p   2v               wss(k,1,1+n,l,m) = s2(kk,1,l,m)
+              41     4   p   2v               wss(k,2,1+n,l,m) = s2(kk,2,l,m)
+              42     1   p   2v        20  continue
+              43                     
+              44                     !
+              45                           return
+              46                           end
+
+ Procedure information
+   Lines      : 30
+   Statements : 24
+   Stack(byte): 960
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : join2sr
+   Attribute and Cross reference of name
+     join2sr
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 18
+      |(Reference)      : 
+     jtmax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 18  24
+      |(Definition)     : 
+      |(Reference)      : 21  22  23
+     jtrun
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 18  24
+      |(Definition)     : 
+      |(Reference)      : 21  22  23  29  35
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 25
+      |(Definition)     : 30  38
+      |(Reference)      : 31  31  39  40  41
+     kk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 25
+      |(Definition)     : 39
+      |(Reference)      : 40  41
+     l
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 25
+      |(Definition)     : 29  35
+      |(Reference)      : 31  31  40  40  41  41
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 18  24
+      |(Definition)     : 
+      |(Reference)      : 21  22  23  30  37  38
+     m
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 25
+      |(Definition)     : 28  34
+      |(Reference)      : 31  31  40  40  41  41
+     mlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 18  24
+      |(Definition)     : 
+      |(Reference)      : 28  34
+     n
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 25
+      |(Definition)     : 36
+      |(Reference)      : 37  40  41
+     ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 18  24
+      |(Definition)     : 
+      |(Reference)      : 21  23  36
+     nk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 25
+      |(Definition)     : 37
+      |(Reference)      : 39
+     s1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 18  22
+      |(Definition)     : 
+      |(Reference)      : 31
+     s2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 18  23
+      |(Definition)     : 
+      |(Reference)      : 40  41
+     wss
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 18  21
+      |(Definition)     : 27  31  40  41
+      |(Reference)      : 
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+         10  execution     (Definition) 32  
+                           (Reference)  28  29  30
+         20  execution     (Definition) 42  
+                           (Reference)  34  35  36  38
+
+ External subroutine subprogram "join3sr"
+  (inc)(line-no.)(nest)(optimize)
+              47                     !
+              48                           subroutine join3sr(wss,s1,s2,s3,jtrun,jtmax,lev,mlistnum,ncld)
+              49                     !
+              50                           implicit  none
+              51                           real      wss (lev,2,2+ncld,jtrun,jtmax)
+              52                           real      s1(lev,2,jtrun,jtmax)
+              53                           real      s2(lev,2,jtrun,jtmax)
+              54                           real      s3(lev*ncld,2,jtrun,jtmax)
+              55                           integer   jtrun,jtmax,lev,mlistnum,ncld
+              56                           integer   m,l,k,n,nk,kk
+              57                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wss
+                                   <<< Loop-information  End >>>
+              58        pp   4v            wss=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+              59     1  pp                 do 10 m=1,mlistnum
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      s2, s1, wss
+                                   <<< Loop-information  End >>>
+              60     2   p                 do 10 l=1,jtrun
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.50, ITR: 80, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      s2, s1, wss
+                                   <<< Loop-information  End >>>
+              61     3   p   2v            do 10 k = 1, lev*2
+              62     3   p   2v               wss(k,1,1,l,m) = s1(k,1,l,m)
+              63     3   p   2v               wss(k,1,2,l,m) = s2(k,1,l,m)
+              64     1   p   2v        10  continue
+              65                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+              66     1  pp                 do 20 m=1,mlistnum
+              67     2   p                 do 20 l=1,jtrun
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      s3, wss
+                                   <<< Loop-information  End >>>
+              68     3   p                 do 20 n=1,ncld
+              69     3   p                 nk=(n-1)*lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.50, ITR: 80, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      s3, wss
+                                   <<< Loop-information  End >>>
+              70     4   p   2v            do 20 k = 1, lev
+              71     4   p   2v               kk=nk+k
+              72     4   p   2v               wss(k,1,2+n,l,m) = s3(kk,1,l,m)
+              73     4   p   2v               wss(k,2,2+n,l,m) = s3(kk,2,l,m)
+              74     1   p   2v        20  continue
+              75                     !
+              76                           return
+              77                           end
+
+ Procedure information
+   Lines      : 31
+   Statements : 26
+   Stack(byte): 960
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : join3sr
+   Attribute and Cross reference of name
+     join3sr
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 48
+      |(Reference)      : 
+     jtmax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 48  55
+      |(Definition)     : 
+      |(Reference)      : 51  52  53  54
+     jtrun
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 48  55
+      |(Definition)     : 
+      |(Reference)      : 51  52  53  54  60  67
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 56
+      |(Definition)     : 61  70
+      |(Reference)      : 62  62  63  63  71  72  73
+     kk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 56
+      |(Definition)     : 71
+      |(Reference)      : 72  73
+     l
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 56
+      |(Definition)     : 60  67
+      |(Reference)      : 62  62  63  63  72  72  73  73
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 48  55
+      |(Definition)     : 
+      |(Reference)      : 51  52  53  54  61  69  70
+     m
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 56
+      |(Definition)     : 59  66
+      |(Reference)      : 62  62  63  63  72  72  73  73
+     mlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 48  55
+      |(Definition)     : 
+      |(Reference)      : 59  66
+     n
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 56
+      |(Definition)     : 68
+      |(Reference)      : 69  72  73
+     ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 48  55
+      |(Definition)     : 
+      |(Reference)      : 51  54  68
+     nk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 56
+      |(Definition)     : 69
+      |(Reference)      : 71
+     s1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 48  52
+      |(Definition)     : 
+      |(Reference)      : 62
+     s2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 48  53
+      |(Definition)     : 
+      |(Reference)      : 63
+     s3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 48  54
+      |(Definition)     : 
+      |(Reference)      : 72  73
+     wss
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 48  51
+      |(Definition)     : 58  62  63  72  73
+      |(Reference)      : 
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+         10  execution     (Definition) 64  
+                           (Reference)  59  60  61
+         20  execution     (Definition) 74  
+                           (Reference)  66  67  68  70
+
+ External subroutine subprogram "join4sr"
+  (inc)(line-no.)(nest)(optimize)
+              78                     !
+              79                           subroutine join4sr(wss,s1,s2,s3,s4,jtrun,jtmax,lev,mlistnum,ncld)
+              80                     !
+              81                           implicit  none
+              82                           real      wss (lev,2,3+ncld,jtrun,jtmax)
+              83                           real      s1(lev,2,jtrun,jtmax)
+              84                           real      s2(lev,2,jtrun,jtmax)
+              85                           real      s3(lev,2,jtrun,jtmax)
+              86                           real      s4(lev*ncld,2,jtrun,jtmax)
+              87                           integer   jtrun,jtmax,lev,mlistnum,ncld
+              88                           integer   m,l,k,n,nk,kk
+              89                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wss
+                                   <<< Loop-information  End >>>
+              90        pp   4v            wss=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+              91     1  pp                 do 10 m=1,mlistnum
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      s2, s3, s1, wss
+                                   <<< Loop-information  End >>>
+              92     2   p                 do 10 l=1,jtrun
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.33, ITR: 64, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wss, s3, s1, s2
+                                   <<< Loop-information  End >>>
+              93     3   p   2v            do 10 k = 1, lev*2
+              94     3   p   2v               wss(k,1,1,l,m) = s1(k,1,l,m)
+              95     3   p   2v               wss(k,1,2,l,m) = s2(k,1,l,m)
+              96     3   p   2v               wss(k,1,3,l,m) = s3(k,1,l,m)
+              97     1   p   2v        10  continue
+              98                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+              99     1  pp                 do 20 m=1,mlistnum
+             100     2   p                 do 20 l=1,jtrun
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      s4, wss
+                                   <<< Loop-information  End >>>
+             101     3   p                 do 20 n=1,ncld
+             102     3   p                 nk=(n-1)*lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.50, ITR: 80, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      s4, wss
+                                   <<< Loop-information  End >>>
+             103     4   p   2v            do 20 k = 1, lev
+             104     4   p   2v               kk=nk+k
+             105     4   p   2v               wss(k,1,3+n,l,m) = s4(kk,1,l,m)
+             106     4   p   2v               wss(k,2,3+n,l,m) = s4(kk,2,l,m)
+             107     1   p   2v        20  continue
+             108                     !
+             109                           return
+             110                           end
+
+ Procedure information
+   Lines      : 33
+   Statements : 28
+   Stack(byte): 1008
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : join4sr
+   Attribute and Cross reference of name
+     join4sr
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 79
+      |(Reference)      : 
+     jtmax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 79  87
+      |(Definition)     : 
+      |(Reference)      : 82  83  84  85  86
+     jtrun
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 79  87
+      |(Definition)     : 
+      |(Reference)      : 82  83  84  85  86  92  100
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 88
+      |(Definition)     : 93  103
+      |(Reference)      : 94  94  95  95  96  96  104  105  106
+     kk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 88
+      |(Definition)     : 104
+      |(Reference)      : 105  106
+     l
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 88
+      |(Definition)     : 92  100
+      |(Reference)      : 94  94  95  95  96  96  105  105  106  106
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 79  87
+      |(Definition)     : 
+      |(Reference)      : 82  83  84  85  86  93  102  103
+     m
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 88
+      |(Definition)     : 91  99
+      |(Reference)      : 94  94  95  95  96  96  105  105  106  106
+     mlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 79  87
+      |(Definition)     : 
+      |(Reference)      : 91  99
+     n
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 88
+      |(Definition)     : 101
+      |(Reference)      : 102  105  106
+     ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 79  87
+      |(Definition)     : 
+      |(Reference)      : 82  86  101
+     nk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 88
+      |(Definition)     : 102
+      |(Reference)      : 104
+     s1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 79  83
+      |(Definition)     : 
+      |(Reference)      : 94
+     s2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 79  84
+      |(Definition)     : 
+      |(Reference)      : 95
+     s3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 79  85
+      |(Definition)     : 
+      |(Reference)      : 96
+     s4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 79  86
+      |(Definition)     : 
+      |(Reference)      : 105  106
+     wss
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 79  82
+      |(Definition)     : 90  94  95  96  105  106
+      |(Reference)      : 
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+         10  execution     (Definition) 97  
+                           (Reference)  91  92  93
+         20  execution     (Definition) 107  
+                           (Reference)  99  100  101  103
+
+ Total information
+   Procedures       : 4
+   Total lines      : 110
+   Total statements : 87
+   Total stack(byte): 3296
+   Total prefetch num: 0
+

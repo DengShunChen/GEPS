@@ -1,0 +1,382 @@
+
+ Fujitsu Fortran Version 4.6.1  Wed Jan 11 10:52:18 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/tco639l72/src
+   Source file       : couvtq.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "couvtq"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine couvtq ( nxj,mn,kk,ktpbl,dt,wktri,xkm,hgt,uu,beta &
+               2                                              ,dhgt,ro2)
+               3                     !
+               4                     !####################################################################
+               5                     !
+               6                     ! 1. function description
+               7                     !
+               8                     !     prepare tri-diagonal matrix for backward time scheme of
+               9                     !     the diffusion equation: du/dt = d(xkm*(du/dz))/dz
+              10                     !
+              11                     ! 2. common block specification
+              12                     !
+              13                     ! 3. parameter specification
+              14                     !
+              15                     !     mn   : number of tri-diagonal matrix (horizontal dimension)      i
+              16                     !     kk   : vertical dimension                                        i
+              17                     !     ktpbl: starting lveles to consider vertical mixing effects       i
+              18                     !     dt   : time step                                                 i
+              19                     !     wktri: output tri-diagonal matrix coef. + forcing      (mn,kk,4) o
+              20                     !     xkm  : input eddy mixing coefficient at even levels    (mn,kk)   i
+              21                     !     hgt  : input height at odd levels                      (mn,kk)   i
+              22                     !     uu   : variable to be updated by backward time scheme  (mn,kk)   i
+              23                     !     beta : parameter to control time scheme ;                        i
+              24                     !            1.0 -> backward, 1/2. -> crank-nicholson, 0. -> forward.
+              25                     !
+              26                     ! 4. local variable
+              27                     !
+              28                     ! 5. calling modules
+              29                     !
+              30                     !    mixpbl
+              31                     !
+              32                     ! 6. usage
+              33                     !
+              34                     !    call couvtq (mn,kk,ktpbl,dt,wktri,xkm,hgt,uu,beta)
+              35                     !
+              36                     ! 7. modules called
+              37                     !
+              38                     ! 8. limitation
+              39                     !
+              40                     ! 9. date
+              41                     !
+              42                     !    created    nov. 1991
+              43                     !    modified   nov. 1991
+              44                     !    remodified mar. 1992
+              45                     !
+              46                     ! 10. author
+              47                     !       c.-s. liou/ f.-j. wang,
+              48                     !       modify to f90 by C-H Lee and sort by River Chen in 2015
+              49                     !
+              50                     !#####################################################################
+              51                     !
+              52                           use const, only: RTYPE
+              53                     !
+              54                           implicit  none
+              55                     
+              56                           integer   nxj,mn,kk,ktpbl,kt,kt1,k,i,ik,iksm,iks,iksp
+              57                           real      alpha,beta,dt,xx,yy,zz
+              58                     
+              59                           real      wktri(mn,kk,4),xkm(mn,kk),hgt(mn,kk)
+              60                           real      dhgt(mn,kk),ro2(mn,kk)
+              61                           real(kind=RTYPE) uu(mn,kk)
+              62                     !
+              63                           alpha = 1.0 - beta
+              64                           kt = kk - ktpbl + 1
+              65                           kt1 = kt - 1
+              66                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      hgt, dhgt, xkm, ro2, uu, wktri
+                                   <<< Loop-information  End >>>
+              67     1                     do 120 k = 1, kt1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 180
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.39, ITR: 48, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      uu, xkm, ro2, hgt, dhgt, wktri
+                                   <<< Loop-information  End >>>
+              68     2  pp    v            do 120 i = 1, nxj
+              69     2   p    v            ik = (k-1)*mn + i
+              70     2   p    v            iksm =(ktpbl-2)*mn + ik
+              71     2   p    v            iks  =(ktpbl-1)*mn + ik
+              72     2   p    v            iksp = ktpbl   *mn + ik
+              73     2   p    v            xx = -dt*xkm(iksm,1)*ro2(iksm,1)/( dhgt(iks,1) *      &
+              74     2                                                (hgt(iksm,1)-hgt(iks,1)) )
+              75     2   p    v            yy = -dt*xkm(iks,1)*ro2(iks,1)/( dhgt(iks,1)*         &
+              76     2                                              (hgt(iks,1)-hgt(iksp,1)) )
+              77     2   p    v            wktri(ik,1,1) = beta * xx
+              78     2   p    v            wktri(ik,1,3) = beta * yy
+              79     2   p    v            wktri(ik,1,2) = 1.0 - wktri(ik,1,1) - wktri(ik,1,3)
+              80     2   p    v            wktri(ik,1,4) = uu(iks,1)   * ( 1.0 + alpha*(xx+yy) ) &
+              81     2                                  - uu(iksm,1) * alpha * xx                &
+              82     2                                  - uu(iksp,1) * alpha * yy
+              83     1   p    v        120 continue
+              84                     !
+              85                     !     fix upper b.c. (move -uu(ktpbl-1)*wktri(1,1) to forcing term)
+              86                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 220
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED(lines: 87,93)
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.09, ITR: 48, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wktri, uu, hgt, dhgt, ro2, xkm
+                                   <<< Loop-information  End >>>
+              87     1  pp    v            do 200 i = 1, nxj
+              88     1   p    v            wktri(i,1,4) = wktri(i,1,4) - uu(i,ktpbl-1)*wktri(i,1,1)
+              89     1   p    v        200 continue
+              90                     !
+              91                     !     fix lower b.c.
+              92                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED
+                                   <<< Loop-information  End >>>
+              93     1                     do 220 i = 1, nxj
+              94     1                     zz = - dt*xkm(i,kk-1)*ro2(i,kk-1)/( dhgt(i,kk) *       &
+              95     1                                                 (hgt(i,kk-1)-hgt(i,kk)) )
+              96     1                     wktri(i,kt,1) = beta * zz
+              97     1                     wktri(i,kt,3) = 0.0
+              98     1                     wktri(i,kt,2) = 1.0 - wktri(i,kt,1) - wktri(i,kt,3)
+              99     1                     wktri(i,kt,4) = uu(i,kk)   * ( 1.0 + alpha*zz )        &
+             100     1                                   - uu(i,kk-1) * alpha * zz
+             101     1                 220 continue
+             102                     !
+             103                           return
+             104                           end
+
+ Procedure information
+   Lines      : 104
+   Statements : 36
+   Stack(byte): 1424
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : couvtq
+   Attribute and Cross reference of name
+     alpha
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 57
+      |(Definition)     : 63
+      |(Reference)      : 80  80  80  99  99
+     beta
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  57
+      |(Definition)     : 
+      |(Reference)      : 63  77  78  96
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 52
+     couvtq
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     dhgt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  60
+      |(Definition)     : 
+      |(Reference)      : 73  75  94
+     dt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  57
+      |(Definition)     : 
+      |(Reference)      : 73  75  94
+     hgt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  59
+      |(Definition)     : 
+      |(Reference)      : 73  73  75  75  94  94
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 56
+      |(Definition)     : 68  87  93
+      |(Reference)      : 69  88  88  88  88  94  94  94  94  94  96  97  98  98  98  99  99  99
+     ik
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 56
+      |(Definition)     : 69
+      |(Reference)      : 70  71  72  77  78  79  79  79  80
+     iks
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 56
+      |(Definition)     : 71
+      |(Reference)      : 73  73  75  75  75  75  80
+     iksm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 56
+      |(Definition)     : 70
+      |(Reference)      : 73  73  73  80
+     iksp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 56
+      |(Definition)     : 72
+      |(Reference)      : 75  80
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 56
+      |(Definition)     : 67
+      |(Reference)      : 69
+     kk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  56
+      |(Definition)     : 
+      |(Reference)      : 59  59  59  60  60  61  64  94  94  94  94  94  99  99
+     kt
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 56
+      |(Definition)     : 64
+      |(Reference)      : 65  96  97  98  98  98  99
+     kt1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 56
+      |(Definition)     : 65
+      |(Reference)      : 67
+     ktpbl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  56
+      |(Definition)     : 
+      |(Reference)      : 64  70  71  72  88
+     mn
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  56
+      |(Definition)     : 
+      |(Reference)      : 59  59  59  60  60  61  69  70  71  72
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  56
+      |(Definition)     : 
+      |(Reference)      : 68  87  93
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 52  61
+     ro2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  60
+      |(Definition)     : 
+      |(Reference)      : 73  75  94
+     uu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  61
+      |(Definition)     : 
+      |(Reference)      : 80  80  80  88  99  99
+     wktri
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  59
+      |(Definition)     : 77  78  79  80  88  96  97  98  99
+      |(Reference)      : 79  79  88  88  98  98
+     xkm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  59
+      |(Definition)     : 
+      |(Reference)      : 73  75  94
+     xx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 57
+      |(Definition)     : 73
+      |(Reference)      : 77  80  80
+     yy
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 57
+      |(Definition)     : 75
+      |(Reference)      : 78  80  80
+     zz
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 57
+      |(Definition)     : 94
+      |(Reference)      : 96  99  99
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+        120  execution     (Definition) 83  
+                           (Reference)  67  68
+        200  execution     (Definition) 89  
+                           (Reference)  87
+        220  execution     (Definition) 101  
+                           (Reference)  93
+
+ Total information
+   Procedures       : 1
+   Total lines      : 104
+   Total statements : 36
+   Total stack(byte): 1424
+   Total prefetch num: 0
+
