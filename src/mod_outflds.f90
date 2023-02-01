@@ -426,34 +426,44 @@ contains
       character*26 ihdg,ihdg2
       character*6 lrec(lpout)
       character*4 ggdef
-      character*3 cspec(8)
+!      character*3 cspec(8)
+      character*3,dimension(:),allocatable :: cspec
       logical :: lwrite
       integer::Ptp0,Ptp1,Ptp2,Ptp3
-      integer,dimension(6)::cspe0,cspe1,cspe2,cspe3
+!      integer,dimension(6)::cspe0,cspe1,cspe2,cspe3
+      integer,dimension(:),allocatable ::cspe0,cspe1,cspe2,cspe3
 !
 !key=556 for mixing ratio of hail
 !key=571~575 for number concentration of cloud droplet, ice, rain, snow, and graupel
 !key=572 : inc (ntinc=7)
 !key=573 : rnc (ntrnc=8)
       if ( nmmiph .eq. 9 ) then
+        allocate ( cspec(8),cspe0(8),cspe1(8),cspe2(8),cspe3(8) )
         cspec=(/'500','551','553','552','554','555','572','573'/)
+        cspe0=(/  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  /)
+        cspe1=(/  1  ,  1  ,  1  ,  1  ,  1  ,  1  ,  1  ,  1  /)
+        cspe2=(/  0  , 22  , 24  , 82  , 25  , 32  , 207 , 104 /)  !not sure of inc
+        cspe3=(/  6  ,  8  ,  8  ,  8  ,  8  ,  8  ,  8  ,  8  /)
       elseif ( nmmiph .eq. 16 ) then
-        cspec=(/'500','551','553','552','554','555','556','   '/)
+        allocate ( cspec(7),cspe0(7),cspe1(7),cspe2(7),cspe3(7) )
+        cspec=(/'500','551','553','552','554','555','556'/)
+        cspe0=(/  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  /)
+        cspe1=(/  1  ,  1  ,  1  ,  1  ,  1  ,  1  ,  1  /)
+        cspe2=(/  0  , 22  , 24  , 82  , 25  , 32  , 71  /)
+        cspe3=(/  6  ,  8  ,  8  ,  8  ,  8  ,  8  ,  8  /)
       else
-        cspec=(/'500','551','553','552','554','555','   ','   '/)
+        allocate ( cspec(6),cspe0(6),cspe1(6),cspe2(6),cspe3(6) )
+        cspec=(/'500','551','553','552','554','555'/)
+        cspe0=(/  0  ,  0  ,  0  ,  0  ,  0  ,  0  /)
+        cspe1=(/  1  ,  1  ,  1  ,  1  ,  1  ,  1  /)
+        cspe2=(/  0  , 22  , 24  , 82  , 25  , 32  /)
+        cspe3=(/  6  ,  8  ,  8  ,  8  ,  8  ,  8  /)
       endif
-!      cspec=(/'500','551','553','552','554','555'/)
-      cspe0=(/  0  ,  0  ,  0  ,  0  ,  0  ,  0  /)
-      cspe1=(/  1  ,  1  ,  1  ,  1  ,  1  ,  1  /)
-      cspe2=(/  0  , 22  , 24  , 82  , 25  , 32  /)
-      cspe3=(/  6  ,  8  ,  8  ,  8  ,  8  ,  8  /)
 !
       if ( ntoz .gt. 0 ) then
         ntrchk = ntoz - 1
-!        if ( nmmiph .eq. 9 ) ntrchk = 6  !Thompson with single-moment output
       else
         ntrchk = ncld
-!        if ( nmmiph .eq. 9 ) ntrchk = 6  !Thompson with single-moment output
       endif
 !
       do k = 1, lev+1
