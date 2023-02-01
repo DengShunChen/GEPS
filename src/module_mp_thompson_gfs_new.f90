@@ -428,7 +428,7 @@
       LOGICAL:: thompson_table_writer
 
 !..cloud fraction scheme
-      integer, public :: cfflag_thom = 2
+      integer, public :: cfflag_thom = 1
       ! 1 : Xu-Randall
       ! 2 : Thompson
 
