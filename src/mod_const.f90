@@ -82,7 +82,9 @@
     ! for stochastic physics
     logical :: dosppt       =.false.
     logical :: dospptout    =.false.
+    logical :: doskebout    =.false.
     logical :: doshum       =.false.
+    logical :: doskeb       =.false.
     logical :: dossst       =.false.
     logical :: use_zmtnblck =.false.
          
@@ -116,6 +118,13 @@
     ! sit
     logical :: do_sit
 
+    ! SKEB
+    logical :: first_call
+
+    !for output 
+    integer :: outgrb2    !output grib2 format
+    integer :: outdms     !output dmskey
+
     common/constL/lsimpl,lzadv,yesdia,dopbl,docup,dorad,   &
             dolsp, dograv,doshl, dodry, donnmi,ozon,       &
             restrt,hdiff, cstar, update,doincr,hybrid,     &
@@ -127,7 +136,7 @@
     character(len=80) ifilin,cwbout,bckfile,namlsts, &
             ifilout,crdate,ocards,phyout,cntrl, &
             ifilin_ncep,ifilin_sst,ifilin_nc,   &
-            ifilin_ClmANA,ifilin_ClmFCT
+            ifilin_ClmANA,ifilin_ClmFCT,ifilout_grb
 
     common/files/ifilin,cwbout,bckfile,namlsts, &
             ifilout,crdate,ocards,phyout,cntrl, &

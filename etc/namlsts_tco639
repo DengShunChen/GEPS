@@ -66,6 +66,8 @@
  out_green=t,
  otgreen=3.,
  out_hp=f,
+ outdms   =1,
+ outgrb2  =0, 
  ndsladvh2=f,
  isot=1,
  ivegsrc=1,
@@ -73,7 +75,7 @@
  cmbk=1.00,
  af=0.1,
  &end
-
+ 
  &typ
  write_mem=0,
  trk_intv=3,

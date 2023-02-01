@@ -278,7 +278,7 @@
       INTEGER              :: dt_start(6) = 0    ! (runctl) start date of experiment
                                              ! meaning (yr, mo, dy, hr, mi, se)
 !!!  TYPE(time_days),SAVE :: start_date         ! transformed start date
-      LOGICAL              :: lsitstart    = .TRUE. ! .TRUE. for the first time step
+      LOGICAL              :: lsitstart    = .FALSE. ! .TRUE. for the first time step
     
       LOGICAL            :: lfirst_day = .TRUE.  ! .TRUE. during the first day
       LOGICAL            :: l2nd_day   = .TRUE.  ! .TRUE. during the first+second day
