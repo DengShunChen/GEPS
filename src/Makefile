@@ -427,7 +427,7 @@ endif
 .f90.o:
 	@echo
 	@echo 'compile --> '$<
-	$(FC90) $(FFLAGS) $<
+	$(FC90) $(FFLAGS) $(LIBS) $<
 
 .c.o:
 	@echo
