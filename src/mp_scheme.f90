@@ -153,6 +153,8 @@
               rew2d,rer2d,rei2d,res2d,reg2d,                            &
               t2d,dp2d,dz2d,cld2d,w2d,u2d,v2d
 ! New Thompson MP
+      real, parameter :: qmin=1.0e-12 !(kg/kg)
+      real, parameter :: qnmin=1.0e-6 !(m^-3)
       real,dimension(:,:),allocatable ::                                &
               nwfa,nifa,pfils,pflls,vt_dbz_wt
       real,dimension(:),allocatable :: nwfasfc,nifasfc,rainnc,snownc,   &
@@ -447,8 +449,14 @@
         do k = 1, lev
           kc = lev - k + 1
           do i = 1, nxj
-            if ( qni2d(i,k) .lt. 1.E-10 ) qni2d(i,k) = 1.E-10
-            if ( qnr2d(i,k) .lt. 1.E-10 ) qnr2d(i,k) = 1.E-10
+            if ( qc2d(i,kc) .lt. qmin ) qc2d(i,kc) = qmin
+            if ( qr2d(i,kc) .lt. qmin ) qr2d(i,kc) = qmin
+            if ( qi2d(i,kc) .lt. qmin ) qi2d(i,kc) = qmin
+            if ( qs2d(i,kc) .lt. qmin ) qs2d(i,kc) = qmin
+            if ( qg2d(i,kc) .lt. qmin ) qg2d(i,kc) = qmin
+            if ( qni2d(i,kc) .lt. qnmin ) qni2d(i,kc) = qnmin
+            if ( qnr2d(i,kc) .lt. qnmin ) qnr2d(i,kc) = qnmin
+
             qt(i,              k) = qv2d (i,kc)
             qt(i,(ntcw-1) *lev+k) = qc2d (i,kc)
             qt(i,(ntrw-1) *lev+k) = qr2d (i,kc)
