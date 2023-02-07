@@ -172,7 +172,8 @@
 ! GFDLMP
       real, parameter ::                                                &
                 rainmin=1.0e-10 !(mm)
-      logical   hydrostatic,phys_hydrostatic,sedi_w 
+      logical   hydrostatic,phys_hydrostatic,sedi_w
+      integer :: isedi
      !GFDL MP v2 & v3
       real, dimension(:), allocatable ::                                &
                 gsize,hs,water1d,rain1d,snow1d,ice1d,graupel1d
@@ -668,6 +669,11 @@
         last_step = .true.          !flag for final clean-up (not sure)
         do_inline_mp = .false.      !flag for inline GFDLMP
 
+        isedi = 1                   !flag for sedimentation scheme of precipitating hydrometeors
+                                    !  =1 : time implicit
+                                    !  =2 : PPM Lagrangian
+                                    !  =3 : semi-Lagrangian (from Thompson MP)
+
         te    = 0.0
         q_con = 0.0  !not sure
         cappa = 0.0  !not sure
@@ -736,7 +742,7 @@
                   prefluxr, prefluxi, prefluxs, prefluxg,               &
                   cond0, dep0, evap0, sub0,                             &
 #endif
-                  last_step, do_inline_mp )
+                  last_step, do_inline_mp, isedi )
 
         ! GFDL MP v3
         if ( nmmiph .eq. 13 )                                           &
