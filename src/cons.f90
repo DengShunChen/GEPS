@@ -81,7 +81,7 @@
 ! output data for RSM (Also, RSM compiling flag is necessary)
                       , outrsm,rsmoutinv,rlon1,rlon2,rlat1,rlat2,rgrdsz &
                       , cmbk,cgwd,nmmiph,spl1,spl2                      &
-                      , weightSIT,dSITdt_intv,af,mwhd,doclx,doslavepp   &
+                      , weightSIT,dSITdt_intv,mwhd,doclx,doslavepp   &
                       , outdms,outgrb2
 !
       real    si(lev+1)
@@ -338,8 +338,8 @@
         prslp=sigma(k,2)+sigma(k,1)*1000.+ptop
         if ( prslp .le. spl1  ) hdk1=k
         if ( prslp .le. spl2  ) hdk2(1)=k
-        if ( prslp .le. 200.  ) hdk2(2)=k
-        if ( prslp .le. 400.  ) hdk2(3)=k
+        if ( prslp .le. 100.  ) hdk2(2)=k
+        if ( prslp .le. 200.  ) hdk2(3)=k
       enddo
 !
 !

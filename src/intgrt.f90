@@ -93,7 +93,7 @@
       real      tmin(nxp,my_max),tmax(nxp,my_max)!,td(nxp,my_max),temp
 !
       real(kind=RTYPE) pltemp(jtrun,jtmax,2),cc(nx+2,levp,1,my_max)
-      real      sptm(jtrun,jtmax,2),ww1(nx,my_max)
+      real      ww1(nx,my_max)
 !byl      real      dlgeo(nxp,my_max),dtgeo(nxp,my_max)
 !byl      real      cc3(nx+2,levp,3,my_max),wss3(levp,2,3,jtrun,jtmax)
 !
@@ -103,7 +103,7 @@
       real      fac(ktop), wkj(my,4), wkmf(jtrun), windmax3
       data      windmax3/130./
 !
-      logical   histim, tchange, flag
+      logical   histim, tchange, flag, forward
 !
       logical   wrestrt
       data      wrestrt/.false./
@@ -145,7 +145,8 @@
       real    www,dtx,dta,dth,dtq,thdai,tkei,tpei,dsigp,    &
               cosw,tengi,dt24,tg2,dtx_tau,hfiltx,sqhaf,     &
               dt1,sptend,wmax,xx,facw,dtaup,                &
-              sptendmax2,sptendmax1,dt_chg,prslp,alphax
+              sptendmax2,sptendmax1,dt_chg,prslp,alphax,    &
+              tfilt
       integer itimestep,recn
 
 ! for io quilting
@@ -214,6 +215,7 @@
 !      data facm/1.,0.,1.5,-0.5/
       data facm/ 1.   , 0.  , &
                  1.5  ,-0.5 /
+
 
 !
       year = idate(1)
@@ -427,11 +429,10 @@
       itter=1
 !
       dta = dtx
-      dth = 0.5*dta
-      dtq = 0.5*dth
       itter=1
       ndsldta = 0.5*dta
       ndsldtah= ndsldta/float(itter)
+      dth     = 0.5*dta
 !
 !  compute initial moisture and potential temperature
 !
@@ -537,20 +538,6 @@
 !
 ! sppt
       itimestep=1
-      ptm=0.
-      do jj = 1, jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-        do i = 1,nxj
-          ptm(i,jj)= sgeo(i,jj)/(rgas*288.5)
-          call vexp(ptm(i,jj),ptm(i,jj),1)
-        enddo
-      enddo
-      call mpe2d_unify_nx(ww1,ptm) 
-      call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1         &
-                  ,sptm,nsizey)
-!      call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,spgeo    &
-!                  ,dlgeo,dtgeo,nsizey)
 !
       alphax=alpha
       n_stable=0
@@ -559,8 +546,8 @@
       if(dta.gt.720)then
 !!        dt_chg=1800.
         nc_stable=1
-        sptendmax2=0.3405
-        sptendmax1=0.2405
+        sptendmax2=0.3005
+        sptendmax1=0.2005
       else if(dta.le.720 .and. dta.gt.450 )then
 !!        dt_chg=720.
         nc_stable=2
@@ -649,20 +636,6 @@
       endif
 
 !
-!      if(tau.lt.12.)then
-!         hfiltx=hfilt
-!         alpha = 0.75
-!      else if(tau.ge.6. .and. tau.le.9.)then
-!         hfiltx=hfilt*2.
-!         alpha = 0.75
-!      else if(tau.gt.9. .and. tau.le.12.)then
-!         hfiltx=hfilt*2.
-!         alpha = 0.75
-!      endif
-
-
-
-
 !!      endif
 !
 !  global mean tempertures (tbar) and specific humid (qbar)
@@ -684,44 +657,15 @@
  
 !     estimate all field at t+dt/2
         itt=min(itimestep,2)
-!ndy        do m = 1, mlistnum
-!ndy          mf=mlist(m)
-!ndy          do n = mf, jtrun
-!ndy            do i = 1, 2
-!ndy            do k = 1, levp
-!ndy              temmid(k,i,n,m)= facm(1,itt) * temnow(k,i,n,m)    &
-!ndy                             + facm(2,itt) * temold(k,i,n,m)
-!ndy            enddo
-!ndy            enddo
-!ndy          enddo
-!ndy        enddo
-!
-        do i = 1, 2
-          do m = 1, mlistnum
-            mf=mlist(m)
-            do n = mf, jtrun
-              plmid(n,m,i)= facm(1,itt) * plnow(n,m,i)   &
-                          + facm(2,itt) * plold(n,m,i)
-            enddo
-          enddo
-        enddo
 !
       do jj = 1, jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
         do k = 1, lev
           do i = 1,nxj
-            um(i,k,jj) = facm(1,itt) * ut(i,k,jj) &
-                       + facm(2,itt) * up(i,k,jj)
-            vm(i,k,jj) = facm(1,itt) * vt(i,k,jj) &
-                       + facm(2,itt) * vp(i,k,jj)
-            tm(i,k,jj) = facm(1,itt) * tt(i,k,jj) &
-                       + facm(2,itt) * ttp(i,k,jj)
-            rdivm(i,k,jj)= facm(1,itt) * rdiv(i,k,jj) &
-                         + facm(2,itt) * rdivm(i,k,jj)
-!            up(i,k,jj) = ut(i,k,jj)
-!            vp(i,k,jj) = vt(i,k,jj)
-!            ttp(i,k,jj)= tt(i,k,jj)
+            up(i,k,jj) = ut(i,k,jj)
+            vp(i,k,jj) = vt(i,k,jj)
+            ttp(i,k,jj)= tt(i,k,jj)
           enddo
         enddo
         do k = 1, lev*ncld
@@ -757,6 +701,7 @@
        pten=0.
 
        deldm=0.
+       forward = .true.
 
 !
 !
@@ -776,7 +721,7 @@
 !
 !      do itt = 1,itter
         call ndslfv_monoadvh_fgnl(uum_sl,vvm_sl,ttm_sl     &
-                             ,nxdef,dtq,xy,levp,3)
+                             ,nxdef,dth,xy,levp,3,forward)
 !      enddo
 !
       call mpe2d_transpose_ndsl_f2p(uum_sl,vdzonl, &
@@ -785,68 +730,6 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_f2p(ttm_sl,ddtemp, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-!
-!    advect pressure gradient force from t to t+dt
-!
-!ndy      do jj = 1, jlistnum
-!ndy        j=jlist1(jj)
-!ndy        nxj=nxdef_2d(j)
-!
-!   new p**capa quantities were computed in previous diabat call
-!
-!ndy        call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pt(1,jj), &
-!ndy                                pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
-!
-!       Calculate Vertical velocity & Stream Functions
-!
-!ndy        call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld              &
-!ndy        , cp,radsq,ut(1,1,jj),vt(1,1,jj),rdiv(1,1,jj),tt(1,1,jj)       &
-!ndy        , qt(1,1,jj),phi(1,1,jj),pt(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
-!ndy        , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)         &
-!ndy        , diveng(1,1,jj),vdmerdr(1,1,jj),vdzonlr(1,1,jj),pten(1,1,jj)  &
-!ndy        , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),sgeo(1,jj),2 )
-!
-!ndy      enddo !jj = 1,jlistnum
-!
-!ndy      call joinrs(cc,diveng,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-!ndy      call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc         &
-!ndy                 ,hldten,1,nsizey)
-!ndy      call trngra3(jtrun,jtmax,nx,levp,my,my_max,cim,poly,dpoly        &
-!ndy                 ,hldten,dlphi,dtphi,nsizey)
-!
-!ndy      do jj = 1, jlistnum
-!ndy        j=jlist1(jj)
-!ndy        nxj=nxdef_2d(j)
-!ndy        do k=1,lev
-!ndy          do i=1,nxj
-!ndy            vdmerdr(i,k,jj) = vdmerdr(i,k,jj)-dtphi(i,k,jj)/radsq/onocos(j)
-!ndy            vdzonlr(i,k,jj) = vdzonlr(i,k,jj)-dlphi(i,k,jj)/radsq 
-!ndy          enddo
-!ndy        enddo
-!ndy      enddo !jj = 1,jlistnum
-!
-!     advet grid pressure gradient force from t to t+dt via NDSL advection
-!
-!ndy      call mpe2d_transpose_ndsl_p2f(vdzonlr,uum_sl,   &
-!ndy                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-!ndy      call mpe2d_transpose_ndsl_p2f(vdmerdr,vvm_sl,   &
-!ndy                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-!!      call mpe2d_transpose_ndsl_p2f(diveng,ttm_sl,    &
-!!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-!
-!!      do itt = 1,itter
-!ndy        call ndslfv_monoadvh_fgnl(uum_sl,vvm_sl,ttm_sl  &
-!ndy                             ,nxdef,ndsldtah,xy,levp,2)
-!!      enddo
-!
-!CWB2021 note, both arrays can be single precision
-!ndy      call mpe2d_transpose_ndsl_f2p(uum_sl,vdzonlrp, &
-!ndy                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-!ndy      call mpe2d_transpose_ndsl_f2p(vvm_sl,vdmerdrp, &
-!ndy                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-!!      call mpe2d_transpose_ndsl_f2p(ttm_sl,pten, &
-!!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-
 !
 !     calculate vertical velocity at mid-point
 !
@@ -886,22 +769,18 @@
         nxj=nxdef_2d(j)
         do k=1,lev
           do i=1,nxj
-!ndy            vdmerdrp(i,k,jj) = 0.5*(vdmerdr(i,k,jj)+vdmerdrp(i,k,jj))
-!ndy            vdzonlrp(i,k,jj) = 0.5*(vdzonlr(i,k,jj)+vdzonlrp(i,k,jj))
             vdmerdrp(i,k,jj) = vdmerdg(i,k,jj)-dtphi(i,k,jj)/radsq/onocos(j)
             vdzonlrp(i,k,jj) = vdzonlg(i,k,jj)-dlphi(i,k,jj)/radsq
           enddo
         enddo
       enddo !jj = 1,jlistnum
 
-!     call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlrp,vdmerdrp,ndsldta)
-!
-!     call ndslfv_monoadvv_fgnl(vdzonl,vdmerd,ddtemp,pdot,ptm &
-
 !CWB2021 ndsl single precision test
-      call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlrp,vdmerdrp,dtq)
+      call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlrp,vdmerdrp,dth,forward)
       call ndslfv_monoadvv_fgnl(vdzonl,vdmerd,ddtemp,pdot,pt &
-                          ,nxjp,dtq,3)
+                          ,nxjp,dth,3,forward)
+
+       forward = .false.
 !CWB2021 ndsl single precision test
 
 !
@@ -928,7 +807,7 @@
                ,weight,cim,onocos,poly,dpoly,divten,vorten,nsizey)
       call siimpl ( jtrun,jtmax,lev,dth,ptmeans,dsigma,spalm,eps4,eigval &
                   , evecin,evectr,arrhyd,arsddt,temnow,divnow,plnow      &
-                  , temnow,divnow,plnow,temten,divten,plten,alphax)
+                  , temnow,divnow,plnow,temten,divten,plten,0.8)
 
 !      call trandv ( jtrun,jtmax,nx,my,my_max,lev,vdzonl,vdmerd,weight,cim &
 !                   ,onocos,poly,dpoly,vormid,divmid,nsizey)
@@ -968,13 +847,9 @@
         enddo
       enddo
 !        
-      call whdiffu ( dth,my,my_max,nx,jtrun,jtmax,lev,ncld         &
+      call whdiffu ( dth,my,my_max,nx,jtrun,jtmax,lev,ncld     &
                    ,hfiltx,rad,cosl,ut,vt,vormid,divmid,temmid     &
                    ,eps4,trefs)
-!
-!      call whdiffu ( dta,my,my_max,nx,jtrun,jtmax,lev,ncld       &
-!                   ,hfiltx,rad,cosl,ut,vt,vormid,divmid          &
-!                   ,eps4,trefs)
 !
 !
 !     update all new wind field at mid-point
@@ -1092,25 +967,10 @@
                                     nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !#endif
 !
-!     estimat grid non-linear forcing at t+dt/2 by averaging grid non-linear forcing at t and t+dt
-!
-
-!ndy      do jj = 1, jlistnum
-!ndy        j=jlist1(jj)
-!ndy        nxj=nxdef_2d(j)
-!ndy        do i=1,nxj
-!ndy          do k=1,lev
-!ndy            vdmerdrp(i,k,jj) = af*vdmerdrp(i,k,jj)+(1.-af)*vdmerdg(i,k,jj)
-!ndy            vdzonlrp(i,k,jj) = af*vdzonlrp(i,k,jj)+(1.-af)*vdzonlg(i,k,jj)
-!ndy          enddo
-!ndy        enddo
-!ndy      enddo !jj = 1,jlistnum
-!ch<
-!
 !       update all horizontal informations
 !
 
-      call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlg,vdmerdg,ndsldta)
+      call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlg,vdmerdg,ndsldta,forward)
 
 !CWB2021 ndsl single precision test
 !
@@ -1118,7 +978,7 @@
 !
 !       call ndslfv_monoadvv(ddtemp,qt,vdzonl,vdmerd,pdot,ptm      &
         call ndslfv_monoadvv(ddtemp,qt,vdzonl,vdmerd,pdot,ptm &
-                            ,nxjp,ndsldta)
+                            ,nxjp,ndsldta,forward)
 
 !CWB2021 ndsl single precision test
 
@@ -1221,14 +1081,9 @@
 !   tendencies to stablize integration for long time steps
 !
 !CWB2021
-!     call siimpl ( jtrun,jtmax,lev,dta,ptmeans,dsigma,spalm,eps4,eigval &
-!                 , evecin,evectr,arrhyd,arsddt,temnow,divnow,plnow      &
-!                 , temmid,divmid,plmid,temten,divten,plten,alpha)
-
       call siimpl ( jtrun,jtmax,lev,dta,ptmeans,dsigma,spalm,eps4,eigval &
                   , evecin,evectr,arrhyd,arsddt,temnow,divnow,plnow      &
                   , temmid,divmid,plmid,temten,divten,plten,alphax)
-
 !
       endif
 !
@@ -1307,6 +1162,32 @@
                              , hfiltx,rad,cosl,um,vm,vornow,divnow,temnow  &
                              , eps4,trefs)
 !
+!  robert time filter
+!
+!        tfilt=0.07
+!        do m = 1, mlistnum
+!          mf=mlist(m)
+!          do n = mf, jtrun
+!            do k = 1, lev*2
+!              vormid(k,1,n,m)= vormid(k,1,n,m) + tfilt*( vorold(k,1,n,m) &
+!                             - 2.0*vormid(k,1,n,m)+vornow(k,1,n,m) )
+!              divmid(k,1,n,m)= divmid(k,1,n,m) + tfilt*( divold(k,1,n,m) &
+!                             - 2.0*divmid(k,1,n,m)+divnow(k,1,n,m) )
+!              temmid(k,1,n,m)= temmid(k,1,n,m) + tfilt*( temold(k,1,n,m) &
+!                             - 2.0*temmid(k,1,n,m)+temnow(k,1,n,m) )
+!            enddo
+!          enddo
+!        enddo
+!        do m =1,mlistnum
+!          mf=mlist(m)
+!          do n  = mf,jtrun
+!            plmid(n,m,1)  = plmid(n,m,1) + tfilt*( plold(n,m,1) &
+!                          - 2.0*plmid(n,m,1)+plnow(n,m,1) )
+!            plmid(n,m,2)  = plmid(n,m,2) + tfilt*( plold(n,m,2) &
+!                          - 2.0*plmid(n,m,2)+plnow(n,m,2) )
+!          enddo
+!        enddo
+!
 !
 !        if ( mod(itimestep,2) .eq. 0 ) xy = -1 * xy
         xy = -1 * xy
@@ -1357,18 +1238,6 @@
         enddo
         dt24 = dt24 + dtx
 !
-      do jj = 1, jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-        do k = 1, lev
-          do i = 1,nxj
-            up(i,k,jj) = ut(i,k,jj)
-            vp(i,k,jj) = vt(i,k,jj)
-            ttp(i,k,jj)= tt(i,k,jj)
-            rdivm(i,k,jj)  = rdiv(i,k,jj)
-          enddo
-        enddo
-       enddo
 !
 !  from updated spectral variables compute corresponding grid
 !  point fields
@@ -1396,13 +1265,6 @@
 !
 !  zonal and meridional gradients of terrain pressure
 !
-!!      do m = 1, mlistnum
-!!        mf=mlist(m)
-!!        do n = mf, jtrun
-!!          pltemp(n,m,1)= plnow(n,m,1)+sptm(n,m,1)
-!!          pltemp(n,m,2)= plnow(n,m,2)+sptm(n,m,2)
-!!        enddo
-!!      enddo
       call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,plnow &
                    ,dlpl,dtpl,nsizey)
 !

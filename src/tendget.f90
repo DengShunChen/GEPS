@@ -56,6 +56,8 @@
 !for 2dMPI
       real(kind=RTYPE) temten1(lev,2,jtrun,jtmax)
       real(kind=RTYPE) phiten1(lev,2,jtrun,jtmax)
+      logical forward
+      forward = .false.
       phiten1=0.
 
 !
@@ -256,14 +258,14 @@
             enddo
           enddo
         enddo !jj = 1,jlistnum
-      call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlr,vdmerdr,dta)
+      call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlr,vdmerdr,dta,forward)
 
 !CWB2021 ndsl single precision test
 !
 !
 !       Vertical Advection
 !
-      call ndslfv_monoadvv(ddtemp,qvadv,vdzonl,vdmerd,pdot,pt,nxjp,dta)
+      call ndslfv_monoadvv(ddtemp,qvadv,vdzonl,vdmerd,pdot,pt,nxjp,dta,forward)
 
 !CWB2021 ndsl single precision test
 

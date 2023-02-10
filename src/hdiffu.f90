@@ -6,7 +6,7 @@
       use rank
       use const, only : hdk1,hdk2,radsq,doskeb,onocos,wcfac,wdfac      &
                       , poly,dpoly,hord,vd,RTYPE
-      use param, only : octahedral,af
+      use param, only : octahedral
 
       implicit  none
 
@@ -28,7 +28,7 @@
       real      windmax1,windmax2,windmax3
 
       integer   jj,j,nxj,k,i,m,n,mf,nc,kk,KL
-      real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu,finc
+      real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu
       real      hfilt,hfilt2,nf,dec,coefu,factop,powd,kfac
       real      c1,c2,c3
       logical   windchk
@@ -62,12 +62,11 @@
 !!      enddo
 !
 !
-      finc = 10.*max(af,0.001)
       powd = float(hord) / 2.
       hfilt  = (radsq/(nf*(nf+1)))**powd
       hfilt2 = radsq/(nf*(nf+1))
-      factop = 1.5
-      coefu = factop/float(hdk2(3)-hdk2(2))
+      factop = 60.
+      coefu = factop/float(hdk2(1)-hdk1)
       if ( octahedral ) then
         hfilt  = hfilt/(6.*dta)
         hfilt2 = hfilt2/(6.*dta)
@@ -82,10 +81,10 @@
 !
         KL=Llist(k)
 !
-        kfac  = (1.+finc)*max(float(hdk2(1)-KL),0.)
-        facd = max(amp,kfac)
-        facv = max(min(amp,1.),kfac)
-        fact = max(min(amp,1.),kfac)
+        kfac = min(coefu*max(float(hdk2(1)-KL),0.),factop)
+        facd = max(1.,kfac)*amp
+        facv = max(1.,kfac)*amp
+        fact = max(1.,kfac)*amp
 !!        facd = 1. * amp * (kfac + 2.*max(float(hdk1-KL),0.))
 !!        facv = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
 !!        fact = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
@@ -130,8 +129,8 @@
             vornow(k,2,n,m)=vornow(k,2,n,m)/c1
             divnow(k,1,n,m)=divnow(k,1,n,m)/c2
             divnow(k,2,n,m)=divnow(k,2,n,m)/c2
-!!            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
-!!            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
+!            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
+!            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
             temnow(k,1,n,m)=temnow(k,1,n,m)/c3
             temnow(k,2,n,m)=temnow(k,2,n,m)/c3
           enddo
@@ -155,7 +154,7 @@
 !  sometimes wind speed greater than 100m/s happens at k=2
 !
       windchk=.false.
-      do k=1,8
+      do k=1,hdk1
         if ( wmax(k) .gt. windmax3 ) windchk=.true.
       enddo
       if ( windchk ) then
@@ -175,7 +174,7 @@
       use mpe
       use rank
       use const, only : hdk1,hdk2,radsq,RTYPE
-      use param, only : octahedral,af
+      use param, only : octahedral
 
       implicit  none
 
@@ -194,7 +193,7 @@
 
       integer   jj,j,nxj,k,i,m,n,mf,nc,kk,KL
       real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu
-      real      hfilt,hfilt2,nf,ncut,ncor,kfac,finc
+      real      hfilt,hfilt2,nf,ncut,ncor,kfac
       real      c1,c2,c3
       logical   windchk
 
@@ -203,7 +202,6 @@
 !
 
 !
-      finc = 10.*max(af,0.001)
       nf=jtrun-1
       ncut=0.5*jtrun
       wmax(1:lev)= 0.0
@@ -242,7 +240,7 @@
 
          KL=Llist(k)
 !
-         kfac  = min((5.+finc)*max(float(hdk2(1)-KL),0.),60.+5.*finc)
+         kfac  = min(5.*max(float(hdk2(1)-KL),0.),60.)
          facd = amp + kfac
          facv = amp + kfac
          fact = amp + kfac
@@ -302,7 +300,7 @@
 !  sometimes wind speed greater than 100m/s happens at k=2
 !
       windchk=.false.
-      do k=1,8
+      do k=1,hdk1
         if ( wmax(k) .gt. windmax3 ) windchk=.true.
       enddo
 !
@@ -321,7 +319,7 @@
       use mpe
       use rank
       use const, only : hdk1,hdk2,radsq,vd,RTYPE
-      use param, only : octahedral,af,mwhd
+      use param, only : octahedral,mwhd
 
       implicit  none
 
@@ -340,7 +338,7 @@
 
       integer   jj,j,nxj,k,i,m,n,mf,nc,kk,KL
       real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu
-      real      hfilt2,hfilt4,hfilt6,nf,kfac,finc,fl
+      real      hfilt2,hfilt4,hfilt6,nf,kfac,fl,factop
       real      c1,c2,c3,c4
       logical   windchk
 
@@ -365,8 +363,8 @@
 !
       nf=jtrun-1
 !
-      finc = 10.*max(af,0.001)
-      fl   = 60./float(hdk2(1)-1)
+      factop = 60.
+      fl   = factop/float(hdk2(2)-hdk1)
       hfilt6 = (radsq/(nf*(nf+1)))**3.
       hfilt4 = (radsq/(nf*(nf+1)))**2.
       hfilt2 = radsq/(nf*(nf+1))
@@ -387,13 +385,13 @@
 
         KL=Llist(k)
 !
-        kfac = (fl+finc)*max(float(hdk2(1)-KL),0.)!    &
+        kfac = min(fl*max(float(hdk2(2)-KL),0.),factop)!    &
 !              + min(0.5*max(float(hdk2(3)-KL),0.),3.)
 !        facd = mwhd * max(amp,kfac)
 !        facv = max(min(amp,1.),kfac)
-        facd =     max(1.,amp*kfac)*mwhd
-        facv = 0.5*max(1.,amp*kfac)*mwhd
-        fact = 0.5*max(1.,amp*kfac)*mwhd
+        facd = mwhd*max(1.,kfac)*amp
+        facv = mwhd*max(1.,kfac)*amp
+        fact = mwhd*max(1.,kfac)*amp
 !!        fact = amp * kfacv 
 !          endif
 
@@ -405,27 +403,29 @@
           mf=mlist(m)
           do n=mf,jtrun
 
-!!            c1=1.+dta*facv*hfilt6*eps4(n,m)**3.
             c1=1.+dta*facv*hfilt4*eps4(n,m)**2.
-!!            c2=1.+dta*facd*hfilt6*eps4(n,m)**3.
+!!            c1=1.+dta*facv*hfilt6*eps4(n,m)**3.
+
 !!            c2=1.+dta*facd*hfilt2*eps4(n,m)
 
             if ( KL .le. hdk1 ) then
               c2=1.+dta*facd*hfilt2*eps4(n,m)+vd*exp(-0.5*k)
             else
               c2=1.+dta*facd*hfilt4*eps4(n,m)**2.
+!!              c2=1.+dta*facd*hfilt6*eps4(n,m)**3.
             endif
 
-!!            c3=1.+dta*fact*hfilt6*eps4(n,m)**3.
             c3=1.+dta*fact*hfilt4*eps4(n,m)**2.
+!!            c3=1.+dta*fact*hfilt6*eps4(n,m)**3.
+
 
 
             vornow(k,1,n,m)=vornow(k,1,n,m)/c1
             vornow(k,2,n,m)=vornow(k,2,n,m)/c1
             divnow(k,1,n,m)=divnow(k,1,n,m)/c2
             divnow(k,2,n,m)=divnow(k,2,n,m)/c2
-!!            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
-!!            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
+!            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
+!            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
             temnow(k,1,n,m)=temnow(k,1,n,m)/c3
             temnow(k,2,n,m)=temnow(k,2,n,m)/c3
           enddo
@@ -434,7 +434,7 @@
 !!
 !
       windchk=.false.
-      do k=1,8
+      do k=1,hdk1
         if ( wmax(k) .gt. windmax3 ) windchk=.true.
       enddo
       if ( windchk ) &
@@ -487,7 +487,7 @@
 !!      djt = ( wvn_top(ktop) - wvn_top(1) ) / ktopm1
 
       do k = 2, ktop
-        djt = ( wvn_top(ktop+1) - wvn_top(1) ) * exp(-0.7*(k-1))
+        djt = ( wvn_top(ktop+1) - wvn_top(1) ) * exp(-0.5*(k-1))
 !        wvn_top(k) = (jtrun + wvn_top(k-1))*0.5
         wvn_top(k) = min( wvn_top(ktop+1) - djt , float(jtrun) )
       enddo

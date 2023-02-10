@@ -318,7 +318,7 @@
 !  sponge layer 
       spl1=5.
       spl2=50.
-      vd=0.4
+      vd=0.2
       endif
 !
       tmeans=300.
@@ -330,13 +330,9 @@
 !
 ! for forward weighting Semi-Implicit
 !
-      alpha=0.7
+      alpha=0.55
 !
 ! for two time level 
-!
-!    coefficient of merging PGF
-!
-      af=0.1
 !
 !    coefficient of horizontal difussion for mid-point wind
 !

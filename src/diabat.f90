@@ -591,6 +591,7 @@
 !------------------------------------------------------------------------------
 !     set hours, iter, icrad, julian, uprad, doozon
 !------------------------------------------------------------------------------
+
       rsolhr = hours
       hours = hours + dt/3600.0
       if ( hours .gt. 24.0 )  then
@@ -659,7 +660,7 @@
 !---------------------------------------------------------------------
 ! (3)  set ice thickness => not for couple
 !---------------------------------------------------------------------
-            if(iceold(i,jj)       .and. .not. ice(i,jj)) then
+            if( .not. ice(i,jj)) then
               zice(i,jj)=0.
               cice(i,jj)=0.
               snr(i,jj) =0.
@@ -1109,7 +1110,7 @@
         call dcyc2t3                                                  &
           !  ---  inputs:
           ( solhr,slag,sdec,cdec,sinl(j),cosl(j),                     &
-            xlonr(1,jj),cosz(1,jj),tg(1,jj),tpp(1,lev),tsflw(1,jj),   &
+            xlonr(1,jj),cosz(1,jj),tg(1,jj),tt(1,lev,jj),tsflw(1,jj), &
             sld(1,jj),ss(1,jj),rld(1,jj),asl(1,1,jj),atl(1,1,jj),     &
             asl_clr(1,1,jj),atl_clr(1,1,jj),nxp, nxjp(j), lev,        &
 !  ---  outputs:
@@ -1201,7 +1202,20 @@
                      , hpbl(1,jj),asl(1,1,jj),atl(1,1,jj),xmu(1,jj),gfx(1,jj) &
                      , kpbl(1,jj),nmpbl,nmmiph,j,isot,ivegsrc,sfemis(1,jj)    &
                      , dudtc,dvdtc,dtdtc,dqdtc)
-
+!
+        do k=1,lev
+          kc=lev-k+1
+          do i=1,nxj
+            tt(i,k,jj) = tt(i,k,jj) + dtdtc(i,kc)*dta
+            ut(i,k,jj) = ut(i,k,jj) + dudtc(i,kc)*dta
+            vt(i,k,jj) = vt(i,k,jj) + dvdtc(i,kc)*dta
+            qt(i,k,jj) = qt(i,k,jj) + dqdtc(i,kc)*dta
+          enddo
+        enddo
+        dtdtc=0.
+        dudtc=0.
+        dvdtc=0.
+        dqdtc=0.
 
 !
 !
@@ -1224,16 +1238,6 @@
 ! topograpic gravity wave drag
 !=======================================================================
       if(dograv .and. (nmgwor .eq. 1) ) then 
-        do k=1,lev
-          kc=lev-k+1
-          do i=1,nxj
-            tt(i,k,jj) = tt(i,k,jj) + dtdtc(i,kc)*dta
-            ut(i,k,jj) = ut(i,k,jj) + dudtc(i,kc)*dta
-            vt(i,k,jj) = vt(i,k,jj) + dvdtc(i,kc)*dta
-            qt(i,k,jj) = qt(i,k,jj) + dqdtc(i,kc)*dta
-          enddo
-        enddo
-
         call gwdp (j,nxjp(j),nxp,lev,                                   &
                   ut(1,1,jj),vt(1,1,jj),tt(1,1,jj),qt(1,1,jj),         &
                   plt(1,1,jj),pk(1,1,jj),pk2(1,1,jj),phi,std(1,jj),dta,&
@@ -1748,8 +1752,7 @@
 !            rhc(i,kc) = 0.999 * work1(i) + 0.85 * work2(i)
 !
 !!!            rhc(i,kc)=0.999-0.08*cos(d2r*arg)**2    !a3
-            rhc(i,kc)=0.98-0.07*cos(d2r*xlat(j))**2.0    !v3
-!            rhc(i,kc)=0.98-0.07*cos(d2r*arg)**2.0    !wsm6
+            rhc(i,kc)=0.98-0.07*cos(d2r*arg)**2.0    !wsm6
 !            tem   = (max(min(plt(i,k,jj),900.)-700.,0.01) / 200.)
 !            rhc(i,kc)=tem*rhc(i,kc)+(1.-tem)*0.7
 !!!!             rhc(i,kc)=(1.-coefrhc)*(0.7+0.15*cos(d2r*xlat(j))**2)  &
