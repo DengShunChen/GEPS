@@ -546,8 +546,8 @@
       if(dta.gt.720)then
 !!        dt_chg=1800.
         nc_stable=1
-        sptendmax2=0.3005
-        sptendmax1=0.2005
+        sptendmax2=0.3405
+        sptendmax1=0.2605
       else if(dta.le.720 .and. dta.gt.450 )then
 !!        dt_chg=720.
         nc_stable=2
