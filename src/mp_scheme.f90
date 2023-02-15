@@ -83,7 +83,7 @@
 !  ---  inputs:
            ( nmmiph,nx,nxj,lev,ncld,plt,                               &
              pst,dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,        &
-             itimestep,sgeo,phi,                                       &
+             itimestep,sgeo,phi,cosl,                                  &
 !  ---  inputs/outputs:
              tt,qt,qa,ut,vt,vvel,                                      &
 !  ---  outputs:
@@ -124,6 +124,7 @@
       real,     intent(in)    :: tpi,dta,jj
       real,     intent(in)    :: plt(nx,lev),phii(nx,lev+1),phi(nx,lev)
       real,     intent(in)    :: area
+      real,     intent(in)    :: cosl
       real,     intent(in)    :: sgeo(nx)
       real,     intent(inout) :: vvel(nx,lev) !mb/s
       real(kind=RTYPE), intent(in):: q0(nx,lev*ncld),pst(nx),          &
@@ -172,6 +173,7 @@
 ! GFDLMP
       real, parameter ::                                                &
                 rainmin=1.0e-10 !(mm)
+      real :: fac_qsw
       logical   hydrostatic,phys_hydrostatic,sedi_w
       integer :: isedi
      !GFDL MP v2 & v3
@@ -674,6 +676,10 @@
                                     !  =2 : PPM Lagrangian
                                     !  =3 : semi-Lagrangian (from Thompson MP)
 
+      ! define factor of vapor condensed threshold
+!        fac_qsw = 1.0                 ! default
+        fac_qsw = 1.0 - 0.02*cosl**2  ! =0.98 at equator; =1.0 at pole
+
         te    = 0.0
         q_con = 0.0  !not sure
         cappa = 0.0  !not sure
@@ -742,7 +748,7 @@
                   prefluxr, prefluxi, prefluxs, prefluxg,               &
                   cond0, dep0, evap0, sub0,                             &
 #endif
-                  last_step, do_inline_mp, isedi )
+                  fac_qsw, last_step, do_inline_mp, isedi )
 
         ! GFDL MP v3
         if ( nmmiph .eq. 13 )                                           &

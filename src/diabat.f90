@@ -1844,7 +1844,7 @@
 !  ---  inputs:
            ( nmmiph,nxp,nxjp(j),lev,ncld,plt(1,1,jj),                  &
              pst(1,jj),dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,  &
-             itimestep,sgeo(1,jj),phi,                                 &
+             itimestep,sgeo(1,jj),phi,cosl(j),                         &
 !  ---  inputs/outputs:
              tt(1,1,jj),qt(1,1,jj),clds(1,1,jj),                       &
              ut(1,1,jj),vt(1,1,jj),vvel(1,1,jj),                       &
