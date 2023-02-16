@@ -528,8 +528,8 @@
         sedi_w = .false.
 
       ! define factor of vapor condensed threshold
-!        fac_qsw = 1.0                 ! default
-        fac_qsw = 1.0 - 0.02*cosl**2  ! =0.98 at equator; =1.0 at pole
+        fac_qsw = 1.0                 ! default
+!        fac_qsw = 1.0 - 0.02*cosl**2  ! =0.98 at equator; =1.0 at pole
 
         do i = 1, nxj
           if( islimsk(i) .eq. 1 ) land2d(i,1) = 1.  !land fraction
@@ -681,8 +681,8 @@
                                     !  =3 : semi-Lagrangian (from Thompson MP)
 
       ! define factor of vapor condensed threshold
-!        fac_qsw = 1.0                 ! default
-        fac_qsw = 1.0 - 0.02*cosl**2  ! =0.98 at equator; =1.0 at pole
+        fac_qsw = 1.0                 ! default
+!        fac_qsw = 1.0 - 0.02*cosl**2  ! =0.98 at equator; =1.0 at pole
 
         te    = 0.0
         q_con = 0.0  !not sure
