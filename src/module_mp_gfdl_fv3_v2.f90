@@ -310,6 +310,7 @@ module module_mp_gfdl_v2
     logical :: mono_prof = .true. ! perform terminal fall with mono ppm scheme
     logical :: do_hail = .false. ! use hail parameters instead of graupel
     logical :: hd_icefall = .false. ! use heymsfield and donner, 1990's fall speed of cloud ice
+    logical :: gce_icefall = .false. ! use Goddard's fall speed of cloud ice
     logical :: use_xr_cloud = .false. ! use xu and randall, 1996's cloud diagnosis
     logical :: use_park_cloud = .false. ! park et al. 2016
     logical :: use_gi_cloud = .false. ! gultepe and isaac (2007, grl)
@@ -3519,6 +3520,7 @@ subroutine fall_speed (ks, ke, den, qs, qi, qg, ql, tk, vts, vti, vtg)
     real, dimension (ks:ke) :: qden, tc, rhof
     
     real :: vi0
+    real :: y1, y2, r00, fv
     
     integer :: k
     
@@ -3554,6 +3556,18 @@ subroutine fall_speed (ks, ke, den, qs, qi, qg, ql, tk, vts, vti, vtg)
                 if (hd_icefall) then
                     ! heymsfield and donner, 1990, jas
                     vti (k) = vi_fac * 3.29 * (qi (k) * den (k)) ** 0.16
+                elseif (gce_icefall) then
+                    ! new codes from Steve's in cgs, module_mp_gsfcgce_4ice_nuwrf.f90
+                    vti (k) = 0.
+                    y1 = qi (k) * den (k) * 1000.   ! g/cm^3
+                    if (y1 .ge. 1.e-6) then
+                        y1 = qi (k)
+                        y2 = ql (k)
+                        r00 = den (k) / 1000.  !g/cm^3
+                        fv = sqrt (1.29 / ( den(k) * 1000.))
+                        call vqrqi (2, r00, fv, y1, y2, tk (k), vti (k))
+                    endif
+                    vti (k) = vti (k) * 0.01  !convert back to m/s
                 else
                     ! deng and mace, 2008, grl
                     vti (k) = (3. + log10 (qi (k) * den (k))) * (tc (k) * (aa * tc (k) + bb) + cc) + dd * tc (k) + ee
@@ -5027,5 +5041,86 @@ end subroutine neg_adj
       rql(:) = max(qn(:),R1)
 
       END SUBROUTINE semi_lagrange_sedim
+
+!     compute fall speed of cloud rain and ice
+      SUBROUTINE vqrqi(isg,r00,fv,qri,ql,tair,ww1)
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+! compute fall speed of cloud rain and ice
+! isg=1, for rain
+! isg=2, for ice
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      implicit none
+
+      integer, intent(in) :: isg
+      real, intent(in) :: r00, fv,qri,ql,tair
+      real, intent(inout) :: ww1 
+
+! LOCAL variables
+      integer :: ic 
+      real  :: y1,vr,vs,vg
+      real  :: const_vt, const_d, const_m !cpi, cmin Di
+      real  :: cmin, draimax, tnw, vrc0, vrc1, vrc2, vrc3, zrc, cpi, roqr
+      real  :: bb1, bb2,ice_fall
+      real  :: bin_factor, ftnw, ftnwmin
+      real, dimension(7) ::  aice, vice
+      data aice/1.e-6, 1.e-5, 1.e-4, 1.e-3, 0.01, 0.1, 1./
+      data vice/5,15,30,35,40,45,50/
+
+      ice_fall=0.
+      const_vt=1.49e4
+      const_d=11.9
+      const_m=1./5.38e7
+      cmin=1.E-20
+      cpi=4.*atan(1.)
+      roqr=1.  !rain density (g/cm^3)
+      tnw=0.08
+
+      draimax=0.0500 !maximum rain diameter (cm)
+      draimax=draimax**4.*roqr*cpi
+      zrc=(cpi*roqr*tnw)**0.25
+      vrc0=-26.7
+      vrc1=20600./zrc
+      vrc2=-204500./(zrc*zrc)
+      vrc3=906000./(zrc*zrc*zrc)
+
+      y1=r00*qri
+      ww1=0.
+
+      if (y1 .gt. cmin) then
+
+      if (isg.eq.1) then                             !  rain
+
+         ftnw=1.                                                       
+           if(ql.lt.cmin .and. tair .gt. t_ice)then                      
+             bin_factor=0.11*(1000.*qri)**(-1.27) + 0.98      
+             bin_factor=min(bin_factor, 1.30)       
+             ftnw=1./bin_factor**3.35                             
+             ftnwmin=r00*qri/draimax                        
+             if(qri.le.0.001) ftnw=max(ftnw,ftnwmin/tnw)   
+           endif                                               
+
+               vs=sqrt( y1 )
+               vg=sqrt( vs)
+!               vr=vrc0+vrc1*vg+vrc2*vs+vrc3*vg*vs
+               vr=vrc0+vrc1*vg/ftnw**0.25+vrc2*vs/ftnw**0.50+vrc3*vg*vs/ftnw**0.75
+               ww1=max(fv*vr, 0.e0)
+
+
+      else if (isg.eq.2) then                         ! cloud ice
+
+            y1=1.e6*r00*qri                            ! to g/m**3
+
+            if (y1 .gt. 1.e-6) then
+                  y1=y1*1.e-3
+                  bb1=const_m*y1**0.25
+                  bb2=const_d*bb1**0.5
+                  ww1=max(const_vt*bb2**1.31, 0.0)
+                  ww1=ww1*100. !cm/s
+                  if (ww1 .gt. 50.) ww1=50.               ! SLang
+            endif  !y1
+      endif  !isg
+      endif !y1
+
+      end subroutine vqrqi
 
 end module module_mp_gfdl_v2
