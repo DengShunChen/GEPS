@@ -305,11 +305,12 @@ module module_mp_gfdl_v2
     logical :: use_ccn = .false. ! must be true when prog_ccn is false
     logical :: use_ppm = .false. ! use ppm fall scheme
     logical :: use_ppm_ice = .false. ! use ppm fall scheme for cloud ice
-    logical :: use_semi = .false. ! use Semi-Lagrangian sedimentation
+    logical :: use_semi = .true. ! use Semi-Lagrangian sedimentation
     logical :: use_semi_ice = .false. ! use Semi-Lagrangian sedimentation for cloud ice
     logical :: mono_prof = .true. ! perform terminal fall with mono ppm scheme
     logical :: do_hail = .false. ! use hail parameters instead of graupel
     logical :: hd_icefall = .false. ! use heymsfield and donner, 1990's fall speed of cloud ice
+    logical :: gce_icefall = .false. ! use Goddard's fall speed of cloud ice
     logical :: use_xr_cloud = .false. ! use xu and randall, 1996's cloud diagnosis
     logical :: use_park_cloud = .false. ! park et al. 2016
     logical :: use_gi_cloud = .false. ! gultepe and isaac (2007, grl)
@@ -388,7 +389,7 @@ subroutine gfdl_cld_mp_driver                                              &
               prefluxr, prefluxi, prefluxs, prefluxg,                      &
               condensation, deposition, evaporation, sublimation,          &
 #endif
-              last_step, do_inline_mp )
+              fac_qsw, last_step, do_inline_mp, isedi )
     
     implicit none
     
@@ -399,8 +400,13 @@ subroutine gfdl_cld_mp_driver                                              &
     
     integer, intent (in) :: is, ie ! physics window
     integer, intent (in) :: ks, ke ! vertical dimension
-    
+    integer, intent (in) :: isedi ! isedi=1: time-implicit
+                                  !      =2: PPM-Lagrangian
+                                  !      =3: semi-Lagrangian
+
     real, intent (in) :: dts ! physics time step
+
+    real, intent (in) :: fac_qsw ! factor of vapor condensed threshold
     
     real, intent (in), dimension (is:ie) :: hs, gsize, land
     
@@ -485,7 +491,7 @@ subroutine gfdl_cld_mp_driver                                              &
 #endif
         w_var, vt_r, vt_s, vt_g, vt_i, q_con, cappa, consv_te, te, &
         prefluxr, prefluxi, prefluxs, prefluxg, condensation, deposition, &
-        evaporation, sublimation, last_step, do_inline_mp)
+        evaporation, sublimation, fac_qsw, last_step, do_inline_mp, isedi)
     
 end subroutine gfdl_cld_mp_driver
 
@@ -512,7 +518,7 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
 #endif
         w_var, vt_r, vt_s, vt_g, vt_i, q_con, cappa, consv_te, te, &
         prefluxr, prefluxi, prefluxs, prefluxg, condensation, deposition, &
-        evaporation, sublimation, last_step, do_inline_mp)
+        evaporation, sublimation, fac_qsw, last_step, do_inline_mp, isedi)
     
     implicit none
     
@@ -521,7 +527,9 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
     logical, intent (in) :: consv_te
     logical, intent (in) :: do_inline_mp
     integer, intent (in) :: is, ie, ks, ke
+    integer, intent (in) :: isedi
     real, intent (in) :: dt_in
+    real, intent (in) :: fac_qsw
     real, intent (in), dimension (is:ie) :: gsize
     real, intent (in), dimension (is:ie) :: hs
 #ifdef oldmask
@@ -810,7 +818,7 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
             ! -----------------------------------------------------------------------
             
             call warm_rain (dt_rain, ks, ke, dp1, dz1, tz, qvz, qlz, qrz, qiz, qsz, &
-                qgz, den, denfac, ccn, c_praut, rh_rain, vtrz, r1, pfr, m1_rain, w1, h_var, reevap, dte (i))
+                qgz, den, denfac, ccn, c_praut, rh_rain, vtrz, r1, pfr, m1_rain, w1, h_var, reevap, dte (i), isedi)
             
             evaporation (i) = evaporation (i) + reevap * convt
             rain (i) = rain (i) + r1 * convt
@@ -828,7 +836,7 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
             call fall_speed (ks, ke, den, qsz, qiz, qgz, qlz, tz, vtsz, vtiz, vtgz)
             
             call terminal_fall (dts, ks, ke, tz, qvz, qlz, qrz, qgz, qsz, qiz, &
-                dz1, dp1, den, vtgz, vtsz, vtiz, r1, g1, s1, i1, pfr, pfi, pfs, pfg, m1_sol, w1, dte (i))
+                dz1, dp1, den, vtgz, vtsz, vtiz, r1, g1, s1, i1, pfr, pfi, pfs, pfg, m1_sol, w1, dte (i), isedi)
             
             rain (i) = rain (i) + r1 * convt ! from melted snow & ice that reached the ground
             snow (i) = snow (i) + s1 * convt
@@ -876,7 +884,7 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
             ! -----------------------------------------------------------------------
             
             call warm_rain (dt_rain, ks, ke, dp1, dz1, tz, qvz, qlz, qrz, qiz, qsz, &
-                qgz, den, denfac, ccn, c_praut, rh_rain, vtrz, r1, pfr, m1_rain, w1, h_var, reevap, dte (i))
+                qgz, den, denfac, ccn, c_praut, rh_rain, vtrz, r1, pfr, m1_rain, w1, h_var, reevap, dte (i), isedi)
             
             evaporation (i) = evaporation (i) + reevap * convt
             rain (i) = rain (i) + r1 * convt
@@ -895,7 +903,7 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
             
             call icloud (ks, ke, tz, p1, qvz, qlz, qrz, qiz, qsz, qgz, dp1, den, ccn, &
                 cin, denfac, vtsz, vtgz, vtrz, qaz, rh_adj, rh_rain, dts, h_var, gsize (i), &
-                cond, dep, reevap, sub, last_step_cld)
+                cond, dep, reevap, sub, fac_qsw, last_step_cld)
 
             condensation (i) = condensation (i) + cond * convt
             deposition (i) = deposition (i) + dep * convt
@@ -1127,11 +1135,12 @@ end subroutine sedi_heat
 ! -----------------------------------------------------------------------
 
 subroutine warm_rain (dt, ks, ke, dp, dz, tz, qv, ql, qr, qi, qs, qg, &
-        den, denfac, ccn, c_praut, rh_rain, vtr, r1, pfr, m1_rain, w1, h_var, reevap, dte)
+        den, denfac, ccn, c_praut, rh_rain, vtr, r1, pfr, m1_rain, w1, h_var, reevap, dte, isedi)
     
     implicit none
     
     integer, intent (in) :: ks, ke
+    integer, intent (in) :: isedi
     real, intent (in) :: dt ! time step (s)
     real, intent (in) :: rh_rain, h_var
     real, intent (in), dimension (ks:ke) :: dp, dz, den
@@ -1230,7 +1239,8 @@ subroutine warm_rain (dt, ks, ke, dp, dz, tz, qv, ql, qr, qi, qs, qg, &
         ! mass flux induced by falling rain
         ! -----------------------------------------------------------------------
         
-        if (use_ppm) then
+!        if (use_ppm) then
+        if ( isedi .eq. 2 ) then  ! PPM-Lagrangian sedimentation
             zt (ks) = ze (ks)
             do k = ks + 1, ke
                 zt (k) = ze (k) - dt5 * (vtr (k - 1) + vtr (k))
@@ -1241,7 +1251,8 @@ subroutine warm_rain (dt, ks, ke, dp, dz, tz, qv, ql, qr, qi, qs, qg, &
                 if (zt (k + 1) >= zt (k)) zt (k + 1) = zt (k) - dz_min
             enddo
             call lagrangian_fall_ppm (ks, ke, zs, ze, zt, dp, qr, r1, m1_rain, mono_prof)
-        elseif (use_semi) then
+!        elseif (use_semi) then
+        elseif ( isedi .eq. 3 ) then  ! semi-Lagrangian sedimentation
             do k = ks, ke
                 dzc (k) = dz (ke - k + 1)
                 qrc (k) = qr (ke - k + 1) * den (ke - k + 1)
@@ -1255,7 +1266,8 @@ subroutine warm_rain (dt, ks, ke, dp, dz, tz, qv, ql, qr, qi, qs, qg, &
 !                m1_rain (k) = m1_rainc (ke - k + 1) / den (ke - k + 1)
             enddo
 !            r1 = r1 / den (ke - k + 1)
-        else
+!        else
+        elseif ( isedi .eq. 1 ) then  ! time-implicit sedimention
             call implicit_fall (dt, ks, ke, ze, vtr, dp, qr, r1, m1_rain)
         endif
         
@@ -1570,7 +1582,7 @@ end subroutine linear_prof
 
 subroutine icloud (ks, ke, tzk, p1, qvk, qlk, qrk, qik, qsk, qgk, dp1, den, &
         ccn, cin, denfac, vts, vtg, vtr, qak, rh_adj, rh_rain, dts, h_var, &
-        gsize, cond, dep, reevap, sub, last_step)
+        gsize, cond, dep, reevap, sub, fac_qsw, last_step)
     
     implicit none
     
@@ -1581,6 +1593,7 @@ subroutine icloud (ks, ke, tzk, p1, qvk, qlk, qrk, qik, qsk, qgk, dp1, den, &
     real, intent (inout), dimension (ks:ke) :: qvk, qlk, qrk, qik, qsk, qgk, qak
     real, intent (inout), dimension (ks:ke) :: cin
     real, intent (in) :: rh_adj, rh_rain, dts, h_var, gsize
+    real, intent (in) :: fac_qsw
     real, intent (out) :: cond, dep, reevap, sub
     ! local:
     real, dimension (ks:ke) :: icpk, di, qim
@@ -2021,7 +2034,7 @@ subroutine icloud (ks, ke, tzk, p1, qvk, qlk, qrk, qik, qsk, qgk, dp1, den, &
     
     call subgrid_z_proc (ks, ke, p1, den, denfac, dts, rh_adj, tzk, qvk, qlk, &
         qrk, qik, qsk, qgk, qak, dp1, h_var, rh_rain, te8, ccn, cin, gsize, &
-        cond, dep, reevap, sub, last_step)
+        cond, dep, reevap, sub, fac_qsw, last_step)
     
 end subroutine icloud
 
@@ -2030,12 +2043,13 @@ end subroutine icloud
 ! =======================================================================
 
 subroutine subgrid_z_proc (ks, ke, p1, den, denfac, dts, rh_adj, tz, qv, ql, qr, &
-        qi, qs, qg, qa, dp1, h_var, rh_rain, te8, ccn, cin, gsize, cond, dep, reevap, sub, last_step)
+        qi, qs, qg, qa, dp1, h_var, rh_rain, te8, ccn, cin, gsize, cond, dep, reevap, sub, fac_qsw, last_step)
     
     implicit none
     
     integer, intent (in) :: ks, ke
     real, intent (in) :: dts, rh_adj, h_var, rh_rain, gsize
+    real, intent (in) :: fac_qsw
     real, intent (in), dimension (ks:ke) :: p1, den, denfac, ccn, dp1
     real (kind = r8), intent (in), dimension (ks:ke) :: te8
     real (kind = r8), intent (inout), dimension (ks:ke) :: tz
@@ -2148,7 +2162,8 @@ subroutine subgrid_z_proc (ks, ke, p1, den, denfac, dts, rh_adj, tz, qv, ql, qr,
         tin = tz (k)
         rh_tem = qpz / iqs1 (tin, den (k))
         qsw = wqs2 (tin, den (k), dwsdt)
-        dq0 = qsw - qv (k)
+!        dq0 = qsw - qv (k)
+        dq0 = qsw * fac_qsw - qv (k)  !xb141
         if (use_rhc_cevap) then
             evap = 0.
             if (rh_tem .lt. rhc_cevap) then
@@ -2651,11 +2666,12 @@ end subroutine revap_rac1
 ! =======================================================================
 
 subroutine terminal_fall (dtm, ks, ke, tz, qv, ql, qr, qg, qs, qi, dz, dp, &
-        den, vtg, vts, vti, r1, g1, s1, i1, pfr, pfi, pfs, pfg, m1_sol, w1, dte)
+        den, vtg, vts, vti, r1, g1, s1, i1, pfr, pfi, pfs, pfg, m1_sol, w1, dte, isedi)
     
     implicit none
     
     integer, intent (in) :: ks, ke
+    integer, intent (in) :: isedi
     real, intent (in) :: dtm ! time step (s)
     real, intent (in), dimension (ks:ke) :: vtg, vts, vti, den, dp, dz
     real (kind = r8), intent (inout), dimension (ks:ke) :: tz
@@ -2907,9 +2923,11 @@ subroutine terminal_fall (dtm, ks, ke, tz, qv, ql, qr, qg, qs, qi, dz, dp, &
             enddo
         endif
         
-        if (use_ppm) then
+!        if (use_ppm) then
+        if ( isedi .eq. 2 ) then  ! PPM-Lagrangian sedimentation
             call lagrangian_fall_ppm (ks, ke, zs, ze, zt, dp, qs, s1, m1, mono_prof)
-        elseif (use_semi) then
+!        elseif (use_semi) then
+        elseif ( isedi .eq. 3 ) then  ! semi-Lagrangian sedimentation
             do k = ks, ke
                 dzc (k) = dz (ke - k + 1)
                 qsc (k) = qs (ke - k + 1) * den (ke - k + 1)
@@ -2923,7 +2941,8 @@ subroutine terminal_fall (dtm, ks, ke, tz, qv, ql, qr, qg, qs, qi, dz, dp, &
 !                m1 (k) = m1c (ke - k + 1) / den (ke - k + 1)
             enddo
 !            s1 = s1 / den (ke - k + 1)
-        else
+!        else
+        elseif ( isedi .eq. 1 ) then  ! time-implicit sedimention
             call implicit_fall (dtm, ks, ke, ze, vts, dp, qs, s1, m1)
         endif
         
@@ -3018,9 +3037,11 @@ subroutine terminal_fall (dtm, ks, ke, tz, qv, ql, qr, qg, qs, qi, dz, dp, &
             enddo
         endif
         
-        if (use_ppm) then
+!        if (use_ppm) then
+        if ( isedi .eq. 2 ) then  ! PPM-Lagrangian sedimentation
             call lagrangian_fall_ppm (ks, ke, zs, ze, zt, dp, qg, g1, m1, mono_prof)
-        elseif (use_semi) then
+!        elseif (use_semi) then
+        elseif ( isedi .eq. 3 ) then  ! semi-Lagrangian sedimentation
             do k = ks, ke
                 dzc (k) = dz (ke - k + 1)
                 qgc (k) = qg (ke - k + 1) * den (ke - k + 1)
@@ -3034,7 +3055,8 @@ subroutine terminal_fall (dtm, ks, ke, tz, qv, ql, qr, qg, qs, qi, dz, dp, &
 !                m1 (k) = m1c (ke - k + 1) / den (ke - k + 1)
             enddo
 !            g1 = g1 / den (ke - k + 1)
-        else
+!        else
+        elseif ( isedi .eq. 1 ) then  ! time-implicit sedimention
             call implicit_fall (dtm, ks, ke, ze, vtg, dp, qg, g1, m1)
         endif
         
@@ -3498,6 +3520,7 @@ subroutine fall_speed (ks, ke, den, qs, qi, qg, ql, tk, vts, vti, vtg)
     real, dimension (ks:ke) :: qden, tc, rhof
     
     real :: vi0
+    real :: y1, y2, r00, fv
     
     integer :: k
     
@@ -3533,6 +3556,18 @@ subroutine fall_speed (ks, ke, den, qs, qi, qg, ql, tk, vts, vti, vtg)
                 if (hd_icefall) then
                     ! heymsfield and donner, 1990, jas
                     vti (k) = vi_fac * 3.29 * (qi (k) * den (k)) ** 0.16
+                elseif (gce_icefall) then
+                    ! new codes from Steve's in cgs, module_mp_gsfcgce_4ice_nuwrf.f90
+                    vti (k) = 0.
+                    y1 = qi (k) * den (k) * 1000.   ! g/cm^3
+                    if (y1 .ge. 1.e-6) then
+                        y1 = qi (k)
+                        y2 = ql (k)
+                        r00 = den (k) / 1000.  !g/cm^3
+                        fv = sqrt (1.29 / ( den(k) * 1000.))
+                        call vqrqi (2, r00, fv, y1, y2, tk (k), vti (k))
+                    endif
+                    vti (k) = vti (k) * 0.01  !convert back to m/s
                 else
                     ! deng and mace, 2008, grl
                     vti (k) = (3. + log10 (qi (k) * den (k))) * (tc (k) * (aa * tc (k) + bb) + cc) + dd * tc (k) + ee
@@ -5006,5 +5041,86 @@ end subroutine neg_adj
       rql(:) = max(qn(:),R1)
 
       END SUBROUTINE semi_lagrange_sedim
+
+!     compute fall speed of cloud rain and ice
+      SUBROUTINE vqrqi(isg,r00,fv,qri,ql,tair,ww1)
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+! compute fall speed of cloud rain and ice
+! isg=1, for rain
+! isg=2, for ice
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      implicit none
+
+      integer, intent(in) :: isg
+      real, intent(in) :: r00, fv,qri,ql,tair
+      real, intent(inout) :: ww1 
+
+! LOCAL variables
+      integer :: ic 
+      real  :: y1,vr,vs,vg
+      real  :: const_vt, const_d, const_m !cpi, cmin Di
+      real  :: cmin, draimax, tnw, vrc0, vrc1, vrc2, vrc3, zrc, cpi, roqr
+      real  :: bb1, bb2,ice_fall
+      real  :: bin_factor, ftnw, ftnwmin
+      real, dimension(7) ::  aice, vice
+      data aice/1.e-6, 1.e-5, 1.e-4, 1.e-3, 0.01, 0.1, 1./
+      data vice/5,15,30,35,40,45,50/
+
+      ice_fall=0.
+      const_vt=1.49e4
+      const_d=11.9
+      const_m=1./5.38e7
+      cmin=1.E-20
+      cpi=4.*atan(1.)
+      roqr=1.  !rain density (g/cm^3)
+      tnw=0.08
+
+      draimax=0.0500 !maximum rain diameter (cm)
+      draimax=draimax**4.*roqr*cpi
+      zrc=(cpi*roqr*tnw)**0.25
+      vrc0=-26.7
+      vrc1=20600./zrc
+      vrc2=-204500./(zrc*zrc)
+      vrc3=906000./(zrc*zrc*zrc)
+
+      y1=r00*qri
+      ww1=0.
+
+      if (y1 .gt. cmin) then
+
+      if (isg.eq.1) then                             !  rain
+
+         ftnw=1.                                                       
+           if(ql.lt.cmin .and. tair .gt. t_ice)then                      
+             bin_factor=0.11*(1000.*qri)**(-1.27) + 0.98      
+             bin_factor=min(bin_factor, 1.30)       
+             ftnw=1./bin_factor**3.35                             
+             ftnwmin=r00*qri/draimax                        
+             if(qri.le.0.001) ftnw=max(ftnw,ftnwmin/tnw)   
+           endif                                               
+
+               vs=sqrt( y1 )
+               vg=sqrt( vs)
+!               vr=vrc0+vrc1*vg+vrc2*vs+vrc3*vg*vs
+               vr=vrc0+vrc1*vg/ftnw**0.25+vrc2*vs/ftnw**0.50+vrc3*vg*vs/ftnw**0.75
+               ww1=max(fv*vr, 0.e0)
+
+
+      else if (isg.eq.2) then                         ! cloud ice
+
+            y1=1.e6*r00*qri                            ! to g/m**3
+
+            if (y1 .gt. 1.e-6) then
+                  y1=y1*1.e-3
+                  bb1=const_m*y1**0.25
+                  bb2=const_d*bb1**0.5
+                  ww1=max(const_vt*bb2**1.31, 0.0)
+                  ww1=ww1*100. !cm/s
+                  if (ww1 .gt. 50.) ww1=50.               ! SLang
+            endif  !y1
+      endif  !isg
+      endif !y1
+
+      end subroutine vqrqi
 
 end module module_mp_gfdl_v2

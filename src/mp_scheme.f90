@@ -83,7 +83,7 @@
 !  ---  inputs:
            ( nmmiph,nx,nxj,lev,ncld,plt,                               &
              pst,dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,        &
-             itimestep,sgeo,phi,                                       &
+             itimestep,sgeo,phi,cosl,                                  &
 !  ---  inputs/outputs:
              tt,qt,qa,ut,vt,vvel,                                      &
 !  ---  outputs:
@@ -124,6 +124,7 @@
       real,     intent(in)    :: tpi,dta,jj
       real,     intent(in)    :: plt(nx,lev),phii(nx,lev+1),phi(nx,lev)
       real,     intent(in)    :: area
+      real,     intent(in)    :: cosl
       real,     intent(in)    :: sgeo(nx)
       real,     intent(inout) :: vvel(nx,lev) !mb/s
       real(kind=RTYPE), intent(in):: q0(nx,lev*ncld),pst(nx),          &
@@ -172,7 +173,9 @@
 ! GFDLMP
       real, parameter ::                                                &
                 rainmin=1.0e-10 !(mm)
-      logical   hydrostatic,phys_hydrostatic,sedi_w 
+      real :: fac_qsw
+      logical   hydrostatic,phys_hydrostatic,sedi_w
+      integer :: isedi
      !GFDL MP v2 & v3
       real, dimension(:), allocatable ::                                &
                 gsize,hs,water1d,rain1d,snow1d,ice1d,graupel1d
@@ -524,6 +527,10 @@
         phys_hydrostatic = .true.   !flag for hydrostatic heating from physics 
         sedi_w = .false.
 
+      ! define factor of vapor condensed threshold
+!        fac_qsw = 1.0                 ! default
+        fac_qsw = 1.0 - 0.02*cosl**2  ! =0.98 at equator; =1.0 at pole
+
         do i = 1, nxj
           if( islimsk(i) .eq. 1 ) land2d(i,1) = 1.  !land fraction
           if( effr_in ) mask1d(i) = islimsk(i)      !land-sea mask
@@ -564,7 +571,7 @@
                   cldten3d, tten3d, t3d, w3d, u3d, v3d, uten3d, vten3d, &
                   dz3d, dp3d, garea, dta, land2d,                       &
                   rain2d, snow2d, ice2d, graupel2d,                     &
-                  hydrostatic, phys_hydrostatic,                        &
+                  fac_qsw, hydrostatic, phys_hydrostatic,               &
                   1, nxj, 1, 1, 1, lev, 1, lev )
 
         do k = 1, lev
@@ -668,6 +675,15 @@
         last_step = .true.          !flag for final clean-up (not sure)
         do_inline_mp = .false.      !flag for inline GFDLMP
 
+        isedi = 1                   !flag for sedimentation scheme of precipitating hydrometeors
+                                    !  =1 : time implicit
+                                    !  =2 : PPM Lagrangian
+                                    !  =3 : semi-Lagrangian (from Thompson MP)
+
+      ! define factor of vapor condensed threshold
+!        fac_qsw = 1.0                 ! default
+        fac_qsw = 1.0 - 0.02*cosl**2  ! =0.98 at equator; =1.0 at pole
+
         te    = 0.0
         q_con = 0.0  !not sure
         cappa = 0.0  !not sure
@@ -736,7 +752,7 @@
                   prefluxr, prefluxi, prefluxs, prefluxg,               &
                   cond0, dep0, evap0, sub0,                             &
 #endif
-                  last_step, do_inline_mp )
+                  fac_qsw, last_step, do_inline_mp, isedi )
 
         ! GFDL MP v3
         if ( nmmiph .eq. 13 )                                           &
