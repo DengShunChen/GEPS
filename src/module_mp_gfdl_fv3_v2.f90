@@ -1254,20 +1254,18 @@ subroutine warm_rain (dt, ks, ke, dp, dz, tz, qv, ql, qr, qi, qs, qg, &
 !        elseif (use_semi) then
         elseif ( isedi .eq. 3 ) then  ! semi-Lagrangian sedimentation
             do k = ks, ke
-                dzc (k) = dz (ke - k + 1)
-                qrc (k) = qr (ke - k + 1) * den (ke - k + 1)
+                dzc (k) = abs ( dz (ke - k + 1) )
+                qrc (k) = qr (ke - k + 1) * dp (ke - k + 1)
                 vtrc (k) = vtr (ke - k + 1)
                 m1_rainc (k) = 0.
             enddo
             call semi_lagrange_sedim (ke, dzc, vtrc, qrc, r1, m1_rainc, dt, 1.E-12)
             do k = ks, ke
-                qr (k) = qrc (ke - k + 1) / den (ke - k + 1)
+                qr (k) = qrc (ke - k + 1) / dp (ke - k + 1)
                 m1_rain (k) = m1_rainc (ke - k + 1)
 !                m1_rain (k) = m1_rainc (ke - k + 1) / den (ke - k + 1)
             enddo
-!            r1 = r1 / den (ke - k + 1)
-!        else
-        elseif ( isedi .eq. 1 ) then  ! time-implicit sedimention
+        else  ! isedi=1, time-implicit sedimentation
             call implicit_fall (dt, ks, ke, ze, vtr, dp, qr, r1, m1_rain)
         endif
         
@@ -2826,7 +2824,7 @@ subroutine terminal_fall (dtm, ks, ke, tz, qv, ql, qr, qg, qs, qi, dz, dp, &
                 te1 (k) = rgrav * te1 (k) * c_air * tz (k) * dp (k)
             enddo
         endif
-        
+
         if (use_ppm_ice) then
             call lagrangian_fall_ppm (ks, ke, zs, ze, zt, dp, qi, i1, m1_sol, mono_prof)
         else
@@ -2929,20 +2927,19 @@ subroutine terminal_fall (dtm, ks, ke, tz, qv, ql, qr, qg, qs, qi, dz, dp, &
 !        elseif (use_semi) then
         elseif ( isedi .eq. 3 ) then  ! semi-Lagrangian sedimentation
             do k = ks, ke
-                dzc (k) = dz (ke - k + 1)
-                qsc (k) = qs (ke - k + 1) * den (ke - k + 1)
+                dzc (k) = abs( dz (ke - k + 1) )
+                qsc (k) = qs (ke - k + 1) * dp (ke - k + 1)
                 vtsc (k) = vts (ke - k + 1)
                 m1c (k) = 0.
             enddo
             call semi_lagrange_sedim (ke, dzc, vtsc, qsc, s1, m1c, dtm, 1.E-12)
             do k = ks, ke
-                qs (k) = qsc (ke - k + 1) / den (ke - k + 1)
+                qs (k) = qsc (ke - k + 1) / dp (ke - k + 1)
+                qs (k) = qsc (ke - k + 1)
                 m1 (k) = m1c (ke - k + 1)
 !                m1 (k) = m1c (ke - k + 1) / den (ke - k + 1)
             enddo
-!            s1 = s1 / den (ke - k + 1)
-!        else
-        elseif ( isedi .eq. 1 ) then  ! time-implicit sedimention
+        else  ! isedi=1, time-implicit sedimentation
             call implicit_fall (dtm, ks, ke, ze, vts, dp, qs, s1, m1)
         endif
         
@@ -3043,20 +3040,18 @@ subroutine terminal_fall (dtm, ks, ke, tz, qv, ql, qr, qg, qs, qi, dz, dp, &
 !        elseif (use_semi) then
         elseif ( isedi .eq. 3 ) then  ! semi-Lagrangian sedimentation
             do k = ks, ke
-                dzc (k) = dz (ke - k + 1)
-                qgc (k) = qg (ke - k + 1) * den (ke - k + 1)
+                dzc (k) = abs( dz (ke - k + 1) )
+                qgc (k) = qg (ke - k + 1) * dp (ke - k + 1)
                 vtgc (k) = vtg (ke - k + 1)
                 m1c (k) = 0.
             enddo
             call semi_lagrange_sedim (ke, dzc, vtgc, qgc, g1, m1c, dtm, 1.E-12)
             do k = ks, ke
-                qg (k) = qgc (ke - k + 1) / den (ke - k + 1)
+                qg (k) = qgc (ke - k + 1) / dp (ke - k + 1)
                 m1 (k) = m1c (ke - k + 1)
 !                m1 (k) = m1c (ke - k + 1) / den (ke - k + 1)
             enddo
-!            g1 = g1 / den (ke - k + 1)
-!        else
-        elseif ( isedi .eq. 1 ) then  ! time-implicit sedimention
+        else  ! isedi=1, time-implicit sedimentation
             call implicit_fall (dtm, ks, ke, ze, vtg, dp, qg, g1, m1)
         endif
         
@@ -5028,6 +5023,7 @@ end subroutine neg_adj
                     exit sum_precip
       enddo sum_precip
 
+#ifdef cumulate_flux
 ! calculating precipitation fluxes
       do k=km,1,-1
          if(k == km) then
@@ -5036,6 +5032,9 @@ end subroutine neg_adj
            pfsan(k) = pfsan(k+1) + net_flx(k)
          end if
       enddo
+#else
+      pfsan(:) = net_flx(:)
+#endif
 !
 ! replace the new values
       rql(:) = max(qn(:),R1)
