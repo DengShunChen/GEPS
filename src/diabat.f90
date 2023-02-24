@@ -1752,7 +1752,8 @@
 !            rhc(i,kc) = 0.999 * work1(i) + 0.85 * work2(i)
 !
 !!!            rhc(i,kc)=0.999-0.08*cos(d2r*arg)**2    !a3
-            rhc(i,kc)=0.98-0.07*cos(d2r*arg)**2.0    !wsm6
+             rhc(i,kc)=0.98-0.07*cos(d2r*xlat(j))**2.0
+!            rhc(i,kc)=0.98-0.07*cos(d2r*arg)**2.0    !wsm6
 !            tem   = (max(min(plt(i,k,jj),900.)-700.,0.01) / 200.)
 !            rhc(i,kc)=tem*rhc(i,kc)+(1.-tem)*0.7
 !!!!             rhc(i,kc)=(1.-coefrhc)*(0.7+0.15*cos(d2r*xlat(j))**2)  &

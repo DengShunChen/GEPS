@@ -408,16 +408,16 @@
           do n=1,nv
             past(1:im,n) = qq(1:im,k,n)
           enddo
-!          call cyclic_cell_ppm_intp(xreg,past,xpast,da,im,nv,im,im,sc)
-          call cyclic_cell_plm_intp(xreg,past,xpast,da,im,nv,im,im,sc)
+          call cyclic_cell_ppm_intp(xreg,past,xpast,da,im,nv,im,im,sc)
+!          call cyclic_cell_plm_intp(xreg,past,xpast,da,im,nv,im,im,sc)
         endif
         if( mass.eq.1) then
           do n=1,nv
             da(1:im,n) = da(1:im,n) * dxfact(1:im)
           enddo
         endif
-!        call cyclic_cell_ppm_intp(xnext,da,xreg,next,im,nv,im,im,sc)
-        call cyclic_cell_plm_intp(xnext,da,xreg,next,im,nv,im,im,sc)
+        call cyclic_cell_ppm_intp(xnext,da,xreg,next,im,nv,im,im,sc)
+!        call cyclic_cell_plm_intp(xnext,da,xreg,next,im,nv,im,im,sc)
         do n=1,nv
           qq(1:im,k,n) = next(1:im,n)
         enddo
@@ -636,8 +636,8 @@
           do n=1,nv
             past(1:jm,n) = qq(1:jm,k,n)
           enddo
-!          call cyclic_cell_ppm_intp(gglati,past,ypast,da,jm,nv,jm,jm,sc)
-          call cyclic_cell_plm_intp(gglati,past,ypast,da,jm,nv,jm,jm,sc)
+          call cyclic_cell_ppm_intp(gglati,past,ypast,da,jm,nv,jm,jm,sc)
+!          call cyclic_cell_plm_intp(gglati,past,ypast,da,jm,nv,jm,jm,sc)
         endif
 
         if( mass.eq.1 ) then
@@ -645,8 +645,8 @@
             da(1:jm,n) = da(1:jm,n) * dyfact(1:jm)
           enddo
         endif
-!        call cyclic_cell_ppm_intp(ynext,da,gglati,next,jm,nv,jm,jm,sc)
-        call cyclic_cell_plm_intp(ynext,da,gglati,next,jm,nv,jm,jm,sc)
+        call cyclic_cell_ppm_intp(ynext,da,gglati,next,jm,nv,jm,jm,sc)
+!        call cyclic_cell_plm_intp(ynext,da,gglati,next,jm,nv,jm,jm,sc)
 
         do n=1,nv
           qq(1:jm,k,n) = next(1:jm,n)

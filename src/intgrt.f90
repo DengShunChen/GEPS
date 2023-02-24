@@ -807,7 +807,7 @@
                ,weight,cim,onocos,poly,dpoly,divten,vorten,nsizey)
       call siimpl ( jtrun,jtmax,lev,dth,ptmeans,dsigma,spalm,eps4,eigval &
                   , evecin,evectr,arrhyd,arsddt,temnow,divnow,plnow      &
-                  , temnow,divnow,plnow,temten,divten,plten,0.8)
+                  , temnow,divnow,plnow,temten,divten,plten,alphax)
 
 !      call trandv ( jtrun,jtmax,nx,my,my_max,lev,vdzonl,vdmerd,weight,cim &
 !                   ,onocos,poly,dpoly,vormid,divmid,nsizey)
@@ -983,76 +983,7 @@
 !CWB2021 ndsl single precision test
 
 !
-!
-      call mpe2d_unify_nx(ww1,deldm) 
-      call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1         &
-                  ,plten,nsizey)
 
-      do m = 1, mlistnum
-        mf=mlist(m)
-        do n = mf, jtrun
-          pltemp(n,m,1)= dta*plten(n,m,1)+plnow(n,m,1)
-          pltemp(n,m,2)= dta*plten(n,m,2)+plnow(n,m,2)
-        enddo
-      enddo
-
-      call transr1(jtrun,jtmax,nx,my,my_max,poly,pltemp,pt,nsizey)
-
-      !  stochastic_physics
-      call run_stochastic_physics()
-!
-!  for physical parameterization,output spectrum u,v,t,q to grid point
-!
-        if (yesdia)  then
-
-          call diabat ( docup,dodry,dolsp,dopbl,dorad,doshl,dograv,tofd         &
-                      , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw      &
-                      , idg,jdg,ldiag,dtx,tau,hours,julian,year,yrd             &
-                      , frad,ozon,njump,itypbl,ktcup,ktpbl,ktshl,grav           &
-                      , rgas,cp,stbo,s0,evaprh,hltm,ptop,sigma,dsigma,il,ib     &
-                      , cof,xlat,xlon,sgeo,z0,alb,land,ocean,ice                &
-                      , snr,tg,tgclim,curate,plcl,cumtop,totalp,raintot,raincu  &
-                      , rainlp,raincu6,rainlp6,raincu3,rainlp3,raincu1,rainlp1  &
-                      , hflux,qflux,ustar,tstar,qstar,e                         &
-                      , eps,o3l,dtrad,ss,rs,plt,pk,pk2                          &
-                      , ptp,    ut,    vt,    tt,qp                             &
-                      , pt ,vdzonl,vdmerd,ddtemp,qt                             &
-                      , gwclim,tice,hice,qgini,thdai,tengi                      &
-                      , acld,std,asol,olr,drag,ugws,vgws                        &
-                      , sdpbl,t2,q2,rh2,rh10,u10,v10,gfx                        &
-                      , fm,fh,fm10,fh2,srflag                                   &
-                      , rld,km_soil,smc,stc,canopy,runoff                       &
-                      , sigmaf,istyp,ivegtyp,wltsmc,refsmc,maxsmc,dfkt,xktk,dfk &
-                      , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,deltaq,cnvwr,cnvcr,pdot    &
-                      , shdmax,shdmin,snoalb                                    &
-                      , slopetyp,sld,slc,zice,cice,xtice,sncover,sndepth        &
-                      , ctot,chig,cmid,clow,hpbl,asl,atl,cosz                   &
-                      , nmgwor,nmgwcv,hprime_b,mtnvar,docgrav,nmmiph            &
-!--------------------------------------------------------------------------------
-                      , fusl,fdsl,fuir,fdir                                     &
-                      , fuslr,fdslr,fuirr,fdirr                                 &
-                      , asl_clr,atl_clr,clds                                    &
-                      , ss_clr,rs_clr,asol_clr,olr_clr,sld_clr,rld_clr          &
-                      , alvsf,alvwf,alnsf,alnwf,facsf,facwf                     &
-                      , idtg,doo3l,nfxr,sfalb,sfemis,isot,ivegsrc               &
-                      , itimestep,lrun_sitvdiff,ic_sit                          &
-!xb110>
-!byl                      , rmr,smr,flash)
-                      , flash,tsflw,vvel)
-!xb110<
-!--------------------------------------------------------------------------------
-!
-! add reynolds stress
-!
-          call rayleifr(nx,my,my_max,lev,rad,cosl,dt,vdzonl,vdmerd)
-
-        endif    ! end of (yesdia)
-
-!CWB2021
-
-
-        itimestep=itimestep+1 
-!
 !  after phyical parameterization,transform grid point u,v,t,q to
 !  spectrum
 !
@@ -1074,6 +1005,11 @@
                    ,temten,1,nsizey)
           call rstrandz (jtrun,jtmax,nx,my,my_max,levp,vdmerd,vdzonl   &
                    ,weight,cim,onocos,poly,dpoly,divten,vorten,nsizey)
+!
+          call mpe2d_unify_nx(ww1,deldm) 
+          call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1    &
+                   ,plten,nsizey)
+!
 !
       if (lsimpl)  then
 !
@@ -1162,33 +1098,80 @@
                              , hfiltx,rad,cosl,um,vm,vornow,divnow,temnow  &
                              , eps4,trefs)
 !
-!  robert time filter
+!  for physical parameterization,output spectrum u,v,t,q to grid point
 !
-!        tfilt=0.07
-!        do m = 1, mlistnum
-!          mf=mlist(m)
-!          do n = mf, jtrun
-!            do k = 1, lev*2
-!              vormid(k,1,n,m)= vormid(k,1,n,m) + tfilt*( vorold(k,1,n,m) &
-!                             - 2.0*vormid(k,1,n,m)+vornow(k,1,n,m) )
-!              divmid(k,1,n,m)= divmid(k,1,n,m) + tfilt*( divold(k,1,n,m) &
-!                             - 2.0*divmid(k,1,n,m)+divnow(k,1,n,m) )
-!              temmid(k,1,n,m)= temmid(k,1,n,m) + tfilt*( temold(k,1,n,m) &
-!                             - 2.0*temmid(k,1,n,m)+temnow(k,1,n,m) )
-!            enddo
-!          enddo
-!        enddo
-!        do m =1,mlistnum
-!          mf=mlist(m)
-!          do n  = mf,jtrun
-!            plmid(n,m,1)  = plmid(n,m,1) + tfilt*( plold(n,m,1) &
-!                          - 2.0*plmid(n,m,1)+plnow(n,m,1) )
-!            plmid(n,m,2)  = plmid(n,m,2) + tfilt*( plold(n,m,2) &
-!                          - 2.0*plmid(n,m,2)+plnow(n,m,2) )
-!          enddo
-!        enddo
+        call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temnow,cc,1,nsizey)
+        call ujoinsr(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+        call tranuv(jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac &
+                   ,poly,dpoly,vornow,divnow,ut,vt,nsizey)
+        call transr1(jtrun,jtmax,nx,my,my_max,poly,plnow,pt,nsizey)!
+
+
+      call transr1(jtrun,jtmax,nx,my,my_max,poly,plnow,pt,nsizey)
+
+      !  stochastic_physics
+      call run_stochastic_physics()
 !
+!  for physical parameterization,output spectrum u,v,t,q to grid point
 !
+        if (yesdia)  then
+
+          call diabat ( docup,dodry,dolsp,dopbl,dorad,doshl,dograv,tofd         &
+                      , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw      &
+                      , idg,jdg,ldiag,dtx,tau,hours,julian,year,yrd             &
+                      , frad,ozon,njump,itypbl,ktcup,ktpbl,ktshl,grav           &
+                      , rgas,cp,stbo,s0,evaprh,hltm,ptop,sigma,dsigma,il,ib     &
+                      , cof,xlat,xlon,sgeo,z0,alb,land,ocean,ice                &
+                      , snr,tg,tgclim,curate,plcl,cumtop,totalp,raintot,raincu  &
+                      , rainlp,raincu6,rainlp6,raincu3,rainlp3,raincu1,rainlp1  &
+                      , hflux,qflux,ustar,tstar,qstar,e                         &
+                      , eps,o3l,dtrad,ss,rs,plt,pk,pk2                          &
+                      , ptp,    up,    vp,   ttp,qp                             &
+                      , pt ,    ut,    vt,    tt,qt                             &
+                      , gwclim,tice,hice,qgini,thdai,tengi                      &
+                      , acld,std,asol,olr,drag,ugws,vgws                        &
+                      , sdpbl,t2,q2,rh2,rh10,u10,v10,gfx                        &
+                      , fm,fh,fm10,fh2,srflag                                   &
+                      , rld,km_soil,smc,stc,canopy,runoff                       &
+                      , sigmaf,istyp,ivegtyp,wltsmc,refsmc,maxsmc,dfkt,xktk,dfk &
+                      , ftp,fqp,fpsp,ftp1,fqp1,fpsp1,deltaq,cnvwr,cnvcr,pdot    &
+                      , shdmax,shdmin,snoalb                                    &
+                      , slopetyp,sld,slc,zice,cice,xtice,sncover,sndepth        &
+                      , ctot,chig,cmid,clow,hpbl,asl,atl,cosz                   &
+                      , nmgwor,nmgwcv,hprime_b,mtnvar,docgrav,nmmiph            &
+!--------------------------------------------------------------------------------
+                      , fusl,fdsl,fuir,fdir                                     &
+                      , fuslr,fdslr,fuirr,fdirr                                 &
+                      , asl_clr,atl_clr,clds                                    &
+                      , ss_clr,rs_clr,asol_clr,olr_clr,sld_clr,rld_clr          &
+                      , alvsf,alvwf,alnsf,alnwf,facsf,facwf                     &
+                      , idtg,doo3l,nfxr,sfalb,sfemis,isot,ivegsrc               &
+                      , itimestep,lrun_sitvdiff,ic_sit                          &
+!xb110>
+!byl                      , rmr,smr,flash)
+                      , flash,tsflw,vvel)
+!xb110<
+!--------------------------------------------------------------------------------
+!
+! add reynolds stress
+!
+          call rayleifr(nx,my,my_max,lev,rad,cosl,dt,ut,vt)
+
+          call joinrs(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+          call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc   &
+                     ,temnow,1,nsizey)
+
+          call trandv(jtrun,jtmax,nx,my,my_max,lev,ut,vt,weight,cim &
+                     ,onocos,poly,dpoly,vornow,divnow,nsizey)
+
+        endif    ! end of (yesdia)
+
+!CWB2021
+
+
+        itimestep=itimestep+1 
+
+
 !        if ( mod(itimestep,2) .eq. 0 ) xy = -1 * xy
         xy = -1 * xy
 !

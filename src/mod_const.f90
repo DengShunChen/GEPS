@@ -72,7 +72,7 @@
          ptop,ptmean,dt,tau,taui,taue,tauo,                &
          hours,frad,evaprh,qgini,                          &
          tice,hice,cutfreq,taup,hfilt,ptmeans,             &
-         taureg,cgw,fsit,domfc,otgreen,spl1,spl2,           &
+         taureg,cgw,fsit,domfc,otgreen,spl1,spl2,          &
          dSITdt_intv,weightSIT,updatetg
     logical :: lsimpl,lzadv, yesdia,dopbl, docup, dorad,      &
             dolsp, dograv,doshl, dodry, donnmi,ozon,       &

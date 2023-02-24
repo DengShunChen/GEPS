@@ -82,7 +82,7 @@
                       , outrsm,rsmoutinv,rlon1,rlon2,rlat1,rlat2,rgrdsz &
                       , cmbk,cgwd,nmmiph,spl1,spl2                      &
                       , weightSIT,dSITdt_intv,mwhd,doclx,doslavepp   &
-                      , outdms,outgrb2
+                      , outdms,outgrb2,alpha
 !
       real    si(lev+1)
       logical flag
@@ -339,7 +339,7 @@
         if ( prslp .le. spl1  ) hdk1=k
         if ( prslp .le. spl2  ) hdk2(1)=k
         if ( prslp .le. 100.  ) hdk2(2)=k
-        if ( prslp .le. 200.  ) hdk2(3)=k
+        if ( prslp .le. 300.  ) hdk2(3)=k
       enddo
 !
 !

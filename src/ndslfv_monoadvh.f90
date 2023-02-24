@@ -1867,9 +1867,9 @@
 !       call cyclic_mono_advectx (lonfull,levs,nvars,deltim,               &
 !    &                   uulon(1,1,lan),rrlon(1,1,lan),mono)
 
-        call cyclic_cell_intpxl(nlevs,lons_lat,lonfull,rrlon(1,1,lan))
-        call cyclic_cell_intpxl(nlevs,lons_lat,lonfull,qqlon(1,1,lan))
-        call cyclic_cell_intpxl(levs,lons_lat,lonfull,vvlon(1,1,lan))
+        call cyclic_cell_intpx(nlevs,lons_lat,lonfull,rrlon(1,1,lan))
+        call cyclic_cell_intpx(nlevs,lons_lat,lonfull,qqlon(1,1,lan))
+        call cyclic_cell_intpx(levs,lons_lat,lonfull,vvlon(1,1,lan))
 
 !        if( lprint ) then
 !        print *,' done cyclic_massadvx with mass= ',mass
@@ -2023,8 +2023,8 @@
 !
 ! mass conserving interpolation from full grid to reduced grid
 !
-        call cyclic_cell_intpxl(nlevs,lonfull,lons_lat,qqlon(1,1,lan))
-        call cyclic_cell_intpxl(nlevs,lonfull,lons_lat,rrlon(1,1,lan))
+        call cyclic_cell_intpx(nlevs,lonfull,lons_lat,qqlon(1,1,lan))
+        call cyclic_cell_intpx(nlevs,lonfull,lons_lat,rrlon(1,1,lan))
 
 !
 ! second set advection in x for the second of the pair
@@ -2373,9 +2373,9 @@
 !       call cyclic_mono_advectx (lonfull,levs,nvars,deltim,               &
 !    &                   uulon(1,1,lan),rrlon(1,1,lan),mono)
 
-!        call cyclic_cell_intpxl(nlevs,lons_lat,lonfull,rrlon(1,1,lan))
-        call cyclic_cell_intpxl(nlevs,lons_lat,lonfull,qqlon(1,1,lan))
-        call cyclic_cell_intpxl(levs,lons_lat,lonfull,vvlon(1,1,lan))
+!        call cyclic_cell_intpx(nlevs,lons_lat,lonfull,rrlon(1,1,lan))
+        call cyclic_cell_intpx(nlevs,lons_lat,lonfull,qqlon(1,1,lan))
+        call cyclic_cell_intpx(levs,lons_lat,lonfull,vvlon(1,1,lan))
 
 !        if( lprint ) then
 !        print *,' done cyclic_massadvx with mass= ',mass
@@ -2529,8 +2529,8 @@
 !
 ! mass conserving interpolation from full grid to reduced grid
 !
-        call cyclic_cell_intpxl(nlevs,lonfull,lons_lat,qqlon(1,1,lan))
-!!        call cyclic_cell_intpxl(nlevs,lonfull,lons_lat,rrlon(1,1,lan))
+        call cyclic_cell_intpx(nlevs,lonfull,lons_lat,qqlon(1,1,lan))
+!!        call cyclic_cell_intpx(nlevs,lonfull,lons_lat,rrlon(1,1,lan))
 
 !
 ! second set advection in x for the second of the pair
@@ -2879,9 +2879,9 @@
 !       call cyclic_mono_advectx (lonfull,levs,nvars,deltim,               &
 !    &                   uulon(1,1,lan),rrlon(1,1,lan),mono)
 
-!!        call cyclic_cell_intpxl(nlevs,lons_lat,lonfull,rrlon(1,1,lan))
-        call cyclic_cell_intpxl(nlevs,lons_lat,lonfull,qqlon(1,1,lan))
-        call cyclic_cell_intpxl(levs,lons_lat,lonfull,vvlon(1,1,lan))
+!!        call cyclic_cell_intpx(nlevs,lons_lat,lonfull,rrlon(1,1,lan))
+        call cyclic_cell_intpx(nlevs,lons_lat,lonfull,qqlon(1,1,lan))
+        call cyclic_cell_intpx(levs,lons_lat,lonfull,vvlon(1,1,lan))
 
 !        if( lprint ) then
 !        print *,' done cyclic_massadvx with mass= ',mass
@@ -3035,8 +3035,8 @@
 !
 ! mass conserving interpolation from full grid to reduced grid
 !
-        call cyclic_cell_intpxl(nlevs,lonfull,lons_lat,qqlon(1,1,lan))
-!!        call cyclic_cell_intpxl(nlevs,lonfull,lons_lat,rrlon(1,1,lan))
+        call cyclic_cell_intpx(nlevs,lonfull,lons_lat,qqlon(1,1,lan))
+!!        call cyclic_cell_intpx(nlevs,lonfull,lons_lat,rrlon(1,1,lan))
 
 !
 ! second set advection in x for the second of the pair

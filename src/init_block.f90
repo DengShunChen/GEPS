@@ -241,7 +241,7 @@
 !  sponge layer 
       spl1=5.
       spl2=50.
-      vd=0.1
+      vd=0.08
       else if ( lev .eq. 128 ) then
 !
 ! L128 hybrid coordinate
@@ -330,13 +330,13 @@
 !
 ! for forward weighting Semi-Implicit
 !
-      alpha=0.55
+      alpha=0.7
 !
 ! for two time level 
 !
 !    coefficient of horizontal difussion for mid-point wind
 !
-      mwhd=4.
+      mwhd=1.
 
 !
       ifilin ='ifilin'

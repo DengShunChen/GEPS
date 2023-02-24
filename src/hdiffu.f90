@@ -81,7 +81,8 @@
 !
         KL=Llist(k)
 !
-        kfac = min(coefu*max(float(hdk2(1)-KL),0.),factop)
+        kfac = min(coefu*max(float(hdk2(1)-KL),0.),factop)!  & 
+!             + min(1.*max(float(hdk2(3)-KL),0.),4.)
         facd = max(1.,kfac)*amp
         facv = max(1.,kfac)*amp
         fact = max(1.,kfac)*amp
@@ -386,7 +387,7 @@
         KL=Llist(k)
 !
         kfac = min(fl*max(float(hdk2(2)-KL),0.),factop)!    &
-!              + min(0.5*max(float(hdk2(3)-KL),0.),3.)
+!              + min(1.*max(float(hdk2(3)-KL),0.),4.)
 !        facd = mwhd * max(amp,kfac)
 !        facv = max(min(amp,1.),kfac)
         facd = mwhd*max(1.,kfac)*amp
