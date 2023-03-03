@@ -153,9 +153,8 @@
               qv2d,qc2d,qr2d,qi2d,qs2d,qg2d,qnc2d,qni2d,qnr2d,          &
               rew2d,rer2d,rei2d,res2d,reg2d,                            &
               t2d,dp2d,dz2d,cld2d,w2d,u2d,v2d
+      real    qmin, qnmin
 ! New Thompson MP
-      real, parameter :: qmin=1.0e-12 !(kg/kg)
-      real, parameter :: qnmin=1.0e-6 !(m^-3)
       real,dimension(:,:),allocatable ::                                &
               nwfa,nifa,pfils,pflls,vt_dbz_wt
       real,dimension(:),allocatable :: nwfasfc,nifasfc,rainnc,snownc,   &
@@ -175,7 +174,7 @@
                 rainmin=1.0e-10 !(mm)
       real :: fac_qsw
       logical   hydrostatic,phys_hydrostatic,sedi_w
-      integer :: isedi
+      integer :: isedi, isedi_ice
      !GFDL MP v2 & v3
       real, dimension(:), allocatable ::                                &
                 gsize,hs,water1d,rain1d,snow1d,ice1d,graupel1d
@@ -332,6 +331,9 @@
         kme_stoch=1
         istep=1          !current step
         nsteps=1         !maximum number of steps
+
+        qmin=1.0e-12     !minimum of q (kg/kg)
+        qnmin=1.0e-6     !minimum of qn (m^-3)
 
         t2d=0.
         qv2d=0.
@@ -680,6 +682,11 @@
                                     !  =2 : PPM Lagrangian
                                     !  =3 : semi-Lagrangian (from Thompson MP)
 
+        isedi_ice = 1               !flag for sedimentation scheme of cloud ice
+                                    !  =1 : time implicit
+                                    !  =2 : PPM Lagrangian
+                                    !  =3 : semi-Lagrangian (from Thompson MP)
+
       ! define factor of vapor condensed threshold
 !        fac_qsw = 1.0                 ! default
         fac_qsw = 1.0 - 0.02*cosl**2  ! =0.98 at equator; =1.0 at pole
@@ -752,7 +759,7 @@
                   prefluxr, prefluxi, prefluxs, prefluxg,               &
                   cond0, dep0, evap0, sub0,                             &
 #endif
-                  fac_qsw, last_step, do_inline_mp, isedi )
+                  fac_qsw, last_step, do_inline_mp, isedi, isedi_ice )
 
         ! GFDL MP v3
         if ( nmmiph .eq. 13 )                                           &
@@ -769,14 +776,15 @@
 #endif
                   last_step, do_inline_mp )
 
+        qmin = 1.0e-15     !minimum of q (kg/kg)
         do k = 1, lev
           do i = 1, nxj
             qt(i,             k) = qv2d(i,k)
-            qt(i,(ntcw-1)*lev+k) = qc2d(i,k)
-            qt(i,(ntrw-1)*lev+k) = qr2d(i,k)
-            qt(i,(ntiw-1)*lev+k) = qi2d(i,k)
-            qt(i,(ntsw-1)*lev+k) = qs2d(i,k)
-            qt(i,(ntgl-1)*lev+k) = qg2d(i,k)
+            qt(i,(ntcw-1)*lev+k) = max( qc2d(i,k) , qmin )
+            qt(i,(ntrw-1)*lev+k) = max( qr2d(i,k) , qmin )
+            qt(i,(ntiw-1)*lev+k) = max( qi2d(i,k) , qmin )
+            qt(i,(ntsw-1)*lev+k) = max( qs2d(i,k) , qmin )
+            qt(i,(ntgl-1)*lev+k) = max( qg2d(i,k) , qmin )
             qa(i,k)  = cld2d(i,k)
             tt(i,k)  = t2d  (i,k)
             ut(i,k)  = u2d  (i,k)
