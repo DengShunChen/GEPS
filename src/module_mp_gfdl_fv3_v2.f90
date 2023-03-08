@@ -1162,7 +1162,7 @@ subroutine warm_rain (dt, ks, ke, dp, dz, tz, qv, ql, qr, qi, qs, qg, &
     real, parameter :: thr = 1.e-8
     
     ! for semi_lagrangian sedimension
-    real, dimension (ks:ke) :: dzc, qrc, vtrc, m1_rainc, netflux
+    real, dimension (ks:ke) :: dzc, qrc, vtrc, m1_rainc
     real, dimension (ks:ke) :: dl, dm
     real (kind = r8), dimension (ks:ke) :: te1, te2
     real, dimension (ks:ke + 1) :: ze, zt
@@ -1255,29 +1255,20 @@ subroutine warm_rain (dt, ks, ke, dp, dz, tz, qv, ql, qr, qi, qs, qg, &
                 if (zt (k + 1) >= zt (k)) zt (k + 1) = zt (k) - dz_min
             enddo
             call lagrangian_fall_ppm (ks, ke, zs, ze, zt, dp, qr, r1, m1_rain, mono_prof)
-!        elseif (use_semi) then
-#ifdef use_semi_rain
         elseif ( isedi .eq. 3 ) then  ! semi-Lagrangian sedimentation
             do k = ks, ke
-                dzc (k) = abs ( dz (ke - k + 1) )
+                dzc (k) = - dz (ke - k + 1)
                 qrc (k) = qr (ke - k + 1) * den (ke - k + 1)
                 vtrc (k) = vtr (ke - k + 1)
                 m1_rain (k) = 0.
                 m1_rainc (k) = 0.
-                netflux (k) = 0.
             enddo
             call semi_lagrange_sedim (ke, dzc, vtrc, qrc, r1, m1_rainc, dt, 1.E-12)
-            ! calculating precipitation fluxes
             do k = ks, ke
                 qr (k) = qrc (ke - k + 1) / den (k)
-                netflux (k) = m1_rainc (ke - k + 1) / den (k) * dp (k)
+                m1_rain (k) = m1_rainc (ke - k + 1)  ! accumulated precipitation flux
             enddo
-            m1_rain (ks) = netflux (ks)
-            do k = ks + 1, ke
-                m1_rain (k) = m1_rain (k - 1) + netflux (k)
-            enddo
-            r1 = m1_rain (ke)
-#endif
+            r1 = m1_rain (ke) * grav  ! because convt=1./grav
         else  ! isedi=1, time-implicit sedimentation
             call implicit_fall (dt, ks, ke, ze, vtr, dp, qr, r1, m1_rain)
         endif
@@ -2701,7 +2692,7 @@ subroutine terminal_fall (dtm, ks, ke, tz, qv, ql, qr, qg, qs, qi, dz, dp, &
     real :: fac_imlt
     
     ! for semi_lagrangian sedimension
-    real, dimension (ks:ke) :: dzc, m1c, qsc, vtsc, qgc, vtgc, qic, vtic, netflux
+    real, dimension (ks:ke) :: dzc, m1c, qsc, vtsc, qgc, vtgc, qic, vtic
     integer :: k, k0, m
     logical :: no_fall
     
@@ -2843,27 +2834,18 @@ subroutine terminal_fall (dtm, ks, ke, tz, qv, ql, qr, qg, qs, qi, dz, dp, &
             call lagrangian_fall_ppm (ks, ke, zs, ze, zt, dp, qi, i1, m1_sol, mono_prof)
         elseif ( isedi_ice .eq. 3 ) then  ! semi-Lagrangian sedimentation
             do k = ks, ke
-                dzc (k) = abs( dz (ke - k + 1) )
+                dzc (k) = - dz (ke - k + 1)
                 qic (k) = qi (ke - k + 1) * den (ke - k + 1)
                 vtic (k) = vti (ke - k + 1)
                 m1_sol (k) = 0.
                 m1c (k) = 0.
-                netflux (k) = 0.
             enddo
             call semi_lagrange_sedim (ke, dzc, vtic, qic, i1, m1c, dtm, 1.E-12)
-            ! calculating precipitation fluxes
             do k = ks, ke
                 qi (k) = qic (ke - k + 1) / den (k)
-!                m1_sol (k) = m1c (ke - k + 1) / den (k) * dp (k)
-                netflux (k) = m1c (ke - k + 1) / den (k) * dp (k)
+                m1_sol (k) = m1c (ke - k + 1)  ! accumulated precipitation flux
             enddo
-!            i1 = i1 * dp (ke)
-!            i1 = m1_sol (ke) * dp (ke)
-            m1_sol (ks) = netflux (ks)
-            do k = ks + 1, ke
-                m1_sol (k) = m1_sol (k-1) + netflux (k)
-            enddo
-            i1 = m1_sol (ke)
+            i1 = m1_sol (ke) * grav  ! because convt=1./grav
         else  ! isedi_ice = 1, time-implicit sedimentation
             call implicit_fall (dtm, ks, ke, ze, vti, dp, qi, i1, m1_sol)
         endif
@@ -2961,29 +2943,20 @@ subroutine terminal_fall (dtm, ks, ke, tz, qv, ql, qr, qg, qs, qi, dz, dp, &
 !        if (use_ppm) then
         if ( isedi .eq. 2 ) then  ! PPM-Lagrangian sedimentation
             call lagrangian_fall_ppm (ks, ke, zs, ze, zt, dp, qs, s1, m1, mono_prof)
-!        elseif (use_semi) then
-!#ifdef use_semi_snow
         elseif ( isedi .eq. 3 ) then  ! semi-Lagrangian sedimentation
             do k = ks, ke
-                dzc (k) = abs( dz (ke - k + 1) )
+                dzc (k) = - dz (ke - k + 1)
                 qsc (k) = qs (ke - k + 1) * den (ke - k + 1)
                 vtsc (k) = vts (ke - k + 1)
                 m1 (k) = 0.
                 m1c (k) = 0.
-                netflux (k) = 0.
             enddo
             call semi_lagrange_sedim (ke, dzc, vtsc, qsc, s1, m1c, dtm, 1.E-12)
-            ! calculating precipitation fluxes
             do k = ks, ke
                 qs (k) = qsc (ke - k + 1) / den (k)
-                netflux (k) = m1c (ke - k + 1) / den (k) * dp (k)
+                m1 (k) = m1c (ke - k + 1)  ! accumulated precipitation flux
             enddo
-            m1 (ks) = netflux (ks)
-            do k = ks + 1, ke
-                m1 (k) = m1 (k - 1) + netflux (k)
-            enddo
-            s1 = m1 (ke)
-!#endif
+            s1 = m1 (ke) * grav  ! because convt=1./grav
         else  ! isedi=1, time-implicit sedimentation
             call implicit_fall (dtm, ks, ke, ze, vts, dp, qs, s1, m1)
         endif
@@ -3082,29 +3055,20 @@ subroutine terminal_fall (dtm, ks, ke, tz, qv, ql, qr, qg, qs, qi, dz, dp, &
 !        if (use_ppm) then
         if ( isedi .eq. 2 ) then  ! PPM-Lagrangian sedimentation
             call lagrangian_fall_ppm (ks, ke, zs, ze, zt, dp, qg, g1, m1, mono_prof)
-!        elseif (use_semi) then
-#ifdef use_semi_grpl
         elseif ( isedi .eq. 3 ) then  ! semi-Lagrangian sedimentation
             do k = ks, ke
-                dzc (k) = abs( dz (ke - k + 1) )
+                dzc (k) = - dz (ke - k + 1)
                 qgc (k) = qg (ke - k + 1) * den (ke - k + 1)
                 vtgc (k) = vtg (ke - k + 1)
                 m1 (k) = 0.
                 m1c (k) = 0.
-                netflux (k) = 0.
             enddo
             call semi_lagrange_sedim (ke, dzc, vtgc, qgc, g1, m1c, dtm, 1.E-12)
-            ! calculating precipitation fluxes
             do k = ks, ke
                 qg (k) = qgc (ke - k + 1) / den (k)
-                netflux (k) = m1c (ke - k + 1) / den (k) * dp (k)
+                m1 (k) = m1c (ke - k + 1)  ! accumulated precipitation flux
             enddo
-            m1 (ks) = netflux (ks)
-            do k = ks + 1, ke
-                m1 (k) = m1 (k - 1) + netflux (k)
-            enddo
-            g1 = m1 (ke)
-#endif
+            g1 = m1 (ke) * grav  ! because convt=1./grav
         else  ! isedi=1, time-implicit sedimentation
             call implicit_fall (dtm, ks, ke, ze, vtg, dp, qg, g1, m1)
         endif
@@ -4928,11 +4892,11 @@ end subroutine neg_adj
       enddo
 ! plm is 2nd order, we can use 2nd order wi or 3rd order wi
 ! 2nd order interpolation to get wi
-      wi(1) = ww(1)
-      wi(km+1) = ww(km)
-      do k=2,km
-        wi(k) = (ww(k)*dz(k-1)+ww(k-1)*dz(k))/(dz(k-1)+dz(k))
-      enddo
+!      wi(1) = ww(1)
+!      wi(km+1) = ww(km)
+!      do k=2,km
+!        wi(k) = (ww(k)*dz(k-1)+ww(k-1)*dz(k))/(dz(k-1)+dz(k))
+!      enddo
 ! 3rd order interpolation to get wi
       fa1 = 9./16.
       fa2 = 1./16.
@@ -5032,6 +4996,7 @@ end subroutine neg_adj
                  qqh=qqd*th2+qmi(kb)*th
                  qql=qqd*tl2+qmi(kb)*tl
                  qn(k) = (qqh-qql)/(th-tl)
+                 net_flx(k) = qqh-qql  !xb141
                else if( kt.gt.kb ) then
                  tl=(zi(k)-za(kb))/dza(kb)
                  tl2=tl*tl
@@ -5053,6 +5018,7 @@ end subroutine neg_adj
                  zsum  = zsum + th*dza(kt)
                  qsum  = qsum + dqh*dza(kt)
                  qn(k) = qsum/zsum
+                 net_flx(k) = qsum  !xb141
                endif
                cycle intp
              endif
@@ -5060,24 +5026,23 @@ end subroutine neg_adj
        enddo intp
 
 ! rain out
-      sum_precip: do k=1,km
-                    if( za(k).lt.0.0 .and. za(k+1).le.0.0 ) then
-                      precip = precip + qa(k)*dza(k)
-                      net_flx(k) =  qa(k)*dza(k)
-                      cycle sum_precip
-                    else if ( za(k).lt.0.0 .and. za(k+1).gt.0.0 ) then
-                      th = (0.0-za(k))/dza(k)
-                      th2 = th*th
-                      qqd = 0.5*(qpi(k)-qmi(k))
-                      qqh = qqd*th2+qmi(k)*th
-                      precip = precip + qqh*dza(k)
-                      net_flx(k) = qqh*dza(k)
-                      exit sum_precip
-                    endif
-                    exit sum_precip
-      enddo sum_precip
+!      sum_precip: do k=1,km
+!                    if( za(k).lt.0.0 .and. za(k+1).le.0.0 ) then
+!                      precip = precip + qa(k)*dza(k)
+!                      net_flx(k) =  qa(k)*dza(k)
+!                      cycle sum_precip
+!                    else if ( za(k).lt.0.0 .and. za(k+1).gt.0.0 ) then
+!                      th = (0.0-za(k))/dza(k)
+!                      th2 = th*th
+!                      qqd = 0.5*(qpi(k)-qmi(k))
+!                      qqh = qqd*th2+qmi(k)*th
+!                      precip = precip + qqh*dza(k)
+!                      net_flx(k) = qqh*dza(k)
+!                      exit sum_precip
+!                    endif
+!                    exit sum_precip
+!      enddo sum_precip
 
-#ifdef precip_flux
 ! calculating precipitation fluxes
       do k=km,1,-1
          if(k == km) then
@@ -5086,10 +5051,7 @@ end subroutine neg_adj
            pfsan(k) = pfsan(k+1) + net_flx(k)
          end if
       enddo
-#else
-! calculating layer net fluxes
-      pfsan(:) = net_flx(:)
-#endif
+      precip = pfsan(1)  !xb141
 !
 ! replace the new values
       rql(:) = max(qn(:),R1)
