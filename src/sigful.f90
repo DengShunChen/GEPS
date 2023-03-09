@@ -2,7 +2,7 @@
               , ifilout,cstar,ktrop,idtg,ptop,taux,capa,grav,rgas,rad,cp  &
               , weight,poly,sigma,cosl,phi,tt,ut,vt,sht,o3l,pt,sgeo,pdiff &
 !             , weight,poly,sigma,cosl,phi,tt,ut,vt,sht,pt,sgeo,pdiff
-              , tsave,t1000,plt,pk,pk2,trefs,taup,ggdef,gmdef)
+              , tsave,t1000,plt,pk,pk2,taup,ggdef,gmdef)
 !
 !  read and interpolate analysis fields to model's coordinates
 !
@@ -25,10 +25,12 @@
 !  pk: 3-d full level exner func on gaussian grid and sigma coord.
 !  pk2: 3-d half level exner func on gaussian grid and sigma coord.
 !
+      use const, only : RTYPE,kflag,qmin
       use mpe
       use rank
       use index
       use radn, only : ntoz,ntcw,ntiw
+      use spec, only : trefs
 
       implicit  none
 
@@ -36,32 +38,37 @@
       integer   ktrop,nxmy,nxlev,lncrec,lmaxp1,lmaxp2,k,itaux,itaup
       integer   istat,i,ii,jj,j,nxj,kk,lqwset,m,mf,n,llts,ntrac,nclds
 
-      real      taup,cp,rad,rgas,grav,capa,taux,ptop,dummy,ppp,fac
+      real      taup,cp,rad,rgas,grav,capa,taux,ptop,ppp,fac
       real      alaps,rdg,ttt1,ttt2,apha,ttt,sigp,x1,opok,pk800,pk300
 
 
       logical cstar
-      real      weight(my),poly(jtrun,jtmax,my/2),sigma(lev+1,2)                &
-              , cosl(my),phi(nxp,lev,my_max),tt(nxp,lev,my_max)         &
-              , ut(nxp,lev,my_max),vt(nxp,lev,my_max),pk(nxp,lev,my_max) &
-              , pt(nxp,my_max),sgeo(nxp,my_max),pdiff(nxp,my_max),t1000(nxp,my_max) &
-              , tsave(nxp,my_max),plt(nxp,lev,my_max),pk2(nxp,lev,my_max)&
-              , sht(nxp,lev*ncld,my_max)                                    &
-              , trefs(levp,2,jtrun,jtmax),o3l(nxp,lev,my_max)
+      real      pdiff(nxp,my_max),t1000(nxp,my_max)                     &
+              , tsave(nxp,my_max),plt(nxp,lev,my_max)
+      real(kind=RTYPE) weight(my),poly(jtrun,jtmax,my/2)                &
+              ,        cosl(my),sigma(lev+1,2),pk(nxp,lev,my_max)       &
+              ,        pk2(nxp,lev,my_max)
       character*4 ggdef,gmdef
 !
 !  local work arrays
 !
       real      preplt(nx,lmax+2),prett(nx,lmax+2),hld1(nx,my)         &
-               ,plog(nx,lev),hld2(nx,my),anlslp(nx,my),hkd1(nx,lev),ut_tmp(nx,lev)
-      real     tens(lmax+2),tstd(lmax),hld3(nx,levp,my_max),           &
-               hld4(nx,levp,ncld,my_max)
+               ,plog(nx,lev),hkd1(nx,lev),ut_tmp(nx,lev)
+      real     tens(lmax+2),tstd(lmax),utmp(nxp,lev),vtmp(nxp,lev)
       real      puvphi(26)
 !
-      real      cc(nx+2,levp,1+ncld,my_max),wss(levp,2,1+ncld,jtrun,jtmax)
+      real(kind=RTYPE) cc(nx+2,levp,1+ncld,my_max)                     &
+               ,       ut(nxp,lev,my_max),vt(nxp,lev,my_max)           &
+               ,       tt(nxp,lev,my_max),sht(nxp,lev*ncld,my_max)     &
+               ,       o3l(nxp,lev,my_max),phi(nxp,lev,my_max)         &
+               ,       pt(nxp,my_max),sgeo(nxp,my_max)                 &
+               ,       anlslp(nxp,my_max)
+      real(kind=RTYPE) hld4(nx,levp,ncld,my_max),hld3(nx,levp,my_max)  &
+               ,       hld2(nx,my)
+      real      wss(levp,2,1+ncld,jtrun,jtmax)
       real      work_pr1(lev), work_pr2(lev), work_pr3(lev)
 !
-      real      plnow(jtrun,jtmax,2),ww1(nx,my_max)
+      real(kind=RTYPE) plnow(jtrun,jtmax,2),dummy,ww1(nx,my_max)
 !
       character*26 lrec
       character*6 typ
@@ -156,7 +163,7 @@
 !
 !  read in q at sigma levels
 !
-      hld4=1.0e-20
+      hld4=qmin
       do 73 k = 1, levp
         KL=lev-Llist(k)+1
       if ( KL .lt. 100 ) then
@@ -230,7 +237,7 @@
                 else
                   ntrac = ntcw
                 endif
-                hld4(i,k,ntrac,jj) = max(hld1(i,j),1.0e-20)
+                hld4(i,k,ntrac,jj) = max(hld1(i,j),qmin)
               end do
             end do
           end do
@@ -253,7 +260,7 @@
                 nxj=nxdef(j)
                 if( lreduce.eq.1 )call reducepick (hld1(1,j),nxdef(j),nx,1)
                 do i = 1, nxj
-                  hld4(i,k,ntrac,jj) = max(hld1(i,j),1.0e-20)
+                  hld4(i,k,ntrac,jj) = max(hld1(i,j),qmin)
                 enddo
               enddo
             enddo
@@ -395,16 +402,17 @@
         do  i = 1,nxj
 !ch         ut(i,k,jj)=ut_tmp(i,k) 
 !cjh        ut(i,k,jj)=ut_tmp(n,k) 
-            ut(i,k,jj)=ut_tmp(n,k)*(pt(i,jj)/1000.)**capa
+            utmp(i,k)=ut_tmp(n,k)*(pt(i,jj)/1000.)**capa
             n=n+1
         enddo
         enddo
 !
-      call qsatq_2d( nxjp(j),nxp,lev,ut(1,1,jj),plt(1,1,jj),vt(1,1,jj))
+      call qsatq_2d( nxjp(j),nxp,lev,utmp,plt(1,1,jj),vtmp)
 !
       do 160 k = 1, lev
       do 160 i = 1, nxj
-       ut(i,k,jj) = ut(i,k,jj)/pk(i,k,jj)
+       ut(i,k,jj) = utmp(i,k)/pk(i,k,jj)
+       vt(i,k,jj) = vtmp(i,k)
   160 continue
 !
   170 continue
@@ -444,7 +452,6 @@
 !     enddo
 !
 !!    qrefs=0.0
-
       call joinrs(cc,ut,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc,trefs,1,nsizey)
 
@@ -484,26 +491,26 @@
 !
       do 185 i = 1, nxj
       if( sgeo(i,jj) .lt. 0.1 ) then
-       anlslp(i,j) = pt(i,jj) + ptop
+       anlslp(i,jj) = pt(i,jj) + ptop
 
       elseif( hld1(i,j) .le. 290.5 .and. hld2(i,j) .gt. 290.5 ) then
        apha = rgas*(290.5-hld1(i,j))/sgeo(i,jj)
        ttt = sgeo(i,jj)/(rgas*hld1(i,j))
-       anlslp(i,j) = (pt(i,jj)+ptop)*exp( ttt*(1.0-0.5*apha*ttt+0.333333* &
+       anlslp(i,jj) = (pt(i,jj)+ptop)*exp( ttt*(1.0-0.5*apha*ttt+0.333333* &
                      apha*ttt*apha*ttt) )
 
       elseif( hld1(i,j) .gt. 290.5 .and. hld2(i,j) .gt. 290.5 ) then
        hld1(i,j) = (hld1(i,j)+290.5)*0.5
-       anlslp(i,j) = (pt(i,jj)+ptop)*exp( sgeo(i,jj)/(rgas*hld1(i,j)) )
+       anlslp(i,jj) = (pt(i,jj)+ptop)*exp( sgeo(i,jj)/(rgas*hld1(i,j)) )
 
       elseif( hld1(i,j) .lt. 255.0 .and. hld2(i,j) .lt. 255.0 ) then
        hld1(i,j) = (hld1(i,j)+255.0)*0.5
-       anlslp(i,j) = (pt(i,jj)+ptop)*exp( sgeo(i,jj)/(rgas*hld1(i,j)) )
+       anlslp(i,jj) = (pt(i,jj)+ptop)*exp( sgeo(i,jj)/(rgas*hld1(i,j)) )
 
       else
        apha = alaps * rdg
        ttt = sgeo(i,jj)/(rgas*hld1(i,j))
-       anlslp(i,j) = (pt(i,jj)+ptop)*exp( ttt*(1.0-0.5*apha*ttt+0.333333* &
+       anlslp(i,jj) = (pt(i,jj)+ptop)*exp( ttt*(1.0-0.5*apha*ttt+0.333333* &
                      apha*ttt*apha*ttt) )
       end if
   185 continue
@@ -515,19 +522,19 @@
        nxj=nxdef_2d(j)
       do 195 i = 1, nxj
        hld1(i,j) = pt(i,jj)
-       pdiff(i,jj) = anlslp(i,j) - pt(i,jj)
+       pdiff(i,jj) = anlslp(i,jj) - pt(i,jj)
 !       hld1(i,j) = pdiff(i,jj)
   195 continue
 !
       call mpe_unify(hld1,nx,my,2,mpe_double)
-      call mpe_unify(anlslp,nx,my,2,mpe_double)
+      call mpe2d_unify(hld2,anlslp)
       if(myrank .eq. 0 ) print*,'pt, anlslp at (86,127)= ',hld1(86,127) &
-                        ,anlslp(86,127)
+                        ,hld2(86,127)
 !
 !      call mpe_unify(hld1,nx,my,2,mpe_double)
 !      call syslbl ('x00dif',idtg,itaux,ggdef,lrec)
 !      if( lreduce.eq.1 ) call reduceintp (hld1,nxdef,nx,my)
-!      call dmswrit(nx,my,lrec,lncrec,'H',ifilout,hld1,istat)
+!      call dmswrit(nx,my,lrec,lncrec,kflag,ifilout,hld1,istat)
 !
 !  compute tsave and write out
 !
@@ -544,7 +551,7 @@
 !      call mpe_unify(hld1,nx,my,2,mpe_double)
 !      call syslbl ('x00tsv',idtg,itaux,ggdef,lrec)
 !      if( lreduce.eq.1 ) call reduceintp (hld1,nxdef,nx,my)
-!      call dmswrit (nx,my,lrec,lncrec,'H',ifilout,hld1,istat)
+!      call dmswrit (nx,my,lrec,lncrec,kflag,ifilout,hld1,istat)
 !
       opok  = 1.0/1000.0**capa
       if( cstar ) then
@@ -565,7 +572,11 @@
       if (pk(i,k,jj).gt.pk300)  hkd1(i,k)= tt(i,k,jj) -10.0
       if (pk(i,k,jj).gt.pk800)  hkd1(i,k)= tt(i,k,jj) -7.0
  173  continue
-      call qsatq_2d (nxjp(j),nxp,lev,hkd1(1,1),plt(1,1,jj),sht(1,1,jj))
+      call qsatq_2d (nxjp(j),nxp,lev,hkd1(1,1),plt(1,1,jj),vtmp)
+      do 175 k = 1, lev
+      do 175 i = 1, nxj
+       sht(i,k,jj) = vtmp(i,k)
+ 175  continue
  174  continue
 !
       endif

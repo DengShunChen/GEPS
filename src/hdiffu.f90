@@ -4,18 +4,23 @@
       use index
       use mpe
       use rank
-      use const, only : hdk1,hdk2,radsq,hord,vd
+      use const, only : hdk1,hdk2,radsq,doskeb,onocos,wcfac,wdfac      &
+                      , poly,dpoly,hord,vd,RTYPE
       use param, only : octahedral,af
 
       implicit  none
 
       integer   my,my_max,nx,jtrun,jtmax,lev,ncld
-      real      dta,rad
+      real      rad
+      real      dta
 
-      real      cosl(my),ut(nxp,lev,my_max),vt(nxp,lev,my_max),  &
-                vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),   &
-                temnow(levp,2,jtrun,jtmax),eps4(jtrun,jtmax),            &
-                trefs(levp,2,jtrun,jtmax)
+      real(kind=RTYPE)      vordiss(levp,2,jtrun,jtmax),divdiss(levp,2,jtrun,jtmax), &
+                diss_est(nxp,lev,my_max)
+
+      real(kind=RTYPE) vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),  &
+                       temnow(levp,2,jtrun,jtmax),trefs(levp,2,jtrun,jtmax),   &
+                       ut(nxp,lev,my_max),vt(nxp,lev,my_max),eps4(jtrun,jtmax),&
+                       cosl(my)
 !
 !     parameter ( ktop=4, ktop2=ktop/2 ) ! top "ktop" levels are inhenced
 !
@@ -67,8 +72,8 @@
         hfilt  = hfilt/(6.*dta)
         hfilt2 = hfilt2/(6.*dta)
       else
-        hfilt  = 16.*hfilt/dta
-        hfilt2 = 16.*hfilt2/dta
+        hfilt  = hfilt/dta
+        hfilt2 = hfilt2/dta
       endif
 
       do 100 k=1,levp  ! levp -> lev
@@ -85,8 +90,28 @@
 !!        facv = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
 !!        fact = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
 !
-!  difuse vorticity and divergence fields
-!  diffuse moisture and temperature fields
+
+!  if doskeb = .true. estimate the dissipation of kinectic energy for SKEB
+!
+      if ( doskeb ) then
+        do m=1,mlistnum
+          mf=mlist(m)
+          do n=mf,jtrun
+            c1=1.+dta*facv*hfilt*eps4(n,m)**powd
+            if ( KL .le. hdk1 ) then
+              c2=1.+dta*facd*hfilt2*eps4(n,m)
+            else
+              c2=1.+dta*facd*hfilt*eps4(n,m)**powd
+            endif
+            vordiss(k,1,n,m)=(1.-1./c1)*vornow(k,1,n,m)
+            vordiss(k,2,n,m)=(1.-1./c1)*vornow(k,2,n,m)
+            divdiss(k,1,n,m)=(1.-1./c2)*divnow(k,1,n,m)
+            divdiss(k,2,n,m)=(1.-1./c2)*divnow(k,2,n,m)
+          enddo
+        enddo
+      endif 
+!
+!  difuse vorticity, divergence and temperature fields
 !
         do m=1,mlistnum
           mf=mlist(m)
@@ -112,6 +137,14 @@
           enddo
         enddo
  100  continue
+!
+!       estimate the dissipation of kinetic energy
+      if ( doskeb ) then
+         ! transfer the dissipation to grid point from spectrum
+         call tranuv (jtrun,jtmax,nx,my,my_max,levp,onocos,wcfac,wdfac &
+                    , poly,dpoly,vordiss,divdiss,ut,vt,nsizey)
+      endif
+
 !
 !-------------------------------------------------------------------
 !
@@ -141,7 +174,7 @@
       use index
       use mpe
       use rank
-      use const, only : hdk1,hdk2,radsq
+      use const, only : hdk1,hdk2,radsq,RTYPE
       use param, only : octahedral,af
 
       implicit  none
@@ -149,10 +182,10 @@
       integer   my,my_max,nx,jtrun,jtmax,lev,ncld
       real      dta,rad
 
-      real      cosl(my),ut(nxp,lev,my_max),vt(nxp,lev,my_max),  &
-                vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),   &
-                temnow(levp,2,jtrun,jtmax),eps4(jtrun,jtmax),            &
-                trefs(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),  &
+                       temnow(levp,2,jtrun,jtmax),trefs(levp,2,jtrun,jtmax),   &
+                       ut(nxp,lev,my_max),vt(nxp,lev,my_max),                  &
+                       eps4(jtrun,jtmax),cosl(my)
 !
 !     parameter ( ktop=4, ktop2=ktop/2 ) ! top "ktop" levels are inhenced
 !
@@ -286,7 +319,7 @@
       use index
       use mpe
       use rank
-      use const, only : hdk1,hdk2,radsq,vd
+      use const, only : hdk1,hdk2,radsq,vd,RTYPE
       use param, only : octahedral,af,mwhd
 
       implicit  none
@@ -294,10 +327,10 @@
       integer   my,my_max,nx,jtrun,jtmax,lev,ncld
       real      dta,rad
 
-      real      cosl(my),ut(nxp,lev,my_max),vt(nxp,lev,my_max),  &
-                vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),   &
-                temnow(levp,2,jtrun,jtmax),eps4(jtrun,jtmax),            &
-                trefs(levp,2,jtrun,jtmax)
+      real(kind=RTYPE) vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),  &
+                       temnow(levp,2,jtrun,jtmax),trefs(levp,2,jtrun,jtmax),   &
+                       ut(nxp,lev,my_max),vt(nxp,lev,my_max),                  &
+                       eps4(jtrun,jtmax),cosl(my)
 !
 !     parameter ( ktop=4, ktop2=ktop/2 ) ! top "ktop" levels are inhenced
 !
@@ -341,9 +374,9 @@
         hfilt4 = hfilt4/(6.*dta)
         hfilt2 = hfilt2/(6.*dta)
       else
-        hfilt6 = 16.*hfilt6/dta
-        hfilt4 = 16.*hfilt4/dta
-        hfilt2 = 16.*hfilt2/dta
+        hfilt6 = hfilt6/dta
+        hfilt4 = hfilt4/dta
+        hfilt2 = hfilt2/dta
       endif
 
       do 100 k=1,levp  ! levp -> lev
@@ -412,6 +445,7 @@
 !
       use index
       use mpe
+      use const, only: RTYPE
 !
       implicit  none
 
@@ -422,8 +456,9 @@
 !
       integer   jtrun,jtmax,lev,ncld
 
-      real      temnow(lev,2,jtrun,jtmax),                           &
-                vornow(lev,2,jtrun,jtmax),divnow(lev,2,jtrun,jtmax)
+      real(kind=RTYPE) temnow(lev,2,jtrun,jtmax),  &
+                       vornow(lev,2,jtrun,jtmax),  &
+                       divnow(lev,2,jtrun,jtmax)
 !
       real      wvn_top(ktop+1),djt
 
@@ -526,6 +561,80 @@
 !          enddo
 !2dMPI >
         endif
+!2dMPI <
+        enddo
+      endif
+!  
+      return
+      end
+
+!
+!--------------------------------------------------------------------
+      subroutine filter_skeb(jtrun,jtmax,lev,dissest,wvn_top)
+!
+!  apply Lanczos filter to estimation of kinetic energy dissipation.
+!
+      use index
+      use mpe
+!
+      implicit  none
+
+!
+      integer   jtrun,jtmax,lev,ncld
+
+      real      dissest(lev,2,jtrun,jtmax)
+!
+      real      wvn_top
+
+      integer   k,mode,m,mf,n,nflt,IERR,KL
+      real      pi,flt,fac
+!
+
+!2dMPI >
+!     if(ktop.gt.levp)then
+!        print *,'filter_top fatal: ktop greater than lev partial !'
+!        call MPI_FINALIZE(IERR)
+!        stop
+!     endif
+!2dMPI <
+
+!
+      pi = 3.141596
+!
+!  mode = 0 : just truncate into assigned wavenumbers without 
+!             extra filtering
+!  mode = 1 or other : add fitering along with truncating
+!
+      mode = 1
+!
+      if( mode .eq. 0 ) then
+        do k = 1, lev
+!2dMPI >
+        KL=Llist(k)
+          do m = 1, mlistnum
+            mf=max(2,mlist(m))
+            do n = mf, jtrun
+              nflt = int ( wvn_top / float(n) )
+              flt = min( 1.0, float(nflt) )
+              dissest(k,1,n,m)= dissest(k,1,n,m)*flt
+              dissest(k,2,n,m)= dissest(k,2,n,m)*flt
+            enddo
+          enddo
+!2dMPI <
+        enddo
+      else
+        do k = 1, lev
+!2dMPI >
+        KL=Llist(k)
+          do m = 1, mlistnum
+            mf=max(2,mlist(m))
+            do n = mf, jtrun
+              fac = min(wvn_top,float(n-1)) * pi / wvn_top
+              flt = sin(fac)/fac
+              dissest(k,1,n,m)= dissest(k,1,n,m)*flt
+              dissest(k,2,n,m)= dissest(k,2,n,m)*flt
+            enddo
+          enddo
 !2dMPI <
         enddo
       endif

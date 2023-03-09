@@ -5,12 +5,14 @@
 !
       use index
       use mpe
+      use const, only: RTYPE
 
       implicit  none
       integer   jtrun,jtmax,nx,my,my_max,lev
 
-      real      temnow(lev,2,jtrun,jtmax),eps4(jtrun,jtmax),     &
+      real      temnow(lev,2,jtrun,jtmax),                       &
                 pk(nx,lev,my_max),cosl(my),radsq,dta
+      real(kind=RTYPE) eps4(jtrun,jtmax)
 !
        integer,  parameter :: levtop=2,lev2=levtop/2
        real      tem(lev,2,jtrun,jtmax),ctime,cool

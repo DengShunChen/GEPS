@@ -47,11 +47,13 @@
       use radn
       use albn
 !-----------------------------------------------------------------------
-      use mod_stochastic_physics, only : spptout, & 
-                  init_stochastic_physics, &
-                  run_stochastic_physics, & 
-                  destroy_stochastic_physics
+      use mod_stochastic_physics, only : spptout,skebout, &
+                  run_stochastic_physics,                 &
+                  destroy_stochastic_physics,             &
+                  skeb3du,skeb3dv,diss_est,skebfilt,      &
+                  keb,kea
 !-----------------------------------------------------------------------
+      use mod_grb2_param , only : grbid ,grbfile ,opn_grb2 ,cls_grb2
 
       implicit  none
 !
@@ -59,40 +61,39 @@
 !
       integer   nfxr
 !  for Semi-Lagrangian
-      real      deldm(nxp,my_max),ddtemp(nxp,lev,my_max),          &
-                pten(nxp,lev,my_max),pdot(nxp,lev+1,latpart),      &
+!
+      real(kind=RTYPE) ndsldta,ndsldtah,facm(2,2),                 &
                 diveng(nxp,lev,my_max),                            &
-                vdmerd(nxp,lev,my_max),vdzonl(nxp,lev,my_max),     &
-                vdmerdr(nxp,lev,my_max),vdzonlr(nxp,lev,my_max),   &
-                vdmerdrp(nxp,lev,my_max),vdzonlrp(nxp,lev,my_max), &
-                vdmerdg(nxp,lev,my_max),vdzonlg(nxp,lev,my_max),   &
+                qm_sl(nx,levp*ncld,my_max),                        &
+                pten_sl(nx,levp,my_max),                           &
+                uum_sl(nx,levp,my_max),vvm_sl(nx,levp,my_max),     &
+                ttm_sl(nx,levp,my_max),                            &
                 um(nxp,lev,my_max),vm(nxp,lev,my_max),             &
                 tm(nxp,lev,my_max),                                &
-                rdivm(nxp,lev,my_max),                             &
-                ttm_sl(nx,levp,my_max),                            &
-                pten_sl(nx,levp,my_max),                           &
-                qm_sl(nx,levp*ncld,my_max),                        &
-                vvm_sl(nx,levp,my_max),                            &
-                uum_sl(nx,levp,my_max),ptm(nxp,my_max)
-!
-      real      ndsldta,ndsldtah,facm(2,2)
+                vdmerd(nxp,lev,my_max),vdzonl(nxp,lev,my_max),     &
+                vdmerdg(nxp,lev,my_max),vdzonlg(nxp,lev,my_max),   &
+                vdmerdr(nxp,lev,my_max),vdzonlr(nxp,lev,my_max),   &
+                vdmerdrp(nxp,lev,my_max),vdzonlrp(nxp,lev,my_max), &
+                ddtemp(nxp,lev,my_max),                            &
+                pten(nxp,lev,my_max),tmp(nxp,lev,my_max),dummy,    &
+                rdivm(nxp,lev,my_max),ptm(nxp,my_max),             &
+                deldm(nxp,my_max),sdpbl(nxp,my_max)
+
       integer   ierr,itter,ittw,itt,year,yrd
 !
-      real      glob(nx,my), &
-                hf24(nxp,my_max),qf24(nxp,my_max),ss24(nxp,my_max),rs24(nxp,my_max), &
+      real(kind=RTYPE) glob(nx,my)
+      real      hf24(nxp,my_max),qf24(nxp,my_max),ss24(nxp,my_max),rs24(nxp,my_max), &
                 asol24(nxp,my_max),olr24(nxp,my_max),rain24(nxp,my_max),             &
                 drag(nxp,lev,my_max),ugws(nxp,my_max),vgws(nxp,my_max),              &
-                sdpbl(nxp,my_max),rain1(nxp,my_max),                                 &
-                rh2100(nxp,my_max),rh10100(nxp,my_max),pklev(nxp,my_max)
+                pklev(nxp,my_max)
 
-       real*4   workn(nx,my)
        integer  kn
       character*26 ihdg
 
-      real      tmin(nxp,my_max),tmax(nxp,my_max),td(nxp,my_max),temp
+      real      tmin(nxp,my_max),tmax(nxp,my_max)!,td(nxp,my_max),temp
 !
-      real      cc(nx+2,levp,1,my_max),ww1(nx,my_max)
-      real      pltemp(jtrun,jtmax,2),sptm(jtrun,jtmax,2)
+      real(kind=RTYPE) pltemp(jtrun,jtmax,2),cc(nx+2,levp,1,my_max)
+      real      sptm(jtrun,jtmax,2),ww1(nx,my_max)
 !byl      real      dlgeo(nxp,my_max),dtgeo(nxp,my_max)
 !byl      real      cc3(nx+2,levp,3,my_max),wss3(levp,2,3,jtrun,jtmax)
 !
@@ -143,7 +144,7 @@
 
       real    www,dtx,dta,thdai,tkei,tpei,dsigp,            &
               cosw,tengi,dt24,tg2,dtx_tau,hfiltx,sqhaf,     &
-              dummy,dt1,sptend,wmax,xx,facw,dtaup,          &
+              dt1,sptend,wmax,xx,facw,dtaup,                &
               sptendmax2,sptendmax1,dt_chg,prslp
       integer itimestep,recn
 
@@ -180,8 +181,12 @@
       real mout(nx,my)
       character*26 ihdg2
       integer nc
+      integer*8 :: toutsrt, toutend, toutrate      !For CPU Timings
+      logical:: lopngrb2 !open grib2 file
 
-      
+!CWB2021 ndsl single precision test
+      real(kind=RTYPE)                                            &
+          pdot(nxp,lev+1,latpart)
 !
 !xb110>
 !byl      real rmr(nxp,lev,my_max),smr(nxp,lev,my_max)
@@ -314,15 +319,13 @@
 !!        call mpe_unify(gwet,nx,my,2,mpe_double)
 !!        call mpe_unify(gwr,nx,my,2,mpe_double)
 !
-!       rh2100=rh2*100. 
-!       rh10100=rh10*100. 
 !        call  outflds( 1,nx,my,my_max,lev,ncld                                     &
 !                     , lmax,numout,idtg,ifilout,outdir                             &
 !                     , ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo                     &
 !                     , ptend,pt,plt,pk,pk2,phi,ut,vt,sd                            &
 !                     , tt,qt,rdiv,rvor,tg,gwr,z0,hflux,qflux,snr                   &
 !                     , raintot,raincu,rainlp,asol,olr,ss,rs,alb,gwclim             &
-!                     , acld,cosl,drag,ugws,vgws,t2,rh2100,rh10100,u10,v10,gfx,rld,sld &
+!                     , acld,cosl,drag,ugws,vgws,t2,rh2,rh10,u10,v10,gfx,rld,sld &
 !                     , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500    &
 !                     , ctot,chig,cmid,clow,hpbl,.true.,flash,do_sit)
 !        call  outsigs ( 1,nx,my,my_max,lev,ncld                                    &
@@ -364,22 +367,20 @@
 ! read mountant variables for topographic gravity wave drag
 !
       if(yesdia .and. dograv .and. nmgwor .eq. 2) then
-         call read_mtnvar(nx,my,mtnvar,hprime_b,isot)
+         call read_mtnvar(nx,my,mtnvar,hprime_b)
 !
          if( myrank .eq. 0 ) &
            print*,'read mtnvar=14 hprime_b=',(hprime_b(1,i,1),i=1,mtnvar)
       endif
 !
 !#ifndef NO_OUT
-!       rh2100=rh2*100. 
-!       rh10100=rh10*100. 
 !      call  outflds( 0,nx,my,my_max,lev,ncld                                       &
 !                     , lmax,numout,idtg,ifilout,outdir                             &
 !                     , ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo                     &
 !                     , ptend,pt,plt,pk,pk2,phi,ut,vt,sd                            &
 !                     , tt,qt,rdiv,rvor,tg,gwr,z0,hflux,qflux,snr                   &
 !                     , raintot,raincu,rainlp,asol,olr,ss,rs,alb,gwclim             &
-!                     , acld,cosl,drag,ugws,vgws,t2,rh2100,rh10100,u10,v10,gfx,rld,sld &
+!                     , acld,cosl,drag,ugws,vgws,t2,rh2,rh10,u10,v10,gfx,rld,sld &
 !                     , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500    &
 !                     , ctot,chig,cmid,clow,hpbl,.true.,flash,do_sit)
 !#endif
@@ -402,16 +403,9 @@
 !
 ! add 40m 100m output for green energy plan
 !      if(out_green)then
-          do jj = 1, jlistnum
-            j=jlist1(jj)
-            nxj=nxdef_2d(j)
-            do i = 1,nxj
-              pklev(i,jj) = pk(i,lev,jj)
-            enddo
-          enddo
 !#ifndef NO_OUT
 !        call  outflds_green(0,nx,my,my_max,lev,ncld                &
-!              , idtg,ifilout,cp,rgas,grav,t2,u10,v10,ss,pklev      &
+!              , idtg,ifilout,cp,rgas,grav,t2,u10,v10,ss,pk      &
 !              , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6  &
 !              , ggdef,.true.)
 !#endif
@@ -540,44 +534,41 @@
 !
 ! sppt
       itimestep=1
-      ptm=0.
-      do jj = 1, jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-        do i = 1,nxj
-          ptm(i,jj)= sgeo(i,jj)/(rgas*288.15)
-          call vexp(ptm(i,jj),ptm(i,jj),1)
-        enddo
-      enddo
-      call mpe2d_unify_nx(ww1,ptm) 
-      call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1         &
-                  ,sptm,nsizey)
+!      ptm=0.
+!      do jj = 1, jlistnum
+!        j=jlist1(jj)
+!        nxj=nxdef_2d(j)
+!        do i = 1,nxj
+!          ptm(i,jj)= sgeo(i,jj)/(rgas*288.15)
+!          call vexp(ptm(i,jj),ptm(i,jj),1)
+!        enddo
+!      enddo
+!      call mpe2d_unify_nx(ww1,ptm) 
+!      call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1         &
+!                  ,sptm,nsizey)
 !!      call trngra (jtrun,jtmax,nx,my,my_max,cim,poly,dpoly,spgeo    &
 !!                  ,dlgeo,dtgeo,nsizey)
 !
       n_stable=0
       n_unstable=0
       hfiltx=hfilt
-      if(nco.le.200)then
+      if(dta.gt.720)then
 !!        dt_chg=1800.
         nc_stable=1
-        sptendmax2=0.3405
-        sptendmax1=0.2505
-      else if(nco.eq.384)then
+        sptendmax2=0.3005
+        sptendmax1=0.2405
+      else if(dta.le.720 .and. dta.gt.450 )then
 !!        dt_chg=720.
         nc_stable=2
         sptendmax2=0.4005
         sptendmax1=0.3005
-      else if(nco.eq.640) then
+      else if(dta.le.450) then
 !!        dt_chg=450.
         nc_stable=4
         sptendmax2=0.4305
         sptendmax1=0.3305
       endif
 
-      ! stochastic_physics
-      call init_stochastic_physics(dta)   
-!
 !
 !      if(typhoon)then
 !        dt_trk=6.
@@ -604,11 +595,11 @@
       if(myrank .eq. 0) then 
          print *,'forcast begin tau=',itaui,' to tau=',itaue
 
-      ! for io quilting
-      if(io_quilting)then
-         ntag=ntag+1
-         call mpe_send_key(keydoit,ntag,istat)
-      endif
+!     ! for io quilting
+!      if(io_quilting)then
+!         ntag=ntag+1
+!         call mpe_send_key(keydoit,ntag,istat)
+!      endif
 
       endif
 
@@ -631,6 +622,7 @@
 #endif
 !
       if(do_sit) then
+        lsitstart=(itimestep .le. 1)
         if(fsit .le. 0) then
           lrun_sitvdiff=.true.
           ic_sit=-99
@@ -720,7 +712,7 @@
                        + facm(2,itt) * up(i,k,jj)
             vm(i,k,jj) = facm(1,itt) * vt(i,k,jj) &
                        + facm(2,itt) * vp(i,k,jj)
-            tm(i,k,jj) = facm(1,itt) * tt(i,k,jj)  &
+            tm(i,k,jj) = facm(1,itt) * tt(i,k,jj) &
                        + facm(2,itt) * ttp(i,k,jj)
             rdivm(i,k,jj)= facm(1,itt) * rdiv(i,k,jj) &
                          + facm(2,itt) * rdivm(i,k,jj)
@@ -762,6 +754,7 @@
        pten=0.
 
        deldm=0.
+
 !
 !
 !     advet grid non-linear forcing from t-dt/2 to t+dt/2 via NDSL advection
@@ -775,8 +768,8 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f(vt,vvm_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-!      call mpe2d_transpose_ndsl_p2f(tt,ttm_sl,    &
-!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
+!!      call mpe2d_transpose_ndsl_p2f(tt,ttm_sl,    &
+!!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !
 !      do itt = 1,itter
         call ndslfv_monoadvh_fgnl(uum_sl,vvm_sl,ttm_sl     &
@@ -787,8 +780,8 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_f2p(vvm_sl,vdmerd, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-!      call mpe2d_transpose_ndsl_f2p(ttm_sl,ddtemp, &
-!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
+!!      call mpe2d_transpose_ndsl_f2p(ttm_sl,ddtemp, &
+!!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !
 !    advect pressure gradient force from t to t+dt
 !
@@ -808,9 +801,9 @@
       enddo !jj = 1,jlistnum
 !
       call joinrs(cc,diveng,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-      call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc       &
+      call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc         &
                  ,hldten,1,nsizey)
-      call trngra3(jtrun,jtmax,nx,levp,my,my_max,cim,poly,dpoly      &
+      call trngra3(jtrun,jtmax,nx,levp,my,my_max,cim,poly,dpoly        &
                  ,hldten,dlphi,dtphi,nsizey)
 !!      call mpe2d_unify_nx(ww1,deldm) 
 !!      call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1         &
@@ -829,18 +822,19 @@
 !
 !     advet grid pressure gradient force from t to t+dt via NDSL advection
 !
-      call mpe2d_transpose_ndsl_p2f(vdzonlr,uum_sl,    &
+      call mpe2d_transpose_ndsl_p2f(vdzonlr,uum_sl,   &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f(vdmerdr,vvm_sl,    &
+      call mpe2d_transpose_ndsl_p2f(vdmerdr,vvm_sl,   &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !!      call mpe2d_transpose_ndsl_p2f(diveng,ttm_sl,    &
 !!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !
 !!      do itt = 1,itter
-        call ndslfv_monoadvh_fgnl(uum_sl,vvm_sl,ttm_sl     &
+        call ndslfv_monoadvh_fgnl(uum_sl,vvm_sl,ttm_sl  &
                              ,nxdef,ndsldtah,xy,levp,2)
 !!      enddo
 !
+!CWB2021 note, both arrays can be single precision
       call mpe2d_transpose_ndsl_f2p(uum_sl,vdzonlrp, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_f2p(vvm_sl,vdmerdrp, &
@@ -858,7 +852,7 @@
         j=jlist1(jj)
         nxj=nxdef_2d(j)
 !
-        call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld              &
+        call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld               &
 !byl        call gridnl_hybrid_ndsl (nxjp(j),nxp,lev,ncld                  &
         , cp,radsq,um(1,1,jj),vm(1,1,jj),rdivm(1,1,jj),tm(1,1,jj)       &
         , qt(1,1,jj),phi(1,1,jj),ptm(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
@@ -880,10 +874,16 @@
         enddo
       enddo !jj = 1,jlistnum
 
-      call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlrp,vdmerdrp,ndsldta)
+!     call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlrp,vdmerdrp,ndsldta)
 !
+!     call ndslfv_monoadvv_fgnl(vdzonl,vdmerd,ddtemp,pdot,ptm &
+
+!CWB2021 ndsl single precision test
+      call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlrp,vdmerdrp,ndsldta)
       call ndslfv_monoadvv_fgnl(vdzonl,vdmerd,ddtemp,pdot,ptm &
                           ,nxjp,ndsldta,2)
+!CWB2021 ndsl single precision test
+
 !
       call trandv ( jtrun,jtmax,nx,my,my_max,lev,vdzonl,vdmerd,weight,cim &
                    ,onocos,poly,dpoly,vormid,divmid,nsizey)
@@ -948,13 +948,14 @@
         , qp(1,1,jj),phi(1,1,jj),ptm(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
         , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)          &
         , diveng(1,1,jj),vdmerdg(1,1,jj),vdzonlg(1,1,jj),pten(1,1,jj)   &
-        , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),sgeo(1,jj) )
+        , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),vvel(1,1,jj)  &
+        , sgeo(1,jj) )
       enddo !jj = 1,jlistnum
 !
       call joinrs(cc,diveng,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-      call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc       &
+      call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc          &
                  ,hldten,1,nsizey)
-      call trngra3(jtrun,jtmax,nx,levp,my,my_max,cim,poly,dpoly      &
+      call trngra3(jtrun,jtmax,nx,levp,my,my_max,cim,poly,dpoly         &
                  ,hldten,dlphi,dtphi,nsizey)
 !
       do jj = 1, jlistnum
@@ -971,11 +972,11 @@
 
 ! transpose partial to full: ut -> ut_sl, vt -> vt_sl, ut -> uum_sl, vt -> vvm_sl, tt -> ttm_sl, qp -> qm_sl
 
-#ifdef MULTIPLE
-      call mpe2d_transpose_ndsl_p2f_multi(um   ,vm   ,ut   ,vt   ,tt   ,qp   , &
-                                    ut_sl,vt_sl,uum_sl,vvm_sl,ttm_sl,qm_sl, &
-                                    nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm,6)
-#else
+!#ifdef MULTIPLE
+!      call mpe2d_transpose_ndsl_p2f_multi(um   ,vm   ,ut   ,vt   ,tt   ,qp   , &
+!                                    ut_sl,vt_sl,uum_sl,vvm_sl,ttm_sl,qm_sl, &
+!                                    nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm,6)
+!#else
       call mpe2d_transpose_ndsl_p2f(um,ut_sl,    &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f(vm,vt_sl,    &
@@ -986,11 +987,11 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f(tt,ttm_sl,   &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-!!      call mpe2d_transpose_ndsl_p2f(pten,pten_sl, &
+!!      call mpe2d_transpose_ndsl_p2f_sp(pten,pten_sl, &
 !!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f(qp,qm_sl,    &
                                     nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
-#endif
+!#endif
 
 
 !!    call mpe2d_unify_nx(pt_sl,pt)
@@ -999,32 +1000,32 @@
 
 !     Semi-Lagrangian
 !       Horizontal Advection
+
         do itt = 1,itter
         call ndslfv_monoadvh(ttm_sl,qm_sl,pten_sl,uum_sl,vvm_sl  &
                              ,nxdef,ndsldtah,xy,levp)
         enddo
 
-
 !ch>
 ! transpose full to partial: ttm_sl -> ddtemp,  pten_sl -> pten, uum_sl -> vdzonl
 !                            vvm_sl -> vdmerd,  qm_sl -> qt
 
-#ifdef MULTIPLE
-      call mpe2d_transpose_ndsl_f2p_multi(ttm_sl,pten_sl,uum_sl,vvm_sl,qm_sl, &
-                                    ddtemp   ,pten   ,vdzonl   ,vdmerd   ,qt   , &
-                                    nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
-#else
+!#ifdef MULTIPLE
+!      call mpe2d_transpose_ndsl_f2p_multi(ttm_sl,pten_sl,uum_sl,vvm_sl,qm_sl, &
+!                                    ddtemp   ,pten   ,vdzonl   ,vdmerd   ,qt   , &
+!                                    nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
+!#else
       call mpe2d_transpose_ndsl_f2p(ttm_sl,ddtemp, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_f2p(pten_sl,pten,     &
+      call mpe2d_transpose_ndsl_f2p(pten_sl,pten,  &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_f2p(uum_sl,vdzonl, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_f2p(vvm_sl,vdmerd, &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_f2p(qm_sl,qt,   &
+      call mpe2d_transpose_ndsl_f2p(qm_sl,qt,      &
                                     nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
-#endif
+!#endif
 !
 !     estimat grid non-linear forcing at t+dt/2 by averaging grid non-linear forcing at t and t+dt
 !
@@ -1043,12 +1044,19 @@
 !
 !       update all horizontal informations
 !
-        call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlrp,vdmerdrp,ndsldta)
+
+      call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlrp,vdmerdrp,ndsldta)
+
+!CWB2021 ndsl single precision test
 !
 !       Vertical Advection
 !
-        call ndslfv_monoadvv(ddtemp,qt,vdzonl,vdmerd,pdot,ptm      &
+!       call ndslfv_monoadvv(ddtemp,qt,vdzonl,vdmerd,pdot,ptm      &
+        call ndslfv_monoadvv(ddtemp,qt,vdzonl,vdmerd,pdot,ptm &
                             ,nxjp,ndsldta)
+
+!CWB2021 ndsl single precision test
+
 !
 !
       call mpe2d_unify_nx(ww1,deldm) 
@@ -1071,7 +1079,7 @@
 !  for physical parameterization,output spectrum u,v,t,q to grid point
 !
         if (yesdia)  then
-!
+
           call diabat ( docup,dodry,dolsp,dopbl,dorad,doshl,dograv,tofd         &
                       , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw      &
                       , idg,jdg,ldiag,dtx,tau,hours,julian,year,yrd             &
@@ -1105,14 +1113,19 @@
                       , itimestep,lrun_sitvdiff,ic_sit                          &
 !xb110>
 !byl                      , rmr,smr,flash)
-                      , flash,tsflw)
+                      , flash,tsflw,vvel)
 !xb110<
 !--------------------------------------------------------------------------------
 !
 ! add reynolds stress
 !
           call rayleifr(nx,my,my_max,lev,rad,cosl,dt,vdzonl,vdmerd)
+
         endif    ! end of (yesdia)
+
+!CWB2021
+
+
         itimestep=itimestep+1 
 !
 !  after phyical parameterization,transform grid point u,v,t,q to
@@ -1130,9 +1143,9 @@
             enddo
           enddo
 !
-          call joinrs(cc,ddtemp,dummy,dummy,dummy,nx,my_max,lev        &
+          call joinrs(cc,ddtemp,dummy,dummy,dummy,nx,my_max,lev    &
                    ,jlistnum,1,1)
-          call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc     &
+          call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc &
                    ,temten,1,nsizey)
           call rstrandz (jtrun,jtmax,nx,my,my_max,levp,vdmerd,vdzonl   &
                    ,weight,cim,onocos,poly,dpoly,divten,vorten,nsizey)
@@ -1142,9 +1155,15 @@
 !   apply semi-implicit adjustemts to above explicitly computed
 !   tendencies to stablize integration for long time steps
 !
+!CWB2021
+!     call siimpl ( jtrun,jtmax,lev,dta,ptmeans,dsigma,spalm,eps4,eigval &
+!                 , evecin,evectr,arrhyd,arsddt,temnow,divnow,plnow      &
+!                 , temmid,divmid,plmid,temten,divten,plten,alpha)
+
       call siimpl ( jtrun,jtmax,lev,dta,ptmeans,dsigma,spalm,eps4,eigval &
                   , evecin,evectr,arrhyd,arsddt,temnow,divnow,plnow      &
                   , temmid,divmid,plmid,temten,divten,plten,alpha)
+
 !
       endif
 !
@@ -1197,7 +1216,7 @@
           do n = mf, jtrun
             do i = 1, 2
             do k = 1, levp
-              vorold(k,i,n,m)= vornow(k,i,n,m) 
+              vorold(k,i,n,m)= vornow(k,i,n,m)
               divold(k,i,n,m)= divnow(k,i,n,m)
               temold(k,i,n,m)= temnow(k,i,n,m)
               vornow(k,i,n,m)= dta*vorten(k,i,n,m) + vorold(k,i,n,m)
@@ -1224,7 +1243,6 @@
                              , hfiltx,rad,cosl,um,vm,vornow,divnow,temnow  &
                              , eps4,trefs)
 !
-        lsitstart=.false.
 !
 !        if ( mod(itimestep,2) .eq. 0 ) xy = -1 * xy
         xy = -1 * xy
@@ -1242,14 +1260,13 @@
                   tseanew(ii,jj)=dta*dtseadt(ii,jj)+tseaold(ii,jj)
 !                  tseaold(ii,jj)=tseanow(ii,jj) + tfilt*(tseaold(ii,jj)     &
 !                                 -2.0*tseanow(ii,jj)+tseanew(ii,jj) )
-                  tseaold(ii,jj)=tseanow(ii,jj) 
+                  tseaold(ii,jj)=tseanew(ii,jj) 
                   tseanow(ii,jj)=tseanew(ii,jj)
  
                   dtaup=mod(tau+0.001,updatetg)
                   if(dtaup .lt. dtx_tau)then
                     tg(ii,jj)=tseanow(ii,jj)
                   endif
-
                 endif !end if(ocean)
               enddo
             enddo
@@ -1331,6 +1348,50 @@
                   , poly,dpoly,vornow,divnow,ut,vt,nsizey)
 !
 
+      ! SKEB process
+      if ( doskeb ) then
+        ! estimate the dissipation of kinectic energy for SKEB
+        do jj =1,jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          do k=1,lev
+            do i=1,nxj
+              diss_est(i,k,jj)=(um(i,k,jj)*ut(i,k,jj)                &
+                               +vm(i,k,jj)*vt(i,k,jj))               &
+                               +0.5*(um(i,k,jj)**2.+vm(i,k,jj)**2.)
+            enddo
+          enddo
+        enddo
+        call joinrs(cc,diss_est,dummy,dummy,dummy,nx,my_max,lev      &
+                   ,jlistnum,1,1)
+        call tranrs(jtrun,jtmax,nx,my,my_max,levp,poly,weight,cc     &
+                   ,temten,1,nsizey)
+        ! apply spectral filter of the dissipation of kinetic energy
+        call filter_skeb(jtrun,jtmax,levp,temten,skebfilt)
+        call transr(jtrun,jtmax,nx,my,my_max,levp,poly,temten,cc,1,nsizey)
+        call ujoinsr(cc,diss_est,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
+!
+!        if ( myrank .eq. 0 ) print *,'intgrt: diss_est(1,72,1)=',diss_est(1,72,1)
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          xx=radsq*onocos(j)
+          do k = 1, lev
+            do i = 1, nxj
+              keb(i,k,jj)=0.5*(ut(i,k,jj)**2.+vt(i,k,jj)**2.)*xx
+              ut(i,k,jj)=ut(i,k,jj)+skeb3du(i,k,jj)*diss_est(i,k,jj)
+              vt(i,k,jj)=vt(i,k,jj)+skeb3dv(i,k,jj)*diss_est(i,k,jj)
+              kea(i,k,jj)=0.5*(ut(i,k,jj)**2.+vt(i,k,jj)**2.)*xx
+            enddo
+          enddo
+        enddo
+!        if ( myrank .eq. 0 ) print *,'intgrt: keb(1,72,1)=',keb(1,72,1)
+!        if ( myrank .eq. 0 ) print *,'intgrt: kea(1,72,1)=',kea(1,72,1)
+
+        ! compute vorticity and divergence from u and v
+        call trandv ( jtrun,jtmax,nx,my,my_max,lev,ut,vt,weight,cim &
+                      ,onocos,poly,dpoly,vornow,divnow,nsizey)
+      endif
 !
 !  detact instability occure or not
 !
@@ -1367,79 +1428,28 @@
         prslp=sigma(k,2)+sigma(k,1)*1000.+ptop
         if ( prslp .le. spl1  ) hdk1=k
       enddo
-!
-! output sit var. at "outsitmean" interval
-!
-      if(do_sit .and. (outsitmean .gt. 0.)) then
-        dtaup = mod(tau+0.001, outsitmean)
-        if( dtaup .lt. dtx_tau ) then
-          ntau=tau+0.001
-          if(myrank .eq. 0) print *,'outsitmean at tau=',tau
-          call writesitmean(nx,my,my_max,lkvl,ifilout,ntau,idtg,ggdef)
-        endif
-      endif
-!
-! output flux at 24 hour interval
-!
-      dtaup = mod(tau+0.001, 24.)
-      if( dtaup .lt. dtx_tau ) then
-        ntau=tau+0.001
-        if(myrank .eq. 0) print *,'out24 at tau=',tau
-!        call mpe_unify(hf24,nx,my,2,mpe_double)
-!        call mpe_unify(qf24,nx,my,2,mpe_double)
-!        call mpe_unify(ss24,nx,my,2,mpe_double)
-!        call mpe_unify(rs24,nx,my,2,mpe_double)
-!        call mpe_unify(asol24,nx,my,2,mpe_double)
-!        call mpe_unify(olr24,nx,my,2,mpe_double)
-!        call mpe_unify(rain24,nx,my,2,mpe_double)
-#ifndef NO_OUT
-        call out24(nx,my,my_max,hf24,qf24,ss24,rs24,asol24,olr24,rain24,dt24 &
-                  ,ifilout,glob,ntau,idtg,ggdef,flash24)
-#endif
-        if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. (dailyClm_option.ge.1)) then
-          call outtseadiffFCT24(nx,my,my_max,dt24,ifilout,ntau,idtg,ggdef)
-        endif
 
-        if(do_sit)then
-          if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. (dailyClm_option.ge.1)) then
-            call outtseadiffSIT24(nx,my,my_max,ratioSIT,dtsit24,ifilout,ntau,idtg,ggdef)
-          endif
-          if(loutsit24)then
-            call outsit24(nx,my,my_max,lkvl,ifilout,ntau,idtg,ggdef)
-          endif
-          call dtgfix12(idtg,idtg_temp,ntau-1)
-          ibeforeyymm=idtg_temp/1000000
-          call dtgfix12(idtg,idtg_temp,ntau)
-          icurrentyymm=idtg_temp/1000000
-          lnewyymm=icurrentyymm/=ibeforeyymm
-          if(myrank .eq. 0) then
-            print *,'ibeforeyymm=',ibeforeyymm,'icurrentyymm=',icurrentyymm &
-                   ,'lnewyymm=',lnewyymm
-          endif
-          if( lnewyymm ) then
-            call outsitmon(nx,my,my_max,lkvl,ifilout,ntau,idtg,ggdef)
-          endif
-       endif
-!
-!  zero set arrays
-!
-        do jj = 1, jlistnum
-          j=jlist1(jj)
-          nxj=nxdef_2d(j)
-          do  i = 1,nxj
-            hf24(i,jj)   = 0.
-            qf24(i,jj)   = 0.
-            ss24(i,jj)   = 0.
-            rs24(i,jj)   = 0.
-            asol24(i,jj) = 0.
-            olr24(i,jj)  = 0.
-            rain24(i,jj) = 0.
-            flash24(i,jj)= 0.
+! calculate Tmax Tmin @ 2m from T2
+          do jj = 1, jlistnum
+            j=jlist1(jj)
+            nxj=nxdef_2d(j)
+            do i=1,nxj
+             if (tmax(i,jj).eq.0.0)tmax(i,jj) = t2(i,jj)
+             if (tmin(i,jj).eq.0.0)tmin(i,jj) = t2(i,jj)
+             if (t2(i,jj).gt. tmax(i,jj)) then
+              tmax(i,jj)= t2(i,jj)
+             elseif (t2(i,jj).lt. tmin(i,jj)) then
+              tmin(i,jj)= t2(i,jj)
+             endif
+            enddo
           enddo
-        enddo
-        dt24 = 0.
-      endif 
-!
+
+!    ---------------------------------------------------------------
+!     check tau in hourly for output
+      dtaup = mod(tau+0.001, 1.)
+      if ( dtaup.lt.0.01 )then 
+        itau=NINT( tau )
+
       dtaup= mod(tau+0.001, tauo)
       histim=(dtaup .lt. dtx_tau)
 !       if(myrank.eq.0)print *,'chkhis dtaup,tauo,dtx_tau=',dtaup,tauo,dtx_tau
@@ -1449,8 +1459,41 @@
       dtaup= mod(tau+0.001, dt_trk)
       ltrack=(dtaup .lt. dtx_tau)
 !       if(myrank.eq.0)print *,'chkltr dtaup,dt_trk,dtx_tau=',dtaup,dt_trk,dtx_tau
+
+
+        if(myrank==0) call system_clock(toutsrt)
+!       open grib2 file
+        if( outgrb2 == 1 .and. myrank == 0 )then
+          lopngrb2=.false.
+          if(histim)lopngrb2=.true.
+          if(ltrack)lopngrb2=.true.
+          if( itau .le. nint(domfc) )lopngrb2=.true.
+          if( out_hp .and. mod( itau , 3 ) == 0 )lopngrb2=.true.
+          if( out_green .and. mod( itau , nint(otgreen) ) == 0 )lopngrb2=.true.
+          if( mod( itau , 24 ) == 0  )lopngrb2=.true.
+
+          if(lopngrb2)then
+            if(io_quilting)then 
+              write( keydoit,'(A6,I4.4,A4,I12.12,A8)') &
+              "OPEN..",itau,"....",idtg,"H...DOIT"
+              ntag=ntag+1
+              call mpe_send_key(keydoit,ntag,istat)
+            else
+             grbid=233  ! 231 outflds    233 mfc
+ 133                      format( A  ,A ,I10.10 ,A , i4.4 ,A      )
+             write(grbfile,133 )trim(ifilout_grb),'/GFS_',idtg/100 ,'_',itau,'.grb2'
+             if(myrank==0) print*,'OutFileName= ',trim(grbfile)
+             call opn_grb2(nx,my,idtg,itau,istat)              
+            endif
+          endif
+        endif
+!
 !
 !--- histim (start)
+      if ( histim .or. ltrack )  then
+       !itau = tau + 0.1
+        itau=NINT( tau )
+        if(myrank .eq. 0) print *,' history file written at tau= ', itau
 !
 ! output gwr or gwet
 ! in new soil model, gwr did not exist
@@ -1461,6 +1504,7 @@
 ! gwet(ground wetness) get from smc1*0.2+smc2*0.8
 ! saturate gwrcc set to be 20mm as original land mode setting
 !
+! xb119 may2022 not need to run every time step ,move to histim inside
       do jj = 1, jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
@@ -1478,10 +1522,6 @@
 !      call mpe_unify(gwet,nx,my,2,mpe_double)
 !      call mpe_unify(gwr,nx,my,2,mpe_double)
 !
-      if ( histim .or. ltrack )  then
-
-        itau = tau + 0.1
-        if(myrank .eq. 0) print *,' history file written at tau= ', itau
 !
         if(wrestrt)then
           call chlen (cwbout,48,lcwb)
@@ -1494,7 +1534,7 @@
  
 !!          call gather_spec(work_io,vornow,divnow,temnow,qnow,plnow,    &
 !!             vorold,divold,temold,qold,plold,dsqgeo,spgeo,trefs,       &
-!!             uzm,lev,ncld,jtrun,jtmax,my,nsize)
+!!             lev,ncld,jtrun,jtmax,my,nsize)
 !
 !  add if check to let restart output performed every 24h
 !
@@ -1509,19 +1549,10 @@
 !
 !!          deallocate (work_io)
           rfile = phyout(1:lphy)//ctau
-          allocate (tm1(nx,lev,my))
-          allocate (tm2(nx,lev,my))
-          allocate (tm3(nx,lev,my))
-          allocate (tm4(nx,lev,my))
-          allocate (tmc1(nx,lev,my))
-          allocate (tmc2(nx,lev,my))
-          allocate (tmc3(nx,lev,my))
-          allocate (tmc4(nx,lev,my))
-          allocate (tmc5(nx,lev,my))
-          allocate (tmc6(nx,lev,my))
-          allocate (temp1(nx,lev,my))
-          allocate (temp2(nx,lev,my))
-          allocate (temp3(nx,lev,my))
+          allocate (tm1(nx,lev,my) ,tm2(nx,lev,my) ,tm3(nx,lev,my) ,tm4(nx,lev,my))
+          allocate (tmc1(nx,lev,my) ,tmc2(nx,lev,my) ,tmc3(nx,lev,my) ,tmc4(nx,lev,my))
+          allocate (tmc5(nx,lev,my) ,tmc6(nx,lev,my))
+          allocate (temp1(nx,lev,my) ,temp2(nx,lev,my) ,temp3(nx,lev,my))
 !
 !          call unify_grid                                                  &
 !              ( snr,gwr,tg,tm1,tm2,ss,rs,tm3,tm4,ustar,tstar,qstar         &
@@ -1533,18 +1564,10 @@
 !              , temp2,temp3,rld,zice,asl,atl)
 !
 !-------------------------------------------------------------------
-         allocate (tmr1(nx,lev+1,my))
-         allocate (tmr2(nx,lev+1,my))
-         allocate (tmr3(nx,lev+1,my))
-         allocate (tmr4(nx,lev+1,my))
-         allocate (tmr5(nx,lev+1,my))
-         allocate (tmr6(nx,lev+1,my))
-         allocate (tmr7(nx,lev+1,my))
-         allocate (tmr8(nx,lev+1,my))
-         allocate (tms1(nx,lev,my))
-         allocate (tms2(nx,lev,my))
-         allocate (tms3(nx,lev,my))
-         allocate (tms4(nx,lev,my))
+         allocate (tmr1(nx,lev+1,my) ,tmr2(nx,lev+1,my) ,tmr3(nx,lev+1,my))
+         allocate (tmr4(nx,lev+1,my) ,tmr5(nx,lev+1,my) ,tmr6(nx,lev+1,my))
+         allocate (tmr7(nx,lev+1,my) ,tmr8(nx,lev+1,my))
+         allocate (tms1(nx,lev,my) ,tms2(nx,lev,my) ,tms3(nx,lev,my) ,tms4(nx,lev,my))
 !-------------------------------------------------------------------
 !         call unify_gridr                                                 &
 !          ( tmr1,tmr2,tmr3,tmr4,tmr5,tmr6,tmr7,tmr8,tms1,tms2,tms3,tms4   &
@@ -1567,32 +1590,12 @@
 !            endif
 !          endif
 !
-          deallocate (tm1)
-          deallocate (tm2)
-          deallocate (tm3)
-          deallocate (tm4)
-          deallocate (tmc1)
-          deallocate (tmc2)
-          deallocate (tmc3)
-          deallocate (tmc4)
-          deallocate (tmc5)
-          deallocate (tmc6)
-          deallocate (temp1)
-          deallocate (temp2)
-          deallocate (temp3)
+          deallocate (tm1  ,tm2  ,tm3  ,tm4 )
+          deallocate (tmc1 ,tmc2 ,tmc3 ,tmc4,tmc5,tmc6)
+          deallocate (temp1,temp2,temp3 )
 !---------------------------------------------------------------------
-          deallocate (tmr1)
-          deallocate (tmr2)
-          deallocate (tmr3)
-          deallocate (tmr4)
-          deallocate (tmr5)
-          deallocate (tmr6)
-          deallocate (tmr7)
-          deallocate (tmr8)
-          deallocate (tms1)
-          deallocate (tms2)
-          deallocate (tms3)
-          deallocate (tms4)
+          deallocate (tmr1 ,tmr2 ,tmr3 ,tmr4, tmr5 ,tmr6,tmr7 ,tmr8)
+          deallocate (tms1 ,tms2 ,tms3 ,tms4)
 !---------------------------------------------------------------------
 !
           if(do_sit) then
@@ -1614,7 +1617,7 @@
         call outsigs ( itau,nx,my,my_max,lev,ncld        &
                      , idtg,ifilout,ptop,rad,grav        &
                      , cp,cosl,pt,sgeo,snr,gwr,tg,pk,pk2 &
-                     , ut,vt,tt,qt,phi,rdiv,km_soil,smc  &
+                     , ut,vt,tt,qt,phi,km_soil,smc       &
                      , slc,stc,canopy,zice,ggdef,gmdef )
 #endif
         endif
@@ -1629,7 +1632,7 @@
                    , fusl,fdsl,fuir,fdir                                       &
                    , fuslr,fdslr,fuirr,fdirr                                   &
                    , asl,atl,asl_clr,atl_clr                                   &
-                   , dtrad,clds,sd                                             &
+                   , dtrad,clds,vvel                                           &
                    , ss,rs,olr,asol,sld,rld                                    &
                    , ss_clr,rs_clr,olr_clr                                     &
                    , asol_clr,sld_clr,rld_clr                                  &
@@ -1646,15 +1649,13 @@
 !
        call transr(jtrun,jtmax,nx,my,my_max,levp,poly,vornow,cc,1,nsizey)
        call ujoinsr(cc,rvor,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
-       rh2100=rh2*100.
-       rh10100=rh10*100.
         call  outflds( itau,nx,my,my_max,lev,ncld                              &
                     , lmax,numout,idtg,ifilout,outdir                          &
                     , ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo                  &
-                    , ptend,pt,plt,pk,pk2,phi,ut,vt,sd                         &
-                    , tt,qt,rdiv,rvor,tg,gwr,z0,hflux,qflux,snr                &
+                    , ptend,pt,plt,pk,pk2,phi,ut,vt,vvel                       &
+                    , tt,qt,rdiv,rvor,tg,gwr,z0,hflux,qflux,snr              &
                     , raintot,raincu,rainlp,asol,olr,ss,rs,alb,gwclim          &
-                    , acld,cosl,drag,ugws,vgws,t2,q2,rh2100,rh10100,u10,v10,gfx,rld,sld &
+                    , acld,cosl,drag,ugws,vgws,t2,q2,rh2,rh10,u10,v10,gfx,rld,sld &
 !byl                    , km_soil,smc,slc,stc,canopy,ggdef,slp,v850,v700,h850,h500 &
                     , km_soil,smc,slc,stc,canopy,ggdef,typtrk                  &
 !xb110                    , ctot,chig,cmid,clow,hpbl,histim,flash,do_sit)
@@ -1700,135 +1701,197 @@
 !          call zilch (runoff,nxmy)
         endif
 !
-        ifromtau = taui
-        itotau   = taue
-        flag =.false.
-        if(myrank .eq. 0)then
-          flag =.true.
-!CWB2016 
-          if(.not. io_quilting)then
-!CWB2017           call sendmsg ('gfs',ifromtau,itotau,istat)
-            if(itau.eq.itotau) call sendmsg ('gfs',ifromtau,itotau,istat)
-          else
-            istat=0
-          endif
-        endif
-!ch     call mpe_broadcast(istat,1,flag,mpe_integer)
-        call mpe_bcast(istat,1,0,mpe_integer)
-
-        if (istat.eq.-1) then
-          print *,' SENDMSG ERROR ', 'RANK=',myrank
-          call dmsexit(-1)
-        endif
 !
         if(myrank .eq. 0) print *,' history written at tau=',itau
+      endif     ! end of (histim) --- --- ---
 
-      endif     ! end of (histim)
+!       output f006 data for FV3
+        !if (abs(tau+0.00001-6.) .lt. 0.01) then
+        if ( itau ==  6  ) then
+#ifndef NO_OUT
+          if (myrank .eq. 0) print *,'output FV3 data !!!'
+          call outflds_fv3(nint(tau),nx,my,my_max,idtg,ggdef,ifilout             &
+                            ,q2,fm,fh,fm10,fh2,srflag,ustar)
+#endif
+        endif !(abs(tau+0.00001-6.) .lt. 0.01)
 
-! out green energy plan
-      if(out_green)then
-        if (mod(tau+0.00001, otgreen) .lt. 0.01) then
-          do jj = 1, jlistnum
-            j=jlist1(jj)
-            nxj=nxdef_2d(j)
-            do i = 1,nxj
-              pklev(i,jj) = pk(i,lev,jj)
-            enddo
-          enddo
-#ifndef NO_OUT
-        call  outflds_green(nint(tau),nx,my,my_max,lev,ncld                    &
-                          , idtg,ifilout,cp,rgas,grav,t2,u10,v10,ss,pklev      &
-                          , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6  &
-                          , ggdef)
-#endif
-          if (mod(tau+0.00001, 6. ) .lt. 0.01) then
-           raincu6=0.
-           rainlp6=0.
-          endif
-        endif
-      endif
-! output f006 data for FV3
-      if (abs(tau+0.00001-6.) .lt. 0.01) then
-#ifndef NO_OUT
-        if (myrank .eq. 0) print *,'output FV3 data !!!'
-        call outflds_fv3(nint(tau),nx,my,my_max,idtg,ggdef,ifilout             &
-                          ,q2,fm,fh,fm10,fh2,srflag,ustar)
-#endif
-      endif
-! output 3hr accumulated precipitation for CWB home page
-      if(out_hp)then
-        if (mod(tau+0.00001, 3.) .lt. 0.01) then
-#ifndef NO_OUT
-        call  outflds_hp(nint(tau),nx,my,my_max,idtg,ifilout                   &
-                        ,raincu3,rainlp3,ggdef)
-#endif
-          raincu3=0.
-          rainlp3=0.
-        endif
-      endif
-
-! calculate Tmax Tmin @ 2m from T2
-          do jj = 1, jlistnum
-            j=jlist1(jj)
-            nxj=nxdef_2d(j)
-            do i=1,nxj
-             if (tmax(i,jj).eq.0.0)tmax(i,jj) = t2(i,jj)
-             if (tmin(i,jj).eq.0.0)tmin(i,jj) = t2(i,jj)
-             if (t2(i,jj).gt. tmax(i,jj)) then
-              tmax(i,jj)= t2(i,jj)
-             elseif (t2(i,jj).lt. tmin(i,jj)) then
-              tmin(i,jj)= t2(i,jj)
-             endif
-            enddo
-          enddo
 !
-!kc
-!  output t2,raintot,u10,v10,ctot at 1 hour interval within 192hr. 
-!kc
-!      if(domfc)then
-!==xb118
-! change domfc type from logical to real
-!==xb118
+!kc             output t2,raintot,u10,v10,ctot at 1 hour interval within 192hr. 
+!               if(domfc)then
+!==xb118        change domfc type from logical to real
+!               if(myrank .eq. 0) print*,'domfc at tau,dtaup=',tau,dtaup
+!               if(tau.le.192. .and. dtaup.lt.0.01)then
 
-        dtaup = mod(tau+0.001, 1.)
-!        if(myrank .eq. 0) print*,'domfc at tau,dtaup=',tau,dtaup
-!        if(tau.le.192. .and. dtaup.lt.0.01)then
-        if(tau.le.(domfc+0.001) .and. dtaup.lt.0.01)then
-          ntau=tau+0.001
-          if(myrank .eq. 0) print *,'out1 at tau=',tau
-          do jj = 1, jlistnum
-            j=jlist1(jj)
-            nxj=nxdef_2d(j)
-            do i=1,nxj
-!!              slpty(i,jj)= pt(i,jj)+pdiff(i,jj)
-              rain1(i,jj)= raincu1(i,jj)+rainlp1(i,jj)
-              temp= tda*(t2(i,jj)-273.15)/(tdb+(t2(i,jj)-273.15))+     &
-                     log(rh2(i,jj))
-              td(i,jj)= (tdb*temp/(tda-temp))+273.15
-            enddo
-          enddo
+        if( itau .le. nint(domfc) .and. mod( itau , 1 ) == 0  )then
+          if(myrank .eq. 0) print *,'out1 at tau=',itau
 #ifndef NO_OUT
-       rh2100=rh2*100.
-       rh10100=rh10*100.
-          call out2d_mfc(nx,lev,my,my_max,ifilout,itau,idtg,ntau  &
-                      ,rain1,raintot,glob,t2,q2,rh2100,rh10100,u10,v10, &
-                      tmax,tmin,td,rld,sld,ctot,pt,ggdef)
+          call out2d_mfc(nx,lev,my,my_max,ifilout,itau,idtg         &
+                      ,raincu1,rainlp1,raintot,glob,t2,q2,rh2,rh10  &
+                      ,u10,v10,tmax,tmin,rld,sld,ctot,pt,ggdef)
 #endif
           raincu1=0.0
           rainlp1=0.0
           tmax=0.0
           tmin=0.0
-        endif
-!      endif
+        endif !  ( tau <= domfc )
+!       endif
 !
-      if (dosppt .and.  dospptout .and.  (mod(tau+0.001, 1.) .lt. 0.01)) then
-         call spptout(tau)
-      endif
 
-      if(do_sit .AND. lgodas .AND. ldailysst) then
-        CALL read_dailygodas(idtg,tau,dtx)
-      endif
+!       output 3hr accumulated precipitation for CWB home page
+        if( out_hp .and. mod( itau , 3 ) == 0 )then
+!        if(out_hp)then
+!           if (mod(tau+0.00001, 3.) .lt. 0.01) then
+#ifndef NO_OUT
+          call  outflds_hp(nint(tau),nx,my,my_max,idtg,ifilout                   &
+                          ,raincu3,rainlp3,ggdef)
+#endif
+          raincu3=0.
+          rainlp3=0.
+!          endif
+!        endif
+        endif
 !
+!       out green energy plan
+        if( out_green .and. mod( itau , nint(otgreen) ) == 0 )then
+!        if(out_green)then
+!          if (mod(tau+0.00001, otgreen) .lt. 0.01) then
+#ifndef NO_OUT
+            call  outflds_green(nint(tau),nx,my,my_max,lev,ncld                &
+                          , idtg,ifilout,cp,rgas,grav,t2,u10,v10,ss,pk         &
+                          , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6  &
+                          , ggdef)
+#endif
+!           if (mod(tau+0.00001, 6. ) .lt. 0.01) then
+            if ( mod( itau , 6 ) == 0 ) then
+             raincu6=0.
+             rainlp6=0.
+            endif
+!          endif
+!        endif
+        endif
+!
+!       output flux at 24 hour interval
+!
+        if(  mod( itau , 24 ) == 0  )then
+          if(myrank .eq. 0) print *,'out24 at tau=',itau
+!         call mpe_unify(hf24,nx,my,2,mpe_double)
+!         call mpe_unify(qf24,nx,my,2,mpe_double)
+!         call mpe_unify(ss24,nx,my,2,mpe_double)
+!         call mpe_unify(rs24,nx,my,2,mpe_double)
+!         call mpe_unify(asol24,nx,my,2,mpe_double)
+!         call mpe_unify(olr24,nx,my,2,mpe_double)
+!         call mpe_unify(rain24,nx,my,2,mpe_double)
+#ifndef NO_OUT
+          call out24(nx,my,my_max,hf24,qf24,ss24,rs24,asol24,olr24,rain24,dt24 &
+                  ,ifilout,glob,itau,idtg,ggdef,flash24)
+#endif
+          if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. (dailyClm_option.ge.1)) then
+            call outtseadiffFCT24(nx,my,my_max,dt24,ifilout,itau,idtg,ggdef)
+          endif
+
+          if(do_sit)then
+!           output sit var. at "outsitmean" interval
+            if(outsitmean .gt. 0. ) then
+!              dtaup = mod(tau+0.001, outsitmean)
+!              if( dtaup .lt. dtx_tau ) then
+               if(  mod( itau , NINT(outsitmean) ) == 0  )then 
+                 if(myrank .eq. 0) print *,'outsitmean at tau=',itau
+                 call writesitmean(nx,my,my_max,lkvl,ifilout,itau,idtg,ggdef)
+               endif
+            endif
+            if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. (dailyClm_option.ge.1)) then
+              call outtseadiffSIT24(nx,my,my_max,ratioSIT,dtsit24,ifilout,itau,idtg,ggdef)
+            endif
+            if(loutsit24)then
+              call outsit24(nx,my,my_max,lkvl,ifilout,itau,idtg,ggdef)
+            endif
+            call dtgfix12(idtg,idtg_temp,itau-1)
+            ibeforeyymm=idtg_temp/1000000
+            call dtgfix12(idtg,idtg_temp,itau)
+            icurrentyymm=idtg_temp/1000000
+            lnewyymm=icurrentyymm/=ibeforeyymm
+            if(myrank .eq. 0) then
+              print *,'ibeforeyymm=',ibeforeyymm,'icurrentyymm=',icurrentyymm &
+                     ,'lnewyymm=',lnewyymm
+            endif
+            if( lnewyymm ) then
+              call outsitmon(nx,my,my_max,lkvl,ifilout,itau,idtg,ggdef)
+            endif
+          endif ! (do_sit)
+!
+!         zero set arrays
+!
+          do jj = 1, jlistnum
+            j=jlist1(jj)
+            nxj=nxdef_2d(j)
+            do  i = 1,nxj
+              hf24   (i,jj) = 0.0 
+              qf24   (i,jj) = 0.0
+              ss24   (i,jj) = 0.0
+              rs24   (i,jj) = 0.0
+              asol24 (i,jj) = 0.0
+              olr24  (i,jj) = 0.0
+              rain24 (i,jj) = 0.0
+              flash24(i,jj) = 0.0
+            enddo
+          enddo
+          dt24 = 0.0
+        endif ! (  mod( itau , 24 ) == 0  )
+
+!
+        if (dosppt .and.  dospptout .and. mod( itau , 1 ) == 0 ) then
+           call spptout(tau)
+        endif
+        if (doskeb .and.  doskebout .and. mod( itau , 1 ) == 0 ) then
+           call skebout(tau)
+        endif
+
+        if(do_sit .AND. lgodas .AND. ldailysst) then
+          CALL read_dailygodas(idtg,tau,dtx)
+        endif
+
+        !close grib2 file
+        if(outgrb2==1.and.myrank==0)then
+          if(lopngrb2)then
+            if(io_quilting)then 
+              keydoit(1:4)='CLSE'
+              ntag=ntag+1
+              call mpe_send_key(keydoit,ntag,istat)
+            else
+              call cls_grb2(istat)
+            endif
+          endif
+        endif
+        if(myrank==0)then
+          call system_clock(toutend,toutrate)
+          print *, "In output tau: ",itau," CPU Time: " &
+                 ,dble(toutend-toutsrt)/dble(toutrate)
+        endif
+
+        if ( histim .or. ltrack )  then
+          ifromtau = taui
+          itotau   = taue
+          flag =.false.
+          if(myrank .eq. 0)then
+            flag =.true.
+!CWB2016   
+            if(.not. io_quilting)then
+!CWB2017             call sendmsg ('gfs',ifromtau,itotau,istat)
+              if(itau.eq.itotau) call sendmsg ('gfs',ifromtau,itotau,istat)
+            else
+              istat=0
+            endif
+            if (istat.eq.-1) then
+              print *,' SENDMSG ERROR ', 'RANK=',myrank
+              call dmsexit(-1)
+            endif
+          endif
+!ch       call mpe_broadcast(istat,1,flag,mpe_integer)
+!         call mpe_bcast(istat,1,0,mpe_integer)
+        endif !histim 
+
+      endif !  (mod(tau+0.001, 1.) .lt. 0.01)  hourly for output 
+!    ---------------------------------------------------------------
 !
 ! new year, read obs sst
 !
@@ -1866,8 +1929,8 @@
 
       ! for io quilting
       if(io_quilting)then
-         ntag=ntag+1
-         call mpe_send_key(keydoit,ntag,istat)
+!         ntag=ntag+1
+!         call mpe_send_key(keydoit,ntag,istat)
          ntag=ntag+1
          call mpe_send_key(keydone,ntag,istat)
       endif
@@ -1892,7 +1955,7 @@
           call deallocate_opgsst_array
         endif
         if(do_sit) then
-           print *,'myrank=',myrank,'ready sit_vdiff_end'
+           if(myrank==0)print *,'ready sit_vdiff_end'
            if(locaf) call deallocate_ocaf_array
            if(lwoa0) call deallocate_woa0_array
            if(lgodas) call deallocate_godas_array

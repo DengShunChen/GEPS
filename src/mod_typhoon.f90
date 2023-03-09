@@ -4,6 +4,7 @@
 !
       use param
       use index,  only: nxp
+      use const,  only: RTYPE
 
       implicit none
 
@@ -20,7 +21,7 @@
 !byl      real, dimension(:,:), allocatable, save :: tlon, tydom,  &
 !byl                                slp, v850, v700, h850, h500
       real, dimension(:,:), allocatable, save :: tydom
-      real, dimension(:,:,:), allocatable,save ::  typtrk
+      real(kind=RTYPE), dimension(:,:,:), allocatable,save ::  typtrk
 
       real, dimension(:),   allocatable, save :: tlon, tlat
 

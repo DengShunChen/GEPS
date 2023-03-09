@@ -128,6 +128,7 @@
                            hvap   => con_hvap, rd   => con_rd,          & 
                            eps    => con_eps, epsm1 => con_epsm1,       & 
                            rvrdm1 => con_fvirt
+      use const,    only : RTYPE
 
       implicit none
 
@@ -149,8 +150,9 @@
 
       integer, dimension(im), intent(in) :: soiltyp, vegtype, slopetyp
 
-      real (kind=kind_phys), dimension(im), intent(in) :: ps, u1, v1,   & 
-             t1, q1, sigmaf, sfcemis, dlwflx, dswsfc, snet, tg3, cm,    & 
+      real (kind=RTYPE), dimension(im), intent(in) :: u1, v1, t1, q1
+      real (kind=kind_phys), dimension(im), intent(in) :: ps,           & 
+             sigmaf, sfcemis, dlwflx, dswsfc, snet, tg3, cm,            & 
              ch, prsl1, prslki, ddvel, shdmin, shdmax,                  & 
              snoalb, sfalb, zf
 
@@ -193,7 +195,7 @@
              sfcems, sheat, shdfac, shdmin1d, shdmax1d, smcwlt,         & 
              smcdry, smcref, smcmax, sneqv, snoalb1d, snowh,            & 
              snomlt, sncovr, soilw, soilm, ssoil, tsea, th2, tbot,      & 
-             xlai, zlvl, swdn, tem,z0,fpvs
+             xlai, zlvl, swdn, tem,z0,fpvs,ttmp
 
       integer :: couple, ice, nsoil, nroot, slope, stype, vtype
       integer :: i, k
@@ -260,7 +262,8 @@
           theta1(i) = t1(i) * prslki(i) !* adiabatic temp at level 1 (k)
 
           rho(i) = prsl1(i) / (rd*t1(i)*(1.0+rvrdm1*q0(i)))
-          qs1(i) = fpvs( t1(i) )        !* qs1=sat. humidity at level 1 (kg/kg)
+          ttmp   = t1(i)
+          qs1(i) = fpvs( ttmp )        !* qs1=sat. humidity at level 1 (kg/kg)
           qs1(i) = max(eps*qs1(i) / (prsl1(i)+epsm1*qs1(i)), 1.e-8)
           q0 (i) = min(qs1(i), q0(i))
         endif

@@ -1,8 +1,8 @@
       subroutine outflds( itau,nx,my,my_max,lev,ncld                 &
              , lmax,numout,idtg,ifilout                              &
              , outdir,ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo        &
-             , ptend,pt,plt,pk,pk2,phi,ut,vt,sd                      &
-             , tt,qt,rdiv,rvor,tg,gwet,z0,hflux,qflux,snr            &
+             , ptend,pt,plt,pk,pk2,phi,ut,vt,vvel                    &
+             , tt,qt_org,rdiv,rvor,tg,gwet,z0,hflux,qflux,snr        &
              , raintot,raincu,rainlp,plcl,cumtop,ss,rs,alb,gwclim    &
              , acld,cosl,drag,ugws,vgws,t2,q2,rh2,rh10,u10,v10,gfx,rld,sld &
 !byl             , km,smc,slc,stc,canopy,ggdef,slptyp,v850,v700,h850,h500   &
@@ -20,23 +20,22 @@
       use index
       use mod_outflds
       use radn, only : ntcw,ntiw,ntoz
+      use const, only : RTYPE
 
       implicit  none
 
       integer   itau,nx,my,my_max,lev,ncld,lmax,numout,ktrop,km
       real      ptop,capa,cp,rgas,grav
 
-      real      sigma(lev+1,2),sgeo(nxp,my_max),pdiff(nxp,my_max),ptend(nxp,my_max) &
-              , t1000(nxp,my_max),pt(nxp,my_max),plt(nxp,lev,my_max)                &
-              , pk(nxp,lev,my_max),pk2(nxp,lev,my_max),phi(nxp,lev,my_max)          &
-              , ut(nxp,lev,my_max),vt(nxp,lev,my_max),tt(nxp,lev,my_max)            &
-              , sd(nxp,lev,my_max)                                                  &
-              , qt(nxp,lev*ncld,my_max),rdiv(nxp,lev,my_max)                        &
-              , rvor(nxp,lev,my_max),tg(nxp,my_max),gwet(nxp,my_max)                &
+      real      pdiff(nxp,my_max)                                                   &
+              , t1000(nxp,my_max),plt(nxp,lev,my_max)                               &
+!              , qt(nxp,lev*ncld,my_max),rdiv(nxp,lev,my_max)                        &
+!              , rvor(nxp,lev,my_max),tg(nxp,my_max),gwet(nxp,my_max)                &
+              , tg(nxp,my_max),gwet(nxp,my_max)                                     &
               , z0(nxp,my_max),hflux(nxp,my_max),qflux(nxp,my_max),snr(nxp,my_max)  &
               , raincu(nxp,my_max),rainlp(nxp,my_max),plcl(nxp,my_max),cumtop(nxp,my_max) &
               , ss(nxp,my_max),rs(nxp,my_max),alb(nxp,my_max),gwclim(nxp,my_max)    &
-              , acld(lev,my),cosl(my),drag(nxp,lev,my_max)                          &
+              , acld(lev,my),drag(nxp,lev,my_max)                                   &
               , ugws(nxp,my_max),vgws(nxp,my_max),t2(nxp,my_max)                    &
               , q2(nxp,my_max),rh2(nxp,my_max),rh10(nxp,my_max)                     &
               , u10(nxp,my_max),v10(nxp,my_max),gfx(nxp,my_max),rld(nxp,my_max)     &
@@ -48,18 +47,27 @@
 ! rad-cloud
               , ctot(nxp,my_max),chig(nxp,my_max),cmid(nxp,my_max),clow(nxp,my_max) &
 ! pbl
-              , hpbl(nxp,my_max)                                                    &
+              , hpbl(nxp,my_max) 
 ! river
 !byl              , slptyp(nxp,my_max),v850(nx,my),v700(nx,my),h850(nx,my),h500(nx,my)
 !byl              , slptyp(nx,my),v850(nx,my),v700(nx,my),h850(nx,my),h500(nx,my)
-              , typtrk(nxp,my_max,5)
+      real(kind=RTYPE) rdiv(nxp,lev,my_max),rvor(nxp,lev,my_max)    &
+                     , ut(nxp,lev,my_max),vt(nxp,lev,my_max)        &
+                     , tt(nxp,lev,my_max),qt(nxp,lev*ncld,my_max)   &
+                     , qt_org(nxp,lev*ncld,my_max),phi(nxp,lev,my_max) &
+                     , sgeo(nxp,my_max),ptend(nxp,my_max)           &
+                     , pt(nxp,my_max),vvel(nxp,lev,my_max)          &
+                     , sigma(lev+1,2)                               &
+                     , pk(nxp,lev,my_max),pk2(nxp,lev,my_max)       &
+                     , cosl(my),typtrk(nxp,my_max,5)
 !
       character ifilout*80, ggdef*4
       integer*8 idtg
 !
 ! local work arrays
 !
-      real      tmp(nxp,lev,my_max),plog(nxp,lev,my_max),pllp(nxp,my_max),glob(nx,my)
+      real      tmp(nxp,lev,my_max),plog(nxp,lev,my_max),pllp(nxp,my_max)
+      real(kind=RTYPE) glob(nx,my)
       real      slp(nxp,my_max)
 !
 !  pout(16) chnaged into pout(26) to increase p output to 26 levels
@@ -69,15 +77,14 @@
       real      wrk1(nxp,lev),pout(lpout),pkout(lpout),phistd(lpout) &
 !              , bt1(nx,my),bt2(nx,my)                               &
               , bt1(nxp,my_max),bt2(nxp,my_max)                      &
-              , hld1(nxp,my_max),hld2(nxp,my_max)                    &
-!             , pres3d(nx,my,lpout)
-              , pres3d(nxp,my_max,lpout)
+              , hld1(nxp,my_max),hld2(nxp,my_max) 
 !
-      real      sht(nxp,lev*ncld,my_max),sdhat(nxp,lev,my_max)
+      real(kind=RTYPE) pres3d(nxp,my_max,lpout)
 !
-      real      wk_xy(nxp,my_max,12)   ! the last dim is changable
+      real(kind=RTYPE) wk_xy(nxp,my_max,12)   ! the last dim is changable
+      real      tmpin(nxp),tmpout(nxp)
 !
-      real      soil_xy(nxp,my_max,12)   ! the last dim is changable
+      real(kind=RTYPE) soil_xy(nxp,my_max,12)   ! the last dim is changable
 !
       real      whtlev(100),whtlevq(100),whtlevz(100)
       character*16 taudir(numout),outdir(numout)
@@ -88,7 +95,6 @@
       real      rad,ograv,alaps,rdg,ttb,ttp,ttt,ttt1,ttt2,anlslp
       real      apha,pl1000,splog,ax,bx,cx,dx,tmid,tsf,tadia,xx,deltap
 !
-      real      dsigma(lev,2),deodp
 !
       logical :: lwrite,lwritesit
 !xb110>
@@ -118,6 +124,8 @@
       endif
 !  
       wk_xy = 0.
+      tmpin = 0.
+      tmpout= 0.
 
       pllp=0.
       bt1=0.
@@ -129,15 +137,16 @@
 !
       call whttau (itau,numout,outdir,ntau,taudir)
       if(ntau.eq.0) return
+
 !
-!  save qt into local arrays
+!  copy qt into local qt arrays
 !
       do jj = 1, jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
         do k = 1, lev*ncld
           do i = 1,nxj
-            sht(i,k,jj) = qt(i,k,jj)
+            qt(i,k,jj) = qt_org(i,k,jj)  
           enddo
         enddo
       enddo
@@ -281,27 +290,6 @@
 !      call mpe_unify(pt,nx,my,2,mpe_double)
 !      call mpe_unify(ptend,nx,my,2,mpe_double)
 !
-! linearly comput vertical velocity on full-level
-!
-      do k=1,lev
-        dsigma(k,1) = sigma(k+1,1) - sigma(k,1)
-        dsigma(k,2) = sigma(k+1,2) - sigma(k,2)
-      enddo
-      do jj = 1, jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-        do k=2,lev-1
-          do i = 1, nxj
-            sdhat(i,k,jj)= 0.5*(sd(i,k+1,jj)+sd(i,k,jj))
-!            sdhat(i,k,jj)= sd(i,k+1,jj)*(pk(i,k,jj)-pk2(i,k-1,jj))/(pk2(i,k,jj)-pk2(i,k-1,jj))  &
-!                          +sd(i,k,jj)  *(pk2(i,k,jj)-pk(i,k,jj))  /(pk2(i,k,jj)-pk2(i,k-1,jj))
-          enddo
-        enddo
-        do i = 1,nxj
-          sdhat(i,1,jj)=0.5*sdhat(i,2,jj)
-          sdhat(i,lev,jj)=0.5*sdhat(i,lev-1,jj)
-        enddo
-      enddo
 !
 ! output surface fields
 !
@@ -593,7 +581,7 @@
 !!        call mpe_unify(bt2,nx,my,2,mpe_double)
         if(myrank.eq.0)print*,' outfld : start windout, lwrite = ',lwrite
         call windout (nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,num &
-           ,whtlev,cosl,pkout,plog,pllp,ut,vt,sdhat,bt1,bt2,pres3d,glob,ggdef,lwrite)
+           ,whtlev,cosl,pkout,plog,pllp,ut,vt,vvel,bt1,bt2,pres3d,glob,ggdef,lwrite)
       endif
 !
       labx='dag   '
@@ -650,43 +638,15 @@
             enddo
           enddo
         enddo
-        call qsatq(nxj,wk_xy(1,jj,1),plt(1,lev,jj),wk_xy(1,jj,5))
+        tmpin(:)=wk_xy(:,jj,1)
+        call qsatq(nxj,tmpin,plt(1,lev,jj),tmpout)
+        wk_xy(:,jj,5)=tmpout(:)
         do i = 1,nxj
           wk_xy(i,jj,5) = 100.*(qt(i,lev,jj)/wk_xy(i,jj,5))
           wk_xy(i,jj,5) = min( 100., max( 1., wk_xy(i,jj,5) ) )
         enddo
       enddo
-!
-!  get back original qt
-!
-      do jj = 1, jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-        do k = 1, lev*ncld
-          do i = 1,nxj
-            qt(i,k,jj) = sht(i,k,jj)
-          enddo
-        enddo
-      enddo
- 
-      do jj = 1, jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-        do i = 1,nxj
-          soil_xy(i,jj,1) = smc(i,1,jj)
-          soil_xy(i,jj,2) = smc(i,2,jj)
-          soil_xy(i,jj,3) = smc(i,3,jj)
-          soil_xy(i,jj,4) = smc(i,4,jj)
-          soil_xy(i,jj,5) = slc(i,1,jj)
-          soil_xy(i,jj,6) = slc(i,2,jj)
-          soil_xy(i,jj,7) = slc(i,3,jj)
-          soil_xy(i,jj,8) = slc(i,4,jj)
-          soil_xy(i,jj,9) = stc(i,1,jj)
-          soil_xy(i,jj,10) = stc(i,2,jj)
-          soil_xy(i,jj,11) = stc(i,3,jj)
-          soil_xy(i,jj,12) = stc(i,4,jj)
-        enddo
-      enddo
+
 !
       do jj =1,jlistnum
         j=jlist1(jj)
@@ -701,6 +661,27 @@
           wk_xy(i,jj,12) = qt(i,lev,jj)
         enddo
       enddo
+
+!soil variable
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        do i = 1,nxj
+          soil_xy(i,jj,1 ) = smc(i,1,jj)
+          soil_xy(i,jj,2 ) = smc(i,2,jj)
+          soil_xy(i,jj,3 ) = smc(i,3,jj)
+          soil_xy(i,jj,4 ) = smc(i,4,jj)
+          soil_xy(i,jj,5 ) = slc(i,1,jj)
+          soil_xy(i,jj,6 ) = slc(i,2,jj)
+          soil_xy(i,jj,7 ) = slc(i,3,jj)
+          soil_xy(i,jj,8 ) = slc(i,4,jj)
+          soil_xy(i,jj,9 ) = stc(i,1,jj)
+          soil_xy(i,jj,10) = stc(i,2,jj)
+          soil_xy(i,jj,11) = stc(i,3,jj)
+          soil_xy(i,jj,12) = stc(i,4,jj)
+        enddo
+      enddo
+
 !
 ! output some 2-dimension veriable to dmsfile
 !

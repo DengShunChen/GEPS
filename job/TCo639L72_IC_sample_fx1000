@@ -1,6 +1,6 @@
 #!/bin/ksh
 #PJM -L "node=32:noncont"
-#PJM -L rscgrp=cfs
+#PJM -L rscgrp=fujitsu
 #PJM -x PJM_CACHE_MODE=4
 #PJM -L elapse=2:00:00
 #PJM -L node-mem=unlimited

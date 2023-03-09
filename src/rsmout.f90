@@ -1,9 +1,11 @@
-      subroutine rsmout(idtg,itau,nx,my,my_max,lev,ncld            &
+    subroutine rsmout(idtg,itau,nx,my,my_max,lev,ncld            &
              , ptop,cp,rgas,grav,sgeo,pdiff                        &
              , t1000,pt,plt,pk,pk2,phi,ut,vt                       &
              , tt,qt,tg,snr,cosl                                   &
              , km,smc,stc                                          &
              , ice,land,ocean)
+
+#ifdef RSM
 !
 !  output driver subroutine to process sigma level data to standard
 !  pressure surfaces and standard grids
@@ -11,22 +13,24 @@
       use mpe
       use rank
       use index
-      use const, only: rlon1, rlon2, rlat1, rlat2, rgrdsz
+      use const, only: rlon1, rlon2, rlat1, rlat2, rgrdsz, RTYPE
       implicit  none
 
       integer(kind=8)  :: idtg
       integer   itau,nx,my,my_max,lev,ncld,km
       real      ptop,cp,rgas,grav
 
-      real      sgeo(nxp,my_max),pdiff(nxp,my_max)                    &
-              , t1000(nxp,my_max),pt(nxp,my_max),plt(nxp,lev,my_max)  &
-              , pk(nxp,lev,my_max),pk2(nxp,lev,my_max)                &
-              , phi(nxp,lev,my_max),tt(nxp,lev,my_max)                &
-              , ut(nxp,lev,my_max),vt(nxp,lev,my_max)                 &
-              , qt(nxp,lev*ncld,my_max)                               &
-              , tg(nxp,my_max),snr(nxp,my_max),cosl(my)               &
+      real      pdiff(nxp,my_max)                                     &
+              , t1000(nxp,my_max),plt(nxp,lev,my_max)                 &
+              , tg(nxp,my_max),snr(nxp,my_max)                        &
 !soil
               , smc(nxp,km,my_max),stc(nxp,km,my_max)
+      real(kind=RTYPE) ut(nxp,lev,my_max),vt(nxp,lev,my_max)          &
+              ,        tt(nxp,lev,my_max),qt(nxp,lev*ncld,my_max)     &
+              ,        phi(nxp,lev,my_max),sgeo(nxp,my_max)           &
+              ,        pt(nxp,my_max)                                 &
+              ,        pk(nxp,lev,my_max),pk2(nxp,lev,my_max)         &
+              ,        cosl(my)
 
       logical   land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max)
 
@@ -34,15 +38,17 @@
 ! local work arrays
 !
       real      slp(nxp,my_max),tmp(nxp,lev,my_max),plog(nxp,lev,my_max) &
-              , pllp(nxp,my_max),glob(nx,my),glob2(nx,my),slmsk(nxp,my_max)
+              , pllp(nxp,my_max),slmsk(nxp,my_max)
+      real(kind=RTYPE) glob(nx,my)
       real      tens(lev+1)             
 !
       integer,  parameter :: lpout = 47 
       real      wrk1(nxp,lev),pout(lpout),pkout(lpout),phistd(lpout) &
-              , bt1(nxp,my_max),bt2(nxp,my_max)                  &
-              , hld1(nxp,my_max),hld2(nxp,my_max),pres3d(nxp,my_max,lpout)
+              , bt1(nxp,my_max),bt2(nxp,my_max)
+      real(kind=RTYPE) pres3d(nxp,my_max,lpout),hld1(nxp,my_max)     &
+              ,        hld2(nxp,my_max)
 !
-      real      soil_xy(nxp,my_max,8)   ! the last dim is changable
+      real(kind=RTYPE) soil_xy(nxp,my_max,8)   ! the last dim is changable
 !
       integer   nxmy,jj,j,nxj,k,i,n,nk,ngq,ntt,kk,ntrac,ii
       integer   llts
@@ -80,7 +86,6 @@
                ,1000.0/
 !
       data rad/6.371e6/
-#ifdef RSM
 !
       nx2=nint(360./rgrdsz)
       my2=nint(180./rgrdsz+1.)
@@ -552,7 +557,8 @@
         if(myrank.eq.0)print*,' rsmout : start windout'
 !  yj replace windout
 ! first: do the u components
-      call voterp(nx,my,my_max,lev,lpout,plog,pllp,ut,bt1 &
+      tmp=ut
+      call voterp(nx,my,my_max,lev,lpout,plog,pllp,tmp,bt1 &
                  ,pkout,pres3d,tens)
 !      if( lreduce.eq.1 ) call reduceintp (bt1,nxdef,nx,my)
 !      do i =1,nx
@@ -599,7 +605,8 @@
         endif
       enddo  
 !  now the v components
-      call voterp(nx,my,my_max,lev,lpout,plog,pllp,vt,bt2 &
+      tmp=vt
+      call voterp(nx,my,my_max,lev,lpout,plog,pllp,tmp,bt2 &
                  ,pkout,pres3d,tens)
 !      if( lreduce.eq.1 ) call reduceintp (bt2,nxdef,nx,my)
 !
@@ -714,7 +721,8 @@
 ! ***tg***
 !byl      call mpe2d_unify(glob,tg)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
-      call unify_reduceintp(nx,my,my_max,tg,glob)
+      hld1=tg
+      call unify_reduceintp(nx,my,my_max,hld1,glob)
       if(myrank.eq.0) then
       call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
                   ,rsmoutp,0,xr,yr,.true.)
@@ -791,7 +799,8 @@
 ! ***snr***
 !byl      call mpe2d_unify(glob,snr)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
-      call unify_reduceintp(nx,my,my_max,snr,glob)
+      hld1=snr
+      call unify_reduceintp(nx,my,my_max,hld1,glob)
       if(myrank.eq.0) then
       call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
                   ,rsmoutp,0,xr,yr,.true.)
@@ -878,7 +887,8 @@
        enddo
 !byl       call mpe2d_unify(glob,slmsk)
 !byl       if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
-      call unify_reduceintp(nx,my,my_max,slmsk,glob)
+      hld1=slmsk
+      call unify_reduceintp(nx,my,my_max,hld1,glob)
 !yj2019
        if(myrank.eq.0) then
        call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
@@ -908,7 +918,8 @@
       enddo
 !byl      call mpe2d_unify(glob,slmsk)
 !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)      
-      call unify_reduceintp(nx,my,my_max,slmsk,glob)
+      hld1=slmsk
+      call unify_reduceintp(nx,my,my_max,hld1,glob)
       if(myrank.eq.0) then
       call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
                   ,rsmoutp,0,xr,yr,.true.)
@@ -952,6 +963,4 @@
       if (ierr/=0) stop "rsmout: deallocate fail rsmoutp"
 !      
 #endif
-      return
-      end
-
+    end subroutine rsmout

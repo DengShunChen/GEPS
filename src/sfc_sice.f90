@@ -103,6 +103,7 @@
                            eps => con_eps, epsm1 => con_epsm1,          & 
                            grav => con_g, rvrdm1 => con_fvirt,          & 
                            t0c => con_t0c, rd => con_rd
+      use const,    only : RTYPE
 !
       implicit none
 !
@@ -122,8 +123,9 @@
       integer, intent(in) :: im, km, lsm, imj
 !     logical, intent(in) :: lprnt
 
-      real (kind=kind_phys), dimension(im), intent(in) :: ps, u1, v1,   & 
-             t1, q1, sfcemis, dlwflx, sfcnsw, sfcdsw, srflag, cm, ch,   & 
+      real (kind=RTYPE), dimension(im), intent(in) :: u1, v1, t1, q1
+      real (kind=kind_phys), dimension(im), intent(in) :: ps,           & 
+             sfcemis, dlwflx, sfcnsw, sfcdsw, srflag, cm, ch,           & 
              prsl1, prslki, ddvel
 
       integer, dimension(im), intent(in) :: islimsk
@@ -147,7 +149,7 @@
              sneti, snetw, hfd, hfi,                                    &
 !    &       hflxi, hflxw, sneti, snetw, qssi, qssw, hfd, hfi, hfw,     & 
              focn, snof, hi_save, hs_save,                 rch, rho,    & 
-             snowd, theta1
+             snowd, theta1, ttmp
 
       real (kind=kind_phys) :: t12, t14, tem, stsice(im,kmi) &
       ,                   hflxi, hflxw, q0, qs1, wind, qssi, qssw,fpvs
@@ -219,7 +221,8 @@
 !         tsurf(i)  = tskin(i)
           theta1(i) = t1(i) * prslki(i)
           rho(i)    = prsl1(i) / (rd*t1(i)*(1.0+rvrdm1*q0))
-          qs1       = fpvs(t1(i))
+          ttmp      = t1(i)
+          qs1       = fpvs(ttmp)
           qs1       = max(eps*qs1 / (prsl1(i) + epsm1*qs1), 1.e-8)
           q0        = min(qs1, q0)
 

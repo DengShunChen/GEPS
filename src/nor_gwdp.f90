@@ -42,6 +42,7 @@
 
 !ch>
       use index, only : nxdef
+      use const, only : RTYPE
 !ch<
 
       implicit  none
@@ -49,9 +50,11 @@
       integer   j,nxj,nx,lev
       real      dt,grav,rgas,sinl,cosl,cp
 
-      real      t(nx,lev),q(nx,lev),plt(nx,lev),u(nx,lev),v(nx,lev),    &
-                pk(nx,lev),pk2(nx,lev),hi(nx,lev),                      &
+      real      plt(nx,lev),                                  &
                 avgdrag_u(lev),avgdrag_v(lev)
+      real(kind=RTYPE) u(nx,lev),v(nx,lev),t(nx,lev),         &
+                       q(nx,lev),hi(nx,lev),pk(nx,lev),       &
+                       pk2(nx,lev)
 
 ! local array
       integer,  parameter :: nc=20,nphi=4
@@ -69,9 +72,12 @@
       real      b1,b2,dc,xbar,x,s3,uhat,fxtotal,chat,flux1,flux2,dflux1
       real      uhat_z0,uhat_z1,dpk,wsold,wsnew
 
-      data cmin/0.25/, cmax/2000./ taul/0.6/
-      data cstar/1./, pw/1./, s/1./, wavelenth/2000./
-      data fluxtotal/3.75e-4/, lunch_lev/44/, ltop/1/
+!      data cmin/0.25/, cmax/2000./ taul/0.6/
+!      data cstar/1./, pw/1./, s/1./, wavelenth/2000./
+!      data fluxtotal/3.75e-4/, lunch_lev/44/, ltop/1/
+      data cmin/0.25/, cmax/1000./ taul/0.25/, lunch_lev/44/
+      data cstar/1./, ltop/1/, wavelenth/2000./
+      data fluxtotal/3.75e-4/, pw/1.5/, s/0./    !CG1
 !
       ilon=1142
       jlat=nx/4
@@ -89,6 +95,11 @@
 ! ... potential temperature (pt)
 ! ... density (den)
 !
+      p2=0.
+      pt=0.
+      den=0.
+      sn2=0.
+
       do k=1,lunch_lev+1
       do i=1,nxj
         p2(i,k)=1000.0*pk2(i,k)*pk2(i,k)*pk2(i,k)*sqrt(pk2(i,k))
@@ -136,6 +147,7 @@
 !      endif
 !
       uv_lunch=0.
+      uv=0.
       k=lunch_lev
       do i=1,nxj
         uv_lunch(i,1)=u(i,k)
@@ -350,11 +362,14 @@
         dpk=(p2(i,k-1)-p2(i,k))*100.
         drag_u(i,k)=-grav*(dflux_u(i,k-1)-dflux_u(i,k))/dpk
         drag_v(i,k)=-grav*(dflux_v(i,k-1)-dflux_v(i,k))/dpk
-        wsold=u(i,k)*u(i,k)+v(i,k)*v(i,k)
+        wsold=0.5*(u(i,k)*u(i,k)+v(i,k)*v(i,k))
+!        wsold=u(i,k)*u(i,k)+v(i,k)*v(i,k)
         u(i,k)=u(i,k)+dt*drag_u(i,k)
         v(i,k)=v(i,k)+dt*drag_v(i,k)
-        wsnew=u(i,k)*u(i,k)+v(i,k)*v(i,k)
-        t(i,k)=t(i,k)+dt*(wsold-wsnew)/(4.*cp*dt)
+!        wsnew=u(i,k)*u(i,k)+v(i,k)*v(i,k)
+!        t(i,k)=t(i,k)+dt*(wsold-wsnew)/(4.*cp*dt)
+        wsnew=0.5*(u(i,k)*u(i,k)+v(i,k)*v(i,k))
+        t(i,k)=t(i,k)+(wsold-wsnew)/cp
         avgdrag_u(k)=avgdrag_u(k)+drag_u(i,k)*cosl
         avgdrag_v(k)=avgdrag_v(k)+drag_v(i,k)*cosl
       enddo
@@ -363,7 +378,8 @@
       enddo
       k=1
       do i=1,nxj
-        wsold=u(i,k)*u(i,k)+v(i,k)*v(i,k)
+        wsold=0.5*(u(i,k)*u(i,k)+v(i,k)*v(i,k))
+!        wsold=u(i,k)*u(i,k)+v(i,k)*v(i,k)
         dpk=(ptop-p2(i,k))*100.
         drag_u(i,k)=grav*dflux_u(i,k)/dpk
         drag_v(i,k)=grav*dflux_v(i,k)/dpk
@@ -371,8 +387,10 @@
         v(i,k)=v(i,k)+dt*drag_v(i,k)
 !        u(i,k)=u(i,k)+dt*drag_u(i,k+1)*2.
 !        v(i,k)=v(i,k)+dt*drag_v(i,k+1)*2.
-        wsnew=u(i,k)*u(i,k)+v(i,k)*v(i,k)
-        t(i,k)=t(i,k)+dt*(wsold-wsnew)/(4.*cp*dt)
+!        wsnew=u(i,k)*u(i,k)+v(i,k)*v(i,k)
+!        t(i,k)=t(i,k)+dt*(wsold-wsnew)/(4.*cp*dt)
+        wsnew=0.5*(u(i,k)*u(i,k)+v(i,k)*v(i,k))
+        t(i,k)=t(i,k)+(wsold-wsnew)/cp
         avgdrag_u(k)=avgdrag_u(k)+drag_u(i,k+1)*2.*cosl
         avgdrag_v(k)=avgdrag_v(k)+drag_v(i,k+1)*2.*cosl
       enddo

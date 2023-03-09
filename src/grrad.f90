@@ -1,4 +1,4 @@
-!!!!  ==========================================================  !!!!!
+!!!!!  ==========================================================  !!!!!
 !!!!!             'module_radiation_driver' descriptions           !!!!!
 !!!!!  ==========================================================  !!!!!
 !                                                                      !
@@ -188,7 +188,7 @@
      &                                     progcld1, progcld2, progcld3,&
      &					   progcld4, diagcld1,          &
                                            progcld5, progcld5o,         &
-                                           progclduni
+                                           progclduni, progcld6
 
       use module_radsw_parameters,  only : topfsw_type, sfcfsw_type,    &
      &                                     profsw_type,cmpfsw_type,nbdsw
@@ -1008,6 +1008,10 @@
              olyr, rhly, qstl, vvel, clw, prslk1, tem2da, tem2db, tvly
       real (kind=kind_phys), dimension(im,lm+ltp)  :: qst2, rhly2
       real (kind=kind_phys), dimension(im,lm+ltp)  :: es2, qs2
+#if defined (GFDLMP_v2)
+      real (kind=kind_phys), dimension(im,lm+ltp)  :: qa
+#endif
+      real (kind=kind_phys), dimension(im,lm+ltp)  :: cnvw1, cnvc1
 
       real (kind=kind_phys), dimension(im) :: tsfa, cvt1, cvb1, tem1d,  &
              sfcemis, tsfg, tskn
@@ -1243,6 +1247,8 @@
 !         plyr(i,k1)   = 0.01 * prsl(i,k)   ! pa to mb (hpa)
           tlyr(i,k1)   = tgrs(i,k)
           prslk1(i,k1) = prslk(i,k)
+          cnvw1(i,k1)  = cnvw(i,k)
+          cnvc1(i,k1)  = cnvc(i,k)
 
 !  --- ...  compute relative humidity
 !         es  = min( prsl(i,k), 0.001 * fpvs( tgrs(i,k) ) )   ! fpvs in pa
@@ -1662,6 +1668,19 @@
          if ( me == 0 .and. myrank == 0 )                               &
            print *,'### call GFDL cloud ###'
 
+#if defined (GFDLMP_v2)
+         qa = 0.  !aerosol mixing ratio (kg/kg)
+         call progcld6                                                  &
+!    ---  inputs:
+             ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,cnvw1,cnvc1,          &
+               tracer1(:,:,ntcw),tracer1(:,:,ntrw),tracer1(:,:,ntiw),   &
+               tracer1(:,:,ntsw),tracer1(:,:,ntgl),qa,                  &
+               cldcov,slmsk,snowd,                                      &
+               xlat,xlon,im,lmk,lmp,                                    &
+!    ---  outputs:
+               clouds,cldsa,mtopa,mbota                                 &
+              ) 
+#else
          clw = 0.0
          if ( .not. lgfdlmprad ) then
          do k = 1, lmk
@@ -1681,7 +1700,6 @@
            phy_f3d(:,:,3) = 250.
            phy_f3d(:,:,4) = 1000.
          endif
-
          if ( .not. lgfdlmprad ) then  ! no consistency between GFDLMP and radiation
            call progcld5                                                &
 !    ---  inputs:
@@ -1705,6 +1723,7 @@
               ) 
 !           endif
          endif
+#endif
 
         endif                            ! end if_icmphys
 

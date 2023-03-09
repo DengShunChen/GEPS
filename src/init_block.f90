@@ -42,6 +42,7 @@
       ldiag=1
       idg=16
       jdg=16
+      qmin=1.0e-20
 
 !!      stbo=5.669e-8
 !!      s0=1368.3
@@ -84,11 +85,13 @@
       doincr=.true.
 !
       doo3l=.true.
-!
-      domfc=384.
-      otgreen=6.
-      out_green=.false.
-      out_hp=.false.
+! about of input and output set
+      domfc    =    384.
+      otgreen  =      6.
+      out_green= .false.
+      out_hp   = .false.
+      outgrb2  =      0  !output grib2 format
+      outdms   =      1  !output dmskey 1:real-8  ,2:real-4
 ! pdf cloud
       pdfcloud=.false.
 ! stochastic physics
@@ -189,7 +192,7 @@
 !  sponge layer 
       spl1=10.
       spl2=100.
-      vd=0.
+      vd=0.08
       else if ( lev .eq. 72 ) then
 !
 ! L72 hybrid coordinate
@@ -315,7 +318,7 @@
 !  sponge layer 
       spl1=5.
       spl2=50.
-      vd=0.5
+      vd=0.4
       endif
 !
 !      tmeans=300.
@@ -352,9 +355,11 @@
 !-- for sit
       ifilin_ncep   = 'ifilin_ncep'
       ifilin_sst    = 'ifilin_sst'
-      ifilin_nc     = 'ifilin_nc'
+      ifilin_nc     = '.' ! 'ifilin_nc'  change to path
       ifilin_ClmANA = 'ifilin_ClmANA'
       ifilin_ClmFCT = 'ifilin_ClmFCT'
+!-- for grib2 output path
+      ifilout_grb  = '.'
 !
 !dms
 !t512l60

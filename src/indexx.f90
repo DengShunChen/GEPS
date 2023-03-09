@@ -1,9 +1,12 @@
       SUBROUTINE indexx(n,arr,indx)
 
+!
+      use const, only : RTYPE
+!
       implicit  none
 
       INTEGER   n,indx(n),M,NSTACK
-      REAL      arr(n)
+      REAL(kind=RTYPE) arr(n)
       PARAMETER (M=7,NSTACK=50)
       INTEGER   i,indxt,ir,itemp,j,jstack,k,l,istack(NSTACK)
       REAL      a
