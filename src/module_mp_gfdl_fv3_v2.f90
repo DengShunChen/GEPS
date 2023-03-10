@@ -44,7 +44,7 @@ module module_mp_gfdl_v2
         esw_table, d_sat, qs1d_m, wqsat_moist, wqsat2_moist, qs1d_moist, revap_rac1, &
         wqs2_vect, rhow, rhor, rhos, rhog, rhoh, rnzr, rnzs, rnzg, rnzh, rvgas, rdgas, &
         grav, hlv, hlf, cp_air, cp_vap, cv_air, cv_vap, c_ice, c_liq, dc_vap, dc_ice, &
-        t_ice, t_wfr, e00, pi, zvir, rgrav
+        t_ice, t_wfr, e00, pi, zvir, rgrav, isedi, isedi_ice
     
     integer, parameter :: r8 = 8 ! double precision
 
@@ -182,6 +182,14 @@ module module_mp_gfdl_v2
     integer :: irain_f = 0 ! cloud water to rain auto conversion scheme
         ! irain_f  = 0 : with subgrid variability
         ! irain_f /= 0 : no subgrid variability
+    integer :: isedi = 1  ! sedimentation scheme for rain, snow and graupel
+        ! isedi = 1: time-implicit monotonic
+        ! isedi = 2: PPM Lagrangian
+        ! isedi = 3: semi-Lagrangian (Juang and Hong 2010)
+    integer :: isedi_ice = 1  ! sedimentation scheme for cloud ice
+        ! isedi = 1: time-implicit monotonic
+        ! isedi = 2: PPM Lagrangian
+        ! isedi = 3: semi-Lagrangian (Juang and Hong 2010)
     
     logical :: sedi_transport = .true. ! transport of momentum in sedimentation
     logical :: do_sedi_w = .false. ! transport of vertical momentum during sedimentation
@@ -389,7 +397,7 @@ subroutine gfdl_cld_mp_driver                                              &
               prefluxr, prefluxi, prefluxs, prefluxg,                      &
               condensation, deposition, evaporation, sublimation,          &
 #endif
-              fac_qsw, last_step, do_inline_mp, isedi, isedi_ice )
+              fac_qsw, last_step, do_inline_mp )
     
     implicit none
     
@@ -400,12 +408,6 @@ subroutine gfdl_cld_mp_driver                                              &
     
     integer, intent (in) :: is, ie ! physics window
     integer, intent (in) :: ks, ke ! vertical dimension
-    integer, intent (in) :: isedi ! isedi=1: time-implicit
-                                  !      =2: PPM-Lagrangian
-                                  !      =3: semi-Lagrangian
-    integer, intent (in) :: isedi_ice ! isedi_ice=1: time-implicit
-                                      !          =2: PPM-Lagrangian
-                                      !          =3: semi-Lagrangian
 
     real, intent (in) :: dts ! physics time step
 
@@ -494,7 +496,7 @@ subroutine gfdl_cld_mp_driver                                              &
 #endif
         w_var, vt_r, vt_s, vt_g, vt_i, q_con, cappa, consv_te, te, &
         prefluxr, prefluxi, prefluxs, prefluxg, condensation, deposition, &
-        evaporation, sublimation, fac_qsw, last_step, do_inline_mp, isedi, isedi_ice)
+        evaporation, sublimation, fac_qsw, last_step, do_inline_mp)
     
 end subroutine gfdl_cld_mp_driver
 
@@ -521,7 +523,7 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
 #endif
         w_var, vt_r, vt_s, vt_g, vt_i, q_con, cappa, consv_te, te, &
         prefluxr, prefluxi, prefluxs, prefluxg, condensation, deposition, &
-        evaporation, sublimation, fac_qsw, last_step, do_inline_mp, isedi, isedi_ice )
+        evaporation, sublimation, fac_qsw, last_step, do_inline_mp )
     
     implicit none
     
@@ -530,7 +532,6 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
     logical, intent (in) :: consv_te
     logical, intent (in) :: do_inline_mp
     integer, intent (in) :: is, ie, ks, ke
-    integer, intent (in) :: isedi, isedi_ice
     real, intent (in) :: dt_in
     real, intent (in) :: fac_qsw
     real, intent (in), dimension (is:ie) :: gsize
@@ -821,7 +822,7 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
             ! -----------------------------------------------------------------------
             
             call warm_rain (dt_rain, ks, ke, dp1, dz1, tz, qvz, qlz, qrz, qiz, qsz, &
-                qgz, den, denfac, ccn, c_praut, rh_rain, vtrz, r1, pfr, m1_rain, w1, h_var, reevap, dte (i), isedi)
+                qgz, den, denfac, ccn, c_praut, rh_rain, vtrz, r1, pfr, m1_rain, w1, h_var, reevap, dte (i))
             
             evaporation (i) = evaporation (i) + reevap * convt
             rain (i) = rain (i) + r1 * convt
@@ -839,8 +840,7 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
             call fall_speed (ks, ke, den, qsz, qiz, qgz, qlz, tz, vtsz, vtiz, vtgz)
             
             call terminal_fall (dts, ks, ke, tz, qvz, qlz, qrz, qgz, qsz, qiz, &
-                dz1, dp1, den, vtgz, vtsz, vtiz, r1, g1, s1, i1, pfr, pfi, pfs, pfg, m1_sol, w1, dte (i), &
-                isedi, isedi_ice )
+                dz1, dp1, den, vtgz, vtsz, vtiz, r1, g1, s1, i1, pfr, pfi, pfs, pfg, m1_sol, w1, dte (i) )
             
             rain (i) = rain (i) + r1 * convt ! from melted snow & ice that reached the ground
             snow (i) = snow (i) + s1 * convt
@@ -888,7 +888,7 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
             ! -----------------------------------------------------------------------
             
             call warm_rain (dt_rain, ks, ke, dp1, dz1, tz, qvz, qlz, qrz, qiz, qsz, &
-                qgz, den, denfac, ccn, c_praut, rh_rain, vtrz, r1, pfr, m1_rain, w1, h_var, reevap, dte (i), isedi)
+                qgz, den, denfac, ccn, c_praut, rh_rain, vtrz, r1, pfr, m1_rain, w1, h_var, reevap, dte (i))
             
             evaporation (i) = evaporation (i) + reevap * convt
             rain (i) = rain (i) + r1 * convt
@@ -1139,12 +1139,11 @@ end subroutine sedi_heat
 ! -----------------------------------------------------------------------
 
 subroutine warm_rain (dt, ks, ke, dp, dz, tz, qv, ql, qr, qi, qs, qg, &
-        den, denfac, ccn, c_praut, rh_rain, vtr, r1, pfr, m1_rain, w1, h_var, reevap, dte, isedi)
+        den, denfac, ccn, c_praut, rh_rain, vtr, r1, pfr, m1_rain, w1, h_var, reevap, dte)
     
     implicit none
     
     integer, intent (in) :: ks, ke
-    integer, intent (in) :: isedi
     real, intent (in) :: dt ! time step (s)
     real, intent (in) :: rh_rain, h_var
     real, intent (in), dimension (ks:ke) :: dp, dz, den
@@ -2667,12 +2666,11 @@ end subroutine revap_rac1
 ! =======================================================================
 
 subroutine terminal_fall (dtm, ks, ke, tz, qv, ql, qr, qg, qs, qi, dz, dp, &
-        den, vtg, vts, vti, r1, g1, s1, i1, pfr, pfi, pfs, pfg, m1_sol, w1, dte, isedi, isedi_ice)
+        den, vtg, vts, vti, r1, g1, s1, i1, pfr, pfi, pfs, pfg, m1_sol, w1, dte)
     
     implicit none
     
     integer, intent (in) :: ks, ke
-    integer, intent (in) :: isedi, isedi_ice
     real, intent (in) :: dtm ! time step (s)
     real, intent (in), dimension (ks:ke) :: vtg, vts, vti, den, dp, dz
     real (kind = r8), intent (inout), dimension (ks:ke) :: tz
