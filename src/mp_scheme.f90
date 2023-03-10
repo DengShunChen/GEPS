@@ -677,7 +677,7 @@
         last_step = .true.          !flag for final clean-up (not sure)
         do_inline_mp = .false.      !flag for inline GFDLMP
 
-        isedi = 1                   !flag for sedimentation scheme of precipitating hydrometeors
+        isedi = 1                   !flag for sedimentation scheme of rain, snow and graupel
                                     !  =1 : time implicit
                                     !  =2 : PPM Lagrangian
                                     !  =3 : semi-Lagrangian (from Thompson MP)

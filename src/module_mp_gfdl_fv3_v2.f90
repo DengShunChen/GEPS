@@ -1268,7 +1268,6 @@ subroutine warm_rain (dt, ks, ke, dp, dz, tz, qv, ql, qr, qi, qs, qg, &
                 qr (k) = qrc (ke - k + 1) / den (k)
                 m1_rain (k) = m1_rainc (ke - k + 1)  ! accumulated precipitation flux
             enddo
-            r1 = m1_rain (ke) * grav  ! because convt=1./grav
         else  ! isedi=1, time-implicit sedimentation
             call implicit_fall (dt, ks, ke, ze, vtr, dp, qr, r1, m1_rain)
         endif
@@ -2845,7 +2844,6 @@ subroutine terminal_fall (dtm, ks, ke, tz, qv, ql, qr, qg, qs, qi, dz, dp, &
                 qi (k) = qic (ke - k + 1) / den (k)
                 m1_sol (k) = m1c (ke - k + 1)  ! accumulated precipitation flux
             enddo
-            i1 = m1_sol (ke) * grav  ! because convt=1./grav
         else  ! isedi_ice = 1, time-implicit sedimentation
             call implicit_fall (dtm, ks, ke, ze, vti, dp, qi, i1, m1_sol)
         endif
@@ -2956,7 +2954,6 @@ subroutine terminal_fall (dtm, ks, ke, tz, qv, ql, qr, qg, qs, qi, dz, dp, &
                 qs (k) = qsc (ke - k + 1) / den (k)
                 m1 (k) = m1c (ke - k + 1)  ! accumulated precipitation flux
             enddo
-            s1 = m1 (ke) * grav  ! because convt=1./grav
         else  ! isedi=1, time-implicit sedimentation
             call implicit_fall (dtm, ks, ke, ze, vts, dp, qs, s1, m1)
         endif
@@ -3068,7 +3065,6 @@ subroutine terminal_fall (dtm, ks, ke, tz, qv, ql, qr, qg, qs, qi, dz, dp, &
                 qg (k) = qgc (ke - k + 1) / den (k)
                 m1 (k) = m1c (ke - k + 1)  ! accumulated precipitation flux
             enddo
-            g1 = m1 (ke) * grav  ! because convt=1./grav
         else  ! isedi=1, time-implicit sedimentation
             call implicit_fall (dtm, ks, ke, ze, vtg, dp, qg, g1, m1)
         endif
@@ -4996,7 +4992,7 @@ end subroutine neg_adj
                  qqh=qqd*th2+qmi(kb)*th
                  qql=qqd*tl2+qmi(kb)*tl
                  qn(k) = (qqh-qql)/(th-tl)
-                 net_flx(k) = qqh-qql  !xb141
+                 net_flx(k) = (qa(k)*dza(k)-(qqh-qql))  !xb141
                else if( kt.gt.kb ) then
                  tl=(zi(k)-za(kb))/dza(kb)
                  tl2=tl*tl
@@ -5018,7 +5014,7 @@ end subroutine neg_adj
                  zsum  = zsum + th*dza(kt)
                  qsum  = qsum + dqh*dza(kt)
                  qn(k) = qsum/zsum
-                 net_flx(k) = qsum  !xb141
+                 net_flx(k) = (qa(k)*dza(k)-qsum)  !xb141
                endif
                cycle intp
              endif
@@ -5026,32 +5022,30 @@ end subroutine neg_adj
        enddo intp
 
 ! rain out
-!      sum_precip: do k=1,km
-!                    if( za(k).lt.0.0 .and. za(k+1).le.0.0 ) then
-!                      precip = precip + qa(k)*dza(k)
-!                      net_flx(k) =  qa(k)*dza(k)
-!                      cycle sum_precip
-!                    else if ( za(k).lt.0.0 .and. za(k+1).gt.0.0 ) then
-!                      th = (0.0-za(k))/dza(k)
-!                      th2 = th*th
-!                      qqd = 0.5*(qpi(k)-qmi(k))
-!                      qqh = qqd*th2+qmi(k)*th
-!                      precip = precip + qqh*dza(k)
-!                      net_flx(k) = qqh*dza(k)
-!                      exit sum_precip
-!                    endif
-!                    exit sum_precip
-!      enddo sum_precip
+      sum_precip: do k=1,km
+                    if( za(k).lt.0.0 .and. za(k+1).le.0.0 ) then
+                      precip = precip + qa(k)*dza(k)
+                      cycle sum_precip
+                    else if ( za(k).lt.0.0 .and. za(k+1).gt.0.0 ) then
+                      th = (0.0-za(k))/dza(k)
+                      th2 = th*th
+                      qqd = 0.5*(qpi(k)-qmi(k))
+                      qqh = qqd*th2+qmi(k)*th
+                      precip = precip + qqh*dza(k)
+                      exit sum_precip
+                    endif
+                    exit sum_precip
+      enddo sum_precip
+      precip = precip*grav  !xb141, because convt=1./grav
 
 ! calculating precipitation fluxes
       do k=km,1,-1
          if(k == km) then
-           pfsan(k) = net_flx(k)
+           pfsan(k) = net_flx(k)*grav               !xb141, because convt=1./grav
          else
-           pfsan(k) = pfsan(k+1) + net_flx(k)
+           pfsan(k) = pfsan(k+1) + net_flx(k)*grav  !xb141, because convt=1./grav
          end if
       enddo
-      precip = pfsan(1)  !xb141
 !
 ! replace the new values
       rql(:) = max(qn(:),R1)
