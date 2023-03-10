@@ -153,9 +153,8 @@
               qv2d,qc2d,qr2d,qi2d,qs2d,qg2d,qnc2d,qni2d,qnr2d,          &
               rew2d,rer2d,rei2d,res2d,reg2d,                            &
               t2d,dp2d,dz2d,cld2d,w2d,u2d,v2d
+      real    qmin, qnmin
 ! New Thompson MP
-      real, parameter :: qmin=1.0e-12 !(kg/kg)
-      real, parameter :: qnmin=1.0e-6 !(m^-3)
       real,dimension(:,:),allocatable ::                                &
               nwfa,nifa,pfils,pflls,vt_dbz_wt
       real,dimension(:),allocatable :: nwfasfc,nifasfc,rainnc,snownc,   &
@@ -173,9 +172,8 @@
 ! GFDLMP
       real, parameter ::                                                &
                 rainmin=1.0e-10 !(mm)
-      real :: fac_qsw
+      real :: rhc
       logical   hydrostatic,phys_hydrostatic,sedi_w
-      integer :: isedi
      !GFDL MP v2 & v3
       real, dimension(:), allocatable ::                                &
                 gsize,hs,water1d,rain1d,snow1d,ice1d,graupel1d
@@ -210,6 +208,10 @@
               acphysc, acphyse, acphysd, acphyss, acphysm, acphysf,     &
               preci3d, precs3d, precg3d, prech3d, precr3d
 #endif
+!
+! define rhc for GFDL MP v1 & v2
+      rhc = 1.0                 ! default
+!     rhc = 1.0 - 0.02*cosl**2  ! =0.98 at equator; =1.0 at pole
 !
 ! reset all value to zero
       prsl  = 0.
@@ -332,6 +334,9 @@
         kme_stoch=1
         istep=1          !current step
         nsteps=1         !maximum number of steps
+
+        qmin=1.0e-12     !minimum of q (kg/kg)
+        qnmin=1.0e-6     !minimum of qn (m^-3)
 
         t2d=0.
         qv2d=0.
@@ -527,10 +532,6 @@
         phys_hydrostatic = .true.   !flag for hydrostatic heating from physics 
         sedi_w = .false.
 
-      ! define factor of vapor condensed threshold
-        fac_qsw = 1.0                 ! default
-!        fac_qsw = 1.0 - 0.02*cosl**2  ! =0.98 at equator; =1.0 at pole
-
         do i = 1, nxj
           if( islimsk(i) .eq. 1 ) land2d(i,1) = 1.  !land fraction
           if( effr_in ) mask1d(i) = islimsk(i)      !land-sea mask
@@ -571,7 +572,7 @@
                   cldten3d, tten3d, t3d, w3d, u3d, v3d, uten3d, vten3d, &
                   dz3d, dp3d, garea, dta, land2d,                       &
                   rain2d, snow2d, ice2d, graupel2d,                     &
-                  fac_qsw, hydrostatic, phys_hydrostatic,               &
+                  rhc, hydrostatic, phys_hydrostatic,               &
                   1, nxj, 1, 1, 1, lev, 1, lev )
 
         do k = 1, lev
@@ -675,15 +676,6 @@
         last_step = .true.          !flag for final clean-up (not sure)
         do_inline_mp = .false.      !flag for inline GFDLMP
 
-        isedi = 1                   !flag for sedimentation scheme of precipitating hydrometeors
-                                    !  =1 : time implicit
-                                    !  =2 : PPM Lagrangian
-                                    !  =3 : semi-Lagrangian (from Thompson MP)
-
-      ! define factor of vapor condensed threshold
-        fac_qsw = 1.0                 ! default
-!        fac_qsw = 1.0 - 0.02*cosl**2  ! =0.98 at equator; =1.0 at pole
-
         te    = 0.0
         q_con = 0.0  !not sure
         cappa = 0.0  !not sure
@@ -752,7 +744,7 @@
                   prefluxr, prefluxi, prefluxs, prefluxg,               &
                   cond0, dep0, evap0, sub0,                             &
 #endif
-                  fac_qsw, last_step, do_inline_mp, isedi )
+                  rhc, last_step, do_inline_mp )
 
         ! GFDL MP v3
         if ( nmmiph .eq. 13 )                                           &
@@ -769,14 +761,15 @@
 #endif
                   last_step, do_inline_mp )
 
+        qmin = 1.0e-15     !minimum of q (kg/kg)
         do k = 1, lev
           do i = 1, nxj
             qt(i,             k) = qv2d(i,k)
-            qt(i,(ntcw-1)*lev+k) = qc2d(i,k)
-            qt(i,(ntrw-1)*lev+k) = qr2d(i,k)
-            qt(i,(ntiw-1)*lev+k) = qi2d(i,k)
-            qt(i,(ntsw-1)*lev+k) = qs2d(i,k)
-            qt(i,(ntgl-1)*lev+k) = qg2d(i,k)
+            qt(i,(ntcw-1)*lev+k) = max( qc2d(i,k) , qmin )
+            qt(i,(ntrw-1)*lev+k) = max( qr2d(i,k) , qmin )
+            qt(i,(ntiw-1)*lev+k) = max( qi2d(i,k) , qmin )
+            qt(i,(ntsw-1)*lev+k) = max( qs2d(i,k) , qmin )
+            qt(i,(ntgl-1)*lev+k) = max( qg2d(i,k) , qmin )
             qa(i,k)  = cld2d(i,k)
             tt(i,k)  = t2d  (i,k)
             ut(i,k)  = u2d  (i,k)

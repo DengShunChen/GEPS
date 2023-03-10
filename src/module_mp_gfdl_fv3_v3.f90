@@ -238,6 +238,11 @@ module module_mp_gfdl_v3
     ! 1: Mark Stoelinga (2005)
     ! 2: Smith et al. (1975), Tong and Xue (2005)
     ! 3: Marshall-Palmer formula (https://en.wikipedia.org/wiki/DBZ_(meteorology))
+
+    integer :: isedi = 1  ! sedimentation scheme
+    ! 1: time-implicit monotonic
+    ! 2: PPM Lagrangian
+    ! 3: semi-Lagrangian (Juang and Hong 2010)
     
     logical :: do_sedi_uv = .true. ! transport of horizontal momentum in sedimentation
     logical :: do_sedi_w = .false. ! transport of vertical momentum in sedimentation
@@ -1921,7 +1926,7 @@ subroutine sedimentation (dts, ks, ke, tz, qv, ql, qr, qi, qs, qg, dz, dp, &
             vti, r1, tau_imlt, cvm, icpk, "qi")
     endif
     
-    call terminal_fall (dts, ks, ke, tz, qv, ql, qr, qi, qs, qg, dz, dp, &
+    call terminal_fall (dts, ks, ke, tz, qv, ql, qr, qi, qs, qg, dz, dp, den, &
         vti, i1, pfi, u, v, w, dte, "qi")
     
     pfi (ks) = max (0.0, pfi (ks))
@@ -1940,7 +1945,7 @@ subroutine sedimentation (dts, ks, ke, tz, qv, ql, qr, qi, qs, qg, dz, dp, &
             vts, r1, tau_smlt, cvm, icpk, "qs")
     endif
     
-    call terminal_fall (dts, ks, ke, tz, qv, ql, qr, qi, qs, qg, dz, dp, &
+    call terminal_fall (dts, ks, ke, tz, qv, ql, qr, qi, qs, qg, dz, dp, den, &
         vts, s1, pfs, u, v, w, dte, "qs")
     
     pfs (ks) = max (0.0, pfs (ks))
@@ -1963,7 +1968,7 @@ subroutine sedimentation (dts, ks, ke, tz, qv, ql, qr, qi, qs, qg, dz, dp, &
             vtg, r1, tau_gmlt, cvm, icpk, "qg")
     endif
     
-    call terminal_fall (dts, ks, ke, tz, qv, ql, qr, qi, qs, qg, dz, dp, &
+    call terminal_fall (dts, ks, ke, tz, qv, ql, qr, qi, qs, qg, dz, dp, den, &
         vtg, g1, pfg, u, v, w, dte, "qg")
     
     pfg (ks) = max (0.0, pfg (ks))
@@ -1979,7 +1984,7 @@ subroutine sedimentation (dts, ks, ke, tz, qv, ql, qr, qi, qs, qg, dz, dp, &
 
         call term_rsg (ks, ke, ql, den, denfac, vw_fac, vconw, blinw, normw, expow, muw, vw_max, const_vw, vtw)
     
-        call terminal_fall (dts, ks, ke, tz, qv, ql, qr, qi, qs, qg, dz, dp, &
+        call terminal_fall (dts, ks, ke, tz, qv, ql, qr, qi, qs, qg, dz, dp, den, &
             vtw, w1, pfw, u, v, w, dte, "ql")
 
         pfw (ks) = max (0.0, pfw (ks))
@@ -1995,7 +2000,7 @@ subroutine sedimentation (dts, ks, ke, tz, qv, ql, qr, qi, qs, qg, dz, dp, &
     
     call term_rsg (ks, ke, qr, den, denfac, vr_fac, vconr, blinr, normr, expor, mur, vr_max, const_vr, vtr)
     
-    call terminal_fall (dts, ks, ke, tz, qv, ql, qr, qi, qs, qg, dz, dp, &
+    call terminal_fall (dts, ks, ke, tz, qv, ql, qr, qi, qs, qg, dz, dp, den, &
         vtr, r1, pfr, u, v, w, dte, "qr")
     
     pfr (ks) = max (0.0, pfr (ks))
@@ -2214,7 +2219,7 @@ end subroutine sedi_melt
 ! melting during sedimentation
 ! =======================================================================
 
-subroutine terminal_fall (dts, ks, ke, tz, qv, ql, qr, qi, qs, qg, dz, dp, &
+subroutine terminal_fall (dts, ks, ke, tz, qv, ql, qr, qi, qs, qg, dz, dp, den, &
         vt, x1, m1, u, v, w, dte, qflag)
     
     implicit none
@@ -2227,7 +2232,7 @@ subroutine terminal_fall (dts, ks, ke, tz, qv, ql, qr, qi, qs, qg, dz, dp, &
     
     real, intent (in) :: dts
     
-    real, intent (in), dimension (ks:ke) :: vt, dp, dz
+    real, intent (in), dimension (ks:ke) :: vt, dp, dz, den
     
     character (len = 2), intent (in) :: qflag
     
@@ -2256,6 +2261,9 @@ subroutine terminal_fall (dts, ks, ke, tz, qv, ql, qr, qi, qs, qg, dz, dp, &
     real, dimension (ks:ke + 1) :: ze, zt
     
     real (kind = r8), dimension (ks:ke) :: te1, te2
+
+    ! for semi_lagrangian sedimension
+    real, dimension (ks:ke) :: dzc, vtc, m1c, qtc
 
     m1 = 0.0
     
@@ -2319,8 +2327,22 @@ subroutine terminal_fall (dts, ks, ke, tz, qv, ql, qr, qi, qs, qg, dz, dp, &
             print *, "gfdl_mp: qflag error!"
     end select
     
-    if (use_ppm) then
+!    if (use_ppm) then
+    if ( isedi .eq. 2 ) then
         call lagrangian_fall_ppm (ks, ke, zs, ze, zt, dp, q, x1, m1, mono_prof)
+    elseif ( isedi .eq. 3 ) then
+        do k = ks, ke
+            dzc (k) = - dz (ke - k + 1)
+            qtc (k) = q (ke - k + 1) * den (ke - k + 1)
+            vtc (k) = vt (ke - k + 1)
+            m1 (k) = 0.
+            m1c (k) = 0.
+        enddo
+        call semi_lagrange_sedim (ke, dzc, vtc, qtc, x1, m1c, dts, 1.E-12)
+        do k = ks, ke
+            q (k) = qtc (ke - k + 1) / den (k)
+            m1 (k) = m1c (ke - k + 1)  ! accumulated precipitation flux
+        enddo
     else
         call implicit_fall (dts, ks, ke, ze, vt, dp, q, x1, m1)
     endif
@@ -7250,5 +7272,242 @@ function wet_bulb_moist (qv, ql, qi, qr, qs, qg, tk, den)
     wet_bulb_moist = wet_bulb_core (qv, tk, den, lcp)
     
 end function wet_bulb_moist
+
+!-------------------------------------------------------------------
+      SUBROUTINE semi_lagrange_sedim(km,dzl,wwl,rql,precip,pfsan,dt,R1)
+!-------------------------------------------------------------------
+!
+! This routine is a semi-Lagrangain forward advection for hydrometeors
+! with mass conservation and positive definite advection
+! 2nd order interpolation with monotonic piecewise parabolic method is used.
+! This routine is under assumption of decfl < 1 for semi_Lagrangian
+!
+! km     number of layers
+! dzl    depth of model layer in meter (m)
+! wwl    terminal velocity at model layer (m/s)
+! rql    dry air density*mixing ratio
+! precip precipitation at surface (mm)
+! pfsan  precipitation fluxes (mm?)
+! dt     time step (s)
+! R1     minimum q, =1.E-12 in new Thompson MP
+!
+! author: hann-ming henry juang <henry.juang@noaa.gov>
+!         implemented by song-you hong
+! reference: Juang, H.-M., and S.-Y. Hong, 2010: Forward semi-Lagrangian advection
+!         with mass conservation and positive definiteness for falling
+!         hydrometeors. *Mon.  Wea. Rev.*, *138*, 1778-1791
+!
+      implicit none
+
+      integer, intent(in) :: km
+      real, intent(in) ::  dt, R1
+      real, intent(in) :: dzl(km),wwl(km)
+      real, intent(out) :: precip
+      real, intent(inout) :: rql(km)
+      real, intent(out)  :: pfsan(km)
+      integer  k,m,kk,kb,kt
+      real  tl,tl2,qql,dql,qqd
+      real  th,th2,qqh,dqh
+      real  zsum,qsum,dim,dip,con1,fa1,fa2
+      real  allold, decfl
+      real  dz(km), ww(km), qq(km)
+      real  wi(km+1), zi(km+1), za(km+2)
+      real  qn(km)
+      real  dza(km+1), qa(km+1), qmi(km+1), qpi(km+1)
+      real  net_flx(km)
+!
+      precip = 0.0
+      qa(:) = 0.0
+      qq(:) = 0.0
+      dz(:) = dzl(:)
+      ww(:) = wwl(:)
+      do k = 1,km
+        if(rql(k).gt.R1) then 
+          qq(k) = rql(k) 
+        else 
+          ww(k) = 0.0 
+        endif
+        pfsan(k) = 0.0
+        net_flx(k) = 0.0
+      enddo
+! skip for no precipitation for all layers
+      allold = 0.0
+      do k=1,km
+        allold = allold + qq(k)
+      enddo
+      if(allold.le.0.0) then
+         return 
+      endif
+!
+! compute interface values
+      zi(1)=0.0
+      do k=1,km
+        zi(k+1) = zi(k)+dz(k)
+      enddo
+! plm is 2nd order, we can use 2nd order wi or 3rd order wi
+! 2nd order interpolation to get wi
+!      wi(1) = ww(1)
+!      wi(km+1) = ww(km)
+!      do k=2,km
+!        wi(k) = (ww(k)*dz(k-1)+ww(k-1)*dz(k))/(dz(k-1)+dz(k))
+!      enddo
+! 3rd order interpolation to get wi
+      fa1 = 9./16.
+      fa2 = 1./16.
+      wi(1) = ww(1)
+      wi(2) = 0.5*(ww(2)+ww(1))
+      do k=3,km-1
+        wi(k) = fa1*(ww(k)+ww(k-1))-fa2*(ww(k+1)+ww(k-2))
+      enddo
+      wi(km) = 0.5*(ww(km)+ww(km-1))
+      wi(km+1) = ww(km)
+
+! terminate of top of raingroup
+      do k=2,km
+        if( ww(k).eq.0.0 ) wi(k)=ww(k-1)
+      enddo
+
+! diffusivity of wi
+      con1 = 0.05
+      do k=km,1,-1
+        decfl = (wi(k+1)-wi(k))*dt/dz(k)
+        if( decfl .gt. con1 ) then
+          wi(k) = wi(k+1) - con1*dz(k)/dt
+        endif
+      enddo
+! compute arrival point
+      do k=1,km+1
+        za(k) = zi(k) - wi(k)*dt
+      enddo
+      za(km+2) = zi(km+1)
+
+      do k=1,km+1
+        dza(k) = za(k+1)-za(k)
+      enddo
+
+! computer deformation at arrival point
+      do k=1,km
+        qa(k) = qq(k)*dz(k)/dza(k)
+      enddo
+      qa(km+1) = 0.0
+
+! estimate values at arrival cell interface with monotone
+      do k=2,km
+        dip=(qa(k+1)-qa(k))/(dza(k+1)+dza(k))
+        dim=(qa(k)-qa(k-1))/(dza(k-1)+dza(k))
+        if( dip*dim.le.0.0 ) then
+          qmi(k)=qa(k)
+          qpi(k)=qa(k)
+        else
+          qpi(k)=qa(k)+0.5*(dip+dim)*dza(k)
+          qmi(k)=2.0*qa(k)-qpi(k)
+          if( qpi(k).lt.0.0 .or. qmi(k).lt.0.0 ) then
+            qpi(k) = qa(k)
+            qmi(k) = qa(k)
+          endif
+        endif
+      enddo
+      qpi(1)=qa(1)
+      qmi(1)=qa(1)
+      qmi(km+1)=qa(km+1)
+      qpi(km+1)=qa(km+1)
+
+! interpolation to regular point
+      qn = 0.0
+      kb=1
+      kt=1
+      intp : do k=1,km
+             kb=max(kb-1,1)
+             kt=max(kt-1,1)
+! find kb and kt
+             if( zi(k).ge.za(km+1) ) then
+               exit intp
+             else
+               find_kb : do kk=kb,km
+                         if( zi(k).le.za(kk+1) ) then
+                           kb = kk
+                           exit find_kb
+                         else
+                           cycle find_kb
+                         endif
+               enddo find_kb
+               find_kt : do kk=kt,km+2
+                         if( zi(k+1).le.za(kk) ) then
+                           kt = kk
+                           exit find_kt
+                         else
+                           cycle find_kt
+                         endif
+               enddo find_kt
+               kt = kt - 1
+! compute q with piecewise constant method
+               if( kt.eq.kb ) then
+                 tl=(zi(k)-za(kb))/dza(kb)
+                 th=(zi(k+1)-za(kb))/dza(kb)
+                 tl2=tl*tl
+                 th2=th*th
+                 qqd=0.5*(qpi(kb)-qmi(kb))
+                 qqh=qqd*th2+qmi(kb)*th
+                 qql=qqd*tl2+qmi(kb)*tl
+                 qn(k) = (qqh-qql)/(th-tl)
+                 net_flx(k) = (qa(k)*dza(k)-(qqh-qql))  !xb141
+               else if( kt.gt.kb ) then
+                 tl=(zi(k)-za(kb))/dza(kb)
+                 tl2=tl*tl
+                 qqd=0.5*(qpi(kb)-qmi(kb))
+                 qql=qqd*tl2+qmi(kb)*tl
+                 dql = qa(kb)-qql
+                 zsum  = (1.-tl)*dza(kb)
+                 qsum  = dql*dza(kb)
+                 if( kt-kb.gt.1 ) then
+                 do m=kb+1,kt-1
+                   zsum = zsum + dza(m)
+                   qsum = qsum + qa(m) * dza(m)
+                 enddo
+                 endif
+                 th=(zi(k+1)-za(kt))/dza(kt)
+                 th2=th*th
+                 qqd=0.5*(qpi(kt)-qmi(kt))
+                 dqh=qqd*th2+qmi(kt)*th
+                 zsum  = zsum + th*dza(kt)
+                 qsum  = qsum + dqh*dza(kt)
+                 qn(k) = qsum/zsum
+                 net_flx(k) = (qa(k)*dza(k)-qsum)  !xb141
+               endif
+               cycle intp
+             endif
+
+       enddo intp
+
+! rain out
+      sum_precip: do k=1,km
+                    if( za(k).lt.0.0 .and. za(k+1).le.0.0 ) then
+                      precip = precip + qa(k)*dza(k)
+                      cycle sum_precip
+                    else if ( za(k).lt.0.0 .and. za(k+1).gt.0.0 ) then
+                      th = (0.0-za(k))/dza(k)
+                      th2 = th*th
+                      qqd = 0.5*(qpi(k)-qmi(k))
+                      qqh = qqd*th2+qmi(k)*th
+                      precip = precip + qqh*dza(k)
+                      exit sum_precip
+                    endif
+                    exit sum_precip
+      enddo sum_precip
+      precip = precip*grav  !xb141, because convt=1./grav
+
+! calculating precipitation fluxes
+      do k=km,1,-1
+         if(k == km) then
+           pfsan(k) = net_flx(k)*grav               !xb141, because convt=1./grav
+         else
+           pfsan(k) = pfsan(k+1) + net_flx(k)*grav  !xb141, because convt=1./grav
+         end if
+      enddo
+!
+! replace the new values
+      rql(:) = max(qn(:),R1)
+
+      END SUBROUTINE semi_lagrange_sedim
 
 end module module_mp_gfdl_v3
