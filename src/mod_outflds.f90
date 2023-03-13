@@ -532,6 +532,87 @@ contains
       return
   end subroutine shumout2
 
+  subroutine cloudout(nx,my,my_max,lpout,lev,itau,ifilout,idtg   &
+      , plev,num,whtlev,pkout,pk,pklp,clds,cldb,cldfc,glob,ggdef,lwrite)
+!
+      use index
+      use rank, only : myrank
+      use param, only : ncld
+      use mod_grb2_param
+      use const ,only:outdms,outgrb2 , RTYPE,kflag
+
+      implicit  none
+
+      integer   nx,my,my_max,lpout,lev,itau,num,ntrac,ncnt,ntrchk
+
+      real      pkout(lpout),pklp(nxp,my_max)                        &
+      , pk(nxp,lev,my_max),clds(nxp,lev,my_max),cldb(nxp,my_max)      &
+      , plev(lpout),whtlev(num),tens(lev+1) 
+      real(kind=RTYPE) pout(nx,my),glob(nx,my),tmp(nxp,my_max)       &
+      , cldfc(nxp,my_max,lpout),ffx(nx,my_max)
+!
+      integer   i,k,lpl,n,lenc,istat,jj,j,nxj
+
+      integer*8 idtg
+      character*80 ifilout
+      character*26 ihdg,ihdg2
+      character*6 lrec(lpout)
+      character*4 ggdef
+      logical :: lwrite
+!
+      do k = 1, lev+1
+       tens(k) = 1.0
+      end do
+      tens(lev)= 0.0
+      tens(lev+1)= 0.0
+!
+      do k = 1, lpout-1
+       lpl = int(plev(k)+0.001)
+       write( lrec(k), '(i3.3,a3)' ) lpl,'770'
+      end do
+      lrec(lpout) = 'h00770'
+      call voterp(nx,my,my_max,lev,lpout,pk,pklp,clds,cldb,pkout,cldfc,tens)
+!
+      lenc= nx*my
+      ncnt= 0
+!
+      !for debug
+      !num=12
+      !whtlev(1:12)=(/100.,150.,200.,250.,300.,400.,500.,600.,700.,850.,925.,1000./)
+      do 30 n=1,num
+      do 10 k=1,lpout
+!
+      if(plev(k).eq.whtlev(n)) then
+!
+      do 11 jj=1, jlistnum
+      j=jlist1(jj)
+      nxj=nxdef_2d(j)
+      do 11 i=1,nxj
+       tmp(i,jj)= cldfc(i,jj,k)
+   11 continue
+      call unify_reduceintp(nx,my,my_max,tmp,glob)
+
+      if(outgrb2==1.and.myrank==0)then
+          call wrt_grb2(itau,0,6,32,3,100,-2,plev(k),glob)   !cloud fraction
+      endif
+!
+      call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
+      call qmaxn3(glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lenc,ifilout,ncnt,glob,pout,ihdg,ihdg2)
+      go to 30
+      endif
+   10 continue
+   30 continue
+      if(outdms.gt.0)then
+      if(lwrite .and. myrank .lt. ncnt ) &
+        call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+      endif
+!
+   40 continue
+
+      return
+  end subroutine cloudout
+
 
   subroutine surfout(nx,my,my_max,ifilout,itau,idtg,taudir,ntau,pdiff  &
        ,pt,ptop,slp,ptend,glob,ggdef,lwrite)
@@ -540,7 +621,7 @@ contains
       use mpe
       use rank
       use mod_grb2_param
-      use const ,only:outdms,outgrb2 ,RTYPE,kflag
+      use const ,only:outdms,outgrb2 ,RTYPE,kflag ,domfc
 !
       implicit  none
       integer   nx,my,my_max,i,j,jj,kk,n,lev,nxj,itau,ntau,num,lenc,istat
@@ -599,6 +680,7 @@ contains
       if(label(kk).eq.'SSL010' .or. label(kk).eq.'ssl010') then
         call unify_reduceintp(nx,my,my_max,slp,glob)
         call syslbl('ssl010',idtg,itau,ggdef,lrec)
+        if( itau==0 .or. itau .gt. nint(domfc) )then
         if(outdms.gt.0)then
           if(lwrite) call dmswrit(nx,my,lrec,lenc,kflag,ifilout,glob,istat)
         endif
@@ -606,7 +688,7 @@ contains
           call wrt_grb2(itau,0,3,1,2,101,0,0.,glob)
         endif
         call qmaxn3(glob,lrec(1:14),lrec(15:26),1,1,1,nx,my,1)
-
+        endif !itau .gt. domfc
 !
 !  terrain pressure
 !

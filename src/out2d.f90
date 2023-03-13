@@ -339,8 +339,8 @@
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,0,0,2,103,0,2.,glob)
-      go to 30
       endif !domfc
+      go to 30
       endif
 !   ---------- wind component ----------
 !skin u component ( model lowest)
@@ -370,8 +370,8 @@
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,2,2,2,103,0,10.,glob)
-      go to 30
       endif !domfc
+      go to 30
       endif
 !10m v component
       if(label(kk).eq.'b10210') then
@@ -382,8 +382,8 @@
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,2,3,2,103,0,10.,glob)
-      go to 30
       endif !domfc
+      go to 30
       endif
 !   ---------- humidity ----------
 !skin relative humidity (model lowest)
@@ -404,8 +404,8 @@
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,1,0,6,103,0,2.,glob)
-      go to 30
       endif !domfc
+      go to 30
       endif
 !2m relative humidity
       if(label(kk).eq.'b02510') then
@@ -421,8 +421,8 @@
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,1,2,103,0,2.,glob)
-      go to 30
       endif !domfc
+      go to 30
       endif
 !10m relative humidity
       if(label(kk).eq.'b10510') then
@@ -773,11 +773,13 @@
 !< xb13
 ! ctot_total cloud fraction
       if(label(kk).eq.'x00770') then
+      if( itau==0 .or. itau .gt. nint(domfc) )then
       call unify_reduceintp(nx,my,my_max,wk_xy(1,1,6),glob)
       call syslbl ('x00770',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
       if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,6,1,3,7,0,0.,glob)
+      endif !domfc
       go to 30
       endif
 ! chig_high cloud fraction

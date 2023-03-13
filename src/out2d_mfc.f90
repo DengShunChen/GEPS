@@ -55,7 +55,7 @@
       data ptp1/  1,  1,  0,  1,  1,  2,  2,  0,  0,  0, 5, 4, 6,  3 /
       data ptp2/  8, 49,  0,  0,  1,  2,  3,  4,  5,  6, 3, 7, 1,  1 /
       data ptp3/  2,  1,  2,  6,  2,  2,  2,  2,  2,  2, 2, 2, 3,  2 /
-      data ptp4/103,103,103,103,103,103,103,103,103,103, 1, 1, 7,101 /
+      data ptp4/103,103,103,103,103,103,103,103,103,103, 1, 1,10,101 /
       data ptp5/  0,  0,  2,  2,  2, 10, 10,  2,  2,  2, 0, 0, 0,  0 /
 
 !
@@ -182,12 +182,10 @@
             endif
           enddo
 
-          !Tmax2m 
-          n=8
+          n=8          !Tmax2m 
           call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),mout)
           if(myrank==0)call wrt_grb2_accu(ntau,ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,float(ptp5(n)),2,1,mout ) 
-          !Tmin2m
-          n=9
+          n=9          !Tmin2m
           call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),mout)
           if(myrank==0)call wrt_grb2_accu(ntau,ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,float(ptp5(n)),3,1,mout ) 
 
