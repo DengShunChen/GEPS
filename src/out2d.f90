@@ -177,7 +177,7 @@
       call syslbl ('x00590',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,3,2,7,0,0.,glob)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,3,2,10,0,0.,glob)
       go to 30
       endif
 !   ---------- short wave Radiation ----------
@@ -778,7 +778,7 @@
       call syslbl ('x00770',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,6,1,3,7,0,0.,glob)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,6,1,3,10,0,0.,glob)
       endif !domfc
       go to 30
       endif
@@ -788,7 +788,7 @@
       call syslbl ('x00760',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,6,5,3,7,0,0.,glob)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,6,5,3,10,0,0.,glob)
       go to 30
       endif
 ! cmid_middle cloud fraction
@@ -797,7 +797,7 @@
       call syslbl ('x00750',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,6,4,3,7,0,0.,glob)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,6,4,3,10,0,0.,glob)
       go to 30
       endif
 ! clow_low cloud fraction
@@ -806,7 +806,7 @@
       call syslbl ('x00740',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,6,3,3,7,0,0.,glob)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,6,3,3,10,0,0.,glob)
       go to 30
       endif
 !zonal mean cloudiness of Y-Z cross section 0-1 
@@ -817,7 +817,7 @@
       end do
       call syslbl ('x00730',idtg,itau,ggdef,ihdg)
       if(outdms.gt.0) call dmswrit(lev,my,ihdg,lenc2,kflag,ifilout,acld,istat)
-      !if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,6,22,2,7,0,0.,glob)
+      !if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,6,22,2,10,0,0.,glob)
       go to 30
       endif
 
@@ -828,7 +828,7 @@
       call syslbl ('pbl000',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,3,18,1,7,0,0.,glob)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,3,18,1,10,0,0.,glob)
       go to 30
       endif
 !
