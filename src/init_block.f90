@@ -102,6 +102,8 @@
       doclx=.false.
 ! Semi-Lagrangian Averaging of Physical Parametrizations
       doslavepp=.false.
+! dy-core two loop sequence
+      two_loop=.true.
 ! output data for RSM (Also, RSM compiling flag is necessary)
       outrsm=.false.
       rsmoutinv=6
@@ -316,9 +318,9 @@
            .99251445,.99638192,1.0000000 /) 
       ptop=0.01
 !  sponge layer 
-      spl1=5.
-      spl2=50.
-      vd=0.2
+      spl1=20.
+      spl2=100.
+      vd=2.
       endif
 !
       tmeans=300.

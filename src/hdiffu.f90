@@ -65,7 +65,7 @@
       powd = float(hord) / 2.
       hfilt  = (radsq/(nf*(nf+1)))**powd
       hfilt2 = radsq/(nf*(nf+1))
-      factop = 60.
+      factop = 30.
       coefu = factop/float(hdk2(1)-hdk1)
       if ( octahedral ) then
         hfilt  = hfilt/(6.*dta)
@@ -83,6 +83,7 @@
 !
         kfac = min(coefu*max(float(hdk2(1)-KL),0.),factop)!  & 
 !             + min(1.*max(float(hdk2(3)-KL),0.),4.)
+        if ( KL .le. hdk1 ) kfac = kfac*(1.+vd*exp(-0.5*k))
         facd = max(1.,kfac)*amp
         facv = max(1.,kfac)*amp
         fact = max(1.,kfac)*amp
@@ -117,14 +118,16 @@
           mf=mlist(m)
           do n=mf,jtrun
 
-            c1=1.+dta*facv*hfilt*eps4(n,m)**powd
-            c3=1.+dta*fact*hfilt*eps4(n,m)**powd
-
-            if ( KL .le. hdk1 ) then
-              c2=1.+dta*facd*hfilt2*eps4(n,m)+vd*exp(-0.5*k)
-            else
+!            if ( KL .le. hdk1 ) then
+!              c1=1.+dta*facv*hfilt*eps4(n,m)**powd+vd*exp(-0.7*k)
+!              c2=1.+dta*facd*hfilt*eps4(n,m)**powd+vd*exp(-0.7*k)
+!              c3=1.+dta*fact*hfilt*eps4(n,m)**powd+vd*exp(-0.7*k)
+!            else
+              c1=1.+dta*facv*hfilt*eps4(n,m)**powd
               c2=1.+dta*facd*hfilt*eps4(n,m)**powd
-            endif
+              c3=1.+dta*fact*hfilt*eps4(n,m)**powd
+!            endif
+
 
             vornow(k,1,n,m)=vornow(k,1,n,m)/c1
             vornow(k,2,n,m)=vornow(k,2,n,m)/c1
@@ -364,8 +367,8 @@
 !
       nf=jtrun-1
 !
-      factop = 60.
-      fl   = factop/float(hdk2(2)-hdk1)
+      factop = 30.
+      fl   = factop/float(hdk2(3)-hdk2(2))
       hfilt6 = (radsq/(nf*(nf+1)))**3.
       hfilt4 = (radsq/(nf*(nf+1)))**2.
       hfilt2 = radsq/(nf*(nf+1))
@@ -386,13 +389,14 @@
 
         KL=Llist(k)
 !
-        kfac = min(fl*max(float(hdk2(2)-KL),0.),factop)!    &
+        kfac = min(fl*max(float(hdk2(3)-KL),0.),factop)!    &
 !              + min(1.*max(float(hdk2(3)-KL),0.),4.)
+        if ( KL .le. hdk1 ) kfac = kfac*(1.+vd*exp(-0.5*k))
 !        facd = mwhd * max(amp,kfac)
 !        facv = max(min(amp,1.),kfac)
-        facd = mwhd*max(1.,kfac)*amp
-        facv = mwhd*max(1.,kfac)*amp
-        fact = mwhd*max(1.,kfac)*amp
+        facd = max(1.,kfac)*amp
+        facv = max(1.,kfac)*amp
+        fact = max(1.,kfac)*amp
 !!        fact = amp * kfacv 
 !          endif
 
@@ -404,19 +408,20 @@
           mf=mlist(m)
           do n=mf,jtrun
 
-            c1=1.+dta*facv*hfilt4*eps4(n,m)**2.
 !!            c1=1.+dta*facv*hfilt6*eps4(n,m)**3.
-
 !!            c2=1.+dta*facd*hfilt2*eps4(n,m)
-
-            if ( KL .le. hdk1 ) then
-              c2=1.+dta*facd*hfilt2*eps4(n,m)+vd*exp(-0.5*k)
-            else
+!            if ( KL .le. hdk1 ) then
+!              c1=1.+dta*facv*hfilt4*eps4(n,m)**2.+vd*exp(-0.7*k)
+!              c2=1.+dta*facd*hfilt4*eps4(n,m)**2.+vd*exp(-0.7*k)
+!              c3=1.+dta*fact*hfilt4*eps4(n,m)**2.+vd*exp(-0.7*k)
+!            else
+              c1=1.+dta*facv*hfilt4*eps4(n,m)**2.
               c2=1.+dta*facd*hfilt4*eps4(n,m)**2.
+              c3=1.+dta*fact*hfilt4*eps4(n,m)**2.
 !!              c2=1.+dta*facd*hfilt6*eps4(n,m)**3.
-            endif
+!            endif
 
-            c3=1.+dta*fact*hfilt4*eps4(n,m)**2.
+
 !!            c3=1.+dta*fact*hfilt6*eps4(n,m)**3.
 
 
