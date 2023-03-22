@@ -314,7 +314,7 @@
 !land suface tempaerature or sea surface temperature
       if(label(kk).eq.'s00100') then
       globp=tg
-      call unify_reduceintp(nx,my,my_max,globp,glob)
+      call unify_reduceintp_idw(nx,my,my_max,globp,glob)
       call syslbl ('s00100',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -449,7 +449,7 @@
       do 36 i=1,nxj
         globp(i,jj)=gwet(i,jj)/20.
  36   continue
-      call unify_reduceintp(nx,my,my_max,globp,glob)
+      call unify_reduceintp_idw(nx,my,my_max,globp,glob)
       call syslbl ('s005a0',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -459,7 +459,7 @@
 !soil moisture content (mm)
       if(label(kk).eq.'s005a1') then
       globp=gwet
-      call unify_reduceintp(nx,my,my_max,globp,glob)
+      call unify_reduceintp_idw(nx,my,my_max,globp,glob)
       call syslbl ('s005a1',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -469,7 +469,7 @@
 !canopy moisture content(mm)
       if(label(kk).eq.'s005c0') then
       globp=canopy
-      call unify_reduceintp(nx,my,my_max,globp,glob)
+      call unify_reduceintp_idw(nx,my,my_max,globp,glob)
       call syslbl ('s005c0',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -488,7 +488,7 @@
 !
 ! 0-10cm Volumetric soil moisture fraction (0-1.0)
       if(label(kk).eq.'sa15b0') then
-      call unify_reduceintp(nx,my,my_max,soil_xy(1,1,1),glob)
+      call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,1),glob)
       call syslbl ('sa15b0',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -498,7 +498,7 @@
 
 ! 10-40cm Volumetric soil moisture fraction (0-1.0)
       if(label(kk).eq.'sa25b0') then
-      call unify_reduceintp(nx,my,my_max,soil_xy(1,1,2),glob)
+      call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,2),glob)
       call syslbl ('sa25b0',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -507,7 +507,7 @@
       endif
 ! 40-100cm Volumetric soil moisture fraction (0-1.0)
       if(label(kk).eq.'sa35b0') then
-      call unify_reduceintp(nx,my,my_max,soil_xy(1,1,3),glob)
+      call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,3),glob)
       call syslbl ('sa35b0',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -516,7 +516,7 @@
       endif
 ! 100-200cm Volumetric soil moisture fraction (0-1.0)
       if(label(kk).eq.'sa45b0') then
-      call unify_reduceintp(nx,my,my_max,soil_xy(1,1,4),glob)
+      call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,4),glob)
       call syslbl ('sa45b0',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -526,7 +526,7 @@
 !kc >
 ! 0-10cm Volumetric soil moisture fraction (0-1.0)
       if(label(kk).eq.'s015b0') then
-      call unify_reduceintp(nx,my,my_max,soil_xy(1,1,1),glob)
+      call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,1),glob)
       call syslbl ('s015b0',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -547,7 +547,7 @@
                   +soil_xy(i,jj,4)*sfac4
       end do
       end do
-      call unify_reduceintp(nx,my,my_max,globp,glob)
+      call unify_reduceintp_idw(nx,my,my_max,globp,glob)
       call syslbl ('s025b0',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -557,7 +557,7 @@
 !xb13 <
 ! 10-40cm Volumetric soil moisture fraction (0-1.0)
       if(label(kk).eq.'s035b0') then
-      call unify_reduceintp(nx,my,my_max,soil_xy(1,1,2),glob)
+      call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,2),glob)
       call syslbl ('s035b0',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -567,7 +567,7 @@
 
 ! 40-100cm Volumetric soil moisture fraction (0-1.0)
       if(label(kk).eq.'s045b0') then
-      call unify_reduceintp(nx,my,my_max,soil_xy(1,1,3),glob)
+      call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,3),glob)
       call syslbl ('s045b0',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -576,7 +576,7 @@
       endif
 ! 100-200cm Volumetric soil moisture fraction (0-1.0)
       if(label(kk).eq.'s055b0') then
-      call unify_reduceintp(nx,my,my_max,soil_xy(1,1,4),glob)
+      call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,4),glob)
       call syslbl ('s055b0',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -587,7 +587,7 @@
 ! s**5b1
 ! 0-10cm Unfrozen(liquid) soil moisture content(volumetric fraction)
       if(label(kk).eq.'sa15b1') then
-      call unify_reduceintp(nx,my,my_max,soil_xy(1,1,5),glob)
+      call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,5),glob)
       call syslbl ('sa15b1',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0 )call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -596,7 +596,7 @@
       endif
 ! 10-40cm Unfrozen(liquid) soil moisture content(volumetric fraction)
       if(label(kk).eq.'sa25b1') then
-      call unify_reduceintp(nx,my,my_max,soil_xy(1,1,6),glob)
+      call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,6),glob)
       call syslbl ('sa25b1',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -605,7 +605,7 @@
       endif
 ! 40-100cm Unfrozen(liquid) soil moisture content(volumetric fraction)
       if(label(kk).eq.'sa35b1') then
-      call unify_reduceintp(nx,my,my_max,soil_xy(1,1,7),glob)
+      call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,7),glob)
       call syslbl ('sa35b1',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -614,7 +614,7 @@
       endif
 ! 100-200cm Unfrozen(liquid) soil moisture content(volumetric fraction)
       if(label(kk).eq.'sa45b1') then
-      call unify_reduceintp(nx,my,my_max,soil_xy(1,1,8),glob)
+      call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,8),glob)
       call syslbl ('sa45b1',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -624,7 +624,7 @@
 !xb13
 ! 0-10cm Unfrozen(liquid) soil moisture content(volumetric fraction)
       if(label(kk).eq.'s015b1') then
-      call unify_reduceintp(nx,my,my_max,soil_xy(1,1,5),glob)
+      call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,5),glob)
       call syslbl ('s015b1',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -642,7 +642,7 @@
                   +soil_xy(i,jj,8)*sfac4
       end do
       end do
-      call unify_reduceintp(nx,my,my_max,globp,glob)
+      call unify_reduceintp_idw(nx,my,my_max,globp,glob)
       call syslbl ('s025b1',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -651,7 +651,7 @@
       endif
 ! 10-40cm Unfrozen(liquid) soil moisture content(volumetric fraction)
       if(label(kk).eq.'s035b1') then
-      call unify_reduceintp(nx,my,my_max,soil_xy(1,1,6),glob)
+      call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,6),glob)
       call syslbl ('s035b1',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -660,7 +660,7 @@
       endif
 ! 40-100cm Unfrozen(liquid) soil moisture content(volumetric fraction)
       if(label(kk).eq.'s045b1') then
-      call unify_reduceintp(nx,my,my_max,soil_xy(1,1,7),glob)
+      call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,7),glob)
       call syslbl ('s045b1',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -669,7 +669,7 @@
       endif
 ! 100-200cm Unfrozen(liquid) soil moisture content(volumetric fraction)
       if(label(kk).eq.'s055b1') then
-      call unify_reduceintp(nx,my,my_max,soil_xy(1,1,8),glob)
+      call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,8),glob)
       call syslbl ('s055b1',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -680,7 +680,7 @@
 ! s**100
 ! 0-10cm Volumetric soil temperature(K)
       if(label(kk).eq.'sa1100') then
-      call unify_reduceintp(nx,my,my_max,soil_xy(1,1,9),glob)
+      call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,9),glob)
       call syslbl ('sa1100',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -689,7 +689,7 @@
       endif
 ! 10-40cm Volumetric soil temperature(K)
       if(label(kk).eq.'sa2100') then
-      call unify_reduceintp(nx,my,my_max,soil_xy(1,1,10),glob)
+      call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,10),glob)
       call syslbl ('sa2100',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -698,7 +698,7 @@
       endif
 ! 40-100cm Volumetric soil temperature(K)
       if(label(kk).eq.'sa3100') then
-      call unify_reduceintp(nx,my,my_max,soil_xy(1,1,11),glob)
+      call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,11),glob)
       call syslbl ('sa3100',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -707,7 +707,7 @@
       endif
 ! 100-200cm Volumetric soil temperature(K)
       if(label(kk).eq.'sa4100') then
-      call unify_reduceintp(nx,my,my_max,soil_xy(1,1,12),glob)
+      call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,12),glob)
       call syslbl ('sa4100',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -717,7 +717,7 @@
 !xb13>
 ! 0-10cm Volumetric soil temperature(K)
       if(label(kk).eq.'s01100') then
-      call unify_reduceintp(nx,my,my_max,soil_xy(1,1,9),glob)
+      call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,9),glob)
       call syslbl ('s01100',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -735,7 +735,7 @@
                   +soil_xy(i,jj,12)*sfac4
       end do
       end do
-      call unify_reduceintp(nx,my,my_max,globp,glob)
+      call unify_reduceintp_idw(nx,my,my_max,globp,glob)
       call syslbl ('s02100',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -744,7 +744,7 @@
       endif
 ! 10-40cm Volumetric soil temperature(K)
       if(label(kk).eq.'s03100') then
-      call unify_reduceintp(nx,my,my_max,soil_xy(1,1,10),glob)
+      call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,10),glob)
       call syslbl ('s03100',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -753,7 +753,7 @@
       endif
 ! 40-100cm Volumetric soil temperature(K)
       if(label(kk).eq.'s04100') then
-      call unify_reduceintp(nx,my,my_max,soil_xy(1,1,11),glob)
+      call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,11),glob)
       call syslbl ('s04100',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
@@ -762,7 +762,7 @@
       endif
 ! 100-200cm Volumetric soil temperature(K)
       if(label(kk).eq.'s05100') then
-      call unify_reduceintp(nx,my,my_max,soil_xy(1,1,12),glob)
+      call unify_reduceintp_idw(nx,my,my_max,soil_xy(1,1,12),glob)
       call syslbl ('s05100',idtg,itau,ggdef,ihdg)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
       if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)

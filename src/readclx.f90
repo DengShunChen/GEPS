@@ -25,6 +25,10 @@
 !
       use index
       use namelist_soilveg
+!helio>
+      use mpe
+      use phygrid, only : ls_full,ls_redu
+!helio<
 !
       implicit  none
 
@@ -265,7 +269,24 @@
 
       write(lrec,16)ggdef,blnk
       call dmsreadi(nx,my,lrec,lncrec,'I',bckfile,iglob,istat)
-      call unify_reducepicki(nx,my,my_max,iglob,ls)
+!helio>
+!     call unify_reducepicki(nx,my,my_max,iglob,ls)
+      ls_full(:,:) = iglob(:,:)
+      do jj = 1, jlistnum
+         j=jlist1(jj)
+         ii=nxjstart(j)
+         nxj=nxdef_2d(j)
+         if(lreduce.eq.1) call reducepicki (iglob(1,j),nxdef(j),nx,1)
+         do i = 1, nxj
+            ls(i,jj) = iglob(ii,j)
+            ii=ii+1
+         enddo
+      enddo
+      ls_redu(:,:) = iglob(:,:)
+
+      call mpe_unify(ls_redu,nx,my,2,mpe_integer)
+!helio<
+
 
 !soil
 !-- soiltyp

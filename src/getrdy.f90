@@ -133,6 +133,23 @@
       endif
       endif
 !------------------------------------------------------------
+!helio>
+      if (my/2.eq.200) then
+          open(71,file='global_idw.t200.816.400.dat',&
+                 form='unformatted',access='direct',recl=8*nx*my*8)
+      else if (my/2.eq.384) then
+          open(71,file='global_idw.t384.1552.768.dat',&
+                 form='unformatted',access='direct',recl=8*nx*my*8)
+      else if (my/2.eq.640) then
+          open(71,file='global_idw.t640.2576.1280.dat',&
+                 form='unformatted',access='direct',recl=8*nx*my*8)
+      end if
+
+      read(71,rec=1) outp
+      close(71)
+
+!helio<
+!------------------------------------------------------------
 
       if (restrt) then
 !
