@@ -240,9 +240,10 @@ module module_mp_gfdl_v3
     ! 3: Marshall-Palmer formula (https://en.wikipedia.org/wiki/DBZ_(meteorology))
 
     integer :: isedi = 1  ! sedimentation scheme
-    ! 1: time-implicit monotonic
-    ! 2: PPM Lagrangian
-    ! 3: semi-Lagrangian (Juang and Hong 2010)
+    ! 1: time-implicit
+    ! 2: time-explicit
+    ! 3: PPM Lagrangian
+    ! 4: semi-Lagrangian (Juang and Hong 2010)
     
     logical :: do_sedi_uv = .true. ! transport of horizontal momentum in sedimentation
     logical :: do_sedi_w = .false. ! transport of vertical momentum in sedimentation
@@ -2328,9 +2329,9 @@ subroutine terminal_fall (dts, ks, ke, tz, qv, ql, qr, qi, qs, qg, dz, dp, den, 
     end select
     
 !    if (use_ppm) then
-    if ( isedi .eq. 2 ) then
+    if ( isedi .eq. 3 ) then
         call lagrangian_fall_ppm (ks, ke, zs, ze, zt, dp, q, x1, m1, mono_prof)
-    elseif ( isedi .eq. 3 ) then
+    elseif ( isedi .eq. 4 ) then
         do k = ks, ke
             dzc (k) = - dz (ke - k + 1)
             qtc (k) = q (ke - k + 1) * den (ke - k + 1)
@@ -2343,6 +2344,8 @@ subroutine terminal_fall (dts, ks, ke, tz, qv, ql, qr, qi, qs, qg, dz, dp, den, 
             q (k) = qtc (ke - k + 1) / den (k)
             m1 (k) = m1c (ke - k + 1)  ! accumulated precipitation flux
         enddo
+    elseif ( isedi .eq. 2 ) then
+        call explicit_fall (dts, ks, ke, ze, vt, dp, q, x1, m1)
     else
         call implicit_fall (dts, ks, ke, ze, vt, dp, q, x1, m1)
     endif
