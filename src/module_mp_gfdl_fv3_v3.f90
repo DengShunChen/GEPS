@@ -1,6 +1,6 @@
 !#define MERRA2_aeroclimfix
 !#define oldmask
-#define PSD_paper_seting
+#define PSD_paper_setting
 !***********************************************************************
 !*                   GNU Lesser General Public License
 !*
@@ -297,7 +297,7 @@ module module_mp_gfdl_v3
     
     real :: mp_time = 150.0 ! maximum microphysics time step (s)
 
-#ifdef PSD_paper_seting
+#ifdef PSD_paper_setting
     real :: n0w_sig = 1.2 ! intercept parameter (significand) of cloud water (Lin et al. 1983) (1/m^4) (Martin et al. 1994)
     real :: n0i_sig = 1.0 ! intercept parameter (significand) of cloud ice (Lin et al. 1983) (1/m^4) (McFarquhar et al. 2015)
 #else
@@ -311,7 +311,7 @@ module module_mp_gfdl_v3
     real :: n0g_sig = 4.0 ! intercept parameter (significand) of graupel (Rutledge and Hobbs 1984) (1/m^4) (Houze et al. 1979)
     real :: n0h_sig = 4.0 ! intercept parameter (significand) of hail (Lin et al. 1983) (1/m^4) (Federer and Waldvogel 1975)
     
-#ifdef PSD_paper_seting
+#ifdef PSD_paper_setting
     real :: n0w_exp = 66.0 ! intercept parameter (exponent) of cloud water (Lin et al. 1983) (1/m^4) (Martin et al. 1994)
     real :: n0i_exp = 10.0 ! intercept parameter (exponent) of cloud ice (Lin et al. 1983) (1/m^4) (McFarquhar et al. 2015)
 #else
@@ -325,7 +325,7 @@ module module_mp_gfdl_v3
     real :: n0g_exp = 6.0 ! intercept parameter (exponent) of graupel (Rutledge and Hobbs 1984) (1/m^4) (Houze et al. 1979)
     real :: n0h_exp = 4.0 ! intercept parameter (exponent) of hail (Lin et al. 1983) (1/m^4) (Federer and Waldvogel 1975)
     
-#ifdef PSD_paper_seting
+#ifdef PSD_paper_setting
     real :: muw = 11.0 ! shape parameter of cloud water in Gamma distribution (Martin et al. 1994)
     real :: mui = 1.0 ! shape parameter of cloud ice in Gamma distribution (McFarquhar et al. 2015)
 #else
@@ -340,7 +340,7 @@ module module_mp_gfdl_v3
     real :: muh = 1.0 ! shape parameter of hail in Gamma distribution (Federer and Waldvogel 1975)
     
     real :: alinw = 3.e7 ! "a" in Lin et al. (1983) for cloud water (Ikawa and Saito 1990)
-#ifdef PSD_paper_seting
+#ifdef PSD_paper_setting
     real :: alini = 11.72 ! "a" in Lin et al. (1983) for cloud ice (Ikawa and Saita 1990)
 #else
     real :: alini = 7.e2 ! "a" in Lin et al. (1983) for cloud ice (Ikawa and Saita 1990)
@@ -351,7 +351,7 @@ module module_mp_gfdl_v3
     real :: alinh = 1.0 ! "a" in Lin et al. (1983), similar to a, but for hail (Pruppacher and Klett 2010)
 
     real :: blinw = 2.0 ! "b" in Lin et al. (1983) for cloud water (Ikawa and Saito 1990)
-#ifdef PSD_paper_seting
+#ifdef PSD_paper_setting
     real :: blini = 0.41 ! "b" in Lin et al. (1983) for cloud ice (Ikawa and Saita 1990)
 #else
     real :: blini = 1.0 ! "b" in Lin et al. (1983) for cloud ice (Ikawa and Saita 1990)

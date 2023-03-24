@@ -83,7 +83,7 @@
 !  ---  inputs:
            ( nmmiph,nx,nxj,lev,ncld,plt,                               &
              pst,dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,        &
-             itimestep,sgeo,phi,cosl,                                  &
+             itimestep,sgeo,phi,rhc,                                   &
 !  ---  inputs/outputs:
              tt,qt,qa,ut,vt,vvel,                                      &
 !  ---  outputs:
@@ -124,7 +124,7 @@
       real,     intent(in)    :: tpi,dta,jj
       real,     intent(in)    :: plt(nx,lev),phii(nx,lev+1),phi(nx,lev)
       real,     intent(in)    :: area
-      real,     intent(in)    :: cosl
+      real,     intent(in)    :: rhc(nxj,lev)
       real,     intent(in)    :: sgeo(nx)
       real,     intent(inout) :: vvel(nx,lev) !mb/s
       real(kind=RTYPE), intent(in):: q0(nx,lev*ncld),pst(nx),          &
@@ -172,7 +172,6 @@
 ! GFDLMP
       real, parameter ::                                                &
                 rainmin=1.0e-10 !(mm)
-      real :: rhc
       logical   hydrostatic,phys_hydrostatic,sedi_w
      !GFDL MP v2 & v3
       real, dimension(:), allocatable ::                                &
@@ -210,7 +209,7 @@
 #endif
 !
 ! define rhc for GFDL MP v1 & v2
-      rhc = 1.0                 ! default
+!     rhc = 1.0                 ! default
 !     rhc = 1.0 - 0.02*cosl**2  ! =0.98 at equator; =1.0 at pole
 !
 ! reset all value to zero
