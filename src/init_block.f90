@@ -103,7 +103,7 @@
 ! Semi-Lagrangian Averaging of Physical Parametrizations
       doslavepp=.false.
 ! dy-core two loop sequence
-      two_loop=.true.
+      two_loop=.false.
 ! output data for RSM (Also, RSM compiling flag is necessary)
       outrsm=.false.
       rsmoutinv=6
