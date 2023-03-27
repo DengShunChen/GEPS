@@ -758,7 +758,7 @@
                   prefluxw, prefluxr, prefluxi, prefluxs, prefluxg,     &
                   cond0, dep0, evap0, sub0,                             &
 #endif
-                  last_step, do_inline_mp )
+                  rhc, last_step, do_inline_mp )
 
         qmin = 1.0e-15     !minimum of q (kg/kg)
         do k = 1, lev

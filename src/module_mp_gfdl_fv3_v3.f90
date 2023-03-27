@@ -594,7 +594,7 @@ subroutine gfdl_cld_mp_driver                                              &
               prefluxw, prefluxr, prefluxi, prefluxs, prefluxg,            &
               condensation, deposition, evaporation, sublimation,          &
 #endif
-              last_step, do_inline_mp )
+              rhc, last_step, do_inline_mp )
     
     implicit none
     
@@ -611,6 +611,7 @@ subroutine gfdl_cld_mp_driver                                              &
     real, intent (in), dimension (is:ie) :: hs, gsize, land
     
     real, intent (in), dimension (is:ie, ks:ke) :: delz, qnl, qni
+    real, intent (in), dimension (is:ie, ks:ke) :: rhc
     
     real, intent (inout), dimension (is:ie, ks:ke) :: delp, pt, ua, va, wa, te
     real, intent (inout), dimension (is:ie, ks:ke) :: qv, ql, qr, qi, qs, qg, qa
@@ -645,7 +646,7 @@ subroutine gfdl_cld_mp_driver                                              &
 #endif
         gsize, hs, q_con, cappa, consv_te, te, prefluxw, prefluxr, prefluxi, &
         prefluxs, prefluxg, condensation, deposition, evaporation, sublimation, &
-        last_step, do_inline_mp, .false., .true.)
+        rhc, last_step, do_inline_mp, .false., .true.)
     
 end subroutine gfdl_cld_mp_driver
 
@@ -1062,7 +1063,7 @@ subroutine mpdrv (hydrostatic, ua, va, wa, delp, pt, qv, ql, qr, qi, qs, &
 #endif
         gsize, hs, q_con, cappa, consv_te, te, prefluxw, prefluxr, &
         prefluxi, prefluxs, prefluxg, condensation, deposition, evaporation, &
-        sublimation, last_step, do_inline_mp, do_mp_fast, do_mp_full)
+        sublimation, rhc, last_step, do_inline_mp, do_mp_fast, do_mp_full)
     
     implicit none
     
@@ -1083,6 +1084,7 @@ subroutine mpdrv (hydrostatic, ua, va, wa, delp, pt, qv, ql, qr, qi, qs, &
 #endif
     
     real, intent (in), dimension (is:ie, ks:ke) :: delz, qnl, qni
+    real, intent (in), dimension (is:ie, ks:ke) :: rhc
     
     real, intent (inout), dimension (is:ie, ks:ke) :: delp, pt, ua, va, wa
     real, intent (inout), dimension (is:ie, ks:ke) :: qv, ql, qr, qi, qs, qg, qa
@@ -1109,6 +1111,7 @@ subroutine mpdrv (hydrostatic, ua, va, wa, delp, pt, qv, ql, qr, qi, qs, &
     real, dimension (ks:ke) :: qvz, qlz, qrz, qiz, qsz, qgz, qaz
     real, dimension (ks:ke) :: den, pz, denfac, ccn, cin
     real, dimension (ks:ke) :: u, v, w
+    real, dimension (ks:ke) :: rhcz
     
     real (kind = r8) :: con_r8, c8
     
@@ -1220,6 +1223,8 @@ subroutine mpdrv (hydrostatic, ua, va, wa, delp, pt, qv, ql, qr, qi, qs, &
             den (k) = - dp (k) / (grav * dz (k))
             pz (k) = den (k) * rdgas * tz (k)
             
+            rhcz (k) = rhc (i, k)
+
             ! -----------------------------------------------------------------------
             ! for sedi_momentum transport
             ! -----------------------------------------------------------------------
@@ -1323,7 +1328,7 @@ subroutine mpdrv (hydrostatic, ua, va, wa, delp, pt, qv, ql, qr, qi, qs, &
         
         if (do_mp_fast) then
             
-            call mp_fast (ks, ke, tz, qvz, qlz, qrz, qiz, qsz, qgz, dtm, dp, den, &
+            call mp_fast (ks, ke, tz, qvz, qlz, qrz, qiz, qsz, qgz, dtm, dp, den, rhcz, &
                 ccn, cin, condensation (i), deposition (i), evaporation (i), &
                 sublimation (i), convt)
             
@@ -1335,7 +1340,7 @@ subroutine mpdrv (hydrostatic, ua, va, wa, delp, pt, qv, ql, qr, qi, qs, &
         
         if (do_mp_full) then
             
-            call mp_full (ks, ke, ntimes, tz, qvz, qlz, qrz, qiz, qsz, qgz, dp, dz, &
+            call mp_full (ks, ke, ntimes, tz, qvz, qlz, qrz, qiz, qsz, qgz, dp, dz, rhcz, &
                 u, v, w, den, denfac, ccn, cin, dts, rh_adj, rh_rain, h_var, dte (i), &
                 water (i), rain (i), ice (i), snow (i), graupel (i), prefluxw (i, :), &
                 prefluxr (i, :), prefluxi (i, :), prefluxs (i, :), prefluxg (i, :), &
@@ -1632,7 +1637,7 @@ end subroutine neg_adj
 ! full microphysics loop
 ! =======================================================================
 
-subroutine mp_full (ks, ke, ntimes, tz, qv, ql, qr, qi, qs, qg, dp, dz, u, v, w, &
+subroutine mp_full (ks, ke, ntimes, tz, qv, ql, qr, qi, qs, qg, dp, dz, rhc, u, v, w, &
         den, denfac, ccn, cin, dts, rh_adj, rh_rain, h_var, dte, water, rain, ice, &
         snow, graupel, prefluxw, prefluxr, prefluxi, prefluxs, prefluxg, &
         condensation, deposition, evaporation, sublimation, convt)
@@ -1648,6 +1653,7 @@ subroutine mp_full (ks, ke, ntimes, tz, qv, ql, qr, qi, qs, qg, dp, dz, u, v, w,
     real, intent (in) :: dts, rh_adj, rh_rain, h_var, convt
     
     real, intent (in), dimension (ks:ke) :: dp, dz, den, denfac, ccn
+    real, intent (in), dimension (ks:ke) :: rhc
     
     real, intent (inout), dimension (ks:ke) :: qv, ql, qr, qi, qs, qg, u, v, w, cin
     real, intent (inout), dimension (ks:ke) :: prefluxw, prefluxr, prefluxi, prefluxs, prefluxg
@@ -1713,7 +1719,7 @@ subroutine mp_full (ks, ke, ntimes, tz, qv, ql, qr, qi, qs, qg, dp, dz, u, v, w,
         ! -----------------------------------------------------------------------
         
         call subgrid_z_proc (ks, ke, den, denfac, dts, rh_adj, tz, qv, ql, &
-            qr, qi, qs, qg, dp, ccn, cin, cond, dep, reevap, sub)
+            qr, qi, qs, qg, dp, ccn, cin, cond, dep, reevap, sub, rhc)
         
         condensation = condensation + cond * convt
         deposition = deposition + dep * convt
@@ -1728,7 +1734,7 @@ end subroutine mp_full
 ! fast microphysics loop
 ! =======================================================================
 
-subroutine mp_fast (ks, ke, tz, qv, ql, qr, qi, qs, qg, dtm, dp, den, &
+subroutine mp_fast (ks, ke, tz, qv, ql, qr, qi, qs, qg, dtm, dp, den, rhc, &
         ccn, cin, condensation, deposition, evaporation, sublimation, convt)
     
     implicit none
@@ -1742,6 +1748,7 @@ subroutine mp_fast (ks, ke, tz, qv, ql, qr, qi, qs, qg, dtm, dp, den, &
     real, intent (in) :: dtm, convt
     
     real, intent (in), dimension (ks:ke) :: dp, den, ccn
+    real, intent (in), dimension (ks:ke) :: rhc
     
     real, intent (inout), dimension (ks:ke) :: qv, ql, qr, qi, qs, qg, cin
     
@@ -1799,7 +1806,7 @@ subroutine mp_fast (ks, ke, tz, qv, ql, qr, qi, qs, qg, dtm, dp, den, &
     ! -----------------------------------------------------------------------
     
     call pcond_pevap (ks, ke, dtm, qv, ql, qr, qi, qs, qg, tz, dp, cvm, te8, den, &
-        lcpk, icpk, tcpk, tcp3, cond, reevap)
+        lcpk, icpk, tcpk, tcp3, cond, reevap, rhc)
     
     condensation = condensation + cond * convt
     evaporation = evaporation + reevap * convt
@@ -3661,7 +3668,7 @@ end subroutine pgacw_pgacr
 ! =======================================================================
 
 subroutine subgrid_z_proc (ks, ke, den, denfac, dts, rh_adj, tz, qv, ql, qr, &
-        qi, qs, qg, dp, ccn, cin, cond, dep, reevap, sub)
+        qi, qs, qg, dp, ccn, cin, cond, dep, reevap, sub, rhc)
     
     implicit none
     
@@ -3674,6 +3681,7 @@ subroutine subgrid_z_proc (ks, ke, den, denfac, dts, rh_adj, tz, qv, ql, qr, &
     real, intent (in) :: dts, rh_adj
     
     real, intent (in), dimension (ks:ke) :: den, denfac, ccn, dp
+    real, intent (in), dimension (ks:ke) :: rhc
     
     real, intent (inout), dimension (ks:ke) :: qv, ql, qr, qi, qs, qg, cin
     
@@ -3721,7 +3729,7 @@ subroutine subgrid_z_proc (ks, ke, den, denfac, dts, rh_adj, tz, qv, ql, qr, &
     ! -----------------------------------------------------------------------
     
     call pcond_pevap (ks, ke, dts, qv, ql, qr, qi, qs, qg, tz, dp, cvm, te8, den, &
-        lcpk, icpk, tcpk, tcp3, cond, reevap)
+        lcpk, icpk, tcpk, tcp3, cond, reevap, rhc)
     
     if (.not. do_warm_rain_mp) then
         
@@ -3857,7 +3865,7 @@ end subroutine pinst
 ! =======================================================================
 
 subroutine pcond_pevap (ks, ke, dts, qv, ql, qr, qi, qs, qg, tz, dp, cvm, te8, den, &
-        lcpk, icpk, tcpk, tcp3, cond, reevap)
+        lcpk, icpk, tcpk, tcp3, cond, reevap, rhc)
     
     implicit none
     
@@ -3870,6 +3878,7 @@ subroutine pcond_pevap (ks, ke, dts, qv, ql, qr, qi, qs, qg, tz, dp, cvm, te8, d
     real, intent (in) :: dts
     
     real, intent (in), dimension (ks:ke) :: den, dp
+    real, intent (in), dimension (ks:ke) :: rhc
     
     real (kind = r8), intent (in), dimension (ks:ke) :: te8
     
@@ -3897,7 +3906,8 @@ subroutine pcond_pevap (ks, ke, dts, qv, ql, qr, qi, qs, qg, tz, dp, cvm, te8, d
         qsw = wqs (tin, den (k), dqdt)
         qpz = qv (k) + ql (k) + qi (k)
         rh_tem = qpz / qsw
-        dq = qsw - qv (k)
+!        dq = qsw - qv (k)
+        dq = qsw * rhc (k) - qv (k)  !xb141
         if (dq .gt. 0.) then
             factor = min (1., fac_l2v * (rh_fac * dq / qsw))
             sink = min (ql (k), factor * dq / (1. + tcp3 (k) * dqdt))
@@ -5297,7 +5307,7 @@ end subroutine sedi_heat
 subroutine fast_sat_adj (dtm, is, ie, ks, ke, hydrostatic, consv_te, &
         te, qv, ql, qr, qi, qs, qg, qa, qnl, qni, hs, delz, pt, delp, &
         q_con, cappa, gsize, last_step, condensation, evaporation, &
-        deposition, sublimation, do_sat_adj)
+        deposition, sublimation, rhc, do_sat_adj)
     
     implicit none
     
@@ -5314,6 +5324,7 @@ subroutine fast_sat_adj (dtm, is, ie, ks, ke, hydrostatic, consv_te, &
     real, intent (in), dimension (is:ie) :: hs, gsize
     
     real, intent (in), dimension (is:ie, ks:ke) :: delz, qnl, qni
+    real, intent (in), dimension (is:ie, ks:ke) :: rhc
     
     real, intent (inout), dimension (is:ie, ks:ke) :: delp, pt, te
     real, intent (inout), dimension (is:ie, ks:ke) :: qv, ql, qr, qi, qs, qg, qa
@@ -5364,7 +5375,7 @@ subroutine fast_sat_adj (dtm, is, ie, ks, ke, hydrostatic, consv_te, &
     call mpdrv (hydrostatic, ua, va, wa, delp, pt, qv, ql, qr, qi, qs, qg, qa, &
         qnl, qni, delz, is, ie, ks, ke, dtm, water, rain, ice, snow, graupel, &
         gsize, hs, q_con, cappa, consv_te, te, prefluxw, prefluxr, prefluxi, &
-        prefluxs, prefluxg, condensation, deposition, evaporation, sublimation, &
+        prefluxs, prefluxg, condensation, deposition, evaporation, sublimation, rhc, &
         last_step, .true., do_sat_adj, .false.)
     
 end subroutine fast_sat_adj
