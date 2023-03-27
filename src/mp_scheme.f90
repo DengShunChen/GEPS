@@ -380,7 +380,7 @@
             qnr2d(i,k) = qt(i,(ntrnc-1)*lev+kc)
             prsl (i,k) = plt(i,kc)*100.                 !layer pressure (Pa)
             t2d  (i,k) = tt(i,kc)
-            w2d  (i,k) = - vvel(i,k)*100.*                              &
+            w2d  (i,k) = - vvel(i,kc)*100.*                             &
                          (1.+con_fvirt*qt(i,kc))*tt(i,kc)/              &
                          prsl(i,k)*con_rd/con_g         !vertical velocity (m/s)
             dz2d (i,k) = (phii(i,k+1)-phii(i,k))/con_g  !layer depth (m)
