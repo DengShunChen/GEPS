@@ -808,7 +808,7 @@
          ( th3d(nx,lev,1),qv3d(nx,lev,1),qc3d(nx,lev,1),qr3d(nx,lev,1), &
            qi3d(nx,lev,1),qs3d(nx,lev,1),qg3d(nx,lev,1),qh3d(nx,lev,1), &
            rho3d(nx,lev,1),pii3d(nx,lev,1),p3d(nx,lev,1),z3d(nx,lev,1), &
-           ht(nx,1),dz3d(nx,1,lev),w3d(nx,1,lev),rainnc2d(nx,1),        &
+           ht(nx,1),dz3d(nx,lev,1),w3d(nx,lev,1),rainnc2d(nx,1),        &
            snownc2d(nx,1),graupelnc2d(nx,1),hailnc2d(nx,1),rain2d(nx,1),&
            snow2d(nx,1),graupel2d(nx,1),hail2d(nx,1),sr2d(nx,1),        &
            rew3d(nx,lev,1),rer3d(nx,lev,1),rei3d(nx,lev,1),             &
@@ -884,7 +884,7 @@
             ! use virtural temperature : Tv = (1+(Rv/Rd-1)*q)*T = (1+con_fvirt*q)*T
             rho3d(i,k,1) = p3d(i,k,1)/con_rd/tt(i,kc)                   &
                           /(1+con_fvirt*qt(i,kc))            !density of air (kg/m^3)
-            w3d  (i,k,1) = -vvel(i,k)*100.*(1.+con_fvirt*qt(i,kc))      &
+            w3d  (i,k,1) = -vvel(i,kc)*100.*(1.+con_fvirt*qt(i,kc))     &
                           *tt(i,kc)/p3d(i,k,1)*con_rd/con_g  !vertical velocity (m/s)
           enddo
         enddo
