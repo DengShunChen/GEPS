@@ -397,7 +397,7 @@ subroutine gfdl_cld_mp_driver                                              &
               prefluxr, prefluxi, prefluxs, prefluxg,                      &
               condensation, deposition, evaporation, sublimation,          &
 #endif
-              fac_qsw, last_step, do_inline_mp )
+              rhc, last_step, do_inline_mp )
     
     implicit none
     
@@ -411,7 +411,7 @@ subroutine gfdl_cld_mp_driver                                              &
 
     real, intent (in) :: dts ! physics time step
 
-    real, intent (in) :: fac_qsw ! factor of vapor condensed threshold
+    real, intent (in), dimension (is:ie, ks:ke) :: rhc
     
     real, intent (in), dimension (is:ie) :: hs, gsize, land
     
@@ -496,7 +496,7 @@ subroutine gfdl_cld_mp_driver                                              &
 #endif
         w_var, vt_r, vt_s, vt_g, vt_i, q_con, cappa, consv_te, te, &
         prefluxr, prefluxi, prefluxs, prefluxg, condensation, deposition, &
-        evaporation, sublimation, fac_qsw, last_step, do_inline_mp)
+        evaporation, sublimation, rhc, last_step, do_inline_mp)
     
 end subroutine gfdl_cld_mp_driver
 
@@ -523,7 +523,7 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
 #endif
         w_var, vt_r, vt_s, vt_g, vt_i, q_con, cappa, consv_te, te, &
         prefluxr, prefluxi, prefluxs, prefluxg, condensation, deposition, &
-        evaporation, sublimation, fac_qsw, last_step, do_inline_mp )
+        evaporation, sublimation, rhc, last_step, do_inline_mp )
     
     implicit none
     
@@ -533,7 +533,7 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
     logical, intent (in) :: do_inline_mp
     integer, intent (in) :: is, ie, ks, ke
     real, intent (in) :: dt_in
-    real, intent (in) :: fac_qsw
+    real, intent (in), dimension (is:ie, ks:ke) :: rhc
     real, intent (in), dimension (is:ie) :: gsize
     real, intent (in), dimension (is:ie) :: hs
 #ifdef oldmask
@@ -563,6 +563,7 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
     real, dimension (ks:ke) :: den, p1, denfac
     real, dimension (ks:ke) :: ccn, cin, c_praut, m1_rain, m1_sol, m1
     real, dimension (ks:ke) :: u0, v0, u1, v1, w1
+    real, dimension (ks:ke) :: rhcz
     
     real (kind = r8), dimension (is:ie, ks:ke) :: te_beg, te_end, tw_beg, tw_end
     real (kind = r8), dimension (is:ie, ks:ke) :: te_beg_0, te_end_0, tw_beg_0, tw_end_0
@@ -673,6 +674,8 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
             
             den (k) = - dp1 (k) / (grav * dz1 (k)) ! density of dry air
             p1 (k) = den (k) * rdgas * tz (k) ! dry air pressure
+
+            rhcz (k) = rhc (i, k)
             
             ! -----------------------------------------------------------------------
             ! for sedi_momentum transport:
@@ -907,7 +910,7 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
             
             call icloud (ks, ke, tz, p1, qvz, qlz, qrz, qiz, qsz, qgz, dp1, den, ccn, &
                 cin, denfac, vtsz, vtgz, vtrz, qaz, rh_adj, rh_rain, dts, h_var, gsize (i), &
-                cond, dep, reevap, sub, fac_qsw, last_step_cld)
+                cond, dep, reevap, sub, rhcz, last_step_cld)
 
             condensation (i) = condensation (i) + cond * convt
             deposition (i) = deposition (i) + dep * convt
@@ -1582,7 +1585,7 @@ end subroutine linear_prof
 
 subroutine icloud (ks, ke, tzk, p1, qvk, qlk, qrk, qik, qsk, qgk, dp1, den, &
         ccn, cin, denfac, vts, vtg, vtr, qak, rh_adj, rh_rain, dts, h_var, &
-        gsize, cond, dep, reevap, sub, fac_qsw, last_step)
+        gsize, cond, dep, reevap, sub, rhck, last_step)
     
     implicit none
     
@@ -1593,7 +1596,7 @@ subroutine icloud (ks, ke, tzk, p1, qvk, qlk, qrk, qik, qsk, qgk, dp1, den, &
     real, intent (inout), dimension (ks:ke) :: qvk, qlk, qrk, qik, qsk, qgk, qak
     real, intent (inout), dimension (ks:ke) :: cin
     real, intent (in) :: rh_adj, rh_rain, dts, h_var, gsize
-    real, intent (in) :: fac_qsw
+    real, intent (in), dimension (ks:ke) :: rhck
     real, intent (out) :: cond, dep, reevap, sub
     ! local:
     real, dimension (ks:ke) :: icpk, di, qim
@@ -2034,7 +2037,7 @@ subroutine icloud (ks, ke, tzk, p1, qvk, qlk, qrk, qik, qsk, qgk, dp1, den, &
     
     call subgrid_z_proc (ks, ke, p1, den, denfac, dts, rh_adj, tzk, qvk, qlk, &
         qrk, qik, qsk, qgk, qak, dp1, h_var, rh_rain, te8, ccn, cin, gsize, &
-        cond, dep, reevap, sub, fac_qsw, last_step)
+        cond, dep, reevap, sub, rhck, last_step)
     
 end subroutine icloud
 
@@ -2043,13 +2046,13 @@ end subroutine icloud
 ! =======================================================================
 
 subroutine subgrid_z_proc (ks, ke, p1, den, denfac, dts, rh_adj, tz, qv, ql, qr, &
-        qi, qs, qg, qa, dp1, h_var, rh_rain, te8, ccn, cin, gsize, cond, dep, reevap, sub, fac_qsw, last_step)
+        qi, qs, qg, qa, dp1, h_var, rh_rain, te8, ccn, cin, gsize, cond, dep, reevap, sub, rhcz, last_step)
     
     implicit none
     
     integer, intent (in) :: ks, ke
     real, intent (in) :: dts, rh_adj, h_var, rh_rain, gsize
-    real, intent (in) :: fac_qsw
+    real, intent (in), dimension (ks:ke) :: rhcz
     real, intent (in), dimension (ks:ke) :: p1, den, denfac, ccn, dp1
     real (kind = r8), intent (in), dimension (ks:ke) :: te8
     real (kind = r8), intent (inout), dimension (ks:ke) :: tz
@@ -2163,7 +2166,7 @@ subroutine subgrid_z_proc (ks, ke, p1, den, denfac, dts, rh_adj, tz, qv, ql, qr,
         rh_tem = qpz / iqs1 (tin, den (k))
         qsw = wqs2 (tin, den (k), dwsdt)
 !        dq0 = qsw - qv (k)
-        dq0 = qsw * fac_qsw - qv (k)  !xb141
+        dq0 = qsw * rhcz (k) - qv (k)  !xb141
         if (use_rhc_cevap) then
             evap = 0.
             if (rh_tem .lt. rhc_cevap) then

@@ -402,6 +402,7 @@
 !     parameter (rhzbot=0.85, rhztop=0.85)
 
       real      work1(nxp),work2(nxp),rhc(nxp,lev),rhckt,psautco(nxp)
+      real      rhc_mp(nxp,lev)  !for GFDL MP
       real      del(nxp,lev),prsl(nxp,lev),psfc(nxp)
       real      qtc(nxp,lev), qtr(nxp,lev), ttc(nxp,lev)
       real      ftp(nxp,lev,my_max), fqp(nxp,lev,my_max), fpsp(nxp,my_max)
@@ -1839,11 +1840,31 @@
 ! for microphysics
       area = tem1*tem2  !area of grid box (m^2)
 
+! define rhc for GFDL MP
+      rhc_mp = 1.
+#ifdef rhc_GFDL
+      if ( arg .gt. 45. ) then
+        arg = 45.
+      elseif ( arg .lt. -45 ) then
+        arg = -45.
+      endif
+      do k=1,lev
+        do i=1,nxj
+!          rhc_mp(i,k) = 1.0 - 0.02*cos(d2r*arg)**2
+          if ( plt(i,k,jj)/plt(i,lev,jj) .lt. 0.4 ) then
+             tem = ( plt(i,k,jj)/plt(i,lev,jj) )**0.015
+             if ( tem .le. 0.95 ) tem = 0.95
+             rhc_mp(i,k) = rhc_mp(i,k)*tem
+          endif
+        enddo
+      enddo
+#endif
+
       call mp_scheme                                                   &
 !  ---  inputs:
            ( nmmiph,nxp,nxjp(j),lev,ncld,plt(1,1,jj),                  &
              pst(1,jj),dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,  &
-             itimestep,sgeo(1,jj),phi,cosl(j),                         &
+             itimestep,sgeo(1,jj),phi,rhc_mp,                          &
 !  ---  inputs/outputs:
              tt(1,1,jj),qt(1,1,jj),clds(1,1,jj),                       &
              ut(1,1,jj),vt(1,1,jj),vvel(1,1,jj),                       &

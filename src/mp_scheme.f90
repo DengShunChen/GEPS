@@ -83,7 +83,7 @@
 !  ---  inputs:
            ( nmmiph,nx,nxj,lev,ncld,plt,                               &
              pst,dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,        &
-             itimestep,sgeo,phi,cosl,                                  &
+             itimestep,sgeo,phi,rhc,                                   &
 !  ---  inputs/outputs:
              tt,qt,qa,ut,vt,vvel,                                      &
 !  ---  outputs:
@@ -124,7 +124,7 @@
       real,     intent(in)    :: tpi,dta,jj
       real,     intent(in)    :: plt(nx,lev),phii(nx,lev+1),phi(nx,lev)
       real,     intent(in)    :: area
-      real,     intent(in)    :: cosl
+      real,     intent(in)    :: rhc(nxj,lev)
       real,     intent(in)    :: sgeo(nx)
       real,     intent(inout) :: vvel(nx,lev) !mb/s
       real(kind=RTYPE), intent(in):: q0(nx,lev*ncld),pst(nx),          &
@@ -172,7 +172,6 @@
 ! GFDLMP
       real, parameter ::                                                &
                 rainmin=1.0e-10 !(mm)
-      real :: rhc
       logical   hydrostatic,phys_hydrostatic,sedi_w
      !GFDL MP v2 & v3
       real, dimension(:), allocatable ::                                &
@@ -210,7 +209,7 @@
 #endif
 !
 ! define rhc for GFDL MP v1 & v2
-      rhc = 1.0                 ! default
+!     rhc = 1.0                 ! default
 !     rhc = 1.0 - 0.02*cosl**2  ! =0.98 at equator; =1.0 at pole
 !
 ! reset all value to zero
@@ -381,7 +380,7 @@
             qnr2d(i,k) = qt(i,(ntrnc-1)*lev+kc)
             prsl (i,k) = plt(i,kc)*100.                 !layer pressure (Pa)
             t2d  (i,k) = tt(i,kc)
-            w2d  (i,k) = - vvel(i,k)*100.*                              &
+            w2d  (i,k) = - vvel(i,kc)*100.*                             &
                          (1.+con_fvirt*qt(i,kc))*tt(i,kc)/              &
                          prsl(i,k)*con_rd/con_g         !vertical velocity (m/s)
             dz2d (i,k) = (phii(i,k+1)-phii(i,k))/con_g  !layer depth (m)
@@ -759,7 +758,7 @@
                   prefluxw, prefluxr, prefluxi, prefluxs, prefluxg,     &
                   cond0, dep0, evap0, sub0,                             &
 #endif
-                  last_step, do_inline_mp )
+                  rhc, last_step, do_inline_mp )
 
         qmin = 1.0e-15     !minimum of q (kg/kg)
         do k = 1, lev
@@ -809,7 +808,7 @@
          ( th3d(nx,lev,1),qv3d(nx,lev,1),qc3d(nx,lev,1),qr3d(nx,lev,1), &
            qi3d(nx,lev,1),qs3d(nx,lev,1),qg3d(nx,lev,1),qh3d(nx,lev,1), &
            rho3d(nx,lev,1),pii3d(nx,lev,1),p3d(nx,lev,1),z3d(nx,lev,1), &
-           ht(nx,1),dz3d(nx,1,lev),w3d(nx,1,lev),rainnc2d(nx,1),        &
+           ht(nx,1),dz3d(nx,lev,1),w3d(nx,lev,1),rainnc2d(nx,1),        &
            snownc2d(nx,1),graupelnc2d(nx,1),hailnc2d(nx,1),rain2d(nx,1),&
            snow2d(nx,1),graupel2d(nx,1),hail2d(nx,1),sr2d(nx,1),        &
            rew3d(nx,lev,1),rer3d(nx,lev,1),rei3d(nx,lev,1),             &
@@ -885,7 +884,7 @@
             ! use virtural temperature : Tv = (1+(Rv/Rd-1)*q)*T = (1+con_fvirt*q)*T
             rho3d(i,k,1) = p3d(i,k,1)/con_rd/tt(i,kc)                   &
                           /(1+con_fvirt*qt(i,kc))            !density of air (kg/m^3)
-            w3d  (i,k,1) = -vvel(i,k)*100.*(1.+con_fvirt*qt(i,kc))      &
+            w3d  (i,k,1) = -vvel(i,kc)*100.*(1.+con_fvirt*qt(i,kc))     &
                           *tt(i,kc)/p3d(i,k,1)*con_rd/con_g  !vertical velocity (m/s)
           enddo
         enddo
