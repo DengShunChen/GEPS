@@ -1,0 +1,1893 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar  7 10:21:01 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm_helio
+   Source file       : mersenne_twister.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ Module "mersenne_twister"
+  (inc)(line-no.)(nest)(optimize)
+               1                     !$$$  Module Documentation Block
+               2                     !
+               3                     ! Module: mersenne_twister   Modern random number generator
+               4                     !   Prgmmr: Iredell          Org: W/NX23     date: 2005-06-14
+               5                     !
+               6                     ! Abstract: This module calculates random numbers using the Mersenne twister.
+               7                     !   (It has been adapted to a Fortran 90 module from open source software.
+               8                     !   The comments from the original software are given below in the remarks.)
+               9                     !   The Mersenne twister (aka MT19937) is a state-of-the-art random number
+              10                     !   generator based on Mersenne primes and originally developed in 1997 by
+              11                     !   Matsumoto and Nishimura. It has a period before repeating of 2^19937-1,
+              12                     !   which certainly should be good enough for geophysical purposes. :-)
+              13                     !   Considering the algorithm's robustness, it runs fairly speedily.
+              14                     !   (Some timing statistics are given below in the remarks.)
+              15                     !   This adaptation uses the standard Fortran 90 random number interface,
+              16                     !   which can generate an arbitrary number of random numbers at one time.
+              17                     !   The random numbers generated are uniformly distributed between 0 and 1.
+              18                     !   The module also can generate random numbers from a Gaussian distribution
+              19                     !   with mean 0 and standard deviation 1, using a Numerical Recipes algorithm.
+              20                     !   The module also can generate uniformly random integer indices.
+              21                     !   There are also thread-safe versions of the generators in this adaptation,
+              22                     !   necessitating the passing of generator states which must be kept private.
+              23                     !
+              24                     ! Program History Log:
+              25                     !   2005-06-14  Mark Iredell
+              26                     !
+              27                     ! Usage:
+              28                     !   The module can be compiled with 4-byte reals or with 8-byte reals, but
+              29                     !   4-byte integers are required. The module should be endian-independent.
+              30                     !   The Fortran 90 interfaces random_seed and random_number are overloaded
+              31                     !   and can be used as in the standard by adding the appropriate use statement
+              32                     !     use mersenne_twister
+              33                     !   In the below use cases, harvest is a real array of arbitrary size,
+              34                     !   and iharvest is an integer array of arbitrary size.
+              35                     !   To generate uniformly distributed random numbers between 0 and 1,
+              36                     !     call random_number(harvest)
+              37                     !   To generate Gaussian distributed random numbers with 0 mean and 1 sigma,
+              38                     !     call random_gauss(harvest)
+              39                     !   To generate uniformly distributed random integer indices between 0 and n,
+              40                     !     call random_index(n,iharvest)
+              41                     !   In standard "saved" mode, the random number generator can be used without
+              42                     !   setting a seed. But to set a seed, only 1 non-zero integer is required, e.g.
+              43                     !     call random_setseed(4357) ! set default seed
+              44                     !   The full generator state can be set via the standard interface random_seed,
+              45                     !   but it is recommended to use this method only to restore saved states, e.g.
+              46                     !     call random_seed(size=lsave)  ! get size of generator state seed array
+              47                     !     allocate isave(lsave)         ! allocate seed array
+              48                     !     call random_seed(get=isave)   ! fill seed array (then maybe save to disk)
+              49                     !     call random_seed(put=isave)   ! restore state (after read from disk maybe)
+              50                     !   Locally kept generator states can also be saved in a seed array, e.g.
+              51                     !     type(random_stat):: stat
+              52                     !     call random_seed(get=isave,stat=stat)  ! fill seed array
+              53                     !     call random_seed(put=isave,stat=stat)  ! restore state
+              54                     !   To generate random numbers in a threaded region, the "thread-safe" mode
+              55                     !   must be used where generator states of type random_state are passed, e.g.
+              56                     !     type(random_stat):: stat(8)
+              57                     !     do i=1,8                               ! threadable loop
+              58                     !       call random_setseed(7171*i,stat(i))  ! thread-safe call
+              59                     !     enddo
+              60                     !     do i=1,8                               ! threadable loop
+              61                     !       call random_number(harvest,stat(i))  ! thread-safe call
+              62                     !     enddo
+              63                     !     do i=1,8                               ! threadable loop
+              64                     !       call random_gauss(harvest,stat(i))   ! thread-safe call
+              65                     !     enddo
+              66                     !     do i=1,8                               ! threadable loop
+              67                     !       call random_index(n,iharvest,stat(i))! thread-safe call
+              68                     !     enddo
+              69                     !   There is also a relatively inefficient "interactive" mode available, where
+              70                     !   setting seeds and generating random numbers are done in the same call.
+              71                     !   There is also a functional mode available, returning one value at a time.
+              72                     !
+              73                     ! Public Defined Types:
+              74                     !   random_stat       Generator state (private contents)
+              75                     !
+              76                     ! Public Subprograms:
+              77                     !   random_seed         determine size or put or get state
+              78                     !     size              optional integer output size of seed array
+              79                     !     put               optional integer(:) input seed array
+              80                     !     get               optional integer(:) output seed array
+              81                     !     stat              optional type(random_stat) (thread-safe mode)
+              82                     !   random_setseed      set seed (thread-safe mode)
+              83                     !     inseed            integer seed input
+              84                     !     stat              type(random_stat) output
+              85                     !   random_setseed      set seed (saved mode)
+              86                     !     inseed            integer seed input
+              87                     !   random_number       get mersenne twister random numbers (thread-safe mode)
+              88                     !     harvest           real(:) numbers output
+              89                     !     stat              type(random_stat) input
+              90                     !   random_number       get mersenne twister random numbers (saved mode)
+              91                     !     harvest           real(:) numbers output
+              92                     !   random_number       get mersenne twister random numbers (interactive mode)
+              93                     !     harvest           real(:) numbers output
+              94                     !     inseed            integer seed input
+              95                     !   random_number_f     get mersenne twister random number (functional mode)
+              96                     !     harvest           real number output
+              97                     !   random_gauss        get gaussian random numbers (thread-safe mode)
+              98                     !     harvest           real(:) numbers output
+              99                     !     stat              type(random_stat) input
+             100                     !   random_gauss        get gaussian random numbers (saved mode)
+             101                     !     harvest           real(:) numbers output
+             102                     !   random_gauss        get gaussian random numbers (interactive mode)
+             103                     !     harvest           real(:) numbers output
+             104                     !     inseed            integer seed input
+             105                     !   random_gauss_f      get gaussian random number (functional mode)
+             106                     !     harvest           real number output
+             107                     !   random_index        get random indices (thread-safe mode)
+             108                     !     imax              integer maximum index input
+             109                     !     iharvest          integer(:) numbers output
+             110                     !     stat              type(random_stat) input
+             111                     !   random_index        get random indices (saved mode)
+             112                     !     imax              integer maximum index input
+             113                     !     iharvest          integer(:) numbers output
+             114                     !   random_index        get random indices (interactive mode)
+             115                     !     imax              integer maximum index input
+             116                     !     iharvest          integer(:) numbers output
+             117                     !     inseed            integer seed input
+             118                     !   random_index_f      get random index (functional mode)
+             119                     !     imax              integer maximum index input
+             120                     !     iharvest          integer number output
+             121                     !
+             122                     ! Remarks:
+             123                     !   (1) Here are the comments in the original open source code:
+             124                     !     A C-program for MT19937: Real number version
+             125                     !     genrand() generates one pseudorandom real number (double)
+             126                     !     which is uniformly distributed on [0,1]-interval, for each
+             127                     !     call. sgenrand(seed) set initial values to the working area
+             128                     !     of 624 words. Before genrand(), sgenrand(seed) must be
+             129                     !     called once. (seed is any 32-bit integer except for 0).
+             130                     !     Integer generator is obtained by modifying two lines.
+             131                     !     Coded by Takuji Nishimura, considering the suggestions by
+             132                     !     Topher Cooper and Marc Rieffel in July-Aug. 1997.
+             133                     !     This library is free software; you can redistribute it and/or
+             134                     !     modify it under the terms of the GNU Library General Public
+             135                     !     License as published by the Free Software Foundation; either
+             136                     !     version 2 of the License, or (at your option) any later
+             137                     !     version.
+             138                     !     This library is distributed in the hope that it will be useful,
+             139                     !     but WITHOUT ANY WARRANTY; without even the implied warranty of
+             140                     !     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+             141                     !     See the GNU Library General Public License for more details.
+             142                     !     You should have received a copy of the GNU Library General
+             143                     !     Public License along with this library; if not, write to the
+             144                     !     Free Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+             145                     !     02111-1307  USA
+             146                     !     Copyright (C) 1997 Makoto Matsumoto and Takuji Nishimura.
+             147                     !     When you use this, send an email to: matumoto@math.keio.ac.jp
+             148                     !     with an appropriate reference to your work.
+             149                     !     Fortran translation by Hiroshi Takano.  Jan. 13, 1999.
+             150                     !
+             151                     !   (2) On a single IBM Power4 processor on the NCEP operational cluster (2005)
+             152                     !     each Mersenne twister random number takes less than 30 ns, about 3 times
+             153                     !     slower than the default random number generator, and each random number
+             154                     !     from a Gaussian distribution takes less than 150 ns.
+             155                     !
+             156                     ! Attributes:
+             157                     !   Language: Fortran 90
+             158                     !
+             159                     !$$$
+             160                           module mersenne_twister
+             161                             private
+             162                     !  Public declarations
+             163                             public random_stat
+             164                             public random_seed
+             165                             public random_setseed
+             166                             public random_number
+             167                             public random_number_f
+             168                             public random_gauss
+             169                             public random_gauss_f
+             170                             public random_index
+             171                             public random_index_f
+             172                     !  Parameters
+             173                             integer,parameter:: n=624
+             174                             integer,parameter:: m=397
+             175                             integer,parameter:: mata=-1727483681 ! constant vector a
+             176                             integer,parameter:: umask=-2147483648 ! most significant w-r bits
+             177                             integer,parameter:: lmask =2147483647 ! least significant r bits
+             178                             integer,parameter:: tmaskb=-1658038656 ! tempering parameter
+             179                             integer,parameter:: tmaskc=-272236544 ! tempering parameter
+             180                             integer,parameter:: mag01(0:1)=(/0,mata/)
+             181                             integer,parameter:: iseed=4357
+             182                             integer,parameter:: nrest=n+6
+             183                     !  Defined types
+             184                             type random_stat
+             185                               private
+             186                               integer:: mti=n+1
+             187                               integer:: mt(0:n-1)
+             188                               integer:: iset
+             189                               real:: gset
+             190                             end type
+             191                     !  Saved data
+             192                             type(random_stat),save:: sstat
+             193                     !  Overloaded interfaces
+             194                             interface random_setseed
+             195                               module procedure random_setseed_s
+             196                               module procedure random_setseed_t
+             197                             end interface
+             198                             interface random_number
+             199                               module procedure random_number_i
+             200                               module procedure random_number_s
+             201                               module procedure random_number_t
+             202                             end interface
+             203                             interface random_gauss
+             204                               module procedure random_gauss_i
+             205                               module procedure random_gauss_s
+             206                               module procedure random_gauss_t
+             207                             end interface
+             208                             interface random_index
+             209                               module procedure random_index_i
+             210                               module procedure random_index_s
+             211                               module procedure random_index_t
+             212                             end interface
+             213                     !  All the subprograms
+             214                           contains
+             215                     !  Subprogram random_seed
+             216                     !  Sets and gets state; overloads Fortran 90 standard.
+             217                             subroutine random_seed(size,put,get,stat)
+             218                               implicit none
+             219                               integer,intent(out),optional:: size
+             220                               integer,intent(in),optional:: put(nrest)
+             221                               integer,intent(out),optional:: get(nrest)
+             222                               type(random_stat),intent(inout),optional:: stat
+             223     1                         if(present(size)) then     ! return size of seed array
+             224     1               !     if(present(put).or.present(get))&
+             225     1               !      call errmsg('RANDOM_SEED: more than one option set - some ignored')
+             226     1                           size=nrest
+             227     1                         elseif(present(put)) then  ! restore from seed array
+             228     1               !     if(present(get))&
+             229     1               !      call errmsg('RANDOM_SEED: more than one option set - some ignored')
+             230     2                           if(present(stat)) then
+             231     2                             stat%mti=put(1)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1600
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.80, ITR: 288, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      stat, put
+                                   <<< Loop-information  End >>>
+             232     2   s   3v                    stat%mt=put(2:n+1)
+             233     2                             stat%iset=put(n+2)
+             234     2                             stat%gset=transfer(put(n+3:nrest),stat%gset)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1334
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.37, ITR: 160, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      stat
+                                   <<< Loop-information  End >>>
+             235     3   s   2v                    if(stat%mti.lt.0.or.stat%mti.gt.n.or.any(stat%mt.eq.0).or. &
+             236     3                    &         stat%iset.lt.0.or.stat%iset.gt.1) then
+             237     3                               call random_setseed_t(iseed,stat)
+             238     3               !         call errmsg('RANDOM_SEED: invalid seeds put - default seeds used')
+             239     3                             endif
+             240     2                           else
+             241     2                             sstat%mti=put(1)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1600
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.80, ITR: 288, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sstat, put
+                                   <<< Loop-information  End >>>
+             242     2   s   3v                    sstat%mt=put(2:n+1)
+             243     2                             sstat%iset=put(n+2)
+             244     2                             sstat%gset=transfer(put(n+3:nrest),sstat%gset)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1334
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.37, ITR: 160, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sstat
+                                   <<< Loop-information  End >>>
+             245     3   s   2v                    if(sstat%mti.lt.0.or.sstat%mti.gt.n.or.any(sstat%mt.eq.0)  &
+             246     3                    &         .or.sstat%iset.lt.0.or.sstat%iset.gt.1) then
+             247     3                               call random_setseed_t(iseed,sstat)
+             248     3               !         call errmsg('RANDOM_SEED: invalid seeds put - default seeds used')
+             249     3                             endif
+             250     2                           endif
+             251     1                         elseif(present(get)) then  ! save to seed array
+             252     2                           if(present(stat)) then
+             253     2                             if(stat%mti.eq.n+1) call random_setseed_t(iseed,stat)
+             254     2                             get(1)=stat%mti
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1600
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.80, ITR: 288, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      get, stat
+                                   <<< Loop-information  End >>>
+             255     2   s   3v                    get(2:n+1)=stat%mt
+             256     2                             get(n+2)=stat%iset
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             257     2       f                     get(n+3:nrest)=transfer(stat%gset,get,nrest-(n+3)+1)
+             258     2                           else
+             259     2                             if(sstat%mti.eq.n+1) call random_setseed_t(iseed,sstat)
+             260     2                             get(1)=sstat%mti
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1600
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.80, ITR: 288, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      get, sstat
+                                   <<< Loop-information  End >>>
+             261     2   s   3v                    get(2:n+1)=sstat%mt
+             262     2                             get(n+2)=sstat%iset
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             263     2       f                     get(n+3:nrest)=transfer(sstat%gset,get,nrest-(n+3)+1)
+             264     2                           endif
+             265     1                         else                       ! reset default seed
+             266     2                           if(present(stat)) then
+             267     2                             call random_setseed_t(iseed,stat)
+             268     2                           else
+             269     2                             call random_setseed_t(iseed,sstat)
+             270     2                           endif
+             271     1                         endif
+             272                             end subroutine
+             273                     !  Subprogram random_setseed_s
+             274                     !  Sets seed in saved mode.
+             275                             subroutine random_setseed_s(inseed)
+             276                               implicit none
+             277                               integer,intent(in):: inseed
+             278                               call random_setseed_t(inseed,sstat)
+             279                             end subroutine
+             280                     !  Subprogram random_setseed_t
+             281                     !  Sets seed in thread-safe mode.
+             282                             subroutine random_setseed_t(inseed,stat)
+             283                               implicit none
+             284                               integer,intent(in):: inseed
+             285                               type(random_stat),intent(out):: stat
+             286                               integer ii,mti
+             287                               ii=inseed
+             288                               if(ii.eq.0) ii=iseed
+             289                               stat%mti=n
+             290                               stat%mt(0)=iand(ii,-1)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.60, ITR: 6, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      stat
+                                   <<< Loop-information  End >>>
+             291     1   s   2s                do mti=1,n-1
+             292     1   s   2s                  stat%mt(mti)=iand(69069*stat%mt(mti-1),-1)
+             293     1   s   2s                enddo
+             294                               stat%iset=0
+             295                               stat%gset=0.
+             296                             end subroutine
+             297                     !  Subprogram random_number_f
+             298                     !  Generates random numbers in functional mode.
+             299                             function random_number_f() result(harvest)
+             300                               implicit none
+             301                               real:: harvest
+             302                               real h(1)
+             303                               if(sstat%mti.eq.n+1) call random_setseed_t(iseed,sstat)
+             304                               call random_number_t(h,sstat)
+             305                               harvest=h(1)
+             306                             end function
+             307                     !  Subprogram random_number_i
+             308                     !  Generates random numbers in interactive mode.
+             309                             subroutine random_number_i(harvest,inseed)
+             310                               implicit none
+             311                               real,intent(out):: harvest(:)
+             312                               integer,intent(in):: inseed
+             313                               type(random_stat) stat
+             314                               call random_setseed_t(inseed,stat)
+             315                               call random_number_t(harvest,stat)
+             316                             end subroutine
+             317                     !  Subprogram random_number_s
+             318                     !  Generates random numbers in saved mode; overloads Fortran 90 standard.
+             319                             subroutine random_number_s(harvest)
+             320                               implicit none
+             321                               real,intent(out):: harvest(:)
+             322                               if(sstat%mti.eq.n+1) call random_setseed_t(iseed,sstat)
+             323                               call random_number_t(harvest,sstat)
+             324                             end subroutine
+             325                     !  Subprogram random_number_t
+             326                     !  Generates random numbers in thread-safe mode.
+             327                             subroutine random_number_t(harvest,stat)
+             328                               implicit none
+             329                               real,intent(out):: harvest(:)
+             330                               type(random_stat),intent(inout):: stat
+             331                               integer j,kk,y
+             332                               integer tshftu,tshfts,tshftt,tshftl
+             333                               tshftu(y)=ishft(y,-11)
+             334                               tshfts(y)=ishft(y,7)
+             335                               tshftt(y)=ishft(y,15)
+             336                               tshftl(y)=ishft(y,-18)
+             337     1                         do j=1,size(harvest)
+             338     2                           if(stat%mti.ge.n) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 534
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.26, ITR: 128, MVE: 2, POL: L)
+                                   <<< Loop-information  End >>>
+             339     3   s   2v                    do kk=0,n-m-1
+             340     3   p   2v                      y=ior(iand(stat%mt(kk),umask),iand(stat%mt(kk+1),lmask))
+             341     3   p   2v                      stat%mt(kk)=ieor(ieor(stat%mt(kk+m),ishft(y,-1)),        &
+             342     3                    &   mag01(iand(y,1)))
+             343     3   p   2v                    enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 12, MVE: 4, POL: S)
+                                   <<< Loop-information  End >>>
+             344     3   s   2s                    do kk=n-m,n-2
+             345     3   p   2v                      y=ior(iand(stat%mt(kk),umask),iand(stat%mt(kk+1),lmask))
+             346     3   m   2m                      stat%mt(kk)=ieor(ieor(stat%mt(kk+(m-n)),ishft(y,-1)),    &
+             347     3                    &   mag01(iand(y,1)))
+             348     3   p   2v                    enddo
+             349     2                             y=ior(iand(stat%mt(n-1),umask),iand(stat%mt(0),lmask))
+             350     2                             stat%mt(n-1)=ieor(ieor(stat%mt(m-1),ishft(y,-1)),          &
+             351     2                    &   mag01(iand(y,1)))
+             352     2                             stat%mti=0
+             353     2                           endif
+             354     1                           y=stat%mt(stat%mti)
+             355     1                           y=ieor(y,tshftu(y))
+             356     1                           y=ieor(y,iand(tshfts(y),tmaskb))
+             357     1                           y=ieor(y,iand(tshftt(y),tmaskc))
+             358     1                           y=ieor(y,tshftl(y))
+             359     2                           if(y.lt.0) then
+             360     2                             harvest(j)=(real(y)+2.0**32)/(2.0**32-1.0)
+             361     2                           else
+             362     2                             harvest(j)=real(y)/(2.0**32-1.0)
+             363     2                           endif
+             364     1                           stat%mti=stat%mti+1
+             365     1                         enddo
+             366                             end subroutine
+             367                     !  Subprogram random_gauss_f
+             368                     !  Generates Gaussian random numbers in functional mode.
+             369                             function random_gauss_f() result(harvest)
+             370                               implicit none
+             371                               real:: harvest
+             372                               real h(1)
+             373                               if(sstat%mti.eq.n+1) call random_setseed_t(iseed,sstat)
+             374                               call random_gauss_t(h,sstat)
+             375                               harvest=h(1)
+             376                             end function
+             377                     !  Subprogram random_gauss_i
+             378                     !  Generates Gaussian random numbers in interactive mode.
+             379                             subroutine random_gauss_i(harvest,inseed)
+             380                               implicit none
+             381                               real,intent(out):: harvest(:)
+             382                               integer,intent(in):: inseed
+             383                               type(random_stat) stat
+             384                               call random_setseed_t(inseed,stat)
+             385                               call random_gauss_t(harvest,stat)
+             386                             end subroutine
+             387                     !  Subprogram random_gauss_s
+             388                     !  Generates Gaussian random numbers in saved mode.
+             389                             subroutine random_gauss_s(harvest)
+             390                               implicit none
+             391                               real,intent(out):: harvest(:)
+             392                               if(sstat%mti.eq.n+1) call random_setseed_t(iseed,sstat)
+             393                               call random_gauss_t(harvest,sstat)
+             394                             end subroutine
+             395                     !  Subprogram random_gauss_t
+             396                     !  Generates Gaussian random numbers in thread-safe mode.
+             397                             subroutine random_gauss_t(harvest,stat)
+             398                               implicit none
+             399                               real,intent(out):: harvest(:)
+             400                               type(random_stat),intent(inout):: stat
+             401                               integer mx,my,mz,j
+             402                               real r2(2),r,g1,g2
+             403                               mz=size(harvest)
+             404                               if(mz.le.0) return
+             405                               mx=0
+             406     1                         if(stat%iset.eq.1) then
+             407     1                           mx=1
+             408     1                           harvest(1)=stat%gset
+             409     1                           stat%iset=0
+             410     1                         endif
+             411                               my=(mz-mx)/2*2+mx
+             412     1                         do
+             413     1                           call random_number_t(harvest(mx+1:my),stat)
+             414     2                           do j=mx,my-2,2
+             415     2    i                        call rgauss(harvest(j+1),harvest(j+2),r,g1,g2)
+             416     3                             if(r.lt.1.) then
+             417     3                               harvest(mx+1)=g1
+             418     3                               harvest(mx+2)=g2
+             419     3                               mx=mx+2
+             420     3                             endif
+             421     2                           enddo
+             422     1                           if(mx.eq.my) exit
+             423     1                         enddo
+             424     1                         if(my.lt.mz) then
+             425     2                           do
+             426     2                             call random_number_t(r2,stat)
+             427     2    i                        call rgauss(r2(1),r2(2),r,g1,g2)
+             428     2                             if(r.lt.1.) exit
+             429     2                           enddo
+             430     1                           harvest(mz)=g1
+             431     1                           stat%gset=g2
+             432     1                           stat%iset=1
+             433     1                         endif
+             434                             contains
+             435                     !  Numerical Recipes algorithm to generate Gaussian random numbers.
+             436                               subroutine rgauss(r1,r2,r,g1,g2)
+             437                                 real,intent(in):: r1,r2
+             438                                 real,intent(out):: r,g1,g2
+             439                                 real v1,v2,fac
+             440                                 v1=2.*r1-1.
+             441                                 v2=2.*r2-1.
+             442                                 r=v1**2+v2**2
+             443     1                           if(r.lt.1.) then
+             444     1                             fac=sqrt(-2.*log(r)/r)
+             445     1                             g1=v1*fac
+             446     1                             g2=v2*fac
+             447     1                           endif
+             448                               end subroutine
+             449                             end subroutine
+             450                     !  Subprogram random_index_f
+             451                     !  Generates random indices in functional mode.
+             452                             function random_index_f(imax) result(iharvest)
+             453                               implicit none
+             454                               integer,intent(in):: imax
+             455                               integer:: iharvest
+             456                               integer ih(1)
+             457                               if(sstat%mti.eq.n+1) call random_setseed_t(iseed,sstat)
+             458                               call random_index_t(imax,ih,sstat)
+             459                               iharvest=ih(1)
+             460                             end function
+             461                     !  Subprogram random_index_i
+             462                     !  Generates random indices in interactive mode.
+             463                             subroutine random_index_i(imax,iharvest,inseed)
+             464                               implicit none
+             465                               integer,intent(in):: imax
+             466                               integer,intent(out):: iharvest(:)
+             467                               integer,intent(in):: inseed
+             468                               type(random_stat) stat
+             469                               call random_setseed_t(inseed,stat)
+             470                               call random_index_t(imax,iharvest,stat)
+             471                             end subroutine
+             472                     !  Subprogram random_index_s
+             473                     !  Generates random indices in saved mode.
+             474                             subroutine random_index_s(imax,iharvest)
+             475                               implicit none
+             476                               integer,intent(in):: imax
+             477                               integer,intent(out):: iharvest(:)
+             478                               if(sstat%mti.eq.n+1) call random_setseed_t(iseed,sstat)
+             479                               call random_index_t(imax,iharvest,sstat)
+             480                             end subroutine
+             481                     !  Subprogram random_index_t
+             482                     !  Generates random indices in thread-safe mode.
+             483                             subroutine random_index_t(imax,iharvest,stat)
+             484                               implicit none
+             485                               integer,intent(in):: imax
+             486                               integer,intent(out):: iharvest(:)
+             487                               type(random_stat),intent(inout):: stat
+             488                               integer,parameter:: mh=n
+             489                               integer i1,i2,mz
+             490                               real h(mh)
+             491                               mz=size(iharvest)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      (unknown)
+                                   <<< Loop-information  End >>>
+             492     1                         do i1=1,mz,mh
+             493     1                           i2=min((i1-1)+mh,mz)
+             494     1                           call random_number_t(h(:i2-(i1-1)),stat)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 43
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.16, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      h
+                                   <<< Loop-information  End >>>
+             495     1  pp   2v                  iharvest(i1:i2)=max(ceiling(h(:i2-(i1-1))*imax),1)
+             496     1                         enddo
+             497                             end subroutine
+             498                           end module
+
+ Procedure information
+   Lines      : 498
+   Statements : 291
+   Stack(byte): 20032
+   Prefetch num: 0
+
+ Scoping unit of module : mersenne_twister
+   Attribute and Cross reference of name
+     iseed
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 181
+      |(Definition)     : 
+      |(Reference)      : 
+     lmask
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 177
+      |(Definition)     : 
+      |(Reference)      : 
+     m
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 174
+      |(Definition)     : 
+      |(Reference)      : 
+     mag01
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PRIVATE, DIMENSION
+      |(Declaration)    : 180
+      |(Definition)     : 
+      |(Reference)      : 
+     mata
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 175
+      |(Definition)     : 
+      |(Reference)      : 180
+     mersenne_twister
+      |(Class and Type) : module name
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 160
+      |(Definition)     : 
+      |(Reference)      : 
+     n
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 173
+      |(Definition)     : 
+      |(Reference)      : 182
+     nrest
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 182
+      |(Definition)     : 
+      |(Reference)      : 
+     random_gauss
+      |(Class and Type) : generic name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 168  203
+      |(Definition)     : 
+      |(Reference)      : 
+     random_gauss_f
+      |(Class and Type) : module function name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 169
+      |(Definition)     : 
+      |(Reference)      : 
+     random_gauss_i
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 204
+      |(Definition)     : 
+      |(Reference)      : 
+     random_gauss_s
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 205
+      |(Definition)     : 
+      |(Reference)      : 
+     random_gauss_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 206
+      |(Definition)     : 
+      |(Reference)      : 
+     random_index
+      |(Class and Type) : generic name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 170  208
+      |(Definition)     : 
+      |(Reference)      : 
+     random_index_f
+      |(Class and Type) : module function name, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 171
+      |(Definition)     : 
+      |(Reference)      : 
+     random_index_i
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 209
+      |(Definition)     : 
+      |(Reference)      : 
+     random_index_s
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 210
+      |(Definition)     : 
+      |(Reference)      : 
+     random_index_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 211
+      |(Definition)     : 
+      |(Reference)      : 
+     random_number
+      |(Class and Type) : generic name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 166  198
+      |(Definition)     : 
+      |(Reference)      : 
+     random_number_f
+      |(Class and Type) : module function name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 167
+      |(Definition)     : 
+      |(Reference)      : 
+     random_number_i
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 199
+      |(Definition)     : 
+      |(Reference)      : 
+     random_number_s
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 200
+      |(Definition)     : 
+      |(Reference)      : 
+     random_number_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 201
+      |(Definition)     : 
+      |(Reference)      : 
+     random_seed
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 164
+      |(Definition)     : 
+      |(Reference)      : 
+     random_setseed
+      |(Class and Type) : generic name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 165  194
+      |(Definition)     : 
+      |(Reference)      : 
+     random_setseed_s
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 195
+      |(Definition)     : 
+      |(Reference)      : 
+     random_setseed_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 196
+      |(Definition)     : 
+      |(Reference)      : 
+     random_stat
+      |(Class and Type) : type name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 163
+      |(Definition)     : 184
+      |(Reference)      : 192
+     sstat
+      |(Class and Type) : variable name, TYPE(random_stat)
+      |(Attributes)     : PRIVATE, SAVE, initialized
+      |(Declaration)    : 192
+      |(Definition)     : 
+      |(Reference)      : 
+     tmaskb
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 178
+      |(Definition)     : 
+      |(Reference)      : 
+     tmaskc
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 179
+      |(Definition)     : 
+      |(Reference)      : 
+     umask
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 176
+      |(Definition)     : 
+      |(Reference)      : 
+   Derived type construction
+     random_stat
+      |  (Attributes) : PRIVATE
+      |mti
+      |  (Type and Attributes) : INTEGER(4), default initialize, PRIVATE
+      |mt
+      |  (Type and Attributes) : INTEGER(4), DIMENSION, PRIVATE
+      |iset
+      |  (Type and Attributes) : INTEGER(4), PRIVATE
+      |gset
+      |  (Type and Attributes) : REAL(8), PRIVATE
+
+ Scoping unit of module sub-program : random_seed
+   Attribute and Cross reference of name
+     any
+      |(Class and Type) : intrinsic function name, LOGICAL(4)
+      |(Attributes)     : PURE
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 235  245
+     get
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, INTENT(OUT), OPTIONAL, dummy-argument
+      |(Declaration)    : 217  221
+      |(Definition)     : 254  255  256  257  260  261  262  263
+      |(Reference)      : 251  257  263
+     iseed
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 237  247  253  259  267  269
+     n
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 232  233  234  235  242  243  244  245  253  255  256  257  257  259  261  262  263  263
+     nrest
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 220  221  226  234  244  257  257  263  263
+     present
+      |(Class and Type) : intrinsic function name, LOGICAL(4)
+      |(Attributes)     : PURE
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 223  227  230  251  252  266
+     put
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, INTENT(IN), OPTIONAL, dummy-argument
+      |(Declaration)    : 217  220
+      |(Definition)     : 
+      |(Reference)      : 227  231  232  233  234  241  242  243  244
+     random_seed
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 217
+      |(Reference)      : 
+     random_setseed_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 237  247  253  259  267  269
+     random_stat
+      |(Class and Type) : type name
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 222
+     size
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(OUT), OPTIONAL, dummy-argument
+      |(Declaration)    : 217  219
+      |(Definition)     : 226
+      |(Reference)      : 223
+     sstat
+      |(Class and Type) : variable name, TYPE(random_stat)
+      |(Attributes)     : SAVE, host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 241  242  243  244  247  259  269
+      |(Reference)      : 244  245  245  245  245  245  259  260  261  262  263
+     stat
+      |(Class and Type) : variable name, TYPE(random_stat)
+      |(Attributes)     : INTENT(INOUT), OPTIONAL, dummy-argument, initialized
+      |(Declaration)    : 217  222
+      |(Definition)     : 231  232  233  234  237  253  267
+      |(Reference)      : 230  234  235  235  235  235  235  252  253  254  255  256  257  266
+     transfer
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 234  244  257  263
+
+ Scoping unit of module sub-program : random_setseed_s
+   Attribute and Cross reference of name
+     inseed
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 275  277
+      |(Definition)     : 
+      |(Reference)      : 278
+     random_setseed_s
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 275
+      |(Reference)      : 
+     random_setseed_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 278
+     sstat
+      |(Class and Type) : variable name, TYPE(random_stat)
+      |(Attributes)     : SAVE, host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 278
+      |(Reference)      : 
+
+ Scoping unit of module sub-program : random_setseed_t
+   Attribute and Cross reference of name
+     iand
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 290  292
+     ii
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 286
+      |(Definition)     : 287  288
+      |(Reference)      : 288  290
+     inseed
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 282  284
+      |(Definition)     : 
+      |(Reference)      : 287
+     iseed
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 288
+     mti
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 286
+      |(Definition)     : 291
+      |(Reference)      : 292  292
+     n
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 289  291
+     random_setseed_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 282
+      |(Reference)      : 
+     random_stat
+      |(Class and Type) : type name
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 285
+     stat
+      |(Class and Type) : variable name, TYPE(random_stat)
+      |(Attributes)     : INTENT(OUT), dummy-argument, default-initialized
+      |(Declaration)    : 282  285
+      |(Definition)     : 289  290  292  294  295
+      |(Reference)      : 292
+
+ Scoping unit of module sub-program : random_number_f
+   Attribute and Cross reference of name
+     h
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 302
+      |(Definition)     : 304
+      |(Reference)      : 305
+     harvest
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : result-value
+      |(Declaration)    : 299  301
+      |(Definition)     : 305
+      |(Reference)      : 
+     iseed
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 303
+     n
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 303
+     random_number_f
+      |(Class and Type) : module function name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 299
+      |(Reference)      : 
+     random_number_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 304
+     random_setseed_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 303
+     sstat
+      |(Class and Type) : variable name, TYPE(random_stat)
+      |(Attributes)     : SAVE, host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 303  304
+      |(Reference)      : 303
+
+ Scoping unit of module sub-program : random_number_i
+   Attribute and Cross reference of name
+     harvest
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(OUT), dummy-argument
+      |(Declaration)    : 309  311
+      |(Definition)     : 315
+      |(Reference)      : 
+     inseed
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 309  312
+      |(Definition)     : 
+      |(Reference)      : 314
+     random_number_i
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 309
+      |(Reference)      : 
+     random_number_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 315
+     random_setseed_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 314
+     random_stat
+      |(Class and Type) : type name
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 313
+     stat
+      |(Class and Type) : variable name, TYPE(random_stat)
+      |(Attributes)     : 
+      |(Declaration)    : 313
+      |(Definition)     : 314  315
+      |(Reference)      : 
+
+ Scoping unit of module sub-program : random_number_s
+   Attribute and Cross reference of name
+     harvest
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(OUT), dummy-argument
+      |(Declaration)    : 319  321
+      |(Definition)     : 323
+      |(Reference)      : 
+     iseed
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 322
+     n
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 322
+     random_number_s
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 319
+      |(Reference)      : 
+     random_number_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 323
+     random_setseed_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 322
+     sstat
+      |(Class and Type) : variable name, TYPE(random_stat)
+      |(Attributes)     : SAVE, host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 322  323
+      |(Reference)      : 322
+
+ Scoping unit of module sub-program : random_number_t
+   Attribute and Cross reference of name
+     harvest
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(OUT), dummy-argument
+      |(Declaration)    : 327  329
+      |(Definition)     : 360  362
+      |(Reference)      : 337
+     iand
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 340  340  341  345  345  346  349  349  350  356  357
+     ieor
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 341  341  346  346  350  350  355  356  357  358
+     ior
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 340  345  349
+     ishft
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 333  334  335  336  341  346  350
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 331
+      |(Definition)     : 337
+      |(Reference)      : 360  362
+     kk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 331
+      |(Definition)     : 339  344
+      |(Reference)      : 340  340  341  341  345  345  346  346
+     lmask
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 340  345  349
+     m
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 341  346  346  350
+     mag01
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 341  346  350
+     n
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 338  339  339  344  344  344  349  350
+     random_number_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 327
+      |(Reference)      : 
+     random_stat
+      |(Class and Type) : type name
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 330
+     real
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 360  362
+     size
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 337
+     stat
+      |(Class and Type) : variable name, TYPE(random_stat)
+      |(Attributes)     : INTENT(INOUT), dummy-argument, initialized
+      |(Declaration)    : 327  330
+      |(Definition)     : 341  346  350  352  364
+      |(Reference)      : 338  340  340  341  345  345  346  349  349  350  354  354  364
+     tmaskb
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 356
+     tmaskc
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 357
+     tshftl
+      |(Class and Type) : statement function name, INTEGER(4)
+      |(Attributes)     : PURE
+      |(Declaration)    : 332  336
+      |(Definition)     : 
+      |(Reference)      : 358
+     tshfts
+      |(Class and Type) : statement function name, INTEGER(4)
+      |(Attributes)     : PURE
+      |(Declaration)    : 332  334
+      |(Definition)     : 
+      |(Reference)      : 356
+     tshftt
+      |(Class and Type) : statement function name, INTEGER(4)
+      |(Attributes)     : PURE
+      |(Declaration)    : 332  335
+      |(Definition)     : 
+      |(Reference)      : 357
+     tshftu
+      |(Class and Type) : statement function name, INTEGER(4)
+      |(Attributes)     : PURE
+      |(Declaration)    : 332  333
+      |(Definition)     : 
+      |(Reference)      : 355
+     umask
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 340  345  349
+     y
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 331
+      |(Definition)     : 340  345  349  354  355  356  357  358
+      |(Reference)      : 333  333  334  334  335  335  336  336  341  341  346  346  350  350  355  355  356  356  357  357  358  358  359  360  362
+
+ Scoping unit of module sub-program : random_gauss_f
+   Attribute and Cross reference of name
+     h
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 372
+      |(Definition)     : 374
+      |(Reference)      : 375
+     harvest
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : result-value
+      |(Declaration)    : 369  371
+      |(Definition)     : 375
+      |(Reference)      : 
+     iseed
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 373
+     n
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 373
+     random_gauss_f
+      |(Class and Type) : module function name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 369
+      |(Reference)      : 
+     random_gauss_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 374
+     random_setseed_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 373
+     sstat
+      |(Class and Type) : variable name, TYPE(random_stat)
+      |(Attributes)     : SAVE, host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 373  374
+      |(Reference)      : 373
+
+ Scoping unit of module sub-program : random_gauss_i
+   Attribute and Cross reference of name
+     harvest
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(OUT), dummy-argument
+      |(Declaration)    : 379  381
+      |(Definition)     : 385
+      |(Reference)      : 
+     inseed
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 379  382
+      |(Definition)     : 
+      |(Reference)      : 384
+     random_gauss_i
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 379
+      |(Reference)      : 
+     random_gauss_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 385
+     random_setseed_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 384
+     random_stat
+      |(Class and Type) : type name
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 383
+     stat
+      |(Class and Type) : variable name, TYPE(random_stat)
+      |(Attributes)     : 
+      |(Declaration)    : 383
+      |(Definition)     : 384  385
+      |(Reference)      : 
+
+ Scoping unit of module sub-program : random_gauss_s
+   Attribute and Cross reference of name
+     harvest
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(OUT), dummy-argument
+      |(Declaration)    : 389  391
+      |(Definition)     : 393
+      |(Reference)      : 
+     iseed
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 392
+     n
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 392
+     random_gauss_s
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 389
+      |(Reference)      : 
+     random_gauss_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 393
+     random_setseed_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 392
+     sstat
+      |(Class and Type) : variable name, TYPE(random_stat)
+      |(Attributes)     : SAVE, host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 392  393
+      |(Reference)      : 392
+
+ Scoping unit of module sub-program : random_gauss_t
+   Attribute and Cross reference of name
+     g1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 402
+      |(Definition)     : 415  427
+      |(Reference)      : 417  430
+     g2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 402
+      |(Definition)     : 415  427
+      |(Reference)      : 418  431
+     harvest
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(OUT), dummy-argument
+      |(Declaration)    : 397  399
+      |(Definition)     : 408  413  417  418  430
+      |(Reference)      : 403  415  415
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 401
+      |(Definition)     : 414
+      |(Reference)      : 415  415
+     mx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 401
+      |(Definition)     : 405  407  419
+      |(Reference)      : 411  411  413  414  417  418  419  422
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 401
+      |(Definition)     : 411
+      |(Reference)      : 413  414  422  424
+     mz
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 401
+      |(Definition)     : 403
+      |(Reference)      : 404  411  424  430
+     r
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 402
+      |(Definition)     : 415  427
+      |(Reference)      : 416  428
+     r2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 402
+      |(Definition)     : 426
+      |(Reference)      : 427  427
+     random_gauss_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 397
+      |(Reference)      : 
+     random_number_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 413  426
+     random_stat
+      |(Class and Type) : type name
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 400
+     rgauss
+      |(Class and Type) : internal subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 415  427
+     size
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 403
+     stat
+      |(Class and Type) : variable name, TYPE(random_stat)
+      |(Attributes)     : INTENT(INOUT), dummy-argument, initialized
+      |(Declaration)    : 397  400
+      |(Definition)     : 409  413  426  431  432
+      |(Reference)      : 406  408
+
+ Scoping unit of internal sub-program : rgauss
+   Attribute and Cross reference of name
+     fac
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 439
+      |(Definition)     : 444
+      |(Reference)      : 445  446
+     g1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(OUT), dummy-argument
+      |(Declaration)    : 436  438
+      |(Definition)     : 445
+      |(Reference)      : 
+     g2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(OUT), dummy-argument
+      |(Declaration)    : 436  438
+      |(Definition)     : 446
+      |(Reference)      : 
+     log
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 444
+     r
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(OUT), dummy-argument
+      |(Declaration)    : 436  438
+      |(Definition)     : 442
+      |(Reference)      : 443  444  444
+     r1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 436  437
+      |(Definition)     : 
+      |(Reference)      : 440
+     r2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 436  437
+      |(Definition)     : 
+      |(Reference)      : 441
+     rgauss
+      |(Class and Type) : internal subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 436
+      |(Reference)      : 
+     sqrt
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 444
+     v1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 439
+      |(Definition)     : 440
+      |(Reference)      : 442  445
+     v2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 439
+      |(Definition)     : 441
+      |(Reference)      : 442  446
+
+ Scoping unit of module sub-program : random_index_f
+   Attribute and Cross reference of name
+     ih
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 456
+      |(Definition)     : 458
+      |(Reference)      : 459
+     iharvest
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : result-value
+      |(Declaration)    : 452  455
+      |(Definition)     : 459
+      |(Reference)      : 
+     imax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 452  454
+      |(Definition)     : 
+      |(Reference)      : 458
+     iseed
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 457
+     n
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 457
+     random_index_f
+      |(Class and Type) : module function name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 452
+      |(Reference)      : 
+     random_index_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 458
+     random_setseed_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 457
+     sstat
+      |(Class and Type) : variable name, TYPE(random_stat)
+      |(Attributes)     : SAVE, host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 457  458
+      |(Reference)      : 457
+
+ Scoping unit of module sub-program : random_index_i
+   Attribute and Cross reference of name
+     iharvest
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, INTENT(OUT), dummy-argument
+      |(Declaration)    : 463  466
+      |(Definition)     : 470
+      |(Reference)      : 
+     imax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 463  465
+      |(Definition)     : 
+      |(Reference)      : 470
+     inseed
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 463  467
+      |(Definition)     : 
+      |(Reference)      : 469
+     random_index_i
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 463
+      |(Reference)      : 
+     random_index_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 470
+     random_setseed_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 469
+     random_stat
+      |(Class and Type) : type name
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 468
+     stat
+      |(Class and Type) : variable name, TYPE(random_stat)
+      |(Attributes)     : 
+      |(Declaration)    : 468
+      |(Definition)     : 469  470
+      |(Reference)      : 
+
+ Scoping unit of module sub-program : random_index_s
+   Attribute and Cross reference of name
+     iharvest
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, INTENT(OUT), dummy-argument
+      |(Declaration)    : 474  477
+      |(Definition)     : 479
+      |(Reference)      : 
+     imax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 474  476
+      |(Definition)     : 
+      |(Reference)      : 479
+     iseed
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 478
+     n
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 478
+     random_index_s
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 474
+      |(Reference)      : 
+     random_index_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 479
+     random_setseed_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 478
+     sstat
+      |(Class and Type) : variable name, TYPE(random_stat)
+      |(Attributes)     : SAVE, host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 478  479
+      |(Reference)      : 478
+
+ Scoping unit of module sub-program : random_index_t
+   Attribute and Cross reference of name
+     ceiling
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 495
+     h
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 490
+      |(Definition)     : 494
+      |(Reference)      : 495
+     i1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 489
+      |(Definition)     : 492
+      |(Reference)      : 493  494  495  495
+     i2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 489
+      |(Definition)     : 493
+      |(Reference)      : 494  495  495
+     iharvest
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, INTENT(OUT), dummy-argument
+      |(Declaration)    : 483  486
+      |(Definition)     : 495
+      |(Reference)      : 491
+     imax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 483  485
+      |(Definition)     : 
+      |(Reference)      : 495
+     max
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 495
+     mh
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 488
+      |(Definition)     : 
+      |(Reference)      : 490  492  493
+     min
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 493
+     mz
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 489
+      |(Definition)     : 491
+      |(Reference)      : 492  493
+     n
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 488
+     random_index_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 483
+      |(Reference)      : 
+     random_number_t
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 494
+     random_stat
+      |(Class and Type) : type name
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 487
+     size
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 491
+     stat
+      |(Class and Type) : variable name, TYPE(random_stat)
+      |(Attributes)     : INTENT(INOUT), dummy-argument, initialized
+      |(Declaration)    : 483  487
+      |(Definition)     : 494
+      |(Reference)      : 
+
+ Total information
+   Procedures       : 1
+   Total lines      : 498
+   Total statements : 291
+   Total stack(byte): 20032
+   Total prefetch num: 0
+

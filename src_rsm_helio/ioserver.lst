@@ -1,0 +1,383 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar  7 10:21:07 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm_helio
+   Source file       : ioserver.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "ioserver"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine ioserver(nxmy)
+               2                     
+               3                     !CWB2016 for gfs io_quilting
+               4                     
+               5                           use const, only : ifilout
+               6                     
+               7                           implicit none
+               8                     
+               9                           integer, parameter :: NMAX=2048
+              10                     
+              11                           integer  nxmy,i,j,ist,ist1,ist2,iL,Len,ncnt,ntag
+              12                           real*8   z(nxmy,NMAX)
+              13                           character*34 key,keys(NMAX)
+              14                     
+              15                     !CWB2016
+              16                           integer  ifromtau,itotau,istat
+              17                           ifromtau=0
+              18                     
+              19                           call dmsmsg("ALL",ist)
+              20                           call dmsopn(ifilout,"w",ist)
+              21     1                     if(ist.ne.0)then
+              22     1                       print*,'ioserver: dmsfile open error, dmsfile and status=',trim(ifilout),ist
+              23     1                       call dmsexit (1)
+              24     1                       stop
+              25     1                     endif
+              26                     
+              27                           ntag=0
+              28                           ncnt=0
+              29                     
+              30     1                     do while (.true.)
+              31     1                       ntag=ntag+1
+              32     1                       call mpe_recv_key(key,ntag,ist1)
+              33     1                       if(key(1:4).eq."DONE")goto 100
+              34     2                       if(key(1:4).eq."DOIT")then
+              35     2               
+              36     2               !CWB2018 bug fixed
+              37     3                       if(ncnt.gt.0)then
+              38     3               
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 4
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+              39     4                         do j=1,ncnt
+              40     4                            call dmsput(ifilout,keys(j)//char(0),z(1,j),ist)
+              41     5                            if(ist.ne.0)then
+              42     5                              print *,' '
+              43     5                              print *,'** Bad I/O: ',keys(j),' dmsput error:',trim(ifilout)
+              44     5                              call dmscls (ifilout,ist)
+              45     5                              stop
+              46     5                            endif
+              47     4                         enddo
+              48     3               
+              49     3               !CWB2016
+              50     3                         read(keys(ncnt)(7:10),'(i4)')itotau
+              51     3               
+              52     3               !CWB20160927 for NWP control
+              53     3                         if(itotau == 9) call sleep(20)
+              54     3               
+              55     4                         if((itotau /= 0).and.(itotau /= ifromtau))then
+              56     4                         call sendmsg ('gfs',ifromtau,itotau,istat)
+              57     5                         if (istat.eq.-1) then
+              58     5                             print *,'ioserver:  SENDMSG ERROR '
+              59     5                             call dmsexit(-1)
+              60     5                         endif
+              61     4                         ifromtau=itotau
+              62     4                         endif
+              63     3               
+              64     3                         ncnt=0
+              65     3               
+              66     3               !CWB2018 bug fixed
+              67     3                       endif
+              68     2               
+              69     2                       else
+              70     2                         ncnt=ncnt+1
+              71     3                         if(ncnt.gt.NMAX)then
+              72     3                           print *,'<<< ioserver : flushing dms buffer to prevent overflow >>>'
+              73     4                           do j=1,NMAX
+              74     4                              call dmsput(ifilout,keys(j)//char(0),z(1,j),ist)
+              75     5                              if(ist.ne.0)then
+              76     5                                print *,' '
+              77     5                                print *,'** Bad I/O: ',keys(j),' dmsput error:',trim(ifilout)
+              78     5                                call dmscls (ifilout,ist)
+              79     5                                stop
+              80     5                              endif
+              81     4                           enddo
+              82     3                           ncnt=1
+              83     3                         endif
+              84     2               
+              85     2                         keys(ncnt)=key
+              86     2                         ntag=ntag+1
+              87     2                         call mpe_recv_data(z(1,ncnt),nxmy,ntag,ist2)
+              88     2                       endif
+              89     1                     enddo
+              90                     
+              91                     100   continue
+              92                           call dmscls (ifilout,ist)
+              93                     
+              94                           call mpe_finalize
+              95                           call dmsexit(0)
+              96                           stop
+              97                     
+              98                           return
+              99                           end
+
+ Procedure information
+   Lines      : 99
+   Statements : 72
+   Stack(byte): 71536
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : ioserver
+   Attribute and Cross reference of name
+     char
+      |(Class and Type) : intrinsic function name, CHARACTER((unknown),1)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 40  74
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 5
+     dmscls
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 44  78  92
+     dmsexit
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 23  59  95
+     dmsmsg
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 19
+     dmsopn
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 20
+     dmsput
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 40  74
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 11
+      |(Definition)     : 
+      |(Reference)      : 
+     iL
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 11
+      |(Definition)     : 
+      |(Reference)      : 
+     ifilout
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 20  40  44  74  78  92
+      |(Reference)      : 5  22  43  77
+     ifromtau
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 16
+      |(Definition)     : 17  56  61
+      |(Reference)      : 55
+     ioserver
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     ist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 11
+      |(Definition)     : 19  20  40  44  74  78  92
+      |(Reference)      : 21  22  41  75
+     ist1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 11
+      |(Definition)     : 32
+      |(Reference)      : 
+     ist2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 11
+      |(Definition)     : 87
+      |(Reference)      : 
+     istat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 16
+      |(Definition)     : 56
+      |(Reference)      : 57
+     itotau
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 16
+      |(Definition)     : 50  56
+      |(Reference)      : 53  55  55  61
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 11
+      |(Definition)     : 39  73
+      |(Reference)      : 40  40  43  74  74  77
+     key
+      |(Class and Type) : variable name, CHARACTER(34,1)
+      |(Attributes)     : 
+      |(Declaration)    : 13
+      |(Definition)     : 32
+      |(Reference)      : 33  34  85
+     keys
+      |(Class and Type) : variable name, CHARACTER(34,1)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 13
+      |(Definition)     : 85
+      |(Reference)      : 40  43  50  74  77
+     Len
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 11
+      |(Definition)     : 
+      |(Reference)      : 
+     mpe_finalize
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 94
+     mpe_recv_data
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 87
+     mpe_recv_key
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 32
+     NMAX
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 9
+      |(Definition)     : 
+      |(Reference)      : 12  13  71  73
+     ncnt
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 11
+      |(Definition)     : 28  64  70  82
+      |(Reference)      : 37  39  50  70  71  85  87
+     ntag
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 11
+      |(Definition)     : 27  31  32  86  87
+      |(Reference)      : 31  86
+     nxmy
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  11
+      |(Definition)     : 87
+      |(Reference)      : 12
+     sendmsg
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 56
+     sleep
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 53
+     trim
+      |(Class and Type) : intrinsic function name, CHARACTER((unknown),1)
+      |(Attributes)     : PURE
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 22  43  77
+     z
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 12
+      |(Definition)     : 40  74  87
+      |(Reference)      : 
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+        100  execution     (Definition) 91  
+                           (Reference)  33
+
+ Total information
+   Procedures       : 1
+   Total lines      : 99
+   Total statements : 72
+   Total stack(byte): 71536
+   Total prefetch num: 0
+

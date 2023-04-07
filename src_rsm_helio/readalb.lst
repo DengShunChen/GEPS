@@ -1,0 +1,644 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar  7 10:21:48 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm_helio
+   Source file       : readalb.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "readalb"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine readalb(bckfile,nx,my,my_max,julian,ggdef,            &
+               2                                              alvsf,alvwf,alnsf,alnwf,facsf,facwf)
+               3                     !----------------------------------------------------------------
+               4                     !
+               5                     !  read climt data from data base
+               6                     !
+               7                     !----------------------------------------------------------------
+               8                     !  input :
+               9                     !         nx      : dimension of e-w direction
+              10                     !         my      : dimension of s-n direction
+              11                     !         julian  : julian day
+              12                     !
+              13                     !  -- 4 months data
+              14                     !         alvsfcl : mean vis albedo with strong cosz dependency
+              15                     !         alvwfcl : mean vis albedo with weak cosz dependency
+              16                     !         alnsfcl : mean nir albedo with strong cosz dependency
+              17                     !         alnwfcl : mean nir albedo with weak cosz dependency
+              18                     !
+              19                     !  output :
+              20                     ! -- time intepolation to julian day
+              21                     !         alvsf  : mean vis albedo with strong cosz dependency
+              22                     !         alvwf  : mean vis albedo with weak cosz dependency
+              23                     !         alnsf  : mean nir albedo with strong cosz dependency
+              24                     !         alnwf  : mean nir albedo with weak cosz dependency
+              25                     !  -- annual mean
+              26                     !         facsf   : fractional coverage with strong cosz dependency
+              27                     !         facwf   : fractional coverage with weak cosz dependency
+              28                     !
+              29                     !  By Mei-Yu Chang, 2014/09/07
+              30                     !----------------------------------------------------------------
+              31                     !
+              32                           use rank
+              33                           use mpe
+              34                           use index
+              35                           use physpara  ,only : ialbflg
+              36                     
+              37                           implicit none
+              38                     
+              39                           integer nx,my,my_max,julian,ii
+              40                     
+              41                           real  alvsf(nxp,my_max),alvwf(nxp,my_max), &
+              42                                 alnsf(nxp,my_max),alnwf(nxp,my_max), &
+              43                                 facsf(nxp,my_max),facwf(nxp,my_max)
+              44                     ! local working array
+              45                           integer i,j,jj,nxj,lncrec,mm,nn,k,jul,istat
+              46                           real    coef1,coef2
+              47                           real  alvsfcl(nxp,my_max,2),alvwfcl(nxp,my_max,2),   &
+              48                                 alnsfcl(nxp,my_max,2),alnwfcl(nxp,my_max,2)
+              49                           real work(nx,my)
+              50                     !
+              51                           character bckfile*80,lrec*26,blnk*1,ggdef*4
+              52                           integer   mon(12),mmse(2),mmax,mmt,mon1(12),mon2(12)
+              53                           data mon1/ 74,166,258,349,  0,  0,  0,  0,  0,  0,  0,  0/
+              54                           data mon2/ 15, 46, 74,105,135,166,196,227,258,288,319,349/
+              55                     
+              56     1                     if ( ialbflg .eq. 0 ) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1600
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<< Loop-information  End >>>
+              57     1   s    v              mon  = mon1
+              58     1                       mmax = 4
+              59     1                       mmt  = 3
+              60     1                     endif
+              61                     
+              62     1                     if ( ialbflg .eq. 1 ) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1600
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<< Loop-information  End >>>
+              63     1   s    v              mon  = mon2
+              64     1                       mmax = 12
+              65     1                       mmt  =  1
+              66     1                     endif
+              67                     !
+              68                           data blnk/' '/
+              69                     !
+              70                           lncrec=nx*my
+              71                     !
+              72                           jul=julian
+              73                           if(jul .ge. 366)jul=365
+              74                     !----------------------------------------------------------------
+              75                     !  to interpolat linearly based on julian day
+              76                     !
+              77                     !-- climate dataset has 12 months
+              78                     
+              79                           if(jul .le. mon(1))jul=jul+365
+              80                     !
+              81     1                     if(jul .gt. mon(mmax))then
+              82     1                       mmse(1)= mmax * mmt
+              83     1                       mmse(2)=    1 * mmt
+              84     1                       coef1=float(jul-mon(mmax))/float(365+mon(1)-mon(mmax))
+              85     1                       coef2=1.-coef1
+              86     1                     else
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 314
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<< Loop-information  End >>>
+              87     2   m    m              do k=2,mmax
+              88     3   p    m                if(jul .gt. mon(k-1) .and. jul .le. mon(k))then
+              89     3   s    v                  mmse(1)= (k-1) * mmt
+              90     3   s    v                  mmse(2)=    k  * mmt
+              91     3   p    m                  coef1=float(jul-mon(k-1))/float(mon(k)-mon(k-1))
+              92     3   p    v                  coef2=1.-coef1
+              93     3   p    v                endif
+              94     2   p    v              enddo
+              95     1                     endif
+              96                     !----------------------------------------------------------------
+              97                     ! read albedo data
+              98                     !----------------------------------------------------------------
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      mmse
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 3  FILL 21
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+              99     1                     do nn=1,2
+             100     1                     mm=mmse(nn)
+             101     1               
+             102     1               
+             103     1                     if (ialbflg.eq.0) write(lrec,31)ggdef,mm
+             104     1                     if (ialbflg.eq.1) write(lrec,37)ggdef,mm
+             105     1                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,work,istat)
+             106     1                     call unify_reducepick(nx,my,my_max,work,alvsfcl(1,1,nn))
+             107     1               !     call qmax2d(work,1,1,nx,my)
+             108     1               
+             109     1               
+             110     1                     if (ialbflg.eq.0) write(lrec,32)ggdef,mm
+             111     1                     if (ialbflg.eq.1) write(lrec,38)ggdef,mm
+             112     1                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,work,istat)
+             113     1                     call unify_reducepick(nx,my,my_max,work,alvwfcl(1,1,nn))
+             114     1               !     call qmax2d(work,1,1,nx,my)
+             115     1               
+             116     1                     if (ialbflg.eq.0) write(lrec,33)ggdef,mm
+             117     1                     if (ialbflg.eq.1) write(lrec,39)ggdef,mm
+             118     1                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,work,istat)
+             119     1                     call unify_reducepick(nx,my,my_max,work,alnsfcl(1,1,nn))
+             120     1               !     call qmax2d(work,1,1,nx,my)
+             121     1               
+             122     1                     if (ialbflg.eq.0) write(lrec,34)ggdef,mm
+             123     1                     if (ialbflg.eq.1) write(lrec,40)ggdef,mm
+             124     1                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,work,istat)
+             125     1                     call unify_reducepick(nx,my,my_max,work,alnwfcl(1,1,nn))
+             126     1               !     call qmax2d(work,1,1,nx,my)
+             127     1               
+             128     1                     enddo ! end of nn
+             129                     !
+             130                     !-- facsf (0-100)
+             131                     !
+             132                           write(lrec,35)ggdef
+             133                     !     write(*,*)'35, lrec=',lrec
+             134                           call dmsread(nx,my,lrec,lncrec,'H',bckfile,work,istat)
+             135                           call unify_reducepick(nx,my,my_max,work,facsf)
+             136                     !     call qmax2d(work,1,1,nx,my)
+             137                     !
+             138                     !-- facwf (0-100)
+             139                     !
+             140                           write(lrec,36)ggdef
+             141                     !     write(*,*)'35, lrec=',lrec
+             142                           call dmsread(nx,my,lrec,lncrec,'H',bckfile,work,istat)
+             143                           call unify_reducepick(nx,my,my_max,work,facwf)
+             144                     !     call qmax2d(work,1,1,nx,my)
+             145                     !
+             146                     !----------------------------------------------------------------
+             147                       31  format('S0003A','GBCK',a4,4x,i2.2,6x)  ! alvsfcl
+             148                       32  format('S0003B','GBCK',a4,4x,i2.2,6x)  ! alvwfcl
+             149                       33  format('S0003C','GBCK',a4,4x,i2.2,6x)  ! alnsfcl
+             150                       34  format('S0003D','GBCK',a4,4x,i2.2,6x)  ! alnwfcl
+             151                       35  format('S0003E','GBCK',a4,12x)         ! facsf
+             152                       36  format('S0003F','GBCK',a4,12x)         ! facwf
+             153                       37  format('S00X3A','GBCK',a4,4x,i2.2,6x)  ! alvsfcl
+             154                       38  format('S00X3B','GBCK',a4,4x,i2.2,6x)  ! alvwfcl
+             155                       39  format('S00X3C','GBCK',a4,4x,i2.2,6x)  ! alnsfcl
+             156                       40  format('S00X3D','GBCK',a4,4x,i2.2,6x)  ! alnwfcl
+             157                     !----------------------------------------------------------------
+             158                     
+             159                     !
+             160                     !---  time interpolation
+             161                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      alnwfcl, alnsfcl, alvwfcl, alvsfcl
+                                   <<<      alnwf, alnsf, alvwf, alvsf
+                                   <<< Loop-information  End >>>
+             162     1  pp                 do jj=1,jlistnum
+             163     1   p                    j=jlist1(jj)
+             164     1   p                    nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 56, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      alnsfcl, alnwf, alnsf, alnwfcl, alvwfcl
+                                   <<<      alvsfcl, alvwf, alvsf
+                                   <<< Loop-information  End >>>
+             165     2   p    v            do i=1,nxj
+             166     2   p    v               alvsf(i,jj)=coef1*alvsfcl(i,jj,1)+coef2*alvsfcl(i,jj,2)
+             167     2   p    v               alvwf(i,jj)=coef1*alvwfcl(i,jj,1)+coef2*alvwfcl(i,jj,2)
+             168     2   p    v               alnsf(i,jj)=coef1*alnsfcl(i,jj,1)+coef2*alnsfcl(i,jj,2)
+             169     2   p    v               alnwf(i,jj)=coef1*alnwfcl(i,jj,1)+coef2*alnwfcl(i,jj,2)
+             170     2   p    v            enddo
+             171     1   p                 enddo
+             172                     
+             173                     
+             174                     !     if (myrank .eq. 0) then
+             175                     !         print *,'*** for readalb.f ***'
+             176                     !         print *,'julian :',julian
+             177                     !         print *,'*** alvsf :'
+             178                     !         call qmax2d(alvsf,1,1,nx,my)
+             179                     !         print *,'*** alvwf :'
+             180                     !         call qmax2d(alvwf,1,1,nx,my)
+             181                     !         print *,'*** alnsf :'
+             182                     !         call qmax2d(alnsf,1,1,nx,my)
+             183                     !         print *,'*** alnwf :'
+             184                     !         call qmax2d(alnwf,1,1,nx,my)
+             185                     !         print *,'*** facsf :'
+             186                     !         call qmax2d(facsf,1,1,nx,my)
+             187                     !         print *,'*** facwf :'
+             188                     !         call qmax2d(facwf,1,1,nx,my)
+             189                     !     endif
+             190                     !
+             191                           return
+             192                           end
+
+ Procedure information
+   Lines      : 192
+   Statements : 93
+   Stack(byte): 56224
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : readalb
+   Attribute and Cross reference of name
+     alnsf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  41
+      |(Definition)     : 168
+      |(Reference)      : 
+     alnsfcl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 47
+      |(Definition)     : 119
+      |(Reference)      : 168  168
+     alnwf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  41
+      |(Definition)     : 169
+      |(Reference)      : 
+     alnwfcl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 47
+      |(Definition)     : 125
+      |(Reference)      : 169  169
+     alvsf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  41
+      |(Definition)     : 166
+      |(Reference)      : 
+     alvsfcl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 47
+      |(Definition)     : 106
+      |(Reference)      : 166  166
+     alvwf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  41
+      |(Definition)     : 167
+      |(Reference)      : 
+     alvwfcl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 47
+      |(Definition)     : 113
+      |(Reference)      : 167  167
+     bckfile
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  51
+      |(Definition)     : 105  112  118  124  134  142
+      |(Reference)      : 
+     blnk
+      |(Class and Type) : variable name, CHARACTER(1,1)
+      |(Attributes)     : initialized
+      |(Declaration)    : 51  68
+      |(Definition)     : 
+      |(Reference)      : 
+     coef1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 46
+      |(Definition)     : 84  91
+      |(Reference)      : 85  92  166  167  168  169
+     coef2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 46
+      |(Definition)     : 85  92
+      |(Reference)      : 166  167  168  169
+     dmsread
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 105  112  118  124  134  142
+     facsf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  41
+      |(Definition)     : 135
+      |(Reference)      : 
+     facwf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  41
+      |(Definition)     : 143
+      |(Reference)      : 
+     float
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 84  84  91  91
+     ggdef
+      |(Class and Type) : variable name, CHARACTER(4,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  51
+      |(Definition)     : 
+      |(Reference)      : 103  104  110  111  116  117  122  123  132  140
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 45
+      |(Definition)     : 165
+      |(Reference)      : 166  166  166  167  167  167  168  168  168  169  169  169
+     ialbflg
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 35  56  62  103  104  110  111  116  117  122  123
+     ii
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 39
+      |(Definition)     : 
+      |(Reference)      : 
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 34
+     istat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 45
+      |(Definition)     : 105  112  118  124  134  142
+      |(Reference)      : 
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 45
+      |(Definition)     : 163
+      |(Reference)      : 164
+     jj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 45
+      |(Definition)     : 162
+      |(Reference)      : 163  166  166  166  167  167  167  168  168  168  169  169  169
+     jlist1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 163
+     jlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 162
+     jul
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 45
+      |(Definition)     : 72  73  79
+      |(Reference)      : 73  79  79  81  84  88  88  91
+     julian
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  39
+      |(Definition)     : 
+      |(Reference)      : 72
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 45
+      |(Definition)     : 87
+      |(Reference)      : 88  88  89  90  91  91  91
+     lncrec
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 45
+      |(Definition)     : 70  105  112  118  124  134  142
+      |(Reference)      : 
+     lrec
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : 
+      |(Declaration)    : 51
+      |(Definition)     : 103  104  105  110  111  112  116  117  118  122  123  124  132  134  140  142
+      |(Reference)      : 
+     mm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 45
+      |(Definition)     : 100
+      |(Reference)      : 103  104  110  111  116  117  122  123
+     mmax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 52
+      |(Definition)     : 58  64
+      |(Reference)      : 81  82  84  84  87
+     mmse
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 52
+      |(Definition)     : 82  83  89  90
+      |(Reference)      : 100
+     mmt
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 52
+      |(Definition)     : 59  65
+      |(Reference)      : 82  83  89  90
+     mon
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 52
+      |(Definition)     : 57  63
+      |(Reference)      : 79  81  84  84  84  88  88  91  91  91
+     mon1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, initialized
+      |(Declaration)    : 52  53
+      |(Definition)     : 
+      |(Reference)      : 57
+     mon2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, initialized
+      |(Declaration)    : 52  54
+      |(Definition)     : 
+      |(Reference)      : 63
+     mpe
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 33
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  39
+      |(Definition)     : 105  106  112  113  118  119  124  125  134  135  142  143
+      |(Reference)      : 49  70
+     my_max
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  39
+      |(Definition)     : 106  113  119  125  135  143
+      |(Reference)      : 41  41  41  41  41  41  47  47  47  47
+     nn
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 45
+      |(Definition)     : 99
+      |(Reference)      : 100  106  113  119  125
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  39
+      |(Definition)     : 105  106  112  113  118  119  124  125  134  135  142  143
+      |(Reference)      : 49  70
+     nxdef_2d
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 164
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 45
+      |(Definition)     : 164
+      |(Reference)      : 165
+     nxp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 41  41  41  41  41  41  47  47  47  47
+     physpara
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 35
+     rank
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 32
+     readalb
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     unify_reducepick
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 106  113  119  125  135  143
+     work
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 49
+      |(Definition)     : 105  106  112  113  118  119  124  125  134  135  142  143
+      |(Reference)      : 
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+         31  format        (Definition) 147  
+                           (Reference)  103
+         32  format        (Definition) 148  
+                           (Reference)  110
+         33  format        (Definition) 149  
+                           (Reference)  116
+         34  format        (Definition) 150  
+                           (Reference)  122
+         35  format        (Definition) 151  
+                           (Reference)  132
+         36  format        (Definition) 152  
+                           (Reference)  140
+         37  format        (Definition) 153  
+                           (Reference)  104
+         38  format        (Definition) 154  
+                           (Reference)  111
+         39  format        (Definition) 155  
+                           (Reference)  117
+         40  format        (Definition) 156  
+                           (Reference)  123
+
+ Total information
+   Procedures       : 1
+   Total lines      : 192
+   Total statements : 93
+   Total stack(byte): 56224
+   Total prefetch num: 0
+

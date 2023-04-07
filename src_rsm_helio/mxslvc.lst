@@ -1,0 +1,613 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar  7 10:21:05 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm_helio
+   Source file       : mxslvc.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "mxslvc"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine mxslvc ( aa, mn, mt, kk )
+               2                     !
+               3                     !###############################################################
+               4                     !
+               5                     !  1. function specification
+               6                     !
+               7                     !    solve a matrix of a band-structured type coming from
+               8                     !    two-stream approximations with cloud overlapping treatment
+               9                     !
+              10                     !  2. input/output variables :
+              11                     !
+              12                     !    aa (in) : matrix of coefficients and r.h.s. forcing
+              13                     !              1st-5th  columns = elements left to the diagonal
+              14                     !                  6th  column  = diagonal elements
+              15                     !             7th-11th  columns = elements right to the diagonal
+              16                     !                 12th  column  = r.h.s. forcings
+              17                     !                                 need change two lows each other
+              18                     !    aa (out): 6th-11th columns = upper tri-diagonal matrix
+              19                     !                  12th colimn  = solutions of the matrix
+              20                     !     mn   : horizontal dimension of aa
+              21                     !     mt   : number of matrix sets (horizontal points) to be updated
+              22                     !     kk   : vertical dimension of aa,
+              23                     !            4 * lev ,  lev : number of model layers
+              24                     !
+              25                     !  3. date & author
+              26                     !
+              27                     !     c. t. fong   july, 1996
+              28                     !     modify to f90 by C-H Lee and sort by River Chen in 2015
+              29                     !
+              30                     !#####################################################################
+              31                     !
+              32                     
+              33                           use fj_pad
+              34                     
+              35                           implicit  none
+              36                     
+              37                           integer   mn, mt, kk
+              38                           real      aa(mn+npad,kk,12)
+              39                     !
+              40                     !  local working arrays
+              41                     !
+              42                           integer   lev,k,kini,i,m,km,jm,j,ln,kl,jl,jj
+              43                           real      vmin,tmp,zzz
+              44                     
+              45                           lev = kk / 4
+              46                           vmin = 1.0e-5
+              47                     !
+              48                     !    eliminate all elements below the diagonal
+              49                     !
+              50     1                     if ( lev .eq. 1 ) then
+              51     1                     print*,' only one model layer not allowed, job stop '
+              52     1                     stop
+              53     1                     end if
+              54                     !
+              55     1                     do 500 k = 2, lev-1
+              56     1                     kini = (k-1)*4
+              57     1               !
+              58     1               !ocl norecurrence
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 55
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      aa
+                                   <<<    PREFETCH(SOFT) : 36
+                                   <<<     SEQUENTIAL : 36
+                                   <<<      aa: 36
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 9
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+              59     2  pp    v             do i = 1, mt
+              60     2   p    v                aa(i,kini+1,6)   = aa(i,kini+1,6) - aa(i,kini+1,4)*aa(i,kini-1,8) &
+              61     2                              - aa(i,kini+1,5)*aa(i,kini,7)
+              62     2   p    v                aa(i,kini+1,7) = aa(i,kini+1,7) - aa(i,kini+1,4)*aa(i,kini-1,9)   &
+              63     2                              - aa(i,kini+1,5)*aa(i,kini,8)
+              64     2   p    v                aa(i,kini+1,12)   = aa(i,kini+1,12) - aa(i,kini+1,4)*aa(i,kini-1,12) &
+              65     2                              - aa(i,kini+1,5)*aa(i,kini,12)
+              66     2   p    v                aa(i,kini+1,5) = 0.
+              67     2   p    v                aa(i,kini+1,4) = 0.
+              68     2   p    v                aa(i,kini+2,5)   = aa(i,kini+2,5) - aa(i,kini+2,3)*aa(i,kini-1,8) &
+              69     2                              - aa(i,kini+2,4)*aa(i,kini,7)
+              70     2   p    v                aa(i,kini+2,6) = aa(i,kini+2,6) - aa(i,kini+2,3)*aa(i,kini-1,9) &
+              71     2                              - aa(i,kini+2,4)*aa(i,kini,8)
+              72     2   p    v                aa(i,kini+2,12)   = aa(i,kini+2,12) - aa(i,kini+2,3)*aa(i,kini-1,12) &
+              73     2                              - aa(i,kini+2,4)*aa(i,kini,12)
+              74     2   p    v                aa(i,kini+2,4) = 0.
+              75     2   p    v                aa(i,kini+2,3) = 0.
+              76     2   p    v                aa(i,kini+3,4)   = aa(i,kini+3,4) - aa(i,kini+3,2)*aa(i,kini-1,8) &
+              77     2                              - aa(i,kini+3,3)*aa(i,kini,7)
+              78     2   p    v                aa(i,kini+3,5) = aa(i,kini+3,5) - aa(i,kini+3,2)*aa(i,kini-1,9) &
+              79     2                              - aa(i,kini+3,3)*aa(i,kini,8)
+              80     2   p    v                aa(i,kini+3,12)   = aa(i,kini+3,12) - aa(i,kini+3,2)*aa(i,kini-1,12) &
+              81     2                              - aa(i,kini+3,3)*aa(i,kini,12)
+              82     2   p    v                aa(i,kini+3,3) = 0.
+              83     2   p    v                aa(i,kini+3,2) = 0.
+              84     2   p    v                aa(i,kini+4,3)   = aa(i,kini+4,3) - aa(i,kini+4,1)*aa(i,kini-1,8) &
+              85     2                              - aa(i,kini+4,2)*aa(i,kini,7)
+              86     2   p    v                aa(i,kini+4,4) = aa(i,kini+4,4) - aa(i,kini+4,1)*aa(i,kini-1,9) &
+              87     2                              - aa(i,kini+4,2)*aa(i,kini,8)
+              88     2   p    v                aa(i,kini+4,12)   = aa(i,kini+4,12) - aa(i,kini+4,1)*aa(i,kini-1,12) &
+              89     2                              - aa(i,kini+4,2)*aa(i,kini,12)
+              90     2   p    v                aa(i,kini+4,2) = 0.
+              91     2   p    v                aa(i,kini+4,1) = 0.
+              92     2               
+              93     2   p    v                tmp = 1.d0/aa(i,kini+2,6)
+              94     2               
+              95     2               !ibm   zzz = aa(i,km,7) / aa(i,km+1,6)
+              96     2   p    v                zzz = aa(i,kini+1,7)*tmp
+              97     2   p    v                aa(i,kini+1,6)  = aa(i,kini+1,6)  - aa(i,kini+2,5)*zzz
+              98     2   p    v                aa(i,kini+1,10) = aa(i,kini+1,10) - aa(i,kini+2,9)*zzz
+              99     2   p    v                aa(i,kini+1,11) = aa(i,kini+1,11) - aa(i,kini+2,10)*zzz
+             100     2   p    v                aa(i,kini+1,12) = aa(i,kini+1,12) - aa(i,kini+2,12)*zzz
+             101     2   p    v                aa(i,kini+1,7)  = 0.
+             102     2               !
+             103     2   p    v                zzz  = 1.d0/aa(i,kini+1,6)
+             104     2   p    v                aa(i,kini+1,10) = aa(i,kini+1,10)*zzz
+             105     2   p    v                aa(i,kini+1,11) = aa(i,kini+1,11)*zzz
+             106     2   p    v                aa(i,kini+1,12) = aa(i,kini+1,12)*zzz
+             107     2   p    v                aa(i,kini+1,6) = 1.0
+             108     2               !
+             109     2   p    v                aa(i,kini+2,9) = aa(i,kini+2,9) - aa(i,kini+2,5)*aa(i,kini+1,10)
+             110     2   p    v                aa(i,kini+2,10) = aa(i,kini+2,10) - aa(i,kini+2,5)*aa(i,kini+1,11)
+             111     2   p    v                aa(i,kini+2,12) = aa(i,kini+2,12) - aa(i,kini+2,5)*aa(i,kini+1,12)
+             112     2   p    v                aa(i,kini+2,5) = 0.
+             113     2               
+             114     2   p    v                aa(i,kini+3,8) = aa(i,kini+3,8) - aa(i,kini+3,4)*aa(i,kini+1,10)
+             115     2   p    v                aa(i,kini+3,9) = aa(i,kini+3,9) - aa(i,kini+3,4)*aa(i,kini+1,11)
+             116     2   p    v                aa(i,kini+3,12) = aa(i,kini+3,12) - aa(i,kini+3,4)*aa(i,kini+1,12)
+             117     2   p    v                aa(i,kini+3,4) = 0.
+             118     2               
+             119     2   p    v                aa(i,kini+4,7) = aa(i,kini+4,7) - aa(i,kini+4,3)*aa(i,kini+1,10)
+             120     2   p    v                aa(i,kini+4,8) = aa(i,kini+4,8) - aa(i,kini+4,3)*aa(i,kini+1,11)
+             121     2   p    v                aa(i,kini+4,12) = aa(i,kini+4,12) - aa(i,kini+4,3)*aa(i,kini+1,12)
+             122     2   p    v                aa(i,kini+4,3) = 0.
+             123     2               !
+             124     2               !ibm
+             125     2   p    v                zzz = 1.d0/aa(i,kini+2,6)
+             126     2   p    v                aa(i,kini+2,9) = aa(i,kini+2,9)*zzz
+             127     2   p    v                aa(i,kini+2,10) = aa(i,kini+2,10)*zzz
+             128     2   p    v                aa(i,kini+2,12) = aa(i,kini+2,12)*zzz
+             129     2   p    v                aa(i,kini+2,6) = 1.0
+             130     2               
+             131     2   p    v                aa(i,kini+3,8) = aa(i,kini+3,8) - aa(i,kini+3,5)*aa(i,kini+2,9)
+             132     2   p    v                aa(i,kini+3,9) = aa(i,kini+3,9) - aa(i,kini+3,5)*aa(i,kini+2,10)
+             133     2   p    v                aa(i,kini+3,12) = aa(i,kini+3,12) - aa(i,kini+3,5)*aa(i,kini+2,12)
+             134     2   p    v                aa(i,kini+3,5) = 0.
+             135     2               
+             136     2   p    v                aa(i,kini+4,7) = aa(i,kini+4,7) - aa(i,kini+4,4)*aa(i,kini+2,9)
+             137     2   p    v                aa(i,kini+4,8) = aa(i,kini+4,8) - aa(i,kini+4,4)*aa(i,kini+2,9+1)
+             138     2   p    v                aa(i,kini+4,12) = aa(i,kini+4,12) - aa(i,kini+4,4)*aa(i,kini+2,12)
+             139     2   p    v                aa(i,kini+4,4) = 0.
+             140     2               
+             141     2   p    v             enddo
+             142     1               !
+             143     1                 500 continue
+             144                     
+             145                     !
+             146                     !  when k = lev , only 6x4 matrix left
+             147                     !
+             148                            kini = (lev-1) * 4
+             149                     !ocl norecurrence,prefetch
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      aa
+                                   <<< Loop-information  End >>>
+             150     1  pp                  do 510  m = 1, 4     !  m : 1 ~ 4 ( diagonal increasing )
+             151     1   p                  km = kini + m
+             152     1   p                  jm = 7 - m
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.61, ITR: 80, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      aa
+                                   <<< Loop-information  End >>>
+             153     2   p    v             do 510 i = 1, mt
+             154     2   p    v             aa(i,km,jm)   = aa(i,km,jm) - aa(i,km,jm-2)*aa(i,kini-1,8) &
+             155     2                                                  - aa(i,km,jm-1)*aa(i,kini,7)
+             156     2   p    v             aa(i,km,jm+1) = aa(i,km,jm+1) - aa(i,km,jm-2)*aa(i,kini-1,9) &
+             157     2                                                    - aa(i,km,jm-1)*aa(i,kini,8)
+             158     2   p    v             aa(i,km,12)   = aa(i,km,12) - aa(i,km,jm-2)*aa(i,kini-1,12) &
+             159     2                                                  - aa(i,km,jm-1)*aa(i,kini,12)
+             160     2   p    v             aa(i,km,jm-1) = 0.
+             161     2   p    v             aa(i,km,jm-2) = 0.
+             162     1   p    v        510  continue
+             163                     !
+             164                     !  only 4x4 matrix left
+             165                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             166     1       f              do 650 m = 1, 3
+             167     1       f              km = kini + m
+             168     1       f              jm = 10 - m
+             169     1               !ibm
+             170     1               !fj       call vrec(tmp1(1),aa(1,km,6),mt)
+             171     1               !ibm
+             172     1               !ocl norecurrence,prefetch
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      aa
+                                   <<< Loop-information  End >>>
+             173     2  pp   f       	 do 610 j = 7, jm
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.31, ITR: 48, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      aa
+                                   <<< Loop-information  End >>>
+             174     3   p   2v               do 610 i = 1, mt
+             175     3               !ibm     aa(i,km,j) = aa(i,km,j) / aa(i,km,6)
+             176     3               !fj         aa(i,km,j) = aa(i,km,j)*tmp1(i)
+             177     3   p   2v               aa(i,km,j) = aa(i,km,j)*(1.d0/aa(i,km,6))
+             178     3               
+             179     2   p   2v        610    continue
+             180     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 696
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.34, ITR: 48, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      aa
+                                   <<< Loop-information  End >>>
+             181     2  pp   2v      	 do 615 i = 1, mt
+             182     2               !ibm     aa(i,km,12) = aa(i,km,12) / aa(i,km,6)
+             183     2               !fj         aa(i,km,12) = aa(i,km,12)*tmp1(i)
+             184     2   p   2v               aa(i,km,12) = aa(i,km,12)*(1.d0/aa(i,km,6))
+             185     2   p   2v      	 aa(i,km,6) = 1.0
+             186     2   p   2v        615    continue
+             187     1               !
+             188     1               !ocl norecurrence,prefetch
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      aa
+                                   <<< Loop-information  End >>>
+             189     2  pp   f                do 640 ln = m+1, 4
+             190     2   p   f                kl = kini + ln
+             191     2               !
+             192     2   p   f                jl = 6 - ( ln - m )
+             193     2   p   f                jm = 10 - ln
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      aa
+                                   <<< Loop-information  End >>>
+             194     3   p   f       	 do 620 j = jl+1, jm
+             195     3   p   f       	 jj = 6 + (j-jl)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.40, ITR: 176, MVE: 6, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      aa
+                                   <<< Loop-information  End >>>
+             196     4   p   2v               do 620 i = 1, mt
+             197     4   p   2v               aa(i,kl,j) = aa(i,kl,j) - aa(i,kl,jl)*aa(i,km,jj)
+             198     3   p   2v        620    continue
+             199     2               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.71, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      aa
+                                   <<< Loop-information  End >>>
+             200     3   p   2v               do 630 i = 1, mt
+             201     3   p   2v               aa(i,kl,12) = aa(i,kl,12) - aa(i,kl,jl)*aa(i,km,12)
+             202     3   p   2v               aa(i,kl,jl) = 0.
+             203     3   p   2v        630    continue
+             204     2   p   f         640    continue
+             205     1       f         650  continue
+             206                     !
+             207                     !ibm
+             208                     !fj       call vrec(tmp1(1),aa(1,kk,6),mt)
+             209                     !ibm
+             210                     !ocl norecurrence,prefetch
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 800
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.29, ITR: 48, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      aa
+                                   <<< Loop-information  End >>>
+             211     1  pp   2v             do 680 i = 1, mt
+             212     1               !ibm   aa(i,kk,12) = aa(i,kk,12) / aa(i,kk,6)
+             213     1               !fj       aa(i,kk,12) = aa(i,kk,12)*tmp1(i)
+             214     1   p   2v             aa(i,kk,12) = aa(i,kk,12)*(1.d0/aa(i,kk,6))
+             215     1   p   2v        680  continue
+             216                     !
+             217                     !  back substitution
+             218                     !
+             219                     !
+             220                     !  k = lev
+             221                     !
+             222                           kini = lev*4 + 1
+             223                     !
+             224     1                     do 720  m = 1, 3
+             225     1                     km = kini - m
+             226     1               !
+             227     1               !ocl norecurrence,prefetch
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      aa
+                                   <<< Loop-information  End >>>
+             228     2  pp                  do 710 ln = m+1, 4
+             229     2   p                  kl = kini - ln
+             230     2   p                  jl = 6 + ( ln - m )
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.40, ITR: 176, MVE: 6, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      aa
+                                   <<< Loop-information  End >>>
+             231     3   p   2v             do 710 i = 1, mt
+             232     3   p   2v             aa(i,kl,12) = aa(i,kl,12) - aa(i,kl,jl)*aa(i,km,12)
+             233     2   p   2v        710  continue
+             234     1               !
+             235     1                 720 continue
+             236                     !
+             237                     !  k = lev-1 ~ 1
+             238                     !
+             239     1       4             do 810 k = lev-1, 1, -1
+             240     1       4             kini = k*4 + 1
+             241     1               !
+             242     1               !ocl norecurrence,prefetch
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      aa
+                                   <<< Loop-information  End >>>
+             243     2  pp   4             do 800 m = 1, 4
+             244     2   p   4             km = kini - m
+             245     2   p   4             jm = 6 + m
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.50, ITR: 120, MVE: 8, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      aa
+                                   <<< Loop-information  End >>>
+             246     3   p   4v            do 800 i = 1, mt
+             247     3   p   4v            aa(i,km,12) = aa(i,km,12) - aa(i,km,jm)*aa(i,kini,12) &
+             248     3                                               - aa(i,km,jm+1)*aa(i,kini+1,12)
+             249     2   p   4v        800 continue
+             250     1       4         810 continue
+             251                     !
+             252                           return
+             253                           end
+
+ Procedure information
+   Lines      : 253
+   Statements : 136
+   Stack(byte): 4016
+   Prefetch num: 36
+
+ Scoping unit of external sub-program : mxslvc
+   Attribute and Cross reference of name
+     aa
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  38
+      |(Definition)     : 60  62  64  66  67  68  70  72  74  75  76  78  80  82  83  84  86  88  90  91  97  98  99  100  101  104  105  106  107  109  110  111  112  114  115  116  117  119  120  121  122  126  127  128  129  131  132  133  134  136  137  138  139  154  156  158  160  161  177  184  185  197  201  202  214  232  247
+      |(Reference)      : 60  60  60  60  60  62  62  62  62  62  64  64  64  64  64  68  68  68  68  68  70  70  70  70  70  72  72  72  72  72  76  76  76  76  76  78  78  78  78  78  80  80  80  80  80  84  84  84  84  84  86  86  86  86  86  88  88  88  88  88  93  96  97  97  98  98  99  99  100  100  103  104  105  106  109  109  109  110  110  110  111  111  111  114  114  114  115  115  115  116  116  116  119  119  119  120  120  120  121  121  121  125  126  127  128  131  131  131  132  132  132  133  133  133  136  136  136  137  137  137  138  138  138  154  154  154  154  154  156  156  156  156  156  158  158  158  158  158  177  177  184  184  197  197  197  201  201  201  214  214  232  232  232  247  247  247  247  247
+     fj_pad
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 33
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 42
+      |(Definition)     : 59  153  174  181  196  200  211  231  246
+      |(Reference)      : 60  60  60  60  60  60  62  62  62  62  62  62  64  64  64  64  64  64  66  67  68  68  68  68  68  68  70  70  70  70  70  70  72  72  72  72  72  72  74  75  76  76  76  76  76  76  78  78  78  78  78  78  80  80  80  80  80  80  82  83  84  84  84  84  84  84  86  86  86  86  86  86  88  88  88  88  88  88  90  91  93  96  97  97  97  98  98  98  99  99  99  100  100  100  101  103  104  104  105  105  106  106  107  109  109  109  109  110  110  110  110  111  111  111  111  112  114  114  114  114  115  115  115  115  116  116  116  116  117  119  119  119  119  120  120  120  120  121  121  121  121  122  125  126  126  127  127  128  128  129  131  131  131  131  132  132  132  132  133  133  133  133  134  136  136  136  136  137  137  137  137  138  138  138  138  139  154  154  154  154  154  154  156  156  156  156  156  156  158  158  158  158  158  158  160  161  177  177  177  184  184  184  185  197  197  197  197  201  201  201  201  202  214  214  214  232  232  232  232  247  247  247  247  247  247
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 42
+      |(Definition)     : 173  194
+      |(Reference)      : 177  177  195  197  197
+     jj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 42
+      |(Definition)     : 195
+      |(Reference)      : 197
+     jl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 42
+      |(Definition)     : 192  230
+      |(Reference)      : 194  195  197  201  202  232
+     jm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 42
+      |(Definition)     : 152  168  193  245
+      |(Reference)      : 154  154  154  154  156  156  156  156  158  158  160  161  173  194  247  247
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 42
+      |(Definition)     : 55  239
+      |(Reference)      : 56  240
+     kini
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 42
+      |(Definition)     : 56  148  222  240
+      |(Reference)      : 60  60  60  60  60  60  62  62  62  62  62  62  64  64  64  64  64  64  66  67  68  68  68  68  68  68  70  70  70  70  70  70  72  72  72  72  72  72  74  75  76  76  76  76  76  76  78  78  78  78  78  78  80  80  80  80  80  80  82  83  84  84  84  84  84  84  86  86  86  86  86  86  88  88  88  88  88  88  90  91  93  96  97  97  97  98  98  98  99  99  99  100  100  100  101  103  104  104  105  105  106  106  107  109  109  109  109  110  110  110  110  111  111  111  111  112  114  114  114  114  115  115  115  115  116  116  116  116  117  119  119  119  119  120  120  120  120  121  121  121  121  122  125  126  126  127  127  128  128  129  131  131  131  131  132  132  132  132  133  133  133  133  134  136  136  136  136  137  137  137  137  138  138  138  138  139  151  154  154  156  156  158  158  167  190  225  229  244  247  247
+     kk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  37
+      |(Definition)     : 
+      |(Reference)      : 38  45  214  214  214
+     kl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 42
+      |(Definition)     : 190  229
+      |(Reference)      : 197  197  197  201  201  201  202  232  232  232
+     km
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 42
+      |(Definition)     : 151  167  225  244
+      |(Reference)      : 154  154  154  154  156  156  156  156  158  158  158  158  160  161  177  177  177  184  184  184  185  197  201  232  247  247  247  247
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 42
+      |(Definition)     : 45
+      |(Reference)      : 50  55  148  222  239
+     ln
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 42
+      |(Definition)     : 189  228
+      |(Reference)      : 190  192  193  229  230
+     m
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 42
+      |(Definition)     : 150  166  224  243
+      |(Reference)      : 151  152  167  168  189  192  225  228  230  244  245
+     mn
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  37
+      |(Definition)     : 
+      |(Reference)      : 38
+     mt
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  37
+      |(Definition)     : 
+      |(Reference)      : 59  153  174  181  196  200  211  231  246
+     mxslvc
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     npad
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 38
+     tmp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 43
+      |(Definition)     : 93
+      |(Reference)      : 96
+     vmin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 43
+      |(Definition)     : 46
+      |(Reference)      : 
+     zzz
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 43
+      |(Definition)     : 96  103  125
+      |(Reference)      : 97  98  99  100  104  105  106  126  127  128
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+        500  execution     (Definition) 143  
+                           (Reference)  55
+        510  execution     (Definition) 162  
+                           (Reference)  150  153
+        610  execution     (Definition) 179  
+                           (Reference)  173  174
+        615  execution     (Definition) 186  
+                           (Reference)  181
+        620  execution     (Definition) 198  
+                           (Reference)  194  196
+        630  execution     (Definition) 203  
+                           (Reference)  200
+        640  execution     (Definition) 204  
+                           (Reference)  189
+        650  execution     (Definition) 205  
+                           (Reference)  166
+        680  execution     (Definition) 215  
+                           (Reference)  211
+        710  execution     (Definition) 233  
+                           (Reference)  228  231
+        720  execution     (Definition) 235  
+                           (Reference)  224
+        800  execution     (Definition) 249  
+                           (Reference)  243  246
+        810  execution     (Definition) 250  
+                           (Reference)  239
+
+ Total information
+   Procedures       : 1
+   Total lines      : 253
+   Total statements : 136
+   Total stack(byte): 4016
+   Total prefetch num: 36
+

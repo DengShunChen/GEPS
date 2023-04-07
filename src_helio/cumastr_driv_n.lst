@@ -1,0 +1,939 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar 14 13:21:53 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_helio
+   Source file       : cumastr_driv_n.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb157/CWBSUMc2/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "cumastr_driv_n"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine cumastr_driv_n  &
+               2                                        (nxj  ,nx   ,lev  ,dt   ,g    ,&
+               3                                         r    ,cp   ,hltm ,ptop ,land ,&
+               4                                         topo ,phi  ,u    ,v    ,t    ,&
+               5                                         q    ,ut   ,vt   ,tt   ,qt   ,&
+               6                                         rcup ,pk   ,pk2  ,sd   ,qflux,&
+               7                                         kcbot,kctop,ncld ,sigma,      &
+               8                                         plt  ,pt   ,j    ,lndj ,hfx  ,&
+               9                                         garea ,kcnv ,flash)
+              10                     !c
+              11                     !c#######################################################################
+              12                     !c                     subroutine description
+              13                     !c
+              14                     !c 1. parameter specification
+              15                     !c
+              16                     !c     nx : dimension of horizontal-direction
+              17                     !c    lev : dimension of z-direction
+              18                     !c     dt : time step for ut, vt, tt, qt updates                (s)
+              19                     !c      g : gravity                                             (m/s2)
+              20                     !c      r : air gas constant                                    (j/kg)
+              21                     !c     cp : air specific heat constant                          (j/kg)
+              22                     !c   hltm : water vapor latent heat constant                    (j/kg)
+              23                     !c   ptop : model top pressure                                  (mb)
+              24                     !c   land : logic for bare soil land    (nx)  (=true for bare land)
+              25                     !c   topo : terrain geopotential   (nx)                         (m2/s2)
+              26                     !c    phi : odd level geopotential (nx,lev)                     (m2/s2)
+              27                     !c      u : x-direction velocity   (nx,lev) at current time lvl (m/s)
+              28                     !c      v : y-direction velocity   (nx,lev) at current time lvl (m/s)
+              29                     !c      t : potent temp on odd lvl (nx,lev) at current time lvl (k)
+              30                     !c      q : moisture    on odd lvl (nx,lev) at current time lvl (kg/kg)
+              31                     !c     ut : x-direction velocity   (nx,lev) at past/future  lvl (m/s)
+              32                     !c     vt : y-direction velocity   (nx,lev) at past/future  lvl (m/s)
+              33                     !c     tt : real temp.  on odd lvl (nx,lev) at past/future  lvl (k)
+              34                     !c     qt : moisture    on odd lvl (nx,lev) at past/future  lvl (kg/kg)
+              35                     !c     pk : p**capa on odd levels  (exner func)
+              36                     !c    pk2 : p**capa on even levels (exner func)
+              37                     !c     sd : vertical velocity (nx,lev) mb/s
+              38                     !c   qflux: upward surface moisture flux     (nx)               (w/m2)
+              39                     !c   ocean: logic for open water      (nx)  (=true for open water)
+              40                     !c#####################################################################
+              41                     !c
+              42                           use mpe
+              43                           use rank
+              44                           use index
+              45                           use mo_constants, only:vtmpc1,alv
+              46                           use const, only:RTYPE
+              47                           implicit none
+              48                     !c input & output variable
+              49                           integer nx,nxj,lev,ncld,j,jj
+              50                           integer kcbot(nx),kctop(nx)
+              51                           real  u(nx,lev),v(nx,lev),t(nx,lev)                            &
+              52                               , qflux(nx),sd(nx,lev)                                     &
+              53                     
+              54                               , plt(nx,lev)
+              55                           real(kind=RTYPE) ut(nx,lev),vt(nx,lev),tt(nx,lev)              &
+              56                               ,            q(nx,lev*ncld),qt(nx,lev*ncld),phi(nx,lev)    &
+              57                               ,            topo(nx),pt(nx),sigma(lev+1,2)                &
+              58                               ,            pk(nx,lev),pk2(nx,lev)
+              59                     !c  local work arrays
+              60                           real pkxmb(nx,lev)
+              61                           real pk2x(nx,lev),pkx(nx,lev)
+              62                     !ccumastr
+              63                           real papp1(nx,lev),paphp1(nx,lev+1),pgeo(nx,lev)              &
+              64                                ,zqsat(nx,lev),pverv(nx,lev)                              &
+              65                                ,ztp1(nx,lev),zqp1(nx,lev),zup1(nx,lev),zvp1(nx,lev)      &
+              66                                ,ptte(nx,lev),pqte(nx,lev),pvom(nx,lev),pvol(nx,lev)      &
+              67                                ,zxp1(nx,lev),pxtec(nx,lev),ptop,dth,hltm,g,dt,cp,r       &
+              68                                ,ztu(nx,lev),zqu(nx,lev),zmfu(nx,lev),zmfd(nx,lev)        &
+              69                                ,pcte(nx,lev)
+              70                           real pqhfl(nx),prsfc(nx),pssfc(nx),rcup(nx),zrain(nx)        &
+              71                                 ,phhfl(nx),hfx(nx)
+              72                     !
+              73                           real rhoh2o,d2r,xlatj,xlat,tt1
+              74                     !c
+              75                           integer klevp1,klevm1,k,i,kc,ncldq
+              76                           integer lndj(nx)
+              77                           logical land(nx),ldland(nx)
+              78                     !xb110>
+              79                           real zew,zqs,zcor,foeewm,mdlon
+              80                           logical locum(nx)
+              81                           integer kcnv(nx)
+              82                           real flash(nx),garea(nx),dx(nx)
+              83                     !xb110<
+              84                           ncldq=2
+              85                           rhoh2o=1000.
+              86                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1231
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.24, ITR: 48, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      garea, dx
+                                   <<< Loop-information  End >>>
+              87     1  pp   2v            do i = 1,nxj
+              88     1   p   2v             dx(i) = sqrt(garea(i))
+              89     1   p   2v            end do
+              90                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pt, sd, plt, phi, pgeo, pverv, paphp1
+                                   <<<      papp1
+                                   <<< Loop-information  End >>>
+              91     1  pp                 do k=1,lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.14, ITR: 56, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      phi, plt, sd, pt, pverv, pgeo, paphp1
+                                   <<<      papp1
+                                   <<< Loop-information  End >>>
+              92     2   p    v            do i=1,nxj
+              93     2   p    v              papp1(i,k)=plt(i,k)*100.  ! from mb to pa
+              94     2   p    v              paphp1(i,k)= (sigma(k,1)*pt(i)+sigma(k,2)+ptop)*100. ! from mb to pa
+              95     2   p    v              pgeo(i,k) = phi(i,k)
+              96     2   p    v              pverv(i,k)=sd(i,k)*100.  ! from mb to pa
+              97     2   p    v            enddo
+              98     1   p                 enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 381
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED(lines: 99,103)
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.12, ITR: 56, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ldland, hfx, pt, land, qflux, pqhfl
+                                   <<<      phhfl, locum, zrain, paphp1
+                                   <<< Loop-information  End >>>
+              99     1  pp    v            do i=1,nxj
+             100     1   p    v              paphp1(i,lev+1)= (sigma(lev+1,1)*pt(i)+sigma(lev+1,2)+ptop)*100.
+             101     1   p    v            enddo
+             102                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED
+                                   <<< Loop-information  End >>>
+             103     1                     do  i=1,nxj
+             104     1                     zrain(i) = 0.0
+             105     1                     locum(i) =.false.
+             106     1                     phhfl(i) = hfx(i)
+             107     1                     pqhfl(i) = qflux(i)/alv   !xb110 20190715, convert to upward surface moisture flux (kgm^-2s^-1)
+             108     1                     ldland(i)= land(i)
+             109     1                     enddo
+             110                     
+             111                           dth = dt
+             112                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qt, zxp1, tt, t, q, u, ut, ztp1, ptte
+                                   <<<      zqp1, pqte, pxtec, zup1, zqsat
+                                   <<<      (unknown)
+                                   <<<    PREFETCH(SOFT) : 12
+                                   <<<     SEQUENTIAL : 12
+                                   <<<      v: 2, vt: 2, pvom: 2, zvp1: 2, pvol: 2
+                                   <<<      pcte: 2
+                                   <<< Loop-information  End >>>
+             113     1                     do k=1,lev
+             114     1                     kc=k
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 800
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.39, ITR: 48, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tt, papp1, zxp1, t, qt, q, ut, u, ztp1
+                                   <<<      ptte, zqp1, pqte, pxtec, zup1, zqsat
+                                   <<<      (unknown)
+                                   <<<    PREFETCH(SOFT) : 24
+                                   <<<     SEQUENTIAL : 24
+                                   <<<      vt: 4, v: 4, pvom: 4, zvp1: 4, pvol: 4
+                                   <<<      pcte: 4
+                                   <<< Loop-information  End >>>
+             115     2   m   2v            do i=1,nxj
+             116     2   p   2v              ztp1(i,kc)=tt(i,k)
+             117     2   p   2v              zqp1(i,kc)=qt(i,k)
+             118     2   p   2v              zxp1(i,kc)=qt(i,k+(ncldq-1)*lev)
+             119     2   p   2v              zup1(i,kc)=ut(i,k)
+             120     2   p   2v              zvp1(i,kc)=vt(i,k)
+             121     2   p   2v              pcte(i,kc)=0.0
+             122     2   s   2s              pvom(i,kc)=0.0
+             123     2   s   2s              pvol(i,kc)=0.0
+             124     2   s   2s              tt1=tt(i,k)
+             125     2   s   2s                zew  = foeewm(tt1)
+             126     2   s   2s                zqs  = zew/papp1(i,kc)
+             127     2   s   2s                zqs  = min(0.5,zqs)
+             128     2   m   2s                zcor = 1./(1.-vtmpc1*zqs)
+             129     2   p   2v                zqsat(i,kc)=zqs*zcor
+             130     2               
+             131     2   p    v              ptte(i,kc)=(tt(i,k)-t(i,k))/dth
+             132     2   p    v              pqte(i,kc)=(qt(i,k)-q(i,k))/dth
+             133     2   p    v              pvom(i,kc)=(ut(i,k)-u(i,k))/dth
+             134     2   p    v              pvol(i,kc)=(vt(i,k)-v(i,k))/dth
+             135     2   p    v              pxtec(i,kc)=(zxp1(i,k)-q(i,k+(ncldq-1)*lev))/dth
+             136     2   p    v            enddo
+             137     1                     enddo
+             138                     !============================================================
+             139                           klevp1=lev+1
+             140                           klevm1=lev-1
+             141                     
+             142                           call cumastr_n  &
+             143                                  (nxj,   nx,   lev,  klevp1,klevm1, &
+             144                                   ztp1,  zqp1, zxp1, zup1,  zvp1,   &
+             145                                   ldland,pverv,zqsat,pqhfl, papp1,  &
+             146                                   paphp1,pgeo, ptte, pqte,  pxtec,  &
+             147                                   pvom,  pvol, prsfc,pssfc, kcbot,  &
+             148                                   kctop, dth,  j,    ztu,   zqu,    &
+             149                                   zmfu,  zmfd, zrain,pcte,  phhfl,  &
+             150                                   lndj,  locum,dx   , kcnv,   &
+             151                                   flash)
+             152                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ptte, pvol, v, pvom, q, pqte, t, pxtec
+                                   <<<      u, vt, ut, qt, tt
+                                   <<< Loop-information  End >>>
+             153     1                     do k=1,lev
+             154     1                     kc=k
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 200
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.63, ITR: 72, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ptte, t, pvom, u, pvol, ut, v, q, pqte
+                                   <<<      pxtec, qt, tt, vt
+                                   <<< Loop-information  End >>>
+             155     2  pp    v            do i=1,nxj
+             156     2   p    v              tt(i,k)=t(i,k)+ptte(i,kc)*dt
+             157     2   p    v              qt(i,k)=max(q(i,k)+pqte(i,kc)*dt,0.)
+             158     2   p    v              ut(i,k)=u(i,k)+pvom(i,kc)*dt
+             159     2   p    v              vt(i,k)=v(i,k)+pvol(i,kc)*dt
+             160     2   p    v              qt(i,k+(ncldq-1)*lev)=max(q(i,k+(ncldq-1)*lev)+pxtec(i,kc)*dt,0.)
+             161     2   p    v            enddo
+             162     1                     enddo
+             163                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.75, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pssfc, prsfc, rcup
+                                   <<< Loop-information  End >>>
+             164     1  pp   2v            do i=1,nxj
+             165     1   p   2v              rcup(i)=(prsfc(i)+pssfc(i))*dt/rhoh2o
+             166     1   p   2v            enddo
+             167                     
+             168                           return
+             169                           end
+
+ Procedure information
+   Lines      : 169
+   Statements : 89
+   Stack(byte): 3760
+   Prefetch num: 48
+
+ Scoping unit of external sub-program : cumastr_driv_n
+   Attribute and Cross reference of name
+     alv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 45  107
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 46
+     cp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  63
+      |(Definition)     : 
+      |(Reference)      : 
+     cumastr_driv_n
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     cumastr_n
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 142
+     d2r
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 73
+      |(Definition)     : 
+      |(Reference)      : 
+     dt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  63
+      |(Definition)     : 
+      |(Reference)      : 111  156  157  158  159  160  165
+     dth
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 63
+      |(Definition)     : 111  142
+      |(Reference)      : 131  132  133  134  135
+     dx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 82
+      |(Definition)     : 88  142
+      |(Reference)      : 
+     flash
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  82
+      |(Definition)     : 142
+      |(Reference)      : 
+     foeewm
+      |(Class and Type) : external function name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 125
+     foeewm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 79
+      |(Definition)     : 
+      |(Reference)      : 
+     g
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  63
+      |(Definition)     : 
+      |(Reference)      : 
+     garea
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  82
+      |(Definition)     : 
+      |(Reference)      : 88
+     hfx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  70
+      |(Definition)     : 
+      |(Reference)      : 106
+     hltm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  63
+      |(Definition)     : 
+      |(Reference)      : 
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 75
+      |(Definition)     : 87  92  99  103  115  155  164
+      |(Reference)      : 88  88  93  93  94  94  95  95  96  96  100  100  104  105  106  106  107  107  108  108  116  116  117  117  118  118  119  119  120  120  121  122  123  124  126  129  131  131  131  132  132  132  133  133  133  134  134  134  135  135  135  156  156  156  157  157  157  158  158  158  159  159  159  160  160  160  165  165  165
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 44
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  49
+      |(Definition)     : 142
+      |(Reference)      : 
+     jj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 49
+      |(Definition)     : 
+      |(Reference)      : 
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 75
+      |(Definition)     : 91  113  153
+      |(Reference)      : 93  93  94  94  94  95  95  96  96  114  116  117  118  119  120  124  131  131  132  132  133  133  134  134  135  135  154  156  156  157  157  158  158  159  159  160  160
+     kc
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 75
+      |(Definition)     : 114  154
+      |(Reference)      : 116  117  118  119  120  121  122  123  126  129  131  132  133  134  135  156  157  158  159  160
+     kcbot
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  50
+      |(Definition)     : 142
+      |(Reference)      : 
+     kcnv
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  81
+      |(Definition)     : 142
+      |(Reference)      : 
+     kctop
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  50
+      |(Definition)     : 142
+      |(Reference)      : 
+     klevm1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 75
+      |(Definition)     : 140  142
+      |(Reference)      : 
+     klevp1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 75
+      |(Definition)     : 139  142
+      |(Reference)      : 
+     land
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  77
+      |(Definition)     : 
+      |(Reference)      : 108
+     ldland
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 77
+      |(Definition)     : 108  142
+      |(Reference)      : 
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  49
+      |(Definition)     : 142
+      |(Reference)      : 51  51  51  51  51  55  55  55  55  55  55  55  55  55  60  61  61  63  63  63  63  63  63  63  63  63  63  63  63  63  63  63  63  63  63  63  63  91  100  100  100  113  118  135  139  140  153  160  160
+     lndj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  76
+      |(Definition)     : 142
+      |(Reference)      : 
+     locum
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 80
+      |(Definition)     : 105  142
+      |(Reference)      : 
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 157  160
+     mdlon
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 79
+      |(Definition)     : 
+      |(Reference)      : 
+     min
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 127
+     mo_constants
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 45
+     mpe
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 42
+     ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  49
+      |(Definition)     : 
+      |(Reference)      : 55  55
+     ncldq
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 75
+      |(Definition)     : 84
+      |(Reference)      : 118  135  160  160
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  49
+      |(Definition)     : 142
+      |(Reference)      : 50  50  51  51  51  51  51  51  55  55  55  55  55  55  55  55  55  55  60  61  61  63  63  63  63  63  63  63  63  63  63  63  63  63  63  63  63  63  63  63  63  70  70  70  70  70  70  70  76  77  77  80  81  82  82  82
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  49
+      |(Definition)     : 142
+      |(Reference)      : 87  92  99  103  115  155  164
+     paphp1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 63
+      |(Definition)     : 94  100  142
+      |(Reference)      : 
+     papp1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 63
+      |(Definition)     : 93  142
+      |(Reference)      : 126
+     pcte
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 63
+      |(Definition)     : 121  142
+      |(Reference)      : 
+     pgeo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 63
+      |(Definition)     : 95  142
+      |(Reference)      : 
+     phhfl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 70
+      |(Definition)     : 106  142
+      |(Reference)      : 
+     phi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 95
+     pk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 
+     pk2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 
+     pk2x
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 61
+      |(Definition)     : 
+      |(Reference)      : 
+     pkx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 61
+      |(Definition)     : 
+      |(Reference)      : 
+     pkxmb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 60
+      |(Definition)     : 
+      |(Reference)      : 
+     plt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  51
+      |(Definition)     : 
+      |(Reference)      : 93
+     pqhfl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 70
+      |(Definition)     : 107  142
+      |(Reference)      : 
+     pqte
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 63
+      |(Definition)     : 132  142
+      |(Reference)      : 157
+     prsfc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 70
+      |(Definition)     : 142
+      |(Reference)      : 165
+     pssfc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 70
+      |(Definition)     : 142
+      |(Reference)      : 165
+     pt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 94  100
+     ptop
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  63
+      |(Definition)     : 
+      |(Reference)      : 94  100
+     ptte
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 63
+      |(Definition)     : 131  142
+      |(Reference)      : 156
+     pverv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 63
+      |(Definition)     : 96  142
+      |(Reference)      : 
+     pvol
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 63
+      |(Definition)     : 123  134  142
+      |(Reference)      : 159
+     pvom
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 63
+      |(Definition)     : 122  133  142
+      |(Reference)      : 158
+     pxtec
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 63
+      |(Definition)     : 135  142
+      |(Reference)      : 160
+     q
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 132  135  157  160
+     qflux
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  51
+      |(Definition)     : 
+      |(Reference)      : 107
+     qt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 157  160
+      |(Reference)      : 117  118  132
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 46  55
+     r
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  63
+      |(Definition)     : 
+      |(Reference)      : 
+     rank
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 43
+     rcup
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  70
+      |(Definition)     : 165
+      |(Reference)      : 
+     rhoh2o
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 73
+      |(Definition)     : 85
+      |(Reference)      : 165
+     sd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  51
+      |(Definition)     : 
+      |(Reference)      : 96
+     sigma
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 94  94  100  100
+     sqrt
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 88
+     t
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  51
+      |(Definition)     : 
+      |(Reference)      : 131  156
+     topo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 
+     tt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 156
+      |(Reference)      : 116  124  131
+     tt1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 73
+      |(Definition)     : 124  125
+      |(Reference)      : 
+     u
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  51
+      |(Definition)     : 
+      |(Reference)      : 133  158
+     ut
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 158
+      |(Reference)      : 119  133
+     v
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  51
+      |(Definition)     : 
+      |(Reference)      : 134  159
+     vt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 159
+      |(Reference)      : 120  134
+     vtmpc1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 45  128
+     xlat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 73
+      |(Definition)     : 
+      |(Reference)      : 
+     xlatj
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 73
+      |(Definition)     : 
+      |(Reference)      : 
+     zcor
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 79
+      |(Definition)     : 128
+      |(Reference)      : 129
+     zew
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 79
+      |(Definition)     : 125
+      |(Reference)      : 126
+     zmfd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 63
+      |(Definition)     : 142
+      |(Reference)      : 
+     zmfu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 63
+      |(Definition)     : 142
+      |(Reference)      : 
+     zqp1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 63
+      |(Definition)     : 117  142
+      |(Reference)      : 
+     zqs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 79
+      |(Definition)     : 126  127
+      |(Reference)      : 127  128  129
+     zqsat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 63
+      |(Definition)     : 129  142
+      |(Reference)      : 
+     zqu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 63
+      |(Definition)     : 142
+      |(Reference)      : 
+     zrain
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 70
+      |(Definition)     : 104  142
+      |(Reference)      : 
+     ztp1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 63
+      |(Definition)     : 116  142
+      |(Reference)      : 
+     ztu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 63
+      |(Definition)     : 142
+      |(Reference)      : 
+     zup1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 63
+      |(Definition)     : 119  142
+      |(Reference)      : 
+     zvp1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 63
+      |(Definition)     : 120  142
+      |(Reference)      : 
+     zxp1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 63
+      |(Definition)     : 118  142
+      |(Reference)      : 135
+
+ Total information
+   Procedures       : 1
+   Total lines      : 169
+   Total statements : 89
+   Total stack(byte): 3760
+   Total prefetch num: 48
+

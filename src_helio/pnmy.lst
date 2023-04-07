@@ -1,0 +1,497 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar 14 13:21:05 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_helio
+   Source file       : pnmy.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb157/CWBSUMc2/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "pnmy"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine pnmy (jtrun,sinlj,pnm)
+               2                     !
+               3                     !  generate legendre polynomials and their derivatives on the
+               4                     !  gaussian latitudes
+               5                     !
+               6                     ! ***input***
+               7                     !
+               8                     !  jtrun: zonal wavenumber truncation limit
+               9                     !  sinlj: sin of gaussian latitudes
+              10                     !
+              11                     !  ***output***
+              12                     !
+              13                     ! ******************************************************************
+              14                     !
+              15                     !
+              16                           use const, only: RTYPE
+              17                     !
+              18                           implicit  none
+              19                     !
+              20                           integer   jtrun
+              21                           real(kind=RTYPE) sinlj
+              22                           real(kind=RTYPE) pnm(jtrun+1,jtrun+1)
+              23                     !
+              24                     ! sinlj is sin(latitude) = cos(colatitude)
+              25                     ! pnm(np,mp) is legendre polynomial p(n,m) with np=n+1, mp=m+1
+              26                     ! pnm(mp,np+1) is x derivative of p(n,m) with np=n+1, mp=m+1
+              27                     !
+              28                           real      xx,sn,sn2i,rt2,c1,theta,fn,fn2,fn2s,c3,ang
+              29                           real      s1,s2,c4,c5,c6,c7,c8,a,b,c,d,e,fk
+              30                           real      fm,fm1,fm2,fm3
+              31                           integer   jtrunp,n,np,kp,k,mp,m,nps
+              32                     
+              33                           jtrunp= jtrun+1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1778
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pnm
+                                   <<< Loop-information  End >>>
+              34        pp   4v            pnm=0.0
+              35                     !
+              36                           xx= sinlj
+              37                           sn= sqrt(1.0-xx*xx)
+              38                           sn2i = 1.0/(1.0 - xx*xx)
+              39                           rt2= sqrt(2.0)
+              40                           c1 = rt2
+              41                     !
+              42                           pnm(1,1) = 1.0/rt2
+              43                           theta=-atan(xx/sqrt(1.0-xx*xx))+2.0*atan(1.0)
+              44                     !
+              45     1                     do 20 n=1,jtrun
+              46     1               	np = n + 1
+              47     1                       fn=n
+              48     1               	fn2 = fn + fn
+              49     1               	fn2s = fn2*fn2
+              50     1               ! eq 22
+              51     1                       c1= c1*sqrt(1.0-1.0/fn2s)
+              52     1                       c3= c1/sqrt(fn*(fn+1.0))
+              53     1               	ang = fn*theta
+              54     1               	s1 = 0.0
+              55     1               	s2 = 0.0
+              56     1               	c4 = 1.0
+              57     1               	c5 = fn
+              58     1               	a = -1.0
+              59     1               	b = 0.0
+              60     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 0
+                                   <<<      SIMD&FP   : SPILL 0  FILL 1
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+              61     2   s    s            do 27 kp=1,np,2
+              62     2   p    v      	k = kp - 1
+              63     2   m    m              s2= s2+c5*sin(ang)*c4
+              64     2   p    v              if (k.eq.n) c4 = 0.5*c4
+              65     2   m    m              s1= s1+c4*cos(ang)
+              66     2   s    s      	a = a + 2.0
+              67     2   s    s      	b = b + 1.0
+              68     2   p    v              fk=k
+              69     2   m    m      	ang = theta*(fn - fk - 2.0)
+              70     2   s    s      	c4 = (a*(fn - b + 1.0)/(b*(fn2 - a)))*c4
+              71     2   s    s      	c5 = c5 - 2.0
+              72     2   p    v         27 continue
+              73     1               ! eq 19
+              74     1               	pnm(np,1) = s1*c1
+              75     1               ! eq 21
+              76     1               	pnm(np,2) = s2*c3
+              77     1                  20 continue
+              78                     !
+              79     1                     do 4 mp=3,jtrunp
+              80     1               	m = mp - 1
+              81     1                       fm= m
+              82     1               	fm1 = fm - 1.0
+              83     1               	fm2 = fm - 2.0
+              84     1               	fm3 = fm - 3.0
+              85     1                       c6= sqrt(1.0+1.0/(fm+fm))
+              86     1               ! eq 23
+              87     1               	pnm(mp,mp) = c6*sn*pnm(m,m)
+              88     1                       if (mp - jtrunp) 3,4,4
+              89     1                   3 continue
+              90     1               	nps = mp + 1
+              91     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pnm
+                                   <<< Loop-information  End >>>
+              92     2   s    s            do 41 np=nps,jtrunp
+              93     2   p    v      	n = np - 1
+              94     2   p    v              fn= n
+              95     2   p    v      	fn2 = fn + fn
+              96     2   p    v      	c7 = (fn2 + 1.0)/(fn2 - 1.0)
+              97     2   p    v      	c8 = (fm1 + fn)/((fm + fn)*(fm2 + fn))
+              98     2   p    v              c= sqrt((fn2+1.0)*c8*(fm3+fn)/(fn2-3.0))
+              99     2   p    v              d= -sqrt(c7*c8*(fn-fm1))
+             100     2   p    v              e= sqrt(c7*(fn-fm)/(fn+fm))
+             101     2               ! eq 17
+             102     2   m    m      	pnm(np,mp) = c*pnm(np-2,mp-2) + xx*(d*pnm(np-1,mp-2) + e*pnm(np - 1,mp))
+             103     2   p    v         41 continue
+             104     1                   4 continue
+             105                     !
+             106                           return
+             107                           end
+
+ Procedure information
+   Lines      : 107
+   Statements : 73
+   Stack(byte): 752
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : pnmy
+   Attribute and Cross reference of name
+     a
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 29
+      |(Definition)     : 58  66
+      |(Reference)      : 66  70  70
+     ang
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 53  69
+      |(Reference)      : 63  65
+     atan
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 43  43
+     b
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 29
+      |(Definition)     : 59  67
+      |(Reference)      : 67  70  70
+     c
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 29
+      |(Definition)     : 98
+      |(Reference)      : 102
+     c1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 40  51
+      |(Reference)      : 51  52  74
+     c3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 52
+      |(Reference)      : 76
+     c4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 29
+      |(Definition)     : 56  64  70
+      |(Reference)      : 63  64  65  70
+     c5
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 29
+      |(Definition)     : 57  71
+      |(Reference)      : 63  71
+     c6
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 29
+      |(Definition)     : 85
+      |(Reference)      : 87
+     c7
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 29
+      |(Definition)     : 96
+      |(Reference)      : 99  100
+     c8
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 29
+      |(Definition)     : 97
+      |(Reference)      : 98  99
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 16
+     cos
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 65
+     d
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 29
+      |(Definition)     : 99
+      |(Reference)      : 102
+     e
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 29
+      |(Definition)     : 100
+      |(Reference)      : 102
+     fk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 29
+      |(Definition)     : 68
+      |(Reference)      : 69
+     fm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 30
+      |(Definition)     : 81
+      |(Reference)      : 82  83  84  85  85  97  100  100
+     fm1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 30
+      |(Definition)     : 82
+      |(Reference)      : 97  99
+     fm2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 30
+      |(Definition)     : 83
+      |(Reference)      : 97
+     fm3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 30
+      |(Definition)     : 84
+      |(Reference)      : 98
+     fn
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 47  94
+      |(Reference)      : 48  48  52  52  53  57  69  70  95  95  97  97  97  98  99  100  100
+     fn2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 48  95
+      |(Reference)      : 49  49  70  96  96  98  98
+     fn2s
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 49
+      |(Reference)      : 51
+     jtrun
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  20
+      |(Definition)     : 
+      |(Reference)      : 22  22  33  45
+     jtrunp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 33
+      |(Reference)      : 79  88  92
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 62
+      |(Reference)      : 64  68
+     kp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 61
+      |(Reference)      : 62
+     m
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 80
+      |(Reference)      : 81  87  87
+     mp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 79
+      |(Reference)      : 80  87  87  88  90  102  102  102  102
+     n
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 45  93
+      |(Reference)      : 46  47  64  94
+     np
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 46  92
+      |(Reference)      : 61  74  76  93  102  102  102  102
+     nps
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 31
+      |(Definition)     : 90
+      |(Reference)      : 92
+     pnm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  22
+      |(Definition)     : 34  42  74  76  87  102
+      |(Reference)      : 87  102  102  102
+     pnmy
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 16  21  22
+     rt2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 39
+      |(Reference)      : 40  42
+     s1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 29
+      |(Definition)     : 54  65
+      |(Reference)      : 65  74
+     s2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 29
+      |(Definition)     : 55  63
+      |(Reference)      : 63  76
+     sin
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 63
+     sinlj
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  21
+      |(Definition)     : 
+      |(Reference)      : 36
+     sn
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 37
+      |(Reference)      : 87
+     sn2i
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 38
+      |(Reference)      : 
+     sqrt
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 37  39  43  51  52  85  98  99  100
+     theta
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 43
+      |(Reference)      : 53  69
+     xx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 36
+      |(Reference)      : 37  37  38  38  43  43  43  102
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+          3  execution     (Definition) 89  
+                           (Reference)  88
+          4  execution     (Definition) 104  
+                           (Reference)  79  88  88
+         20  execution     (Definition) 77  
+                           (Reference)  45
+         27  execution     (Definition) 72  
+                           (Reference)  61
+         41  execution     (Definition) 103  
+                           (Reference)  92
+
+ Total information
+   Procedures       : 1
+   Total lines      : 107
+   Total statements : 73
+   Total stack(byte): 752
+   Total prefetch num: 0
+

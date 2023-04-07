@@ -1,0 +1,1777 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar 14 13:21:12 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_helio
+   Source file       : cuasc_n.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb157/CWBSUMc2/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "cuasc_n"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine cuasc_n &
+               2                          &    (nxj,      klon,     klev,     klevp1,   klevm1,   ptenh,&
+               3                          &     pqenh,    pxenh,    puen,     pven,     pten,     pqen,&
+               4                          &     pqsen,    pgeo,     pgeoh,    pap,      paph,&
+               5                          &     pqte,     pverv,    klwmin,   ldcum,    phcbase,&
+               6                          &     ktype,    klab,     ptu,      pqu,      plu,&
+               7                          &     puu,      pvu,      pmfu,     pmfub,    pmfus,  &
+               8                          &     pmfuq,    pmful,    plude,    pdmfup,   kcbot,  &
+               9                          &     kctop,    kctop0,   kcum,     ztmst,    pqsenh, &
+              10                          &     plglac,   lndj,     wup,      wbase,    kdpl,   &
+              11                          &     pmfude_rate, zoentr1)
+              12                     !     this routine does the calculations for cloud ascents
+              13                     !     for cumulus parameterization
+              14                     !     m.tiedtke         e.c.m.w.f.     7/86 modif.  12/89
+              15                     !     y.wang            iprc           11/01 modif.
+              16                     !     c.zhang           iprc           05/12 modif.
+              17                     !***purpose.
+              18                     !   --------
+              19                     !          to produce cloud ascents for cu-parametrization
+              20                     !          (vertical profiles of t,q,l,u and v and corresponding
+              21                     !           fluxes as well as precipitation rates)
+              22                     !***interface
+              23                     !   ---------
+              24                     !          this routine is called from *cumastr*.
+              25                     !***method.
+              26                     !  --------
+              27                     !          lift surface air dry-adiabatically to cloud base
+              28                     !          and then calculate moist ascent for
+              29                     !          entraining/detraining plume.
+              30                     !          entrainment and detrainment rates differ for
+              31                     !          shallow and deep cumulus convection.
+              32                     !          in case there is no penetrative or shallow convection
+              33                     !          check for possibility of mid level convection
+              34                     !          (cloud base values calculated in *cubasmc*)
+              35                     !***externals
+              36                     !   ---------
+              37                     !          *cuadjtqn* adjust t and q due to condensation in ascent
+              38                     !          *cuentrn*  calculate entrainment/detrainment rates
+              39                     !          *cubasmcn* calculate cloud base values for midlevel convection
+              40                     !***reference
+              41                     !   ---------
+              42                     !          (tiedtke,1989)
+              43                     !***input variables:
+              44                     !       ptenh [ztenh] - environ temperature on half levels. (cuini)
+              45                     !       pqenh [zqenh] - env. specific humidity on half levels. (cuini)
+              46                     !       puen - environment wind u-component. (mssflx)
+              47                     !       pven - environment wind v-component. (mssflx)
+              48                     !       pten - environment temperature. (mssflx)
+              49                     !       pqen - environment specific humidity. (mssflx)
+              50                     !       pqsen - environment saturation specific humidity. (mssflx)
+              51                     !       pgeo - geopotential. (mssflx)
+              52                     !       pgeoh [zgeoh] - geopotential on half levels, (mssflx)
+              53                     !       pap - pressure in pa.  (mssflx)
+              54                     !       paph - pressure of half levels. (mssflx)
+              55                     !       pqte - moisture convergence (delta q/delta t). (mssflx)
+              56                     !       pverv - large scale vertical velocity (omega). (mssflx)
+              57                     !       klwmin [ilwmin] - level of minimum omega. (cuini)
+              58                     !       klab [ilab] - level label - 1: sub-cloud layer.
+              59                     !                                   2: condensation level (cloud base)
+              60                     !       pmfub [zmfub] - updraft mass flux at cloud base. (cumastr)
+              61                     !***variables modified by cuasc:
+              62                     !       ldcum - logical denoting profiles. (cubase)
+              63                     !       ktype - convection type - 1: penetrative  (cumastr)
+              64                     !                                 2: stratocumulus (cumastr)
+              65                     !                                 3: mid-level  (cuasc)
+              66                     !       ptu - cloud temperature.
+              67                     !       pqu - cloud specific humidity.
+              68                     !       plu - cloud liquid water (moisture condensed out)
+              69                     !       puu [zuu] - cloud momentum u-component.
+              70                     !       pvu [zvu] - cloud momentum v-component.
+              71                     !       pmfu - updraft mass flux.
+              72                     !       pmfus [zmfus] - updraft flux of dry static energy. (cubasmc)
+              73                     !       pmfuq [zmfuq] - updraft flux of specific humidity.
+              74                     !       pmful [zmful] - updraft flux of cloud liquid water.
+              75                     !       plude - liquid water returned to environment by detrainment.
+              76                     !       pdmfup [zmfup] -
+              77                     !       kcbot - cloud base level. (cubase)
+              78                     !       kctop - cloud top level
+              79                     !       kctop0 [ictop0] - estimate of cloud top. (cumastr)
+              80                     !       kcum [icum] - flag to control the call
+              81                     !-------------------------------------------------------------------
+              82                       USE mo_constants,     ONLY: g,       & ! gravity acceleration
+              83                                                   cpd,     & ! specific heat at constant pressure
+              84                                                   rd,      & ! gas constant for dry air
+              85                                                   rv,      & !   idem      for water vapour
+              86                                                   alv,     & ! latent heat for vaporisation
+              87                                                   vtmpc1,  & ! vtmpc1=rv/rd-1
+              88                                                   rcpd,    & ! rcpd=1./cpd
+              89                                                   zrg,     & ! 1.0/g
+              90                                                   ralfdcp, &
+              91                                                   rtber,   &
+              92                                                   rtice
+              93                       USE mo_cumulus_flux,  ONLY: lmfdudv, & !
+              94                                                   lmfmid,  & !
+              95                                                   cmfcmin, & !
+              96                                                   cprcon_n,  & !xb110
+              97                                                   cmfctop
+              98                     
+              99                     !-------------------------------------------------------------------
+             100                           implicit none
+             101                     
+             102                           integer  klev,klon,klevp1,klevm1,nxj
+             103                           real     ptenh(klon,klev),       pqenh(klon,klev), &
+             104                          &         pxenh(klon,klev),                       &
+             105                          &         puen(klon,klev),        pven(klon,klev),&
+             106                          &         pten(klon,klev),        pqen(klon,klev),&
+             107                          &         pgeo(klon,klev),        pgeoh(klon,klevp1),&
+             108                          &         pap(klon,klev),         paph(klon,klevp1),&
+             109                          &         pqsen(klon,klev),       pqte(klon,klev),&
+             110                          &         pverv(klon,klev),       pqsenh(klon,klev)
+             111                           real     ptu(klon,klev),         pqu(klon,klev),&
+             112                          &         puu(klon,klev),         pvu(klon,klev),&
+             113                          &         pmfu(klon,klev),        zph(klon),&
+             114                          &         pmfub(klon),            &
+             115                          &         pmfus(klon,klev),       pmfuq(klon,klev),&
+             116                          &         plu(klon,klev),         plude(klon,klev),&
+             117                          &         pmful(klon,klev),       pdmfup(klon,klev)
+             118                           real     zdmfen(klon),           zdmfde(klon),&
+             119                          &         zmfuu(klon),            zmfuv(klon),&
+             120                          &         zpbase(klon),           zqold(klon)
+             121                           real     phcbase(klon),          zluold(klon)
+             122                           real     zprecip(klon),          zlrain(klon,klev)
+             123                           real     zbuo(klon,klev),        kup(klon,klev)
+             124                           real     wup(klon)
+             125                           real     wbase(klon),            zodetr(klon,klev)
+             126                           real     plglac(klon,klev)
+             127                     
+             128                           real     eta(klon),dz(klon)
+             129                     
+             130                           integer  klwmin(klon),           ktype(klon),&
+             131                          &         klab(klon,klev),        kcbot(klon),&
+             132                          &         kctop(klon),            kctop0(klon)
+             133                           integer  lndj(klon)
+             134                           logical  ldcum(klon),            loflag(klon)
+             135                           logical  llo2,llo3,              llo1(klon)
+             136                     
+             137                           integer  kdpl(klon)
+             138                           real     zoentr(klon),           zdpmean(klon)
+             139                           real     pdmfen(klon,klev),      pmfude_rate(klon,klev)
+             140                           real     ushear(klon,klev),      zoentr1(klon,klev)
+             141                           integer  jl,jk
+             142                           integer  ikb,icum,itopm2,ik,icall,is,kcum,jlm,jll
+             143                           integer  jlx(klon)
+             144                           real     ztmst,zcons2,zfacbuo,zprcdgw,z_cwdrag,z_cldmax,z_cwifrac,z_cprc2
+             145                           real     zmftest,zmfmax,zqeen,zseen,zscde,zqude
+             146                           real     zmfusk,zmfuqk,zmfulk
+             147                           real     zbc,zbe,zkedke,zmfun,zwu,zprcon,zdt,zcbf,zzco
+             148                           real     zlcrit,zdfi,zc,zd,zint,zlnew,zvw,zvi,zalfaw,zrold
+             149                           real     zrnew,zz,zdmfeu,zdmfdu,dp
+             150                           real     zfac,zbuoc,zdkbuo,zdken,zvv,zarg,zchange,zxe,zxs,zdshrd
+             151                           real     atop1,atop2,abot
+             152                           real     foealfa,ushmax
+             153                     !--------------------------------
+             154                     !*    1.       specify parameters
+             155                     !--------------------------------
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<< Loop-information  End >>>
+             156     1  pp                 do jk = 1, klev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ushear, zoentr1
+                                   <<< Loop-information  End >>>
+             157     2   p   2v              do jl = 1,nxj
+             158     2   p   2v                zoentr1(jl,jk) = 0.
+             159     2   p   2v                ushear(jl,jk) = 0.
+             160     2   p   2v              enddo
+             161     1   p                 enddo
+             162                           zcons2=3./(g*ztmst)
+             163                           zfacbuo = 0.5/(1.+0.5)
+             164                           zprcdgw = cprcon_n*zrg
+             165                           z_cldmax = 5.e-3
+             166                           z_cwifrac = 0.5
+             167                           z_cprc2 = 0.5
+             168                           z_cwdrag = (3.0/8.0)*0.506/0.2
+             169                     !---------------------------------
+             170                     !     2.        set default values
+             171                     !---------------------------------
+             172                     !xb110>
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1231
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      zph, jlx, kctop
+                                   <<< Loop-information  End >>>
+             173        pp   2v            kctop = 0.
+             174         p   2v            jlx   = 0
+             175         p   2v            zph   = 0.
+             176                           zbuoc = 0.
+             177                     !xb110<
+             178                           llo3 = .false.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 445
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.22, ITR: 48, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ldcum, pmfub, kcbot, ktype, pqu, zluold
+                                   <<<      wup, zdpmean, zoentr
+                                   <<< Loop-information  End >>>
+             179     1  pp    v             do jl = 1, nxj
+             180     1   p    v              zluold(jl)=0.
+             181     1   p    v              wup(jl)=0.
+             182     1   p    v              zdpmean(jl)=0.
+             183     1   p    v              zoentr(jl)=0.
+             184     2   p    v              if(.not.ldcum(jl)) then
+             185     2   p    v                ktype(jl)=0
+             186     2   p    v                kcbot(jl) = -1
+             187     2   p    v                pmfub(jl) = 0.
+             188     2   p    v                pqu(jl,klev) = 0.
+             189     2   p    v              end if
+             190     1   p    v            end do
+             191                     
+             192                     ! initialize variout quantities
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ldcum, ktype, paph, klab, pmfude_rate
+                                   <<<      pdmfen, kup, zbuo, zlrain, pdmfup
+                                   <<<      plglac, plude, pmful, pmfuq, pmfus
+                                   <<<      kctop0
+                                   <<<    PREFETCH(SOFT) : 6
+                                   <<<     SEQUENTIAL : 6
+                                   <<<      kcbot: 2, pmfu: 2, plu: 2
+                                   <<< Loop-information  End >>>
+             193     1                     do jk=1,klev
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 217
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.24, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      paph, ldcum, klab, kctop0, pmfude_rate
+                                   <<<      pdmfen, kup, zbuo, zlrain, pdmfup
+                                   <<<      plglac, plude, pmful, pmfuq, ktype
+                                   <<<      pmfus
+                                   <<<    PREFETCH(SOFT) : 10
+                                   <<<     SEQUENTIAL : 10
+                                   <<<      pmfu: 4, plu: 4, kcbot: 2
+                                   <<< Loop-information  End >>>
+             194     2  pp    v             do jl = 1, nxj
+             195     2   p    v                if(jk.ne.kcbot(jl)) plu(jl,jk)=0.
+             196     2   p    v                pmfu(jl,jk)=0.
+             197     2   p    v                pmfus(jl,jk)=0.
+             198     2   p    v                pmfuq(jl,jk)=0.
+             199     2   p    v                pmful(jl,jk)=0.
+             200     2   p    v                plude(jl,jk)=0.
+             201     2   p    v                plglac(jl,jk)=0.
+             202     2   p    v                pdmfup(jl,jk)=0.
+             203     2   p    v                zlrain(jl,jk)=0.
+             204     2   p    v                zbuo(jl,jk)=0.
+             205     2   p    v                kup(jl,jk)=0.
+             206     2   p    v                pdmfen(jl,jk) = 0.
+             207     2   p    v                pmfude_rate(jl,jk) = 0.
+             208     2   p    v                if(.not.ldcum(jl).or.ktype(jl).eq.3) klab(jl,jk)=0
+             209     2   p    v                if(.not.ldcum(jl).and.paph(jl,jk).lt.4.e4) kctop0(jl)=jk
+             210     2   p    v            end do
+             211     1                     end do
+             212                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 229
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED(lines: 213,219)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ktype, kcbot, ldcum, kctop
+                                   <<< Loop-information  End >>>
+             213     1  pp    s             do jl = 1, nxj
+             214     1   p    m              if ( ktype(jl) == 3 ) ldcum(jl) = .false.
+             215     1   p    v            end do
+             216                     !------------------------------------------------
+             217                     !     3.0      initialize values at cloud base level
+             218                     !------------------------------------------------
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED
+                                   <<< Loop-information  End >>>
+             219     1                      do jl = 1, nxj
+             220     1                       kctop(jl)=kcbot(jl)
+             221     2                       if(ldcum(jl)) then
+             222     2                         ikb = kcbot(jl)
+             223     2                         kup(jl,ikb) = 0.5*wbase(jl)**2
+             224     2                         pmfu(jl,ikb) = pmfub(jl)
+             225     2                         pmfus(jl,ikb) = pmfub(jl)*(cpd*ptu(jl,ikb)+pgeoh(jl,ikb))
+             226     2                         pmfuq(jl,ikb) = pmfub(jl)*pqu(jl,ikb)
+             227     2                         pmful(jl,ikb) = pmfub(jl)*plu(jl,ikb)
+             228     2                       end if
+             229     1                     end do
+             230                     !
+             231                     !-----------------------------------------------------------------
+             232                     !     4.       do ascent: subcloud layer (klab=1) ,clouds (klab=2)
+             233                     !              by doing first dry-adiabatic ascent and then
+             234                     !              by adjusting t,q and l accordingly in *cuadjtqn*,
+             235                     !              then check for buoyancy and set flags accordingly
+             236                     !-----------------------------------------------------------------
+             237                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      kdpl, ptenh, pqenh, ptu, zluold, pqu
+                                   <<<      plu, jlx
+                                   <<< Loop-information  End >>>
+             238     1                     do jk=klevm1,3,-1
+             239     1               !             specify cloud base values for midlevel convection
+             240     1               !             in *cubasmc* in case there is not already convection
+             241     1               ! ---------------------------------------------------------------------
+             242     1                     ik=jk
+             243     1                     call cubasmc_n&
+             244     1                    &    (nxj,      klon,     klev,     klevm1,   ik,      pten,&
+             245     1                    &     pqen,     pqsen,    puen,     pven,    pverv,&
+             246     1                    &     pgeo,     pgeoh,    ldcum,   ktype,   klab,  zlrain,&
+             247     1                    &     pmfu,     pmfub,    kcbot,   ptu,&
+             248     1                    &     pqu,      plu,      puu,     pvu,      pmfus,&
+             249     1                    &     pmfuq,    pmful,    pdmfup)
+             250     1                     is = 0
+             251     1                     jlm = 0
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      klab, llo1, zprecip, loflag, ldcum, paph
+                                   <<<      zph, ktype
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 2
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             252     2        s             do jl = 1, nxj
+             253     2        v              loflag(jl) = .false.
+             254     2        v              zprecip(jl) = 0.
+             255     2        v              llo1(jl) = .false.
+             256     2        v              is = is + klab(jl,jk+1)
+             257     2        v              if ( klab(jl,jk+1) == 0 ) klab(jl,jk) = 0
+             258     3        v              if ( (ldcum(jl) .and. klab(jl,jk+1) == 2) .or.   &
+             259     3                            (ktype(jl) == 3 .and. klab(jl,jk+1) == 1) ) then
+             260     3        v                loflag(jl) = .true.
+             261     3        m                jlm = jlm + 1
+             262     3        s                jlx(jlm) = jl
+             263     3        v              end if
+             264     2        v              zph(jl) = paph(jl,jk)
+             265     3        v              if ( ktype(jl) == 3 .and. jk == kcbot(jl) ) then
+             266     3        v                zmfmax = (paph(jl,jk)-paph(jl,jk-1))*zcons2
+             267     4        v                if ( pmfub(jl) > zmfmax ) then
+             268     4        v                  zfac = zmfmax/pmfub(jl)
+             269     4        v                  pmfu(jl,jk+1) = pmfu(jl,jk+1)*zfac
+             270     4        v                  pmfus(jl,jk+1) = pmfus(jl,jk+1)*zfac
+             271     4        v                  pmfuq(jl,jk+1) = pmfuq(jl,jk+1)*zfac
+             272     4        v                  pmfub(jl) = zmfmax
+             273     4        v                end if
+             274     3        v                pmfub(jl)=min(pmfub(jl),zmfmax)
+             275     3        v              end if
+             276     2        v            end do
+             277     1               
+             278     1                     if(is.gt.0) llo3 = .true.
+             279     1               !
+             280     1               !*     specify entrainment rates in *cuentr*
+             281     1               ! -------------------------------------
+             282     1                     ik=jk
+             283     1                     call cuentr_n(nxj,klon,klev,ik,kcbot,ldcum,llo3, &
+             284     1                                 pgeoh,pmfu,zdmfen,zdmfde)
+             285     1               !
+             286     1               !      do adiabatic ascent for entraining/detraining plume
+             287     2                     if(llo3) then
+             288     2               ! -------------------------------------------------------
+             289     2               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      zqold
+                                   <<< Loop-information  End >>>
+             290     3  pp   4v             do jl = 1, nxj
+             291     3   p   4v                zqold(jl) = 0.
+             292     3   p   4v              end do
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      jlx
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 19
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             293     3   s    s              do jll = 1 , jlm
+             294     3   p    v                jl = jlx(jll)
+             295     3   m    m                zdmfde(jl) = min(zdmfde(jl),0.75*pmfu(jl,jk+1))
+             296     4   p    v                if ( jk == kcbot(jl) ) then
+             297     4   p    v                  zoentr(jl) = -1.75e-3*(min(1.,pqen(jl,jk)/pqsen(jl,jk)) - &
+             298     4                                        1.)*(pgeoh(jl,jk)-pgeoh(jl,jk+1))*zrg
+             299     4   m    m                  zoentr(jl) = min(0.4,zoentr(jl))*pmfu(jl,jk+1)
+             300     4   p    v                end if
+             301     4   p    v                if ( jk < kcbot(jl) ) then
+             302     4   p    v                  zmfmax = (paph(jl,jk)-paph(jl,jk-1))*zcons2
+             303     4   p    v                  zxs = max(pmfu(jl,jk+1)-zmfmax,0.)
+             304     4   m    m                  wup(jl) = wup(jl) + kup(jl,jk+1)*(pap(jl,jk+1)-pap(jl,jk))
+             305     4   s    s                  zdpmean(jl) = zdpmean(jl) + pap(jl,jk+1) - pap(jl,jk)
+             306     4   s    s                  zdmfen(jl) = zoentr(jl)
+             307     5   p    v                  if ( ktype(jl) >= 2 ) then
+             308     5   m    m                    zdmfen(jl) = 2.0*zdmfen(jl)
+             309     5   p    v                    zdmfde(jl) = zdmfen(jl)
+             310     5   p    v                  end if
+             311     4   m    m                  zdmfde(jl) = zdmfde(jl) * &
+             312     4                                        (1.6-min(1.,pqen(jl,jk)/pqsen(jl,jk)))
+             313     4   s    s                  zmftest = pmfu(jl,jk+1) + zdmfen(jl) - zdmfde(jl)
+             314     4   s    s                  zchange = max(zmftest-zmfmax,0.)
+             315     4   s    s                  zxe = max(zchange-zxs,0.)
+             316     4   s    s                  zdmfen(jl) = zdmfen(jl) - zxe
+             317     4   s    s                  zchange = zchange - zxe
+             318     4   s    s                  zdmfde(jl) = zdmfde(jl) + zchange
+             319     4   p    v                end if
+             320     3   m    m                pdmfen(jl,jk) = zdmfen(jl) - zdmfde(jl)
+             321     3   m    v                pmfu(jl,jk) = pmfu(jl,jk+1) + zdmfen(jl) - zdmfde(jl)
+             322     3   p    v                zqeen = pqenh(jl,jk+1)*zdmfen(jl)
+             323     3   p    v                zseen = (cpd*ptenh(jl,jk+1)+pgeoh(jl,jk+1))*zdmfen(jl)
+             324     3   p    v                zscde = (cpd*ptu(jl,jk+1)+pgeoh(jl,jk+1))*zdmfde(jl)
+             325     3   p    v                zqude = pqu(jl,jk+1)*zdmfde(jl)
+             326     3   m    v                plude(jl,jk) = plu(jl,jk+1)*zdmfde(jl)
+             327     3   p    v                zmfusk = pmfus(jl,jk+1) + zseen - zscde
+             328     3   p    v                zmfuqk = pmfuq(jl,jk+1) + zqeen - zqude
+             329     3   p    v                zmfulk = pmful(jl,jk+1) - plude(jl,jk)
+             330     3   m    v                plu(jl,jk) = zmfulk*(1./max(cmfcmin,pmfu(jl,jk)))
+             331     3   m    v                pqu(jl,jk) = zmfuqk*(1./max(cmfcmin,pmfu(jl,jk)))
+             332     3   p    v                ptu(jl,jk) = (zmfusk * &
+             333     3                           (1./max(cmfcmin,pmfu(jl,jk)))-pgeoh(jl,jk))*rcpd
+             334     3   p    v                ptu(jl,jk) = max(100.,ptu(jl,jk))
+             335     3   m    v                ptu(jl,jk) = min(400.,ptu(jl,jk))
+             336     3   p    v                zqold(jl) = pqu(jl,jk)
+             337     3   m    v                zlrain(jl,jk) = zlrain(jl,jk+1)*(pmfu(jl,jk+1)-zdmfde(jl)) * &
+             338     3                                         (1./max(cmfcmin,pmfu(jl,jk)))
+             339     3   s    v                zluold(jl) = plu(jl,jk)
+             340     3   p    v              end do
+             341     2               ! reset to environmental values if below departure level
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 534
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.66, ITR: 72, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      kdpl, zluold, ptu, ptenh, pqenh, pqu
+                                   <<<      plu
+                                   <<< Loop-information  End >>>
+             342     3  pp    v             do jl = 1, nxj
+             343     4   p    v                if ( jk > kdpl(jl) ) then
+             344     4   p    v                  ptu(jl,jk) = ptenh(jl,jk)
+             345     4   p    v                  pqu(jl,jk) = pqenh(jl,jk)
+             346     4   p    v                  plu(jl,jk) = 0.
+             347     4   p    v                  zluold(jl) = plu(jl,jk)
+             348     4   p    v                end if
+             349     3   p    v              end do
+             350     2               !*             do corrections for moist ascent
+             351     2               !*             by adjusting t,q and l in *cuadjtq*
+             352     2               !------------------------------------------------
+             353     2                     ik=jk
+             354     2                     icall=1
+             355     2               !
+             356     3                     if ( jlm > 0 ) then
+             357     3                       call cuadjtq_n(nxj,klon,klev,ik,zph,ptu,pqu,loflag,icall)
+             358     3                     end if
+             359     2               ! compute the upfraft speed in cloud layer
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      jlx
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 2
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             360     3   s    s              do jll = 1 , jlm
+             361     3   s    s                jl = jlx(jll)
+             362     4   s    s                if ( pqu(jl,jk) /= zqold(jl) ) then
+             363     4   s    s                  plglac(jl,jk) = plu(jl,jk) * &
+             364     4                                          ((1.-foealfa(ptu(jl,jk)))- &
+             365     4                                           (1.-foealfa(ptu(jl,jk+1))))
+             366     4   s    s                  ptu(jl,jk) = ptu(jl,jk) + ralfdcp*plglac(jl,jk)
+             367     4   s    s                end if
+             368     3   s    s              end do
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      jlx
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 1  FILL 29
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             369     3   s    s              do jll = 1 , jlm
+             370     3   p    v                jl = jlx(jll)
+             371     4   p    m                if ( pqu(jl,jk) /= zqold(jl) ) then
+             372     4   m    s                  klab(jl,jk) = 2
+             373     4   m    s                  plu(jl,jk) = plu(jl,jk) + zqold(jl) - pqu(jl,jk)
+             374     4   p    s                  zbc = ptu(jl,jk)*(1.+vtmpc1*pqu(jl,jk)-plu(jl,jk+1) - &
+             375     4                             zlrain(jl,jk+1))
+             376     4   s    s                  zbe = ptenh(jl,jk)*(1.+vtmpc1*pqenh(jl,jk))
+             377     4   s    s                  zbuo(jl,jk) = zbc - zbe
+             378     4               ! set flags for the case of midlevel convection
+             379     5   p    s                  if ( ktype(jl) == 3 .and. klab(jl,jk+1) == 1 ) then
+             380     6   p    s                    if ( zbuo(jl,jk) > -0.5 ) then
+             381     6   s    s                      ldcum(jl) = .true.
+             382     6   s    s                      kctop(jl) = jk
+             383     6   m    s                      kup(jl,jk) = 0.5
+             384     6   p    s                    else
+             385     6   s    s                      klab(jl,jk) = 0
+             386     6   s    s                      pmfu(jl,jk) = 0.
+             387     6   s    s                      plude(jl,jk) = 0.
+             388     6   m    s                      plu(jl,jk) = 0.
+             389     6   p    s                    end if
+             390     5   p    s                  end if
+             391     5   p    s                  if ( klab(jl,jk+1) == 2 ) then
+             392     6   s    s                    if ( zbuo(jl,jk) < 0. ) then
+             393     6   s    s                      ptenh(jl,jk) = 0.5*(pten(jl,jk)+pten(jl,jk-1))
+             394     6   s    s                      pqenh(jl,jk) = 0.5*(pqen(jl,jk)+pqen(jl,jk-1))
+             395     6   m    s                      zbuo(jl,jk) = zbc - ptenh(jl,jk)*(1.+vtmpc1*pqenh(jl,jk))
+             396     6   p    s                    end if
+             397     5   m    s                    zbuoc = (zbuo(jl,jk) / &
+             398     5                               (ptenh(jl,jk)*(1.+vtmpc1*pqenh(jl,jk)))+zbuo(jl,jk+1) / &
+             399     5                               (ptenh(jl,jk+1)*(1.+vtmpc1*pqenh(jl,jk+1))))*0.5
+             400     5   p    s                    zdkbuo = (pgeoh(jl,jk)-pgeoh(jl,jk+1))*zfacbuo*zbuoc
+             401     5               ! mixing and "pressure" gradient term in upper troposphere
+             402     6   p    s                    if ( zdmfen(jl) > 0. ) then
+             403     6   p    s                      zdken = min(1.,(1.+z_cwdrag)*zdmfen(jl) / &
+             404     6                                       max(cmfcmin,pmfu(jl,jk+1)))
+             405     6   p    s                    else
+             406     6   m    s                      zdken = min(1.,(1.+z_cwdrag)*zdmfde(jl) / &
+             407     6                                       max(cmfcmin,pmfu(jl,jk+1)))
+             408     6   p    s                    end if
+             409     5   s    s                    kup(jl,jk) = (kup(jl,jk+1)*(1.-zdken)+zdkbuo) / &
+             410     5                                          (1.+zdken)
+             411     6   p    s                    if ( zbuo(jl,jk) < 0. ) then
+             412     6   m    s                      zkedke = kup(jl,jk)/max(1.e-10,kup(jl,jk+1))
+             413     6   s    s                      zkedke = max(0.,min(1.,zkedke))
+             414     6   m    s                      zmfun = sqrt(zkedke)*pmfu(jl,jk+1)
+             415     6   s    s                      zdmfde(jl) = max(zdmfde(jl),pmfu(jl,jk+1)-zmfun)
+             416     6   m    s                      plude(jl,jk) = plu(jl,jk+1)*zdmfde(jl)
+             417     6   m    s                      pmfu(jl,jk) = pmfu(jl,jk+1) + zdmfen(jl) - zdmfde(jl)
+             418     6   p    s                    end if
+             419     6   p    s                    if ( zbuo(jl,jk) > 0.  ) then
+             420     6   p    s                      ikb = kcbot(jl)
+             421     6   p    s                      zoentr(jl) = 1.75e-3*(0.3-(min(1.,pqen(jl,jk-1) /    &
+             422     6                                 pqsen(jl,jk-1))-1.))*(pgeoh(jl,jk-1)-pgeoh(jl,jk)) * &
+             423     6                                 zrg*min(1.,pqsen(jl,jk)/pqsen(jl,ikb))**3
+             424     6   s    s                      zoentr1(jl,jk)=zoentr(jl)
+             425     6   m    s                      zoentr(jl) = min(0.4,zoentr(jl))*pmfu(jl,jk)
+             426     6   p    s                    else
+             427     6   m    s                      zoentr(jl) = 0.
+             428     6   p    s                    end if
+             429     5               ! erase values if below departure level
+             430     6   p    s                    if ( jk > kdpl(jl) ) then
+             431     6   s    s                      pmfu(jl,jk) = pmfu(jl,jk+1)
+             432     6   s    s                      kup(jl,jk) = 0.5
+             433     6   p    s                    end if
+             434     6   m    s                    if ( kup(jl,jk) > 0. .and. pmfu(jl,jk) > 0. ) then
+             435     6   s    s                      kctop(jl) = jk
+             436     6   p    s                      llo1(jl) = .true.
+             437     6   s    s                    else
+             438     6   s    s                      klab(jl,jk) = 0
+             439     6   s    s                      pmfu(jl,jk) = 0.
+             440     6   s    s                      kup(jl,jk) = 0.
+             441     6   s    s                      zdmfde(jl) = pmfu(jl,jk+1)
+             442     6   m    s                      plude(jl,jk) = plu(jl,jk+1)*zdmfde(jl)
+             443     6   p    s                    end if
+             444     5               ! save detrainment rates for updraught
+             445     5   p    s                    if ( pmfu(jl,jk+1) > 0. ) pmfude_rate(jl,jk) = zdmfde(jl)
+             446     5   p    s                  end if
+             447     4   p    s                else if ( ktype(jl) == 2 .and. pqu(jl,jk) == zqold(jl) ) then
+             448     4   m    s                  klab(jl,jk) = 0
+             449     4   s    s                  pmfu(jl,jk) = 0.
+             450     4   s    s                  kup(jl,jk) = 0.
+             451     4   m    s                  zdmfde(jl) = pmfu(jl,jk+1)
+             452     4   m    s                  plude(jl,jk) = plu(jl,jk+1)*zdmfde(jl)
+             453     4   m    s                  pmfude_rate(jl,jk) = zdmfde(jl)
+             454     4   p    v                end if
+             455     3   p    v              end do
+             456     2               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 19
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      llo1, lndj, plu, ptu, pgeoh, kup, zluold
+                                   <<<      zlrain, pmfu, zprecip, pdmfup
+                                   <<< Loop-information  End >>>
+             457     3  pp    v             do jl = 1, nxj
+             458     4   p    v                if ( llo1(jl) ) then
+             459     4               ! conversions only proceeds if plu is greater than a threshold liquid water
+             460     4               ! content of 0.3 g/kg over water and 0.5 g/kg over land to prevent precipitation
+             461     4               ! generation from small water contents.
+             462     5   p    v                  if ( lndj(jl).eq.1 ) then
+             463     5   p    v                    zdshrd = 5.e-4
+             464     5   p    v                  else
+             465     5   p    v                    zdshrd = 3.e-4
+             466     5   p    v                  end if
+             467     4   p    v                  ikb=kcbot(jl)
+             468     5   p    v                  if ( plu(jl,jk) > zdshrd )then
+             469     5   p    v                    zwu = min(15.0,sqrt(2.*max(0.1,kup(jl,jk+1))))
+             470     5   p    v                    zprcon = zprcdgw/(0.75*zwu)
+             471     5               ! PARAMETERS FOR BERGERON-FINDEISEN PROCESS (T < -5C)
+             472     5   p    v                    zdt = min(rtber-rtice,max(rtber-ptu(jl,jk),0.))
+             473     5   p    v                    zcbf = 1. + z_cprc2*sqrt(zdt)
+             474     5   p    v                    zzco = zprcon*zcbf
+             475     5   p    v                    zlcrit = zdshrd/zcbf
+             476     5   p    v                    zdfi = pgeoh(jl,jk) - pgeoh(jl,jk+1)
+             477     5   p    v                    zc = (plu(jl,jk)-zluold(jl))
+             478     5   p    v                    zarg = (plu(jl,jk)/zlcrit)**2
+             479     6   p    v                    if ( zarg < 25.0 ) then
+             480     6   p    v                      zd = zzco*(1.-exp(-zarg))*zdfi
+             481     6   p    v                    else
+             482     6   p    v                      zd = zzco*zdfi
+             483     6   p    v                    end if
+             484     5   p    v                    zint = exp(-zd)
+             485     5   p    v                    zlnew = zluold(jl)*zint + zc/zd*(1.-zint)
+             486     5   p    v                    zlnew = max(0.,min(plu(jl,jk),zlnew))
+             487     5   p    v                    zlnew = min(z_cldmax,zlnew)
+             488     5   p    v                    zprecip(jl) = max(0.,zluold(jl)+zc-zlnew)
+             489     5   p    v                    pdmfup(jl,jk) = zprecip(jl)*pmfu(jl,jk)
+             490     5   p    v                    zlrain(jl,jk) = zlrain(jl,jk) + zprecip(jl)
+             491     5   p    v                    plu(jl,jk) = zlnew
+             492     5   p    v                  end if
+             493     4   p    v                end if
+             494     3   p    v              end do
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      llo1
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 2  FILL 3
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             495     3   s    s             do jl = 1, nxj
+             496     4   p    v                if ( llo1(jl) ) then
+             497     5   p    v                  if ( zlrain(jl,jk) > 0. ) then
+             498     5   p    v                    zvw = 21.18*zlrain(jl,jk)**0.2
+             499     5   p    v                    zvi = z_cwifrac*zvw
+             500     5   s    s                    zalfaw = foealfa(ptu(jl,jk))
+             501     5   p    v                    zvv = zalfaw*zvw + (1.-zalfaw)*zvi
+             502     5   p    v                    zrold = zlrain(jl,jk) - zprecip(jl)
+             503     5   p    v                    zc = zprecip(jl)
+             504     5   p    v                    zwu = min(15.0,sqrt(2.*max(0.1,kup(jl,jk))))
+             505     5   p    v                    zd = zvv/zwu
+             506     5   p    v                    zint = exp(-zd)
+             507     5   p    v                    zrnew = zrold*zint + zc/zd*(1.-zint)
+             508     5   p    v                    zrnew = max(0.,min(zlrain(jl,jk),zrnew))
+             509     5   p    v                    zlrain(jl,jk) = zrnew
+             510     5   p    v                  end if
+             511     4   p    v                end if
+             512     3   p    v              end do
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.45, ITR: 80, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      jlx
+                                   <<< Loop-information  End >>>
+             513     3   s    v              do jll = 1 , jlm
+             514     3   p    v                jl = jlx(jll)
+             515     3   m    v                pmful(jl,jk) = plu(jl,jk)*pmfu(jl,jk)
+             516     3   m    v                pmfus(jl,jk) = (cpd*ptu(jl,jk)+pgeoh(jl,jk))*pmfu(jl,jk)
+             517     3   m    v                pmfuq(jl,jk) = pqu(jl,jk)*pmfu(jl,jk)
+             518     3   p    v              end do
+             519     2                     end if
+             520     1                     end do
+             521                     !----------------------------------------------------------------------
+             522                     ! 5.       final calculations
+             523                     ! ------------------
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 223
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.48, ITR: 40, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      kctop, ldcum, kcbot, zdpmean, wup
+                                   <<< Loop-information  End >>>
+             524     1  pp    v             do jl = 1, nxj
+             525     1               
+             526     1   p    v             if ( kctop(jl) == -1 ) ldcum(jl) = .false.
+             527     1   p    v              kcbot(jl) = max(kcbot(jl),kctop(jl))
+             528     1               !xb110> 20190711
+             529     2   p    v             if (.not.ldcum(jl)) then
+             530     2   p    v                kcbot(jl) = -1
+             531     2   p    v                kctop(jl) = -1
+             532     2   p    v             end if
+             533     1               !xb110< 20190711
+             534     1               
+             535     2   p    v              if ( ldcum(jl) ) then
+             536     2   p    v                wup(jl) = max(1.e-2,wup(jl)/max(1.,zdpmean(jl)))
+             537     2   p    v                wup(jl) = sqrt(2.*wup(jl))
+             538     2   p    v              end if
+             539     1   p    v            end do
+             540                     
+             541                           return
+             542                           end subroutine cuasc_n
+
+ Procedure information
+   Lines      : 542
+   Statements : 347
+   Stack(byte): 4256
+   Prefetch num: 22
+
+ Scoping unit of external sub-program : cuasc_n
+   Attribute and Cross reference of name
+     abot
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 151
+      |(Definition)     : 
+      |(Reference)      : 
+     alv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 82
+     atop1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 151
+      |(Definition)     : 
+      |(Reference)      : 
+     atop2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 151
+      |(Definition)     : 
+      |(Reference)      : 
+     cmfcmin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 93  330  331  332  337  403  406
+     cmfctop
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 93
+     cpd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 82  225  323  324  516
+     cprcon_n
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 93  164
+     cuadjtq_n
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 357
+     cuasc_n
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 542
+     cubasmc_n
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 243
+     cuentr_n
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 283
+     dp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 149
+      |(Definition)     : 
+      |(Reference)      : 
+     dz
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 128
+      |(Definition)     : 
+      |(Reference)      : 
+     eta
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 128
+      |(Definition)     : 
+      |(Reference)      : 
+     exp
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 480  484  506
+     foealfa
+      |(Class and Type) : external function name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 363  363  500
+     foealfa
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 
+      |(Reference)      : 
+     g
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 82  162
+     icall
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 142
+      |(Definition)     : 354  357
+      |(Reference)      : 
+     icum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 142
+      |(Definition)     : 
+      |(Reference)      : 
+     ik
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 142
+      |(Definition)     : 242  243  282  283  353  357
+      |(Reference)      : 
+     ikb
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 142
+      |(Definition)     : 222  420  467
+      |(Reference)      : 223  224  225  225  225  226  226  227  227  421
+     is
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 142
+      |(Definition)     : 250  256
+      |(Reference)      : 256  278
+     itopm2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 142
+      |(Definition)     : 
+      |(Reference)      : 
+     jk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 141
+      |(Definition)     : 156  193  238
+      |(Reference)      : 158  159  195  195  196  197  198  199  200  201  202  203  204  205  206  207  208  209  209  242  256  257  257  258  258  264  265  266  266  269  269  270  270  271  271  282  295  296  297  297  297  297  299  301  302  302  303  304  304  304  305  305  311  311  313  320  321  321  322  323  323  324  324  325  326  326  327  328  329  329  330  330  331  331  332  332  332  334  334  335  335  336  337  337  337  337  339  343  344  344  345  345  346  347  353  362  363  363  363  363  366  366  366  371  372  373  373  373  374  374  374  374  376  376  377  379  380  382  383  385  386  387  388  391  392  393  393  393  394  394  394  395  395  395  397  397  397  397  397  397  400  400  403  406  409  409  411  412  412  414  415  416  416  417  417  419  421  421  421  421  421  424  425  430  431  431  432  434  434  435  438  439  440  441  442  442  445  445  447  448  449  450  451  452  452  453  468  469  472  476  476  477  478  486  489  489  490  490  491  497  498  500  502  504  508  509  515  515  515  516  516  516  516  517  517  517
+     jl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 141
+      |(Definition)     : 157  179  194  213  219  252  290  294  342  361  370  457  495  514  524
+      |(Reference)      : 158  159  180  181  182  183  184  185  186  187  188  195  195  196  197  198  199  200  201  202  203  204  205  206  207  208  208  208  209  209  209  214  214  220  220  221  222  223  223  224  224  225  225  225  225  226  226  226  227  227  227  253  254  255  256  257  257  258  258  258  258  260  262  264  264  265  265  266  266  267  268  269  269  270  270  271  271  272  274  274  291  295  295  295  296  297  297  297  297  297  299  299  299  301  302  302  303  304  304  304  304  304  305  305  305  305  306  306  307  308  308  309  309  311  311  311  311  313  313  313  316  316  318  318  320  320  320  321  321  321  321  322  322  323  323  323  324  324  324  325  325  326  326  326  327  328  329  329  330  330  331  331  332  332  332  334  334  335  335  336  336  337  337  337  337  337  339  339  343  344  344  345  345  346  347  347  362  362  363  363  363  363  366  366  366  371  371  372  373  373  373  373  374  374  374  374  376  376  377  379  379  380  381  382  383  385  386  387  388  391  392  393  393  393  394  394  394  395  395  395  397  397  397  397  397  397  400  400  402  403  403  406  406  409  409  411  412  412  414  415  415  415  416  416  416  417  417  417  417  419  420  421  421  421  421  421  421  421  424  424  425  425  425  427  430  431  431  432  434  434  435  436  438  439  440  441  441  442  442  442  445  445  445  447  447  447  448  449  450  451  451  452  452  452  453  453  458  462  467  468  469  472  476  476  477  477  478  485  486  488  488  489  489  489  490  490  490  491  496  497  498  500  502  502  503  504  508  509  515  515  515  516  516  516  516  517  517  517  526  526  527  527  527  529  530  531  535  536  536  536  537  537
+     jll
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 142
+      |(Definition)     : 293  360  369  513
+      |(Reference)      : 294  361  370  514
+     jlm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 142
+      |(Definition)     : 251  261
+      |(Reference)      : 261  262  293  356  360  369  513
+     jlx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 143
+      |(Definition)     : 174  262
+      |(Reference)      : 294  361  370  514
+     kcbot
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  130
+      |(Definition)     : 186  243  283  527  530
+      |(Reference)      : 195  220  222  265  296  301  420  467  527
+     kctop
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  130
+      |(Definition)     : 173  220  382  435  531
+      |(Reference)      : 526  527
+     kctop0
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  130
+      |(Definition)     : 209
+      |(Reference)      : 
+     kcum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  142
+      |(Definition)     : 
+      |(Reference)      : 
+     kdpl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  137
+      |(Definition)     : 
+      |(Reference)      : 343  430
+     klab
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  130
+      |(Definition)     : 208  243  257  372  385  438  448
+      |(Reference)      : 256  257  258  258  379  391
+     klev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  102
+      |(Definition)     : 243  283  357
+      |(Reference)      : 103  103  103  103  103  103  103  103  103  103  103  103  103  111  111  111  111  111  111  111  111  111  111  111  122  123  123  125  126  130  139  139  140  140  156  188  193
+     klevm1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  102
+      |(Definition)     : 243
+      |(Reference)      : 238
+     klevp1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  102
+      |(Definition)     : 
+      |(Reference)      : 103  103
+     klon
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  102
+      |(Definition)     : 243  283  357
+      |(Reference)      : 103  103  103  103  103  103  103  103  103  103  103  103  103  103  103  111  111  111  111  111  111  111  111  111  111  111  111  111  118  118  118  118  118  118  121  121  122  122  123  123  124  125  125  126  128  128  130  130  130  130  130  130  133  134  134  135  137  138  138  139  139  140  140  143
+     klwmin
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  130
+      |(Definition)     : 
+      |(Reference)      : 
+     ktype
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  130
+      |(Definition)     : 185  243
+      |(Reference)      : 208  214  258  265  307  379  447
+     kup
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 123
+      |(Definition)     : 205  223  383  409  432  440  450
+      |(Reference)      : 304  409  412  412  434  469  504
+     ldcum
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  134
+      |(Definition)     : 214  243  283  381  526
+      |(Reference)      : 184  208  209  221  258  529  535
+     llo1
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 135
+      |(Definition)     : 255  436
+      |(Reference)      : 458  496
+     llo2
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 135
+      |(Definition)     : 
+      |(Reference)      : 
+     llo3
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 135
+      |(Definition)     : 178  278  283
+      |(Reference)      : 287
+     lmfdudv
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 93
+     lmfmid
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 93
+     lndj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  133
+      |(Definition)     : 
+      |(Reference)      : 462
+     loflag
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 134
+      |(Definition)     : 253  260  357
+      |(Reference)      : 
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 303  314  315  330  331  332  334  337  403  406  412  413  415  469  472  486  488  504  508  527  536  536
+     min
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 274  295  297  299  311  335  403  406  413  421  421  425  469  472  486  487  504  508
+     mo_constants
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 82
+     mo_cumulus_flux
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 93
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  102
+      |(Definition)     : 243  283  357
+      |(Reference)      : 157  179  194  213  219  252  290  342  457  495  524
+     pap
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  103
+      |(Definition)     : 
+      |(Reference)      : 304  304  305  305
+     paph
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  103
+      |(Definition)     : 
+      |(Reference)      : 209  264  266  266  302  302
+     pdmfen
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 139
+      |(Definition)     : 206  320
+      |(Reference)      : 
+     pdmfup
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  111
+      |(Definition)     : 202  243  489
+      |(Reference)      : 
+     pgeo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  103
+      |(Definition)     : 243
+      |(Reference)      : 
+     pgeoh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  103
+      |(Definition)     : 243  283
+      |(Reference)      : 225  297  297  323  324  332  400  400  421  421  476  476  516
+     phcbase
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  121
+      |(Definition)     : 
+      |(Reference)      : 
+     plglac
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  126
+      |(Definition)     : 201  363
+      |(Reference)      : 366
+     plu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  111
+      |(Definition)     : 195  243  330  346  373  388  491
+      |(Reference)      : 227  326  339  347  363  373  374  416  442  452  468  477  478  486  515
+     plude
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  111
+      |(Definition)     : 200  326  387  416  442  452
+      |(Reference)      : 329
+     pmfu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  111
+      |(Definition)     : 196  224  243  269  283  321  386  417  431  439  449
+      |(Reference)      : 269  295  299  303  313  321  330  331  332  337  337  403  406  414  415  417  425  431  434  441  445  451  489  515  516  517
+     pmfub
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  111
+      |(Definition)     : 187  243  272  274
+      |(Reference)      : 224  225  226  227  267  268  274
+     pmfude_rate
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  139
+      |(Definition)     : 207  445  453
+      |(Reference)      : 
+     pmful
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  111
+      |(Definition)     : 199  227  243  515
+      |(Reference)      : 329
+     pmfuq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  111
+      |(Definition)     : 198  226  243  271  517
+      |(Reference)      : 271  328
+     pmfus
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  111
+      |(Definition)     : 197  225  243  270  516
+      |(Reference)      : 270  327
+     pqen
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  103
+      |(Definition)     : 243
+      |(Reference)      : 297  311  394  394  421
+     pqenh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  103
+      |(Definition)     : 394
+      |(Reference)      : 322  345  376  395  397  397
+     pqsen
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  103
+      |(Definition)     : 243
+      |(Reference)      : 297  311  421  421  421
+     pqsenh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  103
+      |(Definition)     : 
+      |(Reference)      : 
+     pqte
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  103
+      |(Definition)     : 
+      |(Reference)      : 
+     pqu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  111
+      |(Definition)     : 188  243  331  345  357
+      |(Reference)      : 226  325  336  362  371  373  374  447  517
+     pten
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  103
+      |(Definition)     : 243
+      |(Reference)      : 393  393
+     ptenh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  103
+      |(Definition)     : 393
+      |(Reference)      : 323  344  376  395  397  397
+     ptu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  111
+      |(Definition)     : 243  332  334  335  344  357  363  363  366  500
+      |(Reference)      : 225  324  334  335  366  374  472  516
+     puen
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  103
+      |(Definition)     : 243
+      |(Reference)      : 
+     puu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  111
+      |(Definition)     : 243
+      |(Reference)      : 
+     pven
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  103
+      |(Definition)     : 243
+      |(Reference)      : 
+     pverv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  103
+      |(Definition)     : 243
+      |(Reference)      : 
+     pvu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  111
+      |(Definition)     : 243
+      |(Reference)      : 
+     pxenh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  103
+      |(Definition)     : 
+      |(Reference)      : 
+     ralfdcp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 82  366
+     rcpd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 82  332
+     rd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 82
+     rtber
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 82  472  472
+     rtice
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 82  472
+     rv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 82
+     sqrt
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 414  469  473  504  537
+     ushear
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 140
+      |(Definition)     : 159
+      |(Reference)      : 
+     ushmax
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 152
+      |(Definition)     : 
+      |(Reference)      : 
+     vtmpc1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 82  374  376  395  397  397
+     wbase
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  125
+      |(Definition)     : 
+      |(Reference)      : 223
+     wup
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  124
+      |(Definition)     : 181  304  536  537
+      |(Reference)      : 304  536  537
+     z_cldmax
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 144
+      |(Definition)     : 165
+      |(Reference)      : 487
+     z_cprc2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 144
+      |(Definition)     : 167
+      |(Reference)      : 473
+     z_cwdrag
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 144
+      |(Definition)     : 168
+      |(Reference)      : 403  406
+     z_cwifrac
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 144
+      |(Definition)     : 166
+      |(Reference)      : 499
+     zalfaw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 148
+      |(Definition)     : 500
+      |(Reference)      : 501  501
+     zarg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 150
+      |(Definition)     : 478
+      |(Reference)      : 479  480
+     zbc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 147
+      |(Definition)     : 374
+      |(Reference)      : 377  395
+     zbe
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 147
+      |(Definition)     : 376
+      |(Reference)      : 377
+     zbuo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 123
+      |(Definition)     : 204  377  395
+      |(Reference)      : 380  392  397  397  411  419
+     zbuoc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 150
+      |(Definition)     : 176  397
+      |(Reference)      : 400
+     zc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 148
+      |(Definition)     : 477  503
+      |(Reference)      : 485  488  507
+     zcbf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 147
+      |(Definition)     : 473
+      |(Reference)      : 474  475
+     zchange
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 150
+      |(Definition)     : 314  317
+      |(Reference)      : 315  317  318
+     zcons2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 144
+      |(Definition)     : 162
+      |(Reference)      : 266  302
+     zd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 148
+      |(Definition)     : 480  482  505
+      |(Reference)      : 484  485  506  507
+     zdfi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 148
+      |(Definition)     : 476
+      |(Reference)      : 480  482
+     zdkbuo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 150
+      |(Definition)     : 400
+      |(Reference)      : 409
+     zdken
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 150
+      |(Definition)     : 403  406
+      |(Reference)      : 409  409
+     zdmfde
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 118
+      |(Definition)     : 283  295  309  311  318  415  441  451
+      |(Reference)      : 295  311  313  318  320  321  324  325  326  337  406  415  416  417  442  445  452  453
+     zdmfdu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 149
+      |(Definition)     : 
+      |(Reference)      : 
+     zdmfen
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 118
+      |(Definition)     : 283  306  308  316
+      |(Reference)      : 308  309  313  316  320  321  322  323  402  403  417
+     zdmfeu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 149
+      |(Definition)     : 
+      |(Reference)      : 
+     zdpmean
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 138
+      |(Definition)     : 182  305
+      |(Reference)      : 305  536
+     zdshrd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 150
+      |(Definition)     : 463  465
+      |(Reference)      : 468  475
+     zdt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 147
+      |(Definition)     : 472
+      |(Reference)      : 473
+     zfac
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 150
+      |(Definition)     : 268
+      |(Reference)      : 269  270  271
+     zfacbuo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 144
+      |(Definition)     : 163
+      |(Reference)      : 400
+     zint
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 148
+      |(Definition)     : 484  506
+      |(Reference)      : 485  485  507  507
+     zkedke
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 147
+      |(Definition)     : 412  413
+      |(Reference)      : 413  414
+     zlcrit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 148
+      |(Definition)     : 475
+      |(Reference)      : 478
+     zlnew
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 148
+      |(Definition)     : 485  486  487
+      |(Reference)      : 486  487  488  491
+     zlrain
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 122
+      |(Definition)     : 203  243  337  490  509
+      |(Reference)      : 337  374  490  497  498  502  508
+     zluold
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 121
+      |(Definition)     : 180  339  347
+      |(Reference)      : 477  485  488
+     zmfmax
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 145
+      |(Definition)     : 266  302
+      |(Reference)      : 267  268  272  274  303  314
+     zmftest
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 145
+      |(Definition)     : 313
+      |(Reference)      : 314
+     zmfulk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 146
+      |(Definition)     : 329
+      |(Reference)      : 330
+     zmfun
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 147
+      |(Definition)     : 414
+      |(Reference)      : 415
+     zmfuqk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 146
+      |(Definition)     : 328
+      |(Reference)      : 331
+     zmfusk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 146
+      |(Definition)     : 327
+      |(Reference)      : 332
+     zmfuu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 118
+      |(Definition)     : 
+      |(Reference)      : 
+     zmfuv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 118
+      |(Definition)     : 
+      |(Reference)      : 
+     zodetr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 125
+      |(Definition)     : 
+      |(Reference)      : 
+     zoentr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 138
+      |(Definition)     : 183  297  299  421  425  427
+      |(Reference)      : 299  306  424  425
+     zoentr1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  140
+      |(Definition)     : 158  424
+      |(Reference)      : 
+     zpbase
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 118
+      |(Definition)     : 
+      |(Reference)      : 
+     zph
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 111
+      |(Definition)     : 175  264  357
+      |(Reference)      : 
+     zprcdgw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 144
+      |(Definition)     : 164
+      |(Reference)      : 470
+     zprcon
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 147
+      |(Definition)     : 470
+      |(Reference)      : 474
+     zprecip
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 122
+      |(Definition)     : 254  488
+      |(Reference)      : 489  490  502  503
+     zqeen
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 145
+      |(Definition)     : 322
+      |(Reference)      : 328
+     zqold
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 118
+      |(Definition)     : 291  336
+      |(Reference)      : 362  371  373  447
+     zqude
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 145
+      |(Definition)     : 325
+      |(Reference)      : 328
+     zrg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 82  164  297  421
+     zrnew
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 149
+      |(Definition)     : 507  508
+      |(Reference)      : 508  509
+     zrold
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 148
+      |(Definition)     : 502
+      |(Reference)      : 507
+     zscde
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 145
+      |(Definition)     : 324
+      |(Reference)      : 327
+     zseen
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 145
+      |(Definition)     : 323
+      |(Reference)      : 327
+     ztmst
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  144
+      |(Definition)     : 
+      |(Reference)      : 162
+     zvi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 148
+      |(Definition)     : 499
+      |(Reference)      : 501
+     zvv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 150
+      |(Definition)     : 501
+      |(Reference)      : 505
+     zvw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 148
+      |(Definition)     : 498
+      |(Reference)      : 499  501
+     zwu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 147
+      |(Definition)     : 469  504
+      |(Reference)      : 470  505
+     zxe
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 150
+      |(Definition)     : 315
+      |(Reference)      : 316  317
+     zxs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 150
+      |(Definition)     : 303
+      |(Reference)      : 315
+     zz
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 149
+      |(Definition)     : 
+      |(Reference)      : 
+     zzco
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 147
+      |(Definition)     : 474
+      |(Reference)      : 480  482
+
+ Total information
+   Procedures       : 1
+   Total lines      : 542
+   Total statements : 347
+   Total stack(byte): 4256
+   Total prefetch num: 22
+

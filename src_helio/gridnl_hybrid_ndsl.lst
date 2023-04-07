@@ -1,0 +1,1177 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar 14 13:21:13 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_helio
+   Source file       : gridnl_hybrid_ndsl.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb157/CWBSUMc2/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "gridnl_hybrid_ndsl"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine gridnl_hybrid_ndsl ( nxj,nx,lev,ncld                &
+               2                                             , cp,radsq,ut,vt,rdiv,tt,qt,phi,pt           &
+               3                                             , dtpl,dlpl,sinl,pk,pk2,dsigma,sigma,onocos  &
+               4                                             , cor,diveng,vdmerd,vdzonl,pten,deldm,sdpbl  &
+               5                                             , sd,pdot,vvel,sgeo)
+               6                     !
+               7                     !  real to spectral transformation, compute non-linear contributions
+               8                     !  to spectral tendencies
+               9                     !
+              10                     !  **** input variables ****
+              11                     !
+              12                     !  nx:  e-w dimension
+              13                     !  lev: no. of vertical levels
+              14                     !  cp: specific heat of air
+              15                     !  radsq: radius of earth squared
+              16                     !  ut: gridpt e-w velocity (scaled)
+              17                     !  vt: gridpt n-s velocity (scaled)
+              18                     !  tt: gridpt virtual potential temp
+              19                     !  qt: gridpt specific humidity
+              20                     !  rdiv: gridpt divergence
+              21                     !  pt: gridpt terrain pressure
+              22                     !  dtpl: d(pt)/dy
+              23                     !  dlpl: d(pt)/dx
+              24                     !  pk: exner function on full(odd) levels
+              25                     !  pk2: exner function on half(even) levels
+              26                     !  dsigma: thickness of sigma layers
+              27                     !  sigma: sigma level values
+              28                     !  onocos: 1.0/(cos(lat)**2)
+              29                     !  cor: coriolis on each gaussian latitude
+              30                     !  pten: horizontal adv of terrain pressure
+              31                     !
+              32                     ! *** output variables ***
+              33                     !
+              34                     !  deldm: terrain pressure tendency
+              35                     !  sd: vertical velocity
+              36                     !  pdot: vertical velocity
+              37                     !  vvel: vertical velocity at mean layer(Pa/s)
+              38                     !  diveng: energy term of divergence equation
+              39                     !  vdmerd: meridional advection term of divergence/vorticity tends
+              40                     !  vdzonl: zonal advection term of divergence/vorticity tends
+              41                     !
+              42                     !  modify to f90 by C-H Lee and sort by River Chen in 2015
+              43                     !
+              44                     ! ******************************************************************
+              45                     !
+              46                           use const, only : RTYPE
+              47                     !
+              48                           implicit  none
+              49                     
+              50                           integer   nxj,nx,lev,ncld
+              51                           real      cp,radsq
+              52                           real(kind=RTYPE) onocos,cor,sinl
+              53                     
+              54                     !
+              55                           real(kind=RTYPE) diveng(nx,lev),vdmerd(nx,lev),vdzonl(nx,lev), &
+              56                                     pdot(nx,lev+1),pten(nx,lev),dlpl(nx),dtpl(nx),       &
+              57                                     rdiv(nx,lev),ut(nx,lev),vt(nx,lev),tt(nx,lev),       &
+              58                                     qt(nx,lev*ncld),phi(nx,lev),pt(nx),sgeo(nx),         &
+              59                                     deldm(nx),spal(nx,lev),sd(nx,lev),sdpbl(nx),         &
+              60                                     dsigma(lev,2),sigma(lev+1,2),pk(nx,lev),pk2(nx,lev), &
+              61                                     cg(nx,lev),vvel(nx,lev)
+              62                     !
+              63                           logical   flag(nx)
+              64                     !
+              65                           integer   k,i,kbgn,kk,kkp1
+              66                           real      px,px_pbl
+              67                     
+              68                     
+              69                     !CWB2014 fixed undefined value problem in diabat line 665
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1778
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sd
+                                   <<< Loop-information  End >>>
+              70        pp   4v            sd=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2286
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      deldm
+                                   <<< Loop-information  End >>>
+              71        pp   4v            deldm=0.
+              72                     !
+              73                     !  surface pressure tendency
+              74                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      dlpl, ut, dtpl, vt, pt, deldm, rdiv, cg
+                                   <<<      sd
+                                   <<< Loop-information  End >>>
+              75     1                     do 2 k=1,lev-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 341
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.37, ITR: 104, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rdiv, dlpl, deldm, ut, dtpl, pt, vt, sd
+                                   <<<      cg
+                                   <<< Loop-information  End >>>
+              76     2  pp    v            do 2 i=1,nxj
+              77     2   p    v              cg(i,k) = ut(i,k)*dlpl(i)*onocos+vt(i,k)*dtpl(i)
+              78     2   p    v              deldm(i)= deldm(i)-dsigma(k,1)*cg(i,k)                        &
+              79     2                                -rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
+              80     2               !!        deldm(i)= deldm(i)+pten(i,k)-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
+              81     2               !        deldm(i)= deldm(i)-dsig(k)*(ut(i,k)*dlpl(i)*onocos
+              82     2               !     *           +vt(i,k)*dtpl(i)+rdiv(i,k)*pt(i))
+              83     2   p    v              sd(i,k+1)= deldm(i)
+              84     1   p    v          2 continue
+              85                     !
+              86                           k= lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 364
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.12, ITR: 104, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pt, rdiv, dlpl, deldm, ut, vt, dtpl, cg
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 0
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 5
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+              87     1  pp    v            do 24 i=1,nxj
+              88     1   p    v              cg(i,k) = ut(i,k)*dlpl(i)*onocos+vt(i,k)*dtpl(i)
+              89     1   p    v              deldm(i)= deldm(i)-dsigma(k,1)*cg(i,k)                        &
+              90     1                                -rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
+              91     1               !!        deldm(i)= deldm(i)+pten(i,k)-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
+              92     1               !        deldm(i)= deldm(i)-dsig(k)*(ut(i,k)*dlpl(i)*onocos
+              93     1               !     *           +vt(i,k)*dtpl(i)+rdiv(i,k)*pt(i))
+              94     1   p    v         24 continue
+              95                     !
+              96                     !  vertical velocity
+              97                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1067
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pdot, sd
+                                   <<< Loop-information  End >>>
+              98        pp   2v            sd(:,    1) = 0.0
+              99         p   2v            pdot(:,lev+1) = 0.0
+             100         p   2v            pdot(:,    1) = 0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sd, deldm, pdot
+                                   <<< Loop-information  End >>>
+             101     1  pp                 do 3 k=2,lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.83, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pdot, sd, deldm
+                                   <<< Loop-information  End >>>
+             102     2   p   2v            do 3 i=1,nxj
+             103     2   p   2v              kk=lev-k+2
+             104     2   p   2v              sd(i,k)= sd(i,k)-sigma(k,1)*deldm(i)
+             105     2               !        sd(i,k)= sd(i,k)-sig(k)*deldm(i)
+             106     2   p   2v              pdot(i,kk)=sd(i,k)
+             107     1   p   2v          3 continue
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      deldm, cg, pdot, vvel
+                                   <<< Loop-information  End >>>
+             108     1  pp                 do k=1,lev
+             109     1   p                   kk  =lev-k+1
+             110     1   p                   kkp1=lev-k+2
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 96, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pdot, deldm, cg, vvel
+                                   <<< Loop-information  End >>>
+             111     2   p    v              do i=1,nxj
+             112     2   p    v                vvel(i,k)=0.5*((sigma(k,1)+sigma(k+1,1))*(cg(i,k)+deldm(i))  &
+             113     2                                 + (pdot(i,kk)+pdot(i,kkp1)))
+             114     2   p    v              enddo
+             115     1   p                 enddo
+             116                     !
+             117                     !  obtain vertical velocity within low layers
+             118                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.40, ITR: 96, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sdpbl, flag, sd
+                                   <<< Loop-information  End >>>
+             119     1  pp   2v            do i = 1, nxj
+             120     1   p   2v              flag(i) = .true.
+             121     1   p   2v              sdpbl(i) = sd(i,lev-1)
+             122     1   p   2v            enddo
+             123                     !
+             124                           px_pbl = 850.
+             125                           kbgn = (lev*2)/3 - 1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    INTERCHANGED(nest: 2)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sigma
+                                   <<< Loop-information  End >>>
+             126     1   p    s            do 4 k = kbgn, lev-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    INTERCHANGED(nest: 1)
+                                   <<< Loop-information  End >>>
+             127     2  pp   2             do 4 i = 1, nxj
+             128     2   p   2v              px = sigma(k,1) * pt(i) + sigma(k,2)
+             129     2               !        px = sig(k) * pt(i)
+             130     3   p   2s              if( px .ge. px_pbl .and. flag(i) ) then
+             131     3   p   2s                sdpbl(i) = sd(i,k)
+             132     3   p   2v                flag(i) = .false.
+             133     3   p   2v              endif
+             134     1   p   2v          4 continue
+             135                     !
+             136                     !
+             137                           call vstruc_hybrid_cwb(nxj,nx,lev,cp,radsq,sigma,dsigma,pt,tt,qt &
+             138                                        ,pk,pk2,spal,phi,ncld)
+             139                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ut, vt, spal, dtpl, phi, sgeo, dlpl
+                                   <<<      vdzonl, diveng, vdmerd
+                                   <<< Loop-information  End >>>
+             140     1  pp                 do 13 k=1,lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.10, ITR: 72, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      dtpl, vt, ut, phi, sgeo, diveng, spal
+                                   <<<      dlpl, vdzonl, vdmerd
+                                   <<< Loop-information  End >>>
+             141     2   p    v            do 13 i=1,nxj
+             142     2   p    v              vdmerd(i,k)= -spal(i,k)*dtpl(i)/onocos-ut(i,k)*cor             &
+             143     2                                    -(ut(i,k)*ut(i,k)+vt(i,k)*vt(i,k))*onocos*sinl
+             144     2   p    v              vdzonl(i,k)= -spal(i,k)*dlpl(i)+vt(i,k)*cor
+             145     2               
+             146     2   p    v              diveng(i,k)= sgeo(i)+phi(i,k)
+             147     1   p    v        13  continue
+             148                           return
+             149                           end
+
+ Procedure information
+   Lines      : 149
+   Statements : 62
+   Stack(byte): 2592
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : gridnl_hybrid_ndsl
+   Attribute and Cross reference of name
+     cg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 55
+      |(Definition)     : 77  88
+      |(Reference)      : 78  89  112
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 46
+     cor
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  52
+      |(Definition)     : 
+      |(Reference)      : 142  144
+     cp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  51
+      |(Definition)     : 137
+      |(Reference)      : 
+     deldm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 71  78  89
+      |(Reference)      : 78  83  89  104  112
+     diveng
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 146
+      |(Reference)      : 
+     dlpl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 77  88  144
+     dsigma
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 137
+      |(Reference)      : 78  78  78  89  89  89
+     dtpl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 77  88  142
+     flag
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 63
+      |(Definition)     : 120  132
+      |(Reference)      : 130
+     gridnl_hybrid_ndsl
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 76  87  102  111  119  127  141
+      |(Reference)      : 77  77  77  77  77  78  78  78  78  78  83  83  88  88  88  88  88  89  89  89  89  89  104  104  104  106  106  112  112  112  112  112  120  121  121  128  130  131  131  132  142  142  142  142  142  142  142  142  144  144  144  144  146  146  146
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 75  86  101  108  126  140
+      |(Reference)      : 77  77  77  78  78  78  78  78  83  88  88  88  89  89  89  89  89  103  104  104  104  106  109  110  112  112  112  112  128  128  131  142  142  142  142  142  142  142  144  144  144  146  146
+     kbgn
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 125
+      |(Reference)      : 126
+     kk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 103  109
+      |(Reference)      : 106  112
+     kkp1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 110
+      |(Reference)      : 112
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  50
+      |(Definition)     : 137
+      |(Reference)      : 55  55  55  55  55  55  55  55  55  55  55  55  55  55  55  55  55  55  55  75  86  99  101  103  108  109  110  121  125  126  140
+     ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  50
+      |(Definition)     : 137
+      |(Reference)      : 55
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  50
+      |(Definition)     : 137
+      |(Reference)      : 55  55  55  55  55  55  55  55  55  55  55  55  55  55  55  55  55  55  55  55  55  55  55  63
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  50
+      |(Definition)     : 137
+      |(Reference)      : 76  87  102  111  119  127  141
+     onocos
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  52
+      |(Definition)     : 
+      |(Reference)      : 77  88  142  142
+     pdot
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 99  100  106
+      |(Reference)      : 112  112
+     phi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 137
+      |(Reference)      : 146
+     pk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 137
+      |(Reference)      : 
+     pk2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 137
+      |(Reference)      : 
+     pt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 137
+      |(Reference)      : 78  89  128
+     pten
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 
+     px
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 66
+      |(Definition)     : 128
+      |(Reference)      : 130
+     px_pbl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 66
+      |(Definition)     : 124
+      |(Reference)      : 130
+     qt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 137
+      |(Reference)      : 
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 46  52  55
+     radsq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  51
+      |(Definition)     : 137
+      |(Reference)      : 
+     rdiv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 78  89
+     sd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 70  83  98  104
+      |(Reference)      : 104  106  121  131
+     sdpbl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 121  131
+      |(Reference)      : 
+     sgeo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 146
+     sigma
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 137
+      |(Reference)      : 104  112  112  128  128
+     sinl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  52
+      |(Definition)     : 
+      |(Reference)      : 142
+     spal
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 55
+      |(Definition)     : 137
+      |(Reference)      : 142  144
+     tt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 137
+      |(Reference)      : 
+     ut
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 77  88  142  142  142
+     vdmerd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 142
+      |(Reference)      : 
+     vdzonl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 144
+      |(Reference)      : 
+     vstruc_hybrid_cwb
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 137
+     vt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 
+      |(Reference)      : 77  88  142  142  144
+     vvel
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  55
+      |(Definition)     : 112
+      |(Reference)      : 
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+          2  execution     (Definition) 84  
+                           (Reference)  75  76
+          3  execution     (Definition) 107  
+                           (Reference)  101  102
+          4  execution     (Definition) 134  
+                           (Reference)  126  127
+         13  execution     (Definition) 147  
+                           (Reference)  140  141
+         24  execution     (Definition) 94  
+                           (Reference)  87
+
+ External subroutine subprogram "gridnl_hybrid_ndsl_2tl"
+  (inc)(line-no.)(nest)(optimize)
+             150                     !
+             151                     !----------------------------------------------------------------------
+             152                           subroutine gridnl_hybrid_ndsl_2tl ( nxj,nx,lev,ncld            &
+             153                                             , cp,radsq,ut,vt,rdiv,tt,qt,phi,pt           &
+             154                                             , dtpl,dlpl,sinl,pk,pk2,dsigma,sigma,onocos  &
+             155                                             , cor,diveng,vdmerd,vdzonl,pten,deldm,sdpbl  &
+             156                                             , sd,pdot,sgeo,step)
+             157                     !
+             158                     !  real to spectral transformation, compute non-linear contributions
+             159                     !  to spectral tendencies
+             160                     !
+             161                     !  **** input variables ****
+             162                     !
+             163                     !  nx:  e-w dimension
+             164                     !  lev: no. of vertical levels
+             165                     !  cp: specific heat of air
+             166                     !  radsq: radius of earth squared
+             167                     !  ut: gridpt e-w velocity (scaled)
+             168                     !  vt: gridpt n-s velocity (scaled)
+             169                     !  tt: gridpt virtual potential temp
+             170                     !  qt: gridpt specific humidity
+             171                     !  rdiv: gridpt divergence
+             172                     !  pt: gridpt terrain pressure
+             173                     !  dtpl: d(pt)/dy
+             174                     !  dlpl: d(pt)/dx
+             175                     !  pk: exner function on full(odd) levels
+             176                     !  pk2: exner function on half(even) levels
+             177                     !  dsigma: thickness of sigma layers
+             178                     !  sigma: sigma level values
+             179                     !  onocos: 1.0/(cos(lat)**2)
+             180                     !  cor: coriolis on each gaussian latitude
+             181                     !  pten: horizontal adv of terrain pressure
+             182                     !
+             183                     ! *** output variables ***
+             184                     !
+             185                     !  deldm: terrain pressure tendency
+             186                     !  sd: vertical velocity
+             187                     !  pdot: vertical velocity
+             188                     !  diveng: energy term of divergence equation
+             189                     !  vdmerd: meridional advection term of divergence/vorticity tends
+             190                     !  vdzonl: zonal advection term of divergence/vorticity tends
+             191                     !
+             192                     !  modify to f90 by C-H Lee and sort by River Chen in 2015
+             193                     !
+             194                     ! ******************************************************************
+             195                     !
+             196                           use const, only : RTYPE
+             197                           implicit  none
+             198                     
+             199                           integer   nxj,nx,lev,ncld
+             200                           real      cp,radsq
+             201                           real(kind=RTYPE) onocos,cor,sinl
+             202                     
+             203                     !
+             204                           real(kind=RTYPE) diveng(nx,lev),vdmerd(nx,lev),vdzonl(nx,lev),   &
+             205                                            pdot(nx,lev+1),pten(nx,lev),dlpl(nx),dtpl(nx),  &
+             206                                            rdiv(nx,lev),ut(nx,lev),vt(nx,lev),tt(nx,lev),  &
+             207                                            qt(nx,lev*ncld),phi(nx,lev),pt(nx),sgeo(nx),    &
+             208                                            deldm(nx),spal(nx,lev),sd(nx,lev),sdpbl(nx),    &
+             209                                            dsigma(lev,2),sigma(lev+1,2),pk(nx,lev),        &
+             210                                            pk2(nx,lev)
+             211                     !
+             212                           logical   flag(nx)
+             213                     !
+             214                           integer   k,i,kbgn,kk,step
+             215                           real      px,px_pbl
+             216                     
+             217     1                     if ( step .eq. 2 ) then
+             218     1               !CWB2014 fixed undefined value problem in diabat line 665
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sd
+                                   <<< Loop-information  End >>>
+             219     1  pp   4v            sd=0.
+             220     1               !
+             221     1               !  surface pressure tendency
+             222     1               !
+             223     1                     k= 1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 391
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.87, ITR: 72, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      vt, dtpl, pt, rdiv, dlpl, ut, deldm, sd
+                                   <<< Loop-information  End >>>
+             224     2  pp    v            do 22 i=1,nxj
+             225     2   p    v              deldm(i)= -dsigma(k,1)*(ut(i,k)*dlpl(i)*onocos+vt(i,k)*dtpl(i))   &
+             226     2                                 -rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
+             227     2               !        deldm(i)= pten(i,k)-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
+             228     2               !        deldm(i)= -dsig(k)*(ut(i,k)*dlpl(i)*onocos+vt(i,k)*dtpl(i)
+             229     2               !     *            +rdiv(i,k)*pt(i))
+             230     2   p    v              sd(i,k+1)= deldm(i)
+             231     2   p    v         22 continue
+             232     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      dlpl, ut, rdiv, pt, vt, dtpl, deldm, sd
+                                   <<< Loop-information  End >>>
+             233     2                     do 2 k=2,lev-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 364
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.57, ITR: 96, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pt, vt, dtpl, rdiv, dlpl, ut, deldm, sd
+                                   <<< Loop-information  End >>>
+             234     3  pp    v            do 2 i=1,nxj
+             235     3   p    v              deldm(i)= deldm(i)-dsigma(k,1)*(ut(i,k)*dlpl(i)*onocos            &
+             236     3                                +vt(i,k)*dtpl(i))-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
+             237     3               !        deldm(i)= deldm(i)+pten(i,k)-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
+             238     3               !        deldm(i)= deldm(i)-dsig(k)*(ut(i,k)*dlpl(i)*onocos
+             239     3               !     *           +vt(i,k)*dtpl(i)+rdiv(i,k)*pt(i))
+             240     3   p    v              sd(i,k+1)= deldm(i)
+             241     2   p    v          2 continue
+             242     1               !
+             243     1                     k= lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 391
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.28, ITR: 96, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      deldm, pt, vt, dtpl, rdiv, dlpl, ut
+                                   <<< Loop-information  End >>>
+             244     2  pp    v            do 24 i=1,nxj
+             245     2   p    v              deldm(i)= deldm(i)-dsigma(k,1)*(ut(i,k)*dlpl(i)*onocos            &
+             246     2                                +vt(i,k)*dtpl(i))-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
+             247     2               !        deldm(i)= deldm(i)+pten(i,k)-rdiv(i,k)*(dsigma(k,2)+dsigma(k,1)*pt(i))
+             248     2               !        deldm(i)= deldm(i)-dsig(k)*(ut(i,k)*dlpl(i)*onocos
+             249     2               !     *           +vt(i,k)*dtpl(i)+rdiv(i,k)*pt(i))
+             250     2   p    v         24 continue
+             251     1               !
+             252     1               !  vertical velocity
+             253     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1067
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pdot, sd
+                                   <<< Loop-information  End >>>
+             254     1  pp   2v            sd(:,    1) = 0.0
+             255     1   p   2v            pdot(:,lev+1) = 0.0
+             256     1   p   2v            pdot(:,    1) = 0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sd, deldm, pdot
+                                   <<< Loop-information  End >>>
+             257     2  pp                 do 3 k=2,lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.83, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pdot, sd, deldm
+                                   <<< Loop-information  End >>>
+             258     3   p   2v            do 3 i=1,nxj
+             259     3   p   2v              kk=lev-k+2
+             260     3   p   2v              sd(i,k)= sd(i,k)-sigma(k,1)*deldm(i)
+             261     3               !        sd(i,k)= sd(i,k)-sig(k)*deldm(i)
+             262     3   p   2v              pdot(i,kk)=sd(i,k)
+             263     2   p   2v          3 continue
+             264     1               !
+             265     1               !  obtain vertical velocity within low layers
+             266     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.40, ITR: 96, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sdpbl, flag, sd
+                                   <<< Loop-information  End >>>
+             267     2  pp   2v            do i = 1, nxj
+             268     2   p   2v              flag(i) = .true.
+             269     2   p   2v              sdpbl(i) = sd(i,lev-1)
+             270     2   p   2v            enddo
+             271     1               !
+             272     1                     px_pbl = 850.
+             273     1                     kbgn = (lev*2)/3 - 1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    INTERCHANGED(nest: 2)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sigma
+                                   <<< Loop-information  End >>>
+             274     2   p    s            do 4 k = kbgn, lev-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    INTERCHANGED(nest: 1)
+                                   <<< Loop-information  End >>>
+             275     3  pp   2             do 4 i = 1, nxj
+             276     3   p   2v              px = sigma(k,1) * pt(i) + sigma(k,2)
+             277     3               !        px = sig(k) * pt(i)
+             278     4   p   2s              if( px .ge. px_pbl .and. flag(i) ) then
+             279     4   p   2s                sdpbl(i) = sd(i,k)
+             280     4   p   2v                flag(i) = .false.
+             281     4   p   2v              endif
+             282     2   p   2v          4 continue
+             283     1               !
+             284     1                     else
+             285     1               !
+             286     1                     call vstruc_hybrid_cwb(nxj,nx,lev,cp,radsq,sigma,dsigma,pt,tt,qt &
+             287     1                                  ,pk,pk2,spal,phi,ncld)
+             288     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ut, vt, spal, dtpl, phi, sgeo, dlpl
+                                   <<<      vdzonl, diveng, vdmerd
+                                   <<< Loop-information  End >>>
+             289     2  pp                 do 13 k=1,lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.10, ITR: 72, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      dtpl, vt, ut, phi, sgeo, diveng, spal
+                                   <<<      dlpl, vdzonl, vdmerd
+                                   <<< Loop-information  End >>>
+             290     3   p    v            do 13 i=1,nxj
+             291     3   p    v              vdmerd(i,k)= -spal(i,k)*dtpl(i)/onocos-ut(i,k)*cor             &
+             292     3                                    -(ut(i,k)*ut(i,k)+vt(i,k)*vt(i,k))*onocos*sinl
+             293     3   p    v              vdzonl(i,k)= -spal(i,k)*dlpl(i)+vt(i,k)*cor
+             294     3               
+             295     3   p    v              diveng(i,k)= sgeo(i)+phi(i,k)
+             296     2   p    v        13  continue
+             297     1                     endif
+             298                           return
+             299                           end
+
+ Procedure information
+   Lines      : 150
+   Statements : 60
+   Stack(byte): 2128
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : gridnl_hybrid_ndsl_2tl
+   Attribute and Cross reference of name
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 196
+     cor
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 152  201
+      |(Definition)     : 
+      |(Reference)      : 291  293
+     cp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 152  200
+      |(Definition)     : 286
+      |(Reference)      : 
+     deldm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 152  204
+      |(Definition)     : 225  235  245
+      |(Reference)      : 230  235  240  245  260
+     diveng
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 152  204
+      |(Definition)     : 295
+      |(Reference)      : 
+     dlpl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 152  204
+      |(Definition)     : 
+      |(Reference)      : 225  235  245  293
+     dsigma
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 152  204
+      |(Definition)     : 286
+      |(Reference)      : 225  225  225  235  235  235  245  245  245
+     dtpl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 152  204
+      |(Definition)     : 
+      |(Reference)      : 225  235  245  291
+     flag
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 212
+      |(Definition)     : 268  280
+      |(Reference)      : 278
+     gridnl_hybrid_ndsl_2tl
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 152
+      |(Reference)      : 
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 214
+      |(Definition)     : 224  234  244  258  267  275  290
+      |(Reference)      : 225  225  225  225  225  225  225  230  230  235  235  235  235  235  235  235  235  240  240  245  245  245  245  245  245  245  245  260  260  260  262  262  268  269  269  276  278  279  279  280  291  291  291  291  291  291  291  291  293  293  293  293  295  295  295
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 214
+      |(Definition)     : 223  233  243  257  274  289
+      |(Reference)      : 225  225  225  225  225  225  230  235  235  235  235  235  235  240  245  245  245  245  245  245  259  260  260  260  262  276  276  279  291  291  291  291  291  291  291  293  293  293  295  295
+     kbgn
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 214
+      |(Definition)     : 273
+      |(Reference)      : 274
+     kk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 214
+      |(Definition)     : 259
+      |(Reference)      : 262
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 152  199
+      |(Definition)     : 286
+      |(Reference)      : 204  204  204  204  204  204  204  204  204  204  204  204  204  204  204  204  204  233  243  255  257  259  269  273  274  289
+     ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 152  199
+      |(Definition)     : 286
+      |(Reference)      : 204
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 152  199
+      |(Definition)     : 286
+      |(Reference)      : 204  204  204  204  204  204  204  204  204  204  204  204  204  204  204  204  204  204  204  204  204  212
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 152  199
+      |(Definition)     : 286
+      |(Reference)      : 224  234  244  258  267  275  290
+     onocos
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 152  201
+      |(Definition)     : 
+      |(Reference)      : 225  235  245  291  291
+     pdot
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 152  204
+      |(Definition)     : 255  256  262
+      |(Reference)      : 
+     phi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 152  204
+      |(Definition)     : 286
+      |(Reference)      : 295
+     pk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 152  204
+      |(Definition)     : 286
+      |(Reference)      : 
+     pk2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 152  204
+      |(Definition)     : 286
+      |(Reference)      : 
+     pt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 152  204
+      |(Definition)     : 286
+      |(Reference)      : 225  235  245  276
+     pten
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 152  204
+      |(Definition)     : 
+      |(Reference)      : 
+     px
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 215
+      |(Definition)     : 276
+      |(Reference)      : 278
+     px_pbl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 215
+      |(Definition)     : 272
+      |(Reference)      : 278
+     qt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 152  204
+      |(Definition)     : 286
+      |(Reference)      : 
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 196  201  204
+     radsq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 152  200
+      |(Definition)     : 286
+      |(Reference)      : 
+     rdiv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 152  204
+      |(Definition)     : 
+      |(Reference)      : 225  235  245
+     sd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 152  204
+      |(Definition)     : 219  230  240  254  260
+      |(Reference)      : 260  262  269  279
+     sdpbl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 152  204
+      |(Definition)     : 269  279
+      |(Reference)      : 
+     sgeo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 152  204
+      |(Definition)     : 
+      |(Reference)      : 295
+     sigma
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 152  204
+      |(Definition)     : 286
+      |(Reference)      : 260  276  276
+     sinl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 152  201
+      |(Definition)     : 
+      |(Reference)      : 291
+     spal
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 204
+      |(Definition)     : 286
+      |(Reference)      : 291  293
+     step
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 152  214
+      |(Definition)     : 
+      |(Reference)      : 217
+     tt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 152  204
+      |(Definition)     : 286
+      |(Reference)      : 
+     ut
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 152  204
+      |(Definition)     : 
+      |(Reference)      : 225  235  245  291  291  291
+     vdmerd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 152  204
+      |(Definition)     : 291
+      |(Reference)      : 
+     vdzonl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 152  204
+      |(Definition)     : 293
+      |(Reference)      : 
+     vstruc_hybrid_cwb
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 286
+     vt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 152  204
+      |(Definition)     : 
+      |(Reference)      : 225  235  245  291  291  293
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+          2  execution     (Definition) 241  
+                           (Reference)  233  234
+          3  execution     (Definition) 263  
+                           (Reference)  257  258
+          4  execution     (Definition) 282  
+                           (Reference)  274  275
+         13  execution     (Definition) 296  
+                           (Reference)  289  290
+         22  execution     (Definition) 231  
+                           (Reference)  224
+         24  execution     (Definition) 250  
+                           (Reference)  244
+
+ Total information
+   Procedures       : 2
+   Total lines      : 299
+   Total statements : 122
+   Total stack(byte): 4720
+   Total prefetch num: 0
+

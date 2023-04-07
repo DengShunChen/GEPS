@@ -1,0 +1,3816 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar 14 13:22:04 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_helio
+   Source file       : mod_sitgrid.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb157/CWBSUMc2/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ Module "mod_sitgrid"
+  (inc)(line-no.)(nest)(optimize)
+               1                           module mod_sitgrid
+               2                     !
+               3                     ! modify to f90 by C-H Lee and sort by River Chen in 2015
+               4                     !
+               5                     !      USE param
+               6                     !      USE index
+               7                           USE mod_sit_control,     ONLY: xmissing
+               8                           USE mo_netcdf,         ONLY: lkvl
+               9                     
+              10                     
+              11                           implicit none
+              12                     
+              13                           public
+              14                     !      LOGICAL, SAVE :: do_sit     = .TRUE. ! .true. for calculation of upper ocean temperature profile using sit model
+              15                     
+              16                     !    ! 2-d from ATM vars
+              17                            real, dimension(:,:),allocatable,save ::          &
+              18                                   sitcor,       slm, sitlclass,              &
+              19                                  sitmask,  sitmask2, bathy,  wlvl,           &
+              20                                  ocnmask, obox_mask,                         &
+              21                                      sni,       tsi,       tsw,              &
+              22                                      tsl,      tslm,     tslm1,              &
+              23                                      ocu,       ocv,  ctfreez2
+              24                     
+              25                     !    ! 2-d SIT vars
+              26                            real, dimension(:,:),allocatable,save ::          &
+              27                                   sitwtb,    sitwub,    sitwvb,              &
+              28                                   sitwsb,    fluxiw,      pme2,              &
+              29                                 subfluxw,   wsubsal,                         &
+              30                                    sitcc,     sithc,    engwac,              &
+              31                                       sc,   saltwac,                         &
+              32                                    wtfns,     wsfns
+              33                     
+              34                     !    ! 4- OUTPUT only, original ATM variabels
+              35                            real, dimension(:,:),allocatable,save ::          &
+              36                                   seaice,  grndcapc,                         &
+              37                                 grndhflx,  grndflux
+              38                     
+              39                     !    ! other
+              40                            real, dimension(:,:),allocatable,save ::          &
+              41                                    fluxw,    dfluxs,     soflw,              &
+              42                                    fluxi,    sofli,                          &
+              43                                thickness, obsseaice,    obswtb,              &
+              44                                   obswsb,       rsf,       ssf,              &
+              45                                    disch,     ustrw,     vstrw,              &
+              46                                    evapw,   wind10w
+              47                     
+              48                     
+              49                     !     & ! 3-d SIT vars: snow/ice
+              50                           real, dimension(:,:,:),allocatable,save ::         &
+              51                                      zsi,  silw,    tsnic
+              52                     !    ! 3-d SIT vars: water column
+              53                           real, dimension(:,:,:),allocatable,save ::         &
+              54                                    obswt,   obsws,    obswu,  obswv,         &
+              55                                    sitwt,   sitwu,    sitwv,  sitww,         &
+              56                                    sitws, sitwtke,     wlmx, wldisp,         &
+              57                                      wkm,   wkh, wrho1000, sftobswt
+              58                           real, dimension(:,:,:),allocatable,save ::         &
+              59                                     wtfn,   wsfn,  wtfn0,  wsfn0,             &
+              60                                    awufl,  awvfl,  awtfl, awsfl,              &
+              61                                   awtfl0, awsfl0, awtkefl
+              62                           real:: dtsitmon
+              63                     
+              64                     ! for SIT var. every tau mean
+              65                           real:: dtsittau
+              66                           real, dimension(:,:,:),allocatable,save ::         &
+              67                                 sitwttau, sitwstau, sitwutau, sitwvtau
+              68                     
+              69                     ! for SIT var. daily mean
+              70                           real:: dtsit24
+              71                           real, dimension(:,:,:),allocatable,save ::         &
+              72                                  sitwt24, sitws24, sitwu24, sitwv24
+              73                     
+              74                     
+              75                     ! for store vars. which sit_vdiff need during "fsit" period
+              76                           real dtfsit          ! accumulate dtx when do varfsit=varfsit+var*dtx
+              77                           real,dimension(:,:), allocatable, save::           &
+              78                                   ssfsit,  rsfsit, hfluxfsit, qfluxfsit,     &
+              79                                  u10fsit, v10fsit,  rlspfsit,  rcupfsit,     &
+              80                                ustarfsit,  t2fsit,   rh2fsit,   pstfsit,     &
+              81                                 cicefsit, snrfsit,  zicefsit, xticefsit,     &
+              82                               obswtbfsit,  tgfsit
+              83                     
+              84                     ! for store latest 2 steps sitwt
+              85                           real,dimension(:,:,:,:), allocatable, save::       &
+              86                                 oldsitwt, oldsitwu, oldsitwv, oldsitww,      &
+              87                                 oldsitws, oldsitwtke
+              88                     
+              89                           real,dimension(:,:), allocatable, save::           &
+              90                                   dtswdt, tseadiffSIT, tseadiffSIT24,        &
+              91                                   sumdSITdt, countdSITdt, ratioSIT
+              92                     
+              93                     
+              94                           contains
+              95                     
+              96                             subroutine allocate_sitgrid_array(nxp,my_max)
+              97                     
+              98                                integer  ierr
+              99                                integer  nxp,my_max
+             100                     
+             101                     !    ! 2-d from ATM vars
+             102                                allocate (                                                  &
+             103                              sitcor(nxp,my_max),       slm(nxp,my_max), sitlclass(nxp,my_max),&
+             104                             sitmask(nxp,my_max),  sitmask2(nxp,my_max),     bathy(nxp,my_max),&
+             105                                wlvl(nxp,my_max),   ocnmask(nxp,my_max), obox_mask(nxp,my_max),&
+             106                                 sni(nxp,my_max),       tsi(nxp,my_max),      tsw(nxp,my_max), &
+             107                                 tsl(nxp,my_max),      tslm(nxp,my_max),    tslm1(nxp,my_max), &
+             108                                 ocu(nxp,my_max),       ocv(nxp,my_max), ctfreez2(nxp,my_max), &
+             109                                     stat=ierr)
+             110     1                          if (ierr/= 0) then
+             111     1                            write(6,*) 'mod_sitgrid_2d : allocate fail 1 '
+             112     1                            stop
+             113     1                          end if
+             114                     
+             115                     !    ! 2-d SIT vars
+             116                                allocate (                                                  &
+             117                               sitwtb(nxp,my_max),  sitwub(nxp,my_max), sitwvb(nxp,my_max),    &
+             118                               sitwsb(nxp,my_max),  fluxiw(nxp,my_max),   pme2(nxp,my_max),    &
+             119                             subfluxw(nxp,my_max), wsubsal(nxp,my_max),                       &
+             120                                sitcc(nxp,my_max),   sithc(nxp,my_max), engwac(nxp,my_max),    &
+             121                                   sc(nxp,my_max), saltwac(nxp,my_max),                       &
+             122                                wtfns(nxp,my_max),   wsfns(nxp,my_max), stat=ierr)
+             123     1                         if (ierr/= 0) then
+             124     1                           write(6,*) 'mod_sitgrid_2d : allocate fail 2 '
+             125     1                           stop
+             126     1                         end if
+             127                     
+             128                     !    ! 4- OUTPUT only, original ATM variabels
+             129                               allocate (                                                   &
+             130                                seaice(nxp,my_max), grndcapc(nxp,my_max),                     &
+             131                              grndhflx(nxp,my_max), grndflux(nxp,my_max), stat=ierr)
+             132     1                         if (ierr/= 0) then
+             133     1                           write(6,*) 'mod_sitgrid_2d : allocate fail 3 '
+             134     1                           stop
+             135     1                         end if
+             136                     
+             137                     !    ! other
+             138                               allocate(                                                    &
+             139                                 fluxw(nxp,my_max),    dfluxs(nxp,my_max),  soflw(nxp,my_max), &
+             140                                 fluxi(nxp,my_max),     sofli(nxp,my_max),                    &
+             141                             thickness(nxp,my_max), obsseaice(nxp,my_max), obswtb(nxp,my_max), &
+             142                                obswsb(nxp,my_max),       rsf(nxp,my_max),    ssf(nxp,my_max), &
+             143                                 disch(nxp,my_max),     ustrw(nxp,my_max),  vstrw(nxp,my_max), &
+             144                                 evapw(nxp,my_max),   wind10w(nxp,my_max), stat=ierr)
+             145                     
+             146     1                          if (ierr/= 0) then
+             147     1                              write(6,*) 'mod_sitgrid_2d : allocate fail 4 '
+             148     1                              stop
+             149     1                          end if
+             150                     
+             151                     
+             152                     !     & ! 3-d SIT vars: snow/ice
+             153                                allocate (                                                  &
+             154                               zsi(nxp,my_max,0:1), silw(nxp,my_max,0:1),                     &
+             155                             tsnic(nxp,my_max,0:3), stat=ierr)
+             156     1                          if (ierr/= 0) then
+             157     1                              write(6,*) 'mod_sitgrid_3d : allocate fail 1 '
+             158     1                              stop
+             159     1                          end if
+             160                     
+             161                     !     & ! 3-d SIT vars: water column (part1)
+             162                                allocate (                                                  &
+             163                                    obswt(nxp,my_max,0:lkvl+1),   obsws(nxp,my_max,0:lkvl+1), &
+             164                                    obswu(nxp,my_max,0:lkvl+1),   obswv(nxp,my_max,0:lkvl+1), &
+             165                                    sitwt(nxp,my_max,0:lkvl+1),   sitwu(nxp,my_max,0:lkvl+1), &
+             166                                    sitwv(nxp,my_max,0:lkvl+1),   sitww(nxp,my_max,0:lkvl+1), &
+             167                                    sitws(nxp,my_max,0:lkvl+1), sitwtke(nxp,my_max,0:lkvl+1), &
+             168                                     wlmx(nxp,my_max,0:lkvl+1),  wldisp(nxp,my_max,0:lkvl+1), &
+             169                                      wkm(nxp,my_max,0:lkvl+1),     wkh(nxp,my_max,0:lkvl+1), &
+             170                                 wrho1000(nxp,my_max,0:lkvl+1),sftobswt(nxp,my_max,0:lkvl+1), &
+             171                                  stat=ierr)
+             172     1                          if (ierr/= 0) then
+             173     1                              write(6,*) 'mod_sitgrid_3d : allocate fail 2 '
+             174     1                              stop
+             175     1                          end if
+             176                     
+             177                     !     & ! 3-d SIT vars: water column (part2)
+             178                                allocate (                                                  &
+             179                                      wtfn(nxp,my_max,0:lkvl+1),  wsfn(nxp,my_max,0:lkvl+1),  &
+             180                                     wtfn0(nxp,my_max,0:lkvl+1), wsfn0(nxp,my_max,0:lkvl+1),  &
+             181                                     awufl(nxp,my_max,0:lkvl+1), awvfl(nxp,my_max,0:lkvl+1),  &
+             182                                     awtfl(nxp,my_max,0:lkvl+1), awsfl(nxp,my_max,0:lkvl+1),  &
+             183                                    awtfl0(nxp,my_max,0:lkvl+1),awsfl0(nxp,my_max,0:lkvl+1),  &
+             184                                   awtkefl(nxp,my_max,0:lkvl+1), stat=ierr)
+             185                     
+             186     1                          if (ierr/= 0) then
+             187     1                              write(6,*) 'mod_sitgrid_3d : allocate fail 3 '
+             188     1                              stop
+             189     1                          end if
+             190                     
+             191                     ! for SIT var. every tau mean
+             192                                allocate (         &
+             193                                  sitwttau(nxp,my_max,0:lkvl+1), sitwstau(nxp,my_max,0:lkvl+1), &
+             194                                  sitwutau(nxp,my_max,0:lkvl+1), sitwvtau(nxp,my_max,0:lkvl+1), &
+             195                                  stat=ierr)
+             196                     
+             197                     ! for SIT var. daily mean
+             198                                allocate (         &
+             199                                  sitwt24(nxp,my_max,0:lkvl+1), sitws24(nxp,my_max,0:lkvl+1), &
+             200                                  sitwu24(nxp,my_max,0:lkvl+1), sitwv24(nxp,my_max,0:lkvl+1), &
+             201                                  stat=ierr)
+             202                     
+             203     1                          if (ierr/= 0) then
+             204     1                              write(6,*) 'mod_sitgrid_sit24 : allocate fail 1 '
+             205     1                              stop
+             206     1                          end if
+             207                     
+             208                     
+             209                     ! for store vars. which sit_vdiff need during "fsit" period
+             210                                allocate(                                                   &
+             211                               ssfsit(nxp,my_max),    rsfsit(nxp,my_max), hfluxfsit(nxp,my_max), &
+             212                            qfluxfsit(nxp,my_max),   u10fsit(nxp,my_max),   v10fsit(nxp,my_max), &
+             213                             rlspfsit(nxp,my_max),  rcupfsit(nxp,my_max), ustarfsit(nxp,my_max), &
+             214                               t2fsit(nxp,my_max),   rh2fsit(nxp,my_max),   pstfsit(nxp,my_max), &
+             215                             cicefsit(nxp,my_max),   snrfsit(nxp,my_max),  zicefsit(nxp,my_max), &
+             216                            xticefsit(nxp,my_max),obswtbfsit(nxp,my_max),    tgfsit(nxp,my_max), &
+             217                                  stat=ierr)
+             218                     
+             219     1                         if (ierr/= 0) then
+             220     1                              write(6,*) 'mod_sitgrid_varfsit : allocate fail 1 '
+             221     1                              stop
+             222     1                          end if
+             223                     
+             224                     ! for store latest 2 steps tsw
+             225                     !          allocate( oldtsw(nx,my_max,0:1), stat=ierr)
+             226                               allocate(                                                    &
+             227                          oldsitwt(nxp,my_max,0:lkvl+1,0:1),oldsitwu(nxp,my_max,0:lkvl+1,0:1),&
+             228                          oldsitwv(nxp,my_max,0:lkvl+1,0:1),oldsitww(nxp,my_max,0:lkvl+1,0:1),&
+             229                          oldsitws(nxp,my_max,0:lkvl+1,0:1),oldsitwtke(nxp,my_max,0:lkvl+1,0:1), &
+             230                               stat=ierr)
+             231                     
+             232     1                         if (ierr/= 0) then
+             233     1                              write(6,*) 'mod_sitgrid_oldsit : allocate fail 1 '
+             234     1                              stop
+             235     1                          end if
+             236                     
+             237                                allocate ( dtswdt(nxp,my_max), tseadiffSIT(nxp,my_max),     &
+             238                                          tseadiffSIT24(nxp,my_max), sumdSITdt(nxp,my_max), &
+             239                                          countdSITdt(nxp,my_max), ratioSIT(nxp,my_max), stat=ierr)
+             240                     
+             241     1                         if (ierr/= 0) then
+             242     1                              write(6,*) 'mod_sitgrid_dtswdt : allocate fail 1 '
+             243     1                              stop
+             244     1                          end if
+             245                     
+             246                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sitcor
+                                   <<< Loop-information  End >>>
+             247        pp   4v                 sitcor=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sitlclass
+                                   <<< Loop-information  End >>>
+             248        pp   4v                 sitlclass=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sitmask
+                                   <<< Loop-information  End >>>
+             249        pp   4v                 sitmask=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sitmask2
+                                   <<< Loop-information  End >>>
+             250        pp   4v                 sitmask2=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      bathy
+                                   <<< Loop-information  End >>>
+             251        pp   4v                 bathy=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wlvl
+                                   <<< Loop-information  End >>>
+             252        pp   4v                 wlvl=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ocnmask
+                                   <<< Loop-information  End >>>
+             253        pp   4v                 ocnmask=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      obox_mask
+                                   <<< Loop-information  End >>>
+             254        pp   4v                 obox_mask=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sni
+                                   <<< Loop-information  End >>>
+             255        pp   4v                 sni=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tsi
+                                   <<< Loop-information  End >>>
+             256        pp   4v                 tsi=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tsw
+                                   <<< Loop-information  End >>>
+             257        pp   4v                 tsw=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tsl
+                                   <<< Loop-information  End >>>
+             258        pp   4v                 tsl=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tslm
+                                   <<< Loop-information  End >>>
+             259        pp   4v                 tslm=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tslm1
+                                   <<< Loop-information  End >>>
+             260        pp   4v                 tslm1=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ocu
+                                   <<< Loop-information  End >>>
+             261        pp   4v                 ocu=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ocv
+                                   <<< Loop-information  End >>>
+             262        pp   4v                 ocv=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      slm
+                                   <<< Loop-information  End >>>
+             263        pp   4v                 slm=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ctfreez2
+                                   <<< Loop-information  End >>>
+             264        pp   4v                 ctfreez2=xmissing
+             265                     !     !     2-d SIT vars
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sitwtb
+                                   <<< Loop-information  End >>>
+             266        pp   4v                 sitwtb=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sitwub
+                                   <<< Loop-information  End >>>
+             267        pp   4v                 sitwub=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sitwvb
+                                   <<< Loop-information  End >>>
+             268        pp   4v                 sitwvb=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sitwsb
+                                   <<< Loop-information  End >>>
+             269        pp   4v                 sitwsb=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fluxiw
+                                   <<< Loop-information  End >>>
+             270        pp   4v                 fluxiw=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pme2
+                                   <<< Loop-information  End >>>
+             271        pp   4v                 pme2=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      subfluxw
+                                   <<< Loop-information  End >>>
+             272        pp   4v                 subfluxw=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wsubsal
+                                   <<< Loop-information  End >>>
+             273        pp   4v                 wsubsal=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sitcc
+                                   <<< Loop-information  End >>>
+             274        pp   4v                 sitcc=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sithc
+                                   <<< Loop-information  End >>>
+             275        pp   4v                 sithc=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      engwac
+                                   <<< Loop-information  End >>>
+             276        pp   4v                 engwac=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sc
+                                   <<< Loop-information  End >>>
+             277        pp   4v                 sc=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      saltwac
+                                   <<< Loop-information  End >>>
+             278        pp   4v                 saltwac=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wtfns
+                                   <<< Loop-information  End >>>
+             279        pp   4v                 wtfns=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wsfns
+                                   <<< Loop-information  End >>>
+             280        pp   4v                 wsfns=xmissing
+             281                     !     !     3-d SIT vars: snow/ice
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      zsi
+                                   <<< Loop-information  End >>>
+             282        pp   4v                 zsi=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      silw
+                                   <<< Loop-information  End >>>
+             283        pp   4v                 silw=5.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tsnic
+                                   <<< Loop-information  End >>>
+             284        pp   4v                 tsnic=xmissing
+             285                     !     !     3-d SIT vars: water column
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      obswt
+                                   <<< Loop-information  End >>>
+             286        pp   4v                 obswt=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      obsws
+                                   <<< Loop-information  End >>>
+             287        pp   4v                 obsws=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      obswu
+                                   <<< Loop-information  End >>>
+             288        pp   4v                 obswu=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      obswv
+                                   <<< Loop-information  End >>>
+             289        pp   4v                 obswv=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sitwt
+                                   <<< Loop-information  End >>>
+             290        pp   4v                 sitwt=288.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sitwu
+                                   <<< Loop-information  End >>>
+             291        pp   4v                 sitwu=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sitwv
+                                   <<< Loop-information  End >>>
+             292        pp   4v                 sitwv=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sitww
+                                   <<< Loop-information  End >>>
+             293        pp   4v                 sitww=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sitws
+                                   <<< Loop-information  End >>>
+             294        pp   4v                 sitws=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sitwtke
+                                   <<< Loop-information  End >>>
+             295        pp   4v                 sitwtke=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wlmx
+                                   <<< Loop-information  End >>>
+             296        pp   4v                 wlmx=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wldisp
+                                   <<< Loop-information  End >>>
+             297        pp   4v                 wldisp=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wkm
+                                   <<< Loop-information  End >>>
+             298        pp   4v                 wkm=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wkh
+                                   <<< Loop-information  End >>>
+             299        pp   4v                 wkh=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wrho1000
+                                   <<< Loop-information  End >>>
+             300        pp   4v                 wrho1000=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sftobswt
+                                   <<< Loop-information  End >>>
+             301        pp   4v                 sftobswt=0.
+             302                                dtfsit=0.
+             303                                dtsitmon=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wtfn
+                                   <<< Loop-information  End >>>
+             304        pp   4v                 wtfn=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wsfn
+                                   <<< Loop-information  End >>>
+             305        pp   4v                 wsfn=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wtfn0
+                                   <<< Loop-information  End >>>
+             306        pp   4v                 wtfn0=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wsfn0
+                                   <<< Loop-information  End >>>
+             307        pp   4v                 wsfn0=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      awufl
+                                   <<< Loop-information  End >>>
+             308        pp   4v                 awufl=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      awvfl
+                                   <<< Loop-information  End >>>
+             309        pp   4v                 awvfl=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      awtfl
+                                   <<< Loop-information  End >>>
+             310        pp   4v                 awtfl=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      awsfl
+                                   <<< Loop-information  End >>>
+             311        pp   4v                 awsfl=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      awtfl0
+                                   <<< Loop-information  End >>>
+             312        pp   4v                 awtfl0=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      awsfl0
+                                   <<< Loop-information  End >>>
+             313        pp   4v                 awsfl0=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      awtkefl
+                                   <<< Loop-information  End >>>
+             314        pp   4v                 awtkefl=0.
+             315                     !     !     4- OUTPUT only, original ATM variabels
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      seaice
+                                   <<< Loop-information  End >>>
+             316        pp   4v                 seaice=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      grndcapc
+                                   <<< Loop-information  End >>>
+             317        pp   4v                 grndcapc=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      grndhflx
+                                   <<< Loop-information  End >>>
+             318        pp   4v                 grndhflx=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      grndflux
+                                   <<< Loop-information  End >>>
+             319        pp   4v                 grndflux=xmissing
+             320                     !     !    other
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fluxw
+                                   <<< Loop-information  End >>>
+             321        pp   4v                 fluxw=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      dfluxs
+                                   <<< Loop-information  End >>>
+             322        pp   4v                 dfluxs=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      fluxi
+                                   <<< Loop-information  End >>>
+             323        pp   4v                 fluxi=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      soflw
+                                   <<< Loop-information  End >>>
+             324        pp   4v                 soflw=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sofli
+                                   <<< Loop-information  End >>>
+             325        pp   4v                 sofli=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      thickness
+                                   <<< Loop-information  End >>>
+             326        pp   4v                 thickness=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      obsseaice
+                                   <<< Loop-information  End >>>
+             327        pp   4v                 obsseaice=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      obswtb
+                                   <<< Loop-information  End >>>
+             328        pp   4v                 obswtb=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      obswsb
+                                   <<< Loop-information  End >>>
+             329        pp   4v                 obswsb=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rsf
+                                   <<< Loop-information  End >>>
+             330        pp   4v                 rsf=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ssf
+                                   <<< Loop-information  End >>>
+             331        pp   4v                 ssf=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      disch
+                                   <<< Loop-information  End >>>
+             332        pp   4v                 disch=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ustrw
+                                   <<< Loop-information  End >>>
+             333        pp   4v                 ustrw=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      vstrw
+                                   <<< Loop-information  End >>>
+             334        pp   4v                 vstrw=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      evapw
+                                   <<< Loop-information  End >>>
+             335        pp   4v                 evapw=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wind10w
+                                   <<< Loop-information  End >>>
+             336        pp   4v                 wind10w=xmissing
+             337                     ! for SIT var. daily mean
+             338                                dtsittau=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sitwttau
+                                   <<< Loop-information  End >>>
+             339        pp   4v                 sitwttau=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sitwstau
+                                   <<< Loop-information  End >>>
+             340        pp   4v                 sitwstau=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sitwutau
+                                   <<< Loop-information  End >>>
+             341        pp   4v                 sitwutau=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sitwvtau
+                                   <<< Loop-information  End >>>
+             342        pp   4v                 sitwvtau=0.
+             343                     
+             344                     ! for SIT var. daily mean
+             345                                dtsit24=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sitwt24
+                                   <<< Loop-information  End >>>
+             346        pp   4v                 sitwt24=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sitws24
+                                   <<< Loop-information  End >>>
+             347        pp   4v                 sitws24=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sitwu24
+                                   <<< Loop-information  End >>>
+             348        pp   4v                 sitwu24=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sitwv24
+                                   <<< Loop-information  End >>>
+             349        pp   4v                 sitwv24=0.
+             350                     
+             351                     ! for store vars. which sit_vdiff need during "fsit" period
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ssfsit
+                                   <<< Loop-information  End >>>
+             352        pp   4v                 ssfsit=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rsfsit
+                                   <<< Loop-information  End >>>
+             353        pp   4v                 rsfsit=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      hfluxfsit
+                                   <<< Loop-information  End >>>
+             354        pp   4v                 hfluxfsit=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qfluxfsit
+                                   <<< Loop-information  End >>>
+             355        pp   4v                 qfluxfsit=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      u10fsit
+                                   <<< Loop-information  End >>>
+             356        pp   4v                 u10fsit=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      v10fsit
+                                   <<< Loop-information  End >>>
+             357        pp   4v                 v10fsit=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rlspfsit
+                                   <<< Loop-information  End >>>
+             358        pp   4v                 rlspfsit=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rcupfsit
+                                   <<< Loop-information  End >>>
+             359        pp   4v                 rcupfsit=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ustarfsit
+                                   <<< Loop-information  End >>>
+             360        pp   4v                 ustarfsit=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      t2fsit
+                                   <<< Loop-information  End >>>
+             361        pp   4v                 t2fsit=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rh2fsit
+                                   <<< Loop-information  End >>>
+             362        pp   4v                 rh2fsit=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pstfsit
+                                   <<< Loop-information  End >>>
+             363        pp   4v                 pstfsit=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cicefsit
+                                   <<< Loop-information  End >>>
+             364        pp   4v                 cicefsit=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      snrfsit
+                                   <<< Loop-information  End >>>
+             365        pp   4v                 snrfsit=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      zicefsit
+                                   <<< Loop-information  End >>>
+             366        pp   4v                 zicefsit=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      xticefsit
+                                   <<< Loop-information  End >>>
+             367        pp   4v                 xticefsit=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      obswtbfsit
+                                   <<< Loop-information  End >>>
+             368        pp   4v                 obswtbfsit=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tgfsit
+                                   <<< Loop-information  End >>>
+             369        pp   4v                 tgfsit=0.
+             370                     
+             371                     ! for store latest 2 steps tsw
+             372                     !           oldtsw=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      oldsitwt
+                                   <<< Loop-information  End >>>
+             373        pp   4v                 oldsitwt=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      oldsitwu
+                                   <<< Loop-information  End >>>
+             374        pp   4v                 oldsitwu=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      oldsitwv
+                                   <<< Loop-information  End >>>
+             375        pp   4v                 oldsitwv=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      oldsitww
+                                   <<< Loop-information  End >>>
+             376        pp   4v                 oldsitww=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      oldsitws
+                                   <<< Loop-information  End >>>
+             377        pp   4v                 oldsitws=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      oldsitwtke
+                                   <<< Loop-information  End >>>
+             378        pp   4v                 oldsitwtke=xmissing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      dtswdt
+                                   <<< Loop-information  End >>>
+             379        pp   4v                 dtswdt=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tseadiffSIT
+                                   <<< Loop-information  End >>>
+             380        pp   4v                 tseadiffSIT=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tseadiffSIT24
+                                   <<< Loop-information  End >>>
+             381        pp   4v                 tseadiffSIT24=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sumdSITdt
+                                   <<< Loop-information  End >>>
+             382        pp   4v                 sumdSITdt=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      countdSITdt
+                                   <<< Loop-information  End >>>
+             383        pp   4v                 countdSITdt=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ratioSIT
+                                   <<< Loop-information  End >>>
+             384        pp   4v                 ratioSIT=0.
+             385                                return
+             386                     
+             387                             end subroutine allocate_sitgrid_array
+             388                     
+             389                     
+             390                     
+             391                             subroutine deallocate_sitgrid_array
+             392                     
+             393                     !    ! 1-input only, original ATM/SIT variabels
+             394                                deallocate (                                  &
+             395                                   sitcor,       slm, sitlclass,              &
+             396                                  sitmask,  sitmask2,     bathy,      wlvl,   &
+             397                                  ocnmask, obox_mask,                         &
+             398                                      sni,       tsi,       tsw,              &
+             399                                      tsl,      tslm,     tslm1,              &
+             400                                      ocu,       ocv,  ctfreez2)
+             401                     !    ! 2-d SIT vars
+             402                                deallocate (                                  &
+             403                                   sitwtb,    sitwub,    sitwvb,              &
+             404                                   sitwsb,    fluxiw,      pme2,              &
+             405                                 subfluxw,   wsubsal,                         &
+             406                                    sitcc,     sithc,    engwac,              &
+             407                                       sc,   saltwac,                         &
+             408                                    wtfns,     wsfns)
+             409                     
+             410                     !    ! 4- OUTPUT only, original ATM variabels
+             411                                deallocate (                                  &
+             412                                   seaice,  grndcapc,                         &
+             413                                 grndhflx,  grndflux)
+             414                     
+             415                     !    ! other
+             416                                deallocate (                                  &
+             417                                    fluxw,    dfluxs,     soflw,              &
+             418                                    fluxi,    sofli,                          &
+             419                                thickness, obsseaice,    obswtb,              &
+             420                                   obswsb,       rsf,       ssf,              &
+             421                                    disch,     ustrw,     vstrw,              &
+             422                                    evapw,   wind10w)
+             423                     
+             424                     !    ! 3-d SIT vars: water column
+             425                                deallocate (                                  &
+             426                                      zsi,  silw,    tsnic)
+             427                                deallocate (                                  &
+             428                                    obswt,   obsws,  obswu,  obswv,           &
+             429                                    sitwt,   sitwu,  sitwv,  sitww,           &
+             430                                    sitws, sitwtke,   wlmx, wldisp,           &
+             431                                      wkm,   wkh, wrho1000, sftobswt)
+             432                                deallocate (                                  &
+             433                                     wtfn,   wsfn, wtfn0, wsfn0,              &
+             434                                    awufl,  awvfl, awtfl, awsfl,              &
+             435                                   awtfl0, awsfl0, awtkefl )
+             436                     
+             437                     ! for SIT var. every tau mean
+             438                                deallocate (                                  &
+             439                                  sitwttau, sitwstau, sitwutau, sitwvtau)
+             440                     
+             441                     ! for SIT var. daily mean
+             442                                deallocate (                                  &
+             443                                  sitwt24, sitws24, sitwu24, sitwv24)
+             444                     
+             445                     ! for store vars. which sit_vdiff need during "fsit" period
+             446                                deallocate (                                  &
+             447                                   ssfsit,  rsfsit, hfluxfsit, qfluxfsit,     &
+             448                                  u10fsit, v10fsit,  rlspfsit,  rcupfsit,     &
+             449                                ustarfsit,  t2fsit,   rh2fsit,   pstfsit,     &
+             450                                 cicefsit, snrfsit,  zicefsit, xticefsit,     &
+             451                               obswtbfsit,  tgfsit)
+             452                     
+             453                     ! for store latest 2 steps tsw
+             454                                deallocate (                                  &
+             455                                 oldsitwt, oldsitwu, oldsitwv,oldsitww,       &
+             456                                 oldsitws,oldsitwtke)
+             457                     
+             458                                deallocate ( dtswdt, tseadiffSIT, tseadiffSIT24, &
+             459                                             sumdSITdt, countdSITdt, ratioSIT)
+             460                     
+             461                                return
+             462                     
+             463                             end subroutine deallocate_sitgrid_array
+             464                     
+             465                           end module mod_sitgrid
+
+ Procedure information
+   Lines      : 465
+   Statements : 224
+   Stack(byte): 13216
+   Prefetch num: 0
+
+ Scoping unit of module : mod_sitgrid
+   Attribute and Cross reference of name
+     awsfl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 58
+      |(Definition)     : 
+      |(Reference)      : 
+     awsfl0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 58
+      |(Definition)     : 
+      |(Reference)      : 
+     awtfl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 58
+      |(Definition)     : 
+      |(Reference)      : 
+     awtfl0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 58
+      |(Definition)     : 
+      |(Reference)      : 
+     awtkefl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 58
+      |(Definition)     : 
+      |(Reference)      : 
+     awufl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 58
+      |(Definition)     : 
+      |(Reference)      : 
+     awvfl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 58
+      |(Definition)     : 
+      |(Reference)      : 
+     bathy
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 17
+      |(Definition)     : 
+      |(Reference)      : 
+     cicefsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 77
+      |(Definition)     : 
+      |(Reference)      : 
+     countdSITdt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 89
+      |(Definition)     : 
+      |(Reference)      : 
+     ctfreez2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 17
+      |(Definition)     : 
+      |(Reference)      : 
+     dfluxs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 40
+      |(Definition)     : 
+      |(Reference)      : 
+     disch
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 40
+      |(Definition)     : 
+      |(Reference)      : 
+     dtfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 76
+      |(Definition)     : 
+      |(Reference)      : 
+     dtsit24
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 70
+      |(Definition)     : 
+      |(Reference)      : 
+     dtsitmon
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 62
+      |(Definition)     : 
+      |(Reference)      : 
+     dtsittau
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     dtswdt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 89
+      |(Definition)     : 
+      |(Reference)      : 
+     engwac
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 26
+      |(Definition)     : 
+      |(Reference)      : 
+     evapw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 40
+      |(Definition)     : 
+      |(Reference)      : 
+     fluxi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 40
+      |(Definition)     : 
+      |(Reference)      : 
+     fluxiw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 26
+      |(Definition)     : 
+      |(Reference)      : 
+     fluxw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 40
+      |(Definition)     : 
+      |(Reference)      : 
+     grndcapc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 35
+      |(Definition)     : 
+      |(Reference)      : 
+     grndflux
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 35
+      |(Definition)     : 
+      |(Reference)      : 
+     grndhflx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 35
+      |(Definition)     : 
+      |(Reference)      : 
+     hfluxfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 77
+      |(Definition)     : 
+      |(Reference)      : 
+     lkvl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8
+     mo_netcdf
+      |(Class and Type) : module name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8
+     mod_sit_control
+      |(Class and Type) : module name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 7
+     mod_sitgrid
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 465
+     obox_mask
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 17
+      |(Definition)     : 
+      |(Reference)      : 
+     obsseaice
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 40
+      |(Definition)     : 
+      |(Reference)      : 
+     obsws
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 53
+      |(Definition)     : 
+      |(Reference)      : 
+     obswsb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 40
+      |(Definition)     : 
+      |(Reference)      : 
+     obswt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 53
+      |(Definition)     : 
+      |(Reference)      : 
+     obswtb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 40
+      |(Definition)     : 
+      |(Reference)      : 
+     obswtbfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 77
+      |(Definition)     : 
+      |(Reference)      : 
+     obswu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 53
+      |(Definition)     : 
+      |(Reference)      : 
+     obswv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 53
+      |(Definition)     : 
+      |(Reference)      : 
+     ocnmask
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 17
+      |(Definition)     : 
+      |(Reference)      : 
+     ocu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 17
+      |(Definition)     : 
+      |(Reference)      : 
+     ocv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 17
+      |(Definition)     : 
+      |(Reference)      : 
+     oldsitws
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 85
+      |(Definition)     : 
+      |(Reference)      : 
+     oldsitwt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 85
+      |(Definition)     : 
+      |(Reference)      : 
+     oldsitwtke
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 85
+      |(Definition)     : 
+      |(Reference)      : 
+     oldsitwu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 85
+      |(Definition)     : 
+      |(Reference)      : 
+     oldsitwv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 85
+      |(Definition)     : 
+      |(Reference)      : 
+     oldsitww
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 85
+      |(Definition)     : 
+      |(Reference)      : 
+     pme2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 26
+      |(Definition)     : 
+      |(Reference)      : 
+     pstfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 77
+      |(Definition)     : 
+      |(Reference)      : 
+     qfluxfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 77
+      |(Definition)     : 
+      |(Reference)      : 
+     ratioSIT
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 89
+      |(Definition)     : 
+      |(Reference)      : 
+     rcupfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 77
+      |(Definition)     : 
+      |(Reference)      : 
+     rh2fsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 77
+      |(Definition)     : 
+      |(Reference)      : 
+     rlspfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 77
+      |(Definition)     : 
+      |(Reference)      : 
+     rsf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 40
+      |(Definition)     : 
+      |(Reference)      : 
+     rsfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 77
+      |(Definition)     : 
+      |(Reference)      : 
+     saltwac
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 26
+      |(Definition)     : 
+      |(Reference)      : 
+     sc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 26
+      |(Definition)     : 
+      |(Reference)      : 
+     seaice
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 35
+      |(Definition)     : 
+      |(Reference)      : 
+     sftobswt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 53
+      |(Definition)     : 
+      |(Reference)      : 
+     silw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 50
+      |(Definition)     : 
+      |(Reference)      : 
+     sitcc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 26
+      |(Definition)     : 
+      |(Reference)      : 
+     sitcor
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 17
+      |(Definition)     : 
+      |(Reference)      : 
+     sithc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 26
+      |(Definition)     : 
+      |(Reference)      : 
+     sitlclass
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 17
+      |(Definition)     : 
+      |(Reference)      : 
+     sitmask
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 17
+      |(Definition)     : 
+      |(Reference)      : 
+     sitmask2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 17
+      |(Definition)     : 
+      |(Reference)      : 
+     sitws
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 53
+      |(Definition)     : 
+      |(Reference)      : 
+     sitws24
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 71
+      |(Definition)     : 
+      |(Reference)      : 
+     sitwsb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 26
+      |(Definition)     : 
+      |(Reference)      : 
+     sitwstau
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 66
+      |(Definition)     : 
+      |(Reference)      : 
+     sitwt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 53
+      |(Definition)     : 
+      |(Reference)      : 
+     sitwt24
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 71
+      |(Definition)     : 
+      |(Reference)      : 
+     sitwtb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 26
+      |(Definition)     : 
+      |(Reference)      : 
+     sitwtke
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 53
+      |(Definition)     : 
+      |(Reference)      : 
+     sitwttau
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 66
+      |(Definition)     : 
+      |(Reference)      : 
+     sitwu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 53
+      |(Definition)     : 
+      |(Reference)      : 
+     sitwu24
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 71
+      |(Definition)     : 
+      |(Reference)      : 
+     sitwub
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 26
+      |(Definition)     : 
+      |(Reference)      : 
+     sitwutau
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 66
+      |(Definition)     : 
+      |(Reference)      : 
+     sitwv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 53
+      |(Definition)     : 
+      |(Reference)      : 
+     sitwv24
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 71
+      |(Definition)     : 
+      |(Reference)      : 
+     sitwvb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 26
+      |(Definition)     : 
+      |(Reference)      : 
+     sitwvtau
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 66
+      |(Definition)     : 
+      |(Reference)      : 
+     sitww
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 53
+      |(Definition)     : 
+      |(Reference)      : 
+     slm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 17
+      |(Definition)     : 
+      |(Reference)      : 
+     sni
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 17
+      |(Definition)     : 
+      |(Reference)      : 
+     snrfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 77
+      |(Definition)     : 
+      |(Reference)      : 
+     sofli
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 40
+      |(Definition)     : 
+      |(Reference)      : 
+     soflw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 40
+      |(Definition)     : 
+      |(Reference)      : 
+     ssf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 40
+      |(Definition)     : 
+      |(Reference)      : 
+     ssfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 77
+      |(Definition)     : 
+      |(Reference)      : 
+     subfluxw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 26
+      |(Definition)     : 
+      |(Reference)      : 
+     sumdSITdt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 89
+      |(Definition)     : 
+      |(Reference)      : 
+     t2fsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 77
+      |(Definition)     : 
+      |(Reference)      : 
+     tgfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 77
+      |(Definition)     : 
+      |(Reference)      : 
+     thickness
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 40
+      |(Definition)     : 
+      |(Reference)      : 
+     tseadiffSIT
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 89
+      |(Definition)     : 
+      |(Reference)      : 
+     tseadiffSIT24
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 89
+      |(Definition)     : 
+      |(Reference)      : 
+     tsi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 17
+      |(Definition)     : 
+      |(Reference)      : 
+     tsl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 17
+      |(Definition)     : 
+      |(Reference)      : 
+     tslm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 17
+      |(Definition)     : 
+      |(Reference)      : 
+     tslm1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 17
+      |(Definition)     : 
+      |(Reference)      : 
+     tsnic
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 50
+      |(Definition)     : 
+      |(Reference)      : 
+     tsw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 17
+      |(Definition)     : 
+      |(Reference)      : 
+     u10fsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 77
+      |(Definition)     : 
+      |(Reference)      : 
+     ustarfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 77
+      |(Definition)     : 
+      |(Reference)      : 
+     ustrw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 40
+      |(Definition)     : 
+      |(Reference)      : 
+     v10fsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 77
+      |(Definition)     : 
+      |(Reference)      : 
+     vstrw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 40
+      |(Definition)     : 
+      |(Reference)      : 
+     wind10w
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 40
+      |(Definition)     : 
+      |(Reference)      : 
+     wkh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 53
+      |(Definition)     : 
+      |(Reference)      : 
+     wkm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 53
+      |(Definition)     : 
+      |(Reference)      : 
+     wldisp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 53
+      |(Definition)     : 
+      |(Reference)      : 
+     wlmx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 53
+      |(Definition)     : 
+      |(Reference)      : 
+     wlvl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 17
+      |(Definition)     : 
+      |(Reference)      : 
+     wrho1000
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 53
+      |(Definition)     : 
+      |(Reference)      : 
+     wsfn
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 58
+      |(Definition)     : 
+      |(Reference)      : 
+     wsfn0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 58
+      |(Definition)     : 
+      |(Reference)      : 
+     wsfns
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 26
+      |(Definition)     : 
+      |(Reference)      : 
+     wsubsal
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 26
+      |(Definition)     : 
+      |(Reference)      : 
+     wtfn
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 58
+      |(Definition)     : 
+      |(Reference)      : 
+     wtfn0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 58
+      |(Definition)     : 
+      |(Reference)      : 
+     wtfns
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 26
+      |(Definition)     : 
+      |(Reference)      : 
+     xmissing
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PUBLIC, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 7
+     xticefsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 77
+      |(Definition)     : 
+      |(Reference)      : 
+     zicefsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 77
+      |(Definition)     : 
+      |(Reference)      : 
+     zsi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 50
+      |(Definition)     : 
+      |(Reference)      : 
+
+ Scoping unit of module sub-program : allocate_sitgrid_array
+   Attribute and Cross reference of name
+     allocate_sitgrid_array
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 96
+      |(Reference)      : 387
+     awsfl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 178  311
+      |(Reference)      : 
+     awsfl0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 178  313
+      |(Reference)      : 
+     awtfl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 178  310
+      |(Reference)      : 
+     awtfl0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 178  312
+      |(Reference)      : 
+     awtkefl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 178  314
+      |(Reference)      : 
+     awufl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 178  308
+      |(Reference)      : 
+     awvfl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 178  309
+      |(Reference)      : 
+     bathy
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 102  251
+      |(Reference)      : 
+     cicefsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 210  364
+      |(Reference)      : 
+     countdSITdt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 237  383
+      |(Reference)      : 
+     ctfreez2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 102  264
+      |(Reference)      : 
+     dfluxs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 138  322
+      |(Reference)      : 
+     disch
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 138  332
+      |(Reference)      : 
+     dtfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 302
+      |(Reference)      : 
+     dtsit24
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 345
+      |(Reference)      : 
+     dtsitmon
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 303
+      |(Reference)      : 
+     dtsittau
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 338
+      |(Reference)      : 
+     dtswdt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 237  379
+      |(Reference)      : 
+     engwac
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 116  276
+      |(Reference)      : 
+     evapw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 138  335
+      |(Reference)      : 
+     fluxi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 138  323
+      |(Reference)      : 
+     fluxiw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 116  270
+      |(Reference)      : 
+     fluxw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 138  321
+      |(Reference)      : 
+     grndcapc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 129  317
+      |(Reference)      : 
+     grndflux
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 129  319
+      |(Reference)      : 
+     grndhflx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 129  318
+      |(Reference)      : 
+     hfluxfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 210  354
+      |(Reference)      : 
+     ierr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 98
+      |(Definition)     : 102  116  129  138  153  162  178  192  198  210  226  237
+      |(Reference)      : 110  123  132  146  156  172  186  203  219  232  241
+     lkvl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 162  162  162  162  162  162  162  162  162  162  162  162  162  162  162  162  178  178  178  178  178  178  178  178  178  178  178  192  192  192  192  198  198  198  198  226  226  226  226  226  226
+     my_max
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 96  99
+      |(Definition)     : 
+      |(Reference)      : 102  102  102  102  102  102  102  102  102  102  102  102  102  102  102  102  102  102  116  116  116  116  116  116  116  116  116  116  116  116  116  116  116  129  129  129  129  138  138  138  138  138  138  138  138  138  138  138  138  138  138  138  138  153  153  153  162  162  162  162  162  162  162  162  162  162  162  162  162  162  162  162  178  178  178  178  178  178  178  178  178  178  178  192  192  192  192  198  198  198  198  210  210  210  210  210  210  210  210  210  210  210  210  210  210  210  210  210  210  226  226  226  226  226  226  237  237  237  237  237  237
+     nxp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 96  99
+      |(Definition)     : 
+      |(Reference)      : 102  102  102  102  102  102  102  102  102  102  102  102  102  102  102  102  102  102  116  116  116  116  116  116  116  116  116  116  116  116  116  116  116  129  129  129  129  138  138  138  138  138  138  138  138  138  138  138  138  138  138  138  138  153  153  153  162  162  162  162  162  162  162  162  162  162  162  162  162  162  162  162  178  178  178  178  178  178  178  178  178  178  178  192  192  192  192  198  198  198  198  210  210  210  210  210  210  210  210  210  210  210  210  210  210  210  210  210  210  226  226  226  226  226  226  237  237  237  237  237  237
+     obox_mask
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 102  254
+      |(Reference)      : 
+     obsseaice
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 138  327
+      |(Reference)      : 
+     obsws
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 162  287
+      |(Reference)      : 
+     obswsb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 138  329
+      |(Reference)      : 
+     obswt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 162  286
+      |(Reference)      : 
+     obswtb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 138  328
+      |(Reference)      : 
+     obswtbfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 210  368
+      |(Reference)      : 
+     obswu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 162  288
+      |(Reference)      : 
+     obswv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 162  289
+      |(Reference)      : 
+     ocnmask
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 102  253
+      |(Reference)      : 
+     ocu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 102  261
+      |(Reference)      : 
+     ocv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 102  262
+      |(Reference)      : 
+     oldsitws
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 226  377
+      |(Reference)      : 
+     oldsitwt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 226  373
+      |(Reference)      : 
+     oldsitwtke
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 226  378
+      |(Reference)      : 
+     oldsitwu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 226  374
+      |(Reference)      : 
+     oldsitwv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 226  375
+      |(Reference)      : 
+     oldsitww
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 226  376
+      |(Reference)      : 
+     pme2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 116  271
+      |(Reference)      : 
+     pstfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 210  363
+      |(Reference)      : 
+     qfluxfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 210  355
+      |(Reference)      : 
+     ratioSIT
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 237  384
+      |(Reference)      : 
+     rcupfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 210  359
+      |(Reference)      : 
+     rh2fsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 210  362
+      |(Reference)      : 
+     rlspfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 210  358
+      |(Reference)      : 
+     rsf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 138  330
+      |(Reference)      : 
+     rsfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 210  353
+      |(Reference)      : 
+     saltwac
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 116  278
+      |(Reference)      : 
+     sc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 116  277
+      |(Reference)      : 
+     seaice
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 129  316
+      |(Reference)      : 
+     sftobswt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 162  301
+      |(Reference)      : 
+     silw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 153  283
+      |(Reference)      : 
+     sitcc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 116  274
+      |(Reference)      : 
+     sitcor
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 102  247
+      |(Reference)      : 
+     sithc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 116  275
+      |(Reference)      : 
+     sitlclass
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 102  248
+      |(Reference)      : 
+     sitmask
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 102  249
+      |(Reference)      : 
+     sitmask2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 102  250
+      |(Reference)      : 
+     sitws
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 162  294
+      |(Reference)      : 
+     sitws24
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 198  347
+      |(Reference)      : 
+     sitwsb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 116  269
+      |(Reference)      : 
+     sitwstau
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 192  340
+      |(Reference)      : 
+     sitwt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 162  290
+      |(Reference)      : 
+     sitwt24
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 198  346
+      |(Reference)      : 
+     sitwtb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 116  266
+      |(Reference)      : 
+     sitwtke
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 162  295
+      |(Reference)      : 
+     sitwttau
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 192  339
+      |(Reference)      : 
+     sitwu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 162  291
+      |(Reference)      : 
+     sitwu24
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 198  348
+      |(Reference)      : 
+     sitwub
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 116  267
+      |(Reference)      : 
+     sitwutau
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 192  341
+      |(Reference)      : 
+     sitwv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 162  292
+      |(Reference)      : 
+     sitwv24
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 198  349
+      |(Reference)      : 
+     sitwvb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 116  268
+      |(Reference)      : 
+     sitwvtau
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 192  342
+      |(Reference)      : 
+     sitww
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 162  293
+      |(Reference)      : 
+     slm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 102  263
+      |(Reference)      : 
+     sni
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 102  255
+      |(Reference)      : 
+     snrfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 210  365
+      |(Reference)      : 
+     sofli
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 138  325
+      |(Reference)      : 
+     soflw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 138  324
+      |(Reference)      : 
+     ssf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 138  331
+      |(Reference)      : 
+     ssfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 210  352
+      |(Reference)      : 
+     subfluxw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 116  272
+      |(Reference)      : 
+     sumdSITdt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 237  382
+      |(Reference)      : 
+     t2fsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 210  361
+      |(Reference)      : 
+     tgfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 210  369
+      |(Reference)      : 
+     thickness
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 138  326
+      |(Reference)      : 
+     tseadiffSIT
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 237  380
+      |(Reference)      : 
+     tseadiffSIT24
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 237  381
+      |(Reference)      : 
+     tsi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 102  256
+      |(Reference)      : 
+     tsl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 102  258
+      |(Reference)      : 
+     tslm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 102  259
+      |(Reference)      : 
+     tslm1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 102  260
+      |(Reference)      : 
+     tsnic
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 153  284
+      |(Reference)      : 
+     tsw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 102  257
+      |(Reference)      : 
+     u10fsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 210  356
+      |(Reference)      : 
+     ustarfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 210  360
+      |(Reference)      : 
+     ustrw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 138  333
+      |(Reference)      : 
+     v10fsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 210  357
+      |(Reference)      : 
+     vstrw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 138  334
+      |(Reference)      : 
+     wind10w
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 138  336
+      |(Reference)      : 
+     wkh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 162  299
+      |(Reference)      : 
+     wkm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 162  298
+      |(Reference)      : 
+     wldisp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 162  297
+      |(Reference)      : 
+     wlmx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 162  296
+      |(Reference)      : 
+     wlvl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 102  252
+      |(Reference)      : 
+     wrho1000
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 162  300
+      |(Reference)      : 
+     wsfn
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 178  305
+      |(Reference)      : 
+     wsfn0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 178  307
+      |(Reference)      : 
+     wsfns
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 116  280
+      |(Reference)      : 
+     wsubsal
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 116  273
+      |(Reference)      : 
+     wtfn
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 178  304
+      |(Reference)      : 
+     wtfn0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 178  306
+      |(Reference)      : 
+     wtfns
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 116  279
+      |(Reference)      : 
+     xmissing
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 247  248  249  250  251  252  253  254  255  256  257  258  259  260  261  262  263  264  266  267  268  269  270  271  272  273  274  275  276  277  278  279  280  284  286  287  288  289  296  297  300  316  317  318  319  324  325  326  327  328  329  333  334  335  336  373  374  375  376  377  378
+     xticefsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 210  367
+      |(Reference)      : 
+     zicefsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 210  366
+      |(Reference)      : 
+     zsi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 153  282
+      |(Reference)      : 
+
+ Scoping unit of module sub-program : deallocate_sitgrid_array
+   Attribute and Cross reference of name
+     awsfl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 432
+      |(Reference)      : 
+     awsfl0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 432
+      |(Reference)      : 
+     awtfl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 432
+      |(Reference)      : 
+     awtfl0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 432
+      |(Reference)      : 
+     awtkefl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 432
+      |(Reference)      : 
+     awufl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 432
+      |(Reference)      : 
+     awvfl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 432
+      |(Reference)      : 
+     bathy
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 394
+      |(Reference)      : 
+     cicefsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 446
+      |(Reference)      : 
+     countdSITdt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 458
+      |(Reference)      : 
+     ctfreez2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 394
+      |(Reference)      : 
+     deallocate_sitgrid_array
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 391
+      |(Reference)      : 463
+     dfluxs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 416
+      |(Reference)      : 
+     disch
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 416
+      |(Reference)      : 
+     dtswdt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 458
+      |(Reference)      : 
+     engwac
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 402
+      |(Reference)      : 
+     evapw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 416
+      |(Reference)      : 
+     fluxi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 416
+      |(Reference)      : 
+     fluxiw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 402
+      |(Reference)      : 
+     fluxw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 416
+      |(Reference)      : 
+     grndcapc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 411
+      |(Reference)      : 
+     grndflux
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 411
+      |(Reference)      : 
+     grndhflx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 411
+      |(Reference)      : 
+     hfluxfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 446
+      |(Reference)      : 
+     obox_mask
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 394
+      |(Reference)      : 
+     obsseaice
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 416
+      |(Reference)      : 
+     obsws
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 427
+      |(Reference)      : 
+     obswsb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 416
+      |(Reference)      : 
+     obswt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 427
+      |(Reference)      : 
+     obswtb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 416
+      |(Reference)      : 
+     obswtbfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 446
+      |(Reference)      : 
+     obswu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 427
+      |(Reference)      : 
+     obswv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 427
+      |(Reference)      : 
+     ocnmask
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 394
+      |(Reference)      : 
+     ocu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 394
+      |(Reference)      : 
+     ocv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 394
+      |(Reference)      : 
+     oldsitws
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 454
+      |(Reference)      : 
+     oldsitwt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 454
+      |(Reference)      : 
+     oldsitwtke
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 454
+      |(Reference)      : 
+     oldsitwu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 454
+      |(Reference)      : 
+     oldsitwv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 454
+      |(Reference)      : 
+     oldsitww
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 454
+      |(Reference)      : 
+     pme2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 402
+      |(Reference)      : 
+     pstfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 446
+      |(Reference)      : 
+     qfluxfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 446
+      |(Reference)      : 
+     ratioSIT
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 458
+      |(Reference)      : 
+     rcupfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 446
+      |(Reference)      : 
+     rh2fsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 446
+      |(Reference)      : 
+     rlspfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 446
+      |(Reference)      : 
+     rsf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 416
+      |(Reference)      : 
+     rsfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 446
+      |(Reference)      : 
+     saltwac
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 402
+      |(Reference)      : 
+     sc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 402
+      |(Reference)      : 
+     seaice
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 411
+      |(Reference)      : 
+     sftobswt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 427
+      |(Reference)      : 
+     silw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 425
+      |(Reference)      : 
+     sitcc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 402
+      |(Reference)      : 
+     sitcor
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 394
+      |(Reference)      : 
+     sithc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 402
+      |(Reference)      : 
+     sitlclass
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 394
+      |(Reference)      : 
+     sitmask
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 394
+      |(Reference)      : 
+     sitmask2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 394
+      |(Reference)      : 
+     sitws
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 427
+      |(Reference)      : 
+     sitws24
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 442
+      |(Reference)      : 
+     sitwsb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 402
+      |(Reference)      : 
+     sitwstau
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 438
+      |(Reference)      : 
+     sitwt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 427
+      |(Reference)      : 
+     sitwt24
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 442
+      |(Reference)      : 
+     sitwtb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 402
+      |(Reference)      : 
+     sitwtke
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 427
+      |(Reference)      : 
+     sitwttau
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 438
+      |(Reference)      : 
+     sitwu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 427
+      |(Reference)      : 
+     sitwu24
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 442
+      |(Reference)      : 
+     sitwub
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 402
+      |(Reference)      : 
+     sitwutau
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 438
+      |(Reference)      : 
+     sitwv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 427
+      |(Reference)      : 
+     sitwv24
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 442
+      |(Reference)      : 
+     sitwvb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 402
+      |(Reference)      : 
+     sitwvtau
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 438
+      |(Reference)      : 
+     sitww
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 427
+      |(Reference)      : 
+     slm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 394
+      |(Reference)      : 
+     sni
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 394
+      |(Reference)      : 
+     snrfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 446
+      |(Reference)      : 
+     sofli
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 416
+      |(Reference)      : 
+     soflw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 416
+      |(Reference)      : 
+     ssf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 416
+      |(Reference)      : 
+     ssfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 446
+      |(Reference)      : 
+     subfluxw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 402
+      |(Reference)      : 
+     sumdSITdt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 458
+      |(Reference)      : 
+     t2fsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 446
+      |(Reference)      : 
+     tgfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 446
+      |(Reference)      : 
+     thickness
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 416
+      |(Reference)      : 
+     tseadiffSIT
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 458
+      |(Reference)      : 
+     tseadiffSIT24
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 458
+      |(Reference)      : 
+     tsi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 394
+      |(Reference)      : 
+     tsl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 394
+      |(Reference)      : 
+     tslm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 394
+      |(Reference)      : 
+     tslm1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 394
+      |(Reference)      : 
+     tsnic
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 425
+      |(Reference)      : 
+     tsw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 394
+      |(Reference)      : 
+     u10fsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 446
+      |(Reference)      : 
+     ustarfsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 446
+      |(Reference)      : 
+     ustrw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 416
+      |(Reference)      : 
+     v10fsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 446
+      |(Reference)      : 
+     vstrw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 416
+      |(Reference)      : 
+     wind10w
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 416
+      |(Reference)      : 
+     wkh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 427
+      |(Reference)      : 
+     wkm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 427
+      |(Reference)      : 
+     wldisp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 427
+      |(Reference)      : 
+     wlmx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 427
+      |(Reference)      : 
+     wlvl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 394
+      |(Reference)      : 
+     wrho1000
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 427
+      |(Reference)      : 
+     wsfn
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 432
+      |(Reference)      : 
+     wsfn0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 432
+      |(Reference)      : 
+     wsfns
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 402
+      |(Reference)      : 
+     wsubsal
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 402
+      |(Reference)      : 
+     wtfn
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 432
+      |(Reference)      : 
+     wtfn0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 432
+      |(Reference)      : 
+     wtfns
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 402
+      |(Reference)      : 
+     xticefsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 446
+      |(Reference)      : 
+     zicefsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 446
+      |(Reference)      : 
+     zsi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 425
+      |(Reference)      : 
+
+ Total information
+   Procedures       : 1
+   Total lines      : 465
+   Total statements : 224
+   Total stack(byte): 13216
+   Total prefetch num: 0
+

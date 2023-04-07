@@ -36,12 +36,29 @@ vars='h2o
       vor 
       wnd'
 
-levs2='10 20 30 50 70 100 150 200 250 300 350 400 450 500 550 600 650 700 750 800 850 900 925 950 975 1000'
+levs=' 200    
+       500       
+       850      
+      1000'
+
+levs2='  10
+         20
+         30
+         50
+         70
+        100
+        150
+        250
+        300
+        400
+        700
+        850
+        925'
 
 
 ft_ini=0
 #ft_end=8784
-ft_end=1080
+ft_end=360
 #ft_end=1095
 ft_gap=6
 
@@ -68,6 +85,32 @@ done
 
 for var in $vars
 do
+  for lv in $levs
+  do
+    if [ $lv -lt 100 ]; then
+      varlv=$var'      '$lv
+    else if [ $lv -lt 1000 ]; then
+      varlv=$var'     '$lv
+    else
+      varlv=$var'    '$lv
+    fi
+    fi
+
+    for ft in $(seq ${ft_ini} ${ft_gap} ${ft_end})
+    do     
+      if [ $ft -lt 10 ]; then
+        ft='000'$ft
+      else if [ $ft -lt 100 ]; then
+        ft='00'$ft
+      else if [ $ft -lt 1000 ]; then
+        ft='0'$ft
+      fi
+      fi
+      fi
+      echo "${varlv}" $ft >> ocards
+    done
+  done
+
   for lv in $levs2
   do
     if [ $lv -lt 100 ]; then

@@ -1,0 +1,827 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar 14 13:21:11 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_helio
+   Source file       : mod_spec.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb157/CWBSUMc2/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ Module "spec"
+  (inc)(line-no.)(nest)(optimize)
+               1                           module spec
+               2                     !
+               3                     ! modify to f90 by C-H Lee and sort by River Chen in 2015
+               4                     !
+               5                           use const, only : RTYPE
+               6                           use param
+               7                           use index
+               8                     
+               9                           implicit none
+              10                     
+              11                           public
+              12                     
+              13                           integer,dimension(:),allocatable,save :: jtwv,jtwvp
+              14                     
+              15                     
+              16                     !byl      real,dimension(:,:,:,:),allocatable,save :: vornow,divnow,temnow,qnow,             &
+              17                     !byl                                                  vorold,divold,temold,qold,trefs,       &
+              18                           real(kind=RTYPE),dimension(:,:,:,:),allocatable,save :: vornow,divnow,temnow,         &
+              19                                                                                   vormid,divmid,temmid,         &
+              20                                                                                   vorold,divold,temold,trefs,   &
+              21                                                                                   vorten,divten,temten,hldten
+              22                     !!                                                            vorten,divten,temten,qten,hldten
+              23                     !byl      real,dimension(:,:,:),  allocatable,save :: plnow,plold,dsqgeo,spgeo,plten
+              24                           real(kind=RTYPE),dimension(:,:,:),  allocatable,save :: plnow,plmid,plold,plten,spgeo
+              25                     
+              26                     !ch   real,dimension(:,:),  allocatable,save :: plnowL,ploldL,pltenL   !  for 2dMPI, allocated in cons.f90
+              27                           real(kind=RTYPE),dimension(:,:),  allocatable,save :: plnowL,ploldL,pltenL   !  for 2dMPI, allocated in cons.f90
+              28                     
+              29                     
+              30                           contains
+              31                     
+              32                              subroutine allocate_spec_array
+              33                     
+              34                                integer  ierr
+              35                     
+              36                                allocate (vornow(levp,2,jtrun,jtmax),divnow(levp,     2,jtrun,jtmax), &
+              37                                          temnow(levp,2,jtrun,jtmax),temold(levp     ,2,jtrun,jtmax), &
+              38                     !byl                     qnow(levp*ncld,2,jtrun,jtmax),qold(levp*ncld,2,jtrun,jtmax),&
+              39                                          vorold(levp,2,jtrun,jtmax),divold(levp,     2,jtrun,jtmax), &
+              40                                          vormid(levp,2,jtrun,jtmax),divmid(levp,     2,jtrun,jtmax), &
+              41                                          temmid(levp,2,jtrun,jtmax),                                 &
+              42                                           trefs(levp,2,jtrun,jtmax),                                 &
+              43                                          vorten(levp,2,jtrun,jtmax),divten(levp,     2,jtrun,jtmax), &
+              44                     !!                   temten(levp,2,jtrun,jtmax),  qten(levp*ncld,2,jtrun,jtmax), &
+              45                                          temten(levp,2,jtrun,jtmax),                                 &
+              46                                          hldten(levp,2,jtrun,jtmax),                                 &
+              47                                           plnow(jtrun,jtmax,2),     plold(jtrun,jtmax,2),            &
+              48                                          plmid(jtrun,jtmax,2),                                       &
+              49                     !byl                     dsqgeo(jtrun,jtmax,2),     spgeo(jtrun,jtmax,2),            &
+              50                                          spgeo(jtrun,jtmax,2),                                       &
+              51                                          plten(jtrun,jtmax,2), stat=ierr)
+              52                     
+              53     1                          if (ierr/= 0) then
+              54     1                              write(6,*) 'mod_spec : allocate fail 1 '
+              55     1                              stop
+              56     1                          end if
+              57                     
+              58                     !CWB2017 2dMPI
+              59                                allocate (jtwv(jtrun*jtmax), jtwvp((jtrun*jtmax/nsizex)+1), stat=ierr)
+              60     1                          if (ierr/= 0) then
+              61     1                              write(6,*) 'mod_spec : allocate fail 2 '
+              62     1                              stop
+              63     1                          end if
+              64                     
+              65                     !CWB2015
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      vornow
+                                   <<< Loop-information  End >>>
+              66        pp   4v                 vornow=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      divnow
+                                   <<< Loop-information  End >>>
+              67        pp   4v                 divnow=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      temnow
+                                   <<< Loop-information  End >>>
+              68        pp   4v                 temnow=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      vormid
+                                   <<< Loop-information  End >>>
+              69        pp   4v                 vormid=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      divmid
+                                   <<< Loop-information  End >>>
+              70        pp   4v                 divmid=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      temmid
+                                   <<< Loop-information  End >>>
+              71        pp   4v                 temmid=0.
+              72                     !byl           qnow=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      vorold
+                                   <<< Loop-information  End >>>
+              73        pp   4v                 vorold=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      divold
+                                   <<< Loop-information  End >>>
+              74        pp   4v                 divold=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      temold
+                                   <<< Loop-information  End >>>
+              75        pp   4v                 temold=0.
+              76                     !byl           qold=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      trefs
+                                   <<< Loop-information  End >>>
+              77        pp   4v                 trefs=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      vorten
+                                   <<< Loop-information  End >>>
+              78        pp   4v                 vorten=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      divten
+                                   <<< Loop-information  End >>>
+              79        pp   4v                 divten=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      temten
+                                   <<< Loop-information  End >>>
+              80        pp   4v                 temten=0.
+              81                     !!         qten=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      hldten
+                                   <<< Loop-information  End >>>
+              82        pp   4v                 hldten=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      plnow
+                                   <<< Loop-information  End >>>
+              83        pp   4v                 plnow=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      plold
+                                   <<< Loop-information  End >>>
+              84        pp   4v                 plold=0.
+              85                     !byl           dsqgeo=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      spgeo
+                                   <<< Loop-information  End >>>
+              86        pp   4v                 spgeo=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2286
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      jtwv
+                                   <<< Loop-information  End >>>
+              87        pp   4v                 jtwv=0.
+              88                     
+              89                                return
+              90                     
+              91                              end subroutine
+              92                     
+              93                              subroutine deallocate_spec_array
+              94                     
+              95                     !byl           deallocate (vornow,divnow,temnow,qnow,             &
+              96                     !byl                       vorold,divold,temold,qold,trefs,       &
+              97                                deallocate (vornow,divnow,temnow,                  &
+              98                                            vormid,divmid,temmid,                  &
+              99                                            vorold,divold,temold,trefs,            &
+             100                                            vorten,divten,temten,hldten,           &
+             101                     !!                     vorten,divten,temten,qten,hldten,      &
+             102                     !byl                       plnow,plold,dsqgeo,spgeo,plten)
+             103                                            plnow,plmid,plold,plten,spgeo)
+             104                     
+             105                                deallocate (jtwv,jtwvp)
+             106                                deallocate (plnowL,ploldL,pltenL)
+             107                     
+             108                                return
+             109                     
+             110                              end subroutine
+             111                     
+             112                           end module spec
+
+ Procedure information
+   Lines      : 112
+   Statements : 50
+   Stack(byte): 4368
+   Prefetch num: 0
+
+ Scoping unit of module : spec
+   Attribute and Cross reference of name
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 5
+     divmid
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 18
+      |(Definition)     : 
+      |(Reference)      : 
+     divnow
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 18
+      |(Definition)     : 
+      |(Reference)      : 
+     divold
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 18
+      |(Definition)     : 
+      |(Reference)      : 
+     divten
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 18
+      |(Definition)     : 
+      |(Reference)      : 
+     hldten
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 18
+      |(Definition)     : 
+      |(Reference)      : 
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 7
+     jtwv
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 13
+      |(Definition)     : 
+      |(Reference)      : 
+     jtwvp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 13
+      |(Definition)     : 
+      |(Reference)      : 
+     param
+      |(Class and Type) : module name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 6
+     plmid
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 24
+      |(Definition)     : 
+      |(Reference)      : 
+     plnow
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 24
+      |(Definition)     : 
+      |(Reference)      : 
+     plnowL
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 27
+      |(Definition)     : 
+      |(Reference)      : 
+     plold
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 24
+      |(Definition)     : 
+      |(Reference)      : 
+     ploldL
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 27
+      |(Definition)     : 
+      |(Reference)      : 
+     plten
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 24
+      |(Definition)     : 
+      |(Reference)      : 
+     pltenL
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 27
+      |(Definition)     : 
+      |(Reference)      : 
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 5  18  24  27
+     spec
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 112
+     spgeo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 24
+      |(Definition)     : 
+      |(Reference)      : 
+     temmid
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 18
+      |(Definition)     : 
+      |(Reference)      : 
+     temnow
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 18
+      |(Definition)     : 
+      |(Reference)      : 
+     temold
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 18
+      |(Definition)     : 
+      |(Reference)      : 
+     temten
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 18
+      |(Definition)     : 
+      |(Reference)      : 
+     trefs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 18
+      |(Definition)     : 
+      |(Reference)      : 
+     vormid
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 18
+      |(Definition)     : 
+      |(Reference)      : 
+     vornow
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 18
+      |(Definition)     : 
+      |(Reference)      : 
+     vorold
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 18
+      |(Definition)     : 
+      |(Reference)      : 
+     vorten
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 18
+      |(Definition)     : 
+      |(Reference)      : 
+
+ Scoping unit of module sub-program : allocate_spec_array
+   Attribute and Cross reference of name
+     allocate_spec_array
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 32
+      |(Reference)      : 
+     divmid
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 36  70
+      |(Reference)      : 
+     divnow
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 36  67
+      |(Reference)      : 
+     divold
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 36  74
+      |(Reference)      : 
+     divten
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 36  79
+      |(Reference)      : 
+     hldten
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 36  82
+      |(Reference)      : 
+     ierr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 34
+      |(Definition)     : 36  59
+      |(Reference)      : 53  60
+     jtmax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 36  36  36  36  36  36  36  36  36  36  36  36  36  36  36  36  36  36  36  59  59
+     jtrun
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 36  36  36  36  36  36  36  36  36  36  36  36  36  36  36  36  36  36  36  59  59
+     jtwv
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 59  87
+      |(Reference)      : 
+     jtwvp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 59
+      |(Reference)      : 
+     levp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 36  36  36  36  36  36  36  36  36  36  36  36  36  36
+     nsizex
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 59
+     plmid
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 36
+      |(Reference)      : 
+     plnow
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 36  83
+      |(Reference)      : 
+     plold
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 36  84
+      |(Reference)      : 
+     plten
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 36
+      |(Reference)      : 
+     spgeo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 36  86
+      |(Reference)      : 
+     temmid
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 36  71
+      |(Reference)      : 
+     temnow
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 36  68
+      |(Reference)      : 
+     temold
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 36  75
+      |(Reference)      : 
+     temten
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 36  80
+      |(Reference)      : 
+     trefs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 36  77
+      |(Reference)      : 
+     vormid
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 36  69
+      |(Reference)      : 
+     vornow
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 36  66
+      |(Reference)      : 
+     vorold
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 36  73
+      |(Reference)      : 
+     vorten
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 36  78
+      |(Reference)      : 
+
+ Scoping unit of module sub-program : deallocate_spec_array
+   Attribute and Cross reference of name
+     deallocate_spec_array
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 93
+      |(Reference)      : 
+     divmid
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 97
+      |(Reference)      : 
+     divnow
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 97
+      |(Reference)      : 
+     divold
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 97
+      |(Reference)      : 
+     divten
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 97
+      |(Reference)      : 
+     hldten
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 97
+      |(Reference)      : 
+     jtwv
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 105
+      |(Reference)      : 
+     jtwvp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 105
+      |(Reference)      : 
+     plmid
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 97
+      |(Reference)      : 
+     plnow
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 97
+      |(Reference)      : 
+     plnowL
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 106
+      |(Reference)      : 
+     plold
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 97
+      |(Reference)      : 
+     ploldL
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 106
+      |(Reference)      : 
+     plten
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 97
+      |(Reference)      : 
+     pltenL
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 106
+      |(Reference)      : 
+     spgeo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 97
+      |(Reference)      : 
+     temmid
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 97
+      |(Reference)      : 
+     temnow
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 97
+      |(Reference)      : 
+     temold
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 97
+      |(Reference)      : 
+     temten
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 97
+      |(Reference)      : 
+     trefs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 97
+      |(Reference)      : 
+     vormid
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 97
+      |(Reference)      : 
+     vornow
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 97
+      |(Reference)      : 
+     vorold
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 97
+      |(Reference)      : 
+     vorten
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 97
+      |(Reference)      : 
+
+ Total information
+   Procedures       : 1
+   Total lines      : 112
+   Total statements : 50
+   Total stack(byte): 4368
+   Total prefetch num: 0
+

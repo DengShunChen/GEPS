@@ -1,0 +1,777 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar  7 10:21:02 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm_helio
+   Source file       : qsatq.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "qsatq"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine qsatq (imjm,tqs,pqs,qss)
+               2                     !
+               3                     !  vectorized saturation specific humidity subroutine
+               4                     !  algorithm is table-lookup.
+               5                     !
+               6                     !  formal parameters:
+               7                     !
+               8                     ! **** input ****
+               9                     !
+              10                     !  tqs:  input temperatures
+              11                     !  pqs:  input pressures
+              12                     !  imjm:  number of elements in input arrays
+              13                     !
+              14                     ! **** output ****
+              15                     !
+              16                     !  qss:  output saturation specific humidity
+              17                     !
+              18                           implicit  none
+              19                     
+              20                           integer   imjm,i,ic
+              21                     
+              22                           real      tqs(imjm),pqs(imjm),qss(imjm)
+              23                           real      vpsat(191)
+              24                           real      tem,epsm1,t1,qqq,fpvs
+              25                     !
+              26                     !
+              27                     ! est1 are the saturated vapor pressure over ice for the temperatures
+              28                     !      -90.0 to -40.0 degrees c in one degree increments.
+              29                     ! est3 are the saturated vapor pressures over water for the temperatures
+              30                     !      0 to 100 degrees c in one degree increments.
+              31                     ! est2 are the saturated vapor pressures over water and ice for the
+              32                     !      temperatures -39 to -1 degeegs c linearly interpolated assuming
+              33                     !      total ice at -40.0 degrees and total water at 0 degrees.
+              34                     !
+              35                     ! the saturated values are obtained from the smithsonian meteorological
+              36                     ! tables, sixth revised edition (1971) page 350 using the goff-gratch
+              37                     ! formulation for saturated vapor pressure.
+              38                     !
+              39                           data vpsat/                                                       &
+              40                               9.67165e-05,  1.15983e-04,  1.38819e-04,  1.65835e-04,        &
+              41                               1.97736e-04,  2.35339e-04,  2.79584e-04,  3.31553e-04,        &
+              42                               3.92489e-04,  4.63820e-04,  5.47177e-04,  6.44430e-04,        &
+              43                               7.57710e-04,  8.89450e-04,  1.04242e-03,  1.21975e-03,        &
+              44                               1.42503e-03,  1.66230e-03,  1.93614e-03,  2.25172e-03,        &
+              45                               2.61488e-03,  3.03222e-03,  3.51113e-03,  4.05995e-03,        &
+              46                               4.68804e-03,  5.40589e-03,  6.22523e-03,  7.15922e-03,        &
+              47                               8.22253e-03,  9.43153e-03,  1.08045e-02,  1.23617e-02,        &
+              48                               1.41258e-02,  1.61219e-02,  1.83779e-02,  2.09244e-02,        &
+              49                               2.37959e-02,  2.70300e-02,  3.06684e-02,  3.47573e-02,        &
+              50                               3.93475e-02,  4.44947e-02,  5.02607e-02,  5.67130e-02,        &
+              51                               6.39258e-02,  7.19807e-02,  8.09670e-02,  9.09823e-02,        &
+              52                               1.02134e-01,  1.14538e-01,  1.28323e-01,                      &
+              53                     !
+              54                                             1.45280e-01,  1.64189e-01,  1.85241e-01,        &
+              55                               2.08643e-01,  2.34615e-01,  2.63398e-01,  2.95248e-01,        &
+              56                               3.30441e-01,  3.69270e-01,  4.12053e-01,  4.59124e-01,        &
+              57                               5.10843e-01,  5.67591e-01,  6.29773e-01,  6.97819e-01,        &
+              58                               7.72185e-01,  8.53352e-01,  9.41827e-01,  1.03814e+00,        &
+              59                               1.14287e+00,  1.25659e+00,  1.37992e+00,  1.51352e+00,        &
+              60                               1.65806e+00,  1.81424e+00,  1.98279e+00,  2.16447e+00,        &
+              61                               2.36006e+00,  2.57039e+00,  2.79628e+00,  3.03858e+00,        &
+              62                               3.29819e+00,  3.57599e+00,  3.87289e+00,  4.18982e+00,        &
+              63                               4.52773e+00,  4.88753e+00,  5.27019e+00,  5.67664e+00,        &
+              64                     !
+              65                               6.10780e+00,  6.56617e+00,  7.05475e+00,  7.57526e+00,        &
+              66                               8.12946e+00,  8.71922e+00,  9.34647e+00,  1.00132e+01,        &
+              67                               1.07216e+01,  1.14739e+01,  1.22723e+01,  1.31192e+01,        &
+              68                               1.40172e+01,  1.49688e+01,  1.59767e+01,  1.70438e+01,        &
+              69                               1.81729e+01,  1.93672e+01,  2.06298e+01,  2.19639e+01,        &
+              70                               2.33729e+01,  2.48605e+01,  2.64302e+01,  2.80858e+01,        &
+              71                               2.98314e+01,  3.16708e+01,  3.36085e+01,  3.56487e+01,        &
+              72                               3.77959e+01,  4.00548e+01,  4.24303e+01,  4.49274e+01,        &
+              73                               4.75511e+01,  5.03069e+01,  5.32001e+01,  5.62365e+01,        &
+              74                               5.94220e+01,  6.27625e+01,  6.62643e+01,  6.99337e+01,        &
+              75                     !
+              76                               7.37774e+01,  7.78022e+01,  8.20150e+01,  8.64231e+01,        &
+              77                               9.10338e+01,  9.58548e+01,  1.00894e+02,  1.06159e+02,        &
+              78                               1.11659e+02,  1.17401e+02,  1.23395e+02,  1.29650e+02,        &
+              79                               1.36174e+02,  1.42978e+02,  1.50070e+02,  1.57461e+02,        &
+              80                               1.65161e+02,  1.73180e+02,  1.81529e+02,  1.90218e+02,        &
+              81                               1.99260e+02,  2.08665e+02,  2.18446e+02,  2.28613e+02,        &
+              82                               2.39180e+02,  2.50159e+02,  2.61562e+02,  2.73404e+02,        &
+              83                               2.85696e+02,  2.98453e+02,  3.11689e+02,  3.25418e+02,        &
+              84                               3.39655e+02,  3.54414e+02,  3.69711e+02,  3.85560e+02,        &
+              85                               4.01979e+02,  4.18982e+02,  4.36586e+02,  4.54808e+02,        &
+              86                     !
+              87                               4.73665e+02,  4.93175e+02,  5.13354e+02,  5.34221e+02,        &
+              88                               5.55795e+02,  5.78093e+02,  6.01135e+02,  6.24940e+02,        &
+              89                               6.49527e+02,  6.74918e+02,  7.01131e+02,  7.28188e+02,        &
+              90                               7.56110e+02,  7.84918e+02,  8.14633e+02,  8.45278e+02,        &
+              91                               8.76876e+02,  9.09448e+02,  9.43018e+02,  9.77609e+02,        &
+              92                               1.01325e+03/
+              93                     !
+              94                           tem = 1.0/1.622
+              95                           epsm1=0.622-1.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 517
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.53, ITR: 48, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pqs, qss, (unknown)
+                                   <<< Loop-information  End >>>
+              96     1   m   2v            do 100 i=1,imjm
+              97     1               ! cwb qsatq
+              98     1               !      t1 = max(1.00001, min(190.999, tqs(i)-182.16))
+              99     1               !      ic = int(t1)
+             100     1               !      qqq = min(tem*pqs(i), vpsat(ic)+(vpsat(1+ic)-vpsat(ic))           &
+             101     1               !                                     *(t1-float(ic)))
+             102     1               ! fpvs qpv_sat(in unit pa)
+             103     1   m   2s            qqq = min ( pqs(i) , 0.01*fpvs(tqs(i)) )
+             104     1               !
+             105     1               !      qss(i) = 0.622*qqq/(pqs(i)-qqq)
+             106     1   p   2v            qss(i) = 0.622*qqq/(pqs(i)+epsm1*qqq)
+             107     1   p   2v        100 continue
+             108                           return
+             109                           end
+
+ Procedure information
+   Lines      : 109
+   Statements : 15
+   Stack(byte): 784
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : qsatq
+   Attribute and Cross reference of name
+     epsm1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 24
+      |(Definition)     : 95
+      |(Reference)      : 106
+     fpvs
+      |(Class and Type) : external function name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 103
+     fpvs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 24
+      |(Definition)     : 
+      |(Reference)      : 
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 20
+      |(Definition)     : 96
+      |(Reference)      : 103  103  106  106
+     ic
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 20
+      |(Definition)     : 
+      |(Reference)      : 
+     imjm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  20
+      |(Definition)     : 
+      |(Reference)      : 22  22  22  96
+     min
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 103
+     pqs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  22
+      |(Definition)     : 
+      |(Reference)      : 103  106
+     qqq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 24
+      |(Definition)     : 103
+      |(Reference)      : 106  106
+     qsatq
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     qss
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  22
+      |(Definition)     : 106
+      |(Reference)      : 
+     t1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 24
+      |(Definition)     : 
+      |(Reference)      : 
+     tem
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 24
+      |(Definition)     : 94
+      |(Reference)      : 
+     tqs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  22
+      |(Definition)     : 103
+      |(Reference)      : 
+     vpsat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, initialized
+      |(Declaration)    : 23  39
+      |(Definition)     : 
+      |(Reference)      : 
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+        100  execution     (Definition) 107  
+                           (Reference)  96
+
+ External subroutine subprogram "qsatq_2d"
+  (inc)(line-no.)(nest)(optimize)
+             110                     
+             111                           subroutine qsatq_2d (nxj,im,km,tqs,pqs,qss)
+             112                     !
+             113                     !  vectorized saturation specific humidity subroutine
+             114                     !  algorithm is table-lookup.
+             115                     !
+             116                     !  formal parameters:
+             117                     !
+             118                     ! **** input ****
+             119                     !
+             120                     !  tqs:  input temperatures
+             121                     !  pqs:  input pressures
+             122                     !  imjm:  number of elements in input arrays
+             123                     !
+             124                     ! **** output ****
+             125                     !
+             126                     !  qss:  output saturation specific humidity
+             127                     !
+             128                           implicit  none
+             129                     
+             130                           integer   nxj,im,km,k,i,ic
+             131                     
+             132                           real      tqs(im,km),pqs(im,km),qss(im,km)
+             133                           real      vpsat(191)
+             134                     
+             135                           real      tem,epsm1,t1,qqq,fpvs
+             136                     !
+             137                     !
+             138                     ! est1 are the saturated vapor pressure over ice for the temperatures
+             139                     !      -90.0 to -40.0 degrees c in one degree increments.
+             140                     ! est3 are the saturated vapor pressures over water for the temperatures
+             141                     !      0 to 100 degrees c in one degree increments.
+             142                     ! est2 are the saturated vapor pressures over water and ice for the
+             143                     !      temperatures -39 to -1 degeegs c linearly interpolated assuming
+             144                     !      total ice at -40.0 degrees and total water at 0 degrees.
+             145                     !
+             146                     ! the saturated values are obtained from the smithsonian meteorological
+             147                     ! tables, sixth revised edition (1971) page 350 using the goff-gratch
+             148                     ! formulation for saturated vapor pressure.
+             149                     !
+             150                           data vpsat/                                                       &
+             151                               9.67165e-05,  1.15983e-04,  1.38819e-04,  1.65835e-04,        &
+             152                               1.97736e-04,  2.35339e-04,  2.79584e-04,  3.31553e-04,        &
+             153                               3.92489e-04,  4.63820e-04,  5.47177e-04,  6.44430e-04,        &
+             154                               7.57710e-04,  8.89450e-04,  1.04242e-03,  1.21975e-03,        &
+             155                               1.42503e-03,  1.66230e-03,  1.93614e-03,  2.25172e-03,        &
+             156                               2.61488e-03,  3.03222e-03,  3.51113e-03,  4.05995e-03,        &
+             157                               4.68804e-03,  5.40589e-03,  6.22523e-03,  7.15922e-03,        &
+             158                               8.22253e-03,  9.43153e-03,  1.08045e-02,  1.23617e-02,        &
+             159                               1.41258e-02,  1.61219e-02,  1.83779e-02,  2.09244e-02,        &
+             160                               2.37959e-02,  2.70300e-02,  3.06684e-02,  3.47573e-02,        &
+             161                               3.93475e-02,  4.44947e-02,  5.02607e-02,  5.67130e-02,        &
+             162                               6.39258e-02,  7.19807e-02,  8.09670e-02,  9.09823e-02,        &
+             163                               1.02134e-01,  1.14538e-01,  1.28323e-01,                      &
+             164                     !
+             165                                             1.45280e-01,  1.64189e-01,  1.85241e-01,        &
+             166                               2.08643e-01,  2.34615e-01,  2.63398e-01,  2.95248e-01,        &
+             167                               3.30441e-01,  3.69270e-01,  4.12053e-01,  4.59124e-01,        &
+             168                               5.10843e-01,  5.67591e-01,  6.29773e-01,  6.97819e-01,        &
+             169                               7.72185e-01,  8.53352e-01,  9.41827e-01,  1.03814e+00,        &
+             170                               1.14287e+00,  1.25659e+00,  1.37992e+00,  1.51352e+00,        &
+             171                               1.65806e+00,  1.81424e+00,  1.98279e+00,  2.16447e+00,        &
+             172                               2.36006e+00,  2.57039e+00,  2.79628e+00,  3.03858e+00,        &
+             173                               3.29819e+00,  3.57599e+00,  3.87289e+00,  4.18982e+00,        &
+             174                               4.52773e+00,  4.88753e+00,  5.27019e+00,  5.67664e+00,        &
+             175                     !
+             176                               6.10780e+00,  6.56617e+00,  7.05475e+00,  7.57526e+00,        &
+             177                               8.12946e+00,  8.71922e+00,  9.34647e+00,  1.00132e+01,        &
+             178                               1.07216e+01,  1.14739e+01,  1.22723e+01,  1.31192e+01,        &
+             179                               1.40172e+01,  1.49688e+01,  1.59767e+01,  1.70438e+01,        &
+             180                               1.81729e+01,  1.93672e+01,  2.06298e+01,  2.19639e+01,        &
+             181                               2.33729e+01,  2.48605e+01,  2.64302e+01,  2.80858e+01,        &
+             182                               2.98314e+01,  3.16708e+01,  3.36085e+01,  3.56487e+01,        &
+             183                               3.77959e+01,  4.00548e+01,  4.24303e+01,  4.49274e+01,        &
+             184                               4.75511e+01,  5.03069e+01,  5.32001e+01,  5.62365e+01,        &
+             185                               5.94220e+01,  6.27625e+01,  6.62643e+01,  6.99337e+01,        &
+             186                     !
+             187                               7.37774e+01,  7.78022e+01,  8.20150e+01,  8.64231e+01,        &
+             188                               9.10338e+01,  9.58548e+01,  1.00894e+02,  1.06159e+02,        &
+             189                               1.11659e+02,  1.17401e+02,  1.23395e+02,  1.29650e+02,        &
+             190                               1.36174e+02,  1.42978e+02,  1.50070e+02,  1.57461e+02,        &
+             191                               1.65161e+02,  1.73180e+02,  1.81529e+02,  1.90218e+02,        &
+             192                               1.99260e+02,  2.08665e+02,  2.18446e+02,  2.28613e+02,        &
+             193                               2.39180e+02,  2.50159e+02,  2.61562e+02,  2.73404e+02,        &
+             194                               2.85696e+02,  2.98453e+02,  3.11689e+02,  3.25418e+02,        &
+             195                               3.39655e+02,  3.54414e+02,  3.69711e+02,  3.85560e+02,        &
+             196                               4.01979e+02,  4.18982e+02,  4.36586e+02,  4.54808e+02,        &
+             197                     !
+             198                               4.73665e+02,  4.93175e+02,  5.13354e+02,  5.34221e+02,        &
+             199                               5.55795e+02,  5.78093e+02,  6.01135e+02,  6.24940e+02,        &
+             200                               6.49527e+02,  6.74918e+02,  7.01131e+02,  7.28188e+02,        &
+             201                               7.56110e+02,  7.84918e+02,  8.14633e+02,  8.45278e+02,        &
+             202                               8.76876e+02,  9.09448e+02,  9.43018e+02,  9.77609e+02,        &
+             203                               1.01325e+03/
+             204                     !
+             205                           tem = 1.0/1.622
+             206                           epsm1=0.622-1.
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pqs, qss, (unknown)
+                                   <<< Loop-information  End >>>
+             207     1                     do 100 k=1,km
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 517
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.53, ITR: 48, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pqs, qss, (unknown)
+                                   <<< Loop-information  End >>>
+             208     2   m   2v            do 100 i=1,nxj
+             209     2               ! cwb qsatq
+             210     2               !      t1 = max(1.00001, min(190.999, tqs(i,k)-182.16))
+             211     2               !      ic = int(t1)
+             212     2               !      qqq = min(tem*pqs(i,k), vpsat(ic)+(vpsat(1+ic)-vpsat(ic))         &
+             213     2               !                                     *(t1-float(ic)))
+             214     2               ! fpvs qpv_sat(in unit pa)
+             215     2   m   2s            qqq = min ( pqs(i,k) , 0.01*fpvs(tqs(i,k)) )
+             216     2               !
+             217     2               !      qss(i,k) = 0.622*qqq/(pqs(i,k)-qqq)
+             218     2   p   2v            qss(i,k) = 0.622*qqq/(pqs(i,k)+epsm1*qqq)
+             219     1   p   2v        100 continue
+             220                           return
+             221                           end
+
+ Procedure information
+   Lines      : 112
+   Statements : 16
+   Stack(byte): 800
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : qsatq_2d
+   Attribute and Cross reference of name
+     epsm1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 135
+      |(Definition)     : 206
+      |(Reference)      : 218
+     fpvs
+      |(Class and Type) : external function name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 215
+     fpvs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 135
+      |(Definition)     : 
+      |(Reference)      : 
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 130
+      |(Definition)     : 208
+      |(Reference)      : 215  215  218  218
+     ic
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 130
+      |(Definition)     : 
+      |(Reference)      : 
+     im
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 111  130
+      |(Definition)     : 
+      |(Reference)      : 132  132  132
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 130
+      |(Definition)     : 207
+      |(Reference)      : 215  215  218  218
+     km
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 111  130
+      |(Definition)     : 
+      |(Reference)      : 132  132  132  207
+     min
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 215
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 111  130
+      |(Definition)     : 
+      |(Reference)      : 208
+     pqs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 111  132
+      |(Definition)     : 
+      |(Reference)      : 215  218
+     qqq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 135
+      |(Definition)     : 215
+      |(Reference)      : 218  218
+     qsatq_2d
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 111
+      |(Reference)      : 
+     qss
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 111  132
+      |(Definition)     : 218
+      |(Reference)      : 
+     t1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 135
+      |(Definition)     : 
+      |(Reference)      : 
+     tem
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 135
+      |(Definition)     : 205
+      |(Reference)      : 
+     tqs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 111  132
+      |(Definition)     : 215
+      |(Reference)      : 
+     vpsat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, initialized
+      |(Declaration)    : 133  150
+      |(Definition)     : 
+      |(Reference)      : 
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+        100  execution     (Definition) 219  
+                           (Reference)  207  208
+
+ External subroutine subprogram "qsatq_cwb"
+  (inc)(line-no.)(nest)(optimize)
+             222                     !
+             223                           subroutine qsatq_cwb (imjm,tqs,pqs,qqq)
+             224                     !
+             225                     !  vectorized saturation specific humidity subroutine
+             226                     !  algorithm is table-lookup.
+             227                     !
+             228                     !  formal parameters:
+             229                     !
+             230                     ! **** input ****
+             231                     !
+             232                     !  tqs:  input temperatures
+             233                     !  pqs:  input pressures
+             234                     !  imjm:  number of elements in input arrays
+             235                     !
+             236                     ! **** output ****
+             237                     !
+             238                     !  qss:  output saturation specific humidity
+             239                     !
+             240                           implicit  none
+             241                     
+             242                           integer   imjm,i,ic
+             243                     
+             244                           real      tqs(imjm),pqs(imjm),qss(imjm)
+             245                           real      vpsat(191)
+             246                           real      tem,epsm1,t1,qqq(imjm),fpvs
+             247                     !
+             248                     !
+             249                     ! est1 are the saturated vapor pressure over ice for the temperatures
+             250                     !      -90.0 to -40.0 degrees c in one degree increments.
+             251                     ! est3 are the saturated vapor pressures over water for the temperatures
+             252                     !      0 to 100 degrees c in one degree increments.
+             253                     ! est2 are the saturated vapor pressures over water and ice for the
+             254                     !      temperatures -39 to -1 degeegs c linearly interpolated assuming
+             255                     !      total ice at -40.0 degrees and total water at 0 degrees.
+             256                     !
+             257                     ! the saturated values are obtained from the smithsonian meteorological
+             258                     ! tables, sixth revised edition (1971) page 350 using the goff-gratch
+             259                     ! formulation for saturated vapor pressure.
+             260                     !
+             261                           data vpsat/                                                       &
+             262                               9.67165e-05,  1.15983e-04,  1.38819e-04,  1.65835e-04,        &
+             263                               1.97736e-04,  2.35339e-04,  2.79584e-04,  3.31553e-04,        &
+             264                               3.92489e-04,  4.63820e-04,  5.47177e-04,  6.44430e-04,        &
+             265                               7.57710e-04,  8.89450e-04,  1.04242e-03,  1.21975e-03,        &
+             266                               1.42503e-03,  1.66230e-03,  1.93614e-03,  2.25172e-03,        &
+             267                               2.61488e-03,  3.03222e-03,  3.51113e-03,  4.05995e-03,        &
+             268                               4.68804e-03,  5.40589e-03,  6.22523e-03,  7.15922e-03,        &
+             269                               8.22253e-03,  9.43153e-03,  1.08045e-02,  1.23617e-02,        &
+             270                               1.41258e-02,  1.61219e-02,  1.83779e-02,  2.09244e-02,        &
+             271                               2.37959e-02,  2.70300e-02,  3.06684e-02,  3.47573e-02,        &
+             272                               3.93475e-02,  4.44947e-02,  5.02607e-02,  5.67130e-02,        &
+             273                               6.39258e-02,  7.19807e-02,  8.09670e-02,  9.09823e-02,        &
+             274                               1.02134e-01,  1.14538e-01,  1.28323e-01,                      &
+             275                     !
+             276                                             1.45280e-01,  1.64189e-01,  1.85241e-01,        &
+             277                               2.08643e-01,  2.34615e-01,  2.63398e-01,  2.95248e-01,        &
+             278                               3.30441e-01,  3.69270e-01,  4.12053e-01,  4.59124e-01,        &
+             279                               5.10843e-01,  5.67591e-01,  6.29773e-01,  6.97819e-01,        &
+             280                               7.72185e-01,  8.53352e-01,  9.41827e-01,  1.03814e+00,        &
+             281                               1.14287e+00,  1.25659e+00,  1.37992e+00,  1.51352e+00,        &
+             282                               1.65806e+00,  1.81424e+00,  1.98279e+00,  2.16447e+00,        &
+             283                               2.36006e+00,  2.57039e+00,  2.79628e+00,  3.03858e+00,        &
+             284                               3.29819e+00,  3.57599e+00,  3.87289e+00,  4.18982e+00,        &
+             285                               4.52773e+00,  4.88753e+00,  5.27019e+00,  5.67664e+00,        &
+             286                     !
+             287                               6.10780e+00,  6.56617e+00,  7.05475e+00,  7.57526e+00,        &
+             288                               8.12946e+00,  8.71922e+00,  9.34647e+00,  1.00132e+01,        &
+             289                               1.07216e+01,  1.14739e+01,  1.22723e+01,  1.31192e+01,        &
+             290                               1.40172e+01,  1.49688e+01,  1.59767e+01,  1.70438e+01,        &
+             291                               1.81729e+01,  1.93672e+01,  2.06298e+01,  2.19639e+01,        &
+             292                               2.33729e+01,  2.48605e+01,  2.64302e+01,  2.80858e+01,        &
+             293                               2.98314e+01,  3.16708e+01,  3.36085e+01,  3.56487e+01,        &
+             294                               3.77959e+01,  4.00548e+01,  4.24303e+01,  4.49274e+01,        &
+             295                               4.75511e+01,  5.03069e+01,  5.32001e+01,  5.62365e+01,        &
+             296                               5.94220e+01,  6.27625e+01,  6.62643e+01,  6.99337e+01,        &
+             297                     !
+             298                               7.37774e+01,  7.78022e+01,  8.20150e+01,  8.64231e+01,        &
+             299                               9.10338e+01,  9.58548e+01,  1.00894e+02,  1.06159e+02,        &
+             300                               1.11659e+02,  1.17401e+02,  1.23395e+02,  1.29650e+02,        &
+             301                               1.36174e+02,  1.42978e+02,  1.50070e+02,  1.57461e+02,        &
+             302                               1.65161e+02,  1.73180e+02,  1.81529e+02,  1.90218e+02,        &
+             303                               1.99260e+02,  2.08665e+02,  2.18446e+02,  2.28613e+02,        &
+             304                               2.39180e+02,  2.50159e+02,  2.61562e+02,  2.73404e+02,        &
+             305                               2.85696e+02,  2.98453e+02,  3.11689e+02,  3.25418e+02,        &
+             306                               3.39655e+02,  3.54414e+02,  3.69711e+02,  3.85560e+02,        &
+             307                               4.01979e+02,  4.18982e+02,  4.36586e+02,  4.54808e+02,        &
+             308                     !
+             309                               4.73665e+02,  4.93175e+02,  5.13354e+02,  5.34221e+02,        &
+             310                               5.55795e+02,  5.78093e+02,  6.01135e+02,  6.24940e+02,        &
+             311                               6.49527e+02,  6.74918e+02,  7.01131e+02,  7.28188e+02,        &
+             312                               7.56110e+02,  7.84918e+02,  8.14633e+02,  8.45278e+02,        &
+             313                               8.76876e+02,  9.09448e+02,  9.43018e+02,  9.77609e+02,        &
+             314                               1.01325e+03/
+             315                     !
+             316                           tem = 1.0/1.622
+             317                           epsm1=0.622-1.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 232
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.90, ITR: 96, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pqs, tqs, qqq
+                                   <<< Loop-information  End >>>
+             318     1  pp    v            do 100 i=1,imjm
+             319     1   p    v            t1 = max(1.00001, min(190.999, tqs(i)-182.16))
+             320     1   p    v            ic = int(t1)
+             321     1   p    v            qqq(i) = min(tem*pqs(i), vpsat(ic)+(vpsat(1+ic)-vpsat(ic))        &
+             322     1                                                    *(t1-float(ic)))
+             323     1               !      qss(i) = 0.622*qqq/(pqs(i)-qqq)
+             324     1               !      qss(i) = 0.622*qqq/(pqs(i)+epsm1*qqq)
+             325     1   p    v        100 continue
+             326                           return
+             327                           end
+
+ Procedure information
+   Lines      : 106
+   Statements : 16
+   Stack(byte): 768
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : qsatq_cwb
+   Attribute and Cross reference of name
+     epsm1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 246
+      |(Definition)     : 317
+      |(Reference)      : 
+     float
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 321
+     fpvs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 246
+      |(Definition)     : 
+      |(Reference)      : 
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 242
+      |(Definition)     : 318
+      |(Reference)      : 319  321  321
+     ic
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 242
+      |(Definition)     : 320
+      |(Reference)      : 321  321  321  321
+     imjm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 223  242
+      |(Definition)     : 
+      |(Reference)      : 244  244  244  246  318
+     int
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 320
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 319
+     min
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 319  321
+     pqs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 223  244
+      |(Definition)     : 
+      |(Reference)      : 321
+     qqq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 223  246
+      |(Definition)     : 321
+      |(Reference)      : 
+     qsatq_cwb
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 223
+      |(Reference)      : 
+     qss
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 244
+      |(Definition)     : 
+      |(Reference)      : 
+     t1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 246
+      |(Definition)     : 319
+      |(Reference)      : 320  321
+     tem
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 246
+      |(Definition)     : 316
+      |(Reference)      : 321
+     tqs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 223  244
+      |(Definition)     : 
+      |(Reference)      : 319
+     vpsat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, initialized
+      |(Declaration)    : 245  261
+      |(Definition)     : 
+      |(Reference)      : 321  321  321
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+        100  execution     (Definition) 325  
+                           (Reference)  318
+
+ Total information
+   Procedures       : 3
+   Total lines      : 327
+   Total statements : 47
+   Total stack(byte): 2352
+   Total prefetch num: 0
+

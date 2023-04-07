@@ -1,0 +1,508 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar 14 13:21:04 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_helio
+   Source file       : mpe_transpose_rs1.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb157/CWBSUMc2/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "mpe_transpose_rs1"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine mpe_transpose_rs1(sbuf,rbuf,n,m,lev,nsize,comm)
+               2                     !
+               3                           use mpi
+               4                     
+               5                           implicit none
+               6                           integer  n,m,lev,nsize,i,j,k,ii,len_tr,ierr,comm
+               7                     
+               8                           real sbuf (n,nsize,m,lev), rbuf (n,m*nsize,lev)
+               9                     #ifdef MPISP
+              10                     #   ifdef UNIFY_ONLY
+              11                           real*8 swork(lev,n,m,nsize), rwork(lev,n,m*nsize)
+              12                     #   else
+              13                           real*4 swork(lev,n,m,nsize), rwork(lev,n,m*nsize)
+              14                     #   endif
+              15                     #else
+              16                           real*8 swork(lev,n,m,nsize), rwork(lev,n,m*nsize)
+              17                     #endif
+              18                     !
+              19                           len_tr=n*m
+              20                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+              21     1  pp                 do j=1,m
+              22     2   p                 do ii=1,nsize
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    INTERCHANGED(nest: 4)
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 80, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sbuf
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 6
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+              23     3   p    v            do i=1,n
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    INTERCHANGED(nest: 3)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sbuf
+                                   <<< Loop-information  End >>>
+              24     4   p   2             do k=1,lev
+              25     4   p   2v              swork(k,i,j,ii)=sbuf(i,ii,j,k)
+              26     4   p   2             enddo
+              27     3   p   2v            enddo
+              28     2   p                 enddo
+              29     1   p                 enddo
+              30                     !
+              31                     #ifdef MPISP
+              32                     #   ifdef UNIFY_ONLY
+              33                           call MPI_ALLTOALL( SWORK, LEN_TR*LEV, MPI_REAL8,    &
+              34                                              RWORK, LEN_TR*LEV, MPI_REAL8,    &
+              35                                              comm,              IERR )
+              36                     #   else
+              37                           call MPI_ALLTOALL( SWORK, LEN_TR*LEV, MPI_REAL4,    &
+              38                                              RWORK, LEN_TR*LEV, MPI_REAL4,    &
+              39                                              comm,              IERR )
+              40                     #   endif
+              41                     #else
+              42                           call MPI_ALLTOALL( SWORK, LEN_TR*LEV, MPI_REAL8,    &
+              43                                              RWORK, LEN_TR*LEV, MPI_REAL8,    &
+              44                                              comm,              IERR )
+              45                     #endif
+              46                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    INTERCHANGED(nest: 2)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rbuf
+                                   <<< Loop-information  End >>>
+              47     1   p                 do k=1,lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    INTERCHANGED(nest: 1)
+                                   <<< Loop-information  End >>>
+              48     2  pp                 do j=1,m*nsize
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.16, ITR: 16, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rbuf
+                                   <<< Loop-information  End >>>
+              49     3   p   4             do i=1,n
+              50     3   p   4               rbuf(i,j,k)=rwork(k,i,j)
+              51     3   p   4             enddo
+              52     2   p                 enddo
+              53     1   p                 enddo
+              54                     !
+              55                           return
+              56                           end
+
+ Procedure information
+   Lines      : 56
+   Statements : 26
+   Stack(byte): 1392
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : mpe_transpose_rs1
+   Attribute and Cross reference of name
+     comm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  6
+      |(Definition)     : 
+      |(Reference)      : 42
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 6
+      |(Definition)     : 23  49
+      |(Reference)      : 25  25  50  50
+     ierr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 6
+      |(Definition)     : 42
+      |(Reference)      : 
+     ii
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 6
+      |(Definition)     : 22
+      |(Reference)      : 25  25
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 6
+      |(Definition)     : 21  48
+      |(Reference)      : 25  25  50  50
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 6
+      |(Definition)     : 24  47
+      |(Reference)      : 25  25  50  50
+     len_tr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 6
+      |(Definition)     : 19
+      |(Reference)      : 42  42
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  6
+      |(Definition)     : 
+      |(Reference)      : 8  8  16  16  24  42  42  47
+     m
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  6
+      |(Definition)     : 
+      |(Reference)      : 8  8  16  16  19  21  48
+     mpe_transpose_rs1
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     mpi
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 3
+     mpi_alltoall
+      |(Class and Type) : generic name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 42
+     mpi_real8
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 42  42
+     n
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  6
+      |(Definition)     : 
+      |(Reference)      : 8  8  16  16  19  23  49
+     nsize
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  6
+      |(Definition)     : 
+      |(Reference)      : 8  8  16  16  22  48
+     rbuf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  8
+      |(Definition)     : 50
+      |(Reference)      : 
+     rwork
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 16
+      |(Definition)     : 42
+      |(Reference)      : 50
+     sbuf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  8
+      |(Definition)     : 
+      |(Reference)      : 25
+     swork
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 16
+      |(Definition)     : 25
+      |(Reference)      : 42
+
+ External subroutine subprogram "mpe_transpose_rs1_sp"
+  (inc)(line-no.)(nest)(optimize)
+              57                     !------------------------------------------------------------
+              58                     !CWB2021 for single precision test
+              59                           subroutine mpe_transpose_rs1_sp(sbuf,rbuf,n,m,lev,nsize,comm)
+              60                     !
+              61                           use const, only : RTYPE,MPI_RTYPE
+              62                           use mpi
+              63                     
+              64                           implicit none
+              65                           integer  n,m,lev,nsize,i,j,k,ii,len_tr,ierr,comm
+              66                     
+              67                           real(kind=RTYPE) sbuf(n,nsize,m,lev),rbuf(n,m*nsize,lev)
+              68                           real(kind=RTYPE) swork(lev,n,m,nsize),rwork(lev,n,m*nsize)
+              69                     
+              70                           len_tr=n*m
+              71                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+              72     1  pp                 do j=1,m
+              73     2   p                 do ii=1,nsize
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    INTERCHANGED(nest: 4)
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 80, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sbuf
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 6
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+              74     3   p    v            do i=1,n
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    INTERCHANGED(nest: 3)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sbuf
+                                   <<< Loop-information  End >>>
+              75     4   p   2             do k=1,lev
+              76     4   p   2v              swork(k,i,j,ii)=sbuf(i,ii,j,k)
+              77     4   p   2             enddo
+              78     3   p   2v            enddo
+              79     2   p                 enddo
+              80     1   p                 enddo
+              81                     
+              82                           call MPI_ALLTOALL( SWORK, LEN_TR*LEV, MPI_RTYPE,    &
+              83                                              RWORK, LEN_TR*LEV, MPI_RTYPE,    &
+              84                                              comm,              IERR )
+              85                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    INTERCHANGED(nest: 2)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rbuf
+                                   <<< Loop-information  End >>>
+              86     1   p                 do k=1,lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    INTERCHANGED(nest: 1)
+                                   <<< Loop-information  End >>>
+              87     2  pp                 do j=1,m*nsize
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.16, ITR: 16, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rbuf
+                                   <<< Loop-information  End >>>
+              88     3   p   4             do i=1,n
+              89     3   p   4               rbuf(i,j,k)=rwork(k,i,j)
+              90     3   p   4             enddo
+              91     2   p                 enddo
+              92     1   p                 enddo
+              93                     !
+              94                           return
+              95                           end
+
+ Procedure information
+   Lines      : 39
+   Statements : 27
+   Stack(byte): 1424
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : mpe_transpose_rs1_sp
+   Attribute and Cross reference of name
+     comm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 59  65
+      |(Definition)     : 
+      |(Reference)      : 82
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 61
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 74  88
+      |(Reference)      : 76  76  89  89
+     ierr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 82
+      |(Reference)      : 
+     ii
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 73
+      |(Reference)      : 76  76
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 72  87
+      |(Reference)      : 76  76  89  89
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 75  86
+      |(Reference)      : 76  76  89  89
+     len_tr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 70
+      |(Reference)      : 82  82
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 59  65
+      |(Definition)     : 
+      |(Reference)      : 67  67  68  68  75  82  82  86
+     MPI_RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 61  82  82
+     m
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 59  65
+      |(Definition)     : 
+      |(Reference)      : 67  67  68  68  70  72  87
+     mpe_transpose_rs1_sp
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 59
+      |(Reference)      : 
+     mpi
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 62
+     mpi_alltoall
+      |(Class and Type) : generic name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 82
+     n
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 59  65
+      |(Definition)     : 
+      |(Reference)      : 67  67  68  68  70  74  88
+     nsize
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 59  65
+      |(Definition)     : 
+      |(Reference)      : 67  67  68  68  73  87
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 61  67  68
+     rbuf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 59  67
+      |(Definition)     : 89
+      |(Reference)      : 
+     rwork
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 68
+      |(Definition)     : 82
+      |(Reference)      : 89
+     sbuf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 59  67
+      |(Definition)     : 
+      |(Reference)      : 76
+     swork
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 68
+      |(Definition)     : 76
+      |(Reference)      : 82
+
+ Total information
+   Procedures       : 2
+   Total lines      : 95
+   Total statements : 53
+   Total stack(byte): 2816
+   Total prefetch num: 0
+

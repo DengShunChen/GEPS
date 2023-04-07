@@ -1,0 +1,335 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar  7 10:21:47 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm_helio
+   Source file       : qmaxn3p.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "qmaxn3p"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine qmaxn3p(fld,t1,t2,i1,j1,k1,im,jm,lm)
+               2                     !
+               3                     !  subroutine to print max and min in 2-d layer (or a subarray)
+               4                     !  within a 3-d field stored with n-s index slowest varying
+               5                     !
+               6                     !  ***input***
+               7                     !
+               8                     !  fld: input array
+               9                     !  t1,t2: 2* 8 character caption
+              10                     !  i1: starting index of first dimension (e-w)
+              11                     !  j1: starting index of third dimension (n-s)
+              12                     !  k1: starting index of second dimension (vertical)
+              13                     !  im: first dimension
+              14                     !  jm: third dimension
+              15                     !  lm: second dimension
+              16                     !
+              17                     ! *****************************************************************
+              18                     !
+              19                           use mpe
+              20                           use rank
+              21                           use index
+              22                     !
+              23                           implicit   none
+              24                           integer    i1,j1,k1,im,jm,lm
+              25                           real       fld(im,lm,jm)
+              26                     !
+              27                           character*8 t1, t2
+              28                     
+              29                           real       xmin,xmax
+              30                           integer    imin,jmin,imax,jmax,jj,j,i,idummy
+              31                     !
+              32                           xmin= 1.0e25
+              33                           xmax= -1.0e25
+              34                           imin=1
+              35                           jmin=1
+              36                           imax=1
+              37                           jmax=1
+              38                     !
+              39     1                     do 20 jj =1,jlistnum
+              40     1                     j=jlist1(jj)
+              41     2                     if(j .ge. j1) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 616
+                                   <<< Loop-information  End >>>
+              42     3  pp    s            do 10 i=i1,im
+              43     4   p    s            if (fld(i,k1,jj).le.xmin) then
+              44     4   p    s            xmin= fld(i,k1,jj)
+              45     4   p    m            jmin= j
+              46     4   p    v            imin= i
+              47     4   p    v            endif
+              48     4   p    s            if (fld(i,k1,jj).gt.xmax) then
+              49     4   p    s            xmax= fld(i,k1,jj)
+              50     4   p    m            jmax= j
+              51     4   p    v            imax= i
+              52     4   p    m            endif
+              53     3   p    s         10 continue
+              54     2                     endif
+              55     1                  20 continue
+              56                     !
+              57                           call mpe_global_maxloc(xmax,2,jmax,imax,idummy,idummy,mpe_double)
+              58                           call mpe_global_minloc(xmin,2,jmin,imin,idummy,idummy,mpe_double)
+              59                     !
+              60                           if(myrank .eq. 0) print 9000, t1, t2
+              61                      9000 format (1h0,2a8)
+              62                           if(myrank .eq. 0) print 8995, imax,jmax,xmax,imin,jmin,xmin
+              63                      8995 format(' imax=',i4,' jmax=',i4,' xlarg=',g20.12   &
+              64                           ,' imin=',i4,' jmin=',i4,' xsmal=',g20.12)
+              65                     !
+              66                           return
+              67                           end
+
+ Procedure information
+   Lines      : 67
+   Statements : 41
+   Stack(byte): 81088
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : qmaxn3p
+   Attribute and Cross reference of name
+     fld
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  25
+      |(Definition)     : 
+      |(Reference)      : 43  44  48  49
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 30
+      |(Definition)     : 42
+      |(Reference)      : 43  44  46  48  49  51
+     i1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  24
+      |(Definition)     : 
+      |(Reference)      : 42
+     idummy
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 30
+      |(Definition)     : 57  57  58  58
+      |(Reference)      : 
+     im
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  24
+      |(Definition)     : 
+      |(Reference)      : 25  42
+     imax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 30
+      |(Definition)     : 36  51  57
+      |(Reference)      : 62
+     imin
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 30
+      |(Definition)     : 34  46  58
+      |(Reference)      : 62
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 21
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 30
+      |(Definition)     : 40
+      |(Reference)      : 41  45  50
+     j1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  24
+      |(Definition)     : 
+      |(Reference)      : 41
+     jj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 30
+      |(Definition)     : 39
+      |(Reference)      : 40  43  44  48  49
+     jlist1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 40
+     jlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 39
+     jm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  24
+      |(Definition)     : 
+      |(Reference)      : 25
+     jmax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 30
+      |(Definition)     : 37  50  57
+      |(Reference)      : 62
+     jmin
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 30
+      |(Definition)     : 35  45  58
+      |(Reference)      : 62
+     k1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  24
+      |(Definition)     : 
+      |(Reference)      : 43  44  48  49
+     lm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  24
+      |(Definition)     : 
+      |(Reference)      : 25
+     mpe
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 19
+     mpe_double
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 57  58
+     mpe_global_maxloc
+      |(Class and Type) : generic name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 57
+     mpe_global_minloc
+      |(Class and Type) : generic name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 58
+     myrank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 60  62
+     qmaxn3p
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     rank
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 20
+     t1
+      |(Class and Type) : variable name, CHARACTER(8,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  27
+      |(Definition)     : 
+      |(Reference)      : 60
+     t2
+      |(Class and Type) : variable name, CHARACTER(8,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  27
+      |(Definition)     : 
+      |(Reference)      : 60
+     xmax
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 29
+      |(Definition)     : 33  49  57
+      |(Reference)      : 48  62
+     xmin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 29
+      |(Definition)     : 32  44  58
+      |(Reference)      : 43  62
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+         10  execution     (Definition) 53  
+                           (Reference)  42
+         20  execution     (Definition) 55  
+                           (Reference)  39
+       8995  format        (Definition) 63  
+                           (Reference)  62
+       9000  format        (Definition) 61  
+                           (Reference)  60
+
+ Total information
+   Procedures       : 1
+   Total lines      : 67
+   Total statements : 41
+   Total stack(byte): 81088
+   Total prefetch num: 0
+

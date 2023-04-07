@@ -1,0 +1,1975 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar 14 13:21:11 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_helio
+   Source file       : shlcon.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb157/CWBSUMc2/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "shlcon"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine shlcon ( nxj,nx,lev,ktshl,dt,g,r,cp,xkapa,hltm,ptop,dsigma &
+               2                                             , tg,pok,pst,topo,phi,po,tt,qt,nshl,rcup,ncld )
+               3                     !
+               4                     !     shallow convection parameterization, vertical mixing of t and q
+               5                     !     (following hogen et al., 1990, tiedtke, et al., 1988)
+               6                     !
+               7                     !     c.-s. liou  april 1992
+               8                     !     modify to f90 by C-H Lee and sort by River Chen in 2015
+               9                     !
+              10                     !     conditions for shallow convection:
+              11                     !     (1) tg       > t surface air (ts)
+              12                     !     (2) rh(lev)   > 0.8
+              13                     !     (3) surface lcl is within lowest 200 mb of the atmosphere
+              14                     !     (4) the atmosphere is moist unstable somewhere in lowest 200 mb
+              15                     !
+              16                     !     mixing coef.:
+              17                     !     xsc = 10.0 m2/s,  from surface to active cloud layer top
+              18                     !     xsc = 2.0  m2/s,  at layer just above the cloud top (inversion)
+              19                     !     xsc = 0.0      ,  elsewhere
+              20                     !
+              21                     !     parameters:
+              22                     !
+              23                     !     nx : horizontal dimension
+              24                     !    lev : vertical dimension
+              25                     !  ktshl : highest sigma level allowed for shallow convection
+              26                     !     dt : time step for shallow convection adjustment
+              27                     !      g : gravity
+              28                     !      r : gas constant
+              29                     !     cp : heat specific of air
+              30                     !  xkapa : r/cp
+              31                     !   hltm : constant of latent heat release for water vaper
+              32                     !   ptop : model top pressure (mb),
+              33                     !   dsigma : sigma level thickness (lev),
+              34                     !     tg : ground surface temperature (nx),                 (k)
+              35                     !    pst : (terrain pressure - ptop) (nx),                  (mb)
+              36                     !    pok : odd level pressure**kapa (nx,lev),               (mb)
+              37                     !   topo : terrain geopotential (nx),                       (m2/s2)
+              38                     !    phi : geopotential on odd levels                       (m2/s2)
+              39                     !     po : odd level pressure (nx,lev),                     (mb)
+              40                     !     tt : real temperature on odd levels (nx,lev),         (k)
+              41                     !     qt : specific humidity on odd levels (nx,lev),        (kg/kg)
+              42                     !   nshl : total shallow convection active points
+              43                     !
+              44                     !  local work arrays
+              45                     !
+              46                     !    xsc : mixing coef. due to shallow convection (nx,lev)  (m2/s2)
+              47                     !
+              48                     
+              49                           use paramt
+              50                           use const, only: RTYPE
+              51                     
+              52                           implicit  none
+              53                     
+              54                           integer   nxj,nx,lev,ktshl,ncld
+              55                     
+              56                           real      tg(nx),po(nx,lev)                                   &
+              57                                   , ql(nx,lev),ttmp(nx)
+              58                           real(kind=RTYPE) tt(nx,lev),qt(nx,lev*ncld),phi(nx,lev)       &
+              59                                   ,        topo(nx),pst(nx),dsigma(lev,2),pok(nx,lev)
+              60                     !
+              61                     !     local work arrays
+              62                     !
+              63                           logical cld(im)
+              64                     !
+              65                           real      xsc(im,lm),ps(im),aa(im,lm,4)                       &
+              66                                   , ts(im),wk(im),pp(im),zz(im),hh(im)
+              67                     
+              68                           integer   indx0(im),indx(im),ktop0(im),ktop(im)
+              69                     !
+              70                           real      pox(im,lm),ttx(im,lm),phix(im,lm)                   &
+              71                                    ,tlclx(im),plclx(im),hhx(im,lm),pokx(im,lm)
+              72                     ! for new kcu
+              73                           real      tlcl(im),plcl(im),zlcl(im),telcl(im),rcup(im)
+              74                           integer   klcl(im),klfc(im),klcl0(im)
+              75                     !
+              76                           real      tmp1(im)
+              77                     !
+              78                           integer nshl,kmax,nxlev,i,k,itt,ii,kclb,ktpmin,ktp,ka,kc,ntrac
+              79                           real    ptop,hltm,xkapa,cp,r,g,dt,hlcl,xkapa1,rh,xlog10,fac
+              80                           real    tdp,tsx,aln10,p_lcl,ddd,cc,zhig,dhh,www,xsc1,xsc2,tp1,hhu
+              81                           real    hhl,wkl,zzl,ddp
+              82                     
+              83                           data hlcl / 200.0 /
+              84                     !
+              85                           nshl = 0
+              86                           xkapa1 = 1.0/xkapa
+              87                           kmax = lev - ktshl + 1
+              88                           nxlev = nx * lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      xsc
+                                   <<< Loop-information  End >>>
+              89     1  pp   4v            do 50 i = 1, nxlev
+              90     1   p   4v            xsc(i,1) = 0.0
+              91     1   p   4v        50  continue
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 667
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED(lines: 92,129)
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.46, ITR: 48, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pst, po, ts, ps
+                                   <<< Loop-information  End >>>
+              92     1  pp   2v            do 60 i = 1, nxj
+              93     1   p   2v            ps(i) = pst(i) + ptop
+              94     1   p   2v        60  continue
+              95                     !
+              96                     !     check condition (1), assume surface to lev-level has same theda
+              97                     !
+              98                     !...modification note: conditional processing has no meaning
+              99                     !                      if (ps(i)/po(i,lev).lt.0.) do 120 still produces NaNQ
+             100                     !
+             101                     !     tmp_min = 1.0
+             102                     !     do i=1, nxj
+             103                     !     tmp_min=min(tmp_min,ps(i)/po(i,lev))
+             104                     !     enddo
+             105                     !
+             106                     !     if(tmp_min .gt. 0.) then
+             107                     
+             108                     !     do 100 i = 1, nxj
+             109                     !     ts(i) = tt(i,lev) * exp(xkapa*log(ps(i)/po(i,lev)))
+             110                     !     if ( tg(i) .gt. ts(i) )  then
+             111                     !        cld(i) = .true.
+             112                     !     else
+             113                     !        cld(i) = .false.
+             114                     !     endif
+             115                     ! 100 continue
+             116                     !
+             117                     !     else
+             118                     !     do 120 i = 1, nxj
+             119                     !     ts(i) = tt(i,lev) * (ps(i)/po(i,lev))**xkapa
+             120                     !     if ( tg(i) .gt. ts(i) )  then
+             121                     !        cld(i) = .true.
+             122                     !     else
+             123                     !        cld(i) = .false.
+             124                     !     endif
+             125                     ! 120 continue
+             126                     !
+             127                     !     endif
+             128                     !---
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED
+                                   <<< Loop-information  End >>>
+             129     1                     do i=1,nxj
+             130     1                       ts(i)=ps(i)/po(i,lev)
+             131     1                     enddo
+             132                           call vlog(ts,ts,nxj)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1334
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 256, MVE: 9, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ts
+                                   <<< Loop-information  End >>>
+             133     1  pp   2v            do i=1,nxj
+             134     1   p   2v              ts(i)=xkapa*ts(i)
+             135     1   p   2v            enddo
+             136                           call vexp(ts,ts,nxj)
+             137                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 593
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.57, ITR: 208, MVE: 7, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ts, tt, cld, tg
+                                   <<< Loop-information  End >>>
+             138     1  pp   2v            do 100 i = 1, nxj
+             139     1   p   2v            ts(i) = tt(i,lev) * ts(i)
+             140     2   p   2v            if ( tg(i) .gt. ts(i) )  then
+             141     2   p   2v               cld(i) = .true.
+             142     2   p   2v            else
+             143     2   p   2v               cld(i) = .false.
+             144     2   p   2v            endif
+             145     1   p   2v        100 continue
+             146                     !
+             147                     !     check condition (2)  (use wk to store qsat)
+             148                     !     besure qt>0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qt
+                                   <<< Loop-information  End >>>
+             149     1  pp                 do k=1,lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 208, MVE: 7, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qt
+                                   <<< Loop-information  End >>>
+             150     2   p   2v              do i=1,nxj
+             151     2   p   2v                qt(i,k)=max(qt(i,k),1.0e-10)
+             152     2   p   2v              enddo
+             153     1   p                 enddo
+             154                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1334
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tt, ttmp
+                                   <<< Loop-information  End >>>
+             155        pp   2v            ttmp(:)=tt(:,lev)
+             156                           call qsatq (nxj, ttmp, po(1,lev), wk )
+             157                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 327
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED(lines: 158,177)
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.60, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qt, cld, wk, ps, rcup, tmp1
+                                   <<< Loop-information  End >>>
+             158     1  pp    v            do 200 i = 1, nxj
+             159     1   p    v            rh = qt(i,lev)/wk(i)
+             160     1   p    v            cld(i) = cld(i) .and. (rh.gt.0.7)
+             161     1   p    v            cld(i) = cld(i) .and. (rcup(i).lt. 1.0e-7)
+             162     1   p    v        200 continue
+             163                     !
+             164                     !     check condition (3), use formula given by r.l. inman for t(lcl)
+             165                     !                          see jam, feb 1969, p155-158, equation 21.
+             166                     !
+             167                     !     do 300 i = 1, nxj
+             168                     !     fac  = log(ps(i)*qt(i,lev)/(6.11*(qt(i,lev)+0.62197)))/log(10.0)
+             169                     !     tdp  = 237.3*fac/(7.5-fac)
+             170                     !     tsx  = ts(i) - 273.16
+             171                     !     tlcl(i) =tdp-(0.212+0.001571*tdp-0.000436*tsx)*(tsx-tdp) + 273.16
+             172                     !     plcl(i) = po(i,lev)*((tlcl(i)/tt(i,lev))**xkapa1)
+             173                     !     cld(i) = cld(i) .and. ((ps(i)-plcl(i)).lt.hlcl)
+             174                     !     cld(i) = cld(i) .and. (po(i,lev).gt.plcl(i))
+             175                     ! 300 continue
+             176                     !------
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED
+                                   <<< Loop-information  End >>>
+             177     1                     do i=1,nxj
+             178     1                     tmp1(i) = (ps(i)*qt(i,lev)/(6.11*(qt(i,lev)+0.62197)))
+             179     1                     enddo
+             180                           call vlog(tmp1,tmp1,nxj)
+             181                           xlog10=log(10.0)
+             182                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 381
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.53, ITR: 40, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tmp1, tt, ts, plcl, tlcl
+                                   <<< Loop-information  End >>>
+             183     1  pp    v            do i = 1, nxj
+             184     1   p    v            fac  = tmp1(i)/xlog10
+             185     1   p    v            tdp  = 237.3*fac/(7.5-fac)
+             186     1   p    v            tsx  = ts(i) - 273.16
+             187     1   p    v            tlcl(i) =tdp-(0.212+0.001571*tdp-0.000436*tsx)*(tsx-tdp) + 273.16
+             188     1   p    v            plcl(i) =tlcl(i)/tt(i,lev)
+             189     1   p    v            enddo
+             190                           call vlog(plcl,plcl,nxj)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1334
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 256, MVE: 9, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      plcl
+                                   <<< Loop-information  End >>>
+             191     1  pp   2v            do i = 1,nxj
+             192     1   p   2v              plcl(i)=xkapa1*plcl(i)
+             193     1   p   2v            enddo
+             194                           call vexp(plcl,plcl,nxj)
+             195                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 433
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.71, ITR: 104, MVE: 7, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      plcl, po, ps, cld
+                                   <<< Loop-information  End >>>
+             196     1  pp    v            do 300 i = 1, nxj
+             197     1   p    v            plcl(i) = po(i,lev)*plcl(i)
+             198     1   p    v            cld(i) = cld(i) .and. ((ps(i)-plcl(i)).lt.hlcl)
+             199     1   p    v            cld(i) = cld(i) .and. (po(i,lev).gt.plcl(i))
+             200     1   p    v        300 continue
+             201                     !
+             202                     !     check condition (4), use saturated moist static energy to check
+             203                     !                          moist instability ( hh(k+1) > hh(k) )
+             204                     !     pack possible shallow convection points for further calculation
+             205                     !
+             206                           itt = 0
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cld
+                                   <<< Loop-information  End >>>
+             207     1       2s            do 400 i = 1, nxj
+             208     2       2v            if ( cld(i) )  then
+             209     2       2m               itt = itt + 1
+             210     2       2s               indx0(itt) = i
+             211     2       2v            endif
+             212     1       2v        400 continue
+             213                           if ( itt .eq. 0 )  return
+             214                     !
+             215                     !  pack array
+             216                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      indx0, ttx, pox, phix
+                                   <<< Loop-information  End >>>
+             217     1  pp                 do k = ktshl-1, lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.75, ITR: 72, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      phix, indx0, ttx, pox
+                                   <<< Loop-information  End >>>
+             218     2   p    v            do i = 1, itt
+             219     2   p    v             ii = indx0(i)
+             220     2   p    v             pox(i,k) = po(ii,k)
+             221     2   p    v             ttx(i,k) = tt(ii,k)
+             222     2   p    v             phix(i,k)= phi(ii,k)/g
+             223     2   p    v            end do
+             224     1   p                 end do
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 696
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.87, ITR: 144, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      indx0, tlclx, plclx
+                                   <<< Loop-information  End >>>
+             225     1  pp   2v            do i = 1, itt
+             226     1   p   2v             ii = indx0(i)
+             227     1   p   2v             plclx(i) = plcl(ii)
+             228     1   p   2v             tlclx(i) = tlcl(ii)
+             229     1   p   2v            end do
+             230                     !
+             231                     ! search for lcl height and k-level
+             232                     !
+             233                           aln10 = log(10.)
+             234                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pox, plclx, ttx, telcl, klcl
+                                   <<< Loop-information  End >>>
+             235     1                     do k = lev, ktshl, -1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 22
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.01, ITR: 40, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pox, plclx, ttx, klcl, telcl
+                                   <<< Loop-information  End >>>
+             236     2  pp    v             do i = 1, itt
+             237     2   p    v              p_lcl=plclx(i)
+             238     2   p    v              ddd = (p_lcl-pox(i,k))*(p_lcl-pox(i,k-1))
+             239     3   p    v              if( ddd .lt. 0. )then
+             240     3               !ibm        cc=(log(p_lcl)-log(pox(i,k)))
+             241     3               !ibm    +      /(log(pox(i,k-1))-log(pox(i,k)))
+             242     3   p    v               cc=log(p_lcl/pox(i,k))/log(pox(i,k-1)/pox(i,k))
+             243     3               !                              !environment temp at lcl lev
+             244     3   p    v               telcl(i)=(ttx(i,k-1)-ttx(i,k))*cc+ttx(i,k)
+             245     4   p    v               if(cc.ge.0.5)then
+             246     4   p    v                klcl(i)=k-1
+             247     4   p    v                else
+             248     4   p    v                klcl(i)=k
+             249     4   p    v                endif
+             250     3   p    v               endif
+             251     2   p    v             enddo
+             252     1                     enddo
+             253                     
+             254                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cld
+                                   <<< Loop-information  End >>>
+             255     1  pp   4v            do i = 1, itt
+             256     1   p   4v             cld(i) = .false.
+             257     1   p   4v            end do
+             258                     !
+             259                     !-----------------------------------------------
+             260                     ! search for lfc level
+             261                     !-----------------------------------------------
+             262                           call qsatq ( itt, tlclx, plclx, wk )
+             263                           call theta_e(itt,1,plclx,tlclx,wk,hh)
+             264                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 593
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 72, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      telcl, cld, tlclx, klcl, klfc, ktop0
+                                   <<< Loop-information  End >>>
+             265     1  pp    v            do i = 1, itt
+             266     1   p    v             klfc(i) = klcl(i)
+             267     1   p    v             ktop0(i) = klcl(i)
+             268     1   p    v             cld(i) = tlclx(i).ge.telcl(i)
+             269     1   p    v            end do
+             270                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 4
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             271     1   s    s            do k = ktshl, lev
+             272     1   s    s             call qsatq ( itt, ttx(1,k), pox(1,k), pokx(1,k) )
+             273     1   s    s             call theta_e(itt,1,pox(1,k),ttx(1,k),pokx(1,k),hhx(1,k))
+             274     1   s    s            end do
+             275                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cld, klcl, hhx, hh, klfc
+                                   <<< Loop-information  End >>>
+             276     1                     do k = lev, ktshl, -1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 534
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.72, ITR: 40, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      klcl, hhx, hh, cld, klfc
+                                   <<< Loop-information  End >>>
+             277     2  pp    v            do i = 1, itt
+             278     3   p    v             if( .not. cld(i) .and. k .le. (klcl(i)-1) )then
+             279     4   p    v               if( hhx(i,k) .lt. hh(i) ) then
+             280     4   p    v                 klfc(i) = k+1
+             281     4   p    v                 cld(i) = .true.
+             282     4   p    v               end if
+             283     3   p    v             end if
+             284     2   p    v            end do
+             285     1                     end do
+             286                     
+             287                     !--------------------------------------------------
+             288                     ! find cloud top(ktop)
+             289                     !--------------------------------------------------
+             290                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 762
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED(lines: 291,295)
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.50, ITR: 176, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cld, indx0, wk
+                                   <<< Loop-information  End >>>
+             291     1  pp   2v            do i = 1, itt
+             292     1   p   2v             cld(i) = .false.
+             293     1   p   2v            end do
+             294                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED
+                                   <<< Loop-information  End >>>
+             295     1                     do i = 1, itt
+             296     1                      ii = indx0(i)
+             297     1                      wk(i) = topo(ii)/g
+             298     1                     end do
+             299                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cld, klfc, phix, wk, hhx, hh, ktop0
+                                   <<< Loop-information  End >>>
+             300     1                     do k = lev, ktshl, -1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 422
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.04, ITR: 56, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      phix, wk, klfc, hhx, hh, cld, ktop0
+                                   <<< Loop-information  End >>>
+             301     2  pp    v            do i = 1, itt
+             302     3   p    v             if( .not. cld(i) .and. k .le. (klfc(i)-1) )then
+             303     3   p    v             zhig = phix(i,k+1) - wk(i)
+             304     3   p    v             dhh = hh(i) - hhx(i,k)
+             305     3               !                             set shl cu an upper bound on 4000m
+             306     4   p    v              if( zhig .le. 4000. .and. dhh .lt. 0. ) then
+             307     4   p    v               ktop0(i) = k+1
+             308     4   p    v               cld(i) = .true.
+             309     4   p    v              end if
+             310     3   p    v             end if
+             311     2   p    v            end do
+             312     1                     end do
+             313                     
+             314                     !
+             315                     !     re-pack indx to select unstable points only
+             316                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cld
+                                   <<< Loop-information  End >>>
+             317     1  pp   4v            do i=1,itt
+             318     1   p   4v            cld(i)=.false.
+             319     1   p   4v            enddo
+             320                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ktop0, klcl, klfc, cld
+                                   <<< Loop-information  End >>>
+             321     1   s    s            do 480 i = 1, itt
+             322     1   p    v            cld(i)=(ktop0(i).lt.klcl(i)).and.(ktop0(i).lt.klfc(i))
+             323     2   p    v            if ( cld(i) )  then
+             324     2   m    m               nshl = nshl + 1
+             325     2   m    v               indx(nshl) = indx0(i)
+             326     2   s    v               ktop(nshl) = ktop0(i)
+             327     2   s    v               klcl0(nshl)=klcl(i)
+             328     2   p    v            endif
+             329     1   p    v        480 continue
+             330                           if ( nshl .eq. 0 )  return
+             331                     
+             332                     !
+             333                     !  re-pack array
+             334                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      indx, phix, ttx, pokx, pox
+                                   <<< Loop-information  End >>>
+             335     1  pp                 do k = ktshl-1, lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.70, ITR: 64, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      indx, phix, ttx, pokx, pox
+                                   <<< Loop-information  End >>>
+             336     2   p    v            do i = 1, nshl
+             337     2   p    v             ii = indx(i)
+             338     2   p    v             pox(i,k) = po(ii,k)
+             339     2   p    v             pokx(i,k) = pok(ii,k)
+             340     2   p    v             ttx(i,k) = tt(ii,k)
+             341     2   p    v             phix(i,k)= phi(ii,k)/g
+             342     2   p    v            end do
+             343     1   p                 end do
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 889
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 272, MVE: 6, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pp, indx
+                                   <<< Loop-information  End >>>
+             344     1  pp   2v            do i = 1, nshl
+             345     1   p   2v             pp(i) = ps(indx(i))*100.0
+             346     1   p   2v            end do
+             347                     !
+             348                     !.........................................
+             349                     ! define kc
+             350                     !.........................................
+             351                     !
+             352                           kclb=lev
+             353                           ktpmin=lev
+             354                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 259
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             355     1  pp    v            do i = 1, nshl
+             356     1   p    v             ktp=ktop(i)
+             357     1   p    v             kclb=(klcl0(i)+lev)*0.5
+             358     1   p    v             ktpmin= min( ktpmin, ktp )
+             359     1   p    v             www = (phix(i,kclb)+phix(i,ktp)) * 0.5
+             360     1   p    v             hh(i) = 1.0/((www-phix(i,kclb))*(www-phix(i,kclb)))
+             361     1   p    v            end do
+             362                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+             363     1  pp                 do k = ktpmin, lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ktop, klcl0
+                                   <<< Loop-information  End >>>
+             364     2   p    s            do i = 1, nshl
+             365     2   p    v            ktp=ktop(i)
+             366     2   p    v            kclb=(klcl0(i)+lev)*0.5
+             367     3   p    s            if( k .ge. ktp .and. k .le. kclb ) then
+             368     3               !                               local bomex version
+             369     3   p    s              xsc1 = -10.*hh(i)*(phix(i,k)-phix(i,kclb)) * (phix(i,k)-phix(i,ktp))
+             370     3               !           nonlocal bomex version k=10.*( 1-1/(a+b*F(z)) )   a=1. b=1.5
+             371     3   p    s              xsc2 = -xsc1/(1.+1.5*(-hh(i))*(phix(i,k)-phix(i,kclb)) &
+             372     3                                 *(phix(i,k)-phix(i,ktp)) )
+             373     3   p    s              xsc(i,k) = xsc1+xsc2
+             374     3   p    v            end if
+             375     2   p    v            end do
+             376     1   p                 end do
+             377                     
+             378                     !
+             379                     !     update t and q by vertical mixing due to shallow convection
+             380                     !
+             381                     !      (construct coef for tri-diagonal equation system)
+             382                     !      (use hh ,wk to store air density ro)
+             383                     !
+             384                           tp1 = g*dt
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 302
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.75, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pox, ttx, xsc, phix, zz, hh, wk
+                                   <<< Loop-information  End >>>
+             385     1  pp    v            do 600 i = 1, nshl
+             386     1   p    v            hhu   = pox(i,ktshl-1)*100.0/(r*ttx(i,ktshl-1))
+             387     1   p    v            hh(i) = pox(i,ktshl)*100.0/(r*ttx(i,ktshl))
+             388     1               !     wk(i) = tp1*0.5*(hhu+hh(i))*xsc(i,ktshl)
+             389     1   p    v            wk(i) = tp1*0.5*(hhu+hh(i))*xsc(i,ktshl-1)
+             390     1   p    v            zz(i) = phix(i,ktshl-1) - phix(i,ktshl)
+             391     1   p    v        600 continue
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pokx, ttx, pp, zz, wk, pox, aa, hh, phix
+                                   <<<      xsc
+                                   <<< Loop-information  End >>>
+             392     1                     do 630 k = ktshl, lev
+             393     1                     ka = k - ktshl + 1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 281
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.70, ITR: 32, MVE: 2, POL: S)
+                                   <<<    UNSWITCHING
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      zz, wk, pokx, ttx, aa, pp, hh
+                                   <<< Loop-information  End >>>
+             394     2  pp    v            do 610 i = 1, nshl
+             395     3   p    v            if ( k .lt. lev )  then
+             396     3                        hhl = pox(i,k+1)*100.0/(r*ttx(i,k+1))
+             397     3               !        wkl = tp1*0.5*(hh(i)+hhl)*xsc(i,k+1)
+             398     3                        wkl = tp1*0.5*(hh(i)+hhl)*xsc(i,k)
+             399     3                        zzl = phix(i,k) - phix(i,k+1)
+             400     3   p    v            else
+             401     3   p    v               hhl = 0.0
+             402     3   p    v               wkl = 0.0
+             403     3   p    v               zzl = 1.0
+             404     3   p    v            endif
+             405     2   p    v            ddp = pp(i)*dsigma(k,1) + dsigma(k,2)
+             406     2   p    v            aa(i,ka,1) = -wk(i)/(ddp*zz(i))
+             407     2   p    v            aa(i,ka,3) = -wkl  /(ddp*zzl)
+             408     2   p    v            aa(i,ka,2) = 1.0 - aa(i,ka,1) - aa(i,ka,3)
+             409     2   p    v            aa(i,ka,4) = ttx(i,k)/pokx(i,k)
+             410     2   p    v            hh(i) = hhl
+             411     2   p    v            wk(i) = wkl
+             412     2   p    v            zz(i) = zzl
+             413     2   p    v        610 continue
+             414     1                 630 continue
+             415                     !     fix upper b.c
+             416                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 572
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.51, ITR: 48, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pokx, ttx, aa
+                                   <<< Loop-information  End >>>
+             417     1  pp   2v            do 640 i = 1, nshl
+             418     1   p   2v            aa(i,1,4)= aa(i,1,4)-aa(i,1,1)*ttx(i,ktshl-1) / pokx(i,ktshl-1)
+             419     1   p   2v        640 continue
+             420                     !
+             421                           call trigau ( aa, nx, nshl, lev, kmax, 0 )
+             422                     !
+             423                     !     update tt,   and prepare for qt update
+             424                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pokx, indx, aa
+                                   <<< Loop-information  End >>>
+             425     1  pp                 do 660 k = ktshl, lev
+             426     1   p                 ka = k - ktshl + 1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.40, ITR: 120, MVE: 7, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      aa, indx, pokx
+                                   <<< Loop-information  End >>>
+             427     2   p    v            do 670 i = 1, nshl
+             428     2   p    v            tt(indx(i),k) = aa(i,ka,4)*pokx(i,k)
+             429     2   p    v            aa(i,ka,4) = qt(indx(i),k)
+             430     2   p    v        670 continue
+             431     1   p             660 continue
+             432                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 593
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.37, ITR: 176, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      aa, indx
+                                   <<< Loop-information  End >>>
+             433     1  pp   2v            do 700 i = 1, nshl
+             434     1   p   2v            aa(i,1,4) = aa(i,1,4) - aa(i,1,1)*qt(indx(i),ktshl-1)
+             435     1   p   2v        700 continue
+             436                     !
+             437                           call trigau ( aa, nx, nshl, lev, kmax, 1 )
+             438                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      indx, aa
+                                   <<< Loop-information  End >>>
+             439     1  pp                 do 720 k = ktshl, lev
+             440     1   p                 ka = k - ktshl + 1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.16, ITR: 96, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      aa, indx
+                                   <<< Loop-information  End >>>
+             441     2   p   2v            do 710 i = 1, nshl
+             442     2   p   2v            qt(indx(i),k) = aa(i,ka,4)
+             443     2   p   2v        710 continue
+             444     1   p             720 continue
+             445                     !
+             446                     ! prepare and update ql--------------------------
+             447                     !
+             448     1                     if(ncld .ge. 2)then
+             449     1                     ntrac=2
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      indx
+                                   <<< Loop-information  End >>>
+             450     2  pp                 do k=1,lev
+             451     2   p                 kc=k+(ntrac-1)*lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.71, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      indx
+                                   <<< Loop-information  End >>>
+             452     3   p   2v            do i=1,nshl
+             453     3   p   2v            ql(indx(i),k)=qt(indx(i),kc)
+             454     3   p   2v            enddo
+             455     2   p                 enddo
+             456     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      indx, aa
+                                   <<< Loop-information  End >>>
+             457     2  pp                 do 800 k = ktshl, lev
+             458     2   p                 ka = k - ktshl + 1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.62, ITR: 128, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      indx, aa
+                                   <<< Loop-information  End >>>
+             459     3   p   2v            do 820 i = 1, nshl
+             460     3   p   2v            aa(i,ka,4) = ql(indx(i),k)
+             461     3   p   2v        820 continue
+             462     2   p             800 continue
+             463     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 593
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.37, ITR: 176, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      aa, indx
+                                   <<< Loop-information  End >>>
+             464     2  pp   2v            do 900 i = 1, nshl
+             465     2   p   2v            aa(i,1,4) = aa(i,1,4) - aa(i,1,1)*ql(indx(i),ktshl-1)
+             466     2   p   2v        900 continue
+             467     1               !
+             468     1                     call trigau ( aa, nx, nshl, lev, kmax, 1 )
+             469     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      indx, aa
+                                   <<< Loop-information  End >>>
+             470     2  pp                 do 920 k = ktshl, lev
+             471     2   p                 ka = k - ktshl + 1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.16, ITR: 96, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      aa, indx
+                                   <<< Loop-information  End >>>
+             472     3   p   2v            do 910 i = 1, nshl
+             473     3   p   2v            ql(indx(i),k) = aa(i,ka,4)
+             474     3   p   2v        910 continue
+             475     2   p             920 continue
+             476     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      indx
+                                   <<< Loop-information  End >>>
+             477     2  pp                 do k=1,lev
+             478     2   p                 kc=k+(ntrac-1)*lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.71, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      indx
+                                   <<< Loop-information  End >>>
+             479     3   p   2v            do i=1,nshl
+             480     3   p   2v            qt(indx(i),kc)=ql(indx(i),k)
+             481     3   p   2v            enddo
+             482     2   p                 enddo
+             483     1               !
+             484     1                     endif
+             485                     !
+             486                     !xx   print 900, itt, nshl
+             487                     !x900 format( 1x,'# of shallow convection points (itt,nshl) = ', 2i7 )
+             488                           return
+             489                           end
+
+ Procedure information
+   Lines      : 489
+   Statements : 287
+   Stack(byte): 23232
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : shlcon
+   Attribute and Cross reference of name
+     aa
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 65
+      |(Definition)     : 406  407  408  409  418  421  429  434  437  460  465  468
+      |(Reference)      : 408  408  418  418  428  434  434  442  465  465  473
+     aln10
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 80
+      |(Definition)     : 233
+      |(Reference)      : 
+     cc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 80
+      |(Definition)     : 242
+      |(Reference)      : 244  245
+     cld
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 63
+      |(Definition)     : 141  143  160  161  198  199  256  268  281  292  308  318  322
+      |(Reference)      : 160  161  198  199  208  278  302  323
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 50
+     cp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  79
+      |(Definition)     : 
+      |(Reference)      : 
+     ddd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 80
+      |(Definition)     : 238
+      |(Reference)      : 239
+     ddp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 81
+      |(Definition)     : 405
+      |(Reference)      : 406  407
+     dhh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 80
+      |(Definition)     : 304
+      |(Reference)      : 306
+     dsigma
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  58
+      |(Definition)     : 
+      |(Reference)      : 405  405
+     dt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  79
+      |(Definition)     : 
+      |(Reference)      : 384
+     fac
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 79
+      |(Definition)     : 184
+      |(Reference)      : 185  185
+     g
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  79
+      |(Definition)     : 
+      |(Reference)      : 222  297  341  384
+     hh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 65
+      |(Definition)     : 263  360  387  410
+      |(Reference)      : 279  304  369  371  389  398
+     hhl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 81
+      |(Definition)     : 396  401
+      |(Reference)      : 398  410
+     hhu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 80
+      |(Definition)     : 386
+      |(Reference)      : 389
+     hhx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 70
+      |(Definition)     : 273
+      |(Reference)      : 279  304
+     hlcl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : initialized
+      |(Declaration)    : 79  83
+      |(Definition)     : 
+      |(Reference)      : 198
+     hltm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  79
+      |(Definition)     : 
+      |(Reference)      : 
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 78
+      |(Definition)     : 89  92  129  133  138  150  158  177  183  191  196  207  218  225  236  255  265  277  291  295  301  317  321  336  344  355  364  385  394  417  427  433  441  452  459  464  472  479
+      |(Reference)      : 90  93  93  130  130  130  134  134  139  139  139  140  140  141  143  151  151  159  159  160  160  161  161  161  178  178  178  178  184  186  187  188  188  188  192  192  197  197  197  198  198  198  198  199  199  199  199  208  210  219  220  221  222  226  227  228  237  238  238  242  242  242  244  244  244  244  246  248  256  266  266  267  267  268  268  268  278  278  279  279  280  281  292  296  297  302  302  303  303  304  304  307  308  318  322  322  322  322  322  323  325  326  327  337  338  339  340  341  345  345  356  357  359  359  360  360  360  365  366  369  369  369  369  369  371  371  371  371  371  373  386  386  387  387  387  389  389  389  390  390  390  396  396  398  398  399  399  405  406  406  406  407  408  408  408  409  409  409  410  411  412  418  418  418  418  418  428  428  428  429  429  434  434  434  434  442  442  453  453  460  460  465  465  465  465  473  473  480  480
+     ii
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 78
+      |(Definition)     : 219  226  296  337
+      |(Reference)      : 220  221  222  227  228  297  338  339  340  341
+     im
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 63  65  65  65  65  65  65  65  65  68  68  68  68  70  70  70  70  70  70  70  73  73  73  73  73  74  74  74  76
+     indx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 68
+      |(Definition)     : 325
+      |(Reference)      : 337  345  428  429  434  442  453  453  460  465  473  480  480
+     indx0
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 68
+      |(Definition)     : 210
+      |(Reference)      : 219  226  296  325
+     itt
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 78
+      |(Definition)     : 206  209  262  263  272  273
+      |(Reference)      : 209  210  213  218  225  236  255  265  277  291  295  301  317  321
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 78
+      |(Definition)     : 149  217  235  271  276  300  335  363  392  425  439  450  457  470  477
+      |(Reference)      : 151  151  220  220  221  221  222  222  238  238  242  242  242  244  244  244  246  248  272  272  272  273  273  273  273  278  279  280  302  303  304  307  338  338  339  339  340  340  341  341  367  367  369  369  371  371  373  393  395  396  396  398  399  399  405  405  409  409  426  428  428  429  440  442  451  453  458  460  471  473  478  480
+     ka
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 78
+      |(Definition)     : 393  426  440  458  471
+      |(Reference)      : 406  407  408  408  408  409  428  429  442  460  473
+     kc
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 78
+      |(Definition)     : 451  478
+      |(Reference)      : 453  480
+     kclb
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 78
+      |(Definition)     : 352  357  366
+      |(Reference)      : 359  360  360  367  369  371
+     klcl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 74
+      |(Definition)     : 246  248
+      |(Reference)      : 266  267  278  322  327
+     klcl0
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 74
+      |(Definition)     : 327
+      |(Reference)      : 357  366
+     klfc
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 74
+      |(Definition)     : 266  280
+      |(Reference)      : 302  322
+     kmax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 78
+      |(Definition)     : 87  421  437  468
+      |(Reference)      : 
+     ktop
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 68
+      |(Definition)     : 326
+      |(Reference)      : 356  365
+     ktop0
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 68
+      |(Definition)     : 267  307
+      |(Reference)      : 322  322  326
+     ktp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 78
+      |(Definition)     : 356  365
+      |(Reference)      : 358  359  367  369  371
+     ktpmin
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 78
+      |(Definition)     : 353  358
+      |(Reference)      : 358  363
+     ktshl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  54
+      |(Definition)     : 
+      |(Reference)      : 87  217  235  271  276  300  335  386  386  387  387  389  390  390  392  393  418  418  425  426  434  439  440  457  458  465  470  471
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  54
+      |(Definition)     : 421  437  468
+      |(Reference)      : 56  56  58  58  58  58  58  87  88  130  139  149  155  156  159  178  178  188  197  199  217  235  271  276  300  335  352  353  357  363  366  392  395  425  439  450  451  457  470  477  478
+     lm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 65  65  70  70  70  70  70
+     log
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 181  233  242  242
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 151
+     min
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 358
+     ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  54
+      |(Definition)     : 
+      |(Reference)      : 58  448
+     nshl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  78
+      |(Definition)     : 85  324  421  437  468
+      |(Reference)      : 324  325  326  327  330  336  344  355  364  385  394  417  427  433  441  452  459  464  472  479
+     ntrac
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 78
+      |(Definition)     : 449
+      |(Reference)      : 451  478
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  54
+      |(Definition)     : 421  437  468
+      |(Reference)      : 56  56  56  56  58  58  58  58  58  58  88
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  54
+      |(Definition)     : 132  136  156  180  190  194
+      |(Reference)      : 92  129  133  138  150  158  177  183  191  196  207
+     nxlev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 78
+      |(Definition)     : 88
+      |(Reference)      : 89
+     p_lcl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 80
+      |(Definition)     : 237
+      |(Reference)      : 238  238  242
+     paramt
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 49
+     phi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  58
+      |(Definition)     : 
+      |(Reference)      : 222  341
+     phix
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 70
+      |(Definition)     : 222  341
+      |(Reference)      : 303  359  359  360  360  369  369  369  369  371  371  371  371  390  390  399  399
+     plcl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 73
+      |(Definition)     : 188  190  190  192  194  194  197
+      |(Reference)      : 192  197  198  199  227
+     plclx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 70
+      |(Definition)     : 227  262  263
+      |(Reference)      : 237
+     po
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  56
+      |(Definition)     : 156
+      |(Reference)      : 130  197  199  220  338
+     pok
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  58
+      |(Definition)     : 
+      |(Reference)      : 339
+     pokx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 70
+      |(Definition)     : 272  273  339
+      |(Reference)      : 409  418  428
+     pox
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 70
+      |(Definition)     : 220  272  273  338
+      |(Reference)      : 238  238  242  242  242  386  387  396
+     pp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 65
+      |(Definition)     : 345
+      |(Reference)      : 405
+     ps
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 65
+      |(Definition)     : 93
+      |(Reference)      : 130  178  198  345
+     pst
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  58
+      |(Definition)     : 
+      |(Reference)      : 93
+     ptop
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  79
+      |(Definition)     : 
+      |(Reference)      : 93
+     ql
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 56
+      |(Definition)     : 453  473
+      |(Reference)      : 460  465  480
+     qsatq
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 156  262  272
+     qt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  58
+      |(Definition)     : 151  442  480
+      |(Reference)      : 151  159  178  178  429  434  453
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 50  58
+     r
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  79
+      |(Definition)     : 
+      |(Reference)      : 386  387  396
+     rcup
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  73
+      |(Definition)     : 
+      |(Reference)      : 161
+     rh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 79
+      |(Definition)     : 159
+      |(Reference)      : 160
+     shlcon
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     tdp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 80
+      |(Definition)     : 185
+      |(Reference)      : 187  187  187
+     telcl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 73
+      |(Definition)     : 244
+      |(Reference)      : 268
+     tg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  56
+      |(Definition)     : 
+      |(Reference)      : 140
+     theta_e
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 263  273
+     tlcl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 73
+      |(Definition)     : 187
+      |(Reference)      : 188  228
+     tlclx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 70
+      |(Definition)     : 228  262  263
+      |(Reference)      : 268
+     tmp1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 76
+      |(Definition)     : 178  180  180
+      |(Reference)      : 184
+     topo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  58
+      |(Definition)     : 
+      |(Reference)      : 297
+     tp1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 80
+      |(Definition)     : 384
+      |(Reference)      : 389  398
+     trigau
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 421  437  468
+     ts
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 65
+      |(Definition)     : 130  132  132  134  136  136  139
+      |(Reference)      : 134  139  140  186
+     tsx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 80
+      |(Definition)     : 186
+      |(Reference)      : 187  187
+     tt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  58
+      |(Definition)     : 428
+      |(Reference)      : 139  155  188  221  340
+     ttmp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 56
+      |(Definition)     : 155  156
+      |(Reference)      : 
+     ttx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 70
+      |(Definition)     : 221  272  273  340
+      |(Reference)      : 244  244  244  386  387  396  409  418
+     vexp
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 136  194
+     vlog
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 132  180  190
+     wk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 65
+      |(Definition)     : 156  262  263  297  389  411
+      |(Reference)      : 159  303  406
+     wkl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 81
+      |(Definition)     : 398  402
+      |(Reference)      : 407  411
+     www
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 80
+      |(Definition)     : 359
+      |(Reference)      : 360  360
+     xkapa
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  79
+      |(Definition)     : 
+      |(Reference)      : 86  134
+     xkapa1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 79
+      |(Definition)     : 86
+      |(Reference)      : 192
+     xlog10
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 79
+      |(Definition)     : 181
+      |(Reference)      : 184
+     xsc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 65
+      |(Definition)     : 90  373
+      |(Reference)      : 389  398
+     xsc1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 80
+      |(Definition)     : 369
+      |(Reference)      : 371  373
+     xsc2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 80
+      |(Definition)     : 371
+      |(Reference)      : 373
+     zhig
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 80
+      |(Definition)     : 303
+      |(Reference)      : 306
+     zlcl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 73
+      |(Definition)     : 
+      |(Reference)      : 
+     zz
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 65
+      |(Definition)     : 390  412
+      |(Reference)      : 406
+     zzl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 81
+      |(Definition)     : 399  403
+      |(Reference)      : 407  412
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+         50  execution     (Definition) 91  
+                           (Reference)  89
+         60  execution     (Definition) 94  
+                           (Reference)  92
+        100  execution     (Definition) 145  
+                           (Reference)  138
+        200  execution     (Definition) 162  
+                           (Reference)  158
+        300  execution     (Definition) 200  
+                           (Reference)  196
+        400  execution     (Definition) 212  
+                           (Reference)  207
+        480  execution     (Definition) 329  
+                           (Reference)  321
+        600  execution     (Definition) 391  
+                           (Reference)  385
+        610  execution     (Definition) 413  
+                           (Reference)  394
+        630  execution     (Definition) 414  
+                           (Reference)  392
+        640  execution     (Definition) 419  
+                           (Reference)  417
+        660  execution     (Definition) 431  
+                           (Reference)  425
+        670  execution     (Definition) 430  
+                           (Reference)  427
+        700  execution     (Definition) 435  
+                           (Reference)  433
+        710  execution     (Definition) 443  
+                           (Reference)  441
+        720  execution     (Definition) 444  
+                           (Reference)  439
+        800  execution     (Definition) 462  
+                           (Reference)  457
+        820  execution     (Definition) 461  
+                           (Reference)  459
+        900  execution     (Definition) 466  
+                           (Reference)  464
+        910  execution     (Definition) 474  
+                           (Reference)  472
+        920  execution     (Definition) 475  
+                           (Reference)  470
+
+ External subroutine subprogram "theta_e"
+  (inc)(line-no.)(nest)(optimize)
+             490                     
+             491                     
+             492                             subroutine theta_e(nx,lev,p,t,q,thetae)
+             493                     !***********************************************************************
+             494                     ! file name        : theta_e.f                                         *
+             495                     !                                                                      *
+             496                     ! description      : To derive equivalent potential temperature.       *
+             497                     !                                                                      *
+             498                     ! data file        : none                                              *
+             499                     !                                                                      *
+             500                     ! I/O parameters   :                                                   *
+             501                     !                                                                      *
+             502                     !  input:
+             503                     !          p(nx,lev)  real        pressure(hPa).                       *
+             504                     !          t(nx,lev)  real        temperature(K).                      *
+             505                     !          q(nx,lev) real         specific humility (g/g)              *
+             506                     !                                                                      *
+             507                     !  output:
+             508                     !          thetae(nx,lev) real    equivalent potential temperature(K). *
+             509                     !
+             510                     ! inter. parameter :                                                   *
+             511                     !          p0         real        1000. hPa pressure.                  *
+             512                     !          theta      real        potential temperature(K).            *
+             513                     !          rgas       real        gas constant for dry air.            *
+             514                     !          cp         real        specific heat of dry air at constant *
+             515                     !                                 pressure.                            *
+             516                     !          aslon      real        constant, = 0.622                    *
+             517                     !                                                                      *
+             518                     ! called fun./sub. : none                                              *
+             519                     !                                                                      *
+             520                     !                                                                      *
+             521                     ! reference        : Bolton,D., 1980: The computation of equivalent    *
+             522                     !                    potential temperature. MOn. Wea. Rev., 108,       *
+             523                     !                    1046-1053.                                        *
+             524                     !                                                                      *
+             525                     ! auther           : Deng Shiung Ming                                  *
+             526                     !                    - Institude for Information Industry              *
+             527                     !
+             528                     ! create date      : Jul. 31, 1994                                     *
+             529                     !----------------------------------------------------------------------*
+             530                     ! modified by      :  Chin-Tzu Fong                                    *
+             531                     ! modified date    :  Apr. 25, 1995                                    *
+             532                     ! modified reason  :  Fit into the structure of GFS                    *
+             533                     ! modify to f90 by C-H Lee and sort by River Chen
+             534                     !***********************************************************************
+             535                     
+             536                             parameter( p0=1000.,rgas=287.,cp=1004.,aslon=0.622 )
+             537                             dimension p(nx,lev),t(nx,lev),q(nx,lev),thetae(nx,lev)
+             538                             dimension td(nx,lev)
+             539                     !
+             540                             dimension tmp1(nx,lev),tmp2(nx,lev),tmp3(nx,lev)
+             541                     !
+             542                     !* To compute dew-point temperature
+             543                     
+             544                     !       do 50 i = 1, nx*lev
+             545                     
+             546                     !* To compute vapor pressure from specific humidity.
+             547                     
+             548                     !       p_td=q(i,1)*p(i,1)/(aslon+q(i,1)*(1.-aslon))
+             549                     
+             550                     !* To derive dew-point temperature from vapor pressure.
+             551                     
+             552                     !       rlog=log(p_td/6.112)
+             553                     !       td(i,1)=243.5*rlog/(17.67-rlog) + 273.15
+             554                     ! 50    continue
+             555                     !
+             556                     !       do 100 k = 1, lev
+             557                     !       do 100 i = 1, nx
+             558                     
+             559                     !* To compute potential temperature.
+             560                     
+             561                     !       theta=t(i,k)*(p0/p(i,k))**(rgas/cp)
+             562                     
+             563                     !* To compute isentropic condensation temperature.
+             564                     
+             565                     !       tc=1./(1./(td(i,k)-56.)+log(t(i,k)/td(i,k))/800.)+56.
+             566                     
+             567                     !* To compute mixing ratio.
+             568                     
+             569                     !       tdz=td(i,k)-273.15
+             570                     !       p_w=6.112*exp(17.67*tdz/(tdz+243.5))
+             571                     !       w=aslon*p_w/(p(i,k)-p_w)
+             572                     
+             573                     !* To compute equivalent potential temperature.
+             574                     
+             575                     !       if( p(i,k).gt.100. )then
+             576                     !         thetae(i,k)=theta*exp(2675.*w/tc)
+             577                     !       else
+             578                     !         thetae(i,k)=theta
+             579                     !       endif
+             580                     ! 100   continue
+             581                     !---
+             582                     
+             583                     !* To compute dew-point temperature
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 728
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.46, ITR: 48, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      q, p, td
+                                   <<< Loop-information  End >>>
+             584     1  pp   2v            do i=1,nx*lev
+             585     1   p   2v              p_td=q(i,1)*p(i,1)/(aslon+q(i,1)*(1.-aslon))
+             586     1   p   2v              td(i,1)=p_td/6.112
+             587     1   p   2v            enddo
+             588                           call vlog(td,td,nx*lev)
+             589                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 572
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED(lines: 590,598)
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.28, ITR: 48, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      td, p, tmp1
+                                   <<< Loop-information  End >>>
+             590     1  pp   2v            do 50 i = 1, nx*lev
+             591     1               !       p_td=q(i,1)*p(i,1)/(aslon+q(i,1)*(1.-aslon))
+             592     1               !       rlog=log(p_td/6.112)
+             593     1   p   2v              rlog=td(i,1)
+             594     1   p   2v              td(i,1)=243.5*rlog/(17.67-rlog) + 273.15
+             595     1   p   2v        50  continue
+             596                     
+             597                     !* To compute potential temperature.
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED
+                                   <<< Loop-information  End >>>
+             598     1                     do i=1,nx*lev
+             599     1                       tmp1(i,1)=p0/p(i,1)
+             600     1                      enddo
+             601                           call vlog(tmp1,tmp1,nx*lev)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 458
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.43, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      td, tmp1, t, tmp3, tmp2
+                                   <<< Loop-information  End >>>
+             602     1  pp    v            do i=1,nx*lev
+             603     1   p    v              tmp1(i,1)=(rgas/cp)*tmp1(i,1)
+             604     1   p    v              tmp2(i,1)=t(i,1)/td(i,1)
+             605     1   p    v              tdz=td(i,1)-273.15
+             606     1   p    v              tmp3(i,1)=(17.67*tdz/(tdz+243.5))
+             607     1   p    v            enddo
+             608                           call vexp(tmp1,tmp1,nx*lev)
+             609                           call vlog(tmp2,tmp2,nx*lev)
+             610                           call vexp(tmp3,tmp3,nx*lev)
+             611                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 40
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.51, ITR: 40, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tmp3, tmp2, p, tmp1, t, td, thetae
+                                   <<< Loop-information  End >>>
+             612     1  pp    v            do 100 i = 1, nx*lev
+             613     1               !       theta=t(i,1)*(p0/p(i,1))**(rgas/cp)
+             614     1               !       tc=1./(1./(td(i,1)-56.)+log(t(i,1)/td(i,1))/800.)+56.
+             615     1               !       tdz=td(i,1)-273.15
+             616     1               !       p_w=6.112*exp(17.67*tdz/(tdz+243.5))
+             617     1   p    v              theta=t(i,1)*tmp1(i,1)
+             618     1   p    v              tc=1./(1./(td(i,1)-56.)+tmp2(i,1)/800.)+56.
+             619     1   p    v              p_w=6.112*tmp3(i,1)
+             620     1   p    v              w=aslon*p_w/(p(i,1)-p_w)
+             621     2   p    v              if( p(i,1).gt.100. )then
+             622     2   p    v                thetae(i,1)=theta*exp(2675.*w/tc)
+             623     2   p    v              else
+             624     2   p    v                thetae(i,1)=theta
+             625     2   p    v              endif
+             626     1   p    v        100 continue
+             627                     !
+             628                             return
+             629                             end
+
+ Procedure information
+   Lines      : 140
+   Statements : 40
+   Stack(byte): 1920
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : theta_e
+   Attribute and Cross reference of name
+     aslon
+      |(Class and Type) : named constant, REAL(8)-implicited
+      |(Attributes)     : 
+      |(Declaration)    : 536
+      |(Definition)     : 
+      |(Reference)      : 585  585  620
+     cp
+      |(Class and Type) : named constant, REAL(8)-implicited
+      |(Attributes)     : 
+      |(Declaration)    : 536
+      |(Definition)     : 
+      |(Reference)      : 
+     exp
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 622
+     i
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 584  590  598  602  612
+      |(Reference)      : 585  585  585  586  593  594  599  599  603  603  604  604  604  605  606  617  617  618  618  619  620  621  622  624
+     lev
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 492
+      |(Definition)     : 
+      |(Reference)      : 537  537  537  537  538  540  540  540  584  588  590  598  601  602  608  609  610  612
+     nx
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 492
+      |(Definition)     : 
+      |(Reference)      : 537  537  537  537  538  540  540  540  584  588  590  598  601  602  608  609  610  612
+     p
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 492  537
+      |(Definition)     : 
+      |(Reference)      : 585  599  620  621
+     p0
+      |(Class and Type) : named constant, REAL(8)-implicited
+      |(Attributes)     : 
+      |(Declaration)    : 536
+      |(Definition)     : 
+      |(Reference)      : 599
+     p_td
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 585
+      |(Reference)      : 586
+     p_w
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 619
+      |(Reference)      : 620  620
+     q
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 492  537
+      |(Definition)     : 
+      |(Reference)      : 585  585
+     rgas
+      |(Class and Type) : named constant, REAL(8)-implicited
+      |(Attributes)     : 
+      |(Declaration)    : 536
+      |(Definition)     : 
+      |(Reference)      : 603  603
+     rlog
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 593
+      |(Reference)      : 594  594
+     t
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 492  537
+      |(Definition)     : 
+      |(Reference)      : 604  617
+     tc
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 618
+      |(Reference)      : 622
+     td
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 538
+      |(Definition)     : 586  588  588  594
+      |(Reference)      : 593  604  605  618
+     tdz
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 605
+      |(Reference)      : 606  606
+     theta
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 617
+      |(Reference)      : 622  624
+     theta_e
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 492
+      |(Reference)      : 
+     thetae
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 492  537
+      |(Definition)     : 622  624
+      |(Reference)      : 
+     tmp1
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 540
+      |(Definition)     : 599  601  601  603  608  608
+      |(Reference)      : 603  617
+     tmp2
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 540
+      |(Definition)     : 604  609  609
+      |(Reference)      : 618
+     tmp3
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 540
+      |(Definition)     : 606  610  610
+      |(Reference)      : 619
+     vexp
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 608  610
+     vlog
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 588  601  609
+     w
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 620
+      |(Reference)      : 622
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+         50  execution     (Definition) 595  
+                           (Reference)  590
+        100  execution     (Definition) 626  
+                           (Reference)  612
+
+ Total information
+   Procedures       : 2
+   Total lines      : 629
+   Total statements : 327
+   Total stack(byte): 25152
+   Total prefetch num: 0
+

@@ -1,0 +1,885 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar  7 10:21:03 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm_helio
+   Source file       : set_soilveg.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "set_soilveg"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine set_soilveg(isot,ivet)
+               2                     !     subroutine set_soilveg(me,isot,ivet,nlunit)
+               3                           use namelist_soilveg
+               4                           implicit none
+               5                     
+               6                     !     integer, intent(in) :: isot,ivet,nlunit
+               7                           integer, intent(inout) :: isot,ivet
+               8                           integer me
+               9                     !my begin locals
+              10                     !for 20 igbp veg type and 19 stasgo soil type
+              11                           integer i
+              12                           REAL WLTSMC1,REFSMC1
+              13                     ! ----------------------------------------------------------------------
+              14                     ! SET TWO SOIL MOISTURE WILT, SOIL MOISTURE REFERENCE PARAMETERS
+              15                     ! ----------------------------------------------------------------------
+              16                           REAL SMLOW
+              17                           REAL SMLOW_DATA
+              18                           DATA SMLOW_DATA /0.5/
+              19                     
+              20                           REAL SMHIGH
+              21                           REAL SMHIGH_DATA
+              22                     !     changed in 2.6 from 3 to 6 on June 2nd 2003
+              23                     !      DATA SMHIGH_DATA /3.0/
+              24                           DATA SMHIGH_DATA /6.0/
+              25                           NAMELIST /SOIL_VEG/ SLOPE_DATA, RSMTBL, RGLTBL, HSTBL, SNUPX, &
+              26                             BB, DRYSMC, F11, MAXSMC, REFSMC, SATPSI, SATDK, SATDW, &
+              27                             WLTSMC, QTZ, LPARAM, ZBOT_DATA, SALP_DATA, CFACTR_DATA, &
+              28                             CMCMAX_DATA, SBETA_DATA, RSMAX_DATA, TOPT_DATA, &
+              29                             REFDK_DATA, FRZK_DATA, BARE, DEFINED_VEG, DEFINED_SOIL, &
+              30                             DEFINED_SLOPE, FXEXP_DATA, NROOT_DATA, REFKDT_DATA, Z0_DATA, &
+              31                             CZIL_DATA, LAI_DATA, CSOIL_DATA,ems1_data,ems2_data
+              32                     
+              33                     !xb118
+              34     1                      if((ivet.eq.2).or.(isot.eq.2))then
+              35     1                        ivet=2
+              36     1                        isot=2
+              37     1                      endif
+              38                     !xb118
+              39                     
+              40                     !cmy end locals
+              41     1                     if(ivet.eq.0) then
+              42     1               
+              43     1               !using umd veg table
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 308
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+              44     1   s   fv            slope_data =(/0.1,  0.6, 1.0, 0.35, 0.55, 0.8, &
+              45     1                       	       0.63, 0.0, 0.0, 0.0,  0.0,  0.0, &
+              46     1                       	       0.0 , 0.0, 0.0, 0.0,  0.0,  0.0, &
+              47     1                       	       0.0 , 0.0, 0.0, 0.0,  0.0,  0.0, &
+              48     1                       	       0.0 , 0.0, 0.0, 0.0,  0.0,  0.0/)
+              49     1               !orig     rsmtbl =(/300.0, 175.0, 175.0, 300.0, 300.0, 70.0, &
+              50     1               !                   20.0, 225.0, 225.0, 225.0, 400.0, 20.0, &
+              51     1               !       	   150.0,   0.0,   0.0,   0.0,   0.0,  0.0, &
+              52     1               !       	     0.0,   0.0,   0.0,   0.0,   0.0,  0.0, &
+              53     1               !       	     0.0,   0.0,   0.0,   0.0,   0.0,  0.0/)
+              54     1               !c-----------------------------
+              55     1               ! 20120809 feng-ju test
+              56     1   p   fv            rsmtbl =(/300.0, 175.0, 175.0, 150.0, 70.0, 70.0, &
+              57     1                                20.0,  70.0,  70.0,  70.0, 70.0, 20.0, &
+              58     1                                70.0,   0.0,   0.0,   0.0,  0.0,  0.0, &
+              59     1                                 0.0,   0.0,   0.0,   0.0,  0.0,  0.0, &
+              60     1                                 0.0,   0.0,   0.0,   0.0,  0.0,  0.0/)
+              61     1               
+              62     1   p   fv            rgltbl =(/30.0,  30.0,  30.0,  30.0,  30.0,  65.0, &
+              63     1                       	  100.0, 100.0, 100.0, 100.0, 100.0, 100.0, &
+              64     1                       	  100.0,   0.0,   0.0,   0.0,	0.0,   0.0, &
+              65     1                       	    0.0,   0.0,   0.0,   0.0,	0.0,   0.0, &
+              66     1                       	    0.0,   0.0,   0.0,   0.0,	0.0,   0.0/)
+              67     1   p   fv            hstbl =(/41.69, 54.53, 51.93, 47.35,  47.35, 54.53, &
+              68     1                       	  36.35, 42.00, 42.00, 42.00,  42.00, 36.35, &
+              69     1                       	  42.00,  0.00,  0.00,  0.00,	0.00,  0.00, &
+              70     1                       	   0.00,  0.00,  0.00,  0.00,	0.00,  0.00, &
+              71     1                       	   0.00,  0.00,  0.00,  0.00,	0.00,  0.00/)
+              72     1               !     changed for version 2.6 on june 2nd 2003
+              73     1               !      data snupx  /0.080, 0.080, 0.080, 0.080, 0.080, 0.080,
+              74     1               !     &  	   0.040, 0.040, 0.040, 0.040, 0.025, 0.040,
+              75     1               !     &  	   0.025, 0.000, 0.000, 0.000, 0.000, 0.000,
+              76     1   p   fv            snupx  =(/0.040, 0.040, 0.040, 0.040, 0.040, 0.040, &
+              77     1                                  0.020, 0.020, 0.020, 0.020, 0.013, 0.020, &
+              78     1                                  0.013, 0.000, 0.000, 0.000, 0.000, 0.000, &
+              79     1                       	   0.000, 0.000, 0.000, 0.000, 0.000, 0.000, &
+              80     1                       	   0.000, 0.000, 0.000, 0.000, 0.000, 0.000/)
+              81     1               
+              82     1       f             bare =11
+              83     1               
+              84     1               !c---------------------------------------------------------------------
+              85     1               ! number of defined veg used.
+              86     1               ! ----------------------------------------------------------------------
+              87     1       f             defined_veg=13
+              88     1   p   fv            nroot_data =(/4,4,4,4,4,4,3,3,3,2,3,3,2,0,0, &
+              89     1                                      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0/)
+              90     1               ! ----------------------------------------------------------------------
+              91     1               ! vegetation class-related arrays
+              92     1               ! ----------------------------------------------------------------------
+              93     1   p   fv            z0_data =(/2.653, 0.826, 0.563, 1.089, 0.854, 0.856, &
+              94     1                                   0.035, 0.238, 0.065, 0.076, 0.011, 0.125, &
+              95     1                                   0.011, 0.000, 0.000, 0.000, 0.000, 0.000, &
+              96     1                                   0.000, 0.000, 0.000, 0.000, 0.000, 0.000, &
+              97     1                                   0.000, 0.000, 0.000, 0.000, 0.000, 0.000/)
+              98     1               !clu: change to 3 or 2   oct 15, 2004
+              99     1   p   fv            lai_data =(/3.0, 3.0, 3.0, 3.0, 3.0, 3.0, &
+             100     1                                    3.0, 3.0, 3.0, 3.0, 3.0, 3.0, &
+             101     1                                    3.0, 0.0, 0.0, 0.0, 0.0, 0.0, &
+             102     1                                    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, &
+             103     1                                    0.0, 0.0, 0.0, 0.0, 0.0, 0.0/)
+             104     1               ! use igbp table
+             105     1               !      elseif(ivet.eq.1)then
+             106     1                     else
+             107     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 250
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             108     1   s   fv            SLOPE_DATA =(/1.0,  1.0, 1.0, 1.0, 1.0, 1.0, &
+             109     1                                      1.0, 1.0, 1.0, 1.0,  1.0,  1.0, &
+             110     1                                      1.0 , 1.0, 1.0, 1.0,  1.0,  1.0, &
+             111     1                                      1.0 , 1.0, 0.0, 0.0,  0.0,  0.0, &
+             112     1                                      0.0 , 0.0, 0.0, 0.0,  0.0,  0.0/)
+             113     1   p   fv            RSMTBL =(/300.0, 300.0, 70.0, 175.0, 175.0, 70.0, &
+             114     1               ! phon test
+             115     1               !     RSMTBL =(/175.0, 175.0, 175.0, 175.0, 175.0, 70.0, &
+             116     1                                   70.0, 70.0, 70.0, 20.0, 40.0, 20.0, &
+             117     1                                  400.0, 35.0, 200.0, 70.0, 100.0, 70.0, &
+             118     1                                  150.0, 200.0, 0.0, 0.0,0.0, 0.0, &
+             119     1                                   0.0, 0.0, 0.0,   0.0,   0.0,  0.0/)
+             120     1               !c-----------------------------
+             121     1   p   fv            RGLTBL =(/30.0,  30.0,  30.0,  30.0,  30.0,  100.0, &
+             122     1                                 100.0, 65.0, 65.0, 100.0, 100.0, 100.0, &
+             123     1                                 100.0, 100.0, 100.0,100.0,30.0, 100.0, &
+             124     1                                 100.0, 100.0, 0.0,0.0,0.0,0.0, &
+             125     1                                 0.0, 0.0, 0.0,  0.0,  0.0,  0.0/)
+             126     1   p   fv            HSTBL =(/47.35, 41.69, 47.35, 54.53, 51.93, 42.00, &
+             127     1                                42.00, 42.00, 42.00, 36.35, 60.00, 36.25, &
+             128     1                                42.00, 36.25, 42.00, 42.00, 51.75, 42.00, &
+             129     1                                42.00, 42.00, 0.00, 0.00, 0.00, 0.00, &
+             130     1                                0.00, 0.00, 0.00,  0.00,  0.00,  0.00/)
+             131     1   p   fv            SNUPX  =(/0.080, 0.080, 0.080, 0.080, 0.080, 0.020, &
+             132     1                                  0.020, 0.060, 0.040, 0.020, 0.010, 0.020, &
+             133     1                                  0.020, 0.020, 0.013, 0.013, 0.010, 0.020, &
+             134     1                                  0.020, 0.020, 0.000, 0.000, 0.000, 0.000, &
+             135     1                                  0.000, 0.000, 0.000, 0.000, 0.000, 0.000/)
+             136     1               
+             137     1       f             bare =16
+             138     1               
+             139     1               !---------------------------------------------------------------------
+             140     1               ! number of defined veg used.
+             141     1               ! ----------------------------------------------------------------------
+             142     1       f             defined_veg=20
+             143     1               
+             144     1   p   fv            NROOT_DATA =(/4,4,4,4,4,3,3,3,3,3,3,3,1,3,2, &
+             145     1                                      3,0,3,3,2,0,0,0,0,0,0,0,0,0,0/)
+             146     1               ! ----------------------------------------------------------------------
+             147     1               ! VEGETATION CLASS-RELATED ARRAYS
+             148     1               ! ----------------------------------------------------------------------
+             149     1   p   fv            Z0_DATA =(/1.089, 2.653, 0.854, 0.826, 0.80, 0.05, &
+             150     1                                   0.03, 0.856, 0.856, 0.15, 0.04, 0.13, &
+             151     1                                   1.00, 0.25, 0.011, 0.011, 0.001, 0.076, &
+             152     1                                   0.05, 0.03, 0.000, 0.000, 0.000, 0.000, &
+             153     1                                   0.000, 0.000, 0.000, 0.000, 0.000, 0.000/)
+             154     1               
+             155     1   p   fv            lai_data =(/3.0, 3.0, 3.0, 3.0, 3.0, 3.0, &
+             156     1                                    3.0, 3.0, 3.0, 3.0, 3.0, 3.0, &
+             157     1                                    3.0, 3.0, 3.0, 3.0, 3.0, 3.0, &
+             158     1                                    3.0, 3.0, 0.0, 0.0, 0.0, 0.0, &
+             159     1                                    0.0, 0.0, 0.0, 0.0, 0.0, 0.0/)
+             160     1               ! emissivity(0-1)
+             161     1               ! phon build refer to WRF landuse tbl
+             162     1               ! ems1 -- for summer
+             163     1               ! ems2 -- for winter
+             164     1   p   fv            ems1_data =(/.95, .95, .94, .93, .97, .93, &
+             165     1                                 .95, .93, .92, .96, .95, .985, &
+             166     1                                 .88, .98, .95, .90, .98, .93, &
+             167     1                                 .92, .90, 0.0, 0.0, 0.0, 0.0, &
+             168     1                                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0/)
+             169     1   p   fv            ems2_data =(/.95, .95, .93, .93, .93, .93, &
+             170     1                                  .93, .93, .92, .92, .95, .92, &
+             171     1                                  .88, .92, .95, .90, .98, .93, &
+             172     1                                  .92, .90, 0.0, 0.0, 0.0, 0.0, &
+             173     1                                 0.0, 0.0, 0.0, 0.0, 0.0, 0.0/)
+             174     1               !  end if veg table
+             175     1                     endif
+             176                     
+             177     1                     if(isot.eq.0) then
+             178     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 250
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             179     1   s   fv            bb         =(/4.26,  8.72, 11.55, 4.74, 10.73,  8.17, &
+             180     1                                 6.77,  5.25,  4.26, 0.00,  0.00,  0.00, &
+             181     1                                 0.00,  0.00,  0.00, 0.00,  0.00,  0.00, &
+             182     1                                 0.00,  0.00,  0.00, 0.00,  0.00,  0.00, &
+             183     1                                 0.00,  0.00,  0.00, 0.00,  0.00,  0.00/)
+             184     1               ! !!!!!!!!!!!!!! the following values in the table are not used
+             185     1               ! !!!!!!!!!!!!!! and are just given for reference
+             186     1   p   fv            drysmc=(/0.029, 0.119, 0.139, 0.047, 0.100, 0.103, &
+             187     1                                 0.069, 0.066, 0.029, 0.000, 0.000, 0.000, &
+             188     1                                 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, &
+             189     1                                 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, &
+             190     1                                 0.000, 0.000, 0.000, 0.000, 0.000, 0.000/)
+             191     1               ! !!!!!!!!!!!!!! the following values in the table are not used
+             192     1               ! !!!!!!!!!!!!!! and are just given for reference
+             193     1   p   fv            f11  =(/-0.999, -1.116, -2.137, -0.572, -3.201, -1.302, &
+             194     1                                -1.519, -0.329, -0.999,  0.000,  0.000,  0.000, &
+             195     1                                 0.000,  0.000,  0.000,  0.000,  0.000,  0.000, &
+             196     1                                 0.000,  0.000,  0.000,  0.000,  0.000,  0.000, &
+             197     1                                 0.000,  0.000,  0.000,  0.000,  0.000,  0.000/)
+             198     1   p   fv            maxsmc=(/0.421, 0.464, 0.468, 0.434, 0.406, 0.465, &
+             199     1                                 0.404, 0.439, 0.421, 0.000, 0.000, 0.000, &
+             200     1                                 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, &
+             201     1                                 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, &
+             202     1                                 0.000, 0.000, 0.000, 0.000, 0.000, 0.000/)
+             203     1               !
+             204     1               ! ----------------------------------------------------------------------
+             205     1               ! the following 5 parameters are derived later in redprm.f from the soil
+             206     1               ! data, and are just given here for reference and to force static
+             207     1               ! storage allocation. -dag lohmann, feb. 2001
+             208     1               ! ----------------------------------------------------------------------
+             209     1               !      data refsmc/0.283, 0.387, 0.412, 0.312, 0.338, 0.382,
+             210     1               !     &           0.315, 0.329, 0.283, 0.000, 0.000, 0.000,
+             211     1               ! !!!!!!!!!!!!!! the following values in the table are not used
+             212     1               ! !!!!!!!!!!!!!! and are just given for reference
+             213     1   p   fv            refsmc=(/0.248, 0.368, 0.398, 0.281, 0.321, 0.361, &
+             214     1                                 0.293, 0.301, 0.248, 0.000, 0.000, 0.000, &
+             215     1                                 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, &
+             216     1                                 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, &
+             217     1                                 0.000, 0.000, 0.000, 0.000, 0.000, 0.000/)
+             218     1               ! ----------------------------------------------------------------------
+             219     1               ! soil texture-related arrays.
+             220     1               ! ----------------------------------------------------------------------
+             221     1   p   fv            satpsi=(/0.04, 0.62, 0.47, 0.14, 0.10, 0.26, &
+             222     1                                 0.14, 0.36, 0.04, 0.00, 0.00, 0.00, &
+             223     1                                 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, &
+             224     1                                 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, &
+             225     1                                 0.00, 0.00, 0.00, 0.00, 0.00, 0.00/)
+             226     1   p   fv            satdk =(/1.41e-5, 0.20e-5, 0.10e-5, 0.52e-5, 0.72e-5, &
+             227     1                                 0.25e-5, 0.45e-5, 0.34e-5, 1.41e-5, 0.00, &
+             228     1                                 0.00   , 0.00   , 0.00   , 0.00   , 0.00, &
+             229     1                                 0.00   , 0.00   , 0.00   , 0.00   , 0.00, &
+             230     1                                 0.00   , 0.00   , 0.00   , 0.00   , 0.00, &
+             231     1                                 0.00   , 0.00   , 0.00   , 0.00   , 0.00/)
+             232     1   p   fv            qtz   =(/0.82, 0.10, 0.25, 0.60, 0.52, 0.35, &
+             233     1                                 0.60, 0.40, 0.82, 0.00, 0.00, 0.00, &
+             234     1                                 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, &
+             235     1                                 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, &
+             236     1                                 0.00, 0.00, 0.00, 0.00, 0.00, 0.00/)
+             237     1               
+             238     1               ! !!!!!!!!!!!!!! the following values in the table are not used
+             239     1               ! !!!!!!!!!!!!!! and are just given for reference
+             240     1   p   fv            wltsmc=(/0.029, 0.119, 0.139, 0.047, 0.100, 0.103, &
+             241     1                                 0.069, 0.066, 0.029, 0.000, 0.000, 0.000, &
+             242     1                                 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, &
+             243     1                                 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, &
+             244     1                                 0.000, 0.000, 0.000, 0.000, 0.000, 0.000/)
+             245     1               ! !!!!!!!!!!!!!! the following values in the table are not used
+             246     1               ! !!!!!!!!!!!!!! and are just given for reference
+             247     1   p   fv            satdw =(/5.71e-6, 2.33e-5, 1.16e-5, 7.95e-6, 1.90e-5, &
+             248     1                                 1.14e-5, 1.06e-5, 1.46e-5, 5.71e-6, 0.00, &
+             249     1                                 0.00   , 0.00   , 0.00   , 0.00   , 0.00, &
+             250     1                                 0.00   , 0.00   , 0.00   , 0.00   , 0.00, &
+             251     1                                 0.00   , 0.00   , 0.00   , 0.00   , 0.00, &
+             252     1                                 0.00   , 0.00   , 0.00   , 0.00   , 0.00/)
+             253     1               
+             254     1               ! ----------------------------------------------------------------------
+             255     1               ! number of defined soiltyps used.
+             256     1               ! ----------------------------------------------------------------------
+             257     1               
+             258     1                     defined_soil=9
+             259     1               
+             260     1                     else
+             261     1               
+             262     1               ! using stasgo table
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 250
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             263     1   s   fv            BB         =(/4.05,  4.26, 4.74, 5.33, 5.33,  5.25, &
+             264     1                                 6.77,  8.72,  8.17, 10.73, 10.39,  11.55, &
+             265     1                                 5.25,  4.26,  4.05, 4.26,  11.55,  4.05, &
+             266     1                                 4.05,  0.00,  0.00, 0.00,  0.00,  0.00, &
+             267     1                                 0.00,  0.00,  0.00, 0.00,  0.00,  0.00/)
+             268     1   p   fv            maxsmc=(/0.395, 0.421, 0.434, 0.476, 0.476, 0.439, &
+             269     1                                 0.404, 0.464, 0.465, 0.406, 0.468, 0.457, &
+             270     1                                 0.464, 0.421, 0.200, 0.421, 0.457, 0.200, &
+             271     1                                 0.395, 0.000, 0.000, 0.000, 0.000, 0.000, &
+             272     1                                 0.000, 0.000, 0.000, 0.000, 0.000, 0.000/)
+             273     1               !
+             274     1               ! !!!!!!!!!!!!!! The following values in the table are NOT used
+             275     1               ! !!!!!!!!!!!!!! and are just given for reference
+             276     1               !     DRYSMC=(/0.023, 0.028, 0.047, 0.084, 0.084, 0.066, &
+             277     1               !                 0.069, 0.120, 0.103, 0.100, 0.126, 0.135, &
+             278     1               !                 0.069, 0.028, 0.012, 0.028, 0.135, 0.012, &
+             279     1               !                 0.023, 0.000, 0.000, 0.000, 0.000, 0.000, &
+             280     1               !                 0.000, 0.000, 0.000, 0.000, 0.000, 0.000/)
+             281     1               !new 2018/09 from Helin
+             282     1   p   fv            drysmc=(/0.01, 0.025, 0.01, 0.01, 0.01, 0.01, &
+             283     1                                 0.01, 0.010, 0.01, 0.010, 0.01, 0.01, &
+             284     1                                 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, &
+             285     1                                 0.01, 0.000, 0.000, 0.000, 0.000, 0.000, &
+             286     1                                 0.000, 0.000, 0.000, 0.000, 0.000, 0.000/)
+             287     1   p   fv            f11  =(/-1.090, -1.041, -0.568, 0.162, 0.162, -0.327, &
+             288     1                                -1.535, -1.118, -1.297, -3.211,  -1.916, -2.258, &
+             289     1                                -0.201, -1.041, -2.287, -1.041,  -2.258, -2.287, &
+             290     1                                -1.090,  0.000,  0.000,  0.000,  0.000,  0.000, &
+             291     1                                 0.000,  0.000,  0.000,  0.000,  0.000,  0.000/)
+             292     1               !
+             293     1               ! ----------------------------------------------------------------------
+             294     1               ! THE FOLLOWING 5 PARAMETERS ARE DERIVED LATER IN REDPRM.F FROM THE SOIL
+             295     1               ! DATA, AND ARE JUST GIVEN HERE FOR REFERENCE AND TO FORCE STATIC
+             296     1               ! STORAGE ALLOCATION. -DAG LOHMANN, FEB. 2001
+             297     1               ! ----------------------------------------------------------------------
+             298     1               !      DATA REFSMC/0.283, 0.387, 0.412, 0.312, 0.338, 0.382,
+             299     1               !     &           0.315, 0.329, 0.283, 0.000, 0.000, 0.000,
+             300     1               ! !!!!!!!!!!!!!! The following values in the table are NOT used
+             301     1               ! !!!!!!!!!!!!!! and are just given for reference
+             302     1   p   fv            REFSMC=(/0.236, 0.283, 0.312, 0.360, 0.360, 0.329, &
+             303     1                                 0.315, 0.387, 0.382, 0.338, 0.404, 0.403, &
+             304     1                                 0.348, 0.283, 0.133, 0.283, 0.403, 0.133, &
+             305     1                                 0.236, 0.000, 0.000, 0.000, 0.000, 0.000, &
+             306     1                                 0.000, 0.000, 0.000, 0.000, 0.000, 0.000/)
+             307     1               ! ----------------------------------------------------------------------
+             308     1               ! SOIL TEXTURE-RELATED ARRAYS.
+             309     1               ! ----------------------------------------------------------------------
+             310     1   p   fv            SATPSI=(/0.035, 0.0363, 0.1413, 0.7586, 0.7586, 0.3548, &
+             311     1                                 0.1349, 0.6166, 0.2630, 0.0977, 0.3236, 0.4677, &
+             312     1                                 0.3548, 0.0363, 0.0350, 0.0363, 0.4677, 0.0350, &
+             313     1                                 0.0350, 0.00, 0.00, 0.00, 0.00, 0.00, &
+             314     1                                 0.00, 0.00, 0.00, 0.00, 0.00, 0.00/)
+             315     1   p   fv            SATDK =(/1.76e-4, 1.4078e-5, 5.2304e-6, 2.8089e-6, 2.8089e-6, &
+             316     1                                 3.377e-6, 4.4518e-6, 2.0348e-6, 2.4464e-6, 7.2199e-6, &
+             317     1                                1.3444e-6, 9.7394e-7, 3.377e-6, 1.4078e-5, 1.4087e-05, &
+             318     1                                1.4078e-5, 9.7394e-7, 1.4078e-5, 1.760e-4, 0.00, &
+             319     1                                 0.00   , 0.00   , 0.00   , 0.00   , 0.00, &
+             320     1                                 0.00   , 0.00   , 0.00   , 0.00   , 0.00/)
+             321     1               !     QTZ   =(/0.92, 0.82, 0.60, 0.25, 0.10, 0.40,
+             322     1   p   fv            QTZ   =(/0.92, 0.82, 0.25, 0.15, 0.10, 0.20, &
+             323     1                                 0.60, 0.10, 0.35, 0.52, 0.10, 0.25, &
+             324     1                                 0.05, 0.25, 0.07, 0.25, 0.60, 0.52, &
+             325     1                                 0.92, 0.00, 0.00, 0.00, 0.00, 0.00, &
+             326     1                                 0.00, 0.00, 0.00, 0.00, 0.00, 0.00/)
+             327     1               
+             328     1               ! !!!!!!!!!!!!!! The following values in the table are NOT used
+             329     1               ! !!!!!!!!!!!!!! and are just given for reference
+             330     1   p   fv            WLTSMC=(/0.023, 0.028, 0.047, 0.084, 0.084, 0.066, &
+             331     1                                 0.069, 0.120, 0.103, 0.100, 0.126, 0.135, &
+             332     1                                 0.069, 0.028, 0.012, 0.028, 0.135, 0.012, &
+             333     1                                 0.023, 0.000, 0.000, 0.000, 0.000, 0.000, &
+             334     1                                 0.000, 0.000, 0.000, 0.000, 0.000, 0.000/)
+             335     1               !
+             336     1   p   fv            SATDW =(/0.6316e-4, 0.5171e-5, 0.8072e-5, 0.2386e-4, 0.2386e-4, &
+             337     1                                 0.1433e-4, 0.1006e-4, 0.2358e-4, 0.1130e-4,0.1864e-04, &
+             338     1                                0.9658e-05,0.1151e-04,0.1356e-04,0.5171e-05,0.9978e-05, &
+             339     1                                0.5171e-05, 0.1151e-04, 0.9978e-05, 0.6316e-04, 0.00, &
+             340     1                                 0.00   , 0.00   , 0.00   , 0.00   , 0.00, &
+             341     1                                 0.00   , 0.00   , 0.00   , 0.00   , 0.00/)
+             342     1               ! ----------------------------------------------------------------------
+             343     1               ! number of defined soiltyps used.
+             344     1               ! ----------------------------------------------------------------------
+             345     1               
+             346     1                     defined_soil=19
+             347     1               !   end if soil table
+             348     1                     endif
+             349                     
+             350                     
+             351                     ! the values shared by different veg/soil type data
+             352                     
+             353                     ! PT 5/18/2015 - changed to FALSE to match atm_namelist setting
+             354                     ! PT LPARAM is not used anywhere
+             355                     !      LPARAM =.TRUE.
+             356                           LPARAM =.FALSE.
+             357                     
+             358                     !     changed for version 2.5.2
+             359                     !      data zbot_data /-3.0/
+             360                           zbot_data =-8.0
+             361                     !     changed for version 2.6 june 2nd 2003
+             362                     !      data salp_data /2.6/
+             363                           salp_data =4.0
+             364                           cfactr_data =0.5
+             365                           cmcmax_data =0.5e-3
+             366                           sbeta_data =-2.0
+             367                           rsmax_data =5000.0
+             368                           topt_data =298.0
+             369                           refdk_data =2.0e-6
+             370                           frzk_data =0.15
+             371                     
+             372                           defined_slope=9
+             373                           fxexp_data =2.0
+             374                           refkdt_data =3.0
+             375                     ! changed in version 2.6 june 2nd 2003
+             376                     !     data czil_data /0.2/
+             377                           czil_data =0.075
+             378                     
+             379                     ! data csoil_data /1.26E+6/
+             380                           csoil_data = 2.00E+6
+             381                     ! ----------------------------------------------------------------------
+             382                     ! READ NAMELIST FILE TO OVERRIDE DEFAULT PARAMETERS ONLY ONCE.
+             383                     ! NAMELIST_NAME must be 50 characters or less.
+             384                     ! ----------------------------------------------------------------------
+             385                     !lu: namelist is set up in run script
+             386                     !PT         if (me == 0) write(0,*) 'read namelist cwsoilvegSOIL_VEG'
+             387                     !$$$         READ(5, SOIL_VEG)
+             388                     !PT         rewind(nlunit)
+             389                     !PT         READ(nlunit, SOIL_VEG)
+             390                     
+             391                     !*       WRITE(6, SOIL_VEG)
+             392                     ! 	 OPEN(58, FILE = 'namelist_filename.txt')
+             393                     !         READ(58,'(A)') NAMELIST_NAME
+             394                     !         CLOSE(58)
+             395                     !         WRITE(0,*) 'Namelist Filename is ', NAMELIST_NAME
+             396                     !         OPEN(59, FILE = NAMELIST_NAME)
+             397                     ! 50      CONTINUE
+             398                     !         READ(59, SOIL_VEG, END=100)
+             399                     !         IF (LPARAM) GOTO 50
+             400                     ! 100     CONTINUE
+             401                     !         CLOSE(59)
+             402                     
+             403     1                        IF (DEFINED_SOIL .GT. MAX_SOILTYP) THEN
+             404     1                           WRITE(0,*) 'Warning: DEFINED_SOIL too large in namelist'
+             405     1                           STOP 222
+             406     1                        ENDIF
+             407     1                        IF (DEFINED_VEG .GT. MAX_VEGTYP) THEN
+             408     1                           WRITE(0,*) 'Warning: DEFINED_VEG too large in namelist'
+             409     1                           STOP 222
+             410     1                        ENDIF
+             411     1                        IF (DEFINED_SLOPE .GT. MAX_SLOPETYP) THEN
+             412     1                           WRITE(0,*) 'Warning: DEFINED_SLOPE too large in namelist'
+             413     1                           STOP 222
+             414     1                        ENDIF
+             415                     
+             416                              SMLOW  = SMLOW_DATA
+             417                              SMHIGH = SMHIGH_DATA
+             418                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 11
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      SATDK, BB, MAXSMC, SATPSI, F11, SATDW
+                                   <<<      DRYSMC, WLTSMC, REFSMC
+                                   <<< Loop-information  End >>>
+             419     1  pp    v               DO I = 1,DEFINED_SOIL
+             420     2   p    v                 if (satdk(i) /= 0.0 .and. bb(i) > 0.0) then
+             421     2   p    v                 SATDW(I)  = BB(I)*SATDK(I)*(SATPSI(I)/MAXSMC(I))
+             422     2   p    v                 F11(I)    = DLOG10(SATPSI(I)) + BB(I)*DLOG10(MAXSMC(I)) + 2.0
+             423     2   p    v                 REFSMC1   = MAXSMC(I)*(5.79E-9/SATDK(I)) &
+             424     2                                       **(1.0/(2.0*BB(I)+3.0))
+             425     2   p    v                 REFSMC(I) = REFSMC1 + (MAXSMC(I)-REFSMC1) / SMHIGH
+             426     2   p    v                 WLTSMC1   = MAXSMC(I) * (200.0/SATPSI(I))**(-1.0/BB(I))
+             427     2   p    v                 WLTSMC(I) = WLTSMC1 - SMLOW * WLTSMC1
+             428     2               
+             429     2               !     ----------------------------------------------------------------------
+             430     2               !     CURRENT VERSION DRYSMC VALUES THAT EQUATE TO WLTSMC.
+             431     2               !     FUTURE VERSION COULD LET DRYSMC BE INDEPENDENTLY SET VIA NAMELIST.
+             432     2               !     ----------------------------------------------------------------------
+             433     2   p    v                 DRYSMC(I) = WLTSMC(I)
+             434     2   p    v                 endif
+             435     1   p    v               END DO
+             436                     
+             437                     !       if (me == 0) write(6,soil_veg)
+             438                            return
+             439                            end
+
+ Procedure information
+   Lines      : 439
+   Statements : 110
+   Stack(byte): 944
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : set_soilveg
+   Attribute and Cross reference of name
+     BARE
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 82  137
+      |(Reference)      : 
+     BB
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 179  263
+      |(Reference)      : 420  421  422  423  426
+     CFACTR_DATA
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 364
+      |(Reference)      : 
+     CMCMAX_DATA
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 365
+      |(Reference)      : 
+     CSOIL_DATA
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 380
+      |(Reference)      : 
+     CZIL_DATA
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 377
+      |(Reference)      : 
+     DEFINED_SLOPE
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 372
+      |(Reference)      : 411
+     DEFINED_SOIL
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 258  346
+      |(Reference)      : 403  419
+     DEFINED_VEG
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 87  142
+      |(Reference)      : 407
+     DLOG10
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 422  422
+     DRYSMC
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 186  282  433
+      |(Reference)      : 
+     ems1_data
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 164
+      |(Reference)      : 
+     ems2_data
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 169
+      |(Reference)      : 
+     F11
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 193  287  422
+      |(Reference)      : 
+     FRZK_DATA
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 370
+      |(Reference)      : 
+     FXEXP_DATA
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 373
+      |(Reference)      : 
+     HSTBL
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 67  126
+      |(Reference)      : 
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 11
+      |(Definition)     : 419
+      |(Reference)      : 420  420  421  421  421  421  421  422  422  422  422  423  423  423  425  425  426  426  426  427  433  433
+     isot
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(INOUT), dummy-argument
+      |(Declaration)    : 1  7
+      |(Definition)     : 36
+      |(Reference)      : 34  177
+     ivet
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(INOUT), dummy-argument
+      |(Declaration)    : 1  7
+      |(Definition)     : 35
+      |(Reference)      : 34  41
+     LAI_DATA
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 99  155
+      |(Reference)      : 
+     LPARAM
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 356
+      |(Reference)      : 
+     MAXSMC
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 198  268
+      |(Reference)      : 421  422  423  425  426
+     MAX_SLOPETYP
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 411
+     MAX_SOILTYP
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 403
+     MAX_VEGTYP
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 407
+     me
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 8
+      |(Definition)     : 
+      |(Reference)      : 
+     NROOT_DATA
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 88  144
+      |(Reference)      : 
+     namelist_soilveg
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 3
+     QTZ
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 232  322
+      |(Reference)      : 
+     REFDK_DATA
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 369
+      |(Reference)      : 
+     REFKDT_DATA
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 374
+      |(Reference)      : 
+     REFSMC
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 213  302  425
+      |(Reference)      : 
+     REFSMC1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 12
+      |(Definition)     : 423
+      |(Reference)      : 425  425
+     RGLTBL
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 62  121
+      |(Reference)      : 
+     RSMAX_DATA
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 367
+      |(Reference)      : 
+     RSMTBL
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 56  113
+      |(Reference)      : 
+     SALP_DATA
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 363
+      |(Reference)      : 
+     SATDK
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 226  315
+      |(Reference)      : 420  421  423
+     SATDW
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 247  336  421
+      |(Reference)      : 
+     SATPSI
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 221  310
+      |(Reference)      : 421  422  426
+     SBETA_DATA
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 366
+      |(Reference)      : 
+     SLOPE_DATA
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 44  108
+      |(Reference)      : 
+     SMHIGH
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 20
+      |(Definition)     : 417
+      |(Reference)      : 425
+     SMHIGH_DATA
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : initialized
+      |(Declaration)    : 21  24
+      |(Definition)     : 
+      |(Reference)      : 417
+     SMLOW
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 16
+      |(Definition)     : 416
+      |(Reference)      : 427
+     SMLOW_DATA
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : initialized
+      |(Declaration)    : 17  18
+      |(Definition)     : 
+      |(Reference)      : 416
+     SNUPX
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 76  131
+      |(Reference)      : 
+     SOIL_VEG
+      |(Class and Type) : namelist name
+      |(Attributes)     : 
+      |(Declaration)    : 25
+      |(Definition)     : 
+      |(Reference)      : 
+     set_soilveg
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     TOPT_DATA
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 368
+      |(Reference)      : 
+     WLTSMC
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 240  330  427
+      |(Reference)      : 433
+     WLTSMC1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 12
+      |(Definition)     : 426
+      |(Reference)      : 427  427
+     Z0_DATA
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 93  149
+      |(Reference)      : 
+     ZBOT_DATA
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 25
+      |(Definition)     : 360
+      |(Reference)      : 
+
+ Total information
+   Procedures       : 1
+   Total lines      : 439
+   Total statements : 110
+   Total stack(byte): 944
+   Total prefetch num: 0
+

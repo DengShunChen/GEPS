@@ -1,0 +1,243 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar  7 10:21:03 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm_helio
+   Source file       : trdiv2.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "trdiv2"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine trdiv2 (m,lm,a,b,c,x)
+               2                     !
+               3                     !  tri-diagonal gaussian elimination subroutine called by varpht
+               4                     !
+               5                           implicit  none
+               6                           integer   m,lm,i,j,k
+               7                           real      work
+               8                           real      a(m,lm)   ,b(m,lm)   ,c(m,lm),  x(m,lm)
+               9                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 616
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.51, ITR: 48, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      b, x, c
+                                   <<< Loop-information  End >>>
+              10     1  pp   2v            do 90 i=1,m
+              11     1   p   2v            work = 1.0/b(i,1)
+              12     1   p   2v            c(i,1)= c(i,1)*work
+              13     1   p   2v            x(i,1) = x(i,1)*work
+              14     1   p   2v         90 continue
+              15                     !
+              16                     ! gaussian elimination
+              17                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      a, c, b, x
+                                   <<< Loop-information  End >>>
+              18     1                     do 101 j=2,lm-1
+              19     1               !ocl novrec
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 391
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.48, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      c, a, b, x
+                                   <<< Loop-information  End >>>
+              20     2  pp    v            do 103 i=1,m
+              21     2   p    v      	  work = 1.0/(b(i,j)-a(i,j)*c(i,j-1))
+              22     2   p    v      	  c(i,j) = c(i,j)*work
+              23     2   p    v            x(i,j)= (x(i,j)-a(i,j)*x(i,j-1))*work
+              24     2   p    v        103 continue
+              25     1                 101 continue
+              26                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 485
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.36, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      x, a, c, b
+                                   <<< Loop-information  End >>>
+              27     1  pp    v            do 105 i=1,m
+              28     1   p    v            x(i,lm) = (x(i,lm)-a(i,lm)*x(i,lm-1))/(b(i,lm)-a(i,lm)*c(i,lm-1))
+              29     1   p    v        105 continue
+              30                     !
+              31                     ! backwards substitution
+              32                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      x, c
+                                   <<< Loop-information  End >>>
+              33     1                     do 104 k= lm-1,1,-1
+              34     1               !ocl novrec
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 762
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 176, MVE: 6, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      x, c
+                                   <<< Loop-information  End >>>
+              35     2  pp   2v            do 104 i=1,m
+              36     2   p   2v      	  x(i,k) = x(i,k)-c(i,k)*x(i,k+1)
+              37     1   p   2v        104 continue
+              38                           return
+              39                           end
+
+ Procedure information
+   Lines      : 39
+   Statements : 26
+   Stack(byte): 1888
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : trdiv2
+   Attribute and Cross reference of name
+     a
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  8
+      |(Definition)     : 
+      |(Reference)      : 21  23  28  28
+     b
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  8
+      |(Definition)     : 
+      |(Reference)      : 11  21  28
+     c
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  8
+      |(Definition)     : 12  22
+      |(Reference)      : 12  21  22  28  36
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 6
+      |(Definition)     : 10  20  27  35
+      |(Reference)      : 11  12  12  13  13  21  21  21  22  22  23  23  23  23  28  28  28  28  28  28  28  36  36  36  36
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 6
+      |(Definition)     : 18
+      |(Reference)      : 21  21  21  22  22  23  23  23  23
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 6
+      |(Definition)     : 33
+      |(Reference)      : 36  36  36  36
+     lm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  6
+      |(Definition)     : 
+      |(Reference)      : 8  8  8  8  18  28  28  28  28  28  28  28  33
+     m
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  6
+      |(Definition)     : 
+      |(Reference)      : 8  8  8  8  10  20  27  35
+     trdiv2
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     work
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 7
+      |(Definition)     : 11  21
+      |(Reference)      : 12  13  22  23
+     x
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  8
+      |(Definition)     : 13  23  28  36
+      |(Reference)      : 13  23  23  28  28  36  36
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+         90  execution     (Definition) 14  
+                           (Reference)  10
+        101  execution     (Definition) 25  
+                           (Reference)  18
+        103  execution     (Definition) 24  
+                           (Reference)  20
+        104  execution     (Definition) 37  
+                           (Reference)  33  35
+        105  execution     (Definition) 29  
+                           (Reference)  27
+
+ Total information
+   Procedures       : 1
+   Total lines      : 39
+   Total statements : 26
+   Total stack(byte): 1888
+   Total prefetch num: 0
+

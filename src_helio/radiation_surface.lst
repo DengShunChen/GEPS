@@ -1,0 +1,1829 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar 14 13:21:14 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_helio
+   Source file       : radiation_surface.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb157/CWBSUMc2/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ Module "module_radiation_surface"
+  (inc)(line-no.)(nest)(optimize)
+               1                     !!!!!  ==========================================================  !!!!!
+               2                     !!!!!            'module_radiation_surface' description            !!!!!
+               3                     !!!!!  ==========================================================  !!!!!
+               4                     !                                                                      !
+               5                     !    this module sets up surface albedo for sw radiation and surface   !
+               6                     !    emissivity for lw radiation.                                      !
+               7                     !                                                                      !
+               8                     !                                                                      !
+               9                     !    in the module, the externally callabe subroutines are :           !
+              10                     !                                                                      !
+              11                     !      'sfc_init'   -- initialization radiation surface data           !
+              12                     !         inputs:                                                      !
+              13                     !           ( me )                                                     !
+              14                     !         outputs:                                                     !
+              15                     !           (none)                                                     !
+              16                     !                                                                      !
+              17                     !      'setalb'     -- set up four-component surface albedoes          !
+              18                     !         inputs:                                                      !
+              19                     !           (slmsk,snowf,sncovr,snoalb,zorlf,coszf,tsknf,tairf,hprif,  !
+              20                     !            alvsf,alnsf,alvwf,alnwf,facsf,facwf,fice,tisfc            !
+              21                     !            imax)                                                     !
+              22                     !         outputs:                                                     !
+              23                     !           (sfcalb)                                                   !
+              24                     !                                                                      !
+              25                     !      'setemis'    -- set up surface emissivity for lw radiation      !
+              26                     !         inputs:                                                      !
+              27                     !           (xlon,xlat,slmsk,snowf,sncovr,zorlf,tsknf,tairf,hprif,     !
+              28                     !            imax)                                                     !
+              29                     !         outputs:                                                     !
+              30                     !           (sfcemis)                                                  !
+              31                     !                                                                      !
+              32                     !    external modules referenced:                                      !
+              33                     !                                                                      !
+              34                     !       'module machine'             in 'machine.f'                    !
+              35                     !       'module physcons'            in 'physcons.f'                   !
+              36                     !       'module module_iounitdef'    in 'iounitdef.f'                  !
+              37                     !                                                                      !
+              38                     !                                                                      !
+              39                     !    program history log:                                              !
+              40                     !           1995   y.t. hou     - created albaer.f (include albedo     !
+              41                     !                                 and aerosols calculations)           !
+              42                     !      nov  1997   y.t. hou     - modified snow albedo                 !
+              43                     !      jan  1998   y.t. hou     - included grumbine's sea-ice scheme   !
+              44                     !      feb  1998   h.l. pan     - seasonal interpolation in cycle      !
+              45                     !      mar  2000   y.t. hou     - modified to use opac aerosol data    !
+              46                     !      apr  2003   y.t. hou     - seperate albedo and aerosols into    !
+              47                     !                    two subroutines, rewritten in f90 modulized form  !
+              48                     !      jan  2005   s. moorthi   - xingren's sea-ice fraction added     !
+              49                     !      apr  2005   y.t. hou     - revised module structure             !
+              50                     !      feb  2006   y.t. hou     - add varying surface emissivity,      !
+              51                     !                    modified sfc albedo structure for modis shceme    !
+              52                     !      mar  2006   s. moorthi   - added surface temp over ice fraction !
+              53                     !      mar  2007   c. marshall & h. wei                                !
+              54                     !                               - added modis based sfc albedo scheme  !
+              55                     !      may  2007   y. hou & s. moorthi                                 !
+              56                     !                               - fix bug in modis albedo over ocean   !
+              57                     !      aug  2007   h. wei & s. moorthi                                 !
+              58                     !                               - fix bug in modis albedo over sea-ice !
+              59                     !      aug  2007   y. hou       - fix bug in emissivity over ocean in  !
+              60                     !                                 the modis scheme option              !
+              61                     !      dec  2008   f. yang      - modified zenith angle dependence on  !
+              62                     !                                 surface albedo over land. (2008 jamc)!
+              63                     !      aug  2012   y. hou       - minor modification in initialization !
+              64                     !                                 subr 'sfc_init'.                     !
+              65                     !      nov  2012   y. hou       - modified control parameters through  !
+              66                     !                    module 'physpara'.                                !
+              67                     !                                                                      !
+              68                     !!!!!  ==========================================================  !!!!!
+              69                     !!!!!                       end descriptions                       !!!!!
+              70                     !!!!!  ==========================================================  !!!!!
+              71                     
+              72                     
+              73                     !========================================!
+              74                           module module_radiation_surface    !
+              75                     !........................................!
+              76                     !
+              77                           use physpara,          only : ialbflg, iemsflg, semis_file,       &
+              78                          &                              kind_phys
+              79                           use physcons,          only : con_t0c, con_ttp, con_pi, con_tice
+              80                           use module_iounitdef,  only : niradsf
+              81                     !
+              82                           implicit   none
+              83                     !
+              84                           private
+              85                     
+              86                     !  ---  version tag and last revision date
+              87                           character(40), parameter ::                                       &
+              88                          &   vtagsfc='ncep-radiation_surface   v5.1  nov 2012 '
+              89                     !    &   vtagsfc='ncep-radiation_surface   v5.0  aug 2012 '
+              90                     
+              91                     !  ---  constant parameters
+              92                           integer, parameter, public :: nf_albd = 4  ! num of sfc albedo components
+              93                     
+              94                           integer, parameter, public :: imxems = 360 ! num of lon-pts in glb emis-type map
+              95                           integer, parameter, public :: jmxems = 180 ! num of lat-pts in glb emis-type map
+              96                     
+              97                           real (kind=kind_phys), parameter :: f_zero = 0.0
+              98                           real (kind=kind_phys), parameter :: f_one  = 1.0
+              99                           real (kind=kind_phys), parameter :: rad2dg= 180.0 / con_pi
+             100                     
+             101                     !  ---  global surface emissivity index array and control flag  set up in 'sfc_init'
+             102                           integer, allocatable  ::  idxems(:,:)
+             103                           integer, allocatable  ::  jdxems(:,:)
+             104                           integer :: iemslw = 0
+             105                     !
+             106                           public  sfc_init, setalb, setemis
+             107                     
+             108                     ! =================
+             109                           contains
+             110                     ! =================
+             111                     
+             112                     
+             113                     !-----------------------------------
+             114                           subroutine sfc_init                                               &
+             115                     !...................................
+             116                     
+             117                     !  ---  inputs:
+             118                          &     ( me , myrank)
+             119                     !  ---  outputs: ( none )
+             120                     
+             121                     !  ===================================================================  !
+             122                     !                                                                       !
+             123                     !  this program is the initialization program for surface radiation     !
+             124                     !  related quantities (albedo, emissivity, etc.)                        !
+             125                     !                                                                       !
+             126                     ! usage:         call sfc_init                                          !
+             127                     !                                                                       !
+             128                     ! subprograms called:  none                                             !
+             129                     !                                                                       !
+             130                     !  ====================  defination of variables  ====================  !
+             131                     !                                                                       !
+             132                     !  inputs:                                                              !
+             133                     !      me           - print control flag                                !
+             134                     !                                                                       !
+             135                     !  outputs: (none) to module variables only                             !
+             136                     !                                                                       !
+             137                     !  external module variables:                                           !
+             138                     !     ialbflg       - control flag for surface albedo schemes           !
+             139                     !                     =0: climatology, based on surface veg types       !
+             140                     !                     =1:                                               !
+             141                     !     iemsflg       - control flag for sfc emissivity schemes (ab:2-dig)!
+             142                     !                     a:=0 set sfc air/ground t same for lw radiation   !
+             143                     !                       =1 set sfc air/ground t diff for lw radiation   !
+             144                     !                     b:=0 use fixed sfc emissivity=1.0 (black-body)    !
+             145                     !                       =1 use varying climtology sfc emiss (veg based) !
+             146                     !                                                                       !
+             147                     !  ====================    end of description    =====================  !
+             148                     !
+             149                           implicit none
+             150                     
+             151                     !  ---  inputs:
+             152                           integer, intent(in) :: me, myrank
+             153                     
+             154                     !  ---  outputs: ( none )
+             155                     
+             156                     !  ---  locals:
+             157                           integer    :: i, k, j, jn
+             158                     !     integer    :: ia, ja
+             159                           logical    :: file_exist
+             160                           character  :: cline*80
+             161                     !
+             162                     !===> ...  begin here
+             163                     !
+             164                           if ( me == 0 .and. myrank == 0) print *, vtagsfc   ! print out version tag
+             165                     
+             166                     !  --- ...  initialization of surface albedo section
+             167                     
+             168     1                     if ( ialbflg == 0  ) then
+             169     1               
+             170     2                       if ( me == 0 .and. myrank == 0 ) then
+             171     2                         print *,' - using climatology surface albedo scheme for sw'
+             172     2                       endif
+             173     1               
+             174     1                     else if ( ialbflg == 1 ) then
+             175     1               
+             176     2                       if ( me == 0 .and. myrank == 0 ) then
+             177     2                         print *,' - using modis based land surface albedo for sw'
+             178     2                       endif
+             179     1               
+             180     1                     else
+             181     1                       print *,' !! error in albedo scheme setting, ialb=',ialbflg
+             182     1                       stop
+             183     1                     endif    ! end if_ialbflg_block
+             184                     
+             185                     !  --- ...  initialization of surface emissivity section
+             186                     
+             187                           iemslw = mod(iemsflg, 10)          ! emissivity control
+             188     1                     if ( iemslw == 0 ) then            ! fixed sfc emis at 1.0
+             189     1               
+             190     2                       if ( me == 0 .and. myrank == 0 ) then
+             191     2                         print *,' - using fixed surface emissivity = 1.0 for lw'
+             192     2                       endif
+             193     1               
+             194     1                     elseif ( iemslw == 1 ) then        ! input sfc emiss type map
+             195     1               
+             196     1               !  ---  allocate data space
+             197     2                       if ( .not. allocated(idxems) ) then
+             198     2                         allocate ( idxems(imxems,jmxems)    )
+             199     2                       endif
+             200     1               !cmy
+             201     2                       if ( .not. allocated(jdxems) ) then
+             202     2                         allocate ( jdxems(imxems,jmxems)    )
+             203     2                       endif
+             204     1               !cmy
+             205     1               
+             206     1               !  ---  check to see if requested emissivity data file existed
+             207     1               
+             208     1                       inquire (file=semis_file, exist=file_exist)
+             209     1               
+             210     2                       if ( .not. file_exist ) then
+             211     3                       if ( me == 0 .and. myrank == 0 ) then
+             212     3                           print *,' - using varying surface emissivity for lw'
+             213     3                           print *,'   requested data file "',semis_file,'" not found!'
+             214     3                           print *,'   change to fixed surface emissivity = 1.0 !'
+             215     3                         endif
+             216     2               
+             217     2                         iemslw = 0
+             218     2                       else
+             219     2                         close(niradsf)
+             220     2                         open (niradsf,file=semis_file,form='formatted',status='old')
+             221     2                         rewind niradsf
+             222     2               
+             223     2                         read (niradsf,12) cline
+             224     2                 12      format(a80)
+             225     2               
+             226     2               !cmy      read (niradsf,14) idxems
+             227     2                         read (niradsf,14) jdxems
+             228     2                 14      format(80i1)
+             229     2               
+             230     2               !cmy
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      jdxems, idxems
+                                   <<< Loop-information  End >>>
+             231     3  pp                     do j = 1,jmxems
+             232     3   p                        jn = jmxems - j + 1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.33, ITR: 288, MVE: 7, POL: S)
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             233     4   p   2v                do i = 1, imxems
+             234     4   p   2v                   idxems(i,jn)=jdxems(i,j)
+             235     4   p   2v                enddo
+             236     3   p                     enddo
+             237     2               !cmy
+             238     2               
+             239     3                         if ( me == 0 .and. myrank == 0 ) then
+             240     3                           print *,' - using varying surface emissivity for lw'
+             241     3                           print *,'   opened data file: ',semis_file
+             242     3                           print *, cline
+             243     3               !check      print *,' check: sample emissivity index data'
+             244     3               !           ia = imxems / 5
+             245     3               !           ja = jmxems / 5
+             246     3               !           print *, idxems(1:imxems:ia,1:jmxems:ja)
+             247     3                         endif
+             248     2               
+             249     2                         close(niradsf)
+             250     2                       endif    ! end if_file_exist_block
+             251     1               
+             252     1                     else
+             253     1                       print *,' !! error in emissivity scheme setting, iems=',iemsflg
+             254     1                       stop
+             255     1                     endif   ! end if_iemslw_block
+             256                     
+             257                     !
+             258                           return
+             259                     !...................................
+             260                           end subroutine sfc_init
+             261                     !-----------------------------------
+             262                     
+             263                     
+             264                     !-----------------------------------
+             265                           subroutine setalb                                                 &
+             266                     !...................................
+             267                     
+             268                     !  ---  inputs:
+             269                          &     ( slmsk,snowf,sncovr,snoalb,zorlf,coszf,tsknf,tairf,hprif,   &
+             270                          &       alvsf,alnsf,alvwf,alnwf,facsf,facwf,fice,tisfc,            &
+             271                          &       imax,                                                      &
+             272                     !  ---  outputs:
+             273                          &       sfcalb                                                     &
+             274                          &     )
+             275                     
+             276                     !  ===================================================================  !
+             277                     !                                                                       !
+             278                     !  this program computes four components of surface albedos (i.e.       !
+             279                     !  vis-nir, direct-diffused) according to controflag ialbflg.           !
+             280                     !   1) climatological surface albedo scheme (briegleb 1992)             !
+             281                     !   2) modis retrieval based scheme from boston univ.                   !
+             282                     !                                                                       !
+             283                     !                                                                       !
+             284                     ! usage:         call setalb                                            !
+             285                     !                                                                       !
+             286                     ! subprograms called:  none                                             !
+             287                     !                                                                       !
+             288                     !  ====================  defination of variables  ====================  !
+             289                     !                                                                       !
+             290                     !  inputs:                                                              !
+             291                     !     slmsk (imax)  - sea(0),land(1),ice(2) mask on fcst model grid     !
+             292                     !     snowf (imax)  - snow depth water equivalent in mm                 !
+             293                     !     sncovr(imax)  - ialgflg=0: not used                               !
+             294                     !                     ialgflg=1: snow cover over land in fraction       !
+             295                     !     snoalb(imax)  - ialbflg=0: not used                               !
+             296                     !                     ialgflg=1: max snow albedo over land in fraction  !
+             297                     !     zorlf (imax)  - surface roughness in cm                           !
+             298                     !     coszf (imax)  - cosin of solar zenith angle                       !
+             299                     !     tsknf (imax)  - ground surface temperature in k                   !
+             300                     !     tairf (imax)  - lowest model layer air temperature in k           !
+             301                     !     hprif (imax)  - topographic sdv in m                              !
+             302                     !           ---  for ialbflg=0 climtological albedo scheme  ---         !
+             303                     !     alvsf (imax)  - 60 degree vis albedo with strong cosz dependency  !
+             304                     !     alnsf (imax)  - 60 degree nir albedo with strong cosz dependency  !
+             305                     !     alvwf (imax)  - 60 degree vis albedo with weak cosz dependency    !
+             306                     !     alnwf (imax)  - 60 degree nir albedo with weak cosz dependency    !
+             307                     !           ---  for ialbflg=1 modis based land albedo scheme ---       !
+             308                     !     alvsf (imax)  - visible black sky albedo at zenith 60 degree      !
+             309                     !     alnsf (imax)  - near-ir black sky albedo at zenith 60 degree      !
+             310                     !     alvwf (imax)  - visible white sky albedo                          !
+             311                     !     alnwf (imax)  - near-ir white sky albedo                          !
+             312                     !                                                                       !
+             313                     !     facsf (imax)  - fractional coverage with strong cosz dependency   !
+             314                     !     facwf (imax)  - fractional coverage with weak cosz dependency     !
+             315                     !     fice  (imax)  - sea-ice fraction                                  !
+             316                     !     tisfc (imax)  - sea-ice surface temperature                       !
+             317                     !     imax          - array horizontal dimension                        !
+             318                     !                                                                       !
+             319                     !  outputs:                                                             !
+             320                     !     sfcalb(imax,nf_albd)                                              !
+             321                     !           ( :, 1) -     near ir direct beam albedo                    !
+             322                     !           ( :, 2) -     near ir diffused albedo                       !
+             323                     !           ( :, 3) -     uv+vis direct beam albedo                     !
+             324                     !           ( :, 4) -     uv+vis diffused albedo                        !
+             325                     !                                                                       !
+             326                     !  module internal control variables:                                   !
+             327                     !     ialbflg       - =0 use the default climatology surface albedo     !
+             328                     !                     =1 use modis retrieved albedo and input snow cover!
+             329                     !                        for land areas                                 !
+             330                     !                                                                       !
+             331                     !  ====================    end of description    =====================  !
+             332                     !
+             333                           implicit none
+             334                     
+             335                     !  ---  inputs
+             336                           integer, intent(in) :: imax
+             337                     
+             338                           real (kind=kind_phys), dimension(:), intent(in) ::                &
+             339                          &       slmsk, snowf, zorlf, coszf, tsknf, tairf, hprif,           &
+             340                          &       alvsf, alnsf, alvwf, alnwf, facsf, facwf, fice, tisfc,     &
+             341                          &       sncovr, snoalb
+             342                     
+             343                     !  ---  outputs
+             344                           real (kind=kind_phys), dimension(:,:), intent(out) :: sfcalb
+             345                     
+             346                     !  ---  locals:
+             347                           real (kind=kind_phys) :: asnvb, asnnb, asnvd, asnnd, asevb        &
+             348                          &,     asenb, asevd, asend, fsno,  fsea,  rfcs,  rfcw,  flnd       &
+             349                          &,     asnow, argh,  hrgh,  fsno0, fsno1, flnd0, fsea0, csnow      &
+             350                          &,     a1, a2, b1, b2, b3, ab1bm, ab2bm
+             351                     
+             352                           real (kind=kind_phys) ffw, dtgd
+             353                     
+             354                           integer :: i, k
+             355                     
+             356                     !
+             357                     !===> ...  begin here
+             358                     !
+             359                     
+             360     1                     if ( ialbflg == 0 ) then   ! use climatological albedo scheme
+             361     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 23
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 42
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 24
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             362     2  pp    v              do i = 1, imax
+             363     2               
+             364     2               ! --- modified snow albedo scheme - units convert to m
+             365     2               !     (originally snowf in mm; zorlf in cm)
+             366     2               
+             367     2   p    v               asnow = 0.02*snowf(i)
+             368     2   p    v               argh  = min(0.50, max(.025, 0.01*zorlf(i)))
+             369     2   p    v               hrgh  = min(f_one, max(0.20, 1.0577-1.1538e-3*hprif(i) ) )
+             370     2   p    v               fsno0 = asnow / (argh + asnow) * hrgh
+             371     2   p    v               if (nint(slmsk(i))==0 .and. tsknf(i)>con_tice) fsno0 = f_zero
+             372     2   p    v               fsno1 = f_one - fsno0
+             373     2   p    v               flnd0 = min(f_one, facsf(i)+facwf(i))
+             374     2   p    v               fsea0 = max(f_zero, f_one-flnd0)
+             375     2   p    v               fsno  = fsno0
+             376     2   p    v               fsea  = fsea0 * fsno1
+             377     2   p    v               flnd  = flnd0 * fsno1
+             378     2               
+             379     2               ! --- diffused sea surface albedo
+             380     2               
+             381     3   p    v               if (tsknf(i) >= 271.5) then
+             382     3   p    v                  asevd = 0.06
+             383     3   p    v                  asend = 0.06
+             384     3   p    v               elseif (tsknf(i) < 271.1) then
+             385     3   p    v                  asevd = 0.70
+             386     3   p    v                  asend = 0.65
+             387     3   p    v               else
+             388     3   p    v                  a1 = (tsknf(i) - 271.1)**2
+             389     3   p    v                  asevd = 0.7 - 4.0*a1
+             390     3   p    v                  asend = 0.65 - 3.6875*a1
+             391     3   p    v               endif
+             392     2               
+             393     2               ! --- diffused snow albedo
+             394     2               
+             395     3   p    v               if (nint(slmsk(i)) == 2) then
+             396     3   p    v                  ffw   = f_one - fice(i)
+             397     4   p    v                  if (ffw < f_one) then
+             398     4   p    v                     dtgd = max(f_zero, min(5.0, (con_ttp-tisfc(i)) ))
+             399     4   p    v                     b1   = 0.03 * dtgd
+             400     4   p    v                  else
+             401     4   p    v                     b1 = f_zero
+             402     4   p    v                  endif
+             403     3               
+             404     3   p    v                  b3   = 0.06 * ffw
+             405     3   p    v                  asnvd = (0.70 + b1) * fice(i) + b3
+             406     3   p    v                  asnnd = (0.60 + b1) * fice(i) + b3
+             407     3   p    v                  asevd = 0.70        * fice(i) + b3
+             408     3   p    v                  asend = 0.60        * fice(i) + b3
+             409     3   p    v               else
+             410     3   p    v                  asnvd = 0.90
+             411     3   p    v                  asnnd = 0.75
+             412     3   p    v               endif
+             413     2               
+             414     2               ! --- direct snow albedo
+             415     2               
+             416     3   p    v               if (coszf(i) < 0.5) then
+             417     3   p    v                  csnow = 0.5 * (3.0 / (f_one+4.0*coszf(i)) - f_one)
+             418     3   p    v                  asnvb = min( 0.98, asnvd+(1.0-asnvd)*csnow )
+             419     3   p    v                  asnnb = min( 0.98, asnnd+(1.0-asnnd)*csnow )
+             420     3   p    v               else
+             421     3   p    v                  asnvb = asnvd
+             422     3   p    v                  asnnb = asnnd
+             423     3   p    v               endif
+             424     2               
+             425     2               ! --- direct sea surface albedo
+             426     2               
+             427     3   p    v               if (coszf(i) > 0.0001) then
+             428     3               !           rfcs = 1.4 / (f_one + 0.8*coszf(i))
+             429     3               !           rfcw = 1.3 / (f_one + 0.6*coszf(i))
+             430     3   p    v                  rfcs = 2.14 / (f_one + 1.48*coszf(i))
+             431     3   p    v                  rfcw = rfcs
+             432     3               
+             433     4   p    v                  if (tsknf(i) >= con_t0c) then
+             434     4   p    v                    asevb = max(asevd, 0.026/(coszf(i)**1.7+0.065)            &
+             435     4                    &              + 0.15 * (coszf(i)-0.1) * (coszf(i)-0.5)            &
+             436     4                    &              * (coszf(i)-f_one))
+             437     4   p    v                    asenb = asevb
+             438     4   p    v                  else
+             439     4   p    v                    asevb = asevd
+             440     4   p    v                    asenb = asend
+             441     4   p    v                  endif
+             442     3   p    v               else
+             443     3   p    v                  rfcs  = f_one
+             444     3   p    v                  rfcw  = f_one
+             445     3   p    v                  asevb = asevd
+             446     3   p    v                  asenb = asend
+             447     3   p    v               endif
+             448     2               
+             449     2   p    v               a1   = alvsf(i) * facsf(i)
+             450     2   p    v               b1   = alvwf(i) * facwf(i)
+             451     2   p    v               a2   = alnsf(i) * facsf(i)
+             452     2   p    v               b2   = alnwf(i) * facwf(i)
+             453     2   p    v               ab1bm = a1*rfcs + b1*rfcw
+             454     2   p    v               ab2bm = a2*rfcs + b2*rfcw
+             455     2   p    v               sfcalb(i,1) = min(0.99, ab2bm) *flnd + asenb*fsea + asnnb*fsno
+             456     2   p    v               sfcalb(i,2) = (a2 + b2) * 0.96 *flnd + asend*fsea + asnnd*fsno
+             457     2   p    v               sfcalb(i,3) = min(0.99, ab1bm) *flnd + asevb*fsea + asnvb*fsno
+             458     2   p    v               sfcalb(i,4) = (a1 + b1) * 0.96 *flnd + asevd*fsea + asnvd*fsno
+             459     2               !byl         sfcalb(i,1) = (a2*rfcs+b2*rfcw)*flnd + asenb*fsea + asnnb*fsno
+             460     2               !byl         sfcalb(i,2) = (a2 + b2) * 0.96 *flnd + asend*fsea + asnnd*fsno
+             461     2               !byl         sfcalb(i,3) = (a1*rfcs+b1*rfcw)*flnd + asevb*fsea + asnvb*fsno
+             462     2               !byl         sfcalb(i,4) = (a1 + b1) * 0.96 *flnd + asevd*fsea + asnvd*fsno
+             463     2               
+             464     2   p    v              enddo    ! end_do_i_loop
+             465     1               
+             466     1                     else                       ! use modis based albedo for land area
+             467     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 23
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 38
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 8
+                                   <<<      PREDICATE : SPILL 4  FILL 4
+                                   <<< Loop-information  End >>>
+             468     2  pp    v              do i = 1, imax
+             469     2               
+             470     2               ! --- snow cover input directly from land model, no conversion needed
+             471     2               
+             472     2   p    v               fsno0 = sncovr(i)
+             473     2               
+             474     2   p    v               if (nint(slmsk(i))==0 .and. tsknf(i)>con_tice) fsno0 = f_zero
+             475     2               
+             476     3   p    v               if (nint(slmsk(i)) == 2) then
+             477     3   p    v                 asnow = 0.02*snowf(i)
+             478     3   p    v                 argh  = min(0.50, max(.025, 0.01*zorlf(i)))
+             479     3   p    v                 hrgh  = min(f_one, max(0.20, 1.0577-1.1538e-3*hprif(i) ) )
+             480     3   p    v                 fsno0 = asnow / (argh + asnow) * hrgh
+             481     3   p    v               endif
+             482     2               
+             483     2   p    v               fsno1 = f_one - fsno0
+             484     2   p    v               flnd0 = min(f_one, facsf(i)+facwf(i))
+             485     2   p    v               fsea0 = max(f_zero, f_one-flnd0)
+             486     2   p    v               fsno  = fsno0
+             487     2   p    v               fsea  = fsea0 * fsno1
+             488     2   p    v               flnd  = flnd0 * fsno1
+             489     2               
+             490     2               ! --- diffused sea surface albedo
+             491     2               
+             492     3   p    v               if (tsknf(i) >= 271.5) then
+             493     3   p    v                  asevd = 0.06
+             494     3   p    v                  asend = 0.06
+             495     3   p    v               elseif (tsknf(i) < 271.1) then
+             496     3   p    v                  asevd = 0.70
+             497     3   p    v                  asend = 0.65
+             498     3   p    v               else
+             499     3   p    v                  a1 = (tsknf(i) - 271.1)**2
+             500     3   p    v                  asevd = 0.7 - 4.0*a1
+             501     3   p    v                  asend = 0.65 - 3.6875*a1
+             502     3   p    v               endif
+             503     2               
+             504     2               ! --- diffused snow albedo, land area use input max snow albedo
+             505     2               
+             506     3   p    v               if (nint(slmsk(i)) == 2) then
+             507     3   p    v                  ffw   = f_one - fice(i)
+             508     4   p    v                  if (ffw < f_one) then
+             509     4   p    v                     dtgd = max(f_zero, min(5.0, (con_ttp-tisfc(i)) ))
+             510     4   p    v                     b1   = 0.03 * dtgd
+             511     4   p    v                  else
+             512     4   p    v                     b1 = f_zero
+             513     4   p    v                  endif
+             514     3               
+             515     3   p    v                  b3   = 0.06 * ffw
+             516     3   p    v                  asnvd = (0.70 + b1) * fice(i) + b3
+             517     3   p    v                  asnnd = (0.60 + b1) * fice(i) + b3
+             518     3   p    v                  asevd = 0.70        * fice(i) + b3
+             519     3   p    v                  asend = 0.60        * fice(i) + b3
+             520     3   p    v               else
+             521     3   p    v                  asnvd = snoalb(i)
+             522     3   p    v                  asnnd = snoalb(i)
+             523     3   p    v               endif
+             524     2               
+             525     2               ! --- direct snow albedo
+             526     2               
+             527     3   p    v               if (nint(slmsk(i)) == 2) then
+             528     4   p    v                 if (coszf(i) < 0.5) then
+             529     4   p    v                    csnow = 0.5 * (3.0 / (f_one+4.0*coszf(i)) - f_one)
+             530     4   p    v                    asnvb = min( 0.98, asnvd+(f_one-asnvd)*csnow )
+             531     4   p    v                    asnnb = min( 0.98, asnnd+(f_one-asnnd)*csnow )
+             532     4   p    v                 else
+             533     4   p    v                   asnvb = asnvd
+             534     4   p    v                   asnnb = asnnd
+             535     4   p    v                 endif
+             536     3   p    v               else
+             537     3   p    v                 asnvb = snoalb(i)
+             538     3   p    v                 asnnb = snoalb(i)
+             539     3   p    v               endif
+             540     2               
+             541     2               ! --- direct sea surface albedo, use fanglin's zenith angle treatment
+             542     2               
+             543     3   p    v               if (coszf(i) > 0.0001) then
+             544     3               
+             545     3               !           rfcs = 1.89 - 3.34*coszf(i) + 4.13*coszf(i)*coszf(i)        &
+             546     3               !    &           - 2.02*coszf(i)*coszf(i)*coszf(i)
+             547     3   p    v                  rfcs = 1.775/(1.0+1.55*coszf(i))
+             548     3               
+             549     4   p    v                  if (tsknf(i) >= con_t0c) then
+             550     4   p    v                    asevb = max(asevd, 0.026/(coszf(i)**1.7+0.065)            &
+             551     4                    &              + 0.15 * (coszf(i)-0.1) * (coszf(i)-0.5)            &
+             552     4                    &              * (coszf(i)-f_one))
+             553     4   p    v                    asenb = asevb
+             554     4   p    v                  else
+             555     4   p    v                    asevb = asevd
+             556     4   p    v                    asenb = asend
+             557     4   p    v                  endif
+             558     3   p    v               else
+             559     3   p    v                  rfcs  = f_one
+             560     3   p    v                  asevb = asevd
+             561     3   p    v                  asenb = asend
+             562     3   p    v               endif
+             563     2               
+             564     2   p    v               ab1bm = min(0.99, alnsf(i)*rfcs)
+             565     2   p    v               ab2bm = min(0.99, alvsf(i)*rfcs)
+             566     2   p    v               sfcalb(i,1) = ab1bm   *flnd + asenb*fsea + asnnb*fsno
+             567     2   p    v               sfcalb(i,2) = alnwf(i)     *flnd + asend*fsea + asnnd*fsno
+             568     2   p    v               sfcalb(i,3) = ab2bm   *flnd + asevb*fsea + asnvb*fsno
+             569     2   p    v               sfcalb(i,4) = alvwf(i)     *flnd + asevd*fsea + asnvd*fsno
+             570     2               
+             571     2   p    v              enddo    ! end_do_i_loop
+             572     1               
+             573     1                     endif   ! end if_ialbflg
+             574                     !
+             575                           return
+             576                     !...................................
+             577                           end subroutine setalb
+             578                     !-----------------------------------
+             579                     
+             580                     
+             581                     !-----------------------------------
+             582                           subroutine setemis                                                &
+             583                     !...................................
+             584                     
+             585                     !  ---  inputs:
+             586                          &     ( xlon,xlat,slmsk,snowf,sncovr,zorlf,tsknf,tairf,hprif,      &
+             587                          &       imax,                                                      &
+             588                     !  ---  outputs:
+             589                          &       sfcemis                                                    &
+             590                          &     )
+             591                     
+             592                     !  ===================================================================  !
+             593                     !                                                                       !
+             594                     !  this program computes surface emissivity for lw radiation.           !
+             595                     !                                                                       !
+             596                     !  usage:         call setemis                                          !
+             597                     !                                                                       !
+             598                     !  subprograms called:  none                                            !
+             599                     !                                                                       !
+             600                     !  ====================  defination of variables  ====================  !
+             601                     !                                                                       !
+             602                     !  inputs:                                                              !
+             603                     !     xlon  (imax)  - longitude in radiance, ok for both 0->2pi or      !
+             604                     !                     -pi -> +pi ranges                                 !
+             605                     !     xlat  (imax)  - latitude  in radiance, default to pi/2 -> -pi/2   !
+             606                     !                     range, otherwise see in-line comment              !
+             607                     !     slmsk (imax)  - sea(0),land(1),ice(2) mask on fcst model grid     !
+             608                     !     snowf (imax)  - snow depth water equivalent in mm                 !
+             609                     !     sncovr(imax)  - ialbflg=1: snow cover over land in fraction       !
+             610                     !     zorlf (imax)  - surface roughness in cm                           !
+             611                     !     tsknf (imax)  - ground surface temperature in k                   !
+             612                     !     tairf (imax)  - lowest model layer air temperature in k           !
+             613                     !     hprif (imax)  - topographic sdv in m                              !
+             614                     !     imax          - array horizontal dimension                        !
+             615                     !                                                                       !
+             616                     !  outputs:                                                             !
+             617                     !     sfcemis(imax) - surface emissivity                                !
+             618                     !                                                                       !
+             619                     !  -------------------------------------------------------------------  !
+             620                     !                                                                       !
+             621                     !  surface type definations:                                            !
+             622                     !     1. open water                   2. grass/wood/shrub land          !
+             623                     !     3. tundra/bare soil             4. sandy desert                   !
+             624                     !     5. rocky desert                 6. forest                         !
+             625                     !     7. ice                          8. snow                           !
+             626                     !                                                                       !
+             627                     !  input index data lon from 0 towards east, lat from n to s            !
+             628                     !                                                                       !
+             629                     !  ====================    end of description    =====================  !
+             630                     !
+             631                           implicit none
+             632                     
+             633                     !  ---  inputs
+             634                           integer, intent(in) :: imax
+             635                     
+             636                           real (kind=kind_phys), dimension(:), intent(in) ::                &
+             637                          &       xlon,xlat, slmsk, snowf,sncovr, zorlf, tsknf, tairf, hprif
+             638                     
+             639                     !  ---  outputs
+             640                           real (kind=kind_phys), dimension(:), intent(out) :: sfcemis
+             641                     
+             642                     !  ---  locals:
+             643                           integer :: i, i1, i2, j1, j2, idx
+             644                     
+             645                           real (kind=kind_phys) :: dltg, hdlt, tmp1, tmp2,                  &
+             646                          &      asnow, argh, hrgh, fsno, fsno0, fsno1
+             647                     
+             648                     !  ---  reference emiss value for diff surface emiss index
+             649                     !       1-open water, 2-grass/shrub land, 3-bare soil, tundra,
+             650                     !       4-sandy desert, 5-rocky desert, 6-forest, 7-ice, 8-snow
+             651                     
+             652                           real (kind=kind_phys) ::  emsref(8)
+             653                           data  emsref / 0.97, 0.95, 0.94, 0.90, 0.93, 0.96, 0.96, 0.99 /
+             654                     
+             655                     !
+             656                     !===> ...  begin here
+             657                     !
+             658                     
+             659     1                     if ( iemslw == 0 ) then        ! sfc emiss default to 1.0
+             660     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             661     1  pp   4v              sfcemis(:) = f_one
+             662     1                       return
+             663     1               
+             664     1                     else                           ! emiss set by sfc type and condition
+             665     1               
+             666     1                       dltg = 360.0 / float(imxems)
+             667     1                       hdlt = 0.5 * dltg
+             668     1               
+             669     1               !  --- ...  mapping input data onto model grid
+             670     1               !           note: this is a simple mapping method, an upgrade is needed if
+             671     1               !           the model grid is much corcer than the 1-deg data resolution
+             672     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+             673     2  pp                   lab_do_imax : do i = 1, imax
+             674     2               
+             675     3   p                     if ( nint(slmsk(i)) == 0 ) then          ! sea point
+             676     3               
+             677     3   p                       sfcemis(i) = emsref(1)
+             678     3               
+             679     3   p                     else if ( nint(slmsk(i)) == 2 ) then     ! sea-ice
+             680     3               
+             681     3   p                       sfcemis(i) = emsref(7)
+             682     3               
+             683     3   p                     else                                     ! land
+             684     3               
+             685     3               !  ---  map grid in longitude direction
+             686     3   p                       i2 = 1
+             687     3   p                       j2 = 1
+             688     3               
+             689     3   p                       tmp1 = xlon(i) * rad2dg
+             690     3   p                       if (tmp1 < f_zero) tmp1 = tmp1 + 360.0
+             691     3               
+             692     4   p                       lab_do_imxems : do i1 = 1, imxems
+             693     4   p                         tmp2 = dltg * (i1 - 1) + hdlt
+             694     4               
+             695     5   p                         if (abs(tmp1-tmp2) <= hdlt) then
+             696     5   p                          i2 = i1
+             697     5   p                           exit lab_do_imxems
+             698     5   p                         endif
+             699     4   p                       enddo  lab_do_imxems
+             700     3               
+             701     3               !  ---  map grid in latitude direction
+             702     3   p                       tmp1 = xlat(i) * rad2dg           ! if xlat in pi/2 -> -pi/2 range
+             703     3               !           tmp1 = 90.0 - xlat(i)*rad2dg      ! if xlat in 0 -> pi range
+             704     3               
+             705     4   p                       lab_do_jmxems : do j1 = 1, jmxems
+             706     4               !cmy          tmp2 = 90.0 - dltg * (j1 - 1)
+             707     4   p                         tmp2 = -90.0 + dltg * (j1 - 1)
+             708     4               
+             709     5   p                         if (abs(tmp1-tmp2) <= hdlt) then
+             710     5   p                           j2 = j1
+             711     5   p                           exit lab_do_jmxems
+             712     5   p                         endif
+             713     4   p                       enddo  lab_do_jmxems
+             714     3               
+             715     3               
+             716     3   p                       idx = max( 2, idxems(i2,j2) )
+             717     3   p                       if ( idx >= 7 ) idx = 2
+             718     3   p                       sfcemis(i) = emsref(idx)
+             719     3               
+             720     3   p                     endif   ! end if_slmsk_block
+             721     2               
+             722     2               !  ---  check for snow covered area
+             723     2               
+             724     3   p                     if ( ialbflg==1 .and. nint(slmsk(i))==1 ) then ! input land area snow cover
+             725     3               
+             726     3   p                       fsno0 = sncovr(i)
+             727     3   p                       fsno1 = f_one - fsno0
+             728     3   p                       sfcemis(i) = sfcemis(i)*fsno1 + emsref(8)*fsno0
+             729     3               
+             730     3   p                     else                                           ! compute snow cover from snow depth
+             731     4   p                       if ( snowf(i) > f_zero ) then
+             732     4   p                         asnow = 0.02*snowf(i)
+             733     4   p                         argh  = min(0.50, max(.025, 0.01*zorlf(i)))
+             734     4   p                         hrgh  = min(f_one, max(0.20, 1.0577-1.1538e-3*hprif(i) ) )
+             735     4   p                         fsno0 = asnow / (argh + asnow) * hrgh
+             736     4   p                         if (nint(slmsk(i)) == 0 .and. tsknf(i) > 271.2)           &
+             737     4                    &                               fsno0=f_zero
+             738     4   p                         fsno1 = f_one - fsno0
+             739     4   p                         sfcemis(i) = sfcemis(i)*fsno1 + emsref(8)*fsno0
+             740     4   p                       endif
+             741     3               
+             742     3   p                     endif                                          ! end if_ialbflg
+             743     2               
+             744     2   p                   enddo  lab_do_imax
+             745     1               
+             746     1                     endif   ! end if_iemslw_block
+             747                     
+             748                     !chk  print *,' in setemis, iemsflg, sfcemis =',iemsflg,sfcemis
+             749                     
+             750                     !
+             751                           return
+             752                     !...................................
+             753                           end subroutine setemis
+             754                     !-----------------------------------
+             755                     
+             756                     !
+             757                     !.........................................!
+             758                           end module module_radiation_surface !
+             759                     !=========================================!
+
+ Procedure information
+   Lines      : 759
+   Statements : 313
+   Stack(byte): 8784
+   Prefetch num: 0
+
+ Scoping unit of module : module_radiation_surface
+   Attribute and Cross reference of name
+     con_pi
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 79  99
+     con_t0c
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 79
+     con_tice
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 79
+     con_ttp
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 79
+     f_one
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 98
+      |(Definition)     : 
+      |(Reference)      : 
+     f_zero
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 97
+      |(Definition)     : 
+      |(Reference)      : 
+     ialbflg
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PRIVATE, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 77
+     idxems
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PRIVATE, ALLOCATABLE, DIMENSION
+      |(Declaration)    : 102
+      |(Definition)     : 
+      |(Reference)      : 
+     iemsflg
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PRIVATE, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 77
+     iemslw
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PRIVATE, initialized
+      |(Declaration)    : 104
+      |(Definition)     : 
+      |(Reference)      : 
+     imxems
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 94
+      |(Definition)     : 
+      |(Reference)      : 
+     jdxems
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PRIVATE, ALLOCATABLE, DIMENSION
+      |(Declaration)    : 103
+      |(Definition)     : 
+      |(Reference)      : 
+     jmxems
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 95
+      |(Definition)     : 
+      |(Reference)      : 
+     kind_phys
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PRIVATE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 77  97  98  99
+     module_iounitdef
+      |(Class and Type) : module name
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 80
+     module_radiation_surface
+      |(Class and Type) : module name
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 74
+      |(Definition)     : 
+      |(Reference)      : 758
+     NIRADSF
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PRIVATE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 80
+     nf_albd
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 92
+      |(Definition)     : 
+      |(Reference)      : 
+     physcons
+      |(Class and Type) : module name
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 79
+     physpara
+      |(Class and Type) : module name
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 77
+     rad2dg
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 99
+      |(Definition)     : 
+      |(Reference)      : 
+     semis_file
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : PRIVATE, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 77
+     setalb
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 106
+      |(Definition)     : 
+      |(Reference)      : 
+     setemis
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 106
+      |(Definition)     : 
+      |(Reference)      : 
+     sfc_init
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 106
+      |(Definition)     : 
+      |(Reference)      : 
+     vtagsfc
+      |(Class and Type) : named constant, CHARACTER(40,1)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 87
+      |(Definition)     : 
+      |(Reference)      : 
+
+ Scoping unit of module sub-program : sfc_init
+   Attribute and Cross reference of name
+     allocated
+      |(Class and Type) : intrinsic function name, LOGICAL(4)
+      |(Attributes)     : PURE
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 197  201
+     cline
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : 
+      |(Declaration)    : 160
+      |(Definition)     : 223
+      |(Reference)      : 242
+     file_exist
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 159
+      |(Definition)     : 208
+      |(Reference)      : 210
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 157
+      |(Definition)     : 233
+      |(Reference)      : 234  234
+     ialbflg
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 168  174  181
+     idxems
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 198  234
+      |(Reference)      : 197
+     iemsflg
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 187  253
+     iemslw
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 187  217
+      |(Reference)      : 188  194
+     imxems
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 198  202  233
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 157
+      |(Definition)     : 231
+      |(Reference)      : 232  234
+     jdxems
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 202  227
+      |(Reference)      : 201  234
+     jmxems
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 198  202  231  232
+     jn
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 157
+      |(Definition)     : 232
+      |(Reference)      : 234
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 157
+      |(Definition)     : 
+      |(Reference)      : 
+     me
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 114  152
+      |(Definition)     : 
+      |(Reference)      : 164  170  176  190  211  239
+     mod
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 187
+     myrank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 114  152
+      |(Definition)     : 
+      |(Reference)      : 164  170  176  190  211  239
+     NIRADSF
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 219  220  221  223  227  249
+     semis_file
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 208  213  220  241
+     sfc_init
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 114
+      |(Reference)      : 260
+     vtagsfc
+      |(Class and Type) : named constant, CHARACTER(40,1)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 164
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+         12  format        (Definition) 224  
+                           (Reference)  223
+         14  format        (Definition) 228  
+                           (Reference)  227
+
+ Scoping unit of module sub-program : setalb
+   Attribute and Cross reference of name
+     a1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 347
+      |(Definition)     : 388  449  499
+      |(Reference)      : 389  390  453  458  500  501
+     a2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 347
+      |(Definition)     : 451
+      |(Reference)      : 454  456
+     ab1bm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 347
+      |(Definition)     : 453  564
+      |(Reference)      : 457  566
+     ab2bm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 347
+      |(Definition)     : 454  565
+      |(Reference)      : 455  568
+     alnsf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 265  338
+      |(Definition)     : 
+      |(Reference)      : 451  564
+     alnwf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 265  338
+      |(Definition)     : 
+      |(Reference)      : 452  567
+     alvsf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 265  338
+      |(Definition)     : 
+      |(Reference)      : 449  565
+     alvwf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 265  338
+      |(Definition)     : 
+      |(Reference)      : 450  569
+     argh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 347
+      |(Definition)     : 368  478
+      |(Reference)      : 370  480
+     asenb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 347
+      |(Definition)     : 437  440  446  553  556  561
+      |(Reference)      : 455  566
+     asend
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 347
+      |(Definition)     : 383  386  390  408  494  497  501  519
+      |(Reference)      : 440  446  456  556  561  567
+     asevb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 347
+      |(Definition)     : 434  439  445  550  555  560
+      |(Reference)      : 437  457  553  568
+     asevd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 347
+      |(Definition)     : 382  385  389  407  493  496  500  518
+      |(Reference)      : 434  439  445  458  550  555  560  569
+     asnnb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 347
+      |(Definition)     : 419  422  531  534  538
+      |(Reference)      : 455  566
+     asnnd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 347
+      |(Definition)     : 406  411  517  522
+      |(Reference)      : 419  419  422  456  531  531  534  567
+     asnow
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 347
+      |(Definition)     : 367  477
+      |(Reference)      : 370  370  480  480
+     asnvb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 347
+      |(Definition)     : 418  421  530  533  537
+      |(Reference)      : 457  568
+     asnvd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 347
+      |(Definition)     : 405  410  516  521
+      |(Reference)      : 418  418  421  458  530  530  533  569
+     b1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 347
+      |(Definition)     : 399  401  450  510  512
+      |(Reference)      : 405  406  453  458  516  517
+     b2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 347
+      |(Definition)     : 452
+      |(Reference)      : 454  456
+     b3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 347
+      |(Definition)     : 404  515
+      |(Reference)      : 405  406  407  408  516  517  518  519
+     con_t0c
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 433  549
+     con_tice
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 371  474
+     con_ttp
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 398  509
+     coszf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 265  338
+      |(Definition)     : 
+      |(Reference)      : 416  417  427  430  434  434  434  434  528  529  543  547  550  550  550  550
+     csnow
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 347
+      |(Definition)     : 417  529
+      |(Reference)      : 418  419  530  531
+     dtgd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 352
+      |(Definition)     : 398  509
+      |(Reference)      : 399  510
+     f_one
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 369  372  373  374  396  397  417  417  430  434  443  444  479  483  484  485  507  508  529  529  530  531  550  559
+     f_zero
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 371  374  398  401  474  485  509  512
+     facsf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 265  338
+      |(Definition)     : 
+      |(Reference)      : 373  449  451  484
+     facwf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 265  338
+      |(Definition)     : 
+      |(Reference)      : 373  450  452  484
+     ffw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 352
+      |(Definition)     : 396  507
+      |(Reference)      : 397  404  508  515
+     fice
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 265  338
+      |(Definition)     : 
+      |(Reference)      : 396  405  406  407  408  507  516  517  518  519
+     flnd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 347
+      |(Definition)     : 377  488
+      |(Reference)      : 455  456  457  458  566  567  568  569
+     flnd0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 347
+      |(Definition)     : 373  484
+      |(Reference)      : 374  377  485  488
+     fsea
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 347
+      |(Definition)     : 376  487
+      |(Reference)      : 455  456  457  458  566  567  568  569
+     fsea0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 347
+      |(Definition)     : 374  485
+      |(Reference)      : 376  487
+     fsno
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 347
+      |(Definition)     : 375  486
+      |(Reference)      : 455  456  457  458  566  567  568  569
+     fsno0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 347
+      |(Definition)     : 370  371  472  474  480
+      |(Reference)      : 372  375  483  486
+     fsno1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 347
+      |(Definition)     : 372  483
+      |(Reference)      : 376  377  487  488
+     hprif
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 265  338
+      |(Definition)     : 
+      |(Reference)      : 369  479
+     hrgh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 347
+      |(Definition)     : 369  479
+      |(Reference)      : 370  480
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 354
+      |(Definition)     : 362  468
+      |(Reference)      : 367  368  369  371  371  373  373  381  384  388  395  396  398  405  406  407  408  416  417  427  430  433  434  434  434  434  449  449  450  450  451  451  452  452  455  456  457  458  472  474  474  476  477  478  479  484  484  492  495  499  506  507  509  516  517  518  519  521  522  527  528  529  537  538  543  547  549  550  550  550  550  564  565  566  567  567  568  569  569
+     ialbflg
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 360
+     imax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 265  336
+      |(Definition)     : 
+      |(Reference)      : 362  468
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 354
+      |(Definition)     : 
+      |(Reference)      : 
+     kind_phys
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 338  344  347  352
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 368  369  374  398  434  478  479  485  509  550
+     min
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 368  369  373  398  418  419  455  457  478  479  484  509  530  531  564  565
+     nint
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 371  395  474  476  506  527
+     rfcs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 347
+      |(Definition)     : 430  443  547  559
+      |(Reference)      : 431  453  454  564  565
+     rfcw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 347
+      |(Definition)     : 431  444
+      |(Reference)      : 453  454
+     setalb
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 265
+      |(Reference)      : 577
+     sfcalb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(OUT), dummy-argument
+      |(Declaration)    : 265  344
+      |(Definition)     : 455  456  457  458  566  567  568  569
+      |(Reference)      : 
+     slmsk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 265  338
+      |(Definition)     : 
+      |(Reference)      : 371  395  474  476  506  527
+     sncovr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 265  338
+      |(Definition)     : 
+      |(Reference)      : 472
+     snoalb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 265  338
+      |(Definition)     : 
+      |(Reference)      : 521  522  537  538
+     snowf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 265  338
+      |(Definition)     : 
+      |(Reference)      : 367  477
+     tairf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 265  338
+      |(Definition)     : 
+      |(Reference)      : 
+     tisfc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 265  338
+      |(Definition)     : 
+      |(Reference)      : 398  509
+     tsknf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 265  338
+      |(Definition)     : 
+      |(Reference)      : 371  381  384  388  433  474  492  495  499  549
+     zorlf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 265  338
+      |(Definition)     : 
+      |(Reference)      : 368  478
+
+ Scoping unit of module sub-program : setemis
+   Attribute and Cross reference of name
+     abs
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 695  709
+     argh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 645
+      |(Definition)     : 733
+      |(Reference)      : 735
+     asnow
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 645
+      |(Definition)     : 732
+      |(Reference)      : 735  735
+     dltg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 645
+      |(Definition)     : 666
+      |(Reference)      : 667  693  707
+     emsref
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, initialized
+      |(Declaration)    : 652  653
+      |(Definition)     : 
+      |(Reference)      : 677  681  718  728  739
+     f_one
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 661  727  734  738
+     f_zero
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 690  731  736
+     float
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 666
+     fsno
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 645
+      |(Definition)     : 
+      |(Reference)      : 
+     fsno0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 645
+      |(Definition)     : 726  735  736
+      |(Reference)      : 727  728  738  739
+     fsno1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 645
+      |(Definition)     : 727  738
+      |(Reference)      : 728  739
+     hdlt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 645
+      |(Definition)     : 667
+      |(Reference)      : 693  695  709
+     hprif
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 582  636
+      |(Definition)     : 
+      |(Reference)      : 734
+     hrgh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 645
+      |(Definition)     : 734
+      |(Reference)      : 735
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 643
+      |(Definition)     : 673
+      |(Reference)      : 675  677  679  681  689  702  718  724  726  728  728  731  732  733  734  736  736  739  739
+     i1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 643
+      |(Definition)     : 692
+      |(Reference)      : 693  696
+     i2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 643
+      |(Definition)     : 686  696
+      |(Reference)      : 716
+     ialbflg
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 724
+     idx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 643
+      |(Definition)     : 716  717
+      |(Reference)      : 717  718
+     idxems
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 716
+     iemslw
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 659
+     imax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 582  634
+      |(Definition)     : 
+      |(Reference)      : 673
+     imxems
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 666  692
+     j1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 643
+      |(Definition)     : 705
+      |(Reference)      : 707  710
+     j2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 643
+      |(Definition)     : 687  710
+      |(Reference)      : 716
+     jmxems
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 705
+     kind_phys
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 636  640  645  652
+     lab_do_imax
+      |(Class and Type) : construct name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 673
+      |(Reference)      : 744
+     lab_do_imxems
+      |(Class and Type) : construct name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 692
+      |(Reference)      : 697  699
+     lab_do_jmxems
+      |(Class and Type) : construct name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 705
+      |(Reference)      : 711  713
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 716  733  734
+     min
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 733  734
+     nint
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 675  679  724  736
+     rad2dg
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 689  702
+     setemis
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 582
+      |(Reference)      : 753
+     sfcemis
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(OUT), dummy-argument
+      |(Declaration)    : 582  640
+      |(Definition)     : 661  677  681  718  728  739
+      |(Reference)      : 728  739
+     slmsk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 582  636
+      |(Definition)     : 
+      |(Reference)      : 675  679  724  736
+     sncovr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 582  636
+      |(Definition)     : 
+      |(Reference)      : 726
+     snowf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 582  636
+      |(Definition)     : 
+      |(Reference)      : 731  732
+     tairf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 582  636
+      |(Definition)     : 
+      |(Reference)      : 
+     tmp1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 645
+      |(Definition)     : 689  690  702
+      |(Reference)      : 690  690  695  709
+     tmp2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 645
+      |(Definition)     : 693  707
+      |(Reference)      : 695  709
+     tsknf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 582  636
+      |(Definition)     : 
+      |(Reference)      : 736
+     xlat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 582  636
+      |(Definition)     : 
+      |(Reference)      : 702
+     xlon
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 582  636
+      |(Definition)     : 
+      |(Reference)      : 689
+     zorlf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 582  636
+      |(Definition)     : 
+      |(Reference)      : 733
+
+ Total information
+   Procedures       : 1
+   Total lines      : 759
+   Total statements : 313
+   Total stack(byte): 8784
+   Total prefetch num: 0
+

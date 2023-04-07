@@ -1,0 +1,482 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar 14 13:21:11 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_helio
+   Source file       : cuentr.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb157/CWBSUMc2/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "cuentr"
+  (inc)(line-no.)(nest)(optimize)
+               1                     !+ Calculates entrainment/detrainment rates
+               2                     !+ $Id: cuentr.f90,v 1.6 1998/10/28 12:28:44 m214003 Exp $
+               3                     
+               4                     !SUBROUTINE cuentr(klon,klev,klevp1,kk,ptenh,paphp1,papp1,klwmin,ldcum, &
+               5                     SUBROUTINE cuentr(nxj,klon,klev,klevp1,kk,ptenh,paphp1,papp1,klwmin,ldcum, &
+               6                     &      ktype,kcbot,kctop0,ppbase,pmfu,pentr,podetr,khmin,pgeoh,pdmfen,pdmfde)
+               7                     
+               8                       ! Description:
+               9                       !
+              10                       ! Calculates entrainment/detrainment rates.
+              11                       !
+              12                       ! Method:
+              13                       !
+              14                       ! This routine calculates entrainment/detrainment rates
+              15                       ! for updrafts in cumulus parameterization
+              16                       !
+              17                       ! This routine is called from *cuasc*.
+              18                       ! Input are environmental values t,q etc and updraft values t,q etc.
+              19                       ! It returns entrainment/detrainment rates.
+              20                       !
+              21                       ! Authors:
+              22                       !
+              23                       ! S. Tiedtke, ECMWF, in 1989, original source
+              24                       ! L. Kornblueh, MPI, May 1998, f90 rewrite
+              25                       ! U. Schulzweida, MPI, May 1998, f90 rewrite
+              26                       !
+              27                       ! for more details see file AUTHORS
+              28                       !
+              29                     
+              30                       USE shr_kind_mod, only: r8 => shr_kind_r8
+              31                       USE mo_constants, ONLY : g,  & ! gravity acceleration
+              32                                                rd    ! gas constant for dry air
+              33                     
+              34                       IMPLICIT NONE
+              35                     
+              36                       !  Scalar arguments with intent(In):
+              37                     !  INTEGER, INTENT (IN) :: kk, klev, klevp1, klon
+              38                       INTEGER, INTENT (IN) :: kk, klev, klevp1, klon, nxj
+              39                     
+              40                       !  Array arguments with intent(In):
+              41                       REAL(r8), INTENT (IN) :: paphp1(klon,klevp1), papp1(klon,klev), pentr(klon), &
+              42                     &                      pgeoh(klon,klev), pmfu(klon,klev), ptenh(klon,klev)
+              43                       INTEGER, INTENT (IN) :: kcbot(klon), kctop0(klon), khmin(klon),  &
+              44                     &                         klwmin(klon), ktype(klon)
+              45                       LOGICAL, INTENT (IN) :: ldcum(klon)
+              46                     
+              47                       !  Array arguments with intent(InOut):
+              48                       REAL(r8), INTENT (INOUT) :: pdmfde(klon), pdmfen(klon), podetr(klon,klev),  &
+              49                     &                         ppbase(klon)
+              50                     
+              51                       !  Local scalars:
+              52                       REAL(r8) :: arg, zdprho, zentr, zorgde, zpmid, zrg, zrrho, ztmzk, zzmzk
+              53                       INTEGER :: ikb, ikh, iklwmin, ikt, jl
+              54                       LOGICAL :: llo1, llo2
+              55                     
+              56                       !  Intrinsic functions
+              57                       INTRINSIC MAX, MERGE, MIN, TAN
+              58                     
+              59                     
+              60                       !  Executable statements
+              61                     
+              62                     !-- 1.  Calculate entrainment and detrainment rates
+              63                     
+              64                     !-- 1.1 Specify entrainment rates for shallow clouds
+              65                     
+              66                     !-- 1.2 Specify entrainment rates for deep clouds
+              67                     
+              68                       zrg = 1./g
+              69                     !  DO jl = 1, klon
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 29
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ptenh, paphp1, kcbot, pmfu, pentr
+                                   <<<      kctop0, klwmin, ldcum, ktype, papp1
+                                   <<<      ppbase, pdmfde, pdmfen, podetr
+                                   <<< Loop-information  End >>>
+              70     1  pp    s        DO jl = 1, nxj
+              71     1   p    v          ppbase(jl) = paphp1(jl,kcbot(jl))
+              72     1   p    v          zrrho = (rd*ptenh(jl,kk+1))/paphp1(jl,kk+1)
+              73     1   p    v          zdprho = (paphp1(jl,kk+1)-paphp1(jl,kk))*zrg
+              74     1   p    v          zpmid = 0.5*(ppbase(jl)+paphp1(jl,kctop0(jl)))
+              75     1   p    v          zentr = pentr(jl)*pmfu(jl,kk+1)*zdprho*zrrho
+              76     1   p    v          llo1 = kk < kcbot(jl) .AND. ldcum(jl)
+              77     1   p    v          pdmfde(jl) = MERGE(zentr,0.d0,llo1)
+              78     1   p    v          llo2 = llo1 .AND. ktype(jl) == 2 .AND. (ppbase(jl)-paphp1(jl,kk)<0.2E5 &
+              79     1               &        .OR. paphp1(jl,kk)>zpmid)
+              80     1   p    v          pdmfen(jl) = MERGE(zentr,0.d0,llo2)
+              81     1   p    v          iklwmin = MAX(klwmin(jl),kctop0(jl)+2)
+              82     1   p    v          llo2 = llo1 .AND. ktype(jl) == 3 .AND. (kk>=iklwmin .OR. papp1(jl,kk)> &
+              83     1               &        zpmid)
+              84     1   p    s          IF (llo2) pdmfen(jl) = zentr
+              85     1   p    v          llo2 = llo1 .AND. ktype(jl) == 1
+              86     1                   ! Turbulent entrainment
+              87     1   p    s          IF (llo2) pdmfen(jl) = zentr
+              88     1                   ! Organized detrainment, detrainment starts at khmin
+              89     1   p    v          ikb = kcbot(jl)
+              90     1   p    v          podetr(jl,kk) = 0.
+              91     2   p    s          IF (llo2 .AND. kk<=khmin(jl) .AND. kk>=kctop0(jl)) THEN
+              92     2   p    s            ikt = kctop0(jl)
+              93     2   p    s            ikh = khmin(jl)
+              94     3   p    s            IF (ikh>ikt) THEN
+              95     3   p    s              zzmzk = -(pgeoh(jl,ikh)-pgeoh(jl,kk))*zrg
+              96     3   p    s              ztmzk = -(pgeoh(jl,ikh)-pgeoh(jl,ikt))*zrg
+              97     3   p    s              arg = 3.1415*(zzmzk/ztmzk)*0.5
+              98     3   p    s              zorgde = TAN(arg)*3.1415*0.5/ztmzk
+              99     3   p    s              zdprho = (paphp1(jl,kk+1)-paphp1(jl,kk))*(zrg*zrrho)
+             100     3   p    s              podetr(jl,kk) = MIN(zorgde,1.d-3)*pmfu(jl,kk+1)*zdprho
+             101     3   p    s            END IF
+             102     2   p    v          END IF
+             103     1   p    v        END DO
+             104                     
+             105                       RETURN
+             106                     END SUBROUTINE cuentr
+
+ Procedure information
+   Lines      : 106
+   Statements : 46
+   Stack(byte): 944
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : cuentr
+   Attribute and Cross reference of name
+     arg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 52
+      |(Definition)     : 97
+      |(Reference)      : 98
+     cuentr
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 5
+      |(Reference)      : 106
+     g
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 31  68
+     ikb
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 53
+      |(Definition)     : 89
+      |(Reference)      : 
+     ikh
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 53
+      |(Definition)     : 93
+      |(Reference)      : 94  95  96
+     iklwmin
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 53
+      |(Definition)     : 81
+      |(Reference)      : 82
+     ikt
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 53
+      |(Definition)     : 92
+      |(Reference)      : 94  96
+     jl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 53
+      |(Definition)     : 70
+      |(Reference)      : 71  71  71  72  72  73  73  74  74  74  75  75  76  76  77  78  78  78  78  80  81  81  82  82  84  85  87  89  90  91  91  92  93  95  95  96  96  99  99  100  100
+     kcbot
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 5  43
+      |(Definition)     : 
+      |(Reference)      : 71  76  89
+     kctop0
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 5  43
+      |(Definition)     : 
+      |(Reference)      : 74  81  91  92
+     khmin
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 5  43
+      |(Definition)     : 
+      |(Reference)      : 91  93
+     kk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 5  38
+      |(Definition)     : 
+      |(Reference)      : 72  72  73  73  75  76  78  78  82  82  90  91  91  95  99  99  100  100
+     klev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 5  38
+      |(Definition)     : 
+      |(Reference)      : 41  41  41  41  48
+     klevp1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 5  38
+      |(Definition)     : 
+      |(Reference)      : 41
+     klon
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 5  38
+      |(Definition)     : 
+      |(Reference)      : 41  41  41  41  41  41  43  43  43  43  43  45  48  48  48  48
+     klwmin
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 5  43
+      |(Definition)     : 
+      |(Reference)      : 81
+     ktype
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 5  43
+      |(Definition)     : 
+      |(Reference)      : 78  82  85
+     ldcum
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 5  45
+      |(Definition)     : 
+      |(Reference)      : 76
+     llo1
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 54
+      |(Definition)     : 76
+      |(Reference)      : 77  78  82  85
+     llo2
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 54
+      |(Definition)     : 78  82  85
+      |(Reference)      : 80  84  87  91
+     MAX
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : INTRINSIC, PURE, ELEMENTAL
+      |(Declaration)    : 57
+      |(Definition)     : 
+      |(Reference)      : 81
+     MERGE
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : INTRINSIC, PURE, ELEMENTAL
+      |(Declaration)    : 57
+      |(Definition)     : 
+      |(Reference)      : 77  80
+     MIN
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : INTRINSIC, PURE, ELEMENTAL
+      |(Declaration)    : 57
+      |(Definition)     : 
+      |(Reference)      : 100
+     mo_constants
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 31
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 5  38
+      |(Definition)     : 
+      |(Reference)      : 70
+     paphp1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 5  41
+      |(Definition)     : 
+      |(Reference)      : 71  72  73  73  74  78  78  99  99
+     papp1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 5  41
+      |(Definition)     : 
+      |(Reference)      : 82
+     pdmfde
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  48
+      |(Definition)     : 77
+      |(Reference)      : 
+     pdmfen
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  48
+      |(Definition)     : 80  84  87
+      |(Reference)      : 
+     pentr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 5  41
+      |(Definition)     : 
+      |(Reference)      : 75
+     pgeoh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 5  41
+      |(Definition)     : 
+      |(Reference)      : 95  95  96  96
+     pmfu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 5  41
+      |(Definition)     : 
+      |(Reference)      : 75  100
+     podetr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  48
+      |(Definition)     : 90  100
+      |(Reference)      : 
+     ppbase
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  48
+      |(Definition)     : 71
+      |(Reference)      : 74  78
+     ptenh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 5  41
+      |(Definition)     : 
+      |(Reference)      : 72
+     r8
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 30  41  48  52
+     rd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 31  72
+     shr_kind_mod
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 30
+     shr_kind_r8
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 30
+     TAN
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : INTRINSIC, PURE, ELEMENTAL
+      |(Declaration)    : 57
+      |(Definition)     : 
+      |(Reference)      : 98
+     zdprho
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 52
+      |(Definition)     : 73  99
+      |(Reference)      : 75  100
+     zentr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 52
+      |(Definition)     : 75
+      |(Reference)      : 77  80  84  87
+     zorgde
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 52
+      |(Definition)     : 98
+      |(Reference)      : 100
+     zpmid
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 52
+      |(Definition)     : 74
+      |(Reference)      : 78  82
+     zrg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 52
+      |(Definition)     : 68
+      |(Reference)      : 73  95  96  99
+     zrrho
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 52
+      |(Definition)     : 72
+      |(Reference)      : 75  99
+     ztmzk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 52
+      |(Definition)     : 96
+      |(Reference)      : 97  98
+     zzmzk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 52
+      |(Definition)     : 95
+      |(Reference)      : 97
+
+ Total information
+   Procedures       : 1
+   Total lines      : 106
+   Total statements : 46
+   Total stack(byte): 944
+   Total prefetch num: 0
+

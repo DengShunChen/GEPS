@@ -1,0 +1,2597 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar  7 10:21:08 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm_helio
+   Source file       : radiation_astronomy.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ Module "module_radiation_astronomy"
+  (inc)(line-no.)(nest)(optimize)
+               1                     !!!!!  ==========================================================  !!!!!
+               2                     !!!!!          'module_radiation_astronomy'  description           !!!!!
+               3                     !!!!!  ==========================================================  !!!!!
+               4                     !                                                                      !
+               5                     !   set up astronomy quantities for solar radiation calculations.      !
+               6                     !                                                                      !
+               7                     !   in module 'module_radiation_astronomy', externally accessable      !
+               8                     !   subroutines are listed below:                                      !
+               9                     !                                                                      !
+              10                     !      'sol_init'   -- initialization                                  !
+              11                     !         input:                                                       !
+              12                     !           ( me )                                                     !
+              13                     !         output:                                                      !
+              14                     !           ( none )                                                   !
+              15                     !                                                                      !
+              16                     !      'sol_update' -- update astronomy related quantities             !
+              17                     !         input:                                                       !
+              18                     !           ( jdate,kyear,deltsw,deltim,lsol_chg, me )                 !
+              19                     !         output:                                                      !
+              20                     !           ( slag,sdec,cdec,solcon )                                  !
+              21                     !                                                                      !
+              22                     !      'coszmn'     -- compute cosin of zenith angles                  !
+              23                     !         input:                                                       !
+              24                     !           ( xlon,sinlat,coslat,solhr,im, me )                        !
+              25                     !         output:                                                      !
+              26                     !           ( coszen,coszdg )                                          !
+              27                     !                                                                      !
+              28                     !                                                                      !
+              29                     !   external modules referenced:                                       !
+              30                     !       'module physpara'                   in 'physpara.f'            !
+              31                     !       'module physcons'                   in 'physcons.f'            !
+              32                     !                                                                      !
+              33                     !   program history log:                                               !
+              34                     !   - a collection of programs to track solar-earth position           !
+              35                     !     may  1977  ---  ray orzol    (gfdl) created program compjd to    !
+              36                     !          computes julian day and fraction from year,month,dayand,time!
+              37                     !     jun  1977  ---  robert white (gfdl) created program cdate to     !
+              38                     !          computes calendar month, day, year from julian day value.   !
+              39                     !     jul  1977  ---  robert white (gfdl) created program solar to     !
+              40                     !          computes radius vector, declination and right ascension of  !
+              41                     !          sun, equation of time, hour angle, fractional daylight, and !
+              42                     !          latitudinal mean zenith angle.                              !
+              43                     !     fall 1988  ---  hualu pan,  updated to limit the iterations in   !
+              44                     !          newton method and also ccr reduced to avoid non-convergence.!
+              45                     !     jul  1989  ---  kenneth campana  modified subr solar and created !
+              46                     !          subr zenith for computations of effective mean cosz and     !
+              47                     !          daylight fraction.                                          !
+              48                     !     oct  1990  ---  yu-tai hou      created subr coszmn to replace   !
+              49                     !          the latitudinal mean cosz by time mean cosz at grid points. !
+              50                     !     may  1998  ---  mark iredell    y2k compliance                   !
+              51                     !     dec  2003  ---  yu-tai hou      combined compjd and fcstim and   !
+              52                     !          rewritten programs in fortran 90 compatable modular form.   !
+              53                     !     feb  2006  ---  yu-tai hou      add 11-yr solar constant cycle   !
+              54                     !     mar  2009  ---  yu-tai hou      modified solinit for climate     !
+              55                     !          hindcast situation responding to ic time.                   !
+              56                     !     aug  2012  ---  yu-tai hou      modified coszmn to allows sw     !
+              57                     !          radiation calling interval less than 1 hr limit and linked  !
+              58                     !          model time step with numb of cosz evaluations. also changed !
+              59                     !          the initialization subroutine 'solinit' into two parts:     !
+              60                     !          'sol_init' is called at the start of run to set up module   !
+              61                     !          parameters; and 'sol_update' is called within the time      !
+              62                     !          loop to check and update data sets.                         !
+              63                     !     nov  2012  ---  yu-tai hou      modified control parameters thru !
+              64                     !          model 'physpara'.                                           !
+              65                     !     jan  2013  ---  yu-tai hou      modified to include new solar    !
+              66                     !          constant tables (noaa_a0, noaa_an, cmip_an, cmip_mn)        !
+              67                     !     dec  2013  ---  hsin-mu lin     corrected an error in the case   !
+              68                     !          of using the old global mean solar constant (isol=0)        !
+              69                     !                                                                      !
+              70                     !!!!!  ==========================================================  !!!!!
+              71                     !!!!!                       end descriptions                       !!!!!
+              72                     !!!!!  ==========================================================  !!!!!
+              73                     
+              74                     
+              75                     
+              76                     !========================================!
+              77                           module module_radiation_astronomy  !
+              78                     !........................................!
+              79                     !
+              80                           use physpara,          only : isolar, solar_file, kind_phys
+              81                           use physcons,          only : con_solr, con_solr_old, con_pi
+              82                           use module_iounitdef,  only : niradsf
+              83                     !
+              84                           implicit   none
+              85                     !
+              86                           private
+              87                     
+              88                     !  ---  version tag and last revision date
+              89                           character(40), parameter ::                                       &
+              90                          &   vtagast='ncep-radiation_astronomy v5.2  jan 2013 '
+              91                     !    &   vtagast='ncep-radiation_astronomy v5.1  nov 2012 '
+              92                     
+              93                     !  ---  parameter constants
+              94                           real (kind=kind_phys), parameter :: degrad = 180.0/con_pi
+              95                           real (kind=kind_phys), parameter :: tpi    = 2.0 * con_pi
+              96                           real (kind=kind_phys), parameter :: hpi    = 0.5 * con_pi
+              97                           real (kind=kind_phys), parameter :: f12    = 12.0
+              98                           real (kind=kind_phys), parameter :: f3600  = 3600.0
+              99                           real (kind=kind_phys), parameter :: czlimt = 0.0001      ! ~ cos(89.99427)
+             100                     !     real (kind=kind_phys), parameter :: pid12  = con_pi/f12  ! angle per hour
+             101                           real (kind=kind_phys), parameter :: pid12  = (2.0*asin(1.0))/f12
+             102                     
+             103                     !  ---  module variables (to be set in subr sol_init):
+             104                           real (kind=kind_phys), public    :: solc0 = con_solr
+             105                           integer   :: isolflg = 10
+             106                           character(26) :: solar_fname = ' '
+             107                     
+             108                     !  ---  module variables (to be set in subr sol_update):
+             109                           real (kind=kind_phys) :: sollag=0.0   ! equation of time
+             110                           real (kind=kind_phys) :: sindec=0.0   ! sineof the solar declination angle
+             111                           real (kind=kind_phys) :: cosdec=0.0   ! cosine of the solar declination angle
+             112                           real (kind=kind_phys) :: anginc=0.0   ! solar angle incrmt per iteration for cosz calc
+             113                           real (kind=kind_phys) :: smon_sav(12) ! saved monthly solar constants (isolflg=4 only)
+             114                           data smon_sav(1:12) / 12*con_solr /
+             115                     
+             116                           integer               :: iyr_sav =0   ! saved year  of data used
+             117                           integer               :: nstp    =6   ! total number of zenith angle iterations
+             118                     
+             119                           public  sol_init, sol_update, coszmn
+             120                     
+             121                     
+             122                     ! =================
+             123                           contains
+             124                     ! =================
+             125                     
+             126                     !-----------------------------------
+             127                           subroutine sol_init                                               &
+             128                     !...................................
+             129                     !  ---  inputs:
+             130                          &     ( me , myrank )
+             131                     !  ---  outputs: ( none )
+             132                     
+             133                     !  ===================================================================  !
+             134                     !                                                                       !
+             135                     !  initialize astronomy process, set up module constants.               !
+             136                     !                                                                       !
+             137                     !  inputs:                                                              !
+             138                     !     me      - print message control flag                              !
+             139                     !                                                                       !
+             140                     !  outputs:  (to module variable)                                       !
+             141                     !     ( none )                                                          !
+             142                     !                                                                       !
+             143                     !  external module variable: (in physpara)                              !
+             144                     !   isolar    - = 0: use the old fixed solar constant in "physcon"      !
+             145                     !               =10: use the new fixed solar constant in "physcon"      !
+             146                     !               = 1: use noaa ann-mean tsi tbl abs-scale with cyc apprx !
+             147                     !               = 2: use noaa ann-mean tsi tbl tim-scale with cyc apprx !
+             148                     !               = 3: use cmip5 ann-mean tsi tbl tim-scale with cyc apprx!
+             149                     !               = 4: use cmip5 mon-mean tsi tbl tim-scale with cyc apprx!
+             150                     !   solar_file- external solar constant data table                      !
+             151                     !                                                                       !
+             152                     !  internal module variable:                                            !
+             153                     !   isolflg   - internal solar constant scheme control flag             !
+             154                     !   solc0     - solar constant  (w/m**2)                                !
+             155                     !   solar_fname-file name for solar constant table assigned based on    !
+             156                     !               the scheme control flag, isolflg.                       !
+             157                     !                                                                       !
+             158                     !  usage:    call sol_init                                              !
+             159                     !                                                                       !
+             160                     !  subprograms called:  none                                            !
+             161                     !                                                                       !
+             162                     !  ===================================================================  !
+             163                     !
+             164                           implicit none
+             165                     
+             166                     !  ---  input:
+             167                           integer,  intent(in) :: me, myrank
+             168                     
+             169                     !  ---  output: ( none )
+             170                     
+             171                     !  ---  local:
+             172                           logical :: file_exist
+             173                     !
+             174                     !===>  ...  begin here
+             175                     !
+             176                           if ( me == 0 .and. myrank == 0) print *, vtagast    !print out version tag
+             177                     
+             178                     !  ---  initialization
+             179                           isolflg = isolar
+             180                           solc0   = con_solr
+             181                           solar_fname = solar_file
+             182                           iyr_sav = 0
+             183                           nstp    = 6
+             184                     
+             185     1                     if ( isolar == 0 ) then
+             186     1                       solc0   = con_solr_old
+             187     2                       if ( me == 0 .and. myrank == 0 ) then
+             188     2                         print *,' - using old fixed solar constant =', solc0
+             189     2                       endif
+             190     1                     elseif ( isolar == 10 ) then
+             191     2                       if ( me == 0 .and. myrank == 0 ) then
+             192     2                         print *,' - using new fixed solar constant =', solc0
+             193     2                       endif
+             194     1                     elseif ( isolar == 1 ) then        ! noaa ann-mean tsi in absolute scale
+             195     1                       solar_fname(15:26) = 'noaa_a0.txt'
+             196     1               
+             197     2                       if ( me == 0 .and. myrank == 0 ) then
+             198     2                         print *,' - using noaa annual mean tsi table in abs scale',   &
+             199     2                    &            ' with cycle approximation (old values)!'
+             200     2                       endif
+             201     1               
+             202     1                       inquire (file=solar_fname, exist=file_exist)
+             203     2                       if ( .not. file_exist ) then
+             204     2                         isolflg = 10
+             205     2               
+             206     3                         if ( me == 0 .and. myrank == 0 ) then
+             207     3                           print *,'   requested solar data file "',solar_fname,       &
+             208     3                    &              '" not found!'
+             209     3                           print *,'   using the default solar constant value =',solc0,&
+             210     3                    &              ' reset control flag isolflg=',isolflg
+             211     3                         endif
+             212     2                       endif
+             213     1                     elseif ( isolar == 2 ) then        ! noaa ann-mean tsi in tim scale
+             214     1                       solar_fname(15:26) = 'noaa_an.txt'
+             215     1               
+             216     2                       if ( me == 0 .and. myrank == 0 ) then
+             217     2                         print *,' - using noaa annual mean tsi table in tim scale',   &
+             218     2                    &            ' with cycle approximation (new values)!'
+             219     2                       endif
+             220     1               
+             221     1                       inquire (file=solar_fname, exist=file_exist)
+             222     2                       if ( .not. file_exist ) then
+             223     2                         isolflg = 10
+             224     2               
+             225     3                         if ( me == 0 .and. myrank == 0 ) then
+             226     3                           print *,'   requested solar data file "',solar_fname,       &
+             227     3                    &              '" not found!'
+             228     3                           print *,'   using the default solar constant value =',solc0,&
+             229     3                    &              ' reset control flag isolflg=',isolflg
+             230     3                         endif
+             231     2                       endif
+             232     1                     elseif ( isolar == 3 ) then        ! cmip5 ann-mean tsi in tim scale
+             233     1                       solar_fname(15:26) = 'cmip_an.txt'
+             234     1               
+             235     2                       if ( me == 0 .and. myrank == 0 ) then
+             236     2                         print *,' - using cmip5 annual mean tsi table in tim scale',  &
+             237     2                    &            ' with cycle approximation'
+             238     2                       endif
+             239     1               
+             240     1                       inquire (file=solar_fname, exist=file_exist)
+             241     2                       if ( .not. file_exist ) then
+             242     2                         isolflg = 10
+             243     2               
+             244     3                         if ( me == 0 .and. myrank == 0 ) then
+             245     3                           print *,'   requested solar data file "',solar_fname,       &
+             246     3                    &              '" not found!'
+             247     3                           print *,'   using the default solar constant value =',solc0,&
+             248     3                    &              ' reset control flag isolflg=',isolflg
+             249     3                         endif
+             250     2                       endif
+             251     1                     elseif ( isolar == 4 ) then        ! cmip5 mon-mean tsi in tim scale
+             252     1                       solar_fname(15:26) = 'cmip_mn.txt'
+             253     1               
+             254     2                       if ( me == 0 .and. myrank == 0 ) then
+             255     2                         print *,' - using cmip5 monthly mean tsi table in tim scale', &
+             256     2                    &            ' with cycle approximation'
+             257     2                       endif
+             258     1               
+             259     1                       inquire (file=solar_fname, exist=file_exist)
+             260     2                       if ( .not. file_exist ) then
+             261     2                         isolflg = 10
+             262     2               
+             263     3                         if ( me == 0 .and. myrank == 0 ) then
+             264     3                           print *,'   requested solar data file "',solar_fname,       &
+             265     3                    &              '" not found!'
+             266     3                           print *,'   using the default solar constant value =',solc0,&
+             267     3                    &              ' reset control flag isolflg=',isolflg
+             268     3                         endif
+             269     2                       endif
+             270     1                     else                               ! selection error
+             271     1                       isolflg = 10
+             272     1               
+             273     2                       if ( me == 0 .and. myrank == 0) then
+             274     2                         print *,' - !!! error in selection of solar constant data',   &
+             275     2                    &            ' source, isol =',isolar
+             276     2                         print *,'   using the default solar constant value =',solc0,  &
+             277     2                    &              ' reset control flag isolflg=',isolflg
+             278     2                       endif
+             279     1                     endif       ! end if_isolar_block
+             280                     !
+             281                           return
+             282                     !...................................
+             283                           end subroutine sol_init
+             284                     !-----------------------------------
+             285                     
+             286                     
+             287                     !-----------------------------------
+             288                           subroutine sol_update                                             &
+             289                     !...................................
+             290                     !  ---  inputs:
+             291                          &     ( myrank,jdate,kyear,deltsw,deltim,lsol_chg, me,             &
+             292                     !  ---  outputs:
+             293                          &       slag, sdec, cdec, solcon                                   &
+             294                          &      )
+             295                     
+             296                     !  ===================================================================  !
+             297                     !                                                                       !
+             298                     !  sol_update computes solar parameters at forecast time                !
+             299                     !                                                                       !
+             300                     !  inputs:                                                              !
+             301                     !     jdate(8)- ncep absolute date and time at fcst time                !
+             302                     !                (yr, mon, day, t-zone, hr, min, sec, mil-sec)          !
+             303                     !     kyear   - usually kyear=jdate(1). if not, it is for hindcast mode,!
+             304                     !               and it is usually the init cond time and serves as the  !
+             305                     !               upper limit of data can be used.                        !
+             306                     !     deltsw  - time duration in seconds per sw calculation             !
+             307                     !     deltim  - timestep in seconds                                     !
+             308                     !     lsol_chg- logical flags for change solar constant                 !
+             309                     !     me      - print message control flag                              !
+             310                     !                                                                       !
+             311                     !  outputs:                                                             !
+             312                     !    slag          - equation of time in radians                        !
+             313                     !    sdec, cdec    - sin and cos of the solar declination angle         !
+             314                     !    solcon        - sun-earth distance adjusted solar constant (w/m2)  !
+             315                     !                                                                       !
+             316                     !                                                                       !
+             317                     !  module variable:                                                     !
+             318                     !   solc0   - solar constant  (w/m**2) not adjusted by earth-sun dist   !
+             319                     !   isolflg - solar constant control flag                               !
+             320                     !             = 0: use the old fixed solar constant                     !
+             321                     !             =10: use the new fixed solar constant                     !
+             322                     !             = 1: use noaa ann-mean tsi tbl abs-scale with cycle apprx !
+             323                     !             = 2: use noaa ann-mean tsi tbl tim-scale with cycle apprx !
+             324                     !             = 3: use cmip5 ann-mean tsi tbl tim-scale with cycle apprx!
+             325                     !             = 4: use cmip5 mon-mean tsi tbl tim-scale with cycle apprx!
+             326                     !   solar_fname-external solar constant data table                      !
+             327                     !   sindec  - sine of the solar declination angle                       !
+             328                     !   cosdec  - cosine of the solar declination angle                     !
+             329                     !   anginc  - solar angle increment per iteration for cosz calc         !
+             330                     !   nstp    - total number of zenith angle iterations                   !
+             331                     !   smon_sav- saved monthly solar constants (isolflg=4 only)            !
+             332                     !   iyr_sav - saved year  of data previously used                       !
+             333                     !                                                                       !
+             334                     !  usage:    call sol_update                                            !
+             335                     !                                                                       !
+             336                     !  subprograms called:  solar, prtime                                   !
+             337                     !                                                                       !
+             338                     !  external functions called: iw3jdn                                    !
+             339                     !                                                                       !
+             340                     !  ===================================================================  !
+             341                     !
+             342                           implicit none
+             343                     
+             344                     !  ---  input:
+             345                           integer, intent(in) :: jdate(:), kyear, me, myrank
+             346                           logical, intent(in) :: lsol_chg
+             347                     
+             348                           real (kind=kind_phys), intent(in) :: deltsw, deltim
+             349                     
+             350                     !  ---  output:
+             351                           real (kind=kind_phys), intent(out) :: slag, sdec, cdec, solcon
+             352                     
+             353                     !  ---  locals:
+             354                           real (kind=kind_phys), parameter :: hrday = 1.0/24.0    ! frc day/hour
+             355                           real (kind=kind_phys), parameter :: minday= 1.0/1440.0  ! frc day/minute
+             356                           real (kind=kind_phys), parameter :: secday= 1.0/86400.0 ! frc day/second
+             357                     
+             358                           real (kind=kind_phys) :: smean, solc1, dtswh, smon(12)
+             359                           real (kind=kind_phys) :: fjd, fjd1, dlt, r1, alp
+             360                     
+             361                           integer :: jd, jd1, iyear, imon, iday, ihr, imin, isec
+             362                           integer :: iw3jdn
+             363                           integer :: i, iyr, iyr1, iyr2, jyr, nn, nswr, icy1, icy2, icy
+             364                     
+             365                           logical :: file_exist
+             366                           character :: cline*60
+             367                     !
+             368                     !===>  ...  begin here
+             369                     !
+             370                     !  --- ...  forecast time
+             371                           iyear = jdate(1)
+             372                           imon  = jdate(2)
+             373                           iday  = jdate(3)
+             374                           ihr   = jdate(5)
+             375                           imin  = jdate(6)
+             376                           isec  = jdate(7)
+             377                     
+             378     1                     if ( lsol_chg ) then   ! get solar constant from data table
+             379     1               
+             380     2                       if ( iyr_sav == iyear ) then   ! same year, no new reading necessary
+             381     3                         if ( isolflg==4 ) then
+             382     3                           solc0 = smon_sav(imon)
+             383     3                         endif
+             384     2                       else                           ! need to read in new data
+             385     2                         iyr_sav = iyear
+             386     2               
+             387     2               !  --- ...  check to see if the solar constant data file existed
+             388     2               
+             389     2                         inquire (file=solar_fname, exist=file_exist)
+             390     3                         if ( .not. file_exist ) then
+             391     3                           print *,' !!! error! can not find solar constant file!!!'
+             392     3                           stop
+             393     3                         else
+             394     3                           iyr = iyear
+             395     3               
+             396     3                           close(niradsf)
+             397     3                           open (niradsf,file=solar_fname,form='formatted',            &
+             398     3                    &                    status='old')
+             399     3                           rewind niradsf
+             400     3               
+             401     3                           read (niradsf, * ) iyr1,iyr2,icy1,icy2,smean,cline(1:60)
+             402     3               !           read (niradsf, 24) iyr1,iyr2,icy1,icy2,smean,cline
+             403     3               ! 24        format(4i5,f8.2,a60)
+             404     3               
+             405     4                           if ( me == 0 .and. myrank == 0 ) then
+             406     4                             print *,'  updating solar constant with cycle approx'
+             407     4                             print *,'   opened solar constant data file: ',solar_fname
+             408     4               !check        print *, iyr1, iyr2, icy1, icy2, smean, cline
+             409     4                           endif
+             410     3               
+             411     3               !  --- ...  check if there is a upper year limit put on the data table
+             412     3               
+             413     3               !           if ( iyear /= kyear ) then
+             414     3               !             icy = icy1 - iyr1 + 1    ! range of the earlest cycle in data table
+             415     3               !             if ( kyear-iyr1 < icy ) then ! need data range at least icy years
+             416     3                                                          ! to perform cycle approximation
+             417     3               !               if ( me == 0 .and. myrank == 0 ) then
+             418     3               !                 print *,'  *** the requested year',iyear,' and upper',&
+             419     3               !    &                  'limit',kyear,' do not fit the range of data ', &
+             420     3               !    &                  'table of iyr1, iyr2 =',iyr1,iyr2
+             421     3               !                 print *,'      use fixed solar constant=',con_solr
+             422     3               !               endif
+             423     3               !               solc0 = con_solr
+             424     3               !               isolflg = 10
+             425     3               
+             426     3               !             elseif ( kyear < iyr2 ) then
+             427     3               
+             428     3               !  --- ...  because the usage limit put on the historical data table,
+             429     3               !           skip those unused data records at first
+             430     3               
+             431     3               !               i = iyr2
+             432     3               !               lab_dowhile0 : do while ( i > kyear )
+             433     3               !                 read (niradsf,26) jyr, solc1
+             434     3               ! 26              format(i4,f10.4)
+             435     3               !                 read (niradsf,*) jyr, solc1
+             436     3               !                 i = i - 1
+             437     3               !               enddo lab_dowhile0
+             438     3               
+             439     3               !               iyr2 = kyear   ! next record will serve the upper limit
+             440     3               
+             441     3               !             endif   ! end if_kyear_block
+             442     3               !           endif   ! end if_iyear_block
+             443     3               
+             444     3               !  --- ...  checking the cycle range
+             445     3               
+             446     4                           if ( iyr < iyr1 ) then
+             447     4                             icy = icy1 - iyr1 + 1    ! range of the earlest cycle in data table
+             448     5                             lab_dowhile1 : do while ( iyr < iyr1 )
+             449     5                               iyr = iyr + icy
+             450     5                             enddo lab_dowhile1
+             451     4               
+             452     5                             if ( me == 0 .and. myrank == 0) then
+             453     5                               print *,'   *** year',iyear,' out of table range!',     &
+             454     5                    &                  iyr1, iyr2
+             455     5                               print *,'       using the closest-cycle year (',iyr,')'
+             456     5                             endif
+             457     4                           elseif ( iyr > iyr2 ) then
+             458     4                             icy = iyr2 - icy2 + 1    ! range of the latest cycle in data table
+             459     5                             lab_dowhile2 : do while ( iyr > iyr2 )
+             460     5                               iyr = iyr - icy
+             461     5                             enddo lab_dowhile2
+             462     4               
+             463     5                             if ( me == 0 .and. myrank == 0 ) then
+             464     5                               print *,'   *** year',iyear,' out of table range!',     &
+             465     5                    &                  iyr1, iyr2
+             466     5                               print *,'       using the closest-cycle year (',iyr,')'
+             467     5                             endif
+             468     4                           endif
+             469     3               
+             470     3               !  --- ...  locate the right record for the year of data
+             471     3               
+             472     4                           if ( isolflg < 4 ) then        ! use annual mean data tables
+             473     4                             i = iyr2
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 5
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             474     5                             lab_dowhile3 : do while ( i >= iyr1 )
+             475     5               !               read (niradsf,26) jyr, solc1
+             476     5               ! 26            format(i4,f10.4)
+             477     5                               read (niradsf,*) jyr, solc1
+             478     5               
+             479     6                               if ( i == iyr .and. iyr == jyr ) then
+             480     6                                 solc0  = smean + solc1
+             481     6               
+             482     7                                 if (me == 0 .and. myrank == 0) then
+             483     7                                   print *,' check: solar constant data used for year',&
+             484     7                    &                       iyr, solc1, solc0
+             485     7                                 endif
+             486     6                                 exit lab_dowhile3
+             487     6                               else
+             488     6                                 if(me == 0 .and. myrank == 0)print *,'  skip solar const data for yr',i
+             489     6                                 i = i - 1
+             490     6                               endif
+             491     5                             enddo   lab_dowhile3
+             492     4                           elseif ( isolflg == 4 ) then   ! use monthly mean data tables
+             493     4                             i = iyr2
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 2
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             494     5                             lab_dowhile4 : do while ( i >= iyr1 )
+             495     5               !               read (niradsf,26) jyr, smon(:)
+             496     5               ! 26            format(i4,12f10.4)
+             497     5                               read (niradsf,*) jyr, smon(1:12)
+             498     5               
+             499     6                               if ( i == iyr .and. iyr == jyr ) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1334
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             500     7   s    v                        do nn = 1, 12
+             501     7   p    v                          smon_sav(nn) = smean + smon(nn)
+             502     7   p    v                        enddo
+             503     6                                 solc0  = smean + smon(imon)
+             504     6               
+             505     7                                 if (me == 0 .and. myrank == 0) then
+             506     7                                     print *,' check: solar constant data used for year',&
+             507     7                    &                iyr,' and month',imon
+             508     7                                 endif
+             509     6                                 exit lab_dowhile4
+             510     6                               else
+             511     6                                 if(me == 0 .and. myrank == 0) print *,'  skip solar const data for yr',i
+             512     6                                 i = i - 1
+             513     6                               endif
+             514     5                             enddo   lab_dowhile4
+             515     4                           endif    ! end if_isolflg_block
+             516     3               
+             517     3                           close ( niradsf )
+             518     3                         endif      ! end if_file_exist_block
+             519     2               
+             520     2                       endif    ! end if_iyr_sav_block
+             521     1                     endif   ! end if_lsol_chg_block
+             522                     
+             523                     !  --- ...  calculate forecast julian day and fraction of julian day
+             524                     
+             525                           jd1 = iw3jdn(iyear,imon,iday)
+             526                     
+             527                     !  --- ...  unlike in normal applications, where day starts from 0 hr,
+             528                     !           in astronomy applications, day stats from noon.
+             529                     
+             530     1                     if (ihr < 12) then
+             531     1                       jd1 = jd1 - 1
+             532     1                       fjd1= 0.5 + float(ihr)*hrday + float(imin)*minday               &
+             533     1                    &            + float(isec)*secday
+             534     1                     else
+             535     1                       fjd1= float(ihr - 12)*hrday + float(imin)*minday                &
+             536     1                    &            + float(isec)*secday
+             537     1                     endif
+             538                     
+             539                           fjd1  = fjd1 + jd1
+             540                     
+             541                           jd  = int(fjd1)
+             542                           fjd = fjd1 - jd
+             543                     
+             544                           call solar                                                        &
+             545                     !  ---  inputs:
+             546                          &     ( jd, fjd,                                                   &
+             547                     !  ---  outputs:
+             548                          &       r1, dlt, alp                                               &
+             549                          &     )
+             550                     
+             551                     !  --- ...  calculate sun-earth distance adjustment factor appropriate to date
+             552                           solcon = solc0 / (r1*r1)
+             553                     
+             554                           slag   = sollag
+             555                           sdec   = sindec
+             556                           cdec   = cosdec
+             557                     
+             558                     !  --- ...  diagnostic print out
+             559                     
+             560     1                     if (me == 0 .and. myrank == 0) then
+             561     1               
+             562     1                       call prtime                                                     &
+             563     1               !  ---  inputs:
+             564     1                    &     ( jd, fjd, dlt, alp, r1, solcon )
+             565     1               !  ---  outputs: ( none )
+             566     1               
+             567     1                     endif
+             568                     
+             569                     !  --- ...  setting up calculation parameters used by subr coszmn
+             570                     
+             571                           nswr  = nint(deltsw / deltim)         ! number of mdl t-step per sw call
+             572                           dtswh = deltsw / f3600                ! time length in hours
+             573                     
+             574     1                     if ( deltsw >= f3600 ) then           ! for longer sw call interval
+             575     1                       nn   = max(6, min(12, nint(f3600/deltim) ))   ! num of calc per hour
+             576     1                       nstp = nint(dtswh) * nn + 1                   ! num of calc per sw call
+             577     1                     else                                  ! for shorter sw sw call interval
+             578     1                       nstp = max(2, min(20, nswr)) + 1
+             579     1               !       nn   = nint( float(nstp-1)/dtswh )
+             580     1                     endif
+             581                     
+             582                           anginc = pid12 * dtswh / float(nstp-1)          ! solar angle inc during each calc step
+             583                     
+             584     1                     if ( me == 0 .and. myrank == 0) then
+             585     1                       print *,'   for cosz calculations: nswr,deltim,deltsw,dtswh =', &
+             586     1                    &          nswr,deltim,deltsw,dtswh,'  anginc,nstp =',anginc,nstp
+             587     1                     endif
+             588                     
+             589                           if (me == 0 .and. myrank == 0) print*,'in sol_update completed sr solar'
+             590                     !
+             591                     
+             592                           return
+             593                     !...................................
+             594                           end subroutine sol_update
+             595                     !-----------------------------------
+             596                     
+             597                     
+             598                     !-----------------------------------
+             599                           subroutine solar                                                  &
+             600                     !...................................
+             601                     !  ---  inputs:
+             602                          &     ( jd, fjd,                                                   &
+             603                     !  ---  outputs:
+             604                          &       r1, dlt, alp                                               &
+             605                          &     )
+             606                     
+             607                     !  ===================================================================  !
+             608                     !                                                                       !
+             609                     !  solar computes radius vector, declination and right ascension of     !
+             610                     !  sun, and equation of time.                                           !
+             611                     !                                                                       !
+             612                     !  inputs:                                                              !
+             613                     !    jd       - julian day                                              !
+             614                     !    fjd      - fraction of the julian day                              !
+             615                     !                                                                       !
+             616                     !  outputs:                                                             !
+             617                     !    r1       - earth-sun radius vector                                 !
+             618                     !    dlt      - declination of sun in radians                           !
+             619                     !    alp      - right ascension of sun in radians                       !
+             620                     !                                                                       !
+             621                     !  module variables:                                                    !
+             622                     !    sollag   - equation of time in radians                             !
+             623                     !    sindec   - sine of declination angle                               !
+             624                     !    cosdec   - cosine of declination angle                             !
+             625                     !                                                                       !
+             626                     !  usage:    call solar                                                 !
+             627                     !                                                                       !
+             628                     !  external subroutines called: none                                    !
+             629                     !                                                                       !
+             630                     !  ===================================================================  !
+             631                     !
+             632                           implicit none
+             633                     
+             634                     !  ---  inputs:
+             635                           real (kind=kind_phys), intent(in) :: fjd
+             636                           integer,               intent(in) :: jd
+             637                     
+             638                     !  ---  outputs:
+             639                           real (kind=kind_phys), intent(out) :: r1, dlt, alp
+             640                     
+             641                     !  ---  locals:
+             642                           real (kind=kind_phys), parameter :: cyear = 365.25   ! days of year
+             643                           real (kind=kind_phys), parameter :: ccr   = 1.3e-6   ! iteration limit
+             644                           real (kind=kind_phys), parameter :: tpp   = 1.55     ! days between epoch and
+             645                                                                                ! perihelion passage of 1900
+             646                           real (kind=kind_phys), parameter :: svt6  = 78.035   ! days between perihelion passage
+             647                                                                                ! and march equinox of 1900
+             648                           integer,               parameter :: jdor  = 2415020  ! jd of epoch which is january
+             649                                                                                ! 0, 1900 at 12 hours ut
+             650                     
+             651                           real (kind=kind_phys) :: dat, t1, year, tyear, ec, angin, ador,   &
+             652                          &       deleqn, sni, tini, er, qq, e1, ep, cd, eq, date, em,       &
+             653                          &       cr, w1, tst, sun
+             654                     
+             655                           integer               :: jdoe, iter
+             656                     
+             657                     !===>  ...  begin here
+             658                     
+             659                     ! --- ...  computes time in julian centuries after epoch
+             660                     
+             661                           t1 = float(jd - jdor) / 36525.0
+             662                     
+             663                     ! --- ...  computes length of anomalistic and tropical years (minus 365 days)
+             664                     
+             665                           year = 0.25964134e0 + 0.304e-5 * t1
+             666                           tyear= 0.24219879e0 - 0.614e-5 * t1
+             667                     
+             668                     ! --- ...  computes orbit eccentricity and angle of earth's inclination from t
+             669                     
+             670                           ec   = 0.01675104e0 - (0.418e-4 + 0.126e-6 * t1) * t1
+             671                           angin= 23.452294e0 - (0.0130125e0 + 0.164e-5 * t1) * t1
+             672                     
+             673                           ador = jdor
+             674                           jdoe = ador + (svt6 * cyear) / (year - tyear)
+             675                     
+             676                     ! --- ...  deleqn is updated svt6 for current date
+             677                     
+             678                           deleqn= float(jdoe - jd) * (year - tyear) / cyear
+             679                           year  = year + 365.0
+             680                           sni   = sin( angin / degrad )
+             681                           tini  = 1.0 / tan( angin / degrad )
+             682                           er    = sqrt( (1.0 + ec) / (1.0 - ec) )
+             683                           qq    = deleqn * tpi / year
+             684                     
+             685                     ! --- ...  determine true anomaly at equinox
+             686                     
+             687                           e1    = 1.0
+             688                           cd    = 1.0
+             689                           iter  = 0
+             690                     
+             691     1                     lab_do_1 : do while ( cd > ccr )
+             692     1               
+             693     1                       ep    = e1 - (e1 - ec*sin(e1) - qq) / (1.0 - ec*cos(e1))
+             694     1                       cd    = abs(e1 - ep)
+             695     1                       e1    = ep
+             696     1                       iter  = iter + 1
+             697     1               
+             698     2                       if (iter > 10) then
+             699     2                         write(6,*) ' iteration count for loop 32 =', iter
+             700     2                         write(6,*) ' e, ep, cd =', e1, ep, cd
+             701     2                         exit lab_do_1
+             702     2                       endif
+             703     1               
+             704     1                     enddo  lab_do_1
+             705                     
+             706                           eq   = 2.0 * atan( er * tan( 0.5*e1 ) )
+             707                     
+             708                     ! --- ...  date is days since last perihelion passage
+             709                     
+             710                           dat  = float(jd - jdor) - tpp + fjd
+             711                           date = mod(dat, year)
+             712                     
+             713                     ! --- ...  solve orbit equations by newton's method
+             714                     
+             715                           em   = tpi * date / year
+             716                           e1   = 1.0
+             717                           cr   = 1.0
+             718                           iter = 0
+             719                     
+             720     1                     lab_do_2 : do while ( cr > ccr )
+             721     1               
+             722     1                       ep   = e1 - (e1 - ec*sin(e1) - em) / (1.0 - ec*cos(e1))
+             723     1                       cr   = abs(e1 - ep)
+             724     1                       e1   = ep
+             725     1                       iter = iter + 1
+             726     1               
+             727     2                       if (iter > 10) then
+             728     2                         write(6,*) ' iteration count for loop 31 =', iter
+             729     2                         exit lab_do_2
+             730     2                       endif
+             731     1               
+             732     1                     enddo  lab_do_2
+             733                     
+             734                           w1   = 2.0 * atan( er * tan( 0.5*e1 ) )
+             735                     
+             736                           r1   = 1.0 - ec*cos(e1)
+             737                     
+             738                           sindec = sni * sin(w1 - eq)
+             739                           cosdec = sqrt( 1.0 - sindec*sindec )
+             740                     
+             741                           dlt  = asin( sindec )
+             742                           alp  = asin( tan(dlt)*tini )
+             743                     
+             744                           tst  = cos( w1 - eq )
+             745                           if (tst < 0.0) alp = con_pi - alp
+             746                           if (alp < 0.0) alp = alp + tpi
+             747                     
+             748                           sun  = tpi * (date - deleqn) / year
+             749                           if (sun < 0.0) sun = sun + tpi
+             750                           sollag = sun - alp - 0.03255e0
+             751                     !
+             752                           return
+             753                     !...................................
+             754                           end subroutine solar
+             755                     !-----------------------------------
+             756                     
+             757                     
+             758                     !-----------------------------------
+             759                           subroutine coszmn                                                 &
+             760                     !...................................
+             761                     !  ---  inputs:
+             762                          &     ( xlon,sinlat,coslat,solhr, im, me,                          &
+             763                     !  ---  outputs:
+             764                          &       coszen, coszdg                                             &
+             765                          &     )
+             766                     
+             767                     !  ===================================================================  !
+             768                     !                                                                       !
+             769                     !  coszmn computes mean cos solar zenith angle over sw calling interval !
+             770                     !                                                                       !
+             771                     !  inputs:                                                              !
+             772                     !    xlon  (im)    - grids' longitudes in radians, work both on zonal   !
+             773                     !                    0->2pi and -pi->+pi arrangements                   !
+             774                     !    sinlat(im)    - sine of the corresponding latitudes                !
+             775                     !    coslat(im)    - cosine of the corresponding latitudes              !
+             776                     !    solhr         - time after 00z in hours                            !
+             777                     !    im            - num of grids in horizontal dimension               !
+             778                     !    me            - print message control flag                         !
+             779                     !                                                                       !
+             780                     !  outputs:                                                             !
+             781                     !    coszen(im)    - average of cosz for daytime only in sw call interval
+             782                     !    coszdg(im)    - average of cosz over entire sw call interval       !
+             783                     !                                                                       !
+             784                     !  module variables:                                                    !
+             785                     !    sollag        - equation of time                                   !
+             786                     !    sindec        - sine of the solar declination angle                !
+             787                     !    cosdec        - cosine of the solar declination angle              !
+             788                     !    anginc        - solar angle increment per iteration for cosz calc  !
+             789                     !    nstp          - total number of zenith angle iterations            !
+             790                     !                                                                       !
+             791                     !  usage:    call comzmn                                                !
+             792                     !                                                                       !
+             793                     !  external subroutines called: none                                    !
+             794                     !                                                                       !
+             795                     !  ===================================================================  !
+             796                     !
+             797                           implicit none
+             798                     
+             799                     !  ---  inputs:
+             800                           integer, intent(in) :: im, me
+             801                     
+             802                           real (kind=kind_phys), intent(in) :: sinlat(:), coslat(:),        &
+             803                          &       xlon(:), solhr
+             804                     
+             805                     !  ---  outputs:
+             806                           real (kind=kind_phys), intent(out) :: coszen(:), coszdg(:)
+             807                     
+             808                     !  ---  locals:
+             809                           real (kind=kind_phys) :: coszn, cns, ss, cc, solang, rstp
+             810                     
+             811                           integer :: istsun(im), i, it, j, lat
+             812                     
+             813                     !===>  ...  begin here
+             814                     
+             815                           solang = pid12 * (solhr - f12)         ! solar angle at present time
+             816                           rstp = 1.0 / float(nstp)
+             817                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1334
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      istsun
+                                   <<< Loop-information  End >>>
+             818     1  pp   2v            do i = 1, im
+             819     1   p   2v              coszen(i) = 0.0
+             820     1   p   2v              istsun(i) = 0
+             821     1   p   2v            enddo
+             822                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      istsun
+                                   <<< Loop-information  End >>>
+             823     1                     do it = 1, nstp
+             824     1                       cns = solang + float(it-1)*anginc + sollag
+             825     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 41
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.50, ITR: 96, MVE: 5, POL: L)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      istsun
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 0
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 20
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             826     2  pp    v              do i = 1, im
+             827     2   p    v                ss  = sinlat(i) * sindec
+             828     2   p    v                cc  = coslat(i) * cosdec
+             829     2               
+             830     2   p    v                coszn = ss + cc * cos(cns + xlon(i))
+             831     2   p    v                coszen(i) = coszen(i) + max(0.0, coszn)
+             832     2   p    v                if (coszn > czlimt) istsun(i) = istsun(i) + 1
+             833     2   p    v              enddo
+             834     1                     enddo
+             835                     
+             836                     !  --- ...  compute time averages
+             837                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 471
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.20, ITR: 48, MVE: 2, POL: L)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      istsun
+                                   <<< Loop-information  End >>>
+             838     1  pp   2v            do i = 1, im
+             839     1   p   2v              coszdg(i) = coszen(i) * rstp
+             840     1   p   2v              if (istsun(i) > 0) coszen(i) = coszen(i) / istsun(i)
+             841     1   p   2v            enddo
+             842                     !
+             843                           return
+             844                     !...................................
+             845                           end subroutine coszmn
+             846                     !-----------------------------------
+             847                     
+             848                     
+             849                     !-----------------------------------
+             850                           subroutine prtime                                                 &
+             851                     !...................................
+             852                     !  ---  inputs:
+             853                          &     ( jd, fjd, dlt, alp, r1, solc                                &
+             854                     !  ---  outputs: ( none )
+             855                          &     )
+             856                     
+             857                     !  ===================================================================  !
+             858                     !                                                                       !
+             859                     !  prtime prints out forecast date, time, and astronomy quantities.     !
+             860                     !                                                                       !
+             861                     !  inputs:                                                              !
+             862                     !    jd       - forecast julian day                                     !
+             863                     !    fjd      - forecast fraction of julian day                         !
+             864                     !    dlt      - declination angle of sun in radians                     !
+             865                     !    alp      - right ascension of sun in radians                       !
+             866                     !    r1       - earth-sun radius vector in meter                        !
+             867                     !    solc     - solar constant in w/m^2                                 !
+             868                     !                                                                       !
+             869                     !  outputs:   ( none )                                                  !
+             870                     !                                                                       !
+             871                     !  module variables:                                                    !
+             872                     !    sollag   - equation of time in radians                             !
+             873                     !                                                                       !
+             874                     !  usage:    call prtime                                                !
+             875                     !                                                                       !
+             876                     !  external subroutines called: w3fs26                                  !
+             877                     !                                                                       !
+             878                     !  ===================================================================  !
+             879                     !
+             880                           implicit none
+             881                     
+             882                     !  ---  inputs:
+             883                           integer, intent(in) :: jd
+             884                     
+             885                           real (kind=kind_phys), intent(in) :: fjd, dlt, alp, r1, solc
+             886                     
+             887                     !  ---  outputs: ( none )
+             888                     
+             889                     !  ---  locals:
+             890                           real (kind=kind_phys), parameter :: sixty  = 60.0
+             891                     
+             892                           character(len=1),     parameter :: sign   = '-'
+             893                           character(len=1),     parameter :: sigb   = ' '
+             894                     
+             895                           character(len=1)     :: dsig
+             896                           character(len=4)     :: month(12)
+             897                     
+             898                           data month / 'jan.','feb.','mar.','apr.','may ','june',           &
+             899                          &             'july','aug.','sep.','oct.','nov ','dec.' /
+             900                     
+             901                           integer               :: iday, imon, iyear, ihr, ltd, ltm,        &
+             902                          &                         ihalp, iyy, jda, mfjd, idaywk, idayyr
+             903                           real (kind=kind_phys) :: xmin, dltd, dltm, dlts, halp, ymin,      &
+             904                          &                         asec, eqt, eqsec
+             905                     
+             906                     !===>  ...  begin here
+             907                     
+             908                     !  --- ...  get forecast hour and minute from fraction of julian day
+             909                     
+             910     1                     if (fjd >= 0.5) then
+             911     1                       jda = jd + 1
+             912     1                       mfjd= nint( fjd*1440.0 )
+             913     1                       ihr = mfjd / 60 - 12
+             914     1                       xmin= float(mfjd) - (ihr + 12)*sixty
+             915     1                     else
+             916     1                       jda = jd
+             917     1                       mfjd= nint( fjd*1440.0 )
+             918     1                       ihr = mfjd / 60 + 12
+             919     1                       xmin= float(mfjd) - (ihr - 12)*sixty
+             920     1                     endif
+             921                     
+             922                     !  --- ...  get forecast year, month, and day from julian day
+             923                     
+             924                           call w3fs26(jda, iyear,imon,iday, idaywk,idayyr)
+             925                     
+             926                     !  -- ...  compute solar parameters
+             927                     
+             928                           dltd = degrad * dlt
+             929                           ltd  = dltd
+             930                           dltm = sixty * (abs(dltd) - abs(float(ltd)))
+             931                           ltm  = dltm
+             932                           dlts = sixty * (dltm - float(ltm))
+             933                     
+             934     1                     if ((dltd < 0.0) .and. (ltd == 0.0)) then
+             935     1                       dsig = sign
+             936     1                     else
+             937     1                       dsig = sigb
+             938     1                     endif
+             939                     
+             940                           halp = 6.0 * alp / hpi
+             941                           ihalp= halp
+             942                           ymin = abs(halp - float(ihalp)) * sixty
+             943                           iyy  = ymin
+             944                           asec = (ymin - float(iyy)) * sixty
+             945                     
+             946                           eqt  = 228.55735 * sollag
+             947                           eqsec= sixty * eqt
+             948                     
+             949                           print 101, iday, month(imon), iyear, ihr, xmin, jd, fjd
+             950                      101  format('0 forecast date',9x,i3,a5,i6,' at',i3,' hrs',f6.2,' mins'/&
+             951                          &       '  julian day',12x,i8,2x,'plus',f11.6)
+             952                     
+             953                           print 102, r1, halp, ihalp, iyy, asec
+             954                      102  format('  radius vector',9x,f10.7/'  right ascension of sun',     &
+             955                          &       f12.7,' hrs, or',i4,' hrs',i4,' mins',f6.1,' secs')
+             956                     
+             957                           print 103, dltd, dsig, ltd, ltm, dlts, eqt, eqsec, sollag, solc
+             958                      103  format('  declination of the sun',f12.7,' degs, or ',a1,i3,       &
+             959                          &       ' degs',i4,' mins',f6.1,' secs'/'  equation of time',6x,   &
+             960                          &       f12.7,' mins, or',f10.2,' secs, or',f9.6,' radians'/       &
+             961                          &       '  solar constant',8x,f12.7,' (distance ajusted)'//)
+             962                     
+             963                     !
+             964                           return
+             965                     !...................................
+             966                           end subroutine prtime
+             967                     !-----------------------------------
+             968                     
+             969                     !
+             970                     !...........................................!
+             971                           end module module_radiation_astronomy !
+             972                     !===========================================!
+
+ Procedure information
+   Lines      : 972
+   Statements : 389
+   Stack(byte): 14272
+   Prefetch num: 0
+
+ Scoping unit of module : module_radiation_astronomy
+   Attribute and Cross reference of name
+     anginc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PRIVATE, initialized
+      |(Declaration)    : 112
+      |(Definition)     : 
+      |(Reference)      : 
+     asin
+      |(Class and Type) : intrinsic function name, none
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 101
+     con_pi
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 81  94  95  96
+     con_solr
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 81  104  114
+     con_solr_old
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 81
+     cosdec
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PRIVATE, initialized
+      |(Declaration)    : 111
+      |(Definition)     : 
+      |(Reference)      : 
+     coszmn
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 119
+      |(Definition)     : 
+      |(Reference)      : 
+     czlimt
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 99
+      |(Definition)     : 
+      |(Reference)      : 
+     degrad
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 94
+      |(Definition)     : 
+      |(Reference)      : 
+     f12
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 97
+      |(Definition)     : 
+      |(Reference)      : 101
+     f3600
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 98
+      |(Definition)     : 
+      |(Reference)      : 
+     hpi
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 96
+      |(Definition)     : 
+      |(Reference)      : 
+     isolar
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PRIVATE, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 80
+     isolflg
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PRIVATE, initialized
+      |(Declaration)    : 105
+      |(Definition)     : 
+      |(Reference)      : 
+     iyr_sav
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PRIVATE, initialized
+      |(Declaration)    : 116
+      |(Definition)     : 
+      |(Reference)      : 
+     kind_phys
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PRIVATE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 80  94  95  96  97  98  99  101  104  109  110  111  112  113
+     module_iounitdef
+      |(Class and Type) : module name
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 82
+     module_radiation_astronomy
+      |(Class and Type) : module name
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 77
+      |(Definition)     : 
+      |(Reference)      : 971
+     NIRADSF
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PRIVATE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 82
+     nstp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PRIVATE, initialized
+      |(Declaration)    : 117
+      |(Definition)     : 
+      |(Reference)      : 
+     physcons
+      |(Class and Type) : module name
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 81
+     physpara
+      |(Class and Type) : module name
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 80
+     pid12
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 101
+      |(Definition)     : 
+      |(Reference)      : 
+     sindec
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PRIVATE, initialized
+      |(Declaration)    : 110
+      |(Definition)     : 
+      |(Reference)      : 
+     smon_sav
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PRIVATE, DIMENSION, initialized
+      |(Declaration)    : 113  114
+      |(Definition)     : 
+      |(Reference)      : 
+     sol_init
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 119
+      |(Definition)     : 
+      |(Reference)      : 
+     sol_update
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 119
+      |(Definition)     : 
+      |(Reference)      : 
+     solar_file
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : PRIVATE, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 80
+     solar_fname
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : PRIVATE, initialized
+      |(Declaration)    : 106
+      |(Definition)     : 
+      |(Reference)      : 
+     solc0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC, initialized
+      |(Declaration)    : 104
+      |(Definition)     : 
+      |(Reference)      : 
+     sollag
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PRIVATE, initialized
+      |(Declaration)    : 109
+      |(Definition)     : 
+      |(Reference)      : 
+     tpi
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 95
+      |(Definition)     : 
+      |(Reference)      : 
+     vtagast
+      |(Class and Type) : named constant, CHARACTER(40,1)
+      |(Attributes)     : PRIVATE
+      |(Declaration)    : 89
+      |(Definition)     : 
+      |(Reference)      : 
+
+ Scoping unit of module sub-program : sol_init
+   Attribute and Cross reference of name
+     con_solr
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 180
+     con_solr_old
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 186
+     file_exist
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 172
+      |(Definition)     : 202  221  240  259
+      |(Reference)      : 203  222  241  260
+     isolar
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 179  185  190  194  213  232  251  274
+     isolflg
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 179  204  223  242  261  271
+      |(Reference)      : 209  228  247  266  276
+     iyr_sav
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 182
+      |(Reference)      : 
+     me
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 127  167
+      |(Definition)     : 
+      |(Reference)      : 176  187  191  197  206  216  225  235  244  254  263  273
+     myrank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 127  167
+      |(Definition)     : 
+      |(Reference)      : 176  187  191  197  206  216  225  235  244  254  263  273
+     nstp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 183
+      |(Reference)      : 
+     sol_init
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 127
+      |(Reference)      : 283
+     solar_file
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 181
+     solar_fname
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 181  195  214  233  252
+      |(Reference)      : 202  207  221  226  240  245  259  264
+     solc0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 180  186
+      |(Reference)      : 188  192  209  228  247  266  276
+     vtagast
+      |(Class and Type) : named constant, CHARACTER(40,1)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 176
+
+ Scoping unit of module sub-program : sol_update
+   Attribute and Cross reference of name
+     alp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 359
+      |(Definition)     : 544
+      |(Reference)      : 562
+     anginc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 582
+      |(Reference)      : 585
+     cdec
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(OUT), dummy-argument
+      |(Declaration)    : 288  351
+      |(Definition)     : 556
+      |(Reference)      : 
+     cline
+      |(Class and Type) : variable name, CHARACTER(60,1)
+      |(Attributes)     : 
+      |(Declaration)    : 366
+      |(Definition)     : 401
+      |(Reference)      : 
+     cosdec
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 556
+     deltim
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 288  348
+      |(Definition)     : 
+      |(Reference)      : 571  575  585
+     deltsw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 288  348
+      |(Definition)     : 
+      |(Reference)      : 571  572  574  585
+     dlt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 359
+      |(Definition)     : 544
+      |(Reference)      : 562
+     dtswh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 358
+      |(Definition)     : 572
+      |(Reference)      : 576  582  585
+     f3600
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 572  574  575
+     file_exist
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 365
+      |(Definition)     : 389
+      |(Reference)      : 390
+     fjd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 359
+      |(Definition)     : 542
+      |(Reference)      : 544  562
+     fjd1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 359
+      |(Definition)     : 532  535  539
+      |(Reference)      : 539  541  542
+     float
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 532  532  532  535  535  535  582
+     hrday
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 354
+      |(Definition)     : 
+      |(Reference)      : 532  535
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 363
+      |(Definition)     : 473  489  493  512
+      |(Reference)      : 474  479  488  489  494  499  511  512
+     icy
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 363
+      |(Definition)     : 447  458
+      |(Reference)      : 449  460
+     icy1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 363
+      |(Definition)     : 401
+      |(Reference)      : 447
+     icy2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 363
+      |(Definition)     : 401
+      |(Reference)      : 458
+     iday
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 361
+      |(Definition)     : 373  525
+      |(Reference)      : 
+     ihr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 361
+      |(Definition)     : 374
+      |(Reference)      : 530  532  535
+     imin
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 361
+      |(Definition)     : 375
+      |(Reference)      : 532  535
+     imon
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 361
+      |(Definition)     : 372  525
+      |(Reference)      : 382  503  506
+     int
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 541
+     isec
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 361
+      |(Definition)     : 376
+      |(Reference)      : 532  535
+     isolflg
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 381  472  492
+     iw3jdn
+      |(Class and Type) : external function name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 525
+     iw3jdn
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 362
+      |(Definition)     : 
+      |(Reference)      : 
+     iyear
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 361
+      |(Definition)     : 371  525
+      |(Reference)      : 380  385  394  453  464
+     iyr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 363
+      |(Definition)     : 394  449  460
+      |(Reference)      : 446  448  449  455  457  459  460  466  479  479  483  499  499  506
+     iyr1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 363
+      |(Definition)     : 401
+      |(Reference)      : 446  447  448  453  464  474  494
+     iyr2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 363
+      |(Definition)     : 401
+      |(Reference)      : 453  457  458  459  464  473  493
+     iyr_sav
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 385
+      |(Reference)      : 380
+     jd
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 361
+      |(Definition)     : 541
+      |(Reference)      : 542  544  562
+     jd1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 361
+      |(Definition)     : 525  531
+      |(Reference)      : 531  539
+     jdate
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 288  345
+      |(Definition)     : 
+      |(Reference)      : 371  372  373  374  375  376
+     jyr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 363
+      |(Definition)     : 477  497
+      |(Reference)      : 479  499
+     kind_phys
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 348  351  354  355  356  358  359
+     kyear
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 288  345
+      |(Definition)     : 
+      |(Reference)      : 
+     lab_dowhile1
+      |(Class and Type) : construct name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 448
+      |(Reference)      : 450
+     lab_dowhile2
+      |(Class and Type) : construct name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 459
+      |(Reference)      : 461
+     lab_dowhile3
+      |(Class and Type) : construct name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 474
+      |(Reference)      : 486  491
+     lab_dowhile4
+      |(Class and Type) : construct name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 494
+      |(Reference)      : 509  514
+     lsol_chg
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 288  346
+      |(Definition)     : 
+      |(Reference)      : 378
+     max
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 575  578
+     me
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 288  345
+      |(Definition)     : 
+      |(Reference)      : 405  452  463  482  488  505  511  560  584  589
+     min
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 575  578
+     minday
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 355
+      |(Definition)     : 
+      |(Reference)      : 532  535
+     myrank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 288  345
+      |(Definition)     : 
+      |(Reference)      : 405  452  463  482  488  505  511  560  584  589
+     NIRADSF
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 396  397  399  401  477  497  517
+     nint
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 571  575  576
+     nn
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 363
+      |(Definition)     : 500  575
+      |(Reference)      : 501  501  576
+     nstp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 576  578
+      |(Reference)      : 582  585
+     nswr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 363
+      |(Definition)     : 571
+      |(Reference)      : 578  585
+     pid12
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 582
+     prtime
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 562
+     r1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 359
+      |(Definition)     : 544
+      |(Reference)      : 552  552  562
+     sdec
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(OUT), dummy-argument
+      |(Declaration)    : 288  351
+      |(Definition)     : 555
+      |(Reference)      : 
+     secday
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 356
+      |(Definition)     : 
+      |(Reference)      : 532  535
+     sindec
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 555
+     slag
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(OUT), dummy-argument
+      |(Declaration)    : 288  351
+      |(Definition)     : 554
+      |(Reference)      : 
+     smean
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 358
+      |(Definition)     : 401
+      |(Reference)      : 480  501  503
+     smon
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 358
+      |(Definition)     : 497
+      |(Reference)      : 501  503
+     smon_sav
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 501
+      |(Reference)      : 382
+     sol_update
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 288
+      |(Reference)      : 594
+     solar
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 544
+     solar_fname
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 389  397  407
+     solc0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 382  480  503
+      |(Reference)      : 483  552
+     solc1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 358
+      |(Definition)     : 477
+      |(Reference)      : 480  483
+     solcon
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(OUT), dummy-argument
+      |(Declaration)    : 288  351
+      |(Definition)     : 552
+      |(Reference)      : 562
+     sollag
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 554
+
+ Scoping unit of module sub-program : solar
+   Attribute and Cross reference of name
+     abs
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 694  723
+     ador
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 651
+      |(Definition)     : 673
+      |(Reference)      : 674
+     alp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(OUT), dummy-argument
+      |(Declaration)    : 599  639
+      |(Definition)     : 742  745  746
+      |(Reference)      : 745  746  746  750
+     angin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 651
+      |(Definition)     : 671
+      |(Reference)      : 680  681
+     asin
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 741  742
+     atan
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 706  734
+     ccr
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 643
+      |(Definition)     : 
+      |(Reference)      : 691  720
+     cd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 651
+      |(Definition)     : 688  694
+      |(Reference)      : 691  700
+     con_pi
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 745
+     cos
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 693  722  736  744
+     cosdec
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 739
+      |(Reference)      : 
+     cr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 651
+      |(Definition)     : 717  723
+      |(Reference)      : 720
+     cyear
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 642
+      |(Definition)     : 
+      |(Reference)      : 678
+     dat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 651
+      |(Definition)     : 710
+      |(Reference)      : 711
+     date
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 651
+      |(Definition)     : 711
+      |(Reference)      : 715  748
+     degrad
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 680  681
+     deleqn
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 651
+      |(Definition)     : 678
+      |(Reference)      : 683  748
+     dlt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(OUT), dummy-argument
+      |(Declaration)    : 599  639
+      |(Definition)     : 741
+      |(Reference)      : 742
+     e1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 651
+      |(Definition)     : 687  695  716  724
+      |(Reference)      : 693  693  693  693  694  700  706  722  722  722  722  723  734  736
+     ec
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 651
+      |(Definition)     : 670
+      |(Reference)      : 682  682  693  693  722  722  736
+     em
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 651
+      |(Definition)     : 715
+      |(Reference)      : 722
+     ep
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 651
+      |(Definition)     : 693  722
+      |(Reference)      : 694  695  700  723  724
+     eq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 651
+      |(Definition)     : 706
+      |(Reference)      : 738  744
+     er
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 651
+      |(Definition)     : 682
+      |(Reference)      : 706  734
+     fjd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 599  635
+      |(Definition)     : 
+      |(Reference)      : 710
+     float
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 661  678  710
+     iter
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 655
+      |(Definition)     : 689  696  718  725
+      |(Reference)      : 696  698  699  725  727  728
+     jd
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 599  636
+      |(Definition)     : 
+      |(Reference)      : 661  678  710
+     jdoe
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 655
+      |(Definition)     : 674
+      |(Reference)      : 678
+     jdor
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 648
+      |(Definition)     : 
+      |(Reference)      : 661  673  710
+     kind_phys
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 635  639  642  643  644  646  651
+     lab_do_1
+      |(Class and Type) : construct name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 691
+      |(Reference)      : 701  704
+     lab_do_2
+      |(Class and Type) : construct name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 720
+      |(Reference)      : 729  732
+     mod
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 711
+     qq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 651
+      |(Definition)     : 683
+      |(Reference)      : 693
+     r1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(OUT), dummy-argument
+      |(Declaration)    : 599  639
+      |(Definition)     : 736
+      |(Reference)      : 
+     sin
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 680  693  722  738
+     sindec
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 738
+      |(Reference)      : 739  739  741
+     sni
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 651
+      |(Definition)     : 680
+      |(Reference)      : 738
+     solar
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 599
+      |(Reference)      : 754
+     sollag
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 750
+      |(Reference)      : 
+     sqrt
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 682  739
+     sun
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 651
+      |(Definition)     : 748  749
+      |(Reference)      : 749  749  750
+     svt6
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 646
+      |(Definition)     : 
+      |(Reference)      : 674  674
+     t1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 651
+      |(Definition)     : 661
+      |(Reference)      : 665  666  670  670  671  671
+     tan
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 681  706  734  742
+     tini
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 651
+      |(Definition)     : 681
+      |(Reference)      : 742
+     tpi
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 683  715  746  748  749
+     tpp
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 644
+      |(Definition)     : 
+      |(Reference)      : 710
+     tst
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 651
+      |(Definition)     : 744
+      |(Reference)      : 745
+     tyear
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 651
+      |(Definition)     : 666
+      |(Reference)      : 674  678
+     w1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 651
+      |(Definition)     : 734
+      |(Reference)      : 738  744
+     year
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 651
+      |(Definition)     : 665  679
+      |(Reference)      : 674  678  679  683  711  715  748
+
+ Scoping unit of module sub-program : coszmn
+   Attribute and Cross reference of name
+     anginc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 824
+     cc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 809
+      |(Definition)     : 828
+      |(Reference)      : 830
+     cns
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 809
+      |(Definition)     : 824
+      |(Reference)      : 830
+     cos
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 830
+     cosdec
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 828
+     coslat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 759  802
+      |(Definition)     : 
+      |(Reference)      : 828
+     coszdg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(OUT), dummy-argument
+      |(Declaration)    : 759  806
+      |(Definition)     : 839
+      |(Reference)      : 
+     coszen
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(OUT), dummy-argument
+      |(Declaration)    : 759  806
+      |(Definition)     : 819  831  840
+      |(Reference)      : 831  839  840
+     coszmn
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 759
+      |(Reference)      : 845
+     coszn
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 809
+      |(Definition)     : 830
+      |(Reference)      : 831  832
+     czlimt
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 832
+     f12
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 815
+     float
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 816  824
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 811
+      |(Definition)     : 818  826  838
+      |(Reference)      : 819  820  827  828  830  831  831  832  832  839  839  840  840  840  840
+     im
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 759  800
+      |(Definition)     : 
+      |(Reference)      : 811  818  826  838
+     istsun
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 811
+      |(Definition)     : 820  832
+      |(Reference)      : 832  840  840
+     it
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 811
+      |(Definition)     : 823
+      |(Reference)      : 824
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 811
+      |(Definition)     : 
+      |(Reference)      : 
+     kind_phys
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 802  806  809
+     lat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 811
+      |(Definition)     : 
+      |(Reference)      : 
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 831
+     me
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 759  800
+      |(Definition)     : 
+      |(Reference)      : 
+     nstp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 816  823
+     pid12
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 815
+     rstp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 809
+      |(Definition)     : 816
+      |(Reference)      : 839
+     sindec
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 827
+     sinlat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 759  802
+      |(Definition)     : 
+      |(Reference)      : 827
+     solang
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 809
+      |(Definition)     : 815
+      |(Reference)      : 824
+     solhr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 759  802
+      |(Definition)     : 
+      |(Reference)      : 815
+     sollag
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 824
+     ss
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 809
+      |(Definition)     : 827
+      |(Reference)      : 830
+     xlon
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 759  802
+      |(Definition)     : 
+      |(Reference)      : 830
+
+ Scoping unit of module sub-program : prtime
+   Attribute and Cross reference of name
+     abs
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 930  930  942
+     alp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 850  885
+      |(Definition)     : 
+      |(Reference)      : 940
+     asec
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 903
+      |(Definition)     : 944
+      |(Reference)      : 953
+     degrad
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 928
+     dlt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 850  885
+      |(Definition)     : 
+      |(Reference)      : 928
+     dltd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 903
+      |(Definition)     : 928
+      |(Reference)      : 929  930  934  957
+     dltm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 903
+      |(Definition)     : 930
+      |(Reference)      : 931  932
+     dlts
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 903
+      |(Definition)     : 932
+      |(Reference)      : 957
+     dsig
+      |(Class and Type) : variable name, CHARACTER(1,1)
+      |(Attributes)     : 
+      |(Declaration)    : 895
+      |(Definition)     : 935  937
+      |(Reference)      : 957
+     eqsec
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 903
+      |(Definition)     : 947
+      |(Reference)      : 957
+     eqt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 903
+      |(Definition)     : 946
+      |(Reference)      : 947  957
+     fjd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 850  885
+      |(Definition)     : 
+      |(Reference)      : 910  912  917  949
+     float
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 914  919  930  932  942  944
+     halp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 903
+      |(Definition)     : 940
+      |(Reference)      : 941  942  953
+     hpi
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 940
+     iday
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 901
+      |(Definition)     : 924
+      |(Reference)      : 949
+     idaywk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 901
+      |(Definition)     : 924
+      |(Reference)      : 
+     idayyr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 901
+      |(Definition)     : 924
+      |(Reference)      : 
+     ihalp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 901
+      |(Definition)     : 941
+      |(Reference)      : 942  953
+     ihr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 901
+      |(Definition)     : 913  918
+      |(Reference)      : 914  919  949
+     imon
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 901
+      |(Definition)     : 924
+      |(Reference)      : 949
+     iyear
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 901
+      |(Definition)     : 924
+      |(Reference)      : 949
+     iyy
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 901
+      |(Definition)     : 943
+      |(Reference)      : 944  953
+     jd
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 850  883
+      |(Definition)     : 
+      |(Reference)      : 911  916  949
+     jda
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 901
+      |(Definition)     : 911  916  924
+      |(Reference)      : 
+     kind_phys
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 885  890  903
+     ltd
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 901
+      |(Definition)     : 929
+      |(Reference)      : 930  934  957
+     ltm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 901
+      |(Definition)     : 931
+      |(Reference)      : 932  957
+     mfjd
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 901
+      |(Definition)     : 912  917
+      |(Reference)      : 913  914  918  919
+     month
+      |(Class and Type) : variable name, CHARACTER(4,1)
+      |(Attributes)     : DIMENSION, initialized
+      |(Declaration)    : 896  898
+      |(Definition)     : 
+      |(Reference)      : 949
+     nint
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 912  917
+     prtime
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 850
+      |(Reference)      : 966
+     r1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 850  885
+      |(Definition)     : 
+      |(Reference)      : 953
+     sigb
+      |(Class and Type) : named constant, CHARACTER(1,1)
+      |(Attributes)     : 
+      |(Declaration)    : 893
+      |(Definition)     : 
+      |(Reference)      : 937
+     sign
+      |(Class and Type) : named constant, CHARACTER(1,1)
+      |(Attributes)     : 
+      |(Declaration)    : 892
+      |(Definition)     : 
+      |(Reference)      : 935
+     sixty
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 890
+      |(Definition)     : 
+      |(Reference)      : 914  919  930  932  942  944  947
+     solc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 850  885
+      |(Definition)     : 
+      |(Reference)      : 957
+     sollag
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated, initialized
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 946  957
+     w3fs26
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 924
+     xmin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 903
+      |(Definition)     : 914  919
+      |(Reference)      : 949
+     ymin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 903
+      |(Definition)     : 942
+      |(Reference)      : 943  944
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+        101  format        (Definition) 950  
+                           (Reference)  949
+        102  format        (Definition) 954  
+                           (Reference)  953
+        103  format        (Definition) 958  
+                           (Reference)  957
+
+ Total information
+   Procedures       : 1
+   Total lines      : 972
+   Total statements : 389
+   Total stack(byte): 14272
+   Total prefetch num: 0
+

@@ -1,0 +1,753 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar  7 10:21:04 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm_helio
+   Source file       : mo_constants.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ Module "mo_constants"
+  (inc)(line-no.)(nest)(optimize)
+               1                     MODULE mo_constants
+               2                     
+               3                       use shr_kind_mod, only: r8 => shr_kind_r8
+               4                     
+               5                       IMPLICIT NONE
+               6                     
+               7                       ! ----------------------------------------------------------------
+               8                       !
+               9                       ! module *mo_constants* basic universal constants  and derived constants.
+              10                       !
+              11                       ! ----------------------------------------------------------------
+              12                     
+              13                       REAL(r8), PARAMETER :: dayl = 86400.  ! length of the day (in seconds).
+              14                     
+              15                       REAL(r8) :: api     ! 2.*arcsin(1.).
+              16                       REAL(r8) :: a       ! radius of the earth.
+              17                       REAL(r8) :: omega   ! solid rotation velocity of the earth.
+              18                       REAL(r8) :: g       ! gravity acceleration.
+              19                       REAL(r8) :: cpd     ! specific heat at constant pressure (dry air).
+              20                       REAL(r8) :: cpv     !            idem               (water vapour).
+              21                       REAL(r8) :: rd      ! gas constant for dry air.
+              22                       REAL(r8) :: rv      !    idem      for water vapour.
+              23                       REAL(r8) :: rcpd    ! rcpd=1./cpd.
+              24                       REAL(r8) :: vtmpc1  ! vtmpc1=rv/rd-1.
+              25                       REAL(r8) :: vtmpc2  ! vtmpc2=cpv/cpd-1.
+              26                       REAL(r8) :: rhoh2o  ! density of liquid water.
+              27                       REAL(r8) :: alv     ! latent heat for vaporisation.
+              28                       REAL(r8) :: als     ! latent heat for sublimation.
+              29                       REAL(r8) :: alf     ! latent heat for fusion.
+              30                       REAL(r8) :: clw     ! specific heat for liquid water.
+              31                       REAL(r8) :: tmelt   ! temperature of fusion of ice.
+              32                       REAL(r8) :: solc    ! solar constant.
+              33                       REAL(r8) :: stbo    ! stephan boltzmann constant.
+              34                       REAL(r8) :: yearl   ! length of the year (in days).
+              35                     
+              36                       ! constants used for computation of saturation mixing ratio
+              37                       !   over liquid water(*c_les*) or ice(*c_ies*).
+              38                     
+              39                       REAL(r8) :: c1es    ! 610.78
+              40                       REAL(r8) :: c2es    ! 1es*rd/rv
+              41                       REAL(r8) :: c3les   ! 17.269
+              42                       REAL(r8) :: c3ies   ! 21.875
+              43                       REAL(r8) :: c4les   ! 35.86
+              44                       REAL(r8) :: c4ies   !  7.66
+              45                       REAL(r8) :: c5les   ! c3les*(tmelt-c4les)
+              46                       REAL(r8) :: c5ies   ! c3ies*(tmelt-c4ies)
+              47                       REAL(r8) :: c5alvcp ! c5les*alv/cpd
+              48                       REAL(r8) :: c5alscp ! c5ies*als/cpd
+              49                       REAL(r8) :: alvdcp  ! alv/cpd
+              50                       REAL(r8) :: alsdcp  ! als/cpd
+              51                       REAL(r8) :: zrg
+              52                       REAL(r8) :: r5alvcp
+              53                       REAL(r8) :: r5alscp
+              54                       REAL(r8) :: ralvdcp
+              55                       REAL(r8) :: ralsdcp
+              56                       REAL(r8) :: ralfdcp
+              57                       REAL(r8) :: rtwat
+              58                       REAL(r8) :: rtber
+              59                       REAL(r8) :: rtice
+              60                     
+              61                     CONTAINS
+              62                     
+              63                       SUBROUTINE inicon
+              64                     
+              65                         ! Description:
+              66                         ! Preset constants in mo_constants.
+              67                         !
+              68                         ! Method:
+              69                         !
+              70                         ! *inicon* is called from *setdyn*.
+              71                         !
+              72                         ! Authors:
+              73                         !
+              74                         ! M. Jarraud, ECMWF, December 1982, original source
+              75                         ! L. Kornblueh, MPI, May 1998, f90 rewrite
+              76                         ! U. Schulzweida, MPI, May 1998, f90 rewrite
+              77                         ! H.-S. Bauer, MPI, Jul 1998, changed
+              78                         ! A. Rhodin, MPI, Jan 1999, subroutine inicon put into module mo_constants
+              79                         !
+              80                         ! for more details see file AUTHORS
+              81                         !
+              82                     
+              83                         IMPLICIT NONE
+              84                     
+              85                         !  Intrinsic functions
+              86                         INTRINSIC ASIN
+              87                     
+              88                         !  Executable statements
+              89                     
+              90                         !-- 1. Preset constants
+              91                     
+              92                         api    = 2.*ASIN(1.)
+              93                         a      = 6371000.
+              94                         omega  = .7292E-4
+              95                         g      = 9.80665
+              96                         cpd    = 1005.46
+              97                         cpv    = 1869.46
+              98                         rd     = 287.05
+              99                         rv     = 461.51
+             100                     
+             101                         rcpd   = 1./cpd
+             102                         vtmpc1 = rv/rd - 1.
+             103                         vtmpc2 = cpv/cpd - 1.
+             104                     
+             105                         rhoh2o = 1000.
+             106                         alv    = 2.5008E6
+             107                         als    = 2.8345E6
+             108                         alf    = als - alv
+             109                     !    alf    = 3.50E5          !new Tiedtke (MPAS)
+             110                     
+             111                         clw    = 4186.84
+             112                         tmelt  = 273.16
+             113                     
+             114                         solc   = 1365.
+             115                         stbo   = 5.67E-8
+             116                     
+             117                         c1es    = 610.78
+             118                         c2es    = c1es*rd/rv
+             119                         c3les   = 17.269
+             120                         c3ies   = 21.875
+             121                         c4les   = 35.86
+             122                         c4ies   =  7.66
+             123                         c5les   = c3les*(tmelt-c4les)
+             124                         c5ies   = c3ies*(tmelt-c4ies)
+             125                         c5alvcp = c5les*alv/cpd
+             126                         c5alscp = c5ies*als/cpd
+             127                         alvdcp  = alv/cpd
+             128                         alsdcp  = als/cpd
+             129                     !> xb110
+             130                         zrg = 1.0/g
+             131                         r5alvcp = c5les*alv*rcpd
+             132                         r5alscp = c5ies*als*rcpd
+             133                         ralvdcp=alv*rcpd
+             134                         ralsdcp=als*rcpd
+             135                         ralfdcp=alf*rcpd
+             136                         rtwat=tmelt
+             137                         rtber=tmelt-5.
+             138                         rtice=tmelt-23.
+             139                     !< xb110
+             140                     
+             141                       END SUBROUTINE inicon
+             142                     
+             143                     END MODULE mo_constants
+
+ Procedure information
+   Lines      : 143
+   Statements : 91
+   Stack(byte): 704
+   Prefetch num: 0
+
+ Scoping unit of module : mo_constants
+   Attribute and Cross reference of name
+     a
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 16
+      |(Definition)     : 
+      |(Reference)      : 
+     alf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 29
+      |(Definition)     : 
+      |(Reference)      : 
+     als
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 28
+      |(Definition)     : 
+      |(Reference)      : 
+     alsdcp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 50
+      |(Definition)     : 
+      |(Reference)      : 
+     alv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 27
+      |(Definition)     : 
+      |(Reference)      : 
+     alvdcp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 49
+      |(Definition)     : 
+      |(Reference)      : 
+     api
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 15
+      |(Definition)     : 
+      |(Reference)      : 
+     c1es
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 39
+      |(Definition)     : 
+      |(Reference)      : 
+     c2es
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 40
+      |(Definition)     : 
+      |(Reference)      : 
+     c3ies
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 42
+      |(Definition)     : 
+      |(Reference)      : 
+     c3les
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 41
+      |(Definition)     : 
+      |(Reference)      : 
+     c4ies
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 44
+      |(Definition)     : 
+      |(Reference)      : 
+     c4les
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 43
+      |(Definition)     : 
+      |(Reference)      : 
+     c5alscp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 48
+      |(Definition)     : 
+      |(Reference)      : 
+     c5alvcp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 47
+      |(Definition)     : 
+      |(Reference)      : 
+     c5ies
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 46
+      |(Definition)     : 
+      |(Reference)      : 
+     c5les
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 45
+      |(Definition)     : 
+      |(Reference)      : 
+     clw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 30
+      |(Definition)     : 
+      |(Reference)      : 
+     cpd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 19
+      |(Definition)     : 
+      |(Reference)      : 
+     cpv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 20
+      |(Definition)     : 
+      |(Reference)      : 
+     dayl
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 13
+      |(Definition)     : 
+      |(Reference)      : 
+     g
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 18
+      |(Definition)     : 
+      |(Reference)      : 
+     mo_constants
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 143
+     omega
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 17
+      |(Definition)     : 
+      |(Reference)      : 
+     r5alscp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 53
+      |(Definition)     : 
+      |(Reference)      : 
+     r5alvcp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 52
+      |(Definition)     : 
+      |(Reference)      : 
+     r8
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : PUBLIC, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 3  13  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  39  40  41  42  43  44  45  46  47  48  49  50  51  52  53  54  55  56  57  58  59
+     ralfdcp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 56
+      |(Definition)     : 
+      |(Reference)      : 
+     ralsdcp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 55
+      |(Definition)     : 
+      |(Reference)      : 
+     ralvdcp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 54
+      |(Definition)     : 
+      |(Reference)      : 
+     rcpd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 23
+      |(Definition)     : 
+      |(Reference)      : 
+     rd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 21
+      |(Definition)     : 
+      |(Reference)      : 
+     rhoh2o
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 26
+      |(Definition)     : 
+      |(Reference)      : 
+     rtber
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 58
+      |(Definition)     : 
+      |(Reference)      : 
+     rtice
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 59
+      |(Definition)     : 
+      |(Reference)      : 
+     rtwat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 57
+      |(Definition)     : 
+      |(Reference)      : 
+     rv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 22
+      |(Definition)     : 
+      |(Reference)      : 
+     shr_kind_mod
+      |(Class and Type) : module name
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 3
+     shr_kind_r8
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 3
+     solc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 32
+      |(Definition)     : 
+      |(Reference)      : 
+     stbo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 33
+      |(Definition)     : 
+      |(Reference)      : 
+     tmelt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 31
+      |(Definition)     : 
+      |(Reference)      : 
+     vtmpc1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 24
+      |(Definition)     : 
+      |(Reference)      : 
+     vtmpc2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 25
+      |(Definition)     : 
+      |(Reference)      : 
+     yearl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 34
+      |(Definition)     : 
+      |(Reference)      : 
+     zrg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : PUBLIC
+      |(Declaration)    : 51
+      |(Definition)     : 
+      |(Reference)      : 
+
+ Scoping unit of module sub-program : inicon
+   Attribute and Cross reference of name
+     ASIN
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : INTRINSIC, PURE, ELEMENTAL
+      |(Declaration)    : 86
+      |(Definition)     : 
+      |(Reference)      : 92
+     a
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 93
+      |(Reference)      : 
+     alf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 108
+      |(Reference)      : 135
+     als
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 107
+      |(Reference)      : 108  126  128  132  134
+     alsdcp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 128
+      |(Reference)      : 
+     alv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 106
+      |(Reference)      : 108  125  127  131  133
+     alvdcp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 127
+      |(Reference)      : 
+     api
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 92
+      |(Reference)      : 
+     c1es
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 117
+      |(Reference)      : 118
+     c2es
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 118
+      |(Reference)      : 
+     c3ies
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 120
+      |(Reference)      : 124
+     c3les
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 119
+      |(Reference)      : 123
+     c4ies
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 122
+      |(Reference)      : 124
+     c4les
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 121
+      |(Reference)      : 123
+     c5alscp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 126
+      |(Reference)      : 
+     c5alvcp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 125
+      |(Reference)      : 
+     c5ies
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 124
+      |(Reference)      : 126  132
+     c5les
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 123
+      |(Reference)      : 125  131
+     clw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 111
+      |(Reference)      : 
+     cpd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 96
+      |(Reference)      : 101  103  125  126  127  128
+     cpv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 97
+      |(Reference)      : 103
+     g
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 95
+      |(Reference)      : 130
+     inicon
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 63
+      |(Reference)      : 141
+     omega
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 94
+      |(Reference)      : 
+     r5alscp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 132
+      |(Reference)      : 
+     r5alvcp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 131
+      |(Reference)      : 
+     ralfdcp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 135
+      |(Reference)      : 
+     ralsdcp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 134
+      |(Reference)      : 
+     ralvdcp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 133
+      |(Reference)      : 
+     rcpd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 101
+      |(Reference)      : 131  132  133  134  135
+     rd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 98
+      |(Reference)      : 102  118
+     rhoh2o
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 105
+      |(Reference)      : 
+     rtber
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 137
+      |(Reference)      : 
+     rtice
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 138
+      |(Reference)      : 
+     rtwat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 136
+      |(Reference)      : 
+     rv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 99
+      |(Reference)      : 102  118
+     solc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 114
+      |(Reference)      : 
+     stbo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 115
+      |(Reference)      : 
+     tmelt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 112
+      |(Reference)      : 123  124  136  137  138
+     vtmpc1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 102
+      |(Reference)      : 
+     vtmpc2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 103
+      |(Reference)      : 
+     zrg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : host-associated
+      |(Declaration)    : 
+      |(Definition)     : 130
+      |(Reference)      : 
+
+ Total information
+   Procedures       : 1
+   Total lines      : 143
+   Total statements : 91
+   Total stack(byte): 704
+   Total prefetch num: 0
+

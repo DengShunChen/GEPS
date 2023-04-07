@@ -1,0 +1,1925 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar 14 13:21:08 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_helio
+   Source file       : sfc_drv.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb157/CWBSUMc2/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "sfc_drv"
+  (inc)(line-no.)(nest)(optimize)
+               1                     ! ===================================================================== !
+               2                     !  description:                                                         !
+               3                     !                                                                       !
+               4                     !  usage:                                                               !
+               5                     !                                                                       !
+               6                     !      call sfc_drv                                                     !
+               7                     !  ---  inputs:                                                         !
+               8                     !          ( im, km, ps, u1, v1, t1, q1, soiltyp, vegtype, sigmaf,      !
+               9                     !            sfcemis, dlwflx, dswsfc, snet, delt, tg3, cm, ch,          !
+              10                     !            prsl1, prslki, zf, islimsk, ddvel, slopetyp,               !
+              11                     !            shdmin, shdmax, snoalb, sfalb, flag_iter, flag_guess,      !
+              12                     !            isot, ivegsrc,                                             !
+              13                     !  ---  in/outs:                                                        !
+              14                     !            weasd, snwdph, tskin, tprcp, srflag, smc, stc, slc,        !
+              15                     !            canopy, trans, tsurf, zorl,                                !
+              16                     !  ---  outputs:                                                        !
+              17                     !            sncovr1, qsurf, gflux, drain, evap, hflx, ep, runoff,      !
+              18                     !            cmm, chh, evbs, evcw, sbsno, snowc, stm, snohf,            !
+              19                     !            smcwlt2, smcref2, wet1 )                                   !
+              20                     !                                                                       !
+              21                     !                                                                       !
+              22                     !  subprogram called:  sflx                                             !
+              23                     !                                                                       !
+              24                     !  program history log:                                                 !
+              25                     !         xxxx  --             created                                  !
+              26                     !         200x  -- sarah lu    modified                                 !
+              27                     !    oct  2006  -- h. wei      modified                                 !
+              28                     !    apr  2009  -- y.-t. hou   modified to include surface emissivity   !
+              29                     !                     effect on lw radiation. replaced the comfussing   !
+              30                     !                     slrad (net sw + dlw) with sfc net sw snet=dsw-usw !
+              31                     !    sep  2009  -- s. moorthi modification to remove rcl and unit change!
+              32                     !    nov  2011  -- sarah lu    corrected wet1 calculation
+              33                     !                                                                       !
+              34                     !  ====================  defination of variables  ====================  !
+              35                     !                                                                       !
+              36                     !  inputs:                                                       size   !
+              37                     !     im       - integer, horiz dimention and num of used pts      1    !
+              38                     !     km       - integer, vertical soil layer dimension            1    !
+              39                     !     ps       - real, surface pressure (pa)                       im   !
+              40                     !     u1, v1   - real, u/v component of surface layer wind         im   !
+              41                     !     t1       - real, surface layer mean temperature (k)          im   !
+              42                     !     q1       - real, surface layer mean specific humidity        im   !
+              43                     !     soiltyp  - integer, soil type (integer index)                im   !
+              44                     !     vegtype  - integer, vegetation type (integer index)          im   !
+              45                     !     sigmaf   - real, areal fractional cover of green vegetation  im   !
+              46                     !     sfcemis  - real, sfc lw emissivity ( fraction )              im   !
+              47                     !     dlwflx   - real, total sky sfc downward lw flux ( w/m**2 )   im   !
+              48                     !     dswflx   - real, total sky sfc downward sw flux ( w/m**2 )   im   !
+              49                     !     snet     - real, total sky sfc netsw flx into ground(w/m**2) im   !
+              50                     !     delt     - real, time interval (second)                      1    !
+              51                     !     tg3      - real, deep soil temperature (k)                   im   !
+              52                     !     cm       - real, surface exchange coeff for momentum (m/s)   im   !
+              53                     !     ch       - real, surface exchange coeff heat & moisture(m/s) im   !
+              54                     !     prsl1    - real, sfc layer 1 mean pressure (pa)              im   !
+              55                     !     prslki   - real,                                             im   !
+              56                     !     zf       - real, height of bottom layer (m)                  im   !
+              57                     !     islimsk  - integer, sea/land/ice mask (=0/1/2)               im   !
+              58                     !     ddvel    - real,                                             im   !
+              59                     !     slopetyp - integer, class of sfc slope (integer index)       im   !
+              60                     !     shdmin   - real, min fractional coverage of green veg        im   !
+              61                     !     shdmax   - real, max fractnl cover of green veg (not used)   im   !
+              62                     !     snoalb   - real, upper bound on max albedo over deep snow    im   !
+              63                     !     sfalb    - real, mean sfc diffused sw albedo (fractional)    im   !
+              64                     !     flag_iter- logical,                                          im   !
+              65                     !     flag_guess-logical,                                          im   !
+              66                     !     isot     - integer, sfc soil type data source zobler or statsgo   !
+              67                     !     ivegsrc  - integer, sfc veg type data source umd or igbp          !
+              68                     !                                                                       !
+              69                     !  input/outputs:                                                       !
+              70                     !     weasd    - real, water equivalent accumulated snow depth (mm) im  !
+              71                     !     snwdph   - real, snow depth (water equiv) over land          im   !
+              72                     !     tskin    - real, ground surface skin temperature ( k )       im   !
+              73                     !     tprcp    - real, total precipitation                         im   !
+              74                     !     srflag   - real, snow/rain flag for precipitation            im   !
+              75                     !     smc      - real, total soil moisture content (fractional)   im,km !
+              76                     !     stc      - real, soil temp (k)                              im,km !
+              77                     !     slc      - real, liquid soil moisture                       im,km !
+              78                     !     canopy   - real, canopy moisture content (m)                 im   !
+              79                     !     trans    - real, total plant transpiration (m/s)             im   !
+              80                     !     tsurf    - real, surface skin temperature (after iteration)  im   !
+              81                     !                                                                       !
+              82                     !  outputs:                                                             !
+              83                     !     sncovr1  - real, snow cover over land (fractional)           im   !
+              84                     !     qsurf    - real, specific humidity at sfc                    im   !
+              85                     !     gflux    - real, soil heat flux (w/m**2)                     im   !
+              86                     !     drain    - real, subsurface runoff (mm/s)                    im   !
+              87                     !     evap     - real, evaperation from latent heat flux           im   !
+              88                     !     hflx     - real, sensible heat flux                          im   !
+              89                     !     ep       - real, potential evaporation                       im   !
+              90                     !     runoff   - real, surface runoff (m/s)                        im   !
+              91                     !     cmm      - real,                                             im   !
+              92                     !     chh      - real,                                             im   !
+              93                     !     evbs     - real, direct soil evaporation (m/s)               im   !
+              94                     !     evcw     - real, canopy water evaporation (m/s)              im   !
+              95                     !     sbsno    - real, sublimation/deposit from snopack (m/s)      im   !
+              96                     !     snowc    - real, fractional snow cover                       im   !
+              97                     !     stm      - real, total soil column moisture content (m)      im   !
+              98                     !     snohf    - real, snow/freezing-rain latent heat flux (w/m**2)im   !
+              99                     !     smcwlt2  - real, dry soil moisture threshold                 im   !
+             100                     !     smcref2  - real, soil moisture threshold                     im   !
+             101                     !     zorl     - real, surface roughness                           im   !
+             102                     !     wet1     - real, normalized soil wetness                     im   !
+             103                     !                                                                       !
+             104                     !  ====================    end of description    =====================  !
+             105                     
+             106                     !-----------------------------------
+             107                           subroutine sfc_drv                                                &
+             108                     !...................................
+             109                     !  ---  inputs: &
+             110                                ( imj,im, km, ps, u1, v1, t1, q1, soiltyp, vegtype, sigmaf,  &
+             111                                  sfcemis, dlwflx, dswsfc, snet, delt, tg3, cm, ch,          &
+             112                                  prsl1, prslki, zf, islimsk, ddvel, slopetyp,               &
+             113                                  shdmin, shdmax, snoalb, sfalb, flag_iter, flag_guess,      &
+             114                                  isot, ivegsrc,                                             &
+             115                     !  ---  in/outs: &
+             116                                  weasd, snwdph, tskin, tprcp, srflag, smc, stc, slc,        &
+             117                                  canopy,  tsurf, zorl,                                &
+             118                     !            canopy, trans, tsurf, zorl,                                &
+             119                     !  ---  outputs: &
+             120                                  sncovr1, qsurf, gflux, drain, evap, hflx, ep, runoff,      &
+             121                     !    &       cmm, chh, evbs, evcw, sbsno, snowc, stm, snohf,            &
+             122                     !    &       smcwlt2, smcref2, wet1                                     &
+             123                                  albedo2, jj, io, jo)
+             124                     !
+             125                           use machine , only : kind_phys
+             126                     !     use funcphys, only : fpvs
+             127                           use physcons, only : grav   => con_g,    cp   => con_cp,          &
+             128                                                hvap   => con_hvap, rd   => con_rd,          &
+             129                                                eps    => con_eps, epsm1 => con_epsm1,       &
+             130                                                rvrdm1 => con_fvirt
+             131                           use const,    only : RTYPE
+             132                     
+             133                           implicit none
+             134                     
+             135                     !  ---  constant parameters:
+             136                           real(kind=kind_phys), parameter :: cpinv   = 1.0/cp
+             137                           real(kind=kind_phys), parameter :: hvapi   = 1.0/hvap
+             138                           real(kind=kind_phys), parameter :: elocp   = hvap/cp
+             139                           real(kind=kind_phys), parameter :: rhoh2o  = 1000.0
+             140                           real(kind=kind_phys), parameter :: a2      = 17.2693882
+             141                           real(kind=kind_phys), parameter :: a3      = 273.16
+             142                           real(kind=kind_phys), parameter :: a4      = 35.86
+             143                           real(kind=kind_phys), parameter :: a23m4   = a2*(a3-a4)
+             144                     
+             145                           real(kind=kind_phys), save         :: zsoil_noah(4)
+             146                           data zsoil_noah / -0.1, -0.4, -1.0, -2.0 /
+             147                     
+             148                     !  ---  input:
+             149                           integer, intent(in) :: im, km, isot, ivegsrc, imj
+             150                     
+             151                           integer, dimension(im), intent(in) :: soiltyp, vegtype, slopetyp
+             152                     
+             153                           real (kind=RTYPE), dimension(im), intent(in) :: u1, v1, t1, q1
+             154                           real (kind=kind_phys), dimension(im), intent(in) :: ps,           &
+             155                                  sigmaf, sfcemis, dlwflx, dswsfc, snet, tg3, cm,            &
+             156                                  ch, prsl1, prslki, ddvel, shdmin, shdmax,                  &
+             157                                  snoalb, sfalb, zf
+             158                     
+             159                           integer, dimension(im), intent(in) :: islimsk
+             160                           real (kind=kind_phys),  intent(in) :: delt
+             161                     
+             162                           logical, dimension(im), intent(in) :: flag_iter, flag_guess
+             163                     
+             164                     !  ---  in/out:
+             165                     !     real (kind=kind_phys), dimension(im), intent(inout) :: weasd,     &
+             166                           real (kind=kind_phys), dimension(im) :: weasd,     &
+             167                                  snwdph, tskin, tprcp, srflag, canopy, trans, tsurf
+             168                     
+             169                           real (kind=kind_phys), dimension(im,km), intent(inout) ::         &
+             170                                  smc, stc, slc
+             171                     
+             172                     !  ---  output:
+             173                     !     real (kind=kind_phys), dimension(im), intent(out) :: sncovr1,     &
+             174                           real (kind=kind_phys), dimension(im)  :: sncovr1,     &
+             175                                  qsurf, gflux, drain, evap, hflx, ep, runoff, cmm, chh,     &
+             176                                  evbs, evcw, sbsno, snowc, stm, snohf, smcwlt2, smcref2,    &
+             177                                  zorl, wet1, albedo2
+             178                     
+             179                     !  ---  locals:
+             180                           real (kind=kind_phys), dimension(im) :: rch, rho,                 &
+             181                                  q0, qs1, theta1, wind, weasd_old, snwdph_old,              &
+             182                                  tprcp_old, srflag_old, tskin_old, canopy_old
+             183                     
+             184                           real (kind=kind_phys), dimension(km) :: et, sldpth, stsoil,       &
+             185                                  smsoil, slsoil
+             186                     
+             187                           real (kind=kind_phys), dimension(im,km) :: zsoil, smc_old,        &
+             188                                  stc_old, slc_old
+             189                     
+             190                           real (kind=kind_phys) :: alb, albedo, beta, chx, cmx, cmc,        &
+             191                                  dew, drip, dqsdt2, ec, edir, ett, eta, esnow, etp,         &
+             192                                  flx1, flx2, flx3, ffrozp, lwdn, pc, prcp, ptu, q2,         &
+             193                                  q2sat, solnet, rc, rcs, rct, rcq, rcsoil, rsmin,           &
+             194                                  runoff1, runoff2, runoff3, sfcspd, sfcprs, sfctmp,         &
+             195                                  sfcems, sheat, shdfac, shdmin1d, shdmax1d, smcwlt,         &
+             196                                  smcdry, smcref, smcmax, sneqv, snoalb1d, snowh,            &
+             197                                  snomlt, sncovr, soilw, soilm, ssoil, tsea, th2, tbot,      &
+             198                                  xlai, zlvl, swdn, tem,z0,fpvs,ttmp
+             199                     
+             200                           integer :: couple, ice, nsoil, nroot, slope, stype, vtype
+             201                           integer :: i, k
+             202                           integer :: jj, io,jo
+             203                     
+             204                           logical :: flag(im)
+             205                     !
+             206                     !===> ...  begin here
+             207                     !
+             208                     
+             209                     !  --- ...  set flag for land points
+             210                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1067
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 192, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      islimsk, flag
+                                   <<< Loop-information  End >>>
+             211     1  pp   2v            do i = 1, imj
+             212     1   p   2v              flag(i) = (islimsk(i) == 1)
+             213     1   p   2v            enddo
+             214                     
+             215                     !  --- ...  save land-related prognostic fields for guess run
+             216                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<< Loop-information  End >>>
+             217     1  pp                 do i = 1, imj
+             218     2   p                   if (flag(i) .and. flag_guess(i)) then
+             219     2   p                     weasd_old(i)  = weasd(i)
+             220     2   p                     snwdph_old(i) = snwdph(i)
+             221     2   p                     tskin_old(i)  = tskin(i)
+             222     2   p                     canopy_old(i) = canopy(i)
+             223     2   p                     tprcp_old(i)  = tprcp(i)
+             224     2   p                     srflag_old(i) = srflag(i)
+             225     2               
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.41, ITR: 80, MVE: 3, POL: S)
+                                   <<< Loop-information  End >>>
+             226     3   p   2v                do k = 1, km
+             227     3   p   2v                  smc_old(i,k) = smc(i,k)
+             228     3   p   2v                  stc_old(i,k) = stc(i,k)
+             229     3   p   2v                  slc_old(i,k) = slc(i,k)
+             230     3   p   2v                enddo
+             231     2   p                   endif
+             232     1   p                 enddo
+             233                     
+             234                     !  --- ...  initialization block
+             235                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 259
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.11, ITR: 64, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      flag_iter, ep, evap, hflx, flag, gflux
+                                   <<<      drain, canopy, evbs, evcw, trans, sbsno
+                                   <<<      snowc, snohf
+                                   <<< Loop-information  End >>>
+             236     1  pp    v            do i = 1, imj
+             237     2   p    v              if (flag_iter(i) .and. flag(i)) then
+             238     2   p    v                ep(i)     = 0.0
+             239     2   p    v                evap (i)  = 0.0
+             240     2   p    v                hflx (i)  = 0.0
+             241     2   p    v                gflux(i)  = 0.0
+             242     2   p    v                drain(i)  = 0.0
+             243     2   p    v                canopy(i) = max(canopy(i), 0.0)
+             244     2               
+             245     2   p    v                evbs (i)  = 0.0
+             246     2   p    v                evcw (i)  = 0.0
+             247     2   p    v                trans(i)  = 0.0
+             248     2   p    v                sbsno(i)  = 0.0
+             249     2   p    v                snowc(i)  = 0.0
+             250     2   p    v                snohf(i)  = 0.0
+             251     2   p    v              endif
+             252     1   p    v            enddo
+             253                     
+             254                     !  --- ...  initialize variables
+             255                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      flag_iter
+                                   <<< Loop-information  End >>>
+             256     1   s    s            do i = 1, imj
+             257     2   p    v              if (flag_iter(i) .and. flag(i)) then
+             258     2   p    v                wind(i) = max(sqrt( u1(i)*u1(i) + v1(i)*v1(i) )               &
+             259     2                                     + max(0.0, min(ddvel(i), 30.0)), 1.0)
+             260     2               
+             261     2   p    v                q0(i)   = max(q1(i), 1.e-8)   !* q1=specific humidity at level 1 (kg/kg)
+             262     2   p    v                theta1(i) = t1(i) * prslki(i) !* adiabatic temp at level 1 (k)
+             263     2               
+             264     2   p    v                rho(i) = prsl1(i) / (rd*t1(i)*(1.0+rvrdm1*q0(i)))
+             265     2   s    s                ttmp   = t1(i)
+             266     2   s    s                qs1(i) = fpvs( ttmp )        !* qs1=sat. humidity at level 1 (kg/kg)
+             267     2   p    v                qs1(i) = max(eps*qs1(i) / (prsl1(i)+epsm1*qs1(i)), 1.e-8)
+             268     2   p    v                q0 (i) = min(qs1(i), q0(i))
+             269     2   p    v              endif
+             270     1   p    v            enddo
+             271                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<< Loop-information  End >>>
+             272     1  pp                 do i = 1, imj
+             273     2   p                   if (flag_iter(i) .and. flag(i)) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      zsoil_noah
+                                   <<< Loop-information  End >>>
+             274     3   p    v                do k = 1, km
+             275     3   p    v                  zsoil(i,k) = zsoil_noah(k)
+             276     3   p    v                enddo
+             277     2   p                   endif
+             278     1   p                 enddo
+             279                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      smsoil, stsoil, slsoil
+                                   <<< Loop-information  End >>>
+             280     1                     do i = 1, imj
+             281     2                       if (flag_iter(i) .and. flag(i)) then
+             282     2               
+             283     2               !  --- ...  noah: prepare variables to run noah lsm
+             284     2               !   1. configuration information (c):
+             285     2               !      ------------------------------
+             286     2               !    couple  - couple-uncouple flag (=1: coupled, =0: uncoupled)
+             287     2               !    ffrozp  - flag for snow-rain detection (1.=snow, 0.=rain)
+             288     2               !    ice     - sea-ice flag (=1: sea-ice, =0: land)
+             289     2               !    dt      - timestep (sec) (dt should not exceed 3600 secs) = delt
+             290     2               !    zlvl    - height (m) above ground of atmospheric forcing variables
+             291     2               !    nsoil   - number of soil layers (at least 2)
+             292     2               !    sldpth  - the thickness of each soil layer (m)
+             293     2               
+             294     2                         couple = 1                      ! run noah lsm in 'couple' mode
+             295     2               
+             296     3                         if     (srflag(i) == 1.0) then  ! snow phase
+             297     3                           ffrozp = 1.0
+             298     3                         elseif (srflag(i) == 0.0) then  ! rain phase
+             299     3                           ffrozp = 0.0
+             300     3                         endif
+             301     2                         ice = 0
+             302     2               
+             303     2                         zlvl = zf(i)
+             304     2               
+             305     2                         nsoil = km
+             306     2                         sldpth(1) = - zsoil(i,1)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 942
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.16, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sldpth
+                                   <<< Loop-information  End >>>
+             307     3  pp   2v                do k = 2, km
+             308     3   p   2v                  sldpth(k) = zsoil(i,k-1) - zsoil(i,k)
+             309     3   p   2v                enddo
+             310     2               
+             311     2               !   2. forcing data (f):
+             312     2               !      -----------------
+             313     2               !    lwdn    - lw dw radiation flux (w/m2)
+             314     2               !    solnet  - net sw radiation flux (dn-up) (w/m2)
+             315     2               !    sfcprs  - pressure at height zlvl above ground (pascals)
+             316     2               !    prcp    - precip rate (kg m-2 s-1)
+             317     2               !    sfctmp  - air temperature (k) at height zlvl above ground
+             318     2               !    th2     - air potential temperature (k) at height zlvl above ground
+             319     2               !    q2      - mixing ratio at height zlvl above ground (kg kg-1)
+             320     2               
+             321     2                         lwdn   = dlwflx(i)         !..downward lw flux at sfc in w/m2
+             322     2                         swdn   = dswsfc(i)         !..downward sw flux at sfc in w/m2
+             323     2                         solnet = snet(i)           !..net sw rad flx (dn-up) at sfc in w/m2
+             324     2                         sfcems = sfcemis(i)
+             325     2               
+             326     2                         sfcprs = prsl1(i)
+             327     2                         prcp   = rhoh2o * tprcp(i) / delt
+             328     2                         sfctmp = t1(i)
+             329     2                         th2    = theta1(i)
+             330     2                         q2     = q0(i)
+             331     2               
+             332     2               !   3. other forcing (input) data (i):
+             333     2               !      ------------------------------
+             334     2               !    sfcspd  - wind speed (m s-1) at height zlvl above ground
+             335     2               !    q2sat   - sat mixing ratio at height zlvl above ground (kg kg-1)
+             336     2               !    dqsdt2  - slope of sat specific humidity curve at t=sfctmp (kg kg-1 k-1)
+             337     2               
+             338     2                         sfcspd = wind(i)
+             339     2                         q2sat =  qs1(i)
+             340     2                         dqsdt2 = q2sat * a23m4/(sfctmp-a4)**2
+             341     2               
+             342     2               !   4. canopy/soil characteristics (s):
+             343     2               !      --------------------------------
+             344     2               !    vegtyp  - vegetation type (integer index)                       -> vtype
+             345     2               !    soiltyp - soil type (integer index)                             -> stype
+             346     2               !    slopetyp- class of sfc slope (integer index)                    -> slope
+             347     2               !    shdfac  - areal fractional coverage of green vegetation (0.0-1.0)
+             348     2               !    shdmin  - minimum areal fractional coverage of green vegetation -> shdmin1d
+             349     2               !    ptu     - photo thermal unit (plant phenology for annuals/crops)
+             350     2               !    alb     - backround snow-free surface albedo (fraction)
+             351     2               !    snoalb  - upper bound on maximum albedo over deep snow          -> snoalb1d
+             352     2               !    tbot    - bottom soil temperature (local yearly-mean sfc air temp)
+             353     2               
+             354     2                         vtype = vegtype(i)
+             355     2                         stype = soiltyp(i)
+             356     2                         slope = slopetyp(i)
+             357     2                         shdfac= sigmaf(i)
+             358     2               
+             359     2                         shdmin1d = shdmin(i)
+             360     2                         shdmax1d = shdmax(i)
+             361     2                         snoalb1d = snoalb(i)
+             362     2               
+             363     2                         ptu  = 0.0
+             364     2                         alb  = sfalb(i)
+             365     2                         tbot = tg3(i)
+             366     2               
+             367     2               !   5. history (state) variables (h):
+             368     2               !      ------------------------------
+             369     2               !    cmc     - canopy moisture content (m)
+             370     2               !    t1      - ground/canopy/snowpack) effective skin temperature (k)   -> tsea
+             371     2               !    stc(nsoil) - soil temp (k)                                         -> stsoil
+             372     2               !    smc(nsoil) - total soil moisture content (volumetric fraction)     -> smsoil
+             373     2               !    sh2o(nsoil)- unfrozen soil moisture content (volumetric fraction)  -> slsoil
+             374     2               !    snowh   - actual snow depth (m)
+             375     2               !    sneqv   - liquid water-equivalent snow depth (m)
+             376     2               !    albedo  - surface albedo including snow effect (unitless fraction)
+             377     2               !    ch      - surface exchange coefficient for heat and moisture (m s-1) -> chx
+             378     2               !    cm      - surface exchange coefficient for momentum (m s-1)          -> cmx
+             379     2               
+             380     2                         cmc = canopy(i) * 0.001            ! convert from mm to m
+             381     2                         tsea = tsurf(i)                    ! clu_q2m_iter
+             382     2               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 640
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.25, ITR: 80, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      slsoil, smsoil, stsoil
+                                   <<< Loop-information  End >>>
+             383     3  pp   2v                do k = 1, km
+             384     3   p   2v                  stsoil(k) = stc(i,k)
+             385     3   p   2v                  smsoil(k) = smc(i,k)
+             386     3   p   2v                  slsoil(k) = slc(i,k)
+             387     3   p   2v                enddo
+             388     2               
+             389     2                         snowh = snwdph(i) * 0.001         ! convert from mm to m
+             390     2                         sneqv = weasd(i)  * 0.001         ! convert from mm to m
+             391     3                         if (sneqv /= 0.0 .and. snowh == 0.0) then
+             392     3                           snowh = 10.0 * sneqv
+             393     3                         endif
+             394     2               
+             395     2                         chx    = ch(i)  * wind(i)              ! compute conductance
+             396     2                         cmx    = cm(i)  * wind(i)
+             397     2                         chh(i) = chx * rho(i)
+             398     2                         cmm(i) = cmx
+             399     2               
+             400     2               !  ---- ... outside sflx, roughness uses cm as unit
+             401     2                         z0 = zorl(i)/100.
+             402     2               
+             403     2               !  --- ...  call noah lsm
+             404     2               
+             405     2                         call sflx                                                     &
+             406     2               !  ---  inputs: &
+             407     2                          ( nsoil, couple, ice, ffrozp, delt, zlvl, sldpth,            &
+             408     2                            swdn, solnet, lwdn, sfcems, sfcprs, sfctmp,                &
+             409     2                            sfcspd, prcp, q2, q2sat, dqsdt2, th2, ivegsrc,             &
+             410     2                            vtype, stype, slope, shdmin1d, alb, snoalb1d,              &
+             411     2               !  ---  input/outputs: &
+             412     2                            tbot, cmc, tsea, stsoil, smsoil, slsoil, sneqv, chx, cmx,  &
+             413     2                            z0,                                                        &
+             414     2               !  ---  outputs: &
+             415     2                            nroot, shdfac, snowh, albedo, eta, sheat, ec,              &
+             416     2                            edir, et, ett, esnow, drip, dew, beta, etp, ssoil,         &
+             417     2                            flx1, flx2, flx3, runoff1, runoff2, runoff3,               &
+             418     2                            snomlt, sncovr, rc, pc, rsmin, xlai, rcs, rct, rcq,        &
+             419     2                            rcsoil, soilw, soilm, smcwlt, smcdry, smcref, smcmax)
+             420     2               
+             421     2               !  --- ...  noah: prepare variables for return to parent mode
+             422     2               !   6. output (o):
+             423     2               !      -----------
+             424     2               !    eta     - actual latent heat flux (w m-2: positive, if upward from sfc)
+             425     2               !    sheat   - sensible heat flux (w m-2: positive, if upward from sfc)
+             426     2               !    beta    - ratio of actual/potential evap (dimensionless)
+             427     2               !    etp     - potential evaporation (w m-2)
+             428     2               !    ssoil   - soil heat flux (w m-2: negative if downward from surface)
+             429     2               !    runoff1 - surface runoff (m s-1), not infiltrating the surface
+             430     2               !    runoff2 - subsurface runoff (m s-1), drainage out bottom
+             431     2               
+             432     2                         evap(i)  = eta
+             433     2                         hflx(i)  = sheat
+             434     2                         gflux(i) = ssoil
+             435     2               
+             436     2                         evbs(i)  = edir
+             437     2                         evcw(i)  = ec
+             438     2                         trans(i) = ett
+             439     2                         sbsno(i) = esnow
+             440     2                         snowc(i) = sncovr
+             441     2                         stm(i)   = soilm
+             442     2                         snohf(i) = flx1 + flx2 + flx3
+             443     2               
+             444     2                         smcwlt2(i) = smcwlt
+             445     2                         smcref2(i) = smcref
+             446     2               !phon diag
+             447     2                         albedo2(i) = albedo
+             448     2               
+             449     2                         ep(i)      = etp
+             450     2                         tsurf(i)   = tsea
+             451     2               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 640
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 64, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      slsoil, stsoil, smsoil
+                                   <<< Loop-information  End >>>
+             452     3  pp   2v                do k = 1, km
+             453     3   p   2v                  stc(i,k) = stsoil(k)
+             454     3   p   2v                  smc(i,k) = smsoil(k)
+             455     3   p   2v                  slc(i,k) = slsoil(k)
+             456     3   p   2v                enddo
+             457     2                         wet1(i) = smsoil(1) / smcmax !Sarah Lu added 09/09/2010 (for GOCART)
+             458     2               
+             459     2               !  --- ...  unit conversion (from m s-1 to mm s-1)
+             460     2                         runoff(i)  = runoff1 * 1000.0
+             461     2                         drain (i)  = runoff2 * 1000.0
+             462     2               
+             463     2               !  --- ...  unit conversion (from m to mm)
+             464     2                         canopy(i)  = cmc   * 1000.0
+             465     2                         snwdph(i)  = snowh * 1000.0
+             466     2                         weasd(i)   = sneqv * 1000.0
+             467     2                         sncovr1(i) = sncovr
+             468     2               !  ---- ... outside sflx, roughness uses cm as unit (update after snow's
+             469     2               !  effect)
+             470     2                         zorl(i) = z0*100.
+             471     2               
+             472     2               !  --- ...  do not return the following output fields to parent model
+             473     2               !    ec      - canopy water evaporation (m s-1)
+             474     2               !    edir    - direct soil evaporation (m s-1)
+             475     2               !    et(nsoil)-plant transpiration from a particular root layer (m s-1)
+             476     2               !    ett     - total plant transpiration (m s-1)
+             477     2               !    esnow   - sublimation from (or deposition to if <0) snowpack (m s-1)
+             478     2               !    drip    - through-fall of precip and/or dew in excess of canopy
+             479     2               !              water-holding capacity (m)
+             480     2               !    dew     - dewfall (or frostfall for t<273.15) (m)
+             481     2               !    beta    - ratio of actual/potential evap (dimensionless)
+             482     2               !    flx1    - precip-snow sfc (w m-2)
+             483     2               !    flx2    - freezing rain latent heat flux (w m-2)
+             484     2               !    flx3    - phase-change heat flux from snowmelt (w m-2)
+             485     2               !    snomlt  - snow melt (m) (water equivalent)
+             486     2               !    sncovr  - fractional snow cover (unitless fraction, 0-1)
+             487     2               !    runoff3 - numerical trunctation in excess of porosity (smcmax)
+             488     2               !              for a given soil layer at the end of a time step
+             489     2               !    rc      - canopy resistance (s m-1)
+             490     2               !    pc      - plant coefficient (unitless fraction, 0-1) where pc*etp
+             491     2               !              = actual transp
+             492     2               !    xlai    - leaf area index (dimensionless)
+             493     2               !    rsmin   - minimum canopy resistance (s m-1)
+             494     2               !    rcs     - incoming solar rc factor (dimensionless)
+             495     2               !    rct     - air temperature rc factor (dimensionless)
+             496     2               !    rcq     - atmos vapor pressure deficit rc factor (dimensionless)
+             497     2               !    rcsoil  - soil moisture rc factor (dimensionless)
+             498     2               !    soilw   - available soil moisture in root zone (unitless fraction
+             499     2               !              between smcwlt and smcmax)
+             500     2               !    soilm   - total soil column moisture content (frozen+unfrozen) (m)
+             501     2               !    smcwlt  - wilting point (volumetric)
+             502     2               !    smcdry  - dry soil moisture threshold where direct evap frm top
+             503     2               !              layer ends (volumetric)
+             504     2               !    smcref  - soil moisture threshold where transpiration begins to
+             505     2               !              stress (volumetric)
+             506     2               !    smcmax  - porosity, i.e. saturated value of soil moisture
+             507     2               !              (volumetric)
+             508     2               !    nroot   - number of root layers, a function of veg type, determined
+             509     2               !              in subroutine redprm.
+             510     2               
+             511     2                       endif   ! end if_flag_iter_and_flag_block
+             512     1                     enddo   ! end do_i_loop
+             513                     
+             514                     !   --- ...  compute qsurf (specific humidity at sfc)
+             515                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 214
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED(lines: 516,523)
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.79, ITR: 32, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ch, wind, rho, hflx, evap, flag_iter, q1
+                                   <<<      flag, rch, qsurf
+                                   <<< Loop-information  End >>>
+             516     1  pp    v            do i = 1, imj
+             517     2   p    v              if (flag_iter(i) .and. flag(i)) then
+             518     2   p    v                rch(i)   = rho(i) * cp * ch(i) * wind(i)
+             519     2   p    v                qsurf(i) = q1(i)  + evap(i) / (elocp * rch(i))
+             520     2   p    v              endif
+             521     1   p    v            enddo
+             522                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED
+                                   <<< Loop-information  End >>>
+             523     1                     do i = 1, imj
+             524     2                       if (flag_iter(i) .and. flag(i)) then
+             525     2                         tem     = 1.0 / rho(i)
+             526     2                         hflx(i) = hflx(i) * tem * cpinv
+             527     2                         evap(i) = evap(i) * tem * hvapi
+             528     2                       endif
+             529     1                     enddo
+             530                     
+             531                     !  --- ...  restore land-related prognostic fields for guess run
+             532                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<< Loop-information  End >>>
+             533     1  pp                 do i = 1, imj
+             534     2   p                   if (flag(i)) then
+             535     3   p                     if (flag_guess(i)) then
+             536     3   p                       weasd(i)  = weasd_old(i)
+             537     3   p                       snwdph(i) = snwdph_old(i)
+             538     3   p                       tskin(i)  = tskin_old(i)
+             539     3   p                       canopy(i) = canopy_old(i)
+             540     3   p                       tprcp(i)  = tprcp_old(i)
+             541     3   p                       srflag(i) = srflag_old(i)
+             542     3               
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.41, ITR: 80, MVE: 3, POL: S)
+                                   <<< Loop-information  End >>>
+             543     4   p   2v                  do k = 1, km
+             544     4   p   2v                    smc(i,k) = smc_old(i,k)
+             545     4   p   2v                    stc(i,k) = stc_old(i,k)
+             546     4   p   2v                    slc(i,k) = slc_old(i,k)
+             547     4   p   2v                  enddo
+             548     3   p                     else
+             549     3   p                       tskin(i) = tsurf(i)
+             550     3   p                     endif
+             551     2   p                   endif
+             552     1   p                 enddo
+             553                     !
+             554                           return
+             555                     !...................................
+             556                           end subroutine sfc_drv
+             557                     !-----------------------------------
+             558                     
+
+ Procedure information
+   Lines      : 558
+   Statements : 205
+   Stack(byte): 4016
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : sfc_drv
+   Attribute and Cross reference of name
+     a2
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 140
+      |(Definition)     : 
+      |(Reference)      : 143
+     a23m4
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 143
+      |(Definition)     : 
+      |(Reference)      : 340
+     a3
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 141
+      |(Definition)     : 
+      |(Reference)      : 143
+     a4
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 142
+      |(Definition)     : 
+      |(Reference)      : 143  340
+     alb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 364  405
+      |(Reference)      : 
+     albedo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 447
+     albedo2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 107  174
+      |(Definition)     : 447
+      |(Reference)      : 
+     beta
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 
+     canopy
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 107  166
+      |(Definition)     : 243  464  539
+      |(Reference)      : 222  243  380
+     canopy_old
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 180
+      |(Definition)     : 222
+      |(Reference)      : 539
+     ch
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 107  154
+      |(Definition)     : 
+      |(Reference)      : 395  518
+     chh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 174
+      |(Definition)     : 397
+      |(Reference)      : 
+     chx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 395  405
+      |(Reference)      : 397
+     cm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 107  154
+      |(Definition)     : 
+      |(Reference)      : 396
+     cmc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 380  405
+      |(Reference)      : 464
+     cmm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 174
+      |(Definition)     : 398
+      |(Reference)      : 
+     cmx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 396  405
+      |(Reference)      : 398
+     con_cp
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 127
+     con_eps
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 127
+     con_epsm1
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 127
+     con_fvirt
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 127
+     con_g
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 127
+     con_hvap
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 127
+     con_rd
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 127
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 131
+     couple
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 200
+      |(Definition)     : 294  405
+      |(Reference)      : 
+     cp
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 127  136  138  518
+     cpinv
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 136
+      |(Definition)     : 
+      |(Reference)      : 526
+     ddvel
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 107  154
+      |(Definition)     : 
+      |(Reference)      : 258
+     delt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 107  160
+      |(Definition)     : 
+      |(Reference)      : 327  405
+     dew
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 
+     dlwflx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 107  154
+      |(Definition)     : 
+      |(Reference)      : 321
+     dqsdt2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 340  405
+      |(Reference)      : 
+     drain
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 107  174
+      |(Definition)     : 242  461
+      |(Reference)      : 
+     drip
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 
+     dswsfc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 107  154
+      |(Definition)     : 
+      |(Reference)      : 322
+     ec
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 437
+     edir
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 436
+     elocp
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 138
+      |(Definition)     : 
+      |(Reference)      : 519
+     ep
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 107  174
+      |(Definition)     : 238  449
+      |(Reference)      : 
+     eps
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 127  267
+     epsm1
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 127  267
+     esnow
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 439
+     et
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 184
+      |(Definition)     : 405
+      |(Reference)      : 
+     eta
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 432
+     etp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 449
+     ett
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 438
+     evap
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 107  174
+      |(Definition)     : 239  432  527
+      |(Reference)      : 519  527
+     evbs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 174
+      |(Definition)     : 245  436
+      |(Reference)      : 
+     evcw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 174
+      |(Definition)     : 246  437
+      |(Reference)      : 
+     ffrozp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 297  299  405
+      |(Reference)      : 
+     flag
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 204
+      |(Definition)     : 212
+      |(Reference)      : 218  237  257  273  281  517  524  534
+     flag_guess
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 107  162
+      |(Definition)     : 
+      |(Reference)      : 218  535
+     flag_iter
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 107  162
+      |(Definition)     : 
+      |(Reference)      : 237  257  273  281  517  524
+     flx1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 442
+     flx2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 442
+     flx3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 442
+     fpvs
+      |(Class and Type) : external function name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 266
+     fpvs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 
+      |(Reference)      : 
+     gflux
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 107  174
+      |(Definition)     : 241  434
+      |(Reference)      : 
+     grav
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 127
+     hflx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 107  174
+      |(Definition)     : 240  433  526
+      |(Reference)      : 526
+     hvap
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 127  137  138
+     hvapi
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 137
+      |(Definition)     : 
+      |(Reference)      : 527
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 201
+      |(Definition)     : 211  217  236  256  272  280  516  523  533
+      |(Reference)      : 212  212  218  218  219  219  220  220  221  221  222  222  223  223  224  224  227  227  228  228  229  229  237  237  238  239  240  241  242  243  243  245  246  247  248  249  250  257  257  258  258  258  258  258  258  261  261  262  262  262  264  264  264  264  265  266  267  267  267  267  268  268  268  273  273  275  281  281  296  298  303  306  308  308  321  322  323  324  326  327  328  329  330  338  339  354  355  356  357  359  360  361  364  365  380  381  384  385  386  389  390  395  395  396  396  397  397  398  401  432  433  434  436  437  438  439  440  441  442  444  445  447  449  450  453  454  455  457  460  461  464  465  466  467  470  517  517  518  518  518  518  519  519  519  519  524  524  525  526  526  527  527  534  535  536  536  537  537  538  538  539  539  540  540  541  541  544  544  545  545  546  546  549  549
+     ice
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 200
+      |(Definition)     : 301  405
+      |(Reference)      : 
+     im
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 107  149
+      |(Definition)     : 
+      |(Reference)      : 151  151  151  153  153  153  153  154  154  154  154  154  154  154  154  154  154  154  154  154  154  154  154  154  159  162  162  166  166  166  166  166  166  166  166  169  169  169  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  180  180  180  180  180  180  180  180  180  180  180  180  187  187  187  187  204
+     imj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 107  149
+      |(Definition)     : 
+      |(Reference)      : 211  217  236  256  272  280  516  523  533
+     io
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 107  202
+      |(Definition)     : 
+      |(Reference)      : 
+     islimsk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 107  159
+      |(Definition)     : 
+      |(Reference)      : 212
+     isot
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 107  149
+      |(Definition)     : 
+      |(Reference)      : 
+     ivegsrc
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 107  149
+      |(Definition)     : 
+      |(Reference)      : 405
+     jj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 107  202
+      |(Definition)     : 
+      |(Reference)      : 
+     jo
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 107  202
+      |(Definition)     : 
+      |(Reference)      : 
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 201
+      |(Definition)     : 226  274  307  383  452  543
+      |(Reference)      : 227  227  228  228  229  229  275  275  308  308  308  384  384  385  385  386  386  453  453  454  454  455  455  544  544  545  545  546  546
+     kind_phys
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 125  136  137  138  139  140  141  142  143  145  154  160  166  169  174  180  184  187  190
+     km
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 107  149
+      |(Definition)     : 
+      |(Reference)      : 169  169  169  184  184  184  184  184  187  187  187  187  226  274  305  307  383  452  543
+     lwdn
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 321  405
+      |(Reference)      : 
+     machine
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 125
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 243  258  258  261  267
+     min
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 258  268
+     nroot
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 200
+      |(Definition)     : 405
+      |(Reference)      : 
+     nsoil
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 200
+      |(Definition)     : 305  405
+      |(Reference)      : 
+     pc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 
+     physcons
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 127
+     prcp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 327  405
+      |(Reference)      : 
+     prsl1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 107  154
+      |(Definition)     : 
+      |(Reference)      : 264  267  326
+     prslki
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 107  154
+      |(Definition)     : 
+      |(Reference)      : 262
+     ps
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 107  154
+      |(Definition)     : 
+      |(Reference)      : 
+     ptu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 363
+      |(Reference)      : 
+     q0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 180
+      |(Definition)     : 261  268
+      |(Reference)      : 264  268  330
+     q1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 107  153
+      |(Definition)     : 
+      |(Reference)      : 261  519
+     q2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 330  405
+      |(Reference)      : 
+     q2sat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 339  405
+      |(Reference)      : 340
+     qs1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 180
+      |(Definition)     : 266  267
+      |(Reference)      : 267  267  268  339
+     qsurf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 107  174
+      |(Definition)     : 519
+      |(Reference)      : 
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 131  153
+     rc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 
+     rch
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 180
+      |(Definition)     : 518
+      |(Reference)      : 519
+     rcq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 
+     rcs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 
+     rcsoil
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 
+     rct
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 
+     rd
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 127  264
+     rho
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 180
+      |(Definition)     : 264
+      |(Reference)      : 397  518  525
+     rhoh2o
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 139
+      |(Definition)     : 
+      |(Reference)      : 327
+     rsmin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 
+     runoff
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 107  174
+      |(Definition)     : 460
+      |(Reference)      : 
+     runoff1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 460
+     runoff2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 461
+     runoff3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 
+     rvrdm1
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 127  264
+     sbsno
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 174
+      |(Definition)     : 248  439
+      |(Reference)      : 
+     sfalb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 107  154
+      |(Definition)     : 
+      |(Reference)      : 364
+     sfc_drv
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 107
+      |(Reference)      : 556
+     sfcemis
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 107  154
+      |(Definition)     : 
+      |(Reference)      : 324
+     sfcems
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 324  405
+      |(Reference)      : 
+     sfcprs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 326  405
+      |(Reference)      : 
+     sfcspd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 338  405
+      |(Reference)      : 
+     sfctmp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 328  405
+      |(Reference)      : 340
+     sflx
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 405
+     shdfac
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 357  405
+      |(Reference)      : 
+     shdmax
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 107  154
+      |(Definition)     : 
+      |(Reference)      : 360
+     shdmax1d
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 360
+      |(Reference)      : 
+     shdmin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 107  154
+      |(Definition)     : 
+      |(Reference)      : 359
+     shdmin1d
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 359  405
+      |(Reference)      : 
+     sheat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 433
+     sigmaf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 107  154
+      |(Definition)     : 
+      |(Reference)      : 357
+     slc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 107  169
+      |(Definition)     : 455  546
+      |(Reference)      : 229  386
+     slc_old
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 187
+      |(Definition)     : 229
+      |(Reference)      : 546
+     sldpth
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 184
+      |(Definition)     : 306  308  405
+      |(Reference)      : 
+     slope
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 200
+      |(Definition)     : 356  405
+      |(Reference)      : 
+     slopetyp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 107  151
+      |(Definition)     : 
+      |(Reference)      : 356
+     slsoil
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 184
+      |(Definition)     : 386  405
+      |(Reference)      : 455
+     smc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 107  169
+      |(Definition)     : 454  544
+      |(Reference)      : 227  385
+     smc_old
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 187
+      |(Definition)     : 227
+      |(Reference)      : 544
+     smcdry
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 
+     smcmax
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 457
+     smcref
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 445
+     smcref2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 174
+      |(Definition)     : 445
+      |(Reference)      : 
+     smcwlt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 444
+     smcwlt2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 174
+      |(Definition)     : 444
+      |(Reference)      : 
+     smsoil
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 184
+      |(Definition)     : 385  405
+      |(Reference)      : 454  457
+     sncovr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 440  467
+     sncovr1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 107  174
+      |(Definition)     : 467
+      |(Reference)      : 
+     sneqv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 390  405
+      |(Reference)      : 391  392  466
+     snet
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 107  154
+      |(Definition)     : 
+      |(Reference)      : 323
+     snoalb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 107  154
+      |(Definition)     : 
+      |(Reference)      : 361
+     snoalb1d
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 361  405
+      |(Reference)      : 
+     snohf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 174
+      |(Definition)     : 250  442
+      |(Reference)      : 
+     snomlt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 
+     snowc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 174
+      |(Definition)     : 249  440
+      |(Reference)      : 
+     snowh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 389  392  405
+      |(Reference)      : 391  465
+     snwdph
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 107  166
+      |(Definition)     : 465  537
+      |(Reference)      : 220  389
+     snwdph_old
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 180
+      |(Definition)     : 220
+      |(Reference)      : 537
+     soilm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 441
+     soiltyp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 107  151
+      |(Definition)     : 
+      |(Reference)      : 355
+     soilw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 
+     solnet
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 323  405
+      |(Reference)      : 
+     sqrt
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 258
+     srflag
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 107  166
+      |(Definition)     : 541
+      |(Reference)      : 224  296  298
+     srflag_old
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 180
+      |(Definition)     : 224
+      |(Reference)      : 541
+     ssoil
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 434
+     stc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 107  169
+      |(Definition)     : 453  545
+      |(Reference)      : 228  384
+     stc_old
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 187
+      |(Definition)     : 228
+      |(Reference)      : 545
+     stm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 174
+      |(Definition)     : 441
+      |(Reference)      : 
+     stsoil
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 184
+      |(Definition)     : 384  405
+      |(Reference)      : 453
+     stype
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 200
+      |(Definition)     : 355  405
+      |(Reference)      : 
+     swdn
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 322  405
+      |(Reference)      : 
+     t1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 107  153
+      |(Definition)     : 
+      |(Reference)      : 262  264  265  328
+     tbot
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 365  405
+      |(Reference)      : 
+     tem
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 525
+      |(Reference)      : 526  527
+     tg3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 107  154
+      |(Definition)     : 
+      |(Reference)      : 365
+     th2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 329  405
+      |(Reference)      : 
+     theta1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 180
+      |(Definition)     : 262
+      |(Reference)      : 329
+     tprcp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 107  166
+      |(Definition)     : 540
+      |(Reference)      : 223  327
+     tprcp_old
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 180
+      |(Definition)     : 223
+      |(Reference)      : 540
+     trans
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 166
+      |(Definition)     : 247  438
+      |(Reference)      : 
+     tsea
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 381  405
+      |(Reference)      : 450
+     tskin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 107  166
+      |(Definition)     : 538  549
+      |(Reference)      : 221
+     tskin_old
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 180
+      |(Definition)     : 221
+      |(Reference)      : 538
+     tsurf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 107  166
+      |(Definition)     : 450
+      |(Reference)      : 381  549
+     ttmp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 265  266
+      |(Reference)      : 
+     u1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 107  153
+      |(Definition)     : 
+      |(Reference)      : 258  258
+     v1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 107  153
+      |(Definition)     : 
+      |(Reference)      : 258  258
+     vegtype
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 107  151
+      |(Definition)     : 
+      |(Reference)      : 354
+     vtype
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 200
+      |(Definition)     : 354  405
+      |(Reference)      : 
+     weasd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 107  166
+      |(Definition)     : 466  536
+      |(Reference)      : 219  390
+     weasd_old
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 180
+      |(Definition)     : 219
+      |(Reference)      : 536
+     wet1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 174
+      |(Definition)     : 457
+      |(Reference)      : 
+     wind
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 180
+      |(Definition)     : 258
+      |(Reference)      : 338  395  396  518
+     xlai
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 405
+      |(Reference)      : 
+     z0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 401  405
+      |(Reference)      : 470
+     zf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 107  154
+      |(Definition)     : 
+      |(Reference)      : 303
+     zlvl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 190
+      |(Definition)     : 303  405
+      |(Reference)      : 
+     zorl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 107  174
+      |(Definition)     : 470
+      |(Reference)      : 401
+     zsoil
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 187
+      |(Definition)     : 275
+      |(Reference)      : 306  308  308
+     zsoil_noah
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, SAVE, initialized
+      |(Declaration)    : 145  146
+      |(Definition)     : 
+      |(Reference)      : 275
+
+ Total information
+   Procedures       : 1
+   Total lines      : 558
+   Total statements : 205
+   Total stack(byte): 4016
+   Total prefetch num: 0
+

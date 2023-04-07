@@ -1,0 +1,1183 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar 14 13:21:14 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_helio
+   Source file       : ndslfv_monoadvv.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb157/CWBSUMc2/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "ndslfv_monoadvv"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine ndslfv_monoadvv (ddtemp,qvadv,vdzonl,vdmerd,pdot      &
+               2                                                     , pt,lonsperlat,deltim)
+               3                     !
+               4                     ! a routine to do non-iteration semi-Lagrangain advection
+               5                     ! considering advection  with monotonicity in interpolation
+               6                     ! contact: hann-ming henry juang
+               7                     ! program log:
+               8                     ! 2011 02 20 : henry juang, initial implemented into nems as NDSL with mass_dp
+               9                     ! 2013 09 30 : henry juang, add option of theta advection, (used later)
+              10                     !
+              11                     !
+              12                           use param
+              13                           use grid, only : latpart,ndslvvar
+              14                           use index
+              15                           use rank
+              16                           use const
+              17                     
+              18                           implicit none
+              19                     
+              20                     !ch   real(kind=RTYPE) pdot(lonfull,lev+1,latpart)
+              21                     !ch   real(kind=RTYPE) plev(lonfull,lev+1)
+              22                           real(kind=RTYPE) pdot(nxp,    lev+1,latpart)
+              23                           real(kind=RTYPE) plev(nxp,    lev+1)
+              24                           real(kind=RTYPE) pt(nxp,latpart)
+              25                     !      integer,intent(in):: global_lats_a(my)
+              26                           integer,intent(in):: lonsperlat(my)
+              27                           real(kind=RTYPE),   intent(in):: deltim
+              28                     
+              29                     !ch   real(kind=RTYPE)      qqlon(lonfull,lev*ndslvvar,latpart)
+              30                           real(kind=RTYPE)      qqlon(nxp,    lev*ndslvvar,latpart)
+              31                           real(kind=RTYPE)      ddtemp(nxp,lev,my_max),qvadv(nxp,lev*ncld,my_max),    &
+              32                                     vdmerd(nxp,lev,my_max),vdzonl(nxp,lev,my_max)
+              33                           real(kind=RTYPE)      rdt2,dt2
+              34                     
+              35                     !     real(kind=RTYPE)      xksav(lonfull,levs      ,latpart)
+              36                     !     real(kind=RTYPE)      stsav(lonfull,levs      ,latpart)
+              37                     !     real(kind=RTYPE)      ttsav(lonfull,levs      ,latpart)
+              38                     
+              39                     !     real(kind=RTYPE)      xr    (lonfull,levs)
+              40                     !     real(kind=RTYPE)      xcp   (lonfull,levs)
+              41                     !     real(kind=RTYPE)      sumrq (lonfull,levs)
+              42                     !     real(kind=RTYPE)      xkappa(lonfull,levs)
+              43                     !     real(kind=RTYPE)      kappa, pi, ply, hh
+              44                     !      real(kind=RTYPE)      cons0, cons1
+              45                     
+              46                     !      logical 	lprint
+              47                     
+              48                           integer mono,mass,nvars
+              49                           integer ii,i,n,k,kk,lon,lan,lat,lons_lat
+              50                           integer kqq, ktt, kuu, kvv
+              51                           integer kq , kt , ku , kv
+              52                     !
+              53                     !     lprint = .false.
+              54                     
+              55                     !     if( lprint ) then
+              56                     !       print *,' enter ndslfv_advect  with monotonicity '
+              57                     !     endif
+              58                     !
+              59                           mono  = 1
+              60                           mass  = 0
+              61                     !      cons0 = 0.0
+              62                     !      cons1 = 1.0
+              63                     !
+              64                     !      levh = ncld * lev
+              65                     !
+              66                           kuu = 1
+              67                           kvv = kuu + lev
+              68                           ktt = kvv + lev
+              69                           kqq = ktt + lev
+              70                     
+              71                           nvars = ndslvvar
+              72                     !
+              73                           rdt2 = 0.5 / deltim
+              74                           dt2 =  2. * deltim
+              75                     !
+              76                     !$omp parallel do                                                &
+              77                     !$omp private(lan,lat,lons_lat,plev,i,k,n,kk,mass,ku,kv,kt,kq)   &
+              78                     !$omp schedule(dynamic)
+              79                     
+              80                     !      do lan=1,lats_node_a
+              81     1   p                 do lan=1,jlistnum
+              82     1               
+              83     1               !        lat = global_lats_a(ipt_lats_node_a-1+lan)
+              84     1   p                   lat = jlist1(lan)
+              85     1   p                   lons_lat = lonsperlat(lat)
+              86     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      (unknown)
+                                   <<< Loop-information  End >>>
+              87     1   p   4v              plev(:,lev+1) = 0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pt, (unknown)
+                                   <<< Loop-information  End >>>
+              88     2   p                   do k=lev,1,-1
+              89     2   p                     kk=lev-k+1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.20, ITR: 144, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pt, (unknown)
+                                   <<< Loop-information  End >>>
+              90     3   p   2v                do i=1,lons_lat
+              91     3   p   2v                  plev(i,k)=plev(i,k+1)+dsigma(kk,1)*pt(i,lan)+dsigma(kk,2)
+              92     3   p   2v                enddo
+              93     2   p                   enddo
+              94     1               
+              95     1               !       if( lprint ) then
+              96     1               !       do k=1,lev
+              97     1               !       print *,' k= ',k
+              98     1               !       call mymaxmin(pdot(1,k,lan),lons_lat,lonfull,1,' pdot ')
+              99     1               !       call mymaxmin(plev(1,k),lons_lat,lonfull,1,' plev ')
+             100     1               !       enddo
+             101     1               !       endif
+             102     1               !
+             103     1               ! d z t at n+1*
+             104     1               !       kappa = con_rd / con_cp
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      vdzonl, vdmerd, ddtemp, qqlon
+                                   <<< Loop-information  End >>>
+             105     2   p                   do k=1,lev
+             106     2   p                     kk=lev-k+1
+             107     2   p                     ku=kuu+k-1
+             108     2   p                     kv=kvv+k-1
+             109     2   p                     kt=ktt+k-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 48, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qqlon, vdmerd, vdzonl, ddtemp
+                                   <<< Loop-information  End >>>
+             110     3   p    v                do i=1,lons_lat
+             111     3   p    v                  qqlon(i,ku,lan) = vdzonl(i,kk,lan)
+             112     3   p    v                  qqlon(i,kv,lan) = vdmerd(i,kk,lan)
+             113     3   p    v                  qqlon(i,kt,lan) = ddtemp(i,kk,lan)
+             114     3   p    v                enddo
+             115     2   p                   enddo
+             116     1               ! rq at n+1*
+             117     2   p                   do n=1,ncld
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qvadv, qqlon
+                                   <<< Loop-information  End >>>
+             118     3   p                   do k=1,lev
+             119     3   p                     kk=lev-k+1+(n-1)*lev
+             120     3   p                     kq=kqq+k-1+(n-1)*lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qvadv, qqlon
+                                   <<< Loop-information  End >>>
+             121     4   p   2v                do i=1,lons_lat
+             122     4   p   2v                  qqlon(i,kq,lan) = qvadv(i,kk,lan)
+             123     4   p   2v                enddo
+             124     3   p                   enddo
+             125     2   p                   enddo
+             126     1               !
+             127     1               ! ----- prepare xr, xcp, xkapa
+             128     1               !
+             129     1               !       xr    = cons0
+             130     1               !       xcp   = cons0
+             131     1               !       sumrq = cons0
+             132     1               !       do n=1,ntrac
+             133     1               !         nqq = kqq + (n-1)*levs
+             134     1               !         if( ri(n) .ne. cons0 .and. cpi(n) .ne. cons0 ) then
+             135     1               !           do k=1,levs
+             136     1               !             kq=nqq+k-1
+             137     1               !             do i=1,lons_lat
+             138     1               !               xr   (i,k) = xr   (i,k) + qqlon(i,kq,lan)*ri(n)
+             139     1               !               xcp  (i,k) = xcp  (i,k) + qqlon(i,kq,lan)*cpi(n)
+             140     1               !               sumrq(i,k) = sumrq(i,k) + qqlon(i,kq,lan)
+             141     1               !             enddo
+             142     1               !           enddo
+             143     1               !         endif
+             144     1               !       enddo
+             145     1               !       do k=1,levs
+             146     1               !         do i=1,lons_lat
+             147     1               !           xr (i,k)   = ( cons1 - sumrq(i,k) )*ri(0)  + xr (i,k)
+             148     1               !           xcp(i,k)   = ( cons1 - sumrq(i,k) )*cpi(0) + xcp(i,k)
+             149     1               !           xkappa(i,k) = xr(i,k) / xcp(i,k)
+             150     1               !           xksav(i,k,lan) = xkappa(i,k)
+             151     1               !         enddo
+             152     1               !       enddo
+             153     1               !
+             154     1               ! change h to theta
+             155     1               !
+             156     1               !       do k=1,levs
+             157     1               !         kt=ktt+k-1
+             158     1               !         do i=1,lons_lat
+             159     1               !           pi = ((plev(i,k)+plev(i,k+1))*0.005)**xkappa(i,k)
+             160     1               !           ttsav(i,k ,lan) = qqlon(i,kt,lan)
+             161     1               !           qqlon(i,kt,lan) = qqlon(i,kt,lan)/pi
+             162     1               !           stsav(i,k ,lan) = qqlon(i,kt,lan)
+             163     1               !         enddo
+             164     1               !       enddo
+             165     1               !
+             166     1               !
+             167     1   p                   mass=0
+             168     1               !ch     call vertical_cell_advect (lons_lat,lonfull,lev,nvars, &
+             169     1   p                   call vertical_cell_advect (lons_lat,nxp,    lev,nvars, &
+             170     1                                 deltim,plev,pdot(1,1,lan),qqlon(1,1,lan),mass)
+             171     1               !
+             172     1               ! dp with mass conserving
+             173     1               !       do k=1,levs
+             174     1               !         kp =g_dp +k-1
+             175     1               !         kpg=g_dpn+k-1
+             176     1               !         do i=1,lon_dim
+             177     1               !           ilan=i+jlonf
+             178     1               !           rrlon(i,k,lan) = grid_gr(ilan,kpg)/grid_gr(ilan,kp )
+             179     1               !           rrlon(i,k,lan) = 1.0
+             180     1               !         enddo
+             181     1               !       enddo
+             182     1               !       mass=1
+             183     1               !       call vertical_cell_advect (lons_lat,lonfull,levs,1,
+             184     1               !    &            deltim,plev,pdot(1,1,lan),rrlon(1,1,lan),mass)
+             185     1               !       do k=1,levs
+             186     1               !         kp =g_dp +k-1
+             187     1               !         kpg=g_dpn+k-1
+             188     1               !         do i=1,lon_dim
+             189     1               !           ilan=i+jlonf
+             190     1               !           grid_gr(ilan,kpg) = rrlon(i,k ,lan)*grid_gr(ilan,kp )
+             191     1               !         enddo
+             192     1               !       enddo
+             193     1               !
+             194     1               ! ----- prepare xr, xcp, xkapa
+             195     1               !
+             196     1               !       xr    = cons0
+             197     1               !       xcp   = cons0
+             198     1               !       sumrq = cons0
+             199     1               !       do n=1,ntrac
+             200     1               !         nqq = kqq + (n-1)*levs
+             201     1               !         if( ri(n) .ne. cons0 .and. cpi(n) .ne. cons0 ) then
+             202     1               !           do k=1,levs
+             203     1               !             kq=nqq+k-1
+             204     1               !             do i=1,lons_lat
+             205     1               !               xr   (i,k) = xr   (i,k) + qqlon(i,kq,lan)*ri(n)
+             206     1               !               xcp  (i,k) = xcp  (i,k) + qqlon(i,kq,lan)*cpi(n)
+             207     1               !               sumrq(i,k) = sumrq(i,k) + qqlon(i,kq,lan)
+             208     1               !             enddo
+             209     1               !           enddo
+             210     1               !         endif
+             211     1               !       enddo
+             212     1               !       do k=1,levs
+             213     1               !         do i=1,lons_lat
+             214     1               !           xr (i,k)   = ( cons1 - sumrq(i,k) )*ri(0)  + xr (i,k)
+             215     1               !           xcp(i,k)   = ( cons1 - sumrq(i,k) )*cpi(0) + xcp(i,k)
+             216     1               !           xkappa(i,k) = xr(i,k) / xcp(i,k)
+             217     1               !         enddo
+             218     1               !       enddo
+             219     1               !
+             220     1               ! add change of p, theta and kappa to h
+             221     1               !
+             222     1               !       do k=1,levs
+             223     1               !         kt=ktt+k-1
+             224     1               !         do i=1,lons_lat
+             225     1               !           ply = (plev(i,k)+plev(i,k+1))*0.5
+             226     1               !           pi = ((plev(i,k)+plev(i,k+1))*0.005)**xkappa(i,k)
+             227     1               !           hh = ttsav(i,k,lan)
+             228     1               !           ttsav(i,k,lan) = ttsav(i,k,lan)
+             229     1               !    &                      + xksav(i,k,lan)*hh/ply*
+             230     1               !    &                       (pdot(i,k,lan)+pdot(i,k+1,lan))*deltim
+             231     1               !           ttsav(i,k,lan) = ttsav(i,k,lan)
+             232     1               !    &                      + pi*(qqlon(i,kt,lan)-stsav(i,k,lan))
+             233     1               !    &                      + hh*log(ply/100.)*
+             234     1               !    &                        (xkappa(i,k)-xksav(i,k,lan))
+             235     1               !           qqlon(i,kt,lan)= ttsav(i,k,lan)
+             236     1               !         enddo
+             237     1               !       enddo
+             238     1               !
+             239     1               ! u v t tendency at n
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qqlon, ddtemp, vdmerd, vdzonl
+                                   <<< Loop-information  End >>>
+             240     2   p                   do k=1,lev
+             241     2   p                     kk=lev-k+1
+             242     2   p                     ku=kuu+k-1
+             243     2   p                     kv=kvv+k-1
+             244     2   p                     kt=ktt+k-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 48, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ddtemp, qqlon, vdmerd, vdzonl
+                                   <<< Loop-information  End >>>
+             245     3   p    v                do i=1,lons_lat
+             246     3               !!            vdzonl(i,kk,lan) = (qqlon(i,ku,lan)-up(i,kk,lan))*rdt2
+             247     3               !!            vdmerd(i,kk,lan) = (vp(i,kk,lan)-qqlon(i,kv,lan))*rdt2
+             248     3               !!            ddtemp(i,kk,lan) = (qqlon(i,kt,lan)-ttp(i,kk,lan))*rdt2
+             249     3   p    v                  vdzonl(i,kk,lan) = qqlon(i,ku,lan)
+             250     3   p    v                  vdmerd(i,kk,lan) = qqlon(i,kv,lan)
+             251     3   p    v                  ddtemp(i,kk,lan) = qqlon(i,kt,lan)
+             252     3   p    v                enddo
+             253     2   p                   enddo
+             254     1               ! rq tendency at n
+             255     2   p                   do n=1,ncld
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qqlon, qvadv
+                                   <<< Loop-information  End >>>
+             256     3   p                   do k=1,lev
+             257     3   p                     kk=lev-k+1+(n-1)*lev
+             258     3   p                     kq=kqq+k-1+(n-1)*lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qqlon, qvadv
+                                   <<< Loop-information  End >>>
+             259     4   p   2v                do i=1,lons_lat
+             260     4               !byl no need tendency for Tracers
+             261     4               !!            qvadv(i,kk,lan) = (qqlon(i,kq,lan)-qm(i,kk,lan))*rdt2
+             262     4   p   2v                  qvadv(i,kk,lan) = qqlon(i,kq,lan)
+             263     4   p   2v                enddo
+             264     3   p                   enddo
+             265     2   p                   enddo
+             266     1               !
+             267     1               !       if( lprint ) then
+             268     1               !       call mymaxmin(qqlon(1,kqq,lan),lons_lat,lonfull,1,' q vertadv')
+             269     1               !       print *,' ------------------------------------------- '
+             270     1               !       print *,' finish updating n+1* in grid_gr at lan=',lan
+             271     1               !       endif
+             272     1               !
+             273     1   p                 enddo
+             274                     !$omp end parallel do
+             275                     
+             276                     !
+             277                     ! ===============================
+             278                     !
+             279                           return
+             280                           end
+
+ Procedure information
+   Lines      : 280
+   Statements : 85
+   Stack(byte): 1104
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : ndslfv_monoadvv
+   Attribute and Cross reference of name
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 16
+     ddtemp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  31
+      |(Definition)     : 251
+      |(Reference)      : 113
+     deltim
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 1  27
+      |(Definition)     : 
+      |(Reference)      : 73  74  169
+     dsigma
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 91  91
+     dt2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 33
+      |(Definition)     : 74
+      |(Reference)      : 
+     grid
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 13
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 49
+      |(Definition)     : 90  110  121  245  259
+      |(Reference)      : 76  91  91  91  111  111  112  112  113  113  122  122  249  249  250  250  251  251  262  262
+     ii
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 49
+      |(Definition)     : 
+      |(Reference)      : 
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 14
+     jlist1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 84
+     jlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 81
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 49
+      |(Definition)     : 88  105  118  240  256
+      |(Reference)      : 76  89  91  91  106  107  108  109  119  120  241  242  243  244  257  258
+     kk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 49
+      |(Definition)     : 89  106  119  241  257
+      |(Reference)      : 76  91  91  111  112  113  122  249  250  251  262
+     kq
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 51
+      |(Definition)     : 120  258
+      |(Reference)      : 76  122  262
+     kqq
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 50
+      |(Definition)     : 69
+      |(Reference)      : 120  258
+     kt
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 51
+      |(Definition)     : 109  244
+      |(Reference)      : 76  113  251
+     ktt
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 50
+      |(Definition)     : 68
+      |(Reference)      : 69  109  244
+     ku
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 51
+      |(Definition)     : 107  242
+      |(Reference)      : 76  111  249
+     kuu
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 50
+      |(Definition)     : 66
+      |(Reference)      : 67  107  242
+     kv
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 51
+      |(Definition)     : 108  243
+      |(Reference)      : 76  112  250
+     kvv
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 50
+      |(Definition)     : 67
+      |(Reference)      : 68  108  243
+     lan
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 49
+      |(Definition)     : 81
+      |(Reference)      : 76  84  91  111  111  112  112  113  113  122  122  169  169  249  249  250  250  251  251  262  262
+     lat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 49
+      |(Definition)     : 84
+      |(Reference)      : 76  85
+     latpart
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 13  22  24  30
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 169
+      |(Reference)      : 22  23  30  31  31  31  31  67  68  69  87  88  89  105  106  118  119  119  120  240  241  256  257  257  258
+     lon
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 49
+      |(Definition)     : 
+      |(Reference)      : 
+     lons_lat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 49
+      |(Definition)     : 85  169
+      |(Reference)      : 76  90  110  121  245  259
+     lonsperlat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 1  26
+      |(Definition)     : 
+      |(Reference)      : 85
+     mass
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 48
+      |(Definition)     : 60  167  169
+      |(Reference)      : 76
+     mono
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 48
+      |(Definition)     : 59
+      |(Reference)      : 
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 26
+     my_max
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 31  31  31  31
+     n
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 49
+      |(Definition)     : 117  255
+      |(Reference)      : 76  119  120  257  258
+     ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 31  117  255
+     ndslfv_monoadvv
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     ndslvvar
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 13  30  71
+     nvars
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 48
+      |(Definition)     : 71  169
+      |(Reference)      : 
+     nxp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 169
+      |(Reference)      : 22  23  24  30  31  31  31  31
+     param
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 12
+     pdot
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  22
+      |(Definition)     : 169
+      |(Reference)      : 
+     plev
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 23
+      |(Definition)     : 87  91  169
+      |(Reference)      : 76  91
+     pt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  24
+      |(Definition)     : 
+      |(Reference)      : 91
+     qqlon
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 30
+      |(Definition)     : 111  112  113  122  169
+      |(Reference)      : 249  250  251  262
+     qvadv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  31
+      |(Definition)     : 262
+      |(Reference)      : 122
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 22  23  24  27  30  31  33
+     rank
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 15
+     rdt2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 33
+      |(Definition)     : 73
+      |(Reference)      : 
+     vdmerd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  31
+      |(Definition)     : 250
+      |(Reference)      : 112
+     vdzonl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  31
+      |(Definition)     : 249
+      |(Reference)      : 111
+     vertical_cell_advect
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 169
+
+ External subroutine subprogram "ndslfv_monoadvv_fgnl"
+  (inc)(line-no.)(nest)(optimize)
+             281                     !
+             282                     ! -------------------------------
+             283                           subroutine ndslfv_monoadvv_fgnl(vdzonl,vdmerd,ddtemp,pdot      &
+             284                                                     , pt,lonsperlat,deltim,nvars)
+             285                     !
+             286                     ! a routine to do non-iteration semi-Lagrangain advection
+             287                     ! considering advection  with monotonicity in interpolation
+             288                     ! contact: hann-ming henry juang
+             289                     ! program log:
+             290                     ! 2011 02 20 : henry juang, initial implemented into nems as NDSL with mass_dp
+             291                     ! 2013 09 30 : henry juang, add option of theta advection, (used later)
+             292                     !
+             293                     !
+             294                           use param
+             295                           use grid, only : latpart
+             296                           use index
+             297                           use rank
+             298                           use const
+             299                     
+             300                           implicit none
+             301                     
+             302                           real(kind=RTYPE) pdot(nxp,    lev+1,latpart)
+             303                           real(kind=RTYPE) plev(nxp,    lev+1)
+             304                           real(kind=RTYPE) pt(nxp,latpart)
+             305                           integer,intent(in):: lonsperlat(my)
+             306                           real(kind=RTYPE),   intent(in):: deltim
+             307                     
+             308                           real(kind=RTYPE)      qqlon(nxp,    lev*nvars,latpart)
+             309                           real(kind=RTYPE)      vdmerd(nxp,lev,my_max),vdzonl(nxp,lev,my_max)
+             310                           real(kind=RTYPE)      ddtemp(nxp,lev,my_max)
+             311                           real(kind=RTYPE)      rdt2,dt2
+             312                     
+             313                           integer mono,mass,nvars
+             314                           integer ii,i,n,k,kk,lon,lan,lat,lons_lat
+             315                           integer kuu, kvv, ktt
+             316                           integer ku , kv, kt
+             317                     !
+             318                     !     lprint = .false.
+             319                     
+             320                     !     if( lprint ) then
+             321                     !       print *,' enter ndslfv_advect  with monotonicity '
+             322                     !     endif
+             323                     !
+             324                           mono  = 1
+             325                           mass  = 0
+             326                     !      cons0 = 0.0
+             327                     !      cons1 = 1.0
+             328                     !
+             329                     !      levh = ncld * lev
+             330                     !
+             331                           kuu = 1
+             332                           kvv = kuu + lev
+             333                           ktt = kvv + lev
+             334                     
+             335                     !      nvars = 2
+             336                     !
+             337                           rdt2 = 0.5 / deltim
+             338                           dt2 =  2. * deltim
+             339                     !
+             340                     !$omp parallel do                                                &
+             341                     !$omp private(lan,lat,lons_lat,plev,i,k,n,kk,mass,ku,kv,kt)      &
+             342                     !$omp schedule(dynamic)
+             343                     
+             344                     !      do lan=1,lats_node_a
+             345     1   p                 do lan=1,jlistnum
+             346     1               
+             347     1               !        lat = global_lats_a(ipt_lats_node_a-1+lan)
+             348     1   p                   lat = jlist1(lan)
+             349     1   p                   lons_lat = lonsperlat(lat)
+             350     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      (unknown)
+                                   <<< Loop-information  End >>>
+             351     1   p   4v              plev(:,lev+1) = 0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pt, (unknown)
+                                   <<< Loop-information  End >>>
+             352     2   p                   do k=lev,1,-1
+             353     2   p                     kk=lev-k+1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.20, ITR: 144, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pt, (unknown)
+                                   <<< Loop-information  End >>>
+             354     3   p   2v                do i=1,lons_lat
+             355     3   p   2v                  plev(i,k)=plev(i,k+1)+dsigma(kk,1)*pt(i,lan)+dsigma(kk,2)
+             356     3   p   2v                enddo
+             357     2   p                   enddo
+             358     1               
+             359     1               !       if( lprint ) then
+             360     1               !       do k=1,lev
+             361     1               !       print *,' k= ',k
+             362     1               !       call mymaxmin(pdot(1,k,lan),lons_lat,lonfull,1,' pdot ')
+             363     1               !       call mymaxmin(plev(1,k),lons_lat,lonfull,1,' plev ')
+             364     1               !       enddo
+             365     1               !       endif
+             366     1               !
+             367     1               ! d z t at n+1*
+             368     1               !       kappa = con_rd / con_cp
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      vdzonl, vdmerd, ddtemp, qqlon
+                                   <<< Loop-information  End >>>
+             369     2   p                   do k=1,lev
+             370     2   p                     kk=lev-k+1
+             371     2   p                     ku=kuu+k-1
+             372     2   p                     kv=kvv+k-1
+             373     2   p                     kt=ktt+k-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 48, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qqlon, vdmerd, vdzonl, ddtemp
+                                   <<< Loop-information  End >>>
+             374     3   p    v                do i=1,lons_lat
+             375     3   p    v                  qqlon(i,ku,lan) = vdzonl(i,kk,lan)
+             376     3   p    v                  qqlon(i,kv,lan) = vdmerd(i,kk,lan)
+             377     3   p    v                  if ( nvars .ge. 3 ) qqlon(i,kt,lan) = ddtemp(i,kk,lan)
+             378     3   p    v                enddo
+             379     2   p                   enddo
+             380     1               !
+             381     1               !
+             382     1   p                   mass=0
+             383     1               !
+             384     1   p                   call vertical_cell_advect (lons_lat,nxp,    lev,nvars, &
+             385     1                                 deltim,plev,pdot(1,1,lan),qqlon(1,1,lan),mass)
+             386     1               !
+             387     1               !
+             388     1               ! u v t tendency at n
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qqlon, ddtemp, vdmerd, vdzonl
+                                   <<< Loop-information  End >>>
+             389     2   p                   do k=1,lev
+             390     2   p                     kk=lev-k+1
+             391     2   p                     ku=kuu+k-1
+             392     2   p                     kv=kvv+k-1
+             393     2   p                     kt=ktt+k-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.60, ITR: 48, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ddtemp, qqlon, vdmerd, vdzonl
+                                   <<< Loop-information  End >>>
+             394     3   p    v                do i=1,lons_lat
+             395     3   p    v                  vdzonl(i,kk,lan) = qqlon(i,ku,lan)
+             396     3   p    v                  vdmerd(i,kk,lan) = qqlon(i,kv,lan)
+             397     3   p    v                  if ( nvars .ge. 3 ) ddtemp(i,kk,lan) = qqlon(i,kt,lan)
+             398     3   p    v                enddo
+             399     2   p                   enddo
+             400     1               !
+             401     1               !       if( lprint ) then
+             402     1               !       call mymaxmin(qqlon(1,kqq,lan),lons_lat,lonfull,1,' q vertadv')
+             403     1               !       print *,' ------------------------------------------- '
+             404     1               !       print *,' finish updating n+1* in grid_gr at lan=',lan
+             405     1               !       endif
+             406     1               !
+             407     1   p                 enddo
+             408                     !$omp end parallel do
+             409                     
+             410                     !
+             411                     ! ===============================
+             412                     !
+             413                           return
+             414                           end
+
+ Procedure information
+   Lines      : 134
+   Statements : 66
+   Stack(byte): 1072
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : ndslfv_monoadvv_fgnl
+   Attribute and Cross reference of name
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 298
+     ddtemp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 283  310
+      |(Definition)     : 397
+      |(Reference)      : 377
+     deltim
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 283  306
+      |(Definition)     : 
+      |(Reference)      : 337  338  384
+     dsigma
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 355  355
+     dt2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 311
+      |(Definition)     : 338
+      |(Reference)      : 
+     grid
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 295
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 314
+      |(Definition)     : 354  374  394
+      |(Reference)      : 340  355  355  355  375  375  376  376  377  377  395  395  396  396  397  397
+     ii
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 314
+      |(Definition)     : 
+      |(Reference)      : 
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 296
+     jlist1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 348
+     jlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 345
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 314
+      |(Definition)     : 352  369  389
+      |(Reference)      : 340  353  355  355  370  371  372  373  390  391  392  393
+     kk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 314
+      |(Definition)     : 353  370  390
+      |(Reference)      : 340  355  355  375  376  377  395  396  397
+     kt
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 316
+      |(Definition)     : 373  393
+      |(Reference)      : 340  377  397
+     ktt
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 315
+      |(Definition)     : 333
+      |(Reference)      : 373  393
+     ku
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 316
+      |(Definition)     : 371  391
+      |(Reference)      : 340  375  395
+     kuu
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 315
+      |(Definition)     : 331
+      |(Reference)      : 332  371  391
+     kv
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 316
+      |(Definition)     : 372  392
+      |(Reference)      : 340  376  396
+     kvv
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 315
+      |(Definition)     : 332
+      |(Reference)      : 333  372  392
+     lan
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 314
+      |(Definition)     : 345
+      |(Reference)      : 340  348  355  375  375  376  376  377  377  384  384  395  395  396  396  397  397
+     lat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 314
+      |(Definition)     : 348
+      |(Reference)      : 340  349
+     latpart
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 295  302  304  308
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 384
+      |(Reference)      : 302  303  308  309  309  310  332  333  351  352  353  369  370  389  390
+     lon
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 314
+      |(Definition)     : 
+      |(Reference)      : 
+     lons_lat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 314
+      |(Definition)     : 349  384
+      |(Reference)      : 340  354  374  394
+     lonsperlat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 283  305
+      |(Definition)     : 
+      |(Reference)      : 349
+     mass
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 313
+      |(Definition)     : 325  382  384
+      |(Reference)      : 340
+     mono
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 313
+      |(Definition)     : 324
+      |(Reference)      : 
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 305
+     my_max
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 309  309  310
+     n
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 314
+      |(Definition)     : 
+      |(Reference)      : 340
+     ndslfv_monoadvv_fgnl
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 283
+      |(Reference)      : 
+     nvars
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 283  313
+      |(Definition)     : 384
+      |(Reference)      : 308  377  397
+     nxp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 384
+      |(Reference)      : 302  303  304  308  309  309  310
+     param
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 294
+     pdot
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 283  302
+      |(Definition)     : 384
+      |(Reference)      : 
+     plev
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 303
+      |(Definition)     : 351  355  384
+      |(Reference)      : 340  355
+     pt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 283  304
+      |(Definition)     : 
+      |(Reference)      : 355
+     qqlon
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 308
+      |(Definition)     : 375  376  377  384
+      |(Reference)      : 395  396  397
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 302  303  304  306  308  309  310  311
+     rank
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 297
+     rdt2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 311
+      |(Definition)     : 337
+      |(Reference)      : 
+     vdmerd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 283  309
+      |(Definition)     : 396
+      |(Reference)      : 376
+     vdzonl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 283  309
+      |(Definition)     : 395
+      |(Reference)      : 375
+     vertical_cell_advect
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 384
+
+ Total information
+   Procedures       : 2
+   Total lines      : 414
+   Total statements : 151
+   Total stack(byte): 2176
+   Total prefetch num: 0
+

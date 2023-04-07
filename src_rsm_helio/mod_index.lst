@@ -1,0 +1,869 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar  7 10:21:04 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm_helio
+   Source file       : mod_index.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ Module "index"
+  (inc)(line-no.)(nest)(optimize)
+               1                           module index
+               2                     
+               3                           implicit none
+               4                     
+               5                           public
+               6                     
+               7                     !      integer mlistnum,mlist(1000),nlist(1000),ilist(1000)
+               8                     !      common /mwork/mlistnum,mlist,nlist,ilist
+               9                     
+              10                     !      integer jlistnum,jlist1(2560),jlist2(2560),jlistnum_tmp(2560)
+              11                     !      common /jwork/jlistnum,jlist1,jlist2,jlistnum_tmp
+              12                     !! for Semi-Lagrangian
+              13                     !      integer jlistnum_sl(200),jlist1_sl(2560,200)
+              14                     
+              15                     !! reduceg
+              16                     !      integer lreduce,nxdef(2560),mtrundef(2560),mfj(2560)
+              17                     !      common /reduceindx/lreduce,nxdef,mtrundef,mfj
+              18                     
+              19                     !      end module index
+              20                     
+              21                     !CWB2017 for high resolution and high number of MPI processes
+              22                           integer mlistnum
+              23                           common /mwork/mlistnum
+              24                     
+              25                           integer, dimension(:),allocatable,save :: mlist,nlist,ilist
+              26                     
+              27                           integer jlistnum
+              28                           common /jwork/jlistnum
+              29                     
+              30                           integer, dimension(:),  allocatable,save :: jlist1,jlist2,jlistnum_sl
+              31                           integer, dimension(:,:),allocatable,save :: jlist2_2d,jlist1_sl
+              32                     
+              33                     ! reduceg
+              34                           integer lreduce
+              35                           common /reduceindx/lreduce
+              36                     
+              37                           integer, dimension(:),  allocatable,save :: nxdef,mtrundef
+              38                     
+              39                     !2dMPI
+              40                           integer nsizex,nsizey,mrow,ncol,row_comm,col_comm,row_rank,col_rank
+              41                           common/mpi2d_comm/nsizex,nsizey,mrow,ncol,row_comm,col_comm,row_rank,col_rank
+              42                     
+              43                           integer Lstart,Lend,Llen,nxp,levp,jlen,nxf,levf,myf,Llistnum,      &
+              44                                   Lstart_ncld,Lend_ncld,jtf,jtp,jtstart,jtend,jtlen
+              45                           common /iwork/Lstart,Lend,Llen,nxp,levp,jlen,nxf,levf,myf,Llistnum,&
+              46                                   Lstart_ncld,Lend_ncld,jtf,jtp,jtstart,jtend,jtlen
+              47                     
+              48                           integer, dimension(:),allocatable,save :: Llist,Llist_ncld,jtlen_all,    &
+              49                                                 nxjp,nxjstart,nxjend,nxjlen,nxdef_2d
+              50                     
+              51                           integer, dimension(:,:),allocatable,save :: nxjstart_all, &
+              52                                                   nxjend_all,nxjlen_all,map2to1
+              53                     
+              54                           contains
+              55                     
+              56                              subroutine allocate_index_array
+              57                     
+              58                                use param
+              59                                use rank
+              60                     
+              61                                integer  ierr
+              62                     
+              63                                allocate (mlist(jtmax),nlist(jtmax*nsize),ilist(jtmax*nsize), &
+              64                                          jlist1(my_max),jlist2(my),jlist2_2d(nsizex,my),     &
+              65                                          jlistnum_sl(nsizey), nxdef(my),mtrundef(my),        &
+              66                                          Llist(levp),Llist_ncld(levp*ncld),                  &
+              67                                          jtlen_all(nsizex),nxjp(my),   &
+              68                                          nxjstart(my),nxjend(my),nxjlen(my),nxdef_2d(my),    &
+              69                                          nxjstart_all(nsizex,my),nxjend_all(nsizex,my),      &
+              70                                          nxjlen_all(nsizex,my),map2to1(nxp,my),stat=ierr)
+              71                     
+              72     1                          if (ierr/= 0) then
+              73     1                              write(6,*) 'mod_index : allocate fail 1'
+              74     1                              stop
+              75     1                          end if
+              76                     
+              77                                allocate (jlist1_sl(my_max,nsizey),stat=ierr)
+              78                     
+              79     1                          if (ierr/= 0) then
+              80     1                              write(6,*) 'mod_index : allocate fail 2'
+              81     1                              stop
+              82     1                          end if
+              83                     
+              84                                return
+              85                     
+              86                              end subroutine
+              87                     
+              88                              subroutine deallocate_index_array
+              89                     
+              90                                deallocate (mlist,nlist,ilist,jlist1,jlist2,jlist2_2d,jlistnum_sl, &
+              91                                            jlist1_sl,nxdef,mtrundef,Llist,Llist_ncld,      &
+              92                                            jtlen_all,nxjp,nxjstart,nxjend,nxjlen,   &
+              93                                            nxdef_2d,nxjstart_all,nxjend_all,&
+              94                                            nxjlen_all,map2to1)
+              95                     
+              96                                return
+              97                     
+              98                              end subroutine
+              99                     
+             100                           end module index
+
+ Procedure information
+   Lines      : 100
+   Statements : 41
+   Stack(byte): 2384
+   Prefetch num: 0
+
+ Scoping unit of module : index
+   Attribute and Cross reference of name
+     col_comm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 40  41
+      |(Definition)     : 
+      |(Reference)      : 
+     col_rank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 40  41
+      |(Definition)     : 
+      |(Reference)      : 
+     ilist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 25
+      |(Definition)     : 
+      |(Reference)      : 
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 1
+      |(Definition)     : 
+      |(Reference)      : 100
+     iwork
+      |(Class and Type) : common name
+      |(Attributes)     : 
+      |(Declaration)    : 45
+      |(Definition)     : 
+      |(Reference)      : 
+     jlen
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 43  45
+      |(Definition)     : 
+      |(Reference)      : 
+     jlist1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 30
+      |(Definition)     : 
+      |(Reference)      : 
+     jlist1_sl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 31
+      |(Definition)     : 
+      |(Reference)      : 
+     jlist2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 30
+      |(Definition)     : 
+      |(Reference)      : 
+     jlist2_2d
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 31
+      |(Definition)     : 
+      |(Reference)      : 
+     jlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 27  28
+      |(Definition)     : 
+      |(Reference)      : 
+     jlistnum_sl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 30
+      |(Definition)     : 
+      |(Reference)      : 
+     jtend
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 43  45
+      |(Definition)     : 
+      |(Reference)      : 
+     jtf
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 43  45
+      |(Definition)     : 
+      |(Reference)      : 
+     jtlen
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 43  45
+      |(Definition)     : 
+      |(Reference)      : 
+     jtlen_all
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 48
+      |(Definition)     : 
+      |(Reference)      : 
+     jtp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 43  45
+      |(Definition)     : 
+      |(Reference)      : 
+     jtstart
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 43  45
+      |(Definition)     : 
+      |(Reference)      : 
+     jwork
+      |(Class and Type) : common name
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 
+      |(Reference)      : 
+     Lend
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 43  45
+      |(Definition)     : 
+      |(Reference)      : 
+     Lend_ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 43  45
+      |(Definition)     : 
+      |(Reference)      : 
+     Llen
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 43  45
+      |(Definition)     : 
+      |(Reference)      : 
+     Llist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 48
+      |(Definition)     : 
+      |(Reference)      : 
+     Llist_ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 48
+      |(Definition)     : 
+      |(Reference)      : 
+     Llistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 43  45
+      |(Definition)     : 
+      |(Reference)      : 
+     Lstart
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 43  45
+      |(Definition)     : 
+      |(Reference)      : 
+     Lstart_ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 43  45
+      |(Definition)     : 
+      |(Reference)      : 
+     levf
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 43  45
+      |(Definition)     : 
+      |(Reference)      : 
+     levp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 43  45
+      |(Definition)     : 
+      |(Reference)      : 
+     lreduce
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 34  35
+      |(Definition)     : 
+      |(Reference)      : 
+     map2to1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 51
+      |(Definition)     : 
+      |(Reference)      : 
+     mlist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 25
+      |(Definition)     : 
+      |(Reference)      : 
+     mlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 22  23
+      |(Definition)     : 
+      |(Reference)      : 
+     mpi2d_comm
+      |(Class and Type) : common name
+      |(Attributes)     : 
+      |(Declaration)    : 41
+      |(Definition)     : 
+      |(Reference)      : 
+     mrow
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 40  41
+      |(Definition)     : 
+      |(Reference)      : 
+     mtrundef
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 37
+      |(Definition)     : 
+      |(Reference)      : 
+     mwork
+      |(Class and Type) : common name
+      |(Attributes)     : 
+      |(Declaration)    : 23
+      |(Definition)     : 
+      |(Reference)      : 
+     myf
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 43  45
+      |(Definition)     : 
+      |(Reference)      : 
+     ncol
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 40  41
+      |(Definition)     : 
+      |(Reference)      : 
+     nlist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 25
+      |(Definition)     : 
+      |(Reference)      : 
+     nsizex
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 40  41
+      |(Definition)     : 
+      |(Reference)      : 
+     nsizey
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 40  41
+      |(Definition)     : 
+      |(Reference)      : 
+     nxdef
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 37
+      |(Definition)     : 
+      |(Reference)      : 
+     nxdef_2d
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 48
+      |(Definition)     : 
+      |(Reference)      : 
+     nxf
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 43  45
+      |(Definition)     : 
+      |(Reference)      : 
+     nxjend
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 48
+      |(Definition)     : 
+      |(Reference)      : 
+     nxjend_all
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 51
+      |(Definition)     : 
+      |(Reference)      : 
+     nxjlen
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 48
+      |(Definition)     : 
+      |(Reference)      : 
+     nxjlen_all
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 51
+      |(Definition)     : 
+      |(Reference)      : 
+     nxjp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 48
+      |(Definition)     : 
+      |(Reference)      : 
+     nxjstart
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 48
+      |(Definition)     : 
+      |(Reference)      : 
+     nxjstart_all
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, ALLOCATABLE, DIMENSION, SAVE
+      |(Declaration)    : 51
+      |(Definition)     : 
+      |(Reference)      : 
+     nxp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 43  45
+      |(Definition)     : 
+      |(Reference)      : 
+     reduceindx
+      |(Class and Type) : common name
+      |(Attributes)     : 
+      |(Declaration)    : 35
+      |(Definition)     : 
+      |(Reference)      : 
+     row_comm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 40  41
+      |(Definition)     : 
+      |(Reference)      : 
+     row_rank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : PUBLIC, common-block-object
+      |(Declaration)    : 40  41
+      |(Definition)     : 
+      |(Reference)      : 
+
+ Scoping unit of module sub-program : allocate_index_array
+   Attribute and Cross reference of name
+     allocate_index_array
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 56
+      |(Reference)      : 
+     ierr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 61
+      |(Definition)     : 63  77
+      |(Reference)      : 72  79
+     ilist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 63
+      |(Reference)      : 
+     jlist1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 63
+      |(Reference)      : 
+     jlist1_sl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 77
+      |(Reference)      : 
+     jlist2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 63
+      |(Reference)      : 
+     jlist2_2d
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 63
+      |(Reference)      : 
+     jlistnum_sl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 63
+      |(Reference)      : 
+     jtlen_all
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 63
+      |(Reference)      : 
+     jtmax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 63  63  63
+     Llist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 63
+      |(Reference)      : 
+     Llist_ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 63
+      |(Reference)      : 
+     levp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 63  63
+     map2to1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 63
+      |(Reference)      : 
+     mlist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 63
+      |(Reference)      : 
+     mtrundef
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 63
+      |(Reference)      : 
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 63  63  63  63  63  63  63  63  63  63  63  63  63
+     my_max
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 63  77
+     ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 63
+     nlist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 63
+      |(Reference)      : 
+     nsize
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 63  63
+     nsizex
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 63  63  63  63  63
+     nsizey
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 63  77
+     nxdef
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 63
+      |(Reference)      : 
+     nxdef_2d
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 63
+      |(Reference)      : 
+     nxjend
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 63
+      |(Reference)      : 
+     nxjend_all
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 63
+      |(Reference)      : 
+     nxjlen
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 63
+      |(Reference)      : 
+     nxjlen_all
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 63
+      |(Reference)      : 
+     nxjp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 63
+      |(Reference)      : 
+     nxjstart
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 63
+      |(Reference)      : 
+     nxjstart_all
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 63
+      |(Reference)      : 
+     nxp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 63
+     param
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 58
+     rank
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 59
+
+ Scoping unit of module sub-program : deallocate_index_array
+   Attribute and Cross reference of name
+     deallocate_index_array
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 88
+      |(Reference)      : 
+     ilist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 90
+      |(Reference)      : 
+     jlist1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 90
+      |(Reference)      : 
+     jlist1_sl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 90
+      |(Reference)      : 
+     jlist2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 90
+      |(Reference)      : 
+     jlist2_2d
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 90
+      |(Reference)      : 
+     jlistnum_sl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 90
+      |(Reference)      : 
+     jtlen_all
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 90
+      |(Reference)      : 
+     Llist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 90
+      |(Reference)      : 
+     Llist_ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 90
+      |(Reference)      : 
+     map2to1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 90
+      |(Reference)      : 
+     mlist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 90
+      |(Reference)      : 
+     mtrundef
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 90
+      |(Reference)      : 
+     nlist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 90
+      |(Reference)      : 
+     nxdef
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 90
+      |(Reference)      : 
+     nxdef_2d
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 90
+      |(Reference)      : 
+     nxjend
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 90
+      |(Reference)      : 
+     nxjend_all
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 90
+      |(Reference)      : 
+     nxjlen
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 90
+      |(Reference)      : 
+     nxjlen_all
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 90
+      |(Reference)      : 
+     nxjp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 90
+      |(Reference)      : 
+     nxjstart
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 90
+      |(Reference)      : 
+     nxjstart_all
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, host-associated
+      |(Declaration)    : 
+      |(Definition)     : 90
+      |(Reference)      : 
+
+ Total information
+   Procedures       : 1
+   Total lines      : 100
+   Total statements : 41
+   Total stack(byte): 2384
+   Total prefetch num: 0
+

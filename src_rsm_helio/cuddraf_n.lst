@@ -1,0 +1,784 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar  7 10:21:06 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm_helio
+   Source file       : cuddraf_n.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "cuddraf_n"
+  (inc)(line-no.)(nest)(optimize)
+               1                            subroutine cuddraf_n                                 &
+               2                          &   ( nxj, klon,     klev,    lddraf                      &
+               3                          &   , ptenh,    pqenh,    puen,     pven             &
+               4                          &   , pgeo,     pgeoh,    paph,     prfl             &
+               5                          &   , ptd,      pqd,      pud,      pvd,      pmfu   &
+               6                          &   , pmfd,     pmfds,    pmfdq,    pdmfdp,   pmfdde_rate &
+               7                          &   )
+               8                     
+               9                     !          this routine calculates cumulus downdraft descent
+              10                     
+              11                     !          m.tiedtke         e.c.m.w.f.    12/86 modif. 12/89
+              12                     
+              13                     !          purpose.
+              14                     !          --------
+              15                     !          to produce the vertical profiles for cumulus downdrafts
+              16                     !          (i.e. t,q,u and v and fluxes)
+              17                     
+              18                     !          interface
+              19                     !          ---------
+              20                     
+              21                     !          this routine is called from *cumastr*.
+              22                     !          input is t,q,p,phi,u,v at half levels.
+              23                     !          it returns fluxes of s,q and evaporation rate
+              24                     !          and u,v at levels where downdraft occurs
+              25                     
+              26                     !          method.
+              27                     !          --------
+              28                     !          calculate moist descent for entraining/detraining plume by
+              29                     !          a) moving air dry-adiabatically to next level below and
+              30                     !          b) correcting for evaporation to obtain saturated state.
+              31                     
+              32                     !     parameter     description                                   units
+              33                     !     ---------     -----------                                   -----
+              34                     !     input parameters (integer):
+              35                     
+              36                     !    *klon*         number of grid points per packet
+              37                     !    *klev*         number of levels
+              38                     
+              39                     !    input parameters (logical):
+              40                     
+              41                     !    *lddraf*       .true. if downdrafts exist
+              42                     
+              43                     !    input parameters (real):
+              44                     
+              45                     !    *ptenh*        env. temperature (t+1) on half levels          k
+              46                     !    *pqenh*        env. spec. humidity (t+1) on half levels     kg/kg
+              47                     !    *puen*         provisional environment u-velocity (t+1)      m/s
+              48                     !    *pven*         provisional environment v-velocity (t+1)      m/s
+              49                     !    *pgeo*         geopotential                                  m2/s2
+              50                     !    *pgeoh*        geopotential on half levels                  m2/s2
+              51                     !    *paph*         provisional pressure on half levels           pa
+              52                     !    *pmfu*         massflux updrafts                           kg/(m2*s)
+              53                     
+              54                     !    updated parameters (real):
+              55                     
+              56                     !    *prfl*         precipitation rate                           kg/(m2*s)
+              57                     
+              58                     !    output parameters (real):
+              59                     
+              60                     !    *ptd*          temperature in downdrafts                      k
+              61                     !    *pqd*          spec. humidity in downdrafts                 kg/kg
+              62                     !    *pud*          u-velocity in downdrafts                      m/s
+              63                     !    *pvd*          v-velocity in downdrafts                      m/s
+              64                     !    *pmfd*         massflux in downdrafts                       kg/(m2*s)!    *pmfds*        flux of dry static energy in downdrafts       j/(m2*s)
+              65                     !    *pmfdq*        flux of spec. humidity in downdrafts         kg/(m2*s)
+              66                     !    *pdmfdp*       flux difference of precip. in downdrafts     kg/(m2*s)
+              67                     
+              68                     !          externals
+              69                     !          ---------
+              70                     !          *cuadjtq* for adjusting t and q due to evaporation in
+              71                     !          saturated descent
+              72                     !----------------------------------------------------------------------
+              73                       USE mo_constants,    ONLY: rd,      &! gas constant for dry air
+              74                                                  cpd,     &! specific heat at constant pressure
+              75                                                  rcpd,    &! rcpd=1./cpd
+              76                                                  vtmpc1,  &! vtmpc1=rv/rd-1
+              77                                                  g,       &! gravity acceleration
+              78                                                  zrg        ! 1.0/g
+              79                       USE mo_cumulus_flux, ONLY: entrdd,  &! entrainment rate for cumulus downdrafts
+              80                                                  cmfcmin, &! minimum massflux value (for safety)
+              81                                                  lmfdudv   ! true if cumulus friction is switched on
+              82                     
+              83                     !----------------------------------------------------------------------
+              84                           implicit none
+              85                     
+              86                           integer  klev,klon,nxj
+              87                           real     ptenh(klon,klev),       pqenh(klon,klev),   &
+              88                          &         puen(klon,klev),        pven(klon,klev),    &
+              89                          &         pgeoh(klon,klev+1),     paph(klon,klev+1),  &
+              90                          &         pgeo(klon,klev),        pmfu(klon,klev)
+              91                     
+              92                           real     ptd(klon,klev),         pqd(klon,klev),     &
+              93                          &         pud(klon,klev),         pvd(klon,klev),     &
+              94                          &         pmfd(klon,klev),        pmfds(klon,klev),   &
+              95                          &         pmfdq(klon,klev),       pdmfdp(klon,klev),  &
+              96                          &         prfl(klon)
+              97                           real     pmfdde_rate(klon,klev)
+              98                           logical  lddraf(klon)
+              99                     
+             100                           real     zdmfen(klon),           zdmfde(klon),       &
+             101                          &         zcond(klon),            zoentr(klon),       &
+             102                          &         zbuoy(klon)
+             103                           real     zph(klon)
+             104                           logical  llo2(klon)
+             105                           logical  llo1
+             106                     ! local variables
+             107                           integer  jl,jk
+             108                           integer  is,ik,icall,ike, itopde(klon)
+             109                           real     zentr,zdz,zzentr,zseen,zqeen,zsdde,zqdde,zdmfdp
+             110                           real     zmfdsk,zmfdqk,zbuo,zrain,zbuoyz,zmfduk,zmfdvk
+             111                     
+             112                     !----------------------------------------------------------------------
+             113                     !     1.           calculate moist descent for cumulus downdraft by
+             114                     !                     (a) calculating entrainment/detrainment rates,
+             115                     !                         including organized entrainment dependent on
+             116                     !                         negative buoyancy and assuming
+             117                     !                         linear decrease of massflux in pbl
+             118                     !                     (b) doing moist descent - evaporative cooling
+             119                     !                         and moistening is calculated in *cuadjtq*
+             120                     !                     (c) checking for negative buoyancy and
+             121                     !                         specifying final t,q,u,v and downward fluxes
+             122                     !                    -------------------------------------------------
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 696
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      zcond, itopde, zdmfde, zdmfen, zbuoy
+                                   <<<      zoentr
+                                   <<< Loop-information  End >>>
+             123     1  pp   2v             do jl = 1, nxj
+             124     1   p   2v              zoentr(jl)=0.
+             125     1   p   2v              zbuoy(jl)=0.
+             126     1   p   2v              zdmfen(jl)=0.
+             127     1   p   2v              zdmfde(jl)=0.
+             128     1               !xb110>
+             129     1   p   2v              itopde(jl)=klev
+             130     1   p   2v              zcond(jl) = 0.
+             131     1               !xb110<
+             132     1   p   2v            enddo
+             133                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      paph, itopde, pmfdde_rate
+                                   <<< Loop-information  End >>>
+             134     1                     do jk=klev,1,-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 762
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 144, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pmfdde_rate, paph, itopde
+                                   <<< Loop-information  End >>>
+             135     2  pp   2v             do jl = 1, nxj
+             136     2   p   2v               pmfdde_rate(jl,jk) = 0.
+             137     2   p   2v               if((paph(jl,klev+1)-paph(jl,jk)).lt. 60.e2) itopde(jl)=jk
+             138     2   p   2v             end do
+             139     1                     end do
+             140                     
+             141     1                     do jk=3,klev
+             142     1                     is=0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 485
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             143     2  pp    v             do jl = 1, nxj
+             144     2   p    v            zph(jl)=paph(jl,jk)
+             145     2   p    v            llo2(jl)=lddraf(jl).and.pmfd(jl,jk-1).lt.0.
+             146     3   p    v            if(llo2(jl)) then
+             147     3   p                    is=is+1
+             148     3   p    v            endif
+             149     2   p    v            end do
+             150     1               
+             151     1                     if(is.eq.0) cycle
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 70
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED(lines: 152,160,171,185)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      llo2
+                                   <<< Loop-information  End >>>
+             152     2  pp    s             do jl = 1, nxj
+             153     3   p    m            if(llo2(jl)) then
+             154     3   p    s               zentr = entrdd*pmfd(jl,jk-1)*(pgeoh(jl,jk-1)-pgeoh(jl,jk))*zrg
+             155     3   p    s               zdmfen(jl)=zentr
+             156     3   p    s               zdmfde(jl)=zentr
+             157     3   p    v            end if
+             158     2   p    v            end do
+             159     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED
+                                   <<< Loop-information  End >>>
+             160     2                      do jl = 1, nxj
+             161     3                        if(llo2(jl)) then
+             162     4                        if(jk.gt.itopde(jl)) then
+             163     4                           zdmfen(jl)=0.
+             164     4                           zdmfde(jl)=pmfd(jl,itopde(jl))*      &
+             165     4                           (paph(jl,jk)-paph(jl,jk-1))/     &
+             166     4                           (paph(jl,klev+1)-paph(jl,itopde(jl)))
+             167     4                        end if
+             168     3                        end if
+             169     2                       end do
+             170     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED
+                                   <<< Loop-information  End >>>
+             171     2                        do jl = 1,nxj
+             172     3                         if(llo2(jl)) then
+             173     4                         if(jk.le.itopde(jl)) then
+             174     4                           zdz=-(pgeoh(jl,jk-1)-pgeoh(jl,jk))*zrg
+             175     4                           zzentr=zoentr(jl)*zdz*pmfd(jl,jk-1)
+             176     4                           zdmfen(jl)=zdmfen(jl)+zzentr
+             177     4                           zdmfen(jl)=max(zdmfen(jl),0.3*pmfd(jl,jk-1))
+             178     4                           zdmfen(jl)=max(zdmfen(jl),-0.75*pmfu(jl,jk)-   &
+             179     4                  &         (pmfd(jl,jk-1)-zdmfde(jl)))
+             180     4                           zdmfen(jl)=min(zdmfen(jl),0.)
+             181     4                         endif
+             182     3                        endif
+             183     2                       enddo
+             184     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED
+                                   <<< Loop-information  End >>>
+             185     2                      do jl = 1, nxj
+             186     3                        if(llo2(jl)) then
+             187     3                           pmfd(jl,jk)=pmfd(jl,jk-1)+zdmfen(jl)-zdmfde(jl)
+             188     3                           zseen=(cpd*ptenh(jl,jk-1)+pgeoh(jl,jk-1))*zdmfen(jl)
+             189     3                           zqeen=pqenh(jl,jk-1)*zdmfen(jl)
+             190     3                           zsdde=(cpd*ptd(jl,jk-1)+pgeoh(jl,jk-1))*zdmfde(jl)
+             191     3                           zqdde=pqd(jl,jk-1)*zdmfde(jl)
+             192     3                           zmfdsk=pmfds(jl,jk-1)+zseen-zsdde
+             193     3                           zmfdqk=pmfdq(jl,jk-1)+zqeen-zqdde
+             194     3                           pqd(jl,jk)=zmfdqk*(1./min(-cmfcmin,pmfd(jl,jk)))
+             195     3                           ptd(jl,jk)=(zmfdsk*(1./min(-cmfcmin,pmfd(jl,jk)))- &
+             196     3                                      pgeoh(jl,jk))*rcpd
+             197     3                           ptd(jl,jk)=min(400.,ptd(jl,jk))
+             198     3                           ptd(jl,jk)=max(100.,ptd(jl,jk))
+             199     3                           zcond(jl)=pqd(jl,jk)
+             200     3                        end if
+             201     2                     end do
+             202     1               
+             203     1                     ik=jk
+             204     1                     icall=2
+             205     1                     call cuadjtq_n(nxj, klon,klev,ik,zph,ptd,pqd,llo2,icall)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 125
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      llo2, zdmfde, pqd, pmfdde_rate, zcond
+                                   <<<      prfl, pmfu, ptd, ptenh, pqenh, pmfd
+                                   <<<      pdmfdp, pmfdq, pgeoh, pmfds, pgeo
+                                   <<<    PREFETCH(SOFT) : 6
+                                   <<<     SEQUENTIAL : 6
+                                   <<<      pgeo: 2, zbuoy: 2, zoentr: 2
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 1
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             206     2  pp    v             do jl = 1, nxj
+             207     3   p    v               if(llo2(jl)) then
+             208     3   p    v                  zcond(jl)=zcond(jl)-pqd(jl,jk)
+             209     3   p    v                  zbuo=ptd(jl,jk)*(1.+vtmpc1*pqd(jl,jk))- &
+             210     3                                ptenh(jl,jk)*(1.+vtmpc1*pqenh(jl,jk))
+             211     4   p    v                  if(prfl(jl).gt.0..and.pmfu(jl,jk).gt.0.) then
+             212     4   p    v                    zrain=prfl(jl)/pmfu(jl,jk)
+             213     4   p    v                    zbuo=zbuo-ptd(jl,jk)*zrain
+             214     4   p    v                  endif
+             215     4   p    v                  if(zbuo.ge.0..or.prfl(jl).le.(pmfd(jl,jk)*zcond(jl))) then
+             216     4   p    v                     pmfd(jl,jk)=0.
+             217     4   p    v                     zbuo=0.
+             218     4   p    v                  end if
+             219     3   p    v                  pmfds(jl,jk)=(cpd*ptd(jl,jk)+pgeoh(jl,jk))*pmfd(jl,jk)
+             220     3   p    v                  pmfdq(jl,jk)=pqd(jl,jk)*pmfd(jl,jk)
+             221     3   p    v                  zdmfdp=-pmfd(jl,jk)*zcond(jl)
+             222     3   p    v                  pdmfdp(jl,jk-1)=zdmfdp
+             223     3   p    v                  prfl(jl)=prfl(jl)+zdmfdp
+             224     3               ! compute organized entrainment for use at next level
+             225     3   p    v                  zbuoyz=zbuo/ptenh(jl,jk)
+             226     3   p    v                  zbuoyz=min(zbuoyz,0.0)
+             227     3   p    v                  zdz=-(pgeo(jl,jk-1)-pgeo(jl,jk))
+             228     3   p    v                  zbuoy(jl)=zbuoy(jl)+zbuoyz*zdz
+             229     3   p    v                  zoentr(jl)=g*zbuoyz*0.5/(1.+zbuoy(jl))
+             230     3   p    v                  pmfdde_rate(jl,jk) = -zdmfde(jl)
+             231     3   p    v                end if
+             232     2   p    v              end do
+             233     1               
+             234     1                     end do
+             235                           return
+             236                           end subroutine cuddraf_n
+
+ Procedure information
+   Lines      : 236
+   Statements : 115
+   Stack(byte): 16288
+   Prefetch num: 6
+
+ Scoping unit of external sub-program : cuddraf_n
+   Attribute and Cross reference of name
+     cmfcmin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 79  194  195
+     cpd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 73  188  190  219
+     cuadjtq_n
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 205
+     cuddraf_n
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 236
+     entrdd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 79  154
+     g
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 73  229
+     icall
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 108
+      |(Definition)     : 204  205
+      |(Reference)      : 
+     ik
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 108
+      |(Definition)     : 203  205
+      |(Reference)      : 
+     ike
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 108
+      |(Definition)     : 
+      |(Reference)      : 
+     is
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 108
+      |(Definition)     : 142  147
+      |(Reference)      : 147  151
+     itopde
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 108
+      |(Definition)     : 129  137
+      |(Reference)      : 162  164  164  173
+     jk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 107
+      |(Definition)     : 134  141
+      |(Reference)      : 136  137  137  144  145  154  154  154  162  164  164  173  174  174  175  177  178  178  187  187  188  188  189  190  190  191  192  193  194  194  195  195  195  197  197  198  198  199  203  208  209  209  209  209  211  212  213  215  216  219  219  219  219  220  220  220  221  222  225  227  227  230
+     jl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 107
+      |(Definition)     : 123  135  143  152  160  171  185  206
+      |(Reference)      : 124  125  126  127  129  130  136  137  137  137  144  144  145  145  145  146  153  154  154  154  155  156  161  162  163  164  164  164  164  164  164  164  164  172  173  174  174  175  175  176  176  177  177  177  178  178  178  178  178  180  180  186  187  187  187  187  188  188  188  189  189  190  190  190  191  191  192  193  194  194  195  195  195  197  197  198  198  199  199  207  208  208  208  209  209  209  209  211  211  212  212  213  215  215  215  216  219  219  219  219  220  220  220  221  221  222  223  223  225  227  227  228  228  229  229  230  230
+     klev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  86
+      |(Definition)     : 205
+      |(Reference)      : 87  87  87  87  87  87  87  87  92  92  92  92  92  92  92  92  97  129  134  137  141  164
+     klon
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  86
+      |(Definition)     : 205
+      |(Reference)      : 87  87  87  87  87  87  87  87  92  92  92  92  92  92  92  92  92  97  98  100  100  100  100  100  103  104  108
+     lddraf
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  98
+      |(Definition)     : 
+      |(Reference)      : 145
+     llo1
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 105
+      |(Definition)     : 
+      |(Reference)      : 
+     llo2
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 104
+      |(Definition)     : 145  205
+      |(Reference)      : 146  153  161  172  186  207
+     lmfdudv
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 79
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 177  178  198
+     min
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 180  194  195  197  226
+     mo_constants
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 73
+     mo_cumulus_flux
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 79
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  86
+      |(Definition)     : 205
+      |(Reference)      : 123  135  143  152  160  171  185  206
+     paph
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  87
+      |(Definition)     : 
+      |(Reference)      : 137  137  144  164  164  164  164
+     pdmfdp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  92
+      |(Definition)     : 222
+      |(Reference)      : 
+     pgeo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  87
+      |(Definition)     : 
+      |(Reference)      : 227  227
+     pgeoh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  87
+      |(Definition)     : 
+      |(Reference)      : 154  154  174  174  188  190  195  219
+     pmfd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  92
+      |(Definition)     : 187  216
+      |(Reference)      : 145  154  164  175  177  178  187  194  195  215  219  220  221
+     pmfdde_rate
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  97
+      |(Definition)     : 136  230
+      |(Reference)      : 
+     pmfdq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  92
+      |(Definition)     : 220
+      |(Reference)      : 193
+     pmfds
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  92
+      |(Definition)     : 219
+      |(Reference)      : 192
+     pmfu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  87
+      |(Definition)     : 
+      |(Reference)      : 178  211  212
+     pqd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  92
+      |(Definition)     : 194  205
+      |(Reference)      : 191  199  208  209  220
+     pqenh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  87
+      |(Definition)     : 
+      |(Reference)      : 189  209
+     prfl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  92
+      |(Definition)     : 223
+      |(Reference)      : 211  212  215  223
+     ptd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  92
+      |(Definition)     : 195  197  198  205
+      |(Reference)      : 190  197  198  209  213  219
+     ptenh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  87
+      |(Definition)     : 
+      |(Reference)      : 188  209  225
+     pud
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  92
+      |(Definition)     : 
+      |(Reference)      : 
+     puen
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  87
+      |(Definition)     : 
+      |(Reference)      : 
+     pvd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  92
+      |(Definition)     : 
+      |(Reference)      : 
+     pven
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  87
+      |(Definition)     : 
+      |(Reference)      : 
+     rcpd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 73  195
+     rd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 73
+     vtmpc1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 73  209  209
+     zbuo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 110
+      |(Definition)     : 209  213  217
+      |(Reference)      : 213  215  225
+     zbuoy
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 100
+      |(Definition)     : 125  228
+      |(Reference)      : 228  229
+     zbuoyz
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 110
+      |(Definition)     : 225  226
+      |(Reference)      : 226  228  229
+     zcond
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 100
+      |(Definition)     : 130  199  208
+      |(Reference)      : 208  215  221
+     zdmfde
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 100
+      |(Definition)     : 127  156  164
+      |(Reference)      : 178  187  190  191  230
+     zdmfdp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 221
+      |(Reference)      : 222  223
+     zdmfen
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 100
+      |(Definition)     : 126  155  163  176  177  178  180
+      |(Reference)      : 176  177  178  180  187  188  189
+     zdz
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 174  227
+      |(Reference)      : 175  228
+     zentr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 154
+      |(Reference)      : 155  156
+     zmfdqk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 110
+      |(Definition)     : 193
+      |(Reference)      : 194
+     zmfdsk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 110
+      |(Definition)     : 192
+      |(Reference)      : 195
+     zmfduk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 110
+      |(Definition)     : 
+      |(Reference)      : 
+     zmfdvk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 110
+      |(Definition)     : 
+      |(Reference)      : 
+     zoentr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 100
+      |(Definition)     : 124  229
+      |(Reference)      : 175
+     zph
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 103
+      |(Definition)     : 144  205
+      |(Reference)      : 
+     zqdde
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 191
+      |(Reference)      : 193
+     zqeen
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 189
+      |(Reference)      : 193
+     zrain
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 110
+      |(Definition)     : 212
+      |(Reference)      : 213
+     zrg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 73  154  174
+     zsdde
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 190
+      |(Reference)      : 192
+     zseen
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 188
+      |(Reference)      : 192
+     zzentr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 175
+      |(Reference)      : 176
+
+ Total information
+   Procedures       : 1
+   Total lines      : 236
+   Total statements : 115
+   Total stack(byte): 16288
+   Total prefetch num: 6
+

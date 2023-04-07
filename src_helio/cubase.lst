@@ -1,0 +1,557 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar 14 13:21:11 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_helio
+   Source file       : cubase.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb157/CWBSUMc2/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "cubase"
+  (inc)(line-no.)(nest)(optimize)
+               1                     !+ calculates cloud base values (t and q) for cumulus parameterization
+               2                     !+ $Id: cubase.f90,v 1.9 1999/07/19 19:07:06 m214030 Exp $
+               3                     
+               4                     !SUBROUTINE cubase(klon,klev,klevp1,klevm1,ptenh,pqenh,pgeoh,paph, &
+               5                     SUBROUTINE cubase(nxj,klon,klev,klevp1,klevm1,ptenh,pqenh,pgeoh,paph, &
+               6                     &      ptu,pqu,plu,puen,pven,puu,pvu,ldcum,kcbot,klab,jin)
+               7                     
+               8                       ! Description:
+               9                       !
+              10                       ! Calculates cloud base values (t and q) for cumulus parameterization
+              11                       !
+              12                       ! Method:
+              13                       !
+              14                       ! Produce cloud base values for cu-parametrization
+              15                       !
+              16                       ! This routine is called from *cumastr*.
+              17                       ! Input are environm. values of t,q,p,phi at half levels.
+              18                       ! It returns cloud base values and flags as follows;
+              19                       !    klab=1 for subcloud levels
+              20                       !    klab=2 for condensation level
+              21                       !
+              22                       ! Lift surface air dry-adiabatically to cloud base
+              23                       ! (non entraining plume,i.e.constant massflux)
+              24                       !
+              25                       ! *cuadjtq* for adjusting t and q due to condensation in ascent
+              26                       !
+              27                       ! Authors:
+              28                       !
+              29                       ! M. Tiedtke, ECMWF, in July 1986 and December 1989, original source
+              30                       ! L. Kornblueh, MPI, May 1998, f90 rewrite
+              31                       ! U. Schulzweida, MPI, May 1998, f90 rewrite
+              32                       !
+              33                       ! for more details see file AUTHORS
+              34                       !
+              35                       USE shr_kind_mod, only: r8 => shr_kind_r8
+              36                       USE mo_constants,    ONLY: cpd,   &! specific heat at constant pressure
+              37                                                  rcpd,  &! rcpd=1./cpd
+              38                                                  vtmpc1  ! vtmpc1=rv/rd-1
+              39                       USE mo_cumulus_flux, ONLY: lmfdudv ! true if cumulus friction is switched on
+              40                     
+              41                       IMPLICIT NONE
+              42                     
+              43                       !  Scalar arguments with intent(In):
+              44                     !  INTEGER, INTENT (IN) :: klon, klev, klevm1, klevp1
+              45                       INTEGER, INTENT (IN) :: klon, nxj, klev, klevm1, klevp1
+              46                     
+              47                       !  Array arguments with intent(In):
+              48                       REAL(r8), INTENT (IN) :: paph(klon,klevp1), pgeoh(klon,klev), pqenh(klon,klev),  &
+              49                     &                      ptenh(klon,klev), puen(klon,klev), pven(klon,klev)
+              50                     
+              51                       !  Array arguments with intent(InOut):
+              52                       REAL(r8), INTENT (INOUT) :: plu(klon,klev), pqu(klon,klev), ptu(klon,klev), &
+              53                     &                         puu(klon,klev), pvu(klon,klev)
+              54                       INTEGER, INTENT (INOUT) :: kcbot(klon), klab(klon,klev)
+              55                       LOGICAL, INTENT (INOUT) :: ldcum(klon)
+              56                     
+              57                       !  Local scalars:
+              58                       REAL(r8) :: zbuo, zz
+              59                       INTEGER :: icall, ik, ikb, is, jk, jl, jin
+              60                     
+              61                       !  Local arrays:
+              62                       REAL(r8) :: zph(klon), zqold(klon)
+              63                       LOGICAL :: loflag(klon)
+              64                     
+              65                       !  External subroutines
+              66                       EXTERNAL cuadjtq
+              67                     
+              68                       !  Executable statements
+              69                     
+              70                     !-- 1. Initialize values at lifting level
+              71                     
+              72                     !  DO jl = 1, klon
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 400
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.14, ITR: 64, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      puu, ldcum, paph, pven, kcbot, puen
+                                   <<<      klab, pvu
+                                   <<< Loop-information  End >>>
+              73     1  pp    v        DO jl = 1, nxj
+              74     1   p    v          klab(jl,klev) = 1
+              75     1   p    v          kcbot(jl) = klevm1
+              76     1   p    v          ldcum(jl) = .FALSE.
+              77     1   p    v          puu(jl,klev) = puen(jl,klev)*(paph(jl,klevp1)-paph(jl,klev))
+              78     1   p    v          pvu(jl,klev) = pven(jl,klev)*(paph(jl,klevp1)-paph(jl,klev))
+              79     1               
+              80     1               !-- 2. Do ascent in subcloud layer,
+              81     1               !      check for existence of condensation level,
+              82     1               !      adjust t,q and l accordingly in *cuadjtq*,
+              83     1               !      check for buoyancy and set flags
+              84     1               
+              85     1   p    v        END DO
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      loflag, pgeoh, ptu, pqenh, pqu, ptenh
+                                   <<<      zqold, plu, klab, kcbot, ldcum, paph
+                                   <<<      puen, puu, pven, pvu
+                                   <<< Loop-information  End >>>
+              86     1                 DO jk = klevm1, 2, -1
+              87     1                   is = 0
+              88     1               !    DO jl = 1, klon
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 616
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+              89     2  pp    v          DO jl = 1, nxj
+              90     2   p    v            IF (klab(jl,jk+1)==1) is = is +1
+              91     2   p    v            loflag(jl) = klab(jl,jk+1) == 1
+              92     2   p    v            zph(jl) = paph(jl,jk)
+              93     2   p    v          END DO
+              94     1                   IF (is==0) CYCLE
+              95     1               !    DO jl = 1, klon
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 286
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.53, ITR: 80, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pqenh, pqu, zqold, loflag, ptu, ptenh
+                                   <<<      pgeoh, klab
+                                   <<< Loop-information  End >>>
+              96     2  pp    v          DO jl = 1, nxj
+              97     3   p    v            IF (loflag(jl)) THEN
+              98     3   p    v              pqu(jl,jk) = pqu(jl,jk+1)
+              99     3   p    v              ptu(jl,jk) = (cpd*ptu(jl,jk+1)+pgeoh(jl,jk+1)-pgeoh(jl,jk))*rcpd
+             100     3   p    v              zbuo = ptu(jl,jk)*(1.+vtmpc1*pqu(jl,jk)) - ptenh(jl,jk)*(1.+vtmpc1* &
+             101     3               &            pqenh(jl,jk)) + 0.5
+             102     3   p    v              IF (zbuo>0.) klab(jl,jk) = 1
+             103     3   p    v              zqold(jl) = pqu(jl,jk)
+             104     3   p    v            END IF
+             105     2   p    v          END DO
+             106     1               
+             107     1                   ik = jk
+             108     1                   icall = 1
+             109     1               !    CALL cuadjtq(klon,klev,ik,zph,ptu,pqu,loflag,icall)
+             110     1                   CALL cuadjtq(nxj,klon,klev,ik,zph,ptu,pqu,loflag,icall)
+             111     1               
+             112     1               !DIR$ IVDEP
+             113     1               !OCL NOVREC
+             114     1               !    DO jl = 1, klon
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 286
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.13, ITR: 48, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ptu, plu, pqenh, pqu, zqold, ptenh
+                                   <<<      loflag, klab, kcbot, ldcum
+                                   <<< Loop-information  End >>>
+             115     2  pp    v          DO jl = 1, nxj
+             116     3   p    v            IF (loflag(jl) .AND. ABS(pqu(jl,jk)-zqold(jl))>0.) THEN
+             117     3   p    v              klab(jl,jk) = 2
+             118     3   p    v              plu(jl,jk) = plu(jl,jk) + zqold(jl) - pqu(jl,jk)
+             119     3   p    v              zbuo = ptu(jl,jk)*(1.+vtmpc1*pqu(jl,jk)) - ptenh(jl,jk)*(1.+vtmpc1* &
+             120     3               &            pqenh(jl,jk)) + 0.5
+             121     4   p    v              IF (zbuo>0.) THEN
+             122     4   p    v                kcbot(jl) = jk
+             123     4   p    v                ldcum(jl) = .TRUE.
+             124     4   p    v              END IF
+             125     3   p    v            END IF
+             126     2   p    v          END DO
+             127     1               
+             128     1                   ! Calculate averages of u and v for subcloud ara,.
+             129     1                   ! The values will be used to define cloud base values.
+             130     1               
+             131     2                   IF (lmfdudv) THEN
+             132     2               !      DO jl = 1, klon
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 381
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 104, MVE: 6, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pven, pvu, kcbot, paph, puen, puu
+                                   <<< Loop-information  End >>>
+             133     3  pp    v            DO jl = 1, nxj
+             134     4   p    v              IF (jk>=kcbot(jl)) THEN
+             135     4   p    v                puu(jl,klev) = puu(jl,klev) + puen(jl,jk)*(paph(jl,jk+1)-paph(jl,jk &
+             136     4               &              ))
+             137     4   p    v                pvu(jl,klev) = pvu(jl,klev) + pven(jl,jk)*(paph(jl,jk+1)-paph(jl,jk &
+             138     4               &              ))
+             139     4   p    v              END IF
+             140     3   p    v            END DO
+             141     2               
+             142     2                   END IF
+             143     1                 END DO
+             144                     
+             145     1                 IF (lmfdudv) THEN
+             146     1               !    DO jl = 1, klon
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 267
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ldcum, pvu
+                                   <<< Loop-information  End >>>
+             147     2  pp    s          DO jl = 1, nxj
+             148     3   p    m            IF (ldcum(jl)) THEN
+             149     3   p    s              ikb = kcbot(jl)
+             150     3   p    s              zz = 1./(paph(jl,klevp1)-paph(jl,ikb))
+             151     3   p    s              puu(jl,klev) = puu(jl,klev)*zz
+             152     3   p    s              pvu(jl,klev) = pvu(jl,klev)*zz
+             153     3   p    s            ELSE
+             154     3   p    s              puu(jl,klev) = puen(jl,klevm1)
+             155     3   p    s              pvu(jl,klev) = pven(jl,klevm1)
+             156     3   p    v            END IF
+             157     2   p    v          END DO
+             158     1                 END IF
+             159                     
+             160                       RETURN
+             161                     END SUBROUTINE cubase
+
+ Procedure information
+   Lines      : 161
+   Statements : 77
+   Stack(byte): 16224
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : cubase
+   Attribute and Cross reference of name
+     ABS
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 116
+     cpd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 36  99
+     cuadjtq
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : EXTERNAL
+      |(Declaration)    : 66
+      |(Definition)     : 
+      |(Reference)      : 110
+     cubase
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 5
+      |(Reference)      : 161
+     icall
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 59
+      |(Definition)     : 108  110
+      |(Reference)      : 
+     ik
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 59
+      |(Definition)     : 107  110
+      |(Reference)      : 
+     ikb
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 59
+      |(Definition)     : 149
+      |(Reference)      : 150
+     is
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 59
+      |(Definition)     : 87  90
+      |(Reference)      : 90  94
+     jin
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 5  59
+      |(Definition)     : 
+      |(Reference)      : 
+     jk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 59
+      |(Definition)     : 86
+      |(Reference)      : 90  91  92  98  98  99  99  99  99  100  100  100  100  102  103  107  116  117  118  118  118  119  119  119  119  122  134  135  135  135  137  137  137
+     jl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 59
+      |(Definition)     : 73  89  96  115  133  147
+      |(Reference)      : 74  75  76  77  77  77  77  78  78  78  78  90  91  91  92  92  97  98  98  99  99  99  99  100  100  100  100  102  103  103  116  116  116  117  118  118  118  118  119  119  119  119  122  123  134  135  135  135  135  135  137  137  137  137  137  148  149  150  150  151  151  152  152  154  154  155  155
+     kcbot
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  54
+      |(Definition)     : 75  122
+      |(Reference)      : 134  149
+     klab
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  54
+      |(Definition)     : 74  102  117
+      |(Reference)      : 90  91
+     klev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 5  45
+      |(Definition)     : 
+      |(Reference)      : 48  48  48  48  48  52  52  52  52  52  54  74  77  77  77  78  78  78  110  135  135  137  137  151  151  152  152  154  155
+     klevm1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 5  45
+      |(Definition)     : 
+      |(Reference)      : 75  86  154  155
+     klevp1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 5  45
+      |(Definition)     : 
+      |(Reference)      : 48  77  78  150
+     klon
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 5  45
+      |(Definition)     : 
+      |(Reference)      : 48  48  48  48  48  48  52  52  52  52  52  54  54  55  62  62  63  110
+     ldcum
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  55
+      |(Definition)     : 76  123
+      |(Reference)      : 148
+     lmfdudv
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 39  131  145
+     loflag
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 63
+      |(Definition)     : 91  110
+      |(Reference)      : 97  116
+     mo_constants
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 36
+     mo_cumulus_flux
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 39
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 5  45
+      |(Definition)     : 
+      |(Reference)      : 73  89  96  110  115  133  147
+     paph
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 5  48
+      |(Definition)     : 
+      |(Reference)      : 77  77  78  78  92  135  135  137  137  150  150
+     pgeoh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 5  48
+      |(Definition)     : 
+      |(Reference)      : 99  99
+     plu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  52
+      |(Definition)     : 118
+      |(Reference)      : 118
+     pqenh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 5  48
+      |(Definition)     : 
+      |(Reference)      : 100  119
+     pqu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  52
+      |(Definition)     : 98  110
+      |(Reference)      : 98  100  103  116  118  119
+     ptenh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 5  48
+      |(Definition)     : 
+      |(Reference)      : 100  119
+     ptu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  52
+      |(Definition)     : 99  110
+      |(Reference)      : 99  100  119
+     puen
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 5  48
+      |(Definition)     : 
+      |(Reference)      : 77  135  154
+     puu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  52
+      |(Definition)     : 77  135  151  154
+      |(Reference)      : 135  151
+     pven
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 5  48
+      |(Definition)     : 
+      |(Reference)      : 78  137  155
+     pvu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 5  52
+      |(Definition)     : 78  137  152  155
+      |(Reference)      : 137  152
+     r8
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 35  48  52  58  62
+     rcpd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 36  99
+     shr_kind_mod
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 35
+     shr_kind_r8
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 35
+     vtmpc1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 36  100  100  119  119
+     zbuo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 58
+      |(Definition)     : 100  119
+      |(Reference)      : 102  121
+     zph
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 62
+      |(Definition)     : 92  110
+      |(Reference)      : 
+     zqold
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 62
+      |(Definition)     : 103
+      |(Reference)      : 116  118
+     zz
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 58
+      |(Definition)     : 150
+      |(Reference)      : 151  152
+
+ Total information
+   Procedures       : 1
+   Total lines      : 161
+   Total statements : 77
+   Total stack(byte): 16224
+   Total prefetch num: 0
+

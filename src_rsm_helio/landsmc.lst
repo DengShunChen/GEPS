@@ -1,0 +1,724 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar  7 10:21:02 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm_helio
+   Source file       : landsmc.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "landsmc"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine landsmc(nxj,mn,km,rhscnpy,rhsmc,ai,bi,ci,smc,land      &
+               2                                             ,canopy,precip,runof,snowmt                     &
+               3                                             ,zsoil,istyp,sigmaf,dt,dth,tsat)
+               4                     !
+               5                     !##################################################################
+               6                     !                     subroutine description
+               7                     !
+               8                     ! 1. function description
+               9                     !
+              10                     !  nmcsfc_gwt is the second part of the soil model that is executed
+              11                     !  after precipitation for the time step has been calculated.
+              12                     !  In this subroutine canopy and soil moisture(smc) will be updated.
+              13                     !
+              14                     ! 2. parameter specification
+              15                     !
+              16                     !     mn : dimension of horizontal-direction
+              17                     !     km : dimension of soil layer
+              18                     !     dt : time step for ut, vt, tt, qt updates                  (s)
+              19                     !    dth : time step for snr updates                             (s)
+              20                     !   smc : volumetric soil moisture content (mn,km)
+              21                     ! canopy : canopy moisture content (mn)                          (mm)
+              22                     !rhscnpy : right hand side terms for  canopy prediction (mn)     (mm/s)
+              23                     ! rhsmc  : right hand side terms for soil moisture prediction (mn,km)(/s)
+              24                     ! ai     : first column of tri-diagnal matrix for solving smc (mn,km)
+              25                     ! bi     : second column of tri-diagonal matrix for solving smc (mn,km)
+              26                     ! ci     : third column of tri-diagonal matrix for solving smc (mn,km)
+              27                     ! land   : logical array for land (mn)                    (true = land  )
+              28                     ! drain  : drainage from bottom soil layer  (mn)                 (mm/s)
+              29                     ! snowmt : snow meltin rate (mn)                                 (mm/s)
+              30                     ! precip : total precipitation in each call(dth) (mn)            (mm)
+              31                     ! runof  : run off rate from soil layers (mn)                    (mm/s)
+              32                     ! canopy : canopy moisture content (mn)                          (mm)
+              33                     ! sigmaf : vegetation fraction (mn)
+              34                     ! istyp  : soil type(1-9) (mn)
+              35                     ! zsoil  : soil layer depth(mn,km)                                (m)
+              36                     ! tsat   : satuation point of 9 soil types (9)
+              37                     !
+              38                     ! 3. local variables
+              39                     !
+              40                     !  prcp  : precipitation rate  (mn)                           (mm/s)
+              41                     !  inf   : infiltration rate   (mn)                           (mm/s)
+              42                     ! infmax : maxmun infiltration rate (mn)                      (mm/s)
+              43                     
+              44                     ! 5. calling modules
+              45                     !
+              46                     !   pbltke
+              47                     !
+              48                     ! 6. usage
+              49                     !
+              50                     !     call landsmc(mn,km,rhscnpy,rhsmc,ai,bi,ci,smc,land,
+              51                     !    &       canopy,precip,runof,snowmt,
+              52                     !    &       zsoil,istyp,sigmaf,dt,dth)
+              53                     ! 7. modules called
+              54                     !
+              55                     !
+              56                     ! 8. limitation
+              57                     !
+              58                     ! 9. date
+              59                     !
+              60                     !     from ncep 2002
+              61                     !     modified  2004
+              62                     !
+              63                     ! 10. author
+              64                     !
+              65                     ! 11. reference
+              66                     !
+              67                     !    Mahrt, L., and H. -L. Pan,1984: Atwo-layer model of soil hydrology.
+              68                     !          Boundary Layer Meteorol., 29, 1-20.
+              69                     !    Pan, H.-L., and L.Mahrt, 1987: Interaction between soil hydrology
+              70                     !          and boundary-layer development. Boundary Layer Meteorol.,
+              71                     !          38,185-202.
+              72                     !#####################################################################
+              73                     !
+              74                           implicit   none
+              75                     
+              76                           real, parameter :: scanop=.5,rhoh2o=1000.
+              77                           real, parameter :: ctfil1=.5,ctfil2=1.-ctfil1
+              78                           real, parameter :: rffact=1.
+              79                     
+              80                     ! input & output variable
+              81                           integer   nxj,mn,km
+              82                           real      dt,dth
+              83                     
+              84                           real      rhscnpy(mn),rhsmc(mn,km)
+              85                           real      ai(mn,km),bi(mn,km),ci(mn,km)
+              86                           real      smc(mn,km),canopy(mn),precip(mn)
+              87                           real      sigmaf(mn),runof(mn)
+              88                           real      zsoil(mn,km),snowmt(mn)
+              89                           integer   istyp(mn)
+              90                           logical   flag(mn),land(mn)
+              91                     !
+              92                           real      prcp(mn),inf(mn),infmax(mn)
+              93                           real      sat(mn),dsat(mn),ksat(mn)
+              94                           real      smsoil(mn,km),cnpy(mn),dx(mn),conkdt(mn)
+              95                     ! landpack
+              96                           integer,  parameter :: ntype=9
+              97                           real      tsat(ntype)
+              98                     !
+              99                           integer   i,k
+             100                           real      delt2,delt,drip,cc,tdif
+             101                     
+             102                           delt2 = dt
+             103                           delt  = dth
+             104                     !
+             105                     !  precipitation rate is needed in unit of kg m-2 s-1
+             106                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 112
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED(lines: 107,117,171)
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      land, flag, istyp, canopy, sat, smc
+                                   <<<      rhsmc, zsoil, infmax, cnpy, precip
+                                   <<<      snowmt, sigmaf, rhscnpy, prcp, inf
+                                   <<<    PREFETCH(SOFT) : 2
+                                   <<<     SEQUENTIAL : 2
+                                   <<<      runof: 2
+                                   <<< Loop-information  End >>>
+             107     1  pp    v            do i = 1, nxj
+             108     1   p    v              prcp(i) = rhoh2o*( precip(i)/delt + snowmt(i) )/1000.
+             109     1   p    v              runof(i) = 0.
+             110     1   p    v              cnpy(i) = canopy(i)
+             111     1   p    v            enddo
+             112                     !
+             113                     !  update canopy water content
+             114                     !        ( updated by delt ,final blending is not necessary)
+             115                     !
+             116                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED
+                                   <<< Loop-information  End >>>
+             117     1                     do i = 1, nxj
+             118     2                       if(land(i)) then
+             119     2                         rhscnpy(i) = rhscnpy(i) + sigmaf(i) * prcp(i)
+             120     2                         canopy(i) = canopy(i) + delt * rhscnpy(i)
+             121     2                         canopy(i) = max(canopy(i),0.)
+             122     2                         prcp(i) = prcp(i) * (1. - sigmaf(i))
+             123     3                         if(canopy(i).gt.scanop) then
+             124     3                           drip = canopy(i) - scanop
+             125     3                           canopy(i) = scanop
+             126     3                           prcp(i) = prcp(i) + drip / delt
+             127     3                         endif
+             128     2               !
+             129     2               !  calculate infiltration rate
+             130     2               !
+             131     2                         inf(i) = prcp(i)
+             132     2                         sat(i) = tsat(istyp(i))
+             133     2               !         dsat(i) = funcdf(tsat(i),soiltyp(i))
+             134     2               !         ksat(i) = funckt(tsat(i),soiltyp(i))
+             135     2               !         infmax(i) = -dsat(i) * (tsat(i) - smc(i,1))
+             136     2               !    &                / (.5 * zsoil(i,1))
+             137     2               !    &                + ksat(i)
+             138     2                         infmax(i) = (-zsoil(i,1)) *                                 &
+             139     2                                     ((sat(i) - smc(i,1)) / delt - rhsmc(i,1))       &
+             140     2                                     * rhoh2o
+             141     2                         infmax(i) = max(rffact*infmax(i),0.)
+             142     2               !         if(smc(i,1).ge.tsat(i)) infmax(i) = ksat(i)
+             143     2               !         if(smc(i,1).ge.tsat(i)) infmax(i) = zsoil(i,1) * rhsmc(i,1)
+             144     2               !
+             145     2               ! new(SWB model)-----------------------------------------------
+             146     2               !         dx(i)=0.
+             147     2               !         dx(i)=(-zsoil(i,1))*(sat(i)-smc(i,1))
+             148     2               !         do k=2,km
+             149     2               !         dx(i)=dx(i)+(zsoil(i,k-1)-zsoil(i,k))*(sat(i)-smc(i,k))
+             150     2               !         enddo
+             151     2               !
+             152     2               ! conkdt=dt(in day)*Kdt_ref*Ks/K_ref
+             153     2               !c                  Kdt_ref=3.   K_ref=2.0e-6
+             154     2               !          conkdt(i)=delt/86400.*3.*ksat(i)/2.*1.0e+6
+             155     2               !          xx2=exp(-conkdt(i))
+             156     2               !          print*,'conkdt,xx=',conkdt(i),xx2
+             157     2               !          infmax(i)=inf(i)*dx(i)*( 1.-xx2 )/
+             158     2               !    +                     (inf(i)+dx(i)*(1.-xx2))
+             159     2               !---------------------------------------------------------------
+             160     3                         if(inf(i).gt.infmax(i)) then
+             161     3                           runof(i) = inf(i) - infmax(i)
+             162     3                           inf(i) = infmax(i)
+             163     3                         endif
+             164     2                         inf(i) = inf(i) / rhoh2o
+             165     2                         rhsmc(i,1) = rhsmc(i,1) - inf(i) / zsoil(i,1)
+             166     2                       endif
+             167     1                     enddo
+             168                     !
+             169                     !  we currently ignore the effect of rain on sea ice
+             170                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED
+                                   <<< Loop-information  End >>>
+             171     1                     do i = 1, nxj
+             172     1                       flag(i) = land(i)
+             173     1                     enddo
+             174                     !
+             175                     !  solve the tri-diagonal matrix
+             176                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      flag, rhsmc, ai, bi, ci
+                                   <<< Loop-information  End >>>
+             177     1  pp                 do k = 1, km
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.85, ITR: 88, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rhsmc, ci, ai, flag, bi
+                                   <<< Loop-information  End >>>
+             178     2   p    v              do i = 1, nxj
+             179     3   p    v                if(flag(i))  then
+             180     3   p    v                  rhsmc(i,k) = rhsmc(i,k) * delt2
+             181     3   p    v                  ai(i,k) = ai(i,k) * delt2
+             182     3   p    v                  bi(i,k) = 1. + bi(i,k) * delt2
+             183     3   p    v                  ci(i,k) = ci(i,k) * delt2
+             184     3   p    v                endif
+             185     2   p    v              enddo
+             186     1   p                 enddo
+             187                     !  forward elimination
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 471
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.36, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      flag, ci, bi, rhsmc
+                                   <<< Loop-information  End >>>
+             188     1  pp    v            do i = 1, nxj
+             189     2   p    v              if(flag(i)) then
+             190     2   p    v                ci(i,1) = -ci(i,1) / bi(i,1)
+             191     2   p    v                rhsmc(i,1) = rhsmc(i,1) / bi(i,1)
+             192     2   p    v              endif
+             193     1   p    v            enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      flag, ai, ci, bi, rhsmc
+                                   <<< Loop-information  End >>>
+             194     1                     do k = 2, km
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 341
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.58, ITR: 40, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ai, ci, bi, rhsmc, flag
+                                   <<< Loop-information  End >>>
+             195     2  pp    v              do i = 1, nxj
+             196     3   p    v                if(flag(i)) then
+             197     3   p    v                  cc = 1. / (bi(i,k) + ai(i,k) * ci(i,k-1))
+             198     3   p    v                  ci(i,k) = -ci(i,k) * cc
+             199     3   p    v                  rhsmc(i,k) = (rhsmc(i,k) - ai(i,k) * rhsmc(i,k-1)) * cc
+             200     3   p    v                endif
+             201     2   p    v              enddo
+             202     1                     enddo
+             203                     !  backward substituttion
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 889
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 112, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rhsmc, flag, ci
+                                   <<< Loop-information  End >>>
+             204     1  pp   2v            do i = 1, nxj
+             205     2   p   2v              if(flag(i)) then
+             206     2   p   2v                ci(i,km) = rhsmc(i,km)
+             207     2   p   2v              endif
+             208     1   p   2v            enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      flag, ci, rhsmc
+                                   <<< Loop-information  End >>>
+             209     1                     do k = km-1, 1,-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 616
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.75, ITR: 96, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ci, rhsmc, flag
+                                   <<< Loop-information  End >>>
+             210     2  pp   2v              do i = 1, nxj
+             211     3   p   2v                if(flag(i)) then
+             212     3   p   2v                  ci(i,k) = ci(i,k) * ci(i,k+1) + rhsmc(i,k)
+             213     3   p   2v                endif
+             214     2   p   2v              enddo
+             215     1                     enddo
+             216                      100  continue
+             217                     !
+             218                     !  update soil moisture
+             219                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      flag, zsoil, ci, smc, sat, runof, smsoil
+                                   <<< Loop-information  End >>>
+             220     1                     do k = 1, km
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 272
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.60, ITR: 32, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sat, zsoil, runof, flag, ci, smc, smsoil
+                                   <<< Loop-information  End >>>
+             221     2  pp    v              do i = 1, nxj
+             222     3   p    v                if(flag(i)) then
+             223     3   p    v                  smsoil(i,k) = smc(i,k) + ci(i,k)
+             224     3   p    v                  smsoil(i,k) = max(smsoil(i,k),0.)
+             225     3   p    v                  tdif = max(smsoil(i,k) - sat(i),0.)
+             226     3   p    v                  runof(i) = runof(i) -                           &
+             227     3                                     rhoh2o * tdif * zsoil(i,k) / delt
+             228     3   p    v                  smsoil(i,k) = smsoil(i,k) - tdif
+             229     3   p    v                endif
+             230     2   p    v              enddo
+             231     1                     enddo
+             232                     !
+             233                     ! first update smc by delt2
+             234                     ! then blend smsoil and smc to get (t+delt) smc
+             235                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      flag, smsoil, smc
+                                   <<< Loop-information  End >>>
+             236     1  pp                 do k = 1, km
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.53, ITR: 96, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      flag, smsoil, smc
+                                   <<< Loop-information  End >>>
+             237     2   p   2v              do i = 1, nxj
+             238     3   p   2v                if(flag(i)) then
+             239     3   p   2v                  smc(i,k) = ctfil1 * smsoil(i,k) + ctfil2 * smc(i,k)
+             240     3   p   2v                endif
+             241     2   p   2v              enddo
+             242     1   p                 enddo
+             243                     !
+             244                     !     do i = 1, nxj
+             245                     !       if(flag(i)) then
+             246                     !         canopy(i) = ctfil1 * canopy(i) + ctfil2 * cnpy(i)
+             247                     !       endif
+             248                     !     enddo
+             249                     !     i = 1
+             250                     !     print *, ' smc'
+             251                     !     print 6000, smc(i,1), smc(i,2)
+             252                      6000 format(2(f8.5,','))
+             253                           return
+             254                           end
+
+ Procedure information
+   Lines      : 254
+   Statements : 113
+   Stack(byte): 3584
+   Prefetch num: 2
+
+ Scoping unit of external sub-program : landsmc
+   Attribute and Cross reference of name
+     ai
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  85
+      |(Definition)     : 181
+      |(Reference)      : 181  197  199
+     bi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  85
+      |(Definition)     : 182
+      |(Reference)      : 182  190  191  197
+     canopy
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  86
+      |(Definition)     : 120  121  125
+      |(Reference)      : 110  120  121  123  124
+     cc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 100
+      |(Definition)     : 197
+      |(Reference)      : 198  199
+     ci
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  85
+      |(Definition)     : 183  190  198  206  212
+      |(Reference)      : 183  190  197  198  212  212  223
+     cnpy
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 94
+      |(Definition)     : 110
+      |(Reference)      : 
+     conkdt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 94
+      |(Definition)     : 
+      |(Reference)      : 
+     ctfil1
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 77
+      |(Definition)     : 
+      |(Reference)      : 77  239
+     ctfil2
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 77
+      |(Definition)     : 
+      |(Reference)      : 239
+     delt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 100
+      |(Definition)     : 103
+      |(Reference)      : 108  120  126  138  226
+     delt2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 100
+      |(Definition)     : 102
+      |(Reference)      : 180  181  182  183
+     drip
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 100
+      |(Definition)     : 124
+      |(Reference)      : 126
+     dsat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 93
+      |(Definition)     : 
+      |(Reference)      : 
+     dt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  82
+      |(Definition)     : 
+      |(Reference)      : 102
+     dth
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  82
+      |(Definition)     : 
+      |(Reference)      : 103
+     dx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 94
+      |(Definition)     : 
+      |(Reference)      : 
+     flag
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 90
+      |(Definition)     : 172
+      |(Reference)      : 179  189  196  205  211  222  238
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 99
+      |(Definition)     : 107  117  171  178  188  195  204  210  221  237
+      |(Reference)      : 108  108  108  109  110  110  118  119  119  119  119  120  120  120  121  121  122  122  122  123  124  125  126  126  131  131  132  132  138  138  138  138  138  141  141  160  160  161  161  161  162  162  164  164  165  165  165  165  172  172  179  180  180  181  181  182  182  183  183  189  190  190  190  191  191  191  196  197  197  197  198  198  199  199  199  199  205  206  206  211  212  212  212  212  222  223  223  223  224  224  225  225  226  226  226  228  228  238  239  239  239
+     inf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 92
+      |(Definition)     : 131  162  164
+      |(Reference)      : 160  161  164  165
+     infmax
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 92
+      |(Definition)     : 138  141
+      |(Reference)      : 141  160  161  162
+     istyp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  89
+      |(Definition)     : 
+      |(Reference)      : 132
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 99
+      |(Definition)     : 177  194  209  220  236
+      |(Reference)      : 180  180  181  181  182  182  183  183  197  197  197  198  198  199  199  199  199  212  212  212  212  223  223  223  224  224  225  226  228  228  239  239  239
+     km
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  81
+      |(Definition)     : 
+      |(Reference)      : 84  85  85  85  86  88  94  177  194  206  206  209  220  236
+     ksat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 93
+      |(Definition)     : 
+      |(Reference)      : 
+     land
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  90
+      |(Definition)     : 
+      |(Reference)      : 118  172
+     landsmc
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 121  141  224  225
+     mn
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  81
+      |(Definition)     : 
+      |(Reference)      : 84  84  85  85  85  86  86  86  87  87  88  88  89  90  90  92  92  92  93  93  93  94  94  94  94
+     ntype
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 96
+      |(Definition)     : 
+      |(Reference)      : 97
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  81
+      |(Definition)     : 
+      |(Reference)      : 107  117  171  178  188  195  204  210  221  237
+     prcp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 92
+      |(Definition)     : 108  122  126
+      |(Reference)      : 119  122  126  131
+     precip
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  86
+      |(Definition)     : 
+      |(Reference)      : 108
+     rffact
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 78
+      |(Definition)     : 
+      |(Reference)      : 141
+     rhoh2o
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 76
+      |(Definition)     : 
+      |(Reference)      : 108  138  164  226
+     rhscnpy
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  84
+      |(Definition)     : 119
+      |(Reference)      : 119  120
+     rhsmc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  84
+      |(Definition)     : 165  180  191  199
+      |(Reference)      : 138  165  180  191  199  199  206  212
+     runof
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  87
+      |(Definition)     : 109  161  226
+      |(Reference)      : 226
+     sat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 93
+      |(Definition)     : 132
+      |(Reference)      : 138  225
+     scanop
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 76
+      |(Definition)     : 
+      |(Reference)      : 123  124  125
+     sigmaf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  87
+      |(Definition)     : 
+      |(Reference)      : 119  122
+     smc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  86
+      |(Definition)     : 239
+      |(Reference)      : 138  223  239
+     smsoil
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 94
+      |(Definition)     : 223  224  228
+      |(Reference)      : 224  225  228  239
+     snowmt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  88
+      |(Definition)     : 
+      |(Reference)      : 108
+     tdif
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 100
+      |(Definition)     : 225
+      |(Reference)      : 226  228
+     tsat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  97
+      |(Definition)     : 
+      |(Reference)      : 132
+     zsoil
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  88
+      |(Definition)     : 
+      |(Reference)      : 138  165  226
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+        100  execution     (Definition) 216
+       6000  format        (Definition) 252
+
+ Total information
+   Procedures       : 1
+   Total lines      : 254
+   Total statements : 113
+   Total stack(byte): 3584
+   Total prefetch num: 2
+

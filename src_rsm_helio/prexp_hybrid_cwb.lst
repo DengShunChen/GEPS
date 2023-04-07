@@ -1,0 +1,377 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar  7 10:21:12 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm_helio
+   Source file       : prexp_hybrid_cwb.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "prexp_hybrid_cwb"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine prexp_hybrid_cwb ( nxj,nx,lev,ptop,sigma,pt,pk,pk2,plt )
+               2                     !
+               3                     !  subroutine to compute p to the kapa on odd and even levels
+               4                     !
+               5                     ! *** input ****
+               6                     !
+               7                     !  nx: e-w dimension no.
+               8                     !  lev: number of vertical levels
+               9                     !  sig: sigma levels
+              10                     !  pt: terrain pressure
+              11                     !
+              12                     ! *** output ***
+              13                     !
+              14                     !  pk: odd (full) level p**capa
+              15                     !  pk2: even( half) level p**capa
+              16                     !
+              17                     ! **************************************************
+              18                     !
+              19                           use const, only: RTYPE
+              20                     !
+              21                           implicit  none
+              22                           integer   nxj,nx,lev
+              23                           real      ptop
+              24                     
+              25                           real      plt(nx,lev),pk2d(nx,lev)
+              26                           real(kind=RTYPE) pt(nx),sigma(lev+1,2),pk2(nx,lev),pk(nx,lev)
+              27                     !
+              28                           real      pl2(nx,2)
+              29                     !
+              30                     !  compute  pressure variables
+              31                     !
+              32                           integer k,i,ktop,kbot
+              33                           real    capa,capap1,opok,ptopk
+              34                     
+              35                           capa  = 1.0/3.5
+              36                           capap1= 1.0+capa
+              37                           opok  = 1.0/1000.0**capa
+              38                     !
+              39                           ptopk= ptop*opok*ptop**capa
+              40                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pt, pk2d
+                                   <<< Loop-information  End >>>
+              41     1                     do k=1,lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.25, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pt, pk2d
+                                   <<< Loop-information  End >>>
+              42     2  pp   2v            do i=1,nxj
+              43     2   p   2v            pk2d(i,k)= sigma(k+1,1)*pt(i)+sigma(k+1,2)+ptop
+              44     2               !      pk2(i,k)= sig(k+1)*pt(i)+ptop
+              45     2   p   2v            enddo
+              46     1                     call vlog(pk2d(1,k),pk2d(1,k),nxj)
+              47     1                     enddo
+              48                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pk2d, pk2
+                                   <<< Loop-information  End >>>
+              49     1                     do k=1,lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1143
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 256, MVE: 9, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pk2d
+                                   <<< Loop-information  End >>>
+              50     2  pp   2v            do i=1,nxj
+              51     2   p   2v            pk2d(i,k)=capa*pk2d(i,k)
+              52     2   p   2v            enddo
+              53     1                     call vexp(pk2d(1,k),pk2d(1,k),nxj)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1334
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pk2d, pk2
+                                   <<< Loop-information  End >>>
+              54     1  pp   4v            pk2(:,k)= pk2d(:,k)
+              55     1                     enddo
+              56                     
+              57                           kbot= 1
+              58                           k= 1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 373
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.58, ITR: 56, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pt, pk2, plt, pk, pl2
+                                   <<< Loop-information  End >>>
+              59     1  pp    v            do 80 i=1, nxj
+              60     1   p    v            pl2(i,kbot)= sigma(2,1)*pt(i)+sigma(2,2)+ptop
+              61     1               !      pl2(i,kbot)= sig(2)*pt(i)+ptop
+              62     1   p    v            pk2(i,k)   = opok*pk2(i,k)
+              63     1   p    v            pk(i,k)    = (pl2(i,kbot)*pk2(i,k)-ptopk) &
+              64     1                                / (capap1*(pl2(i,kbot)-ptop))
+              65     1   p    v            plt(i,k)   = 1000.0*pk(i,k)*pk(i,k)*pk(i,k)*sqrt(pk(i,k))
+              66     1   p    v         80 continue
+              67                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pt, pk2, pl2, pk, plt
+                                   <<< Loop-information  End >>>
+              68     1                     do 90 k = 2, lev
+              69     1                     ktop= kbot
+              70     1                     kbot= 3 - ktop
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 308
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.70, ITR: 64, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pk2, pl2, pt, plt, pk
+                                   <<< Loop-information  End >>>
+              71     2  pp    v            do 90 i = 1, nxj
+              72     2   p    v            pl2(i,kbot)= sigma(k+1,1)*pt(i)+sigma(k+1,2)+ptop
+              73     2               !      pl2(i,kbot)= sig(k+1)*pt(i)+ptop
+              74     2   p    v            pk2(i,k)   = opok*pk2(i,k)
+              75     2   p    v            pk(i,k)    = (pl2(i,kbot)*pk2(i,k)-pl2(i,ktop)*pk2(i,k-1)) &
+              76     2                                / (capap1*(pl2(i,kbot)-pl2(i,ktop)))
+              77     2   p    v            plt(i,k)   = 1000.0*pk(i,k)*pk(i,k)*pk(i,k)*sqrt(pk(i,k))
+              78     1   p    v         90 continue
+              79                     !
+              80                           return
+              81                           end
+
+ Procedure information
+   Lines      : 81
+   Statements : 46
+   Stack(byte): 2384
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : prexp_hybrid_cwb
+   Attribute and Cross reference of name
+     capa
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 33
+      |(Definition)     : 35
+      |(Reference)      : 36  37  39  51
+     capap1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 33
+      |(Definition)     : 36
+      |(Reference)      : 63  75
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 19
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 32
+      |(Definition)     : 42  50  59  71
+      |(Reference)      : 43  43  51  51  60  60  62  62  63  63  63  63  65  65  65  65  65  72  72  74  74  75  75  75  75  75  75  75  77  77  77  77  77
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 32
+      |(Definition)     : 41  49  58  68
+      |(Reference)      : 43  43  43  46  46  51  51  53  53  54  54  62  62  63  63  65  65  65  65  65  72  72  74  74  75  75  75  77  77  77  77  77
+     kbot
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 32
+      |(Definition)     : 57  70
+      |(Reference)      : 60  63  63  69  72  75  75
+     ktop
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 32
+      |(Definition)     : 69
+      |(Reference)      : 70  75  75
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  22
+      |(Definition)     : 
+      |(Reference)      : 25  25  26  26  26  41  49  68
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  22
+      |(Definition)     : 
+      |(Reference)      : 25  25  26  26  26  28
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  22
+      |(Definition)     : 46  53
+      |(Reference)      : 42  50  59  71
+     opok
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 33
+      |(Definition)     : 37
+      |(Reference)      : 39  62  74
+     pk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  26
+      |(Definition)     : 63  75
+      |(Reference)      : 65  65  65  65  77  77  77  77
+     pk2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  26
+      |(Definition)     : 54  62  74
+      |(Reference)      : 62  63  74  75  75
+     pk2d
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 25
+      |(Definition)     : 43  46  46  51  53  53
+      |(Reference)      : 51  54
+     pl2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 28
+      |(Definition)     : 60  72
+      |(Reference)      : 63  63  75  75  75  75
+     plt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  25
+      |(Definition)     : 65  77
+      |(Reference)      : 
+     prexp_hybrid_cwb
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     pt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  26
+      |(Definition)     : 
+      |(Reference)      : 43  60  72
+     ptop
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  23
+      |(Definition)     : 
+      |(Reference)      : 39  39  43  60  63  72
+     ptopk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 33
+      |(Definition)     : 39
+      |(Reference)      : 63
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 19  26
+     sigma
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  26
+      |(Definition)     : 
+      |(Reference)      : 43  43  60  60  72  72
+     sqrt
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 65  77
+     vexp
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 53
+     vlog
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 46
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+         80  execution     (Definition) 66  
+                           (Reference)  59
+         90  execution     (Definition) 78  
+                           (Reference)  68  71
+
+ Total information
+   Procedures       : 1
+   Total lines      : 81
+   Total statements : 46
+   Total stack(byte): 2384
+   Total prefetch num: 0
+

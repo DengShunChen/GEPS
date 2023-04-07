@@ -1,0 +1,1703 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar 14 13:21:38 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_helio
+   Source file       : mp_scheme.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb157/CWBSUMc2/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "mp_init"
+  (inc)(line-no.)(nest)(optimize)
+               1                     !--------------------------
+               2                           subroutine mp_init                                               &
+               3                     !--------------------------
+               4                     !  ---  inputs:
+               5                                ( nmmiph ,myrank)
+               6                     !  ---  outputs: ( none )
+               7                     
+               8                     ! for WSM6
+               9                           use module_mp_wsm6,     only : wsm6init
+              10                     ! for Thompson
+              11                           use module_mp_thompson, only : thompson_init
+              12                     ! for GFDLMP
+              13                     #if defined (GFDLMP_v2)
+              14                           use module_mp_gfdl_v2,  only : gfdl_cld_mp_init
+              15                     #else
+              16                           use module_mp_gfdl,     only : gfdl_cloud_microphys_init
+              17                     #endif
+              18                     
+              19                           implicit none
+              20                     !  ---  input:
+              21                           integer,  intent(in) :: nmmiph,myrank
+              22                     !  ---  local:
+              23                           integer   ntrac_req
+              24                     !-----------------------------------------------------------------------
+              25                     !  for cloud microphysics
+              26                     !-----------------------------------------------------------------------
+              27                     ! WSM6
+              28     1                       if ( nmmiph .eq. 6 ) then
+              29     1                         call wsm6init()
+              30     1                         if ( myrank .eq. 0 )                                         &
+              31     1                            print *,'WSM6 cloud microphysics initialized'
+              32     1                       endif
+              33                     ! Thompson
+              34     1                       if ( nmmiph .eq. 8 ) then
+              35     1                         call thompson_init()
+              36     1                         if ( myrank .eq. 0 )                                         &
+              37     1                            print *,'Thompson cloud microphysics initialized'
+              38     1                       endif
+              39                     ! GFDLMP
+              40     1                       if ( nmmiph .eq. 11 ) then
+              41     1               #if defined (GFDLMP_v2)
+              42     1                         call gfdl_cld_mp_init()
+              43     1               #else
+              44     1                         call gfdl_cloud_microphys_init()
+              45     1               #endif
+              46     1                         if ( myrank .eq. 0 )                                         &
+              47     1                            print *, 'GFDL cloud microphysics initialized'
+              48     1                       endif
+              49                     
+              50                           return
+              51                     !--------------------------
+              52                           end subroutine mp_init
+
+ Procedure information
+   Lines      : 52
+   Statements : 21
+   Stack(byte): 624
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : mp_init
+   Attribute and Cross reference of name
+     gfdl_cloud_microphys_init
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 16  44
+     module_mp_gfdl
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 16
+     module_mp_thompson
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 11
+     module_mp_wsm6
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 9
+     mp_init
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 2
+      |(Reference)      : 52
+     myrank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 2  21
+      |(Definition)     : 
+      |(Reference)      : 30  36  46
+     nmmiph
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 2  21
+      |(Definition)     : 
+      |(Reference)      : 28  34  40
+     ntrac_req
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 23
+      |(Definition)     : 
+      |(Reference)      : 
+     thompson_init
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 11  35
+     wsm6init
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 9  29
+
+ External subroutine subprogram "mp_scheme"
+  (inc)(line-no.)(nest)(optimize)
+              53                     !--------------------------
+              54                     !--------------------------
+              55                           subroutine mp_scheme                                             &
+              56                     !--------------------------
+              57                     !  ---  inputs:
+              58                                ( nmmiph,nx,nxj,lev,ncld,plt,&!prsi,                          &
+              59                                  pst,dsigma,phii,islimsk,q0,kdt,ntcw,ntrw,ntiw,ntsw,       &
+              60                                  ntgl,ntinc,ntrnc,tpi,me,dta,area,jj,                      &
+              61                     #if defined (GFDLMP_v2)
+              62                                  sgeo,                                                     &
+              63                     #endif
+              64                     !  ---  inputs/outputs:
+              65                                  tt,qt,qa,ut,vt,sd,                                        &
+              66                     !  ---  outputs:
+              67                                  re_cloud,re_ice,re_snow,re_rain,                          &
+              68                                  rlsp,sr )
+              69                     
+              70                     ! for wsm6
+              71                           use module_mp_wsm6,      only: wsm6
+              72                     ! for thompson
+              73                           use module_mp_thompson,  only: mp_gt_driver
+              74                     ! for GFDLMP
+              75                     #if defined (GFDLMP_v2)
+              76                           use module_mp_gfdl_v2,   only: gfdl_cld_mp_driver
+              77                     #else
+              78                           use module_mp_gfdl,      only: gfdl_cloud_microphys_driver,      &
+              79                                                          cloud_diagnosis
+              80                     #endif
+              81                           use physcons,            only: con_rd,con_fvirt,con_g
+              82                           use physpara,            only: effr_in
+              83                           use const,               only: RTYPE
+              84                     
+              85                           implicit none
+              86                     
+              87                     !  ---  inputs:
+              88                           integer,  intent(in)    :: nmmiph,nx,nxj,lev,ncld,kdt,me
+              89                           integer,  intent(in)    :: ntcw,ntrw,ntiw,ntsw,ntgl,ntinc,ntrnc
+              90                           integer,  intent(in)    :: islimsk(nx)
+              91                           real,     intent(in)    :: tpi,dta,jj
+              92                           real,     intent(in)    :: plt(nx,lev),phii(nx,lev+1)!,       &
+              93                     !                                 prsi(nx,lev+1)
+              94                           real,     intent(in)    :: area(nx)  ! area of grid box (m^2)
+              95                     #if defined (GFDLMP_v2)
+              96                           real,     intent(in)    :: sgeo(nx)
+              97                     #endif
+              98                     !      real,     intent(in)    :: sd(nx,lev+1)
+              99                           real,     intent(inout) :: sd(nx,lev+1)
+             100                           real(kind=RTYPE), intent(in):: q0(nx,lev*ncld),pst(nx),          &
+             101                                                          dsigma(lev,2)
+             102                     !  ---  inputs/outputs:
+             103                           real(kind=RTYPE), intent(inout) :: tt(nx,lev)
+             104                           real,     intent(inout) :: qa(nx,lev)  ! only changed in GFDL MP
+             105                           real(kind=RTYPE), intent(inout) :: ut(nx,lev),vt(nx,lev)
+             106                           real(kind=RTYPE), intent(inout):: qt(nx,lev*ncld)
+             107                     !  ---  outputs:
+             108                           real,     intent(inout)   :: re_cloud(nx,lev),re_ice(nx,lev),    &
+             109                                                        re_snow(nx,lev),re_rain(nx,lev)
+             110                           real,     intent(inout)   :: rlsp(nx),sr(nx)
+             111                     !  ---  local arrays:
+             112                           integer   kc,k,i
+             113                           real      prsl(nx,lev),del(nx,lev)
+             114                           real      ttc(nx,lev),qtc(nx,lev),qtr(nx,lev),qtrw(nx,lev),      &
+             115                                     qti(nx,lev),qtsw(nx,lev),qtgl(nx,lev),ntnc(nx,lev,2),  &
+             116                                     refl10(nx,lev)
+             117                           real      rainncv(nx),snowncv(nx),graupelncv(nx)
+             118                           real      icem
+             119                           logical   lradar
+             120                     ! GFDLMP
+             121                           real, parameter ::                                                &
+             122                                     rainmin=1.0e-10 !(mm)
+             123                           real, dimension(:,:), allocatable ::                              &
+             124                                     dot,dp
+             125                           logical   hydrostatic,phys_hydrostatic,sedi_w
+             126                     #if defined (GFDLMP_v2)
+             127                           real, dimension(:,:), allocatable ::                              &
+             128                                     qv,ql,qr,qi,qs,qg,cldcov,qnl,qni,w,delp,dz,q_con,cappa, &
+             129                                     te,pt,uin,vin,prefluxr,prefluxi, prefluxs,prefluxg
+             130                           real, dimension(:), allocatable ::                                &
+             131                                     gsize,hs,rain0,snow0,ice0,graupel0,                     &
+             132                                     cond0,dep0,evap0,sub0
+             133                           logical   consv_te,last_step,do_inline_mp
+             134                     #else
+             135                           real, dimension(:,:), allocatable ::                              &
+             136                                     garea,frland,rain0,snow0,ice0,graupel0
+             137                           real, dimension(:,:,:), allocatable ::                            &
+             138                                     qv1,ql1,qr1,qi1,qs1,qg1,qa1,qn1,pt,w,uin,vin,delp,dz,   &
+             139                                     qv_dt,ql_dt,qr_dt,qi_dt,qs_dt,qg_dt,qa_dt,udt,vdt,pt_dt
+             140                           real, dimension(:,:), allocatable ::                              &
+             141                                     ql2,qr2,qi2,qs2,qg2,rho,                                &
+             142                                     re_graupel,rew,rei,rer,res,reg
+             143                     #endif
+             144                     !
+             145                     ! reset all value to zero
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 485
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.22, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qtgl, qtsw, qti, qtrw, qtr, qtc, ttc
+                                   <<<      del, prsl
+                                   <<< Loop-information  End >>>
+             146        pp    v            prsl  = 0.
+             147         p    v            del   = 0.
+             148         p    v            ttc   = 0.
+             149         p    v            qtc   = 0.
+             150         p    v            qtr   = 0.
+             151         p    v            qtrw  = 0.
+             152         p    v            qti   = 0.
+             153         p    v            qtsw  = 0.
+             154         p    v            qtgl  = 0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1778
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ntnc
+                                   <<< Loop-information  End >>>
+             155        pp   4v            ntnc  = 0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1778
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      refl10
+                                   <<< Loop-information  End >>>
+             156        pp   4v            refl10= 0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1231
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      graupelncv, snowncv, rainncv
+                                   <<< Loop-information  End >>>
+             157        pp   2v            rainncv=0.
+             158         p   2v            snowncv=0.
+             159         p   2v            graupelncv=0.
+             160                     
+             161     1                     if ( nmmiph .eq. 11 ) then
+             162     1               #if defined (GFDLMP_v2)
+             163     1                       allocate                                                        &
+             164     1                        ( qv(nxj,lev),ql(nxj,lev),qr(nxj,lev),qi(nxj,lev),qs(nxj,lev), &
+             165     1                          qg(nxj,lev),cldcov(nxj,lev),qnl(nxj,lev),qni(nxj,lev),       &
+             166     1                          w(nxj,lev),pt(nxj,lev),uin(nxj,lev),vin(nxj,lev),            &
+             167     1                          delp(nxj,lev),dz(nxj,lev),prefluxr(nxj,lev),                 &
+             168     1                          prefluxi(nxj,lev),prefluxs(nxj,lev),prefluxg(nxj,lev),       &
+             169     1                          q_con(nxj,lev),cappa(nxj,lev),te(nxj,lev) )
+             170     1                       allocate                                                        &
+             171     1                        ( hs(nxj),gsize(nxj),rain0(nxj),snow0(nxj),ice0(nxj),          &
+             172     1                          graupel0(nxj),cond0(nxj),dep0(nxj),evap0(nxj),sub0(nxj) )
+             173     1               #else
+             174     1                       allocate                                                        &
+             175     1                        ( re_graupel(nxj,lev),rew(nxj,lev),                            &
+             176     1                          rei(nxj,lev),rer(nxj,lev),res(nxj,lev),reg(nxj,lev),         &
+             177     1                          frland(nxj,1),rain0(nxj,1),snow0(nxj,1),ice0(nxj,1),         &
+             178     1                          graupel0(nxj,1),garea(nxj,1),                                &
+             179     1                          qv1(nxj,1,lev),ql1(nxj,1,lev),qr1(nxj,1,lev),qi1(nxj,1,lev), &
+             180     1                          qs1(nxj,1,lev),qg1(nxj,1,lev),qa1(nxj,1,lev),qn1(nxj,1,lev), &
+             181     1                          pt(nxj,1,lev),w(nxj,1,lev),uin(nxj,1,lev),vin(nxj,1,lev),    &
+             182     1                          delp(nxj,1,lev),dz(nxj,1,lev),                               &
+             183     1                          qv_dt(nxj,1,lev),ql_dt(nxj,1,lev),qr_dt(nxj,1,lev),          &
+             184     1                          qi_dt(nxj,1,lev),qs_dt(nxj,1,lev),qg_dt(nxj,1,lev),          &
+             185     1                          qa_dt(nxj,1,lev),udt(nxj,1,lev),vdt(nxj,1,lev),              &
+             186     1                          pt_dt(nxj,1,lev) )
+             187     1                       if ( effr_in ) allocate                                         &
+             188     1                          ( dp(nxj,lev),rho(nxj,lev),ql2(nxj,lev),qr2(nxj,lev),        &
+             189     1                            qi2(nxj,lev),qs2(nxj,lev),qg2(nxj,lev) )
+             190     1               #endif
+             191     1                       if ( sedi_w ) allocate ( dot(nxj,lev) )
+             192     1               #if defined (GFDLMP_v2)
+             193     1                       qnl   = 0.0
+             194     1                       qni   = 0.0
+             195     1                       pt    = 0.0
+             196     1                       uin   = 0.0
+             197     1                       vin   = 0.0
+             198     1                       te    = 0.0
+             199     1                       gsize = 0.0
+             200     1                       cond0 = 0.0
+             201     1                       dep0  = 0.0
+             202     1                       evap0 = 0.0
+             203     1                       sub0  = 0.0
+             204     1                       q_con = 0.0  !not sure
+             205     1                       cappa = 0.0  !not sure
+             206     1                       cldcov    = 0.0  !for do_qa=.false.
+             207     1                       prefluxr  = 0.0
+             208     1                       prefluxi  = 0.0
+             209     1                       prefluxs  = 0.0
+             210     1                       prefluxg  = 0.0
+             211     1               #else
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      frland
+                                   <<< Loop-information  End >>>
+             212     1  pp   4v              frland = 0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      garea
+                                   <<< Loop-information  End >>>
+             213     1  pp   4v              garea = 0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 8
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qv_dt
+                                   <<< Loop-information  End >>>
+             214     1  pp   4v              qv_dt = 0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 8
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ql_dt
+                                   <<< Loop-information  End >>>
+             215     1  pp   4v              ql_dt = 0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 8
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qr_dt
+                                   <<< Loop-information  End >>>
+             216     1  pp   4v              qr_dt = 0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 8
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qi_dt
+                                   <<< Loop-information  End >>>
+             217     1  pp   4v              qi_dt = 0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 8
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qs_dt
+                                   <<< Loop-information  End >>>
+             218     1  pp   4v              qs_dt = 0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 8
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qg_dt
+                                   <<< Loop-information  End >>>
+             219     1  pp   4v              qg_dt = 0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 8
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qa_dt
+                                   <<< Loop-information  End >>>
+             220     1  pp   4v              qa_dt = 0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 8
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pt_dt
+                                   <<< Loop-information  End >>>
+             221     1  pp   4v              pt_dt = 0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 8
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      udt
+                                   <<< Loop-information  End >>>
+             222     1  pp   4v              udt   = 0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 8
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      vdt
+                                   <<< Loop-information  End >>>
+             223     1  pp   4v              vdt   = 0.
+             224     1               #endif
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rain0
+                                   <<< Loop-information  End >>>
+             225     1  pp   4v              rain0 = 0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      snow0
+                                   <<< Loop-information  End >>>
+             226     1  pp   4v              snow0 = 0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ice0
+                                   <<< Loop-information  End >>>
+             227     1  pp   4v              ice0  = 0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      graupel0
+                                   <<< Loop-information  End >>>
+             228     1  pp   4v              graupel0 = 0.
+             229     1                     endif
+             230                     !
+             231                           lradar= .false.
+             232                           icem  =  4./3.*tpi*3.2768*1.e-14*890.
+             233                     !
+             234     1                     if ( nmmiph.eq.6 .or. nmmiph.eq.8 ) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tt, pst, qt, ttc, qtsw, qtgl, qti, qtr
+                                   <<<      qtrw, qtc, del
+                                   <<<    PREFETCH(SOFT) : 4
+                                   <<<     SEQUENTIAL : 4
+                                   <<<      plt: 2, prsl: 2
+                                   <<< Loop-information  End >>>
+             235     2  pp                   do k=1,lev
+             236     2   p                     kc=lev-k+1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.39, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qt, ttc, qtgl, tt, pst, qtsw, qti, qtrw
+                                   <<<      qtr, qtc, del
+                                   <<<    PREFETCH(SOFT) : 6
+                                   <<<     SEQUENTIAL : 6
+                                   <<<      prsl: 4, plt: 2
+                                   <<< Loop-information  End >>>
+             237     3   p    v                do i=1,nxj
+             238     3   p    v                  prsl(i,kc)= plt(i,k)*100. ! change to Pa
+             239     3   p    v                  del(i,kc) = (dsigma(k,1)*pst(i)+dsigma(k,2))*100. !change to Pa
+             240     3   p    v                  qtc(i,kc) = qt(i,             k)
+             241     3   p    v                  qtr(i,kc) = qt(i,(ntcw-1)*lev+k)
+             242     3   p    v                  qtrw(i,kc)= qt(i,(ntrw-1)*lev+k)
+             243     3   p    v                  qti(i,kc) = qt(i,(ntiw-1)*lev+k)
+             244     3   p    v                  qtsw(i,kc)= qt(i,(ntsw-1)*lev+k)
+             245     3   p    v                  qtgl(i,kc)= qt(i,(ntgl-1)*lev+k)
+             246     3   p    v                  ttc(i,kc) = tt(i,             k)
+             247     3   p    v                enddo
+             248     2   p                   enddo
+             249     1               !
+             250     1               !          WSM6
+             251     1                          if ( nmmiph .eq. 6 )                                        &
+             252     1                          call wsm6(ttc,phii,qtc,qtr,qtrw,qti,qtsw,qtgl,prsl,del,dta, &
+             253     1                                    rainncv,sr,islimsk,re_cloud,re_ice,re_snow,       &
+             254     1                                    1,nx,1,lev,1,nxj,1,lev,snowncv,graupelncv)
+             255     1               !          Thompson
+             256     2                          if ( nmmiph .eq. 8 )then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      q0, qti, qt, ntnc
+                                   <<< Loop-information  End >>>
+             257     3  pp                        do k=1,lev
+             258     3   p                          kc=lev-k+1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.20, ITR: 72, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qt, q0, qti, ntnc
+                                   <<< Loop-information  End >>>
+             259     4   p    v                     do i=1,nxj
+             260     4   p    v                       ntnc(i,kc,1) = qt(i,(ntinc-1)*lev+k)                  &
+             261     4                                     +max(0.,qti(i,kc)-q0(i,(ntiw-1)*lev+k))/icem
+             262     4   p    v                       ntnc(i,kc,2) = qt(i,(ntrnc-1)*lev+k)
+             263     4   p    v                     enddo
+             264     3   p                        enddo
+             265     2                            call mp_gt_driver(1,nx,1,lev,1,nxj,1,lev,qtc,qtr,qtrw,    &
+             266     2                                    qti,qtsw,qtgl,ntnc(1,1,1),ntnc(1,1,2),ttc,        &
+             267     2                                    prsl,del,dta,kdt,rainncv,sr,islimsk,refl10,       &
+             268     2                                    lradar,re_cloud,re_ice,re_snow,me,phii)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ntnc, qt
+                                   <<< Loop-information  End >>>
+             269     3                            do k=1,lev
+             270     3                              kc=lev-k+1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 762
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.66, ITR: 80, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ntnc, qt
+                                   <<< Loop-information  End >>>
+             271     4  pp   2v                     do i=1,nxj
+             272     4   p   2v                       qt(i,(ntinc-1)*lev+k)=ntnc(i,kc,1)
+             273     4   p   2v                       qt(i,(ntrnc-1)*lev+k)=ntnc(i,kc,2)
+             274     4   p   2v                     enddo
+             275     3                            enddo
+             276     2                          endif
+             277     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 843
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.57, ITR: 96, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      graupelncv, snowncv, rainncv, rlsp
+                                   <<< Loop-information  End >>>
+             278     2  pp   2v              do i=1,nxj
+             279     2   p   2v                rlsp(i) = rainncv(i) + snowncv(i) + graupelncv(i)
+             280     2   p   2v              enddo
+             281     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ttc, qtc, qtr, qtrw, qti, qtsw, qt, qtgl
+                                   <<<      tt
+                                   <<< Loop-information  End >>>
+             282     2                       do k=1,lev
+             283     2                         kc=lev-k+1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 291
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.08, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qtgl, tt, ttc, qtc, qt, qtr, qtrw, qti
+                                   <<<      qtsw
+                                   <<< Loop-information  End >>>
+             284     3  pp    v                do i=1,nxj
+             285     3   p    v                  qt(i,             k) = qtc(i,kc)
+             286     3   p    v                  qt(i,(ntcw-1)*lev+k) = qtr(i,kc)
+             287     3   p    v                  qt(i,(ntrw-1)*lev+k) = qtrw(i,kc)
+             288     3   p    v                  qt(i,(ntiw-1)*lev+k) = qti(i,kc)
+             289     3   p    v                  qt(i,(ntsw-1)*lev+k) = qtsw(i,kc)
+             290     3   p    v                  qt(i,(ntgl-1)*lev+k) = qtgl(i,kc)
+             291     3   p    v                  tt(i,             k) = ttc(i,kc)
+             292     3               
+             293     3   p    v                enddo
+             294     2                       enddo
+             295     1               
+             296     1                     endif
+             297                     
+             298                     !     GFDLMP
+             299     1                     if ( nmmiph .eq. 11 ) then
+             300     1                       hydrostatic = .false.       !flag for hydrostatic solver
+             301     1                       phys_hydrostatic = .true.   !flag for hydrostatic heating from physics
+             302     1                       sedi_w = .false.
+             303     1               
+             304     1               #if defined (GFDLMP_v2)
+             305     1                       consv_te = .false.          !flag for energy conservation
+             306     1                       last_step = .true.          !flag for final clean-up (not sure)
+             307     1                       do_inline_mp = .false.      !flag for inline GFDLMP
+             308     1               
+             309     1                       do i = 1, nxj
+             310     1                         gsize(i) = sqrt(area(i))  !square root of grid area (m)
+             311     1                         hs(i)    = sgeo(i)        !terrain geopotential (gpm) (not sure)
+             312     1                       enddo
+             313     1                       do k = 1, lev
+             314     1                         kc = lev - k + 1
+             315     1                         do i = 1, nxj
+             316     1                           if ( sedi_w ) then
+             317     1                             prsl(i,k) = 100.0 * plt(i,k)            !layer mean pressure (from mb to Pa)
+             318     1                             dot(i,k) = 0.5*(sd(i,k)+sd(i,k+1))*100. !vertical velocity (from mb/s to Pa/s)
+             319     1                             w(i,k)   = -dot(i,k)*(1.+con_fvirt*qt(i,k))*tt(i,k)      &
+             320     1                                        /prsl(i,k)*con_rd/con_g      !vertical velocity (m/s)
+             321     1                           else
+             322     1                             w(i,k)   = 0.
+             323     1                           endif
+             324     1               
+             325     1                           qv(i,k)   = qt(i,             k)
+             326     1                           ql(i,k)   = qt(i,(ntcw-1)*lev+k)
+             327     1                           qr(i,k)   = qt(i,(ntrw-1)*lev+k)
+             328     1                           qi(i,k)   = qt(i,(ntiw-1)*lev+k)
+             329     1                           qs(i,k)   = qt(i,(ntsw-1)*lev+k)
+             330     1                           qg(i,k)   = qt(i,(ntgl-1)*lev+k)
+             331     1                           pt(i,k)   = tt(i,k)                 !temperature
+             332     1                           uin(i,k)  = ut(i,k)                 !zonal wind (m/s)
+             333     1                           vin(i,k)  = vt(i,k)                 !meridional wind (m/s)
+             334     1                           delp(i,k) = (dsigma(k,1)*pst(i)+dsigma(k,2))*100. !difference of interface pressure (Pa)
+             335     1                           dz(i,k)   = (phii(i,kc)-phii(i,kc+1))/con_g       !differences of height (m), dz<0
+             336     1                         enddo
+             337     1                       enddo
+             338     1               
+             339     1                       call gfdl_cld_mp_driver                                         &
+             340     1                               ( qv, ql, qr, qi, qs, qg, cldcov, qnl, qni,             &
+             341     1                                 pt, w, uin, vin, dz, delp, gsize, dta, hs,            &
+             342     1                                 rain0, snow0, ice0, graupel0, hydrostatic,            &
+             343     1                                 1, nxj, 1, lev, q_con, cappa, consv_te, te,           &
+             344     1                                 prefluxr, prefluxi, prefluxs, prefluxg,               &
+             345     1                                 cond0, dep0, evap0, sub0,                             &
+             346     1                                 last_step, do_inline_mp )
+             347     1               
+             348     1                       do k = 1, lev
+             349     1                         do i = 1, nxj
+             350     1                           qt(i,             k) = qv(i,k)
+             351     1                           qt(i,(ntcw-1)*lev+k) = ql(i,k)
+             352     1                           qt(i,(ntrw-1)*lev+k) = qr(i,k)
+             353     1                           qt(i,(ntiw-1)*lev+k) = qi(i,k)
+             354     1                           qt(i,(ntsw-1)*lev+k) = qs(i,k)
+             355     1                           qt(i,(ntgl-1)*lev+k) = qg(i,k)
+             356     1                           qa(i,k)  = cldcov(i,k)
+             357     1                           tt(i,k)  = pt (i,k)
+             358     1                           ut(i,k)  = uin(i,k)
+             359     1                           vt(i,k)  = vin(i,k)
+             360     1               
+             361     1                           if ( sedi_w ) then
+             362     1                             dot(i,k)  = -w(i,k)*prsl(i,k)*con_g/con_rd                &
+             363     1                                         /((1+con_fvirt*qt(i,k))*tt(i,k))
+             364     1                             sd(i,k+1) = dot(i,k)/100./0.5-sd(i,k)
+             365     1                           endif
+             366     1                         enddo
+             367     1                       enddo
+             368     1               
+             369     1                       do i = 1, nxj
+             370     1                         rain0(i)    = rain0(i)
+             371     1                         ice0(i)     = ice0(i)
+             372     1                         snow0(i)    = snow0(i)
+             373     1                         graupel0(i) = graupel0(i)
+             374     1               
+             375     1                         rlsp(i) = rain0(i)+snow0(i)+ice0(i)+graupel0(i)     !total large scale precipitation (mm)
+             376     1                         if ( rlsp(i) .gt. rainmin ) then
+             377     1                           sr(i) = (snow0(i)+ice0(i)+graupel0(i))                      &
+             378     1                                   /(rain0(i)+snow0(i)+ice0(i)+graupel0(i))  !snow ratio
+             379     1                         else
+             380     1                           sr(i) = 0.0
+             381     1                         endif
+             382     1                       enddo
+             383     1               
+             384     1                       deallocate                                                      &
+             385     1                        ( qv,ql,qr,qi,qs,qg,qnl,qni,cldcov,w,pt,uin,vin,delp,dz,       &
+             386     1                          prefluxr,prefluxi,prefluxs,prefluxg,q_con,cappa,te)
+             387     1                       deallocate                                                      &
+             388     1                        ( hs,gsize,rain0,snow0,ice0,graupel0,cond0,dep0,evap0,sub0 )
+             389     1               #else
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 762
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 96, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      garea, islimsk, area, frland
+                                   <<< Loop-information  End >>>
+             390     2  pp   2v              do i = 1, nxj
+             391     2   p   2v                if( islimsk(i) .eq. 1 ) frland(i,1) = 1.  !land fraction
+             392     2   p   2v                garea(i,1) = area(i)                      !area of grid box (m^-2)
+             393     2   p   2v              enddo
+             394     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    UNSWITCHING
+                                   <<< Loop-information  End >>>
+             395     2  pp                   do k = 1, lev
+             396     2   p                     kc = lev - k + 1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      phii, dz, pst, dp, delp, vt, vin, ut
+                                   <<<      uin, qa1, qn1, qt, qg1, qs1, tt, pt
+                                   <<<    PREFETCH(SOFT) : 104
+                                   <<<     SEQUENTIAL : 104
+                                   <<<      qt: 32, qi1: 8, qr1: 8, ql1: 8, tt: 4
+                                   <<<      pt: 4, qv1: 8, sd: 8, dot: 4, plt: 4
+                                   <<<      w: 8, prsl: 4, qs1: 4
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 50
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             397     3   p    v                do i = 1, nxj
+             398     4   p    v                  if ( sedi_w ) then
+             399     4   p    v                    prsl(i,k) = 100.0 * plt(i,k)             !layer mean pressure (from mb to Pa)
+             400     4   p    v                    dot(i,k)  = 0.5*(sd(i,k)+sd(i,k+1))*100. !vertical velocity (from mb/s to Pa/s)
+             401     4   p    v                    w(i,1,k)  = -dot(i,k)*(1.+con_fvirt*qt(i,k))*tt(i,k)      &
+             402     4                                         /prsl(i,k)*con_rd/con_g      !vertical velocity (m/s)
+             403     4   p    v                  else
+             404     4   p    v                    w(i,1,k)  = 0.
+             405     4   p    v                  endif
+             406     3               
+             407     3   p    v                  qv1(i,1,k)  = qt(i,             k)
+             408     3   p    v                  ql1(i,1,k)  = qt(i,(ntcw-1)*lev+k)
+             409     3   p    v                  qr1(i,1,k)  = qt(i,(ntrw-1)*lev+k)
+             410     3   p    v                  qi1(i,1,k)  = qt(i,(ntiw-1)*lev+k)
+             411     3   p    v                  qs1(i,1,k)  = qt(i,(ntsw-1)*lev+k)
+             412     3   p    v                  qg1(i,1,k)  = qt(i,(ntgl-1)*lev+k)
+             413     3   p    v                  qn1(i,1,k)  = 0.                      ! =0. for prog_ccn=.false. (cm^-3)
+             414     3   p    v                  qa1(i,1,k)  = 0.                      !layer cloud fraction (should set to zero for do_qa=.false.)
+             415     3   p    v                  pt(i,1,k)   = tt(i,k)                 !temperature
+             416     3   p    v                  uin(i,1,k)  = ut(i,k)                 !zonal wind (m/s)
+             417     3   p    v                  vin(i,1,k)  = vt(i,k)                 !meridional wind (m/s)
+             418     3   p    v                  delp(i,1,k) = (dsigma(k,1)*pst(i)+dsigma(k,2))*100. !difference of interface pressure (Pa)
+             419     3   p    v                  dz(i,1,k)   = (phii(i,kc)-phii(i,kc+1))/con_g !differences of height (m), dz<0
+             420     3   p    v                  if ( effr_in ) dp(i,k) = delp(i,1,k)
+             421     3   p    v                enddo
+             422     2   p                   enddo
+             423     1               
+             424     1                       call gfdl_cloud_microphys_driver                                &
+             425     1                               ( qv1, ql1, qr1, qi1, qs1, qg1, qa1, qn1,               &
+             426     1                                 qv_dt, ql_dt, qr_dt, qi_dt, qs_dt, qg_dt, qa_dt,      &
+             427     1                                 pt_dt, pt, w, uin, vin, udt, vdt,                     &
+             428     1                                 dz, delp, garea, dta, frland,                         &
+             429     1                                 rain0, snow0, ice0, graupel0,                         &
+             430     1                                 hydrostatic, phys_hydrostatic,                        &
+             431     1                                 1, nxj, 1, 1, 1, lev, 1, lev )
+             432     1               
+             433     2                       do k = 1, lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 59
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      vdt, vin, vt, udt, uin, ut, pt_dt, pt
+                                   <<<      tt, qa_dt, qa1, qa, qg_dt, qg1, qg2
+                                   <<<      qs_dt
+                                   <<<    PREFETCH(SOFT) : 50
+                                   <<<     SEQUENTIAL : 50
+                                   <<<      qt: 12, qs1: 2, qs2: 2, qi_dt: 2, qi1: 2
+                                   <<<      qi2: 2, qr_dt: 2, qr1: 2, qr2: 2
+                                   <<<      ql_dt: 2, ql1: 2, qv_dt: 2, qv1: 2
+                                   <<<      prsl: 2, w: 2, sd: 4, dot: 2, rho: 2
+                                   <<<      ql2: 2
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 32
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             434     3  pp    v                do i = 1, nxj
+             435     3   p    v                  ql2(i,k) = ql1(i,1,k) + ql_dt(i,1,k) * dta
+             436     3   p    v                  qr2(i,k) = qr1(i,1,k) + qr_dt(i,1,k) * dta
+             437     3   p    v                  qi2(i,k) = qi1(i,1,k) + qi_dt(i,1,k) * dta
+             438     3   p    v                  qs2(i,k) = qs1(i,1,k) + qs_dt(i,1,k) * dta
+             439     3   p    v                  qg2(i,k) = qg1(i,1,k) + qg_dt(i,1,k) * dta
+             440     3               
+             441     3   p    v                  qa(i,k)  = qa1(i,1,k) + qa_dt(i,1,k) * dta
+             442     3   p    v                  qt(i,             k) = qv1(i,1,k) + qv_dt(i,1,k) * dta
+             443     3   p    v                  qt(i,(ntcw-1)*lev+k) = ql2(i,k)
+             444     3   p    v                  qt(i,(ntrw-1)*lev+k) = qr2(i,k)
+             445     3   p    v                  qt(i,(ntiw-1)*lev+k) = qi2(i,k)
+             446     3   p    v                  qt(i,(ntsw-1)*lev+k) = qs2(i,k)
+             447     3   p    v                  qt(i,(ntgl-1)*lev+k) = qg2(i,k)
+             448     3   p    v                  tt(i,k)  = pt(i,1,k)  + pt_dt(i,1,k) * dta
+             449     3   p    v                  ut(i,k)  = uin(i,1,k) + udt(i,1,k)   * dta
+             450     3   p    v                  vt(i,k)  = vin(i,1,k) + vdt(i,1,k)   * dta
+             451     3               
+             452     4   p    v                  if ( sedi_w ) then
+             453     4   p    v                    dot(i,k) = -w(i,1,k)*prsl(i,k)*con_g/con_rd               &
+             454     4                                         /((1+con_fvirt*qt(i,k))*tt(i,k))
+             455     4   p    v                    sd(i,k+1)= dot(i,k)/100./0.5-sd(i,k)
+             456     4   p    v                  endif
+             457     3               
+             458     4   p    v                  if ( effr_in ) then
+             459     4   p    v                    rho(i,k) = 0.622*prsl(i,k)                                &
+             460     4                                        /( con_rd*tt(i,k)*(qt(i,k)+0.622) ) !air density (kg/m^3)
+             461     4   p    v                  endif
+             462     3   p    v                enddo
+             463     2                       enddo
+             464     1               
+             465     2                       if ( effr_in ) then
+             466     2                         call cloud_diagnosis                                          &
+             467     2               !               ( 1, nx, 1, lev, rho, qtr, qti, qtrw, qtsw, qtgl, tt,    &  ! module_mp_gfdl_fv3.f90
+             468     2               !                 rew, rei, rer, res, reg )
+             469     2                              ( 1, nxj, 1, lev, rho, dp, islimsk,                      &  ! module_mp_gfdl_fv3_v16.f90
+             470     2                                ql2, qi2, qr2, qs2, qg2, tt,                           &
+             471     2                                rew, rei, rer, res, reg )
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      reg, res, rer, rei, rew, re_snow
+                                   <<<      re_graupel, re_rain, re_ice, re_cloud
+                                   <<< Loop-information  End >>>
+             472     3  pp                     do k = 1, lev
+             473     3   p                       kc = lev - k + 1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.62, ITR: 40, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      re_graupel, re_snow, rer, reg, rei, res
+                                   <<<      rew, re_rain, re_ice, re_cloud
+                                   <<< Loop-information  End >>>
+             474     4   p    v                  do i = 1, nxj
+             475     4   p    v                    re_cloud(i,k)   = rew(i,kc)   !(micron)
+             476     4   p    v                    re_ice(i,k)     = rei(i,kc)   !(micron)
+             477     4   p    v                    re_rain(i,k)    = rer(i,kc)   !(micron)
+             478     4   p    v                    re_snow(i,k)    = res(i,kc)   !(micron)
+             479     4   p    v                    re_graupel(i,k) = reg(i,kc)   !(micron)
+             480     4   p    v                  enddo
+             481     3   p                     enddo
+             482     2                       endif
+             483     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 250
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.78, ITR: 32, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rain0, snow0, ice0, graupel0, rlsp, sr
+                                   <<< Loop-information  End >>>
+             484     2  pp    v              do i = 1, nxj
+             485     2   p    v                if ( rain0(i,1)    .lt. rainmin ) rain0(i,1)    = 0.0
+             486     2   p    v                if ( ice0(i,1)     .lt. rainmin ) ice0(i,1)     = 0.0
+             487     2   p    v                if ( snow0(i,1)    .lt. rainmin ) snow0(i,1)    = 0.0
+             488     2   p    v                if ( graupel0(i,1) .lt. rainmin ) graupel0(i,1) = 0.0
+             489     2               
+             490     2   p    v                rlsp(i) = rain0(i,1)+snow0(i,1)+ice0(i,1)+graupel0(i,1)  !total large scale precipitation (mm)
+             491     3   p    v                if ( rlsp(i) .gt. rainmin ) then
+             492     3   p    v                  sr(i) = (snow0(i,1)+ice0(i,1)+graupel0(i,1))                &
+             493     3                                   /(rain0(i,1)+snow0(i,1)+ice0(i,1)+graupel0(i,1))  !snow ratio
+             494     3   p    v                else
+             495     3   p    v                  sr(i) = 0.0
+             496     3   p    v                endif
+             497     2   p    v              enddo
+             498     1               
+             499     1                       deallocate                                                      &
+             500     1                         ( re_graupel,rew,rei,rer,res,reg,                             &
+             501     1                           frland,rain0,snow0,ice0,graupel0,garea,                     &
+             502     1                           qv1,ql1,qr1,qi1,qs1,qg1,qa1,qn1,pt,w,uin,vin,delp,dz,       &
+             503     1                           qv_dt,ql_dt,qr_dt,qi_dt,qs_dt,qg_dt,qa_dt,udt,vdt,pt_dt )
+             504     1                       if ( effr_in ) deallocate ( dp,rho,ql2,qi2,qr2,qs2,qg2 )
+             505     1               #endif
+             506     1                       if ( sedi_w ) deallocate ( dot )
+             507     1               
+             508     1                     endif  ! end of nmmiph.eq.11
+             509                     
+             510                           return
+             511                     !--------------------------
+             512                           end subroutine mp_scheme
+             513                     !--------------------------
+
+ Procedure information
+   Lines      : 461
+   Statements : 212
+   Stack(byte): 26624
+   Prefetch num: 164
+
+ Scoping unit of external sub-program : mp_scheme
+   Attribute and Cross reference of name
+     area
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 55  94
+      |(Definition)     : 
+      |(Reference)      : 392
+     cloud_diagnosis
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 78  466
+     con_fvirt
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 81  401  453
+     con_g
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 81  401  419  453
+     con_rd
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 81  401  453  459
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 83
+     del
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 113
+      |(Definition)     : 147  239
+      |(Reference)      : 251  265
+     delp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 137
+      |(Definition)     : 174  418  499
+      |(Reference)      : 420  424
+     dot
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 123
+      |(Definition)     : 191  400  453  506
+      |(Reference)      : 401  455
+     dp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 123
+      |(Definition)     : 187  420  504
+      |(Reference)      : 466
+     dsigma
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 55  100
+      |(Definition)     : 
+      |(Reference)      : 239  239  418  418
+     dta
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 55  91
+      |(Definition)     : 
+      |(Reference)      : 251  265  424  435  436  437  438  439  441  442  448  449  450
+     dz
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 137
+      |(Definition)     : 174  419  499
+      |(Reference)      : 424
+     effr_in
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 82  187  420  458  465  504
+     frland
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 135
+      |(Definition)     : 174  212  391  499
+      |(Reference)      : 424
+     garea
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 135
+      |(Definition)     : 174  213  392  499
+      |(Reference)      : 424
+     gfdl_cloud_microphys_driver
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 78  424
+     graupel0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 135
+      |(Definition)     : 174  228  424  488  499
+      |(Reference)      : 488  490  492  492
+     graupelncv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 117
+      |(Definition)     : 159  251
+      |(Reference)      : 279
+     hydrostatic
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 125
+      |(Definition)     : 300
+      |(Reference)      : 424
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 112
+      |(Definition)     : 237  259  271  278  284  390  397  434  474  484
+      |(Reference)      : 238  238  239  239  240  240  241  241  242  242  243  243  244  244  245  245  246  246  260  260  260  260  262  262  272  272  273  273  279  279  279  279  285  285  286  286  287  287  288  288  289  289  290  290  291  291  391  391  392  392  399  399  400  400  400  401  401  401  401  401  404  407  407  408  408  409  409  410  410  411  411  412  412  413  414  415  415  416  416  417  417  418  418  419  419  419  420  420  435  435  435  436  436  436  437  437  437  438  438  438  439  439  439  441  441  441  442  442  442  443  443  444  444  445  445  446  446  447  447  448  448  448  449  449  449  450  450  450  453  453  453  453  453  455  455  455  459  459  459  459  475  475  476  476  477  477  478  478  479  479  485  485  486  486  487  487  488  488  490  490  490  490  490  491  492  492  492  492  492  492  492  492  495
+     ice0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 135
+      |(Definition)     : 174  227  424  486  499
+      |(Reference)      : 486  490  492  492
+     icem
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 118
+      |(Definition)     : 232
+      |(Reference)      : 260
+     islimsk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 55  90
+      |(Definition)     : 
+      |(Reference)      : 251  265  391  466
+     jj
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 55  91
+      |(Definition)     : 
+      |(Reference)      : 
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 112
+      |(Definition)     : 235  257  269  282  395  433  472
+      |(Reference)      : 236  238  239  239  240  241  242  243  244  245  246  258  260  260  262  270  272  273  283  285  286  287  288  289  290  291  396  399  399  400  400  400  401  401  401  401  401  404  407  407  408  408  409  409  410  410  411  411  412  412  413  414  415  415  416  416  417  417  418  418  418  419  420  420  435  435  435  436  436  436  437  437  437  438  438  438  439  439  439  441  441  441  442  442  442  443  443  444  444  445  445  446  446  447  447  448  448  448  449  449  449  450  450  450  453  453  453  453  453  455  455  455  459  459  459  459  473  475  476  477  478  479
+     kc
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 112
+      |(Definition)     : 236  258  270  283  396  473
+      |(Reference)      : 238  239  240  241  242  243  244  245  246  260  260  262  272  273  285  286  287  288  289  290  291  419  419  475  476  477  478  479
+     kdt
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 55  88
+      |(Definition)     : 
+      |(Reference)      : 265
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 55  88
+      |(Definition)     : 
+      |(Reference)      : 92  92  99  100  100  103  104  105  105  106  108  108  108  108  113  113  114  114  114  114  114  114  114  114  114  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  187  187  187  187  187  187  187  191  235  236  241  242  243  244  245  251  251  257  258  260  260  262  265  265  269  270  272  273  282  283  286  287  288  289  290  395  396  408  409  410  411  412  424  424  433  443  444  445  446  447  466  472  473
+     lradar
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 119
+      |(Definition)     : 231
+      |(Reference)      : 265
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 260
+     me
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 55  88
+      |(Definition)     : 
+      |(Reference)      : 265
+     module_mp_gfdl
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 78
+     module_mp_thompson
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 73
+     module_mp_wsm6
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 71
+     mp_gt_driver
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 73  265
+     mp_scheme
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 55
+      |(Reference)      : 512
+     ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 55  88
+      |(Definition)     : 
+      |(Reference)      : 100  106
+     nmmiph
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 55  88
+      |(Definition)     : 
+      |(Reference)      : 161  234  234  251  256  299
+     ntcw
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 55  89
+      |(Definition)     : 
+      |(Reference)      : 241  286  408  443
+     ntgl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 55  89
+      |(Definition)     : 
+      |(Reference)      : 245  290  412  447
+     ntinc
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 55  89
+      |(Definition)     : 
+      |(Reference)      : 260  272
+     ntiw
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 55  89
+      |(Definition)     : 
+      |(Reference)      : 243  260  288  410  445
+     ntnc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 114
+      |(Definition)     : 155  260  262  265  265
+      |(Reference)      : 272  273
+     ntrnc
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 55  89
+      |(Definition)     : 
+      |(Reference)      : 262  273
+     ntrw
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 55  89
+      |(Definition)     : 
+      |(Reference)      : 242  287  409  444
+     ntsw
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 55  89
+      |(Definition)     : 
+      |(Reference)      : 244  289  411  446
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 55  88
+      |(Definition)     : 
+      |(Reference)      : 90  92  92  94  99  100  100  103  104  105  105  106  108  108  108  108  110  110  113  113  114  114  114  114  114  114  114  114  114  117  117  117  251  265
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 55  88
+      |(Definition)     : 
+      |(Reference)      : 174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  174  187  187  187  187  187  187  187  191  237  251  259  265  271  278  284  390  397  424  434  466  474  484
+     phii
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 55  92
+      |(Definition)     : 
+      |(Reference)      : 251  265  419  419
+     phys_hydrostatic
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 125
+      |(Definition)     : 301
+      |(Reference)      : 424
+     physcons
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 81
+     physpara
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 82
+     plt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 55  92
+      |(Definition)     : 
+      |(Reference)      : 238  399
+     prsl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 113
+      |(Definition)     : 146  238  399
+      |(Reference)      : 251  265  401  453  459
+     pst
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 55  100
+      |(Definition)     : 
+      |(Reference)      : 239  418
+     pt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 137
+      |(Definition)     : 174  415  499
+      |(Reference)      : 424  448
+     pt_dt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 137
+      |(Definition)     : 174  221  424  499
+      |(Reference)      : 448
+     q0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
+      |(Declaration)    : 55  100
+      |(Definition)     : 
+      |(Reference)      : 260
+     qa
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 55  104
+      |(Definition)     : 441
+      |(Reference)      : 
+     qa1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 137
+      |(Definition)     : 174  414  499
+      |(Reference)      : 424  441
+     qa_dt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 137
+      |(Definition)     : 174  220  424  499
+      |(Reference)      : 441
+     qg1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 137
+      |(Definition)     : 174  412  499
+      |(Reference)      : 424  439
+     qg2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 140
+      |(Definition)     : 187  439  504
+      |(Reference)      : 447  466
+     qg_dt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 137
+      |(Definition)     : 174  219  424  499
+      |(Reference)      : 439
+     qi1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 137
+      |(Definition)     : 174  410  424  499
+      |(Reference)      : 437
+     qi2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 140
+      |(Definition)     : 187  437  504
+      |(Reference)      : 445  466
+     qi_dt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 137
+      |(Definition)     : 174  217  424  499
+      |(Reference)      : 437
+     ql1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 137
+      |(Definition)     : 174  408  499
+      |(Reference)      : 424  435
+     ql2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 140
+      |(Definition)     : 187  435  504
+      |(Reference)      : 443  466
+     ql_dt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 137
+      |(Definition)     : 174  215  424  499
+      |(Reference)      : 435
+     qn1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 137
+      |(Definition)     : 174  413  499
+      |(Reference)      : 424
+     qr1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 137
+      |(Definition)     : 174  409  499
+      |(Reference)      : 424  436
+     qr2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 140
+      |(Definition)     : 187  436  504
+      |(Reference)      : 444  466
+     qr_dt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 137
+      |(Definition)     : 174  216  424  499
+      |(Reference)      : 436
+     qs1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 137
+      |(Definition)     : 174  411  424  499
+      |(Reference)      : 438
+     qs2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 140
+      |(Definition)     : 187  438  504
+      |(Reference)      : 446  466
+     qs_dt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 137
+      |(Definition)     : 174  218  424  499
+      |(Reference)      : 438
+     qt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 55  106
+      |(Definition)     : 272  273  285  286  287  288  289  290  442  443  444  445  446  447
+      |(Reference)      : 240  241  242  243  244  245  260  262  401  407  408  409  410  411  412  453  459
+     qtc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 114
+      |(Definition)     : 149  240  251  265
+      |(Reference)      : 285
+     qtgl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 114
+      |(Definition)     : 154  245  251  265
+      |(Reference)      : 290
+     qti
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 114
+      |(Definition)     : 152  243  251  265
+      |(Reference)      : 260  288
+     qtr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 114
+      |(Definition)     : 150  241  251  265
+      |(Reference)      : 286
+     qtrw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 114
+      |(Definition)     : 151  242  251  265
+      |(Reference)      : 287
+     qtsw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 114
+      |(Definition)     : 153  244  251  265
+      |(Reference)      : 289
+     qv1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 137
+      |(Definition)     : 174  407  499
+      |(Reference)      : 424  442
+     qv_dt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 137
+      |(Definition)     : 174  214  424  499
+      |(Reference)      : 442
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 83  100  103  105  106
+     rain0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 135
+      |(Definition)     : 174  225  424  485  499
+      |(Reference)      : 485  490  492
+     rainmin
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 121
+      |(Definition)     : 
+      |(Reference)      : 485  486  487  488  491
+     rainncv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 117
+      |(Definition)     : 157  251  265
+      |(Reference)      : 279
+     re_cloud
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 55  108
+      |(Definition)     : 251  265  475
+      |(Reference)      : 
+     re_graupel
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 140
+      |(Definition)     : 174  479  499
+      |(Reference)      : 
+     re_ice
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 55  108
+      |(Definition)     : 251  265  476
+      |(Reference)      : 
+     re_rain
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 55  108
+      |(Definition)     : 477
+      |(Reference)      : 
+     re_snow
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 55  108
+      |(Definition)     : 251  265  478
+      |(Reference)      : 
+     refl10
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 114
+      |(Definition)     : 156  265
+      |(Reference)      : 
+     reg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 140
+      |(Definition)     : 174  466  499
+      |(Reference)      : 479
+     rei
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 140
+      |(Definition)     : 174  466  499
+      |(Reference)      : 476
+     rer
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 140
+      |(Definition)     : 174  466  499
+      |(Reference)      : 477
+     res
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 140
+      |(Definition)     : 174  466  499
+      |(Reference)      : 478
+     rew
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 140
+      |(Definition)     : 174  466  499
+      |(Reference)      : 475
+     rho
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 140
+      |(Definition)     : 187  459  504
+      |(Reference)      : 466
+     rlsp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 55  110
+      |(Definition)     : 279  490
+      |(Reference)      : 491
+     sd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 55  99
+      |(Definition)     : 455
+      |(Reference)      : 400  400  455
+     sedi_w
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 125
+      |(Definition)     : 302
+      |(Reference)      : 191  398  452  506
+     snow0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 135
+      |(Definition)     : 174  226  424  487  499
+      |(Reference)      : 487  490  492  492
+     snowncv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 117
+      |(Definition)     : 158  251
+      |(Reference)      : 279
+     sr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 55  110
+      |(Definition)     : 251  265  492  495
+      |(Reference)      : 
+     tpi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : INTENT(IN), dummy-argument
+      |(Declaration)    : 55  91
+      |(Definition)     : 
+      |(Reference)      : 232
+     tt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 55  103
+      |(Definition)     : 291  448
+      |(Reference)      : 246  401  415  453  459  466
+     ttc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 114
+      |(Definition)     : 148  246  251  265
+      |(Reference)      : 291
+     udt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 137
+      |(Definition)     : 174  222  424  499
+      |(Reference)      : 449
+     uin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 137
+      |(Definition)     : 174  416  499
+      |(Reference)      : 424  449
+     ut
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 55  105
+      |(Definition)     : 449
+      |(Reference)      : 416
+     vdt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 137
+      |(Definition)     : 174  223  424  499
+      |(Reference)      : 450
+     vin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 137
+      |(Definition)     : 174  417  499
+      |(Reference)      : 424  450
+     vt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
+      |(Declaration)    : 55  105
+      |(Definition)     : 450
+      |(Reference)      : 417
+     w
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 137
+      |(Definition)     : 174  401  404  424  499
+      |(Reference)      : 453
+     wsm6
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 71  251
+
+ Total information
+   Procedures       : 2
+   Total lines      : 513
+   Total statements : 233
+   Total stack(byte): 27248
+   Total prefetch num: 164
+

@@ -1,0 +1,2776 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar 14 13:22:03 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_helio
+   Source file       : rsmout.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb157/CWBSUMc2/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "rsmout"
+  (inc)(line-no.)(nest)(optimize)
+               1                         subroutine rsmout(idtg,itau,nx,my,my_max,lev,ncld            &
+               2                                  , ptop,cp,rgas,grav,sgeo,pdiff                        &
+               3                                  , t1000,pt,plt,pk,pk2,phi,ut,vt                       &
+               4                                  , tt,qt,tg,snr,cosl                                   &
+               5                                  , km,smc,stc                                          &
+               6                                  , ice,land,ocean)
+               7                     
+               8                     #ifdef RSM
+               9                     !
+              10                     !  output driver subroutine to process sigma level data to standard
+              11                     !  pressure surfaces and standard grids
+              12                     !
+              13                           use mpe
+              14                           use rank
+              15                           use index
+              16                           use const, only: rlon1, rlon2, rlat1, rlat2, rgrdsz, RTYPE
+              17                           implicit  none
+              18                     
+              19                           integer(kind=8)  :: idtg
+              20                           integer   itau,nx,my,my_max,lev,ncld,km
+              21                           real      ptop,cp,rgas,grav
+              22                     
+              23                           real      pdiff(nxp,my_max)                                     &
+              24                                   , t1000(nxp,my_max),plt(nxp,lev,my_max)                 &
+              25                                   , tg(nxp,my_max),snr(nxp,my_max)                        &
+              26                     !soil
+              27                                   , smc(nxp,km,my_max),stc(nxp,km,my_max)
+              28                           real(kind=RTYPE) ut(nxp,lev,my_max),vt(nxp,lev,my_max)          &
+              29                                   ,        tt(nxp,lev,my_max),qt(nxp,lev*ncld,my_max)     &
+              30                                   ,        phi(nxp,lev,my_max),sgeo(nxp,my_max)           &
+              31                                   ,        pt(nxp,my_max)                                 &
+              32                                   ,        pk(nxp,lev,my_max),pk2(nxp,lev,my_max)         &
+              33                                   ,        cosl(my)
+              34                     
+              35                           logical   land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max)
+              36                     
+              37                     !
+              38                     ! local work arrays
+              39                     !
+              40                           real      slp(nxp,my_max),tmp(nxp,lev,my_max),plog(nxp,lev,my_max) &
+              41                                   , pllp(nxp,my_max),slmsk(nxp,my_max)
+              42                           real(kind=RTYPE) glob(nx,my)
+              43                           real      tens(lev+1)
+              44                     !
+              45                           integer,  parameter :: lpout = 47
+              46                           real      wrk1(nxp,lev),pout(lpout),pkout(lpout),phistd(lpout) &
+              47                                   , bt1(nxp,my_max),bt2(nxp,my_max)
+              48                           real(kind=RTYPE) pres3d(nxp,my_max,lpout),hld1(nxp,my_max)     &
+              49                                   ,        hld2(nxp,my_max)
+              50                     !
+              51                           real(kind=RTYPE) soil_xy(nxp,my_max,8)   ! the last dim is changable
+              52                     !
+              53                           integer   nxmy,jj,j,nxj,k,i,n,nk,ngq,ntt,kk,ntrac,ii
+              54                           integer   llts
+              55                           real      rad,ograv,alaps,rdg,ttb,ttp,ttt,ttt1,ttt2,anlslp
+              56                           real      apha,pl1000,splog,ax,bx,cx,dx,tmid,tsf,tadia,xxx
+              57                     !
+              58                     !yj rsm dimension
+              59                           ! global: lon 0~359.75, lat -90~90
+              60                           integer  nx2,my2,ierr
+              61                           ! default: lon 60~179.75, lat -20~70
+              62                           integer nxs, mys
+              63                           integer x1, x2, y1, y2
+              64                           real,allocatable ::  rsmoutp(:,:),                          &
+              65                          &     temp_gfs(:,:,:),spfh_gfs(:,:,:),clwr_gfs(:,:,:),           &
+              66                          &     rain_gfs(:,:,:),qice_gfs(:,:,:),snow_gfs(:,:,:),grpl_gfs(:,:,:), &
+              67                          &     ozon_gfs(:,:,:),geop_gfs(:,:),u_gfs(:,:,:),v_gfs(:,:,:),     &
+              68                          &     tg_gfs(:,:),smc_gfs(:,:,:),snr_gfs(:,:),stc_gfs(:,:,:),      &
+              69                          &     ice_gfs(:,:),                                               &
+              70                     !yj2019
+              71                          &     terr_gfs(:,:),slmsk_gfs(:,:)
+              72                     
+              73                           real,allocatable :: xr(:),yr(:)
+              74                     !
+              75                           character cdum1*14
+              76                           character cdum2*12
+              77                           data cdum1/'-------------'/
+              78                           data cdum2/'--rsmout---'/
+              79                     !
+              80                           data pout/ 1.0, 2.0, 3.0, 5.0, 7.0                          &
+              81                                    ,10.0,20.0,30.0,50.0,70.0,100.0,125.0,150.0,175.0  &
+              82                                    ,200.0,225.0,250.0,275.0,300.0,325.0,350.0,375.0   &
+              83                                    ,400.0,425.0,450.0,475.0,500.0,525.0,550.0,575.0   &
+              84                                    ,600.0,625.0,650.0,675.0,700.0,725.0,750.0,775.0   &
+              85                                    ,800.0,825.0,850.0,875.0,900.0,925.0,950.0,975.0   &
+              86                                    ,1000.0/
+              87                     !
+              88                           data rad/6.371e6/
+              89                     !
+              90                           nx2=nint(360./rgrdsz)
+              91                           my2=nint(180./rgrdsz+1.)
+              92                           nxs=nint((rlon2-rlon1)/rgrdsz+1.)
+              93                           mys=nint((rlat2-rlat1)/rgrdsz+1.)
+              94                     !
+              95                           if (myrank.eq.0) print*,'allocate rsmoutp'
+              96                           allocate (rsmoutp(nx2,my2))
+              97                           allocate (xr(nx2),yr(my2))
+              98                           if (myrank.eq.0) print*,'allocate all gfs variables for RSM'
+              99     1                     if (myrank.eq.0) then
+             100     1                       x1=nint(  (rlon1-0.)     /rgrdsz+1.)
+             101     1                       x2=nint(  (rlon2-0.)     /rgrdsz+1.)
+             102     1                       y1=nint(  (rlat1-(-90.)) /rgrdsz+1.)
+             103     1                       y2=nint(  (rlat2-(-90.)) /rgrdsz+1.)
+             104     1                       print*,'nxs, mys=',nxs,mys
+             105     1                       print*,'rlon1, rlon2, rlat1, rlat2, rgrdsz',                &
+             106     1                                 rlon1, rlon2, rlat1, rlat2, rgrdsz
+             107     2                       if ( (x2-x1+1).ne.nxs  .or. (y2-y1+1).ne.mys) then
+             108     2                         print*,'wrong dimension for output in rsmout.f90'
+             109     2                         print*,'check: mod(360.,rgrdsz) should be zero'
+             110     2               !          call mpe_finalize
+             111     2                         stop
+             112     2                       endif
+             113     1                       allocate (                                                    &
+             114     1                    &     temp_gfs(nxs,mys,lpout),spfh_gfs(nxs,mys,lpout),           &
+             115     1                    &     clwr_gfs(nxs,mys,lpout),ozon_gfs(nxs,mys,lpout),           &
+             116     1                    &     rain_gfs(nxs,mys,lpout),qice_gfs(nxs,mys,lpout),           &
+             117     1                    &     snow_gfs(nxs,mys,lpout),grpl_gfs(nxs,mys,lpout),           &
+             118     1                    &     geop_gfs(nxs,mys),u_gfs(nxs,mys,lpout),v_gfs(nxs,mys,lpout), &
+             119     1                    &     tg_gfs(nxs,mys),smc_gfs(nxs,mys,km),snr_gfs(nxs,mys),         &
+             120     1                    &     stc_gfs(nxs,mys,km),ice_gfs(nxs,mys),                      &
+             121     1               !yj2019
+             122     1                    &     terr_gfs(nxs,mys),slmsk_gfs(nxs,mys),                      &
+             123     1                    &     stat=ierr)
+             124     1                       if (ierr/=0) stop "rsmout: allocate fail"
+             125     1                       if (ierr/=0) call mpe_finalize
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      temp_gfs
+                                   <<< Loop-information  End >>>
+             126     1  pp   4v                temp_gfs=0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      spfh_gfs
+                                   <<< Loop-information  End >>>
+             127     1  pp   4v                spfh_gfs=0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      clwr_gfs
+                                   <<< Loop-information  End >>>
+             128     1  pp   4v                clwr_gfs=0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rain_gfs
+                                   <<< Loop-information  End >>>
+             129     1  pp   4v                rain_gfs=0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qice_gfs
+                                   <<< Loop-information  End >>>
+             130     1  pp   4v                qice_gfs=0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      snow_gfs
+                                   <<< Loop-information  End >>>
+             131     1  pp   4v                snow_gfs=0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      grpl_gfs
+                                   <<< Loop-information  End >>>
+             132     1  pp   4v                grpl_gfs=0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ozon_gfs
+                                   <<< Loop-information  End >>>
+             133     1  pp   4v                ozon_gfs=0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      geop_gfs
+                                   <<< Loop-information  End >>>
+             134     1  pp   4v                geop_gfs=0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      u_gfs
+                                   <<< Loop-information  End >>>
+             135     1  pp   4v                u_gfs=0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      v_gfs
+                                   <<< Loop-information  End >>>
+             136     1  pp   4v                v_gfs=0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tg_gfs
+                                   <<< Loop-information  End >>>
+             137     1  pp   4v                tg_gfs=0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      smc_gfs
+                                   <<< Loop-information  End >>>
+             138     1  pp   4v                smc_gfs=0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      snr_gfs
+                                   <<< Loop-information  End >>>
+             139     1  pp   4v                snr_gfs=0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      stc_gfs
+                                   <<< Loop-information  End >>>
+             140     1  pp   4v                stc_gfs=0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ice_gfs
+                                   <<< Loop-information  End >>>
+             141     1  pp   4v                ice_gfs=0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      terr_gfs
+                                   <<< Loop-information  End >>>
+             142     1  pp   4v                terr_gfs=0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      slmsk_gfs
+                                   <<< Loop-information  End >>>
+             143     1  pp   4v                slmsk_gfs=0.0
+             144     1                     endif
+             145                           if (myrank.eq.0) print*,'after allocate all gfs variables for RSM'
+             146                     !
+             147                           nxmy = nx*my
+             148                     ! initializing
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 6
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      bt2, bt1, pllp
+                                   <<< Loop-information  End >>>
+             149        pp   2v            pllp=0.
+             150         p   2v            bt1=0.
+             151         p   2v            bt2=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1778
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      glob
+                                   <<< Loop-information  End >>>
+             152        pp   4v            glob=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pres3d
+                                   <<< Loop-information  End >>>
+             153        pp   4v            pres3d=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      soil_xy
+                                   <<< Loop-information  End >>>
+             154        pp   4v            soil_xy=0.
+             155                     !
+             156                           if(myrank .eq. 0) print*,'   in rsmout for tau= ',itau
+             157                     !
+             158                     !
+             159     1                     if(ncld.ge.2)then
+             160     1                       ntrac=2
+             161     1                     else
+             162     1                       ntrac=ncld
+             163     1                     endif
+             164     1                     do n=1,ntrac
+             165     1                       nk=(n-1)*lev
+             166     1                       ngq = 0
+             167     1                       ntt = 0
+             168     2                       do jj =1,jlistnum
+             169     2                         j=jlist1(jj)
+             170     2                         nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qt
+                                   <<< Loop-information  End >>>
+             171     3  pp                     do k = 1, lev
+             172     3   p                       kk=nk+k
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.72, ITR: 112, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qt
+                                   <<< Loop-information  End >>>
+             173     4   p   2v                  do i = 1,nxj
+             174     5   p   2v                    if ( qt(i,kk,jj) .lt. 0.0 )  then
+             175     5   p   2v                      ngq = ngq + 1
+             176     5   p   2v                      qt(i,kk,jj) = 0.0
+             177     5   p   2v                    endif
+             178     4   p   2v                  enddo
+             179     3   p                     enddo
+             180     2               !         ntt = ntt + nxj*lev
+             181     2                         ntt = ntt + nxjp(j)*lev
+             182     2                       enddo
+             183     1                       call mpe_global_sum(ngq,1,mpe_integer)
+             184     1                       call mpe_global_sum(ntt,1,mpe_integer)
+             185     1                       if( n.eq.1 .and. myrank.eq.0 .and. ngq.ne.0 )  print 901, ngq
+             186     1                       if( n.eq.2 .and. myrank.eq.0 .and. ngq.ne.0 )  print 902, ntt-ngq
+             187     1                     enddo
+             188                     
+             189                       901 format ( 1x, " *** warning: in outflds, there are grid points"  &
+             190                                  , " with q < 0. , total number = ",i8,// )
+             191                       902 format ( 1x, " *** checking: in outflds, there are grid points" &
+             192                                  , " with qc > 0. , total number = ",i8,// )
+             193                     !
+             194                     !                 compute interpolation coeffs
+             195                     !
+             196                           ograv= 1.0/grav
+             197                     !
+             198                     !  generate structure variables
+             199                     !
+             200                     !  first, the log(p) quantities
+             201                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 45
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.89, ITR: 40, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pout, pkout
+                                   <<< Loop-information  End >>>
+             202     1  pp    v            do k=1,lpout
+             203     1   p    v              pkout(k)= log(pout(k))
+             204     1   p    v            enddo
+             205                     !
+             206                     !  generate std height at p levels
+             207                     !
+             208                           call geostd(lpout,pout,phistd)
+             209                     !
+             210                           alaps = 0.0065
+             211                           rdg = rgas/grav
+             212                     !
+             213                     !  hydrostatic equation
+             214                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tt, pk2, pk, sgeo, phi
+                                   <<< Loop-information  End >>>
+             215     1  pp                 do jj =1,jlistnum
+             216     1   p                   j=jlist1(jj)
+             217     1   p                   nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 96, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pk2, pk, sgeo, tt, phi
+                                   <<< Loop-information  End >>>
+             218     2   p   2v              do i=1,nxj
+             219     2   p   2v                phi(i,lev,jj)= cp*tt(i,lev,jj)*(pk2(i,lev,jj)-pk(i,lev,jj)) &
+             220     2                                      + sgeo(i,jj)
+             221     2   p   2v              enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pk, pk2, tt, phi
+                                   <<< Loop-information  End >>>
+             222     2   p                   do k=lev-1,1,-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 96, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tt, pk, phi, pk2
+                                   <<< Loop-information  End >>>
+             223     3   p    v                do i=1,nxj
+             224     3   p    v                  phi(i,k,jj)= phi(i,k+1,jj)+cp*(tt(i,k,jj)*(pk2(i,k,jj)-pk(i,k,jj)) &
+             225     3                                      + tt(i,k+1,jj)*(pk(i,k+1,jj)-pk2(i,k,jj)))
+             226     3   p    v                enddo
+             227     2   p                   enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      plt, plog
+                                   <<< Loop-information  End >>>
+             228     2   p                   do k=1,lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.89, ITR: 40, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      plt, plog
+                                   <<< Loop-information  End >>>
+             229     3   p    v                do i=1,nxj
+             230     3   p    v                  plog(i,k,jj)= log(plt(i,k,jj))
+             231     3   p    v                enddo
+             232     2   p                   enddo
+             233     1   p                 enddo
+             234                     !
+             235                     !  compute sea level pressure and update pdiff
+             236                     !  The method is based on one used by ecmwf, reseach manual 2 (1988)
+             237                     !
+             238                     !  llts layer's temperature is used to derive an alternative
+             239                     !  surface skin temperature
+             240                     !
+             241                     !      if( itau .gt. 0 )then
+             242                     !
+             243                           llts = lev-5
+             244                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+             245     1  pp                 do jj = 1, jlistnum
+             246     1   p                   j=jlist1(jj)
+             247     1   p                   nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pk, tt, qt, pt, plt, sgeo, phi, hld1
+                                   <<<      hld2, pdiff, pllp
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 0
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 1
+                                   <<<      PREDICATE : SPILL 1  FILL 1
+                                   <<< Loop-information  End >>>
+             248     2   p    v              do i=1,nxj
+             249     2   p    v                ttb  = tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt(i,lev,jj))
+             250     2   p    v                ttp  = tt(i,llts,jj)*pk(i,llts,jj)/(1.0+0.608*qt(i,llts,jj))
+             251     2   p    v                ttt1 = ttb + alaps*rdg*ttb*   &
+             252     2                             ((pt(i,jj)+ptop)/plt(i,lev,jj)-1.0)
+             253     2   p    v                ttt2 = ttp + alaps*(phi(i,llts,jj)-sgeo(i,jj))/grav
+             254     2   p    v                hld1(i,jj) = 0.25*ttt1 + 0.75*ttt2
+             255     2   p    v                hld2(i,jj) = hld1(i,jj) + alaps*sgeo(i,jj)/grav
+             256     3   p    v                if( sgeo(i,jj) .lt. 0.1 ) then
+             257     3   p    v                  anlslp = pt(i,jj) + ptop
+             258     3   p    v                else if( hld1(i,jj) .le. 290.5 .and. hld2(i,jj) .gt. 290.5 ) then
+             259     3   p    v                  apha = rgas*(290.5-hld1(i,jj))/sgeo(i,jj)
+             260     3   p    v                  ttt = sgeo(i,jj)/(rgas*hld1(i,jj))
+             261     3   p    v                  anlslp = (pt(i,jj)+ptop)*exp( ttt*(1.0-0.5*apha*ttt+0.333333*  &
+             262     3                                    apha*ttt*apha*ttt) )
+             263     3   p    v                else if( hld1(i,jj) .gt. 290.5 .and. hld2(i,jj) .gt. 290.5 ) then
+             264     3   p    v                  hld1(i,jj) = (hld1(i,jj)+290.5)*0.5
+             265     3   p    v                  anlslp = (pt(i,jj)+ptop)*exp( sgeo(i,jj)/(rgas*hld1(i,jj)) )
+             266     3   p    v                else if( hld1(i,jj) .lt. 255.0 .and. hld2(i,jj) .lt. 255.0 ) then
+             267     3   p    v                  hld1(i,jj) = (hld1(i,jj)+255.0)*0.5
+             268     3   p    v                  anlslp = (pt(i,jj)+ptop)*exp( sgeo(i,jj)/(rgas*hld1(i,jj)) )
+             269     3   p    v                else
+             270     3   p    v                  apha = alaps * rdg
+             271     3   p    v                  ttt = sgeo(i,jj)/(rgas*hld1(i,jj))
+             272     3   p    v                  anlslp = (pt(i,jj)+ptop)*exp( ttt*(1.0-0.5*apha*ttt+0.333333*  &
+             273     3                                    apha*ttt*apha*ttt) )
+             274     3   p    v                endif
+             275     2   p    v                pllp(i,jj) = anlslp - pt(i,jj)
+             276     2   p    v                pdiff(i,jj)=pllp(i,jj)
+             277     2   p    v              enddo
+             278     1   p                 enddo
+             279                     !
+             280                     !      else
+             281                     !
+             282                     !  pllp equal to pdiff at the initial time, tau=0
+             283                     !
+             284                     !      do jj = 1, jlistnum
+             285                     !        j=jlist1(jj)
+             286                     !        nxj=nxdef(j)
+             287                     !        do i = 1, nxj
+             288                     !          pllp(i,j) = pdiff(i,jj)
+             289                     !        enddo
+             290                     !      enddo
+             291                     !
+             292                     !      endif     ! end of ( itau .gt. 0 )
+             293                     !
+             294                     !      call mpe_unify(pllp,nx,my,2,mpe_double)
+             295                     !      call mpe_unify(pt,nx,my,2,mpe_double)
+             296                     !
+             297                     !
+             298                     !  obtain the the bottom pressure for the following interpolations
+             299                     !  bt2 will be used in geoptential interpolations
+             300                     !
+             301                           pl1000= log(1000.1)
+             302                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pdiff, pt, pllp, slp
+                                   <<< Loop-information  End >>>
+             303     1                     do jj = 1, jlistnum
+             304     1                       j=jlist1(jj)
+             305     1                       nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 616
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 176, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pdiff, slp, pt, pllp
+                                   <<< Loop-information  End >>>
+             306     2  pp   2v              do i = 1, nxj
+             307     2   p   2v                slp(i,jj)= pt(i,jj)+pdiff(i,jj)
+             308     3   p   2v                if( slp(i,jj) .le. 1000.1) then
+             309     3   p   2v                  pllp(i,jj) = 1000.1
+             310     3   p   2v                else
+             311     3   p   2v                  pllp(i,jj) = slp(i,jj)
+             312     3   p   2v                endif
+             313     2   p   2v              enddo
+             314     1               !
+             315     1                       call geostd (nxjp(j),pllp(1,jj),bt2(1,jj))
+             316     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 45
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.00, ITR: 56, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pllp
+                                   <<< Loop-information  End >>>
+             317     2  pp    v              do i = 1, nxj
+             318     2   p    v                pllp(i,jj) = log(pllp(i,jj))
+             319     2   p    v              enddo
+             320     1                     enddo
+             321                     !
+             322                     !      call mpe_unify(pllp,nx,my,2,mpe_double)
+             323                     !      call mpe_unify(bt2,nx,my,2,mpe_double)
+             324                     !
+             325                     !  temperature output
+             326                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+             327     1  pp                 do jj =1,jlistnum
+             328     1   p                   j=jlist1(jj)
+             329     1   p                   nxj=nxdef_2d(j)
+             330     1               !
+             331     1               !  bottom boundary condition for temperature:
+             332     1               !  limits for 1000 mb boundary condition are (1) standard lapse rate
+             333     1               !  from bottom model level for terrain height and (2) layer mean temp
+             334     1               !  of slp and 1000 mb.  Boundary condition is linear combination
+             335     1               !  of these two cases weighted with subterrainean thickness.
+             336     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tt, pk, qt, tmp
+                                   <<< Loop-information  End >>>
+             337     2   p                   do k = 1, lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.51, ITR: 48, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pk, tt, qt, tmp
+                                   <<< Loop-information  End >>>
+             338     3   p   2v                do i = 1,nxj
+             339     3   p   2v                  tmp(i,k,jj) = tt(i,k,jj)*pk(i,k,jj)/(1.0+0.608*qt(i,k,jj))
+             340     3   p   2v                enddo
+             341     2   p                   enddo
+             342     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pt, slp, sgeo, plog, tmp, plt, bt1
+                                   <<<      t1000
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 0
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 1
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             343     2   p    v              do i=1,nxj
+             344     2   p    v                slp(i,jj) = max( slp(i,jj), pt(i,jj) )
+             345     2   p    v                splog= log(slp(i,jj))
+             346     2   p    v                dx= log(slp(i,jj)/(pt(i,jj)+ptop))
+             347     2               !          bx= tmp(i,lev,jj)*(1.0/sig(lev+1))**0.19023 + sgeo(i,jj)*0.00065
+             348     2   p    v                bx= tmp(i,lev,jj) + sgeo(i,jj)*0.00065
+             349     3   p    v                if ( sgeo(i,jj) .ge. 1000.0 )  then
+             350     3   p    v                  tmid = sgeo(i,jj)/(dx*rgas)
+             351     3   p    v                  ax = tmp(i,lev,jj)+ (tmid-tmp(i,lev,jj))*(splog-plog(i,lev,jj)) &
+             352     3                               / (log((slp(i,jj)+pt(i,jj)+ptop)*0.5)-plog(i,lev,jj))
+             353     3   p    v                else
+             354     3   p    v                  ax = bx
+             355     3   p    v                endif
+             356     2   p    v                cx = (sgeo(i,jj)-1000.0)/(10000.0-1000.0)
+             357     2   p    v                cx = max (0.0, min (1.0, cx))
+             358     2   p    v                dx = cx*cx
+             359     2   p    v                tsf = dx*ax + (1.0-dx)*bx
+             360     2   p    v                tadia= tmp(i,lev,jj)*(slp(i,jj)/plt(i,lev,jj))**0.25
+             361     2   p    v                tsf  = max( tmp(i,lev,jj), min( tsf,tadia ) )
+             362     3   p    v                if ( slp(i,jj) .gt. 1000.1 )  then
+             363     3   p    v                  bt1(i,jj)= tsf
+             364     3   p    v                  t1000(i,jj) = tsf
+             365     3   p    v                else
+             366     3   p    v                  bt1(i,jj)= tsf + (tsf-tmp(i,lev,jj))*(pl1000-splog)  &
+             367     3                                    / (splog - plog(i,lev,jj))
+             368     3   p    v                  t1000(i,jj) = bt1(i,jj)
+             369     3   p    v                endif
+             370     2   p    v              enddo
+             371     1   p                 enddo
+             372                     !
+             373                     !!      call mpe_unify(bt1,nx,my,2,mpe_double)
+             374                     !      if(myrank.eq.0) then
+             375                     !        print*,'check bottom temperature'
+             376                     !        call qmaxn3(bt1,cdum1,cdum2,1,1,1,nx,my,1)
+             377                     !      endif
+             378                     
+             379                     !
+             380                           if(myrank.eq.0)print*,' rsmout : start tempout'
+             381                     ! yj replace tempout
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tens
+                                   <<< Loop-information  End >>>
+             382     1  pp   4v            do k = 1, lev+1
+             383     1   p   4v              tens(k) = 1.0
+             384     1   p   4v            end do
+             385                           tens(lev+1)= 0.0
+             386                           tens(lev)= 0.0
+             387                           call voterp(nx,my,my_max,lev,lpout,plog,pllp,tmp,bt1 &
+             388                                       ,pkout,pres3d,tens)
+             389                     
+             390     1                     do k=1,lpout
+             391     1                       call unify_reduceintp(nx,my,my_max,pres3d(1,1,k),glob)
+             392     2                       if(myrank.eq.0) then
+             393     2               !          call qmax2d(glob,1,1,nx,my)
+             394     2                         call xyintpo('gg',nx,my,'ga',nx2,my2,glob,rsmoutp,0 &
+             395     2                                       ,xr,yr,.true.)
+             396     2               !          print*,'x1,x2,nxs,mys,k=',x1,x2,nxs,mys,k
+             397     2               !          call qmax2d(rsmoutp,1,1,nx2,my2)
+             398     2                         jj=0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rsmoutp, temp_gfs
+                                   <<< Loop-information  End >>>
+             399     3  pp                     do j=y1,y2
+             400     3   p                       jj=jj+1
+             401     3   p                       ii=0
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rsmoutp, temp_gfs
+                                   <<< Loop-information  End >>>
+             402     4   p   2v                  do i=x1,x2
+             403     4   p   2v                    ii=ii+1
+             404     4   p   2v                    temp_gfs(ii,jj,lpout-k+1)=rsmoutp(i,j)
+             405     4   p   2v                  enddo
+             406     3   p                     enddo
+             407     2               !          print*,'k=,temp_gfs(2,2,k)=',k,temp_gfs(2,2,lpout-k+1)
+             408     2               !          print*,'====check temp_gfs after partail for temp===='
+             409     2                         call qmax2d(temp_gfs(1,1,lpout-k+1),1,1,nxs,mys)
+             410     2                       endif
+             411     1                     enddo
+             412                     
+             413                     !
+             414                     !  moisture output as mixing ratio
+             415                     !
+             416     1                       if(ncld.lt.3) then
+             417     1                         print*,'Err: ntrac must include spehum,O3,and clwr for RSM'
+             418     1                         stop
+             419     1                       endif
+             420                     !
+             421     1                     do ntrac=1,ncld
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tmp, bt1
+                                   <<< Loop-information  End >>>
+             422     2  pp                   do jj = 1, jlistnum
+             423     2   p                     j=jlist1(jj)
+             424     2   p                     nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qt, tmp
+                                   <<< Loop-information  End >>>
+             425     3   p                     do k = 1, lev
+             426     3   p                       kk = (ntrac-1)*lev+k
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qt, tmp
+                                   <<< Loop-information  End >>>
+             427     4   p   2v                  do i = 1,nxj
+             428     4   p   2v                    tmp(i,k,jj)=qt(i,kk,jj)
+             429     4   p   2v                  enddo
+             430     3   p                     enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tmp, bt1
+                                   <<< Loop-information  End >>>
+             431     3   p   2v                do i = 1,nxj
+             432     3   p   2v                  bt1(i,jj)=tmp(i,lev,jj)
+             433     3   p   2v                enddo
+             434     2   p                   enddo
+             435     1               !!        call mpe_unify(bt1,nx,my,2,mpe_double)
+             436     1                       if(myrank.eq.0)print*,' rsmout : start shumout2'
+             437     1                       if(myrank.eq.0)print*,' now is ntrac = ',ntrac, &
+             438     1               !                               '(1:spfh,2:cw,3:o3)'
+             439     1                                   '(1:spfh,2:cw,3:rain,4:ice,5:snow,6:graupel,7:o3)'
+             440     1               ! yj replace shumuot2 out
+             441     1                       call voterp(nx,my,my_max,lev,lpout,plog,pllp,tmp,bt1 &
+             442     1                            ,pkout,pres3d,tens)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      glob
+                                   <<< Loop-information  End >>>
+             443     1  pp   4v            glob=0.
+             444     2                       do k=1,lpout
+             445     2               ! relative humidity, clwr, and O3 must be smaller or equal 1.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pres3d
+                                   <<< Loop-information  End >>>
+             446     3  pp                     do jj = 1, jlistnum
+             447     3   p                       j=jlist1(jj)
+             448     3   p                       nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.25, ITR: 160, MVE: 6, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pres3d
+                                   <<< Loop-information  End >>>
+             449     4   p   2v                  do i=1,nxj
+             450     4   p   2v                    pres3d(i,jj,k)= max(pres3d(i,jj,k),0.0)
+             451     4   p   2v                  enddo !end --loop i
+             452     3   p                     enddo !end --loop jj
+             453     2                         call unify_reduceintp(nx,my,my_max,pres3d(1,1,k),glob)
+             454     2               
+             455     3                        if(myrank.eq.0) then
+             456     3                         call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             457     3                                      ,rsmoutp,0,xr,yr,.true.)
+             458     3               !          jj=0
+             459     3               !          do j=y1,y2
+             460     3               !            jj=jj+1
+             461     3               !            ii=0
+             462     3               !            do i=x1,x2
+             463     3               !              ii=ii+1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.75, ITR: 128, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rsmoutp, spfh_gfs
+                                   <<< Loop-information  End >>>
+             464     3  pp   2v                 if (ntrac.eq.1) spfh_gfs(:,:,lpout-k+1)=max(rsmoutp(x1:x2,y1:y2),0.0)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.75, ITR: 128, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rsmoutp, clwr_gfs
+                                   <<< Loop-information  End >>>
+             465     3  pp   2v                 if (ntrac.eq.2) clwr_gfs(:,:,lpout-k+1)=max(rsmoutp(x1:x2,y1:y2),0.0)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.75, ITR: 128, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rsmoutp, rain_gfs
+                                   <<< Loop-information  End >>>
+             466     3  pp   2v                 if (ntrac.eq.3) rain_gfs(:,:,lpout-k+1)=max(rsmoutp(x1:x2,y1:y2),0.0)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.75, ITR: 128, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rsmoutp, qice_gfs
+                                   <<< Loop-information  End >>>
+             467     3  pp   2v                 if (ntrac.eq.4) qice_gfs(:,:,lpout-k+1)=max(rsmoutp(x1:x2,y1:y2),0.0)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.75, ITR: 128, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rsmoutp, snow_gfs
+                                   <<< Loop-information  End >>>
+             468     3  pp   2v                 if (ntrac.eq.5) snow_gfs(:,:,lpout-k+1)=max(rsmoutp(x1:x2,y1:y2),0.0)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.75, ITR: 128, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rsmoutp, grpl_gfs
+                                   <<< Loop-information  End >>>
+             469     3  pp   2v                 if (ntrac.eq.6) grpl_gfs(:,:,lpout-k+1)=max(rsmoutp(x1:x2,y1:y2),0.0)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.75, ITR: 128, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rsmoutp, ozon_gfs
+                                   <<< Loop-information  End >>>
+             470     3  pp   2v                 if (ntrac.eq.ncld) ozon_gfs(:,:,lpout-k+1)=max(rsmoutp(x1:x2,y1:y2),0.0)
+             471     3               !            enddo
+             472     3               !          enddo
+             473     3                         if (ntrac.eq.1)call qmax2d(spfh_gfs(1,1,lpout-k+1),1,1,nxs,mys)
+             474     3                         if (ntrac.eq.2)call qmax2d(clwr_gfs(1,1,lpout-k+1),1,1,nxs,mys)
+             475     3               !          if (ntrac.eq.3)call qmax2d(ozon_gfs(1,1,lpout-k+1),1,1,nxs,mys)
+             476     3                         if (ntrac.eq.3)call qmax2d(rain_gfs(1,1,lpout-k+1),1,1,nxs,mys)
+             477     3                         if (ntrac.eq.4)call qmax2d(qice_gfs(1,1,lpout-k+1),1,1,nxs,mys)
+             478     3                         if (ntrac.eq.5)call qmax2d(snow_gfs(1,1,lpout-k+1),1,1,nxs,mys)
+             479     3                         if (ntrac.eq.6)call qmax2d(grpl_gfs(1,1,lpout-k+1),1,1,nxs,mys)
+             480     3                         if (ntrac.eq.ncld)call qmax2d(ozon_gfs(1,1,lpout-k+1),1,1,nxs,mys)
+             481     3                        endif ! end -- myrank
+             482     2                       enddo !end --loop k
+             483     1                     enddo    !end --loop ntrac
+             484                     
+             485                     !
+             486                     !  geopotential height output
+             487                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      slp, t1000, sgeo, bt1, bt2
+                                   <<< Loop-information  End >>>
+             488     1                       do jj =1,jlistnum
+             489     1                         j=jlist1(jj)
+             490     1                         nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 42
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.02, ITR: 40, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      slp, t1000, sgeo, bt1
+                                   <<< Loop-information  End >>>
+             491     2  pp    v                do i=1,nxj
+             492     3   p    v                  if(slp(i,jj).le.1000.1) then
+             493     3   p    v                    bt1(i,jj)= t1000(i,jj)*rgas*log(slp(i,jj)*0.001)
+             494     3   p    v                  else
+             495     3   p    v                    bt1(i,jj) = min( sgeo(i,jj), 0.0 )
+             496     3   p    v                  endif
+             497     2   p    v                enddo
+             498     1               !
+             499     1               !  compute standard geopotentials, subtract them from sigma
+             500     1               !  level values. vertical interpolation will be done on
+             501     1               !  these deviation from standard values
+             502     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      phi, wrk1, tmp
+                                   <<< Loop-information  End >>>
+             503     2                         do k=1,lev
+             504     2                           call geostd (nxjp(j),plt(1,k,jj),wrk1(1,k))
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 843
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.50, ITR: 160, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wrk1, phi, tmp
+                                   <<< Loop-information  End >>>
+             505     3  pp   2v                  do i=1,nxj
+             506     3   p   2v                    tmp(i,k,jj) = ograv*phi(i,k,jj)-wrk1(i,k)
+             507     3   p   2v                  enddo
+             508     2                         enddo
+             509     1               !
+             510     1               !  bottom boundary conditions
+             511     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 889
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 192, MVE: 7, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      bt1, bt2
+                                   <<< Loop-information  End >>>
+             512     2  pp   2v                do i=1,nxj
+             513     2   p   2v                  bt1(i,jj) = ograv*bt1(i,jj) - bt2(i,jj)
+             514     2   p   2v                enddo
+             515     1                       enddo
+             516                     !!        call mpe_unify(bt1,nx,my,2,mpe_double)
+             517                     !
+             518                             if(myrank.eq.0)print*,' rsmout : start geopout'
+             519                     ! yj replace geopout # output unit [gpm]
+             520                             call voterp(nx,my,my_max,lev,lpout,plog,pllp,tmp,bt1 &
+             521                                 ,pkout,pres3d,tens)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      glob
+                                   <<< Loop-information  End >>>
+             522        pp   4v            glob=0.
+             523     1                     do k=lpout,lpout
+             524     1               !yj      do k=1,lpout
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pres3d
+                                   <<< Loop-information  End >>>
+             525     2  pp                   do  jj=1, jlistnum
+             526     2   p                   j=jlist1(jj)
+             527     2   p                   nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 256, MVE: 9, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pres3d
+                                   <<< Loop-information  End >>>
+             528     3   p   2v              do  i=1,nxj
+             529     3   p   2v               pres3d(i,jj,k)= pres3d(i,jj,k)+phistd(k)
+             530     3   p   2v              enddo
+             531     2   p                   enddo
+             532     1                       call unify_reduceintp(nx,my,my_max,pres3d(1,1,k),glob)
+             533     1               !       call smth9(nx,my,glob,glob2,1)
+             534     1               !       glob=glob2
+             535     1               !       call smth9(nx,my,glob,glob2,2)
+             536     1               !       glob=glob2
+             537     1               
+             538     2                       if(myrank.eq.0) then
+             539     2                         call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             540     2                                      ,rsmoutp,0,xr,yr,.true.)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rsmoutp, geop_gfs
+                                   <<< Loop-information  End >>>
+             541     2  pp   2v                geop_gfs(:,:)=rsmoutp(x1:x2,y1:y2)
+             542     2                         call qmax2d(geop_gfs(1,1),1,1,nxs,mys)
+             543     2                       endif
+             544     1                     enddo
+             545                     
+             546                     ! wind --- u and v
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      vt, ut, bt2, bt1
+                                   <<< Loop-information  End >>>
+             547     1  pp                   do jj =1,jlistnum
+             548     1   p                     j=jlist1(jj)
+             549     1   p                     nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.50, ITR: 80, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      vt, ut, bt2, bt1
+                                   <<< Loop-information  End >>>
+             550     2   p   2v                do i=1,nxj
+             551     2   p   2v                  bt1(i,jj)= ut(i,lev,jj)
+             552     2   p   2v                  bt2(i,jj)= vt(i,lev,jj)
+             553     2   p   2v                enddo
+             554     1   p                   enddo
+             555                     !        call mpe_unify(bt1,nx,my,2,mpe_double)
+             556                     !        call mpe_unify(bt2,nx,my,2,mpe_double)
+             557                             if(myrank.eq.0)print*,' rsmout : start windout'
+             558                     !  yj replace windout
+             559                     ! first: do the u components
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ut, tmp
+                                   <<< Loop-information  End >>>
+             560        pp   4v            tmp=ut
+             561                           call voterp(nx,my,my_max,lev,lpout,plog,pllp,tmp,bt1 &
+             562                                      ,pkout,pres3d,tens)
+             563                     !      if( lreduce.eq.1 ) call reduceintp (bt1,nxdef,nx,my)
+             564                     !      do i =1,nx
+             565                     !        do j =1,my
+             566                     !          pklzl(i,j)=pllp(i,j)
+             567                     !        enddo
+             568                     !      enddo
+             569                     !      if( lreduce.eq.1 ) call reduceintp(pklzl,nxdef,nx,my)
+             570                     
+             571     1                     do k=1,lpout
+             572     1               !
+             573     1               !  below ground level extrapolate surface wind downward
+             574     1               !  deweight wind with cos latitude, earth radius
+             575     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pllp, bt1, pres3d
+                                   <<< Loop-information  End >>>
+             576     2  pp                   do jj = 1, jlistnum
+             577     2   p                     j=jlist1(jj)
+             578     2   p                     nxj=nxdef_2d(j)
+             579     2   p                     xxx= rad/cosl(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.40, ITR: 48, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pres3d, pllp, bt1
+                                   <<< Loop-information  End >>>
+             580     3   p   2v                do i=1,nxj
+             581     3   p   2v                 if(pkout(k).gt.pllp(i,jj)) pres3d(i,jj,k)= bt1(i,jj)
+             582     3   p   2v                 pres3d(i,jj,k)=pres3d(i,jj,k)*xxx
+             583     3   p   2v                enddo
+             584     2   p                   enddo
+             585     1                       call unify_reduceintp(nx,my,my_max,pres3d(1,1,k),glob)
+             586     1               !        do i=1,nxmy
+             587     1               !          if(pkout(k).gt.pklzl(i,1)) pres3d(i,1,k)= bt1(i,1)
+             588     1               !        enddo
+             589     1               !
+             590     1               !  deweight wind with cos latitude, earth radius
+             591     1               !
+             592     1               !        glob=0.
+             593     1               !        do j=1,my
+             594     1               !          xx= rad/cosl(j)
+             595     1               !          do i=1,nx
+             596     1               !            glob(i,j)= pres3d(i,j,k)*xx
+             597     1               !          enddo
+             598     1               !        enddo
+             599     1               ! wind flag is "1" in xyintpo
+             600     2                       if(myrank.eq.0) then
+             601     2                       call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             602     2                                    ,rsmoutp,1,xr,yr,.true.)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rsmoutp, u_gfs
+                                   <<< Loop-information  End >>>
+             603     2  pp   2v                u_gfs(:,:,lpout-k+1)=rsmoutp(x1:x2,y1:y2)
+             604     2                         call qmax2d(u_gfs(1,1,lpout-k+1),1,1,nxs,mys)
+             605     2                       endif
+             606     1                     enddo
+             607                     !  now the v components
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      vt, tmp
+                                   <<< Loop-information  End >>>
+             608        pp   4v            tmp=vt
+             609                           call voterp(nx,my,my_max,lev,lpout,plog,pllp,tmp,bt2 &
+             610                                      ,pkout,pres3d,tens)
+             611                     !      if( lreduce.eq.1 ) call reduceintp (bt2,nxdef,nx,my)
+             612                     !
+             613     1                     do k=1,lpout
+             614     1               !
+             615     1               !  below ground level extrapolate surface wind downward
+             616     1               !  deweight wind with cos latitude, earth radius
+             617     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pllp, bt2, pres3d
+                                   <<< Loop-information  End >>>
+             618     2  pp                   do jj = 1, jlistnum
+             619     2   p                     j=jlist1(jj)
+             620     2   p                     nxj=nxdef_2d(j)
+             621     2   p                     xxx= rad/cosl(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.40, ITR: 48, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pres3d, pllp, bt2
+                                   <<< Loop-information  End >>>
+             622     3   p   2v                do i=1,nxj
+             623     3   p   2v                 if(pkout(k).gt.pllp(i,jj)) pres3d(i,jj,k)= bt2(i,jj)
+             624     3   p   2v                 pres3d(i,jj,k)=pres3d(i,jj,k)*xxx
+             625     3   p   2v                enddo
+             626     2   p                   enddo
+             627     1                       call unify_reduceintp(nx,my,my_max,pres3d(1,1,k),glob)
+             628     1               !        call qmaxn3(glob,cdum1,cdum2,1,1,1,nx,my,1)
+             629     1               
+             630     1               !        do i=1,nxmy
+             631     1               !          if(pkout(k).gt.pklzl(i,1)) pres3d(i,1,k)=bt2(i,1)
+             632     1               !        enddo
+             633     1               !        glob=0.
+             634     1               !        do j=1,my
+             635     1               !          xx= rad/cosl(j)
+             636     1               !          do i=1,nx
+             637     1               !            glob(i,j)= pres3d(i,j,k)*xx
+             638     1               !          enddo
+             639     1               !        enddo
+             640     1               ! wind flag is "1" in xyintpo
+             641     2                       if(myrank.eq.0) then
+             642     2                       call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             643     2                                    ,rsmoutp,1,xr,yr,.true.)
+             644     2               !          jj=0
+             645     2               !          do j=y1,y2
+             646     2               !            jj=jj+1
+             647     2               !            ii=0
+             648     2               !            do i=x1,x2
+             649     2               !              ii=ii+1
+             650     2               !              v_gfs(ii,jj,lpout-k+1)=rsmoutp(i,j)
+             651     2               !            enddo
+             652     2               !          enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rsmoutp, v_gfs
+                                   <<< Loop-information  End >>>
+             653     2  pp   2v                v_gfs(:,:,lpout-k+1)=rsmoutp(x1:x2,y1:y2)
+             654     2                         call qmax2d(v_gfs(1,1,lpout-k+1),1,1,nxs,mys)
+             655     2                       endif
+             656     1                     enddo
+             657                     !
+             658                     !output the terr geopotential height,
+             659                     ! turn off by yjchen2019July, terr is not used and some index is wrong below
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sgeo, hld1
+                                   <<< Loop-information  End >>>
+             660     1  pp                  do jj=1, jlistnum
+             661     1   p                    j=jlist1(jj)
+             662     1   p                    nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sgeo, hld1
+                                   <<< Loop-information  End >>>
+             663     2   p   2v               do i =1,nxj
+             664     2   p   2v                 hld1(i,jj)=sgeo(i,jj)*ograv
+             665     2   p   2v               enddo
+             666     1   p                  enddo
+             667                     !byl       call mpe2d_unify(glob,hld1)
+             668                     !!      do j=1,my
+             669                     !!       nxj=nxdef(j)
+             670                     !!      do i=1,nxj
+             671                     !!        glob(i,j)=glob(i,j)*ograv
+             672                     !!      enddo
+             673                     !!      enddo
+             674                     !byl       if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+             675                            call unify_reduceintp(nx,my,my_max,hld1,glob)
+             676     1                      if(myrank.eq.0) then
+             677     1                      call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             678     1                                  ,rsmoutp,0,xr,yr,.true.)
+             679     1               !!yj2019
+             680     1               !         print*,'rsmout output terrain gfs'
+             681     1               !          jj=0
+             682     1               !          do j=y1,y2
+             683     1               !            jj=jj+1
+             684     1               !            ii=0
+             685     1               !            do i=x1,x2
+             686     1               !              ii=ii+1
+             687     1               !              terr_gfs(ii,jj)=max(rsmoutp(i,j),0.0)
+             688     1               !            enddo
+             689     1               !          enddo
+             690     1               !          call qmaxn3(terr_gfs(1,1),cdum1,cdum2,1,1,1,nxs,mys,1)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.75, ITR: 128, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rsmoutp, terr_gfs
+                                   <<< Loop-information  End >>>
+             691     1  pp   2v                 terr_gfs(:,:)=max(rsmoutp(x1:x2,y1:y2),0.0)
+             692     1                          call qmax2d(terr_gfs(1,1),1,1,nxs,mys)
+             693     1                       endif
+             694                     
+             695                     
+             696                     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+             697                     !  !!!!!!!!!!!!!!!---below output the surface file for rsm (nsig2)---!!!!!
+             698                     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+             699                     !
+             700                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      stc, smc, soil_xy
+                                   <<< Loop-information  End >>>
+             701     1  pp                 do jj = 1, jlistnum
+             702     1   p                   j=jlist1(jj)
+             703     1   p                   nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.91, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      stc, smc, soil_xy
+                                   <<< Loop-information  End >>>
+             704     2   p    v              do i = 1, nxj
+             705     2   p    v                soil_xy(i,jj,1) = smc(i,1,jj)
+             706     2   p    v                soil_xy(i,jj,2) = smc(i,2,jj)
+             707     2   p    v                soil_xy(i,jj,3) = smc(i,3,jj)
+             708     2   p    v                soil_xy(i,jj,4) = smc(i,4,jj)
+             709     2   p    v                soil_xy(i,jj,5) = stc(i,1,jj)
+             710     2   p    v                soil_xy(i,jj,6) = stc(i,2,jj)
+             711     2   p    v                soil_xy(i,jj,7) = stc(i,3,jj)
+             712     2   p    v                soil_xy(i,jj,8) = stc(i,4,jj)
+             713     2   p    v              enddo
+             714     1   p                 enddo
+             715                     !
+             716                     ! output some 2-dimension veriable to dmsfile
+             717                     !
+             718                           if(myrank .eq. 0) print *,' rsmout : output surface file'
+             719                     !replace out2d
+             720                     ! need mpe unify
+             721                     ! ***tg***
+             722                     !byl      call mpe2d_unify(glob,tg)
+             723                     !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tg, hld1
+                                   <<< Loop-information  End >>>
+             724        pp   4v            hld1=tg
+             725                           call unify_reduceintp(nx,my,my_max,hld1,glob)
+             726     1                     if(myrank.eq.0) then
+             727     1                     call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             728     1                                 ,rsmoutp,0,xr,yr,.true.)
+             729     1               !          jj=0
+             730     1               !          do j=y1,y2
+             731     1               !            jj=jj+1
+             732     1               !            ii=0
+             733     1               !            do i=x1,x2
+             734     1               !              ii=ii+1
+             735     1               !              tg_gfs(ii,jj)=rsmoutp(i,j)
+             736     1               !            enddo
+             737     1               !          enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rsmoutp, tg_gfs
+                                   <<< Loop-information  End >>>
+             738     1  pp   2v                tg_gfs(:,:)=rsmoutp(x1:x2,y1:y2)
+             739     1                         call qmax2d(tg_gfs(1,1),1,1,nxs,mys)
+             740     1                     endif
+             741                     ! ***0-0.1m soil moisture content [fraction]***
+             742                     !byl      call mpe2d_unify(glob,soil_xy(1,1,1))
+             743                     !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+             744                           call unify_reduceintp(nx,my,my_max,soil_xy(1,1,1),glob)
+             745     1                     if(myrank.eq.0) then
+             746     1                     call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             747     1                                 ,rsmoutp,0,xr,yr,.true.)
+             748     1               !          jj=0
+             749     1               !          do j=y1,y2
+             750     1               !            jj=jj+1
+             751     1               !            ii=0
+             752     1               !            do i=x1,x2
+             753     1               !              ii=ii+1
+             754     1               !              smc_gfs(ii,jj,1)=rsmoutp(i,j)
+             755     1               !            enddo
+             756     1               !          enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rsmoutp, smc_gfs
+                                   <<< Loop-information  End >>>
+             757     1  pp   2v                smc_gfs(:,:,1)=rsmoutp(x1:x2,y1:y2)
+             758     1                         call qmax2d(smc_gfs(1,1,1),1,1,nxs,mys)
+             759     1                     endif
+             760                     ! ***0.1-0.4m soil moisture content [fraction]***
+             761                     !byl      call mpe2d_unify(glob,soil_xy(1,1,2))
+             762                     !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+             763                           call unify_reduceintp(nx,my,my_max,soil_xy(1,1,2),glob)
+             764     1                     if(myrank.eq.0) then
+             765     1                     call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             766     1                                 ,rsmoutp,0,xr,yr,.true.)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rsmoutp, smc_gfs
+                                   <<< Loop-information  End >>>
+             767     1  pp   2v                smc_gfs(:,:,2)=rsmoutp(x1:x2,y1:y2)
+             768     1                         call qmax2d(smc_gfs(1,1,2),1,1,nxs,mys)
+             769     1                     endif
+             770                     ! ***0.4-1m soil moisture content [fraction]***
+             771                     !byl      call mpe2d_unify(glob,soil_xy(1,1,3))
+             772                     !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+             773                           call unify_reduceintp(nx,my,my_max,soil_xy(1,1,3),glob)
+             774     1                     if(myrank.eq.0) then
+             775     1                     call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             776     1                                 ,rsmoutp,0,xr,yr,.true.)
+             777     1               !          jj=0
+             778     1               !          do j=y1,y2
+             779     1               !            jj=jj+1
+             780     1               !            ii=0
+             781     1               !            do i=x1,x2
+             782     1               !              ii=ii+1
+             783     1               !              smc_gfs(ii,jj,3)=rsmoutp(i,j)
+             784     1               !            enddo
+             785     1               !          enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rsmoutp, smc_gfs
+                                   <<< Loop-information  End >>>
+             786     1  pp   2v                smc_gfs(:,:,3)=rsmoutp(x1:x2,y1:y2)
+             787     1                         call qmax2d(smc_gfs(1,1,3),1,1,nxs,mys)
+             788     1                     endif
+             789                     ! ***below 1m soil moisture content [fraction]***
+             790                     !byl      call mpe2d_unify(glob,soil_xy(1,1,4))
+             791                     !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+             792                           call unify_reduceintp(nx,my,my_max,soil_xy(1,1,4),glob)
+             793     1                     if(myrank.eq.0) then
+             794     1                     call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             795     1                                 ,rsmoutp,0,xr,yr,.true.)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rsmoutp, smc_gfs
+                                   <<< Loop-information  End >>>
+             796     1  pp   2v                smc_gfs(:,:,4)=rsmoutp(x1:x2,y1:y2)
+             797     1                         call qmax2d(smc_gfs(1,1,4),1,1,nxs,mys)
+             798     1                     endif
+             799                     ! ***snr***
+             800                     !byl      call mpe2d_unify(glob,snr)
+             801                     !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      snr, hld1
+                                   <<< Loop-information  End >>>
+             802        pp   4v            hld1=snr
+             803                           call unify_reduceintp(nx,my,my_max,hld1,glob)
+             804     1                     if(myrank.eq.0) then
+             805     1                     call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             806     1                                 ,rsmoutp,0,xr,yr,.true.)
+             807     1               !          jj=0
+             808     1               !          do j=y1,y2
+             809     1               !            jj=jj+1
+             810     1               !            ii=0
+             811     1               !            do i=x1,x2
+             812     1               !              ii=ii+1
+             813     1               !              snr_gfs(ii,jj)=rsmoutp(i,j)
+             814     1               !            enddo
+             815     1               !          enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rsmoutp, snr_gfs
+                                   <<< Loop-information  End >>>
+             816     1  pp   2v                snr_gfs(:,:)=rsmoutp(x1:x2,y1:y2)
+             817     1                         call qmax2d(snr_gfs(1,1),1,1,nxs,mys)
+             818     1                     endif
+             819                     ! ***0-0.1m soil temperature***
+             820                     !byl      call mpe2d_unify(glob,soil_xy(1,1,5))
+             821                     !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+             822                           call unify_reduceintp(nx,my,my_max,soil_xy(1,1,5),glob)
+             823     1                     if(myrank.eq.0) then
+             824     1                     call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             825     1                                 ,rsmoutp,0,xr,yr,.true.)
+             826     1               !          jj=0
+             827     1               !          do j=y1,y2
+             828     1               !            jj=jj+1
+             829     1               !            ii=0
+             830     1               !            do i=x1,x2
+             831     1               !              ii=ii+1
+             832     1               !              stc_gfs(ii,jj,1)=rsmoutp(i,j)
+             833     1               !            enddo
+             834     1               !          enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rsmoutp, stc_gfs
+                                   <<< Loop-information  End >>>
+             835     1  pp   2v                stc_gfs(:,:,1)=rsmoutp(x1:x2,y1:y2)
+             836     1                         call qmax2d(stc_gfs(1,1,1),1,1,nxs,mys)
+             837     1                     endif
+             838                     ! ***0.1-0.4m soil temperature***
+             839                     !byl      call mpe2d_unify(glob,soil_xy(1,1,6))
+             840                     !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+             841                           call unify_reduceintp(nx,my,my_max,soil_xy(1,1,6),glob)
+             842     1                     if(myrank.eq.0) then
+             843     1                     call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             844     1                                 ,rsmoutp,0,xr,yr,.true.)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rsmoutp, stc_gfs
+                                   <<< Loop-information  End >>>
+             845     1  pp   2v                stc_gfs(:,:,2)=rsmoutp(x1:x2,y1:y2)
+             846     1                         call qmax2d(stc_gfs(1,1,2),1,1,nxs,mys)
+             847     1                     endif
+             848                     ! ***0.4-1m soil temperature***
+             849                     !byl      call mpe2d_unify(glob,soil_xy(1,1,7))
+             850                     !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+             851                           call unify_reduceintp(nx,my,my_max,soil_xy(1,1,7),glob)
+             852     1                     if(myrank.eq.0) then
+             853     1                     call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             854     1                                 ,rsmoutp,0,xr,yr,.true.)
+             855     1               !          jj=0
+             856     1               !          do j=y1,y2
+             857     1               !            jj=jj+1
+             858     1               !            ii=0
+             859     1               !            do i=x1,x2
+             860     1               !              ii=ii+1
+             861     1               !              stc_gfs(ii,jj,3)=rsmoutp(i,j)
+             862     1               !            enddo
+             863     1               !          enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rsmoutp, stc_gfs
+                                   <<< Loop-information  End >>>
+             864     1  pp   2v                stc_gfs(:,:,3)=rsmoutp(x1:x2,y1:y2)
+             865     1                         call qmax2d(stc_gfs(1,1,3),1,1,nxs,mys)
+             866     1                     endif
+             867                     ! ***below 1m soil temperature***
+             868                     !byl      call mpe2d_unify(glob,soil_xy(1,1,8))
+             869                     !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+             870                           call unify_reduceintp(nx,my,my_max,soil_xy(1,1,8),glob)
+             871     1                     if(myrank.eq.0) then
+             872     1                     call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             873     1                                 ,rsmoutp,0,xr,yr,.true.)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rsmoutp, stc_gfs
+                                   <<< Loop-information  End >>>
+             874     1  pp   2v                stc_gfs(:,:,4)=rsmoutp(x1:x2,y1:y2)
+             875     1                         call qmax2d(stc_gfs(1,1,4),1,1,nxs,mys)
+             876     1                     endif
+             877                     ! ***land and sea mask***(land=1,sea=0)***
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      glob
+                                   <<< Loop-information  End >>>
+             878        pp   4v             glob=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      slmsk
+                                   <<< Loop-information  End >>>
+             879        pp   4v             slmsk=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      land, ocean, slmsk
+                                   <<< Loop-information  End >>>
+             880     1  pp                  do jj=1,jlistnum
+             881     1   p                    j=jlist1(jj)
+             882     1   p                    nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 64, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ocean, land, slmsk
+                                   <<< Loop-information  End >>>
+             883     2   p   2v             do i=1,nxj
+             884     2   p   2v               if(land(i,jj))slmsk(i,jj)=1.0
+             885     2   p   2v               if(ocean(i,jj))slmsk(i,jj)=0.0
+             886     2   p   2v             enddo
+             887     1   p                  enddo
+             888                     !byl       call mpe2d_unify(glob,slmsk)
+             889                     !byl       if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      slmsk, hld1
+                                   <<< Loop-information  End >>>
+             890        pp   4v            hld1=slmsk
+             891                           call unify_reduceintp(nx,my,my_max,hld1,glob)
+             892                     !yj2019
+             893     1                      if(myrank.eq.0) then
+             894     1                      call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             895     1                                  ,rsmoutp,0,xr,yr,.true.)
+             896     1                           jj=0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rsmoutp, slmsk_gfs
+                                   <<< Loop-information  End >>>
+             897     2  pp                       do j=y1,y2
+             898     2   p                         jj=jj+1
+             899     2   p                         ii=0
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.16, ITR: 80, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rsmoutp, slmsk_gfs
+                                   <<< Loop-information  End >>>
+             900     3   p   2v                    do i=x1,x2
+             901     3   p   2v                      ii=ii+1
+             902     3   p   2v                      slmsk_gfs(ii,jj)=max(min(rsmoutp(i,j),1.0),0.0)
+             903     3   p   2v                    enddo
+             904     2   p                       enddo
+             905     1               !           call qmaxn3(slmsk_gfs(1,1),cdum1,'--slmsk-----',1,1,1,nxs,mys,1)
+             906     1               !           slmsk_gfs(:,:)=rsmoutp(x1:x2,y1:y2)
+             907     1                          call qmax2d(slmsk_gfs(1,1),1,1,nxs,mys)
+             908     1                      endif
+             909                     !! ***ice***(simk in RSM-csfcfld(:,13))
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      glob
+                                   <<< Loop-information  End >>>
+             910        pp   4v            glob=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      slmsk
+                                   <<< Loop-information  End >>>
+             911        pp   4v            slmsk=0.
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ice, slmsk
+                                   <<< Loop-information  End >>>
+             912     1  pp                 do jj=1,jlistnum
+             913     1   p                   j=jlist1(jj)
+             914     1   p                   nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.75, ITR: 144, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      slmsk, ice
+                                   <<< Loop-information  End >>>
+             915     2   p   2v            do i=1,nxj
+             916     2   p   2v              if(ice(i,jj))slmsk(i,jj)=2.0
+             917     2   p   2v            enddo
+             918     1   p                 enddo
+             919                     !byl      call mpe2d_unify(glob,slmsk)
+             920                     !byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      slmsk, hld1
+                                   <<< Loop-information  End >>>
+             921        pp   4v            hld1=slmsk
+             922                           call unify_reduceintp(nx,my,my_max,hld1,glob)
+             923     1                     if(myrank.eq.0) then
+             924     1                     call xyintpo('gg',nx,my,'ga',nx2,my2,glob &
+             925     1                                 ,rsmoutp,0,xr,yr,.true.)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rsmoutp, ice_gfs
+                                   <<< Loop-information  End >>>
+             926     1  pp   2v            ice_gfs(:,:)=rsmoutp(x1:x2,y1:y2)
+             927     1                     call qmax2d(ice_gfs(1,1),1,1,nxs,mys)
+             928     1                     endif
+             929                     ! ***
+             930                     #ifdef CWB_MPMD
+             931                           if(myrank.eq.0) then
+             932                           print*,'before into send_data in rsmout.f90'
+             933                           call send_data(float(itau),nxs,mys,km,lpout,temp_gfs,spfh_gfs &
+             934                          &              ,clwr_gfs,rain_gfs,qice_gfs,snow_gfs,grpl_gfs   &
+             935                          &              ,ozon_gfs,geop_gfs,u_gfs,v_gfs      &
+             936                          &              ,tg_gfs,smc_gfs,snr_gfs,stc_gfs,ice_gfs     &
+             937                     !yj2019
+             938                          &              ,terr_gfs,slmsk_gfs)
+             939                           endif
+             940                     #else
+             941     1                     if(myrank.eq.0) then
+             942     1                     print*,'before into wrte_data in rsmout.f90'
+             943     1                     call wrte_data(idtg,float(itau),nxs,mys,km,lpout,temp_gfs,spfh_gfs &
+             944     1                    &              ,clwr_gfs,rain_gfs,qice_gfs,snow_gfs,grpl_gfs   &
+             945     1                    &              ,ozon_gfs,geop_gfs,u_gfs,v_gfs      &
+             946     1                    &              ,tg_gfs,smc_gfs,snr_gfs,stc_gfs,ice_gfs     &
+             947     1               !yj2019
+             948     1                    &              ,terr_gfs,slmsk_gfs)
+             949     1                     endif
+             950                     #endif
+             951                     
+             952                     !
+             953     1                     if (myrank.eq.0) then
+             954     1                     deallocate ( slmsk_gfs,terr_gfs,ice_gfs,stc_gfs, &
+             955     1                                  snr_gfs,smc_gfs,tg_gfs,v_gfs,u_gfs,  &
+             956     1                                  geop_gfs,ozon_gfs,grpl_gfs,snow_gfs, &
+             957     1                                  qice_gfs,rain_gfs,clwr_gfs,spfh_gfs, &
+             958     1                                  temp_gfs, stat=ierr)
+             959     1                     if (ierr/=0) stop "rsmout: deallocate fail"
+             960     1                     endif
+             961                           deallocate (xr, yr, stat=ierr)
+             962                           deallocate (rsmoutp, stat=ierr)
+             963                           if (ierr/=0) stop "rsmout: deallocate fail rsmoutp"
+             964                     !
+             965                     #endif
+             966                         end subroutine rsmout
+
+ Procedure information
+   Lines      : 966
+   Statements : 523
+   Stack(byte): 47856
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : rsmout
+   Attribute and Cross reference of name
+     alaps
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 55
+      |(Definition)     : 210
+      |(Reference)      : 251  253  255  270
+     anlslp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 55
+      |(Definition)     : 257  261  265  268  272
+      |(Reference)      : 275
+     apha
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 56
+      |(Definition)     : 259  270
+      |(Reference)      : 261  261  261  272  272  272
+     ax
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 56
+      |(Definition)     : 351  354
+      |(Reference)      : 359
+     bt1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 46
+      |(Definition)     : 150  363  366  387  432  441  493  495  513  520  551  561
+      |(Reference)      : 368  513  581
+     bt2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 46
+      |(Definition)     : 151  315  552  609
+      |(Reference)      : 513  623
+     bx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 56
+      |(Definition)     : 348
+      |(Reference)      : 354  359
+     cdum1
+      |(Class and Type) : variable name, CHARACTER(14,1)
+      |(Attributes)     : initialized
+      |(Declaration)    : 75  77
+      |(Definition)     : 
+      |(Reference)      : 
+     cdum2
+      |(Class and Type) : variable name, CHARACTER(12,1)
+      |(Attributes)     : initialized
+      |(Declaration)    : 76  78
+      |(Definition)     : 
+      |(Reference)      : 
+     clwr_gfs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 64
+      |(Definition)     : 113  128  465  474  943  954
+      |(Reference)      : 
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 16
+     cosl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  28
+      |(Definition)     : 
+      |(Reference)      : 579  621
+     cp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  21
+      |(Definition)     : 
+      |(Reference)      : 219  224
+     cx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 56
+      |(Definition)     : 356  357
+      |(Reference)      : 357  358  358
+     dx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 56
+      |(Definition)     : 346  358
+      |(Reference)      : 350  359  359
+     exp
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 261  265  268  272
+     float
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 943
+     geop_gfs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 64
+      |(Definition)     : 113  134  541  542  943  954
+      |(Reference)      : 
+     geostd
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 208  315  504
+     glob
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 42
+      |(Definition)     : 152  391  394  443  453  456  522  532  539  585  601  627  642  675  677  725  727  744  746  763  765  773  775  792  794  803  805  822  824  841  843  851  853  870  872  878  891  894  910  922  924
+      |(Reference)      : 
+     grav
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  21
+      |(Definition)     : 
+      |(Reference)      : 196  211  253  255
+     grpl_gfs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 64
+      |(Definition)     : 113  132  469  479  943  954
+      |(Reference)      : 
+     hld1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 48
+      |(Definition)     : 254  264  267  664  675  724  725  802  803  890  891  921  922
+      |(Reference)      : 255  258  259  260  263  264  265  266  267  268  271
+     hld2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 48
+      |(Definition)     : 255
+      |(Reference)      : 258  263  266
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 53
+      |(Definition)     : 173  218  223  229  248  306  317  338  343  402  427  431  449  491  505  512  528  550  580  622  663  704  883  900  915
+      |(Reference)      : 174  176  219  219  219  219  219  224  224  224  224  224  224  224  224  230  230  249  249  249  250  250  250  251  251  253  253  254  255  255  255  256  257  258  258  259  259  260  260  261  263  263  264  264  265  265  265  266  266  267  267  268  268  268  271  271  272  275  275  276  276  307  307  307  308  309  311  311  318  318  339  339  339  339  344  344  344  345  346  346  348  348  349  350  351  351  351  351  351  351  356  360  360  360  361  362  363  364  366  366  366  368  368  404  428  428  432  432  450  450  492  493  493  493  495  495  506  506  506  513  513  513  529  529  551  551  552  552  581  581  581  582  582  623  623  623  624  624  664  664  705  705  706  706  707  707  708  708  709  709  710  710  711  711  712  712  884  884  885  885  902  916  916
+     ice
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  35
+      |(Definition)     : 
+      |(Reference)      : 916
+     ice_gfs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 64
+      |(Definition)     : 113  141  926  927  943  954
+      |(Reference)      : 
+     idtg
+      |(Class and Type) : variable name, INTEGER(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  19
+      |(Definition)     : 943
+      |(Reference)      : 
+     ierr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 60
+      |(Definition)     : 113  954  961  962
+      |(Reference)      : 124  125  959  963
+     ii
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 53
+      |(Definition)     : 401  403  899  901
+      |(Reference)      : 403  404  901  902
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 15
+     itau
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  20
+      |(Definition)     : 
+      |(Reference)      : 156  943
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 53
+      |(Definition)     : 169  216  246  304  328  399  423  447  489  526  548  577  619  661  702  881  897  913
+      |(Reference)      : 170  181  217  247  305  315  329  404  424  448  490  504  527  549  578  579  620  621  662  703  882  902  914
+     jj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 53
+      |(Definition)     : 168  215  245  303  327  398  400  422  446  488  525  547  576  618  660  701  880  896  898  912
+      |(Reference)      : 169  174  176  216  219  219  219  219  219  224  224  224  224  224  224  224  224  230  230  246  249  249  249  250  250  250  251  251  253  253  254  255  255  255  256  257  258  258  259  259  260  260  261  263  263  264  264  265  265  265  266  266  267  267  268  268  268  271  271  272  275  275  276  276  304  307  307  307  308  309  311  311  315  315  318  318  328  339  339  339  339  344  344  344  345  346  346  348  348  349  350  351  351  351  351  351  351  356  360  360  360  361  362  363  364  366  366  366  368  368  400  404  423  428  428  432  432  447  450  450  489  492  493  493  493  495  495  504  506  506  513  513  513  526  529  529  548  551  551  552  552  577  581  581  581  582  582  619  623  623  623  624  624  661  664  664  702  705  705  706  706  707  707  708  708  709  709  710  710  711  711  712  712  881  884  884  885  885  898  902  913  916  916
+     jlist1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 169  216  246  304  328  423  447  489  526  548  577  619  661  702  881  913
+     jlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 168  215  245  303  327  422  446  488  525  547  576  618  660  701  880  912
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 53
+      |(Definition)     : 171  202  222  228  337  382  390  425  444  503  523  571  613
+      |(Reference)      : 172  203  203  224  224  224  224  224  224  224  224  230  230  339  339  339  339  383  391  404  409  426  428  450  450  453  464  465  466  467  468  469  470  473  474  476  477  478  479  480  504  504  506  506  506  529  529  529  532  581  581  582  582  585  603  604  623  623  624  624  627  653  654
+     kk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 53
+      |(Definition)     : 172  426
+      |(Reference)      : 174  176  428
+     km
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  20
+      |(Definition)     : 943
+      |(Reference)      : 23  23  113  113
+     land
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  35
+      |(Definition)     : 
+      |(Reference)      : 884
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  20
+      |(Definition)     : 387  441  520  561  609
+      |(Reference)      : 23  28  28  28  28  28  28  28  40  40  43  46  165  171  181  219  219  219  219  222  228  243  249  249  249  251  337  348  351  351  351  351  360  360  361  366  366  382  385  386  425  426  432  503  551  552
+     llts
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 54
+      |(Definition)     : 243
+      |(Reference)      : 250  250  250  253
+     log
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 203  230  301  318  345  346  351  493
+     lpout
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 45
+      |(Definition)     : 
+      |(Reference)      : 46  46  46  48  113  113  113  113  113  113  113  113  113  113  202  208  387  390  404  409  441  444  464  465  466  467  468  469  470  473  474  476  477  478  479  480  520  523  523  561  571  603  604  609  613  653  654  943
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 344  357  361  450  464  465  466  467  468  469  470  691  902
+     min
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 357  361  495  902
+     mpe
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 13
+     mpe_finalize
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 125
+     mpe_global_sum
+      |(Class and Type) : generic name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 183  184
+     mpe_integer
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 183  184
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  20
+      |(Definition)     : 387  391  394  441  453  456  520  532  539  561  585  601  609  627  642  675  677  725  727  744  746  763  765  773  775  792  794  803  805  822  824  841  843  851  853  870  872  891  894  922  924
+      |(Reference)      : 28  42  147
+     my2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 60
+      |(Definition)     : 91  394  456  539  601  642  677  727  746  765  775  794  805  824  843  853  872  894  924
+      |(Reference)      : 96  97
+     my_max
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  20
+      |(Definition)     : 387  391  441  453  520  532  561  585  609  627  675  725  744  763  773  792  803  822  841  851  870  891  922
+      |(Reference)      : 23  23  23  23  23  23  23  28  28  28  28  28  28  28  28  28  35  35  35  40  40  40  40  40  46  46  48  48  48  51
+     myrank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 95  98  99  145  156  185  186  380  392  436  437  455  518  538  557  600  641  676  718  726  745  764  774  793  804  823  842  852  871  893  923  941  953
+     mys
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 62
+      |(Definition)     : 93  409  473  474  476  477  478  479  480  542  604  654  692  739  758  768  787  797  817  836  846  865  875  907  927  943
+      |(Reference)      : 104  107  113  113  113  113  113  113  113  113  113  113  113  113  113  113  113  113  113  113
+     n
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 53
+      |(Definition)     : 164
+      |(Reference)      : 165  185  186
+     ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  20
+      |(Definition)     : 
+      |(Reference)      : 28  159  162  416  421  470  480
+     ngq
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 53
+      |(Definition)     : 166  175  183
+      |(Reference)      : 175  185  185  186  186
+     nint
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 90  91  92  93  100  101  102  103
+     nk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 53
+      |(Definition)     : 165
+      |(Reference)      : 172
+     ntrac
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 53
+      |(Definition)     : 160  162  421
+      |(Reference)      : 164  426  437  464  465  466  467  468  469  470  473  474  476  477  478  479  480
+     ntt
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 53
+      |(Definition)     : 167  181  184
+      |(Reference)      : 181  186
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  20
+      |(Definition)     : 387  391  394  441  453  456  520  532  539  561  585  601  609  627  642  675  677  725  727  744  746  763  765  773  775  792  794  803  805  822  824  841  843  851  853  870  872  891  894  922  924
+      |(Reference)      : 42  147
+     nx2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 60
+      |(Definition)     : 90  394  456  539  601  642  677  727  746  765  775  794  805  824  843  853  872  894  924
+      |(Reference)      : 96  97
+     nxdef_2d
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 170  217  247  305  329  424  448  490  527  549  578  620  662  703  882  914
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 53
+      |(Definition)     : 170  217  247  305  329  424  448  490  527  549  578  620  662  703  882  914
+      |(Reference)      : 173  218  223  229  248  306  317  338  343  427  431  449  491  505  512  528  550  580  622  663  704  883  915
+     nxjp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 315  504
+      |(Reference)      : 181
+     nxmy
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 53
+      |(Definition)     : 147
+      |(Reference)      : 
+     nxp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 23  23  23  23  23  23  23  28  28  28  28  28  28  28  28  28  35  35  35  40  40  40  40  40  46  46  46  48  48  48  51
+     nxs
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 62
+      |(Definition)     : 92  409  473  474  476  477  478  479  480  542  604  654  692  739  758  768  787  797  817  836  846  865  875  907  927  943
+      |(Reference)      : 104  107  113  113  113  113  113  113  113  113  113  113  113  113  113  113  113  113  113  113
+     ocean
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  35
+      |(Definition)     : 
+      |(Reference)      : 885
+     ograv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 55
+      |(Definition)     : 196
+      |(Reference)      : 506  513  664
+     ozon_gfs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 64
+      |(Definition)     : 113  133  470  480  943  954
+      |(Reference)      : 
+     pdiff
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  23
+      |(Definition)     : 276
+      |(Reference)      : 307
+     phi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  28
+      |(Definition)     : 219  224
+      |(Reference)      : 224  253  506
+     phistd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 46
+      |(Definition)     : 208
+      |(Reference)      : 529
+     pk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  28
+      |(Definition)     : 
+      |(Reference)      : 219  224  224  249  250  339
+     pk2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  28
+      |(Definition)     : 
+      |(Reference)      : 219  224  224
+     pkout
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 46
+      |(Definition)     : 203  387  441  520  561  609
+      |(Reference)      : 581  623
+     pl1000
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 56
+      |(Definition)     : 301
+      |(Reference)      : 366
+     pllp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 40
+      |(Definition)     : 149  275  309  311  315  318  387  441  520  561  609
+      |(Reference)      : 276  318  581  623
+     plog
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 40
+      |(Definition)     : 230  387  441  520  561  609
+      |(Reference)      : 351  351  366
+     plt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  23
+      |(Definition)     : 504
+      |(Reference)      : 230  251  360
+     pout
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, initialized
+      |(Declaration)    : 46  80
+      |(Definition)     : 208
+      |(Reference)      : 203
+     pres3d
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 48
+      |(Definition)     : 153  387  391  441  450  453  520  529  532  561  581  582  585  609  623  624  627
+      |(Reference)      : 450  529  582  624
+     pt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  28
+      |(Definition)     : 
+      |(Reference)      : 251  257  261  265  268  272  275  307  344  346  351
+     ptop
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  21
+      |(Definition)     : 
+      |(Reference)      : 251  257  261  265  268  272  346  351
+     qice_gfs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 64
+      |(Definition)     : 113  130  467  477  943  954
+      |(Reference)      : 
+     qmax2d
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 409  473  474  476  477  478  479  480  542  604  654  692  739  758  768  787  797  817  836  846  865  875  907  927
+     qt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  28
+      |(Definition)     : 176
+      |(Reference)      : 174  249  250  339  428
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 16  28  42  48  51
+     rad
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : initialized
+      |(Declaration)    : 55  88
+      |(Definition)     : 
+      |(Reference)      : 579  621
+     rain_gfs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 64
+      |(Definition)     : 113  129  466  476  943  954
+      |(Reference)      : 
+     rank
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 14
+     rdg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 55
+      |(Definition)     : 211
+      |(Reference)      : 251  270
+     rgas
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  21
+      |(Definition)     : 
+      |(Reference)      : 211  259  260  265  268  271  350  493
+     rgrdsz
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 16  90  91  92  93  100  101  102  103  105
+     rlat1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 16  93  102  105
+     rlat2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 16  93  103  105
+     rlon1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 16  92  100  105
+     rlon2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 16  92  101  105
+     rsmout
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 966
+     rsmoutp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 64
+      |(Definition)     : 96  394  456  539  601  642  677  727  746  765  775  794  805  824  843  853  872  894  924  962
+      |(Reference)      : 404  464  465  466  467  468  469  470  541  603  653  691  738  757  767  786  796  816  835  845  864  874  902  926
+     sgeo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  28
+      |(Definition)     : 
+      |(Reference)      : 219  253  255  256  259  260  265  268  271  348  349  350  356  495  664
+     slmsk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 40
+      |(Definition)     : 879  884  885  911  916
+      |(Reference)      : 890  921
+     slmsk_gfs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 64
+      |(Definition)     : 113  143  902  907  943  954
+      |(Reference)      : 
+     slp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 40
+      |(Definition)     : 307  344
+      |(Reference)      : 308  311  344  345  346  351  360  362  492  493
+     smc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  23
+      |(Definition)     : 
+      |(Reference)      : 705  706  707  708
+     smc_gfs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 64
+      |(Definition)     : 113  138  757  758  767  768  786  787  796  797  943  954
+      |(Reference)      : 
+     snow_gfs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 64
+      |(Definition)     : 113  131  468  478  943  954
+      |(Reference)      : 
+     snr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  23
+      |(Definition)     : 
+      |(Reference)      : 802
+     snr_gfs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 64
+      |(Definition)     : 113  139  816  817  943  954
+      |(Reference)      : 
+     soil_xy
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 51
+      |(Definition)     : 154  705  706  707  708  709  710  711  712  744  763  773  792  822  841  851  870
+      |(Reference)      : 
+     spfh_gfs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 64
+      |(Definition)     : 113  127  464  473  943  954
+      |(Reference)      : 
+     splog
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 56
+      |(Definition)     : 345
+      |(Reference)      : 351  366  366
+     stc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  23
+      |(Definition)     : 
+      |(Reference)      : 709  710  711  712
+     stc_gfs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 64
+      |(Definition)     : 113  140  835  836  845  846  864  865  874  875  943  954
+      |(Reference)      : 
+     t1000
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  23
+      |(Definition)     : 364  368
+      |(Reference)      : 493
+     tadia
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 56
+      |(Definition)     : 360
+      |(Reference)      : 361
+     temp_gfs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 64
+      |(Definition)     : 113  126  404  409  943  954
+      |(Reference)      : 
+     tens
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 43
+      |(Definition)     : 383  385  386  387  441  520  561  609
+      |(Reference)      : 
+     terr_gfs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 64
+      |(Definition)     : 113  142  691  692  943  954
+      |(Reference)      : 
+     tg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  23
+      |(Definition)     : 
+      |(Reference)      : 724
+     tg_gfs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 64
+      |(Definition)     : 113  137  738  739  943  954
+      |(Reference)      : 
+     tmid
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 56
+      |(Definition)     : 350
+      |(Reference)      : 351
+     tmp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 40
+      |(Definition)     : 339  387  428  441  506  520  560  561  608  609
+      |(Reference)      : 348  351  351  360  361  366  432
+     tsf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 56
+      |(Definition)     : 359  361
+      |(Reference)      : 361  363  364  366  366
+     tt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  28
+      |(Definition)     : 
+      |(Reference)      : 219  224  224  249  250  339
+     ttb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 55
+      |(Definition)     : 249
+      |(Reference)      : 251  251
+     ttp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 55
+      |(Definition)     : 250
+      |(Reference)      : 253
+     ttt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 55
+      |(Definition)     : 260  271
+      |(Reference)      : 261  261  261  261  272  272  272  272
+     ttt1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 55
+      |(Definition)     : 251
+      |(Reference)      : 254
+     ttt2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 55
+      |(Definition)     : 253
+      |(Reference)      : 254
+     u_gfs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 64
+      |(Definition)     : 113  135  603  604  943  954
+      |(Reference)      : 
+     unify_reduceintp
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 391  453  532  585  627  675  725  744  763  773  792  803  822  841  851  870  891  922
+     ut
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  28
+      |(Definition)     : 
+      |(Reference)      : 551  560
+     v_gfs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 64
+      |(Definition)     : 113  136  653  654  943  954
+      |(Reference)      : 
+     voterp
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 387  441  520  561  609
+     vt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  28
+      |(Definition)     : 
+      |(Reference)      : 552  608
+     wrk1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 46
+      |(Definition)     : 504
+      |(Reference)      : 506
+     wrte_data
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 943
+     x1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 63
+      |(Definition)     : 100
+      |(Reference)      : 107  402  464  465  466  467  468  469  470  541  603  653  691  738  757  767  786  796  816  835  845  864  874  900  926
+     x2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 63
+      |(Definition)     : 101
+      |(Reference)      : 107  402  464  465  466  467  468  469  470  541  603  653  691  738  757  767  786  796  816  835  845  864  874  900  926
+     xr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 73
+      |(Definition)     : 97  394  456  539  601  642  677  727  746  765  775  794  805  824  843  853  872  894  924  961
+      |(Reference)      : 
+     xxx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 56
+      |(Definition)     : 579  621
+      |(Reference)      : 582  624
+     xyintpo
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 394  456  539  601  642  677  727  746  765  775  794  805  824  843  853  872  894  924
+     y1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 63
+      |(Definition)     : 102
+      |(Reference)      : 107  399  464  465  466  467  468  469  470  541  603  653  691  738  757  767  786  796  816  835  845  864  874  897  926
+     y2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 63
+      |(Definition)     : 103
+      |(Reference)      : 107  399  464  465  466  467  468  469  470  541  603  653  691  738  757  767  786  796  816  835  845  864  874  897  926
+     yr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION
+      |(Declaration)    : 73
+      |(Definition)     : 97  394  456  539  601  642  677  727  746  765  775  794  805  824  843  853  872  894  924  961
+      |(Reference)      : 
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+        901  format        (Definition) 189  
+                           (Reference)  185
+        902  format        (Definition) 191  
+                           (Reference)  186
+
+ Total information
+   Procedures       : 1
+   Total lines      : 966
+   Total statements : 523
+   Total stack(byte): 47856
+   Total prefetch num: 0
+

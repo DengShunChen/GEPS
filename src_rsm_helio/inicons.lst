@@ -1,0 +1,409 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar  7 10:21:07 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm_helio
+   Source file       : inicons.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-3.6.3/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "inicons"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine inicons(rad,omega,eigval,lev,jtrun,jtmax, &
+               2                                              nw,a,b,c,h,nnmivm)
+               3                     !
+               4                     !  purpose:  define constants and calculate the coefficients for
+               5                     !            initialization modual
+               6                     !----------------------------------------------------------------------
+               7                     !  **** input ****
+               8                     !
+               9                     !  rad          : radius of earth
+              10                     !  omega        : angular velocity of earth
+              11                     !  eigval       : vertical equivalent depth array
+              12                     !  lev          : number of vertical levels
+              13                     !  jtrun        : zonal wave number truncation limit
+              14                     !
+              15                     !  **** output ****
+              16                     !
+              17                     !  nw           : total wavenumber index array
+              18                     !  a            : coefficient array of coefficient matrix
+              19                     !  b            : coefficient array of coefficient matrix
+              20                     !  c            : coefficient array of coefficient matrix
+              21                     !  h            : coefficient array for (non)dimensionlize variables
+              22                     !
+              23                     !  modify to f90 bt C-H Lee and sort by River Chen in 2015
+              24                     !------------------------------------------------------------------------
+              25                     !
+              26                           use index
+              27                           use const, only : RTYPE
+              28                     
+              29                           implicit none
+              30                           integer  lev,jtrun,jtmax,nw(jtrun,jtmax),nnmivm
+              31                     !byl      real     a(jtrun,jtrun,lev),b(jtrun,jtrun,lev),c(jtrun,jtrun,lev)
+              32                           real     a(jtrun,jtrun,nnmivm),b(jtrun,jtrun,nnmivm),c(jtrun,jtrun,nnmivm)
+              33                     !byl      real     eigval(lev),h(jtrun,jtmax,lev)
+              34                           real     h(jtrun,jtmax,nnmivm)
+              35                           real(kind=RTYPE) eigval(lev)
+              36                     
+              37                           integer  k,l,m,n,m1,mf,mm,mn,nnp1
+              38                           real     omega,omega2,omga2r2,rad,rad2,tem,epxn
+              39                     
+              40                           rad2=rad*rad
+              41                           omega2=omega*omega
+              42                           omga2r2=omega2*rad2
+              43                     !
+              44                     !  compute total wavenumber index array
+              45                     !
+              46                           mn=0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 5
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      nw
+                                   <<< Loop-information  End >>>
+              47     1  pp                 do m=1,mlistnum
+              48     1   p                   mf=mlist(m)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.16, ITR: 256, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      nw
+                                   <<< Loop-information  End >>>
+              49     2   p   2v              do n=mf,jtrun
+              50     2   p   2v                nw(n,m)=n*(n-1)
+              51     2   p   2v              enddo
+              52     1   p                 enddo
+              53                     !
+              54                     !  compute (non)dimensionlize array
+              55                     !
+              56                     !CWB2014 fixed the undefined value h in vartran loop
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      h
+                                   <<< Loop-information  End >>>
+              57        pp   4v            h=0.
+              58                     !byl      do k=1,lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+              59     1  pp                 do k=1,nnmivm
+              60     1   p                   tem=eigval(k)/omga2r2
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      nw, h
+                                   <<< Loop-information  End >>>
+              61     2   p                   do m=1,mlistnum
+              62     2   p                     mf=mlist(m)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.28, ITR: 64, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      nw, h
+                                   <<< Loop-information  End >>>
+              63     3   p   2v                do n=mf,jtrun
+              64     3   p   2v                  if (n.ne.1) h(n,m,k)=(tem/nw(n,m))**0.5
+              65     3   p   2v                enddo
+              66     2   p                   enddo
+              67     1   p                 enddo
+              68                     !
+              69                     !  compute coefficients array of coefficient matrix
+              70                     !
+              71                     !byl      do k=1,lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+              72     1  pp                 do k=1,nnmivm
+              73     1   p                   a(1,1,k)=0.
+              74     1   p                   b(1,1,k)=0.
+              75     1   p                   c(1,1,k)=0.
+              76     2   p                   do m=1,jtrun
+              77     2   p                     m1=m-1
+              78     2   p                     mm=m
+              79     2   p                     if(m.eq.1)mm=2
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+              80     3   p    v                do l=mm,jtrun
+              81     3   p    v                  n=l-1
+              82     3   p    v                  nnp1=n*(n+1)
+              83     3   p    v                  epxn=((n*n-m1*m1)/(4.*n*n-1))**0.5
+              84     3   p    v                  c(m,l,k)=2.*m1/nnp1
+              85     3   p    v                  b(m,l,k)=(eigval(k)*nnp1/omga2r2)**0.5
+              86     3   p    v                  a(m,l,k)=-2.*epxn/n*((n+1)*(n-1))**0.5
+              87     3   p    v                enddo
+              88     2   p                   enddo
+              89     1   p                 enddo
+              90                     !
+              91                           return
+              92                           end
+
+ Procedure information
+   Lines      : 92
+   Statements : 50
+   Stack(byte): 912
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : inicons
+   Attribute and Cross reference of name
+     a
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  32
+      |(Definition)     : 73  86
+      |(Reference)      : 
+     b
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  32
+      |(Definition)     : 74  85
+      |(Reference)      : 
+     c
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  32
+      |(Definition)     : 75  84
+      |(Reference)      : 
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 27
+     eigval
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  35
+      |(Definition)     : 
+      |(Reference)      : 60  85
+     epxn
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 38
+      |(Definition)     : 83
+      |(Reference)      : 86
+     h
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  34
+      |(Definition)     : 57  64
+      |(Reference)      : 
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 26
+     inicons
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     jtmax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  30
+      |(Definition)     : 
+      |(Reference)      : 30  34
+     jtrun
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  30
+      |(Definition)     : 
+      |(Reference)      : 30  32  32  32  32  32  32  34  49  63  76  80
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 37
+      |(Definition)     : 59  72
+      |(Reference)      : 60  64  73  74  75  84  85  85  86
+     l
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 37
+      |(Definition)     : 80
+      |(Reference)      : 81  84  85  86
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  30
+      |(Definition)     : 
+      |(Reference)      : 35
+     m
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 37
+      |(Definition)     : 47  61  76
+      |(Reference)      : 48  50  62  64  64  77  78  79  84  85  86
+     m1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 37
+      |(Definition)     : 77
+      |(Reference)      : 83  83  84
+     mf
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 37
+      |(Definition)     : 48  62
+      |(Reference)      : 49  63
+     mlist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 48  62
+     mlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 47  61
+     mm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 37
+      |(Definition)     : 78  79
+      |(Reference)      : 80
+     mn
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 37
+      |(Definition)     : 46
+      |(Reference)      : 
+     n
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 37
+      |(Definition)     : 49  63  81
+      |(Reference)      : 50  50  50  64  64  64  82  82  83  83  83  83  86  86  86
+     nnmivm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  30
+      |(Definition)     : 
+      |(Reference)      : 32  32  32  34  59  72
+     nnp1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 37
+      |(Definition)     : 82
+      |(Reference)      : 84  85
+     nw
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  30
+      |(Definition)     : 50
+      |(Reference)      : 64
+     omega
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  38
+      |(Definition)     : 
+      |(Reference)      : 41  41
+     omega2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 38
+      |(Definition)     : 41
+      |(Reference)      : 42
+     omga2r2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 38
+      |(Definition)     : 42
+      |(Reference)      : 60  85
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 27  35
+     rad
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  38
+      |(Definition)     : 
+      |(Reference)      : 40  40
+     rad2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 38
+      |(Definition)     : 40
+      |(Reference)      : 42
+     tem
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 38
+      |(Definition)     : 60
+      |(Reference)      : 64
+
+ Total information
+   Procedures       : 1
+   Total lines      : 92
+   Total statements : 50
+   Total stack(byte): 912
+   Total prefetch num: 0
+

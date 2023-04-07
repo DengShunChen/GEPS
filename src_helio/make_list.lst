@@ -1,0 +1,1080 @@
+
+ Fujitsu Fortran Version 4.6.1  Tue Mar 14 13:21:54 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_helio
+   Source file       : make_list.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -DW3TAG -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -L/package/fx1000/netcdf-4.7.4/lib -lnetcdff -lnetcdf -L/package/fx1000/hdf5-1.10.7/lib -lhdf5_hl -lhdf5 -L/package/fx1000/dms/lib -lrdms -lgdbm -L/package/fx1000/operlib/lib -lnwp -L/users/xa09/pkg/fx1000/fftw-3.3.10/lib -lfftw3f_threads -lfftw3f -lfftw3_threads -lfftw3 -SSL2BLAMP -L/nwpr/gfs/xb157/CWBSUMc2/components/coupler -lcpl -L/nwpr/gfs/xb124/package/fx1000/MCT/lib -lmct -lmpeu -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -DW3TAG -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "make_list"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine make_list
+               2                     !
+               3                     !  m        : start point of Lugendre number
+               4                     !  mlist    : index of Fourier number on PE
+               5                     !  mlistnum : index of Fourier number on PE
+               6                     !
+               7                     !
+               8                           use param
+               9                           use index
+              10                           use mpe
+              11                           use rank
+              12                           use spec,only : jtwv,jtwvp
+              13                     
+              14                           implicit  none
+              15                           integer   mm,m,ipe,n,jj,j,j1,j2,ii,i1,i2
+              16                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1778
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      mlist
+                                   <<< Loop-information  End >>>
+              17     1  pp   4v            do mm=1,jtmax
+              18     1   p   4v               mlist(mm)=0
+              19     1   p   4v            enddo
+              20                     
+              21                           mlistnum=0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1231
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ilist, nlist
+                                   <<< Loop-information  End >>>
+              22     1  pp   2v            do m=1,jtmax*nsize
+              23     1   p   2v               nlist(m)=0 ; ilist(m)=0
+              24     1   p   2v            enddo
+              25                     
+              26                     !
+              27                     ! for spectral space, use folded cyclic allocation type
+              28                     !
+              29                     
+              30                     ! 1dMPI
+              31                     !     m=jtrun
+              32                     !     do mm=1,jtmax+1,2
+              33                     !        do ipe=nsize,1,-1
+              34                     !           if(m.gt.0)then
+              35                     !            if(ipe-1 .eq. myrank) then
+              36                     !              mlistnum=mlistnum+1
+              37                     !              mlist(mm)=m
+              38                     !            endif
+              39                     !              n=(ipe-1)*jtmax+mm
+              40                     !              nlist(m)=n
+              41                     !              if(ipe-1 .eq. myrank) ilist(m)=mm
+              42                     !              m=m-1
+              43                     !           endif
+              44                     !        enddo
+              45                     !        do ipe=1,nsize
+              46                     !           if(m.gt.0)then
+              47                     !            if(ipe-1 .eq. myrank) then
+              48                     !              mlistnum=mlistnum+1
+              49                     !              mlist(mm+1)=m
+              50                     !            endif
+              51                     !              n=(ipe-1)*jtmax+mm+1
+              52                     !              nlist(m)=n
+              53                     !              if(ipe-1 .eq. myrank) ilist(m)=mm+1
+              54                     !              m=m-1
+              55                     !           endif
+              56                     !        enddo
+              57                     !     enddo
+              58                     
+              59                           jlistnum=0
+              60                     ! for Semi-Lagrangian
+              61                     !byl      do ipe=1,nsize
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1778
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      jlistnum_sl
+                                   <<< Loop-information  End >>>
+              62     1  pp   4v            do ipe=1,nsizey
+              63     1   p   4v               jlistnum_sl(ipe)=0
+              64     1   p   4v            enddo
+              65                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1778
+                                   <<<  [OPTIMIZATION]
+                                   <<<    INTERCHANGED(nest: 2)
+                                   <<<    SIMD(VL: 16)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      jlist1, jlist1_sl
+                                   <<< Loop-information  End >>>
+              66     1  pp   4v            do jj=1,my_max
+              67     1   p   4v               jlist1(jj)=0
+              68     1               ! for Semi-Lagrangian
+              69     1               !byl       do ipe=1,nsize
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    INTERCHANGED(nest: 1)
+                                   <<< Loop-information  End >>>
+              70     2  pp   4              do ipe=1,nsizey
+              71     2   p   4v                jlist1_sl(jj,ipe)=0
+              72     2   p   4              enddo
+              73     1   p   4v            enddo
+              74                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1778
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      jlist2
+                                   <<< Loop-information  End >>>
+              75     1  pp   4v            do j=1,my
+              76     1   p   4v               jlist2(j)=0
+              77     1   p   4v            enddo
+              78                     
+              79                     !
+              80                     ! for grid space, use cyclic allocation type
+              81                     !
+              82                     
+              83                     ! 1dMPI
+              84                     !     j=1
+              85                     !     do jj=1,my_max
+              86                     !        do ipe=1,nsize
+              87                     !           if(j.le.my)then
+              88                     !            if(ipe-1 .eq. myrank) then
+              89                     !              jlistnum=jlistnum+1
+              90                     !              jlist1(jj)=j
+              91                     !            endif
+              92                     !              j2=(ipe-1)*my_max+jj
+              93                     !              jlist2(j)=j2
+              94                     !              j=j+1
+              95                     !           endif
+              96                     !        enddo
+              97                     !     enddo
+              98                     !
+              99                     
+             100                     
+             101                     ! for Semi-Lagrangian
+             102                           j=1
+             103     1                     do jj=1,my_max
+             104     1               !ch      do ipe=1,nsize
+             105     2       2s               do ipe=1,nsizey
+             106     3       2m                  if(j.le.my)then
+             107     3       2v                     jlistnum_sl(ipe)=jlistnum_sl(ipe)+1
+             108     3       2s                     jlist1_sl(jj,ipe)=j
+             109     3       2s                     j=j+1
+             110     3       2v                  endif
+             111     2       2s               enddo
+             112     1                     enddo
+             113                     !
+             114                     
+             115                     !for 2dMPI >>
+             116                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 9
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      jlist2_2d
+                                   <<< Loop-information  End >>>
+             117        pp   4v            jlist2_2d=0
+             118                     
+             119                           j=1
+             120     1                     do jj=1,my_max
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      jlist2_2d
+                                   <<< Loop-information  End >>>
+             121     2                        do ipe=1,nsizey
+             122     3                           if(j.le.my)then
+             123     4                            if(ipe-1 .eq. col_rank) then
+             124     4                              jlistnum=jlistnum+1
+             125     4                              jlist1(jj)=j
+             126     4                            endif
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1143
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.75, ITR: 192, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      jlist2_2d
+                                   <<< Loop-information  End >>>
+             127     4  pp   2v                     do ii=1,nsizex
+             128     4   p   2v                        j2=(ipe-1)*my_max*nsizex+(ii-1)*my_max+jj
+             129     4   p   2v                        jlist2_2d(ii,j)=j2
+             130     4   p   2v                     enddo
+             131     3                              j2=(ipe-1)*my_max+jj
+             132     3                              jlist2(j)=j2
+             133     3                              j=j+1
+             134     3                           endif
+             135     2                        enddo
+             136     1                     enddo
+             137                     
+             138                           Llistnum=0
+             139                     
+             140     1       2s            do n=1,lev
+             141     2       2v               if(n .ge. Lstart .and. n .le. Lend) then
+             142     2       2m                 Llistnum=Llistnum+1
+             143     2       2s                 Llist(Llistnum)=n
+             144     2       2v               endif
+             145     1       2v            enddo
+             146                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      Llist, Llist_ncld
+                                   <<< Loop-information  End >>>
+             147     1                     do n=1,ncld
+             148     1                        i1=(n-1)*levp
+             149     1                        i2=(n-1)*lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 352, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      Llist, Llist_ncld
+                                   <<< Loop-information  End >>>
+             150     2  pp   2v            do ii=1,levp
+             151     2   p   2v               mm=i1+ii
+             152     2   p   2v               jj=i2+Llist(ii)
+             153     2   p   2v               Llist_ncld(mm)=jj
+             154     2   p   2v            enddo
+             155     1                     enddo
+             156                     
+             157                           m=jtrun
+             158     1                     do mm=1,jtmax+1,2
+             159     2       2s               do ipe=nsizey,1,-1
+             160     3       2s                  if(m.gt.0)then
+             161     4       2s                   if(ipe-1 .eq. col_rank) then
+             162     4       2v                     mlistnum=mlistnum+1
+             163     4       2s                     mlist(mm)=m
+             164     4       2v                   endif
+             165     3       2s                     n=(ipe-1)*jtmax+mm
+             166     3       2s                     nlist(m)=n
+             167     3       2v                     if(ipe-1 .eq. col_rank) ilist(m)=mm
+             168     3       2m                     m=m-1
+             169     3       2v                  endif
+             170     2       2s               enddo
+             171     2       2s               do ipe=1,nsizey
+             172     3       2s                  if(m.gt.0)then
+             173     4       2s                   if(ipe-1 .eq. col_rank) then
+             174     4       2v                     mlistnum=mlistnum+1
+             175     4       2s                     mlist(mm+1)=m
+             176     4       2v                   endif
+             177     3       2s                     n=(ipe-1)*jtmax+mm+1
+             178     3       2s                     nlist(m)=n
+             179     3       2v                     if(ipe-1 .eq. col_rank) ilist(m)=mm+1
+             180     3       2m                     m=m-1
+             181     3       2v                  endif
+             182     2       2s               enddo
+             183     1                     enddo
+             184                     
+             185                     
+             186                     ! for siimpl
+             187                     
+             188                             i1=1
+             189                             jtf=0
+             190                             n=0
+             191                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      jtwv
+                                   <<< Loop-information  End >>>
+             192     1                       do m=1,mlistnum
+             193     1                          mm=mlist(m)
+             194     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1778
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.75, ITR: 192, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      jtwv
+                                   <<< Loop-information  End >>>
+             195     2  pp   2v                 do j2=mm,jtrun
+             196     2   p   2v                    n=n+1
+             197     2   p   2v                    jtwv(n)=j2
+             198     2   p   2v                 enddo
+             199     1               
+             200     1                         i2=jtrun-mm+1
+             201     1                         jtf=jtf+i2
+             202     1               
+             203     1                         i1=i1+i2
+             204     1               
+             205     1                       enddo
+             206                     
+             207                             j1=jtf/nsizex
+             208                             j2=mod(jtf,nsizex)
+             209     1                       if(j2.eq.0)then
+             210     1                         jtp=j1
+             211     1                       else
+             212     1               !         jtp=(jtf/nsizex)+1
+             213     1                         jtp=(jtf-j2)/nsizex+1
+             214     1                       endif
+             215                     
+             216                     !       jtstart=row_rank*j1+1+min(row_rank,j2)
+             217                     !       jtend=jtstart+j1-1
+             218                     !       if(j2> row_rank)jtend=jtend+1
+             219                     !       jtlen=jtend-jtstart+1
+             220                     
+             221     1                       if(j2.eq.0)then
+             222     1                         jtstart=row_rank*jtp+1
+             223     1                         jtend=jtstart+jtp-1
+             224     1                       else
+             225     1                         jtstart=row_rank*jtp+1
+             226     1                         jtend=jtstart+jtp-1
+             227     1                         if(row_rank .eq. (nsizex-1)) jtend=jtend-(nsizex-j2)
+             228     1                       endif
+             229                             jtlen=jtend-jtstart+1
+             230                     
+             231                             j=0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      jtwv, jtwvp
+                                   <<< Loop-information  End >>>
+             232     1  pp   2v              do m=jtstart,jtend
+             233     1   p   2v                 j=j+1
+             234     1   p   2v                 jtwvp(j)=jtwv(m)
+             235     1   p   2v              enddo
+             236                     
+             237                     !       call get_all_jtlen   ! gather all jtlen of a row
+             238                     
+             239                             call mpe2d_get_allrow(1,jtlen,jtlen_all)   ! gather all jtlen of a row
+             240                     
+             241                     !       print *,'total_wave jtf jtp jtstart jtend jtlen=',n,jtf,jtp,jtstart,jtend,jtlen
+             242                     !       print *,'           jtf jtp jtstart jtend jtlen=',  jtf,jtp,jtstart,jtend,jtlen
+             243     1                       do j=jtstart,jtend
+             244     1               !          print *,j,jtwv(j)
+             245     1                       enddo
+             246                     !ch <<
+             247                     
+             248                     !        do ipe=1,nsizey
+             249                     !              print *,ipe,jlistnum_sl(ipe)
+             250                     !        enddo
+             251                     !        print *,'   '
+             252                     !        do ipe=1,nsizey
+             253                     !        do jj=1,my_max
+             254                     !              print *,col_rank,ipe,jj,jlist1_sl(jj,ipe)
+             255                     !        enddo
+             256                     !        enddo
+             257                     
+             258                     !  Usage:
+             259                     !        do ipe=1,npe
+             260                     !        do mm=1,mlistnum(ipe)
+             261                     !           mf=mlist(mm,ipe); m=nlist(mf)
+             262                     !           ...
+             263                     !        enddo
+             264                     !        enddo
+             265                     
+             266                           return
+             267                           end
+
+ Procedure information
+   Lines      : 267
+   Statements : 140
+   Stack(byte): 4448
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : make_list
+   Attribute and Cross reference of name
+     col_rank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 123  161  167  173  179
+     i1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 15
+      |(Definition)     : 148  188  203
+      |(Reference)      : 151  203
+     i2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 15
+      |(Definition)     : 149  200
+      |(Reference)      : 152  201  203
+     ii
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 15
+      |(Definition)     : 127  150
+      |(Reference)      : 128  129  151  152
+     ilist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 23  167  179
+      |(Reference)      : 
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 9
+     ipe
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 15
+      |(Definition)     : 62  70  105  121  159  171
+      |(Reference)      : 63  71  107  107  108  123  128  131  161  165  167  173  177  179
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 15
+      |(Definition)     : 75  102  109  119  133  231  233  243
+      |(Reference)      : 76  106  108  109  122  125  129  132  133  233  234
+     j1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 15
+      |(Definition)     : 207
+      |(Reference)      : 210
+     j2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 15
+      |(Definition)     : 128  131  195  208
+      |(Reference)      : 129  132  197  209  213  221  227
+     jj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 15
+      |(Definition)     : 66  103  120  152
+      |(Reference)      : 67  71  108  125  128  131  153
+     jlist1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 67  125
+      |(Reference)      : 
+     jlist1_sl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 71  108
+      |(Reference)      : 
+     jlist2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 76  132
+      |(Reference)      : 
+     jlist2_2d
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 117  129
+      |(Reference)      : 
+     jlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 59  124
+      |(Reference)      : 124
+     jlistnum_sl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 63  107
+      |(Reference)      : 107
+     jtend
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 223  226  227
+      |(Reference)      : 227  229  232  243
+     jtf
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 189  201
+      |(Reference)      : 201  207  208  213
+     jtlen
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 229  239
+      |(Reference)      : 
+     jtlen_all
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 239
+      |(Reference)      : 
+     jtmax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 17  22  158  165  177
+     jtp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 210  213
+      |(Reference)      : 222  223  225  226
+     jtrun
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 157  195  200
+     jtstart
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 222  225
+      |(Reference)      : 223  226  229  232  243
+     jtwv
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 197
+      |(Reference)      : 12  234
+     jtwvp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 234
+      |(Reference)      : 12
+     Lend
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 141
+     Llist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 143
+      |(Reference)      : 152
+     Llist_ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 153
+      |(Reference)      : 
+     Llistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 138  142
+      |(Reference)      : 142  143
+     Lstart
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 141
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 140  149
+     levp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 148  150
+     m
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 15
+      |(Definition)     : 22  157  168  180  192  232
+      |(Reference)      : 23  23  160  163  166  167  168  172  175  178  179  180  193  234
+     make_list
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     mlist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 18  163  175
+      |(Reference)      : 193
+     mlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 21  162  174
+      |(Reference)      : 162  174  192
+     mm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 15
+      |(Definition)     : 17  151  158  193
+      |(Reference)      : 18  153  163  165  167  175  177  179  195  200
+     mod
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 208
+     mpe
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 10
+     mpe2d_get_allrow
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 239
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 75  106  122
+     my_max
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 66  103  120  128  128  131
+     n
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 15
+      |(Definition)     : 140  147  165  177  190  196
+      |(Reference)      : 141  141  143  148  149  166  178  196  197
+     ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 147
+     nlist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 23  166  178
+      |(Reference)      : 
+     nsize
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 22
+     nsizex
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 127  128  207  208  213  227  227
+     nsizey
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 62  70  105  121  159  171
+     param
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8
+     rank
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 11
+     row_rank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 222  225  227
+     spec
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 12
+
+ External subroutine subprogram "make_list_nx"
+  (inc)(line-no.)(nest)(optimize)
+             268                     
+             269                     !-------------------------------------------------------
+             270                           subroutine make_list_nx
+             271                     
+             272                     !
+             273                     !  decompose nx for 2dMPI
+             274                     !
+             275                           use param
+             276                           use mpe
+             277                           use rank
+             278                           use index
+             279                     
+             280                           implicit  none
+             281                           integer   i,ii,j,n1,n2,nxj,tmp(my,nsizex)
+             282                     
+             283                     ! nxp  : nx  partial
+             284                     ! nxjp : nxj partial
+             285                     
+             286                     ! nxjstart : nxj start
+             287                     ! nxjend   : nxj end
+             288                     
+             289                     ! map2to1  : 2d local index to 1d global index
+             290                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      map2to1
+                                   <<< Loop-information  End >>>
+             291     1  pp                    do j=1,my
+             292     1   p                       nxj=nxdef(j)
+             293     1               
+             294     1   p                       n1=nxj/nsizex
+             295     1   p                       n2=mod(nxj,nsizex)
+             296     1               
+             297     1   p                       nxjstart(j)=row_rank*n1+1+min(row_rank,n2)
+             298     1   p                       nxjend(j)=nxjstart(j)+n1-1
+             299     1   p                       if(row_rank < n2)nxjend(j)=nxjend(j)+1
+             300     1               
+             301     1   p                       nxjlen(j)=nxjend(j)-nxjstart(j)+1
+             302     1   p                       nxjp(j)=nxjlen(j)
+             303     1   p                       nxdef_2d(j)=nxjlen(j)
+             304     1               
+             305     1   p                       ii=nxjstart(j)
+             306     1               !ch         do i=1,nxjlen(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.75, ITR: 192, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      map2to1
+                                   <<< Loop-information  End >>>
+             307     2   p   2v                  do i=1,nxp
+             308     2   p   2v                     map2to1(i,j)=ii
+             309     2   p   2v                     ii=ii+1
+             310     2   p   2v                  enddo
+             311     1   p                    enddo
+             312                     
+             313                           call mpe2d_get_allrow(my,nxjstart,tmp)  ! gather all nxjstart of a row
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 6
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.37, ITR: 512, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      nxjstart_all
+                                   <<< Loop-information  End >>>
+             314        pp   4v            nxjstart_all=transpose(tmp)
+             315                           call mpe2d_get_allrow(my,nxjend,tmp)    ! gather all nxjend of a row
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 6
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.37, ITR: 512, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      nxjend_all
+                                   <<< Loop-information  End >>>
+             316        pp   4v            nxjend_all=transpose(tmp)
+             317                           call mpe2d_get_allrow(my,nxjlen,tmp)    ! gather all nxjlen of a row
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 6
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.37, ITR: 512, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      nxjlen_all
+                                   <<< Loop-information  End >>>
+             318        pp   4v            nxjlen_all=transpose(tmp)
+             319                     
+             320     1                     do j=1,my
+             321     1                        nxj=nxdef(j)
+             322     1               !        print 101, j,nxj,nxjstart(j),nxjend(j),nxjlen(j)
+             323     2                        do i=1,nsizex
+             324     2               !        print 102, j,i,nxjstart_all(i,j),nxjend_all(i,j),nxjlen_all(i,j)
+             325     2                        enddo
+             326     1                     enddo
+             327                     !     stop
+             328                     
+             329                     101   format('j,nxj,nxjstart,nxjend,nxjlen=',5I6)
+             330                     102   format('j,i,nxjstart,nxjend,nxjlen=',5I6)
+             331                     
+             332                           return
+             333                           end
+
+ Procedure information
+   Lines      : 66
+   Statements : 38
+   Stack(byte): 1920
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : make_list_nx
+   Attribute and Cross reference of name
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 281
+      |(Definition)     : 307  323
+      |(Reference)      : 308
+     ii
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 281
+      |(Definition)     : 305  309
+      |(Reference)      : 308  309
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 278
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 281
+      |(Definition)     : 291  320
+      |(Reference)      : 292  297  298  298  299  299  301  301  301  302  302  303  303  305  308  321
+     make_list_nx
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 270
+      |(Reference)      : 
+     map2to1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 308
+      |(Reference)      : 
+     min
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 297
+     mod
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 295
+     mpe
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 276
+     mpe2d_get_allrow
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 313  315  317
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 313  315  317
+      |(Reference)      : 281  291  320
+     n1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 281
+      |(Definition)     : 294
+      |(Reference)      : 297  298
+     n2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 281
+      |(Definition)     : 295
+      |(Reference)      : 297  299
+     nsizex
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 281  294  295  323
+     nxdef
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 292  321
+     nxdef_2d
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 303
+      |(Reference)      : 
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 281
+      |(Definition)     : 292  321
+      |(Reference)      : 294  295
+     nxjend
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 298  299  315
+      |(Reference)      : 299  301
+     nxjend_all
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 316
+      |(Reference)      : 
+     nxjlen
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 301  317
+      |(Reference)      : 302  303
+     nxjlen_all
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 318
+      |(Reference)      : 
+     nxjp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 302
+      |(Reference)      : 
+     nxjstart
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 297  313
+      |(Reference)      : 298  301  305
+     nxjstart_all
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 314
+      |(Reference)      : 
+     nxp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 307
+     param
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 275
+     rank
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 277
+     row_rank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 297  297  299
+     tmp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 281
+      |(Definition)     : 313  315  317
+      |(Reference)      : 314  316  318
+     transpose
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 314  316  318
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+        101  format        (Definition) 329
+        102  format        (Definition) 330
+
+ Total information
+   Procedures       : 2
+   Total lines      : 333
+   Total statements : 178
+   Total stack(byte): 6368
+   Total prefetch num: 0
+
