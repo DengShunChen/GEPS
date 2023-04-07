@@ -6,14 +6,26 @@
       use rank, only : root_io,MPI_COMM_atm
 #endif
       use mpi
+
+#ifdef SP
+      real*4  sbuf(n)
+#else
       real*8  sbuf(n)
+#endif
 
 #if defined(RSM) && defined(CWB_MPMD)
       call MPI_SEND( SBUF, n, MPI_DOUBLE_PRECISION, root_io, J, &
                      MPI_COMM_gfs_all, ist )
 #else
+
+#ifdef SP
+      call MPI_SEND( SBUF, n, MPI_REAL, root_io, J, &
+                     MPI_COMM_WORLD, ist )
+#else
       call MPI_SEND( SBUF, n, MPI_DOUBLE_PRECISION, root_io, J, &
                      MPI_COMM_atm, ist )
+#endif
+
 #endif
  
       return

@@ -3,7 +3,8 @@
       use mpe
       use rank
       use index
-      use const, only: RTYPE,kflag
+      use const ,only: outdms ,outgrb2 ,ifilout_grb ,RTYPE,kflag
+      use mod_grb2_param  !for write grib2 data
 
       implicit  none
 
@@ -29,13 +30,15 @@
       call syslbl ('b00632',idtg,itau,ggdef,ihdg)
       wrk=raincu3
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
+      if(outdms.gt.0)call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
+      if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,1,10,2,103,0,0.,1,3,glob)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
 !
       call syslbl ('b00642',idtg,itau,ggdef,ihdg)
       wrk=rainlp3
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
+      if(outdms.gt.0)call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,1,9,2,103,0,0.,1,3,glob)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
 !
       call syslbl ('b00622',idtg,itau,ggdef,ihdg)
@@ -46,7 +49,8 @@
        wrk(i,jj)=raincu3(i,jj)+rainlp3(i,jj)
  98   continue
       call unify_reduceintp(nx,my,my_max,wrk,glob)
-      call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
+      if(outdms.gt.0)call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
+      if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,1,7,2,103,0,0.,1,3,glob)
       call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
 
 !=======================================================================

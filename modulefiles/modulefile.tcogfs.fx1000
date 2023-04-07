@@ -52,8 +52,7 @@ setenv C_COMP_MP $LANG_HOME/bin/mpifccpx
 #============================================================
 #setenv FFLAGS_COM "-c -X9 -Free -CcdRR8 -Cpp -Kfast,ocl,autoobjstack,preex,simd=2 -SSL2 -x- -xswflux,200 -fw"
 setenv FFLAGS_COM "-c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed"
-#setenv DEFINE_FLAGS "-DTIMING -DUSE_FFTW -DW3TAG"
-setenv DEFINE_FLAGS "-DTIMING -DUSE_FFTW -DRSM -DW3TAG"
+setenv DEFINE_FLAGS "-DTIMING -DUSE_FFTW -DRSM -DW3TAG -DGFDLMP_v2"
 setenv MSG_COM "-Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2"
 #setenv MSG_COM "-Ec -Koptmsg=2"
 setenv LIBS_COM "-SSL2BLAMP"
@@ -79,3 +78,8 @@ module load operlib
 module load w3lib/2.0.2
 module unuse /data/common/gfs/modulefiles/$machine
 
+#===add for grib2 output
+setenv G2_LIB "-L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 "
+setenv G2_INC "/package/fx1000/g2lib-1.4.0_cwb/include"
+setenv PNG_LIB " -L/package/fx1000/libpng-1.6.37/lib -lpng "
+setenv JASPER_LIB "-L/package/fx1000/jasper-1.900.1/lib -ljasper"

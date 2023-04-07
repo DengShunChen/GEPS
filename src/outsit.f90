@@ -25,33 +25,25 @@
 
       lenc= nx*my
   
-      ncnt=-1
+      ncnt=0
       do 10 k = 0, outsitlev+1
-        ncnt=ncnt+1
         write( lrec, '(i3.3,a3)' ) k,'SWT'         !!sit wt
         call syslbl (lrec,idtg,itau,ggdef,ihdg)
         globp=sitwt(:,:,k)
         call unify_reduceintp(nx,my,my_max,globp,wk1)
-        if (myrank .eq. k) then
-          pout=wk1
-          ihdg2=ihdg
-        endif
+        call split(nx,my,lenc,ifilout,ncnt,wk1,pout,ihdg,ihdg2)
    10 continue
-      if(myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+      if(myrank .lt. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
 
-      ncnt=-1 
+      ncnt=0
       do 20 k = 0, outsitlev+1
-        ncnt=ncnt+1
         write( lrec, '(i3.3,a3)' ) k,'OWT'        !!sit obswt
         call syslbl (lrec,idtg,itau,ggdef,ihdg)
         globp=obswt(:,:,k)
         call unify_reduceintp(nx,my,my_max,globp,wk1)
-        if (myrank .eq. k) then
-          pout=wk1
-          ihdg2=ihdg
-        endif
+        call split(nx,my,lenc,ifilout,ncnt,wk1,pout,ihdg,ihdg2)
    20 continue
-      if(myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+      if(myrank .lt. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
 
   
       end subroutine sitout
@@ -195,9 +187,8 @@
       lenc= nx*my
 
 
-      ncnt=-1
+      ncnt=0
       do 10 k = 0, outsitlev+1
-        ncnt=ncnt+1
         write( lrec, '(i3.3,a3)' ) k,'WTT'
         call syslbl (lrec,idtg,itau,ggdef,ihdg)
         if(dtsittau .ne. 0.) then
@@ -206,13 +197,10 @@
           glob2d=xmissing
         endif
         call unify_reduceintp(nx,my,my_max,glob2d,wk1)
-        if ( myrank .eq. ncnt ) then
-          pout=wk1
-          ihdg2=ihdg
-        endif
+        call split(nx,my,lenc,ifilout,ncnt,wk1,pout,ihdg,ihdg2)
    10 continue
 
-      if(myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+      if(myrank .lt. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
 
       sitwttau=0.
       dtsittau=0.
@@ -252,9 +240,8 @@
 
       lenc= nx*my
   
-      ncnt=-1
+      ncnt=0
       do 10 k = 0, outsitlev+1
-        ncnt=ncnt+1
         do jj =1, jlistnum
           j=jlist1(jj)
           nxj=nxdef_2d(j)
@@ -275,14 +262,11 @@
         write( lrec, '(i3.3,a3)' ) k,'WTF'
         call syslbl (lrec,idtg,itau,ggdef,ihdg)
         call unify_reduceintp(nx,my,my_max,tm1,wk1)
+        call split(nx,my,lenc,ifilout,ncnt,wk1,pout,ihdg,ihdg2)
 
-        if ( myrank .eq. ncnt ) then
-          pout=wk1
-          ihdg2=ihdg
-        endif
 !        call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
    10 continue
-      if(myrank .le. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat) 
+      if(myrank .lt. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat) 
      
       sitwt24=0.
       wtfn0=0.
@@ -326,7 +310,7 @@
         call syslbl (lrec,idtg,itau,ggdef,ihdg)
         glob2d(:,:)=wtfn(:,:,k)/dtsitmon
         call unify_reduceintp(nx,my,my_max,glob2d,wk1) 
-        call split(nx,my,outsitlev+1,lenc,ifilout,ncnt,wk1,pout,ihdg,ihdg2)
+        call split(nx,my,lenc,ifilout,ncnt,wk1,pout,ihdg,ihdg2)
    10 continue
       if(myrank .lt. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat) 
 

@@ -75,10 +75,9 @@
  cmbk=1.00,
  af=0.1,
  &end
-
+ 
  &typ
  write_mem=0,
  trk_intv=3,
  write_tau=6,
 &end
-

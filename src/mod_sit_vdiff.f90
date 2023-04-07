@@ -87,7 +87,7 @@
 !#define GDCHK2 (1 .eq. 0).AND.(mpp_pe().EQ.44).AND.(jrow.EQ.3).AND.(jl.EQ.212)
 #define GDCHK2 (1 .eq. 0).AND.(mpp_pe().EQ.254).AND.(jrow.EQ.3).AND.(jl.EQ.1)
 !#define GDCHK3 (1 .eq. 1).AND.(mpp_pe().EQ.49).AND.(jrow.EQ.3).AND.(jl.EQ.212)
-#define GDCHK3 (1 .eq. 1).AND.(mpp_pe().EQ.209).AND.(jrow.EQ.5).AND.(jl.EQ.12)
+#define GDCHK3 (1 .eq. 0).AND.(mpp_pe().EQ.209).AND.(jrow.EQ.5).AND.(jl.EQ.12)
 !#define GDCHK3 (1 .eq. 1).AND.(mpp_pe().EQ.21).AND.(jrow.EQ.4).AND.(jl.EQ.319)
 !#define GDCHK3 (1 .eq. 1).AND.(mpp_pe().EQ.24).AND.(jrow.EQ.3).AND.(jl.EQ.188)
 !#define GDCHK3 (mpp_pe().EQ.35).AND.(jrow.EQ.4).AND.(jl.EQ.495) 
@@ -793,7 +793,7 @@ SUBROUTINE sit_vdiff_init ( kproma, kbdim, jrow, istep,               &
     DO jl=1,kproma
       IF (GDCHK2) then
         WRITE(nerr,*) ", I am in sit_vdiff_init 1.0: prior to init_sit_viff_gd"
-        IF (lsitmask(jl) ) CALL output2
+!        IF (lsitmask(jl) ) CALL output2
       ENDIF
       CALL init_sit_viff_gd(jl,jrow)
       IF (GDCHK2) then
@@ -2314,7 +2314,7 @@ END SUBROUTINE sit_vdiff_init
   real, INTENT(in):: pfluxi(kbdim), psofli(kbdim)
 
 ! 2-d SIT vars (wind stress)
-  real, INTENT(in):: taucx(kbdim),    taucy(kbdim)
+  real, INTENT(in out):: taucx(kbdim),    taucy(kbdim)
 
 ! -    water mass variables(rain, snow, evap and runoff):
   real, INTENT(in):: prsf(kbdim), pssf(kbdim)
@@ -2546,7 +2546,7 @@ END SUBROUTINE sit_vdiff_init
   real:: pfluxi2  ! same as pfluxi but (adv energy included) (w/m2) (positive upward)
   real:: ccm      ! cold content at previous time step (J/m2) 
   real:: utauw         ! water-side friction velocity (m/s)     
-  real:: tauwx,    tauwy   ! wind stress over water, They will 0 while iced.
+!  real:: tauwx,    tauwy   ! wind stress over water, They will 0 while iced.
 !!!!***************
 !!!! Local variables for backgroud initial ocean profiles
 !!!  real:: bg_wt0(kbdim,0:lkvl+1)
@@ -4830,17 +4830,11 @@ SUBROUTINE thermocline(jl,jrow)
 !
 !!!        IF (lsit_ice.AND.mas.LT.4) THEN
         IF (mas.LT.4) THEN
-!         set tauwx and tauwy to zero if snow/ice on top
-          tauwx=0.
-          tauwy=0.
-        ELSE
-          tauwx=taucx(jl)
-          tauwy=taucy(jl)
+!         set taucx and taucy to zero if snow/ice on top
+          taucx(jl)=0.
+          taucy(jl)=0.
         ENDIF
-        tauc=tauwx*(1.,0.)+tauwy*(0.,1.)
-        IF(GDCHK2) THEN
-         print *,"12.1, tauwx=",tauwx
-        ENDIF
+        tauc=taucx(jl)*(1.,0.)+taucy(jl)*(0.,1.)
 !!
 !
 !*   12.2 PREPARE CURRENT VECTOR
@@ -5448,13 +5442,17 @@ END SUBROUTINE thermocline
    !   1.0 calc friction velocity of water side and thickness of cool skin (hcoolskin)
    !           = lamda * nu / uf
      IF(GDCHK2) THEN
-       print *,"before frictionvelocity, tauwx=",tauwx
+       print *,"before frictionvelocity, taucx=",taucx(jl) &
+              ,",taucx=",taucx(jl)
      ENDIF
-     utauw=frictionvelocity(tauwx,tauwy)
+     utauw=frictionvelocity(taucx(jl),taucy(jl))
      IF (lcool_skin) THEN
        hcoolskin=cool_skin(pwind10w(jl),utauw)
      ELSE
        hcoolskin=0. 
+     ENDIF
+     IF(GDCHK2) THEN
+       print *,"after frictionvelocity, utauw=",utauw
      ENDIF
    !
    !   2.0 For the skin layer and the missing layers

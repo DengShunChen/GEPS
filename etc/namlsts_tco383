@@ -1,5 +1,5 @@
  &model_param
- nco=640,
+ nco=384,
  lev=72,
  ncld=3,
  octahedral=t,
@@ -15,7 +15,7 @@
  tauo=1.0,
  taup=6.0,
  taureg=6.,
- dt=450.0,
+ dt=720.0,
  cstar=f,
  update=t,
  lsimpl=t,
@@ -60,20 +60,20 @@
  doo3l=t,
  irad=2,
  ioutsigr=1,
- ggdef='gj0g',
- gmdef='gjmg',
+ ggdef='gi0g',
+ gmdef='gimg',
  domfc=384.,
  out_green=t,
  otgreen=3.,
  out_hp=f,
- outdms   =1,
- outgrb2  =0, 
  ndsladvh2=f,
  isot=1,
  ivegsrc=1,
- cgwd=1.20,
- cmbk=1.00,
+ cgwd=1.60,
+ cmbk=0.30,
  af=0.1,
+ outdms   =1,
+ outgrb2  =0, 
  &end
 
  &typ
@@ -81,4 +81,3 @@
  trk_intv=3,
  write_tau=6,
 &end
-

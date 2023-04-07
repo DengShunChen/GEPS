@@ -20,5 +20,9 @@ wrk_sample
 src/depend
 work_*
 build
+<<<<<<< HEAD
 src/libtco.a
 job/*.log
+=======
+.*.swp
+>>>>>>> development
