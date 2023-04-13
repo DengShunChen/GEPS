@@ -931,7 +931,7 @@
           enddo
         enddo
         do i = 1, nxj
-          rlsp(i) = rain2d(i,1)+snow2d(i,1)+graupel2d(i,1)+hail2d(i,1)  !total large scale precipitation (mm)
+          rlsp(i) = rain2d(i,1)  !total large scale precipitation (kg/m^2=mm)
           sr(i)   = sr2d(i,1)
         enddo
 
