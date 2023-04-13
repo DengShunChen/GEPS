@@ -480,7 +480,7 @@
           enddo
         enddo
         do i = 1, nxj
-          rlsp(i) = icencv(i)+rainncv(i)+snowncv(i)+graupelncv(i)  !total large scale precipitation (mm)
+          rlsp(i) = rainncv(i)  !total large scale precipitation (kg/m^2=mm)
         enddo
 
         deallocate                                                      &
