@@ -875,10 +875,10 @@
             qg3d (i,k,1) = qt(i,(ntgl-1)*lev+kc)
             qh3d (i,k,1) = qt(i,(nthl-1)*lev+kc)
             p3d  (i,k,1) = 100.0*plt(i,kc)                   !layer mean pressure (from mb to Pa)
-!            pii3d(i,k,1) = pk(i,kc)                          !exner function, =(p/psfc)**(Rd/cp)
+!            pii3d(i,k,1) = pk(i,kc)                          !exner function, =(plt/1000)**(Rd/cp)
             pii3d(i,k,1) = 1.
-!            th3d (i,k,1) = tt(i,kc)*pk(i,kc)                 !potential temperature (K)
-            th3d (i,k,1) = tt(i,kc)                          !temperature (K)
+!            th3d (i,k,1) = tt(i,kc)/pk(i,kc)                 !potential temperature (K)
+            th3d (i,k,1) = tt(i,kc)                          !real temperature (K)
             z3d  (i,k,1) = phi(i,kc)/con_g                   !layer geopotential height above sea level (m)
             dz3d (i,k,1) = (phii(i,k+1)-phii(i,k))/con_g     !layer thickness (m)
             ! use virtural temperature : Tv = (1+(Rv/Rd-1)*q)*T = (1+con_fvirt*q)*T
@@ -922,7 +922,8 @@
             qt(i,(ntsw-1)*lev+k) = qs3d(i,kc,1)
             qt(i,(ntgl-1)*lev+k) = qg3d(i,kc,1)
             qt(i,(nthl-1)*lev+k) = qh3d(i,kc,1)
-            tt(i,k) = th3d(i,kc,1)
+!            tt(i,k) = th3d(i,kc,1)          !real temperature
+!            tt(i,k) = th3d(i,kc,1)*pk(i,k)  !potential temperature
 
             re_cloud(i,k) = rew3d(i,k,1)  !micron
             re_rain (i,k) = rer3d(i,k,1)  !micron
