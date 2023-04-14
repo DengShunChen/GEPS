@@ -2164,9 +2164,9 @@ subroutine subgrid_z_proc (ks, ke, p1, den, denfac, dts, rh_adj, tz, qv, ql, qr,
         
         tin = tz (k)
         rh_tem = qpz / iqs1 (tin, den (k))
-        qsw = wqs2 (tin, den (k), dwsdt)
-!        dq0 = qsw - qv (k)
-        dq0 = qsw * rhcz (k) - qv (k)  !xb141
+!        qsw = wqs2 (tin, den (k), dwsdt)
+        qsw = wqs2 (tin, den (k), dwsdt) * rhcz (k)  !xb141
+        dq0 = qsw - qv (k)
         if (use_rhc_cevap) then
             evap = 0.
             if (rh_tem .lt. rhc_cevap) then

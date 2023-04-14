@@ -3903,11 +3903,11 @@ subroutine pcond_pevap (ks, ke, dts, qv, ql, qr, qi, qs, qg, tz, dp, cvm, te8, d
     do k = ks, ke
         
         tin = tz (k)
-        qsw = wqs (tin, den (k), dqdt)
+!        qsw = wqs (tin, den (k), dqdt)
+        qsw = wqs (tin, den (k), dqdt) * rhc (k)  !xb141
         qpz = qv (k) + ql (k) + qi (k)
         rh_tem = qpz / qsw
-!        dq = qsw - qv (k)
-        dq = qsw * rhc (k) - qv (k)  !xb141
+        dq = qsw - qv (k)
         if (dq .gt. 0.) then
             factor = min (1., fac_l2v * (rh_fac * dq / qsw))
             sink = min (ql (k), factor * dq / (1. + tcp3 (k) * dqdt))
