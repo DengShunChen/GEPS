@@ -101,6 +101,8 @@
       use module_mp_thompson_new,                                       &
                                only: new_thompson_driver => mp_gt_driver&
                                      , cal_cldfra3, cfflag_thom
+      use module_mp_thompson_make_number_concentrations,                &
+                               only: make_IceNumber, make_RainNumber
 ! for GFDL MP v1
       use module_mp_gfdl,      only: gfdl_cloud_microphys_driver,      &
                                      cloud_diagnosis
@@ -110,7 +112,7 @@
       use module_mp_gfdl_v3,   only: gfdlv3_driver => gfdl_cld_mp_driver
 ! for Goddard (GCE) 4ICE MP
       use module_mp_gce4ice,   only: gsfcgce_4ice_nuwrf
-      use physcons,            only: con_rd,con_fvirt,con_g
+      use physcons,            only: con_rd,con_fvirt,con_g,con_eps
       use physpara,            only: effr_in
       use const,               only: RTYPE
 
@@ -163,6 +165,7 @@
       real,dimension(:),allocatable :: spp_prt_list,spp_stddev_cutoff
       character(len=3),dimension(:),allocatable :: spp_var_list
       real    dt_inner
+      real    rho
       logical sedi_semi,ext_diag,first_time_step,reset_dBZ,aero_ind_fdb,&
               diagflag
       integer do_radar_ref,rand_perturb_on,has_reqc,has_reqi,has_reqs,  &
@@ -384,8 +387,19 @@
                          (1.+con_fvirt*qt(i,kc))*tt(i,kc)/              &
                          prsl(i,k)*con_rd/con_g         !vertical velocity (m/s)
             dz2d (i,k) = (phii(i,k+1)-phii(i,k))/con_g  !layer depth (m)
+
+            ! 1st guess number concentration where mass non-zero
+            if ( kdt .eq. 1 ) then
+              rho = con_eps*prsl(i,k)/                                  &
+                    (con_rd*t2d(i,k)*(qv2d(i,k)+con_eps))  !air density (kg m-3)
+              if ( qi2d(i,k) .gt. 0. )                                  &
+                qni2d(i,k) = make_IceNumber(qi2d(i,k)*rho,t2d(i,k))/rho
+              if ( qr2d(i,k) .gt. 0. )                                  &
+                qnr2d(i,k) = make_RainNumber(qr2d(i,k)*rho,t2d(i,k))/rho
+            endif
           enddo
         enddo
+
 
         call new_thompson_driver                                        &
                    ( qv2d,qc2d,qr2d,qi2d,qs2d,qg2d,qni2d,qnr2d,         &
