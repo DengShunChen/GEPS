@@ -44,7 +44,7 @@ module module_mp_gfdl_v2
         esw_table, d_sat, qs1d_m, wqsat_moist, wqsat2_moist, qs1d_moist, revap_rac1, &
         wqs2_vect, rhow, rhor, rhos, rhog, rhoh, rnzr, rnzs, rnzg, rnzh, rvgas, rdgas, &
         grav, hlv, hlf, cp_air, cp_vap, cv_air, cv_vap, c_ice, c_liq, dc_vap, dc_ice, &
-        t_ice, t_wfr, e00, pi, zvir, rgrav, isedi, isedi_ice
+        t_ice, t_wfr, e00, pi, zvir, rgrav, isedi, isedi_ice, wqs2_rhc
     
     integer, parameter :: r8 = 8 ! double precision
 
@@ -825,7 +825,7 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
             ! -----------------------------------------------------------------------
             
             call warm_rain (dt_rain, ks, ke, dp1, dz1, tz, qvz, qlz, qrz, qiz, qsz, &
-                qgz, den, denfac, ccn, c_praut, rh_rain, vtrz, r1, pfr, m1_rain, w1, h_var, reevap, dte (i))
+                qgz, den, denfac, ccn, c_praut, rh_rain, vtrz, r1, pfr, m1_rain, w1, h_var, reevap, rhcz, dte (i))
             
             evaporation (i) = evaporation (i) + reevap * convt
             rain (i) = rain (i) + r1 * convt
@@ -891,7 +891,7 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
             ! -----------------------------------------------------------------------
             
             call warm_rain (dt_rain, ks, ke, dp1, dz1, tz, qvz, qlz, qrz, qiz, qsz, &
-                qgz, den, denfac, ccn, c_praut, rh_rain, vtrz, r1, pfr, m1_rain, w1, h_var, reevap, dte (i))
+                qgz, den, denfac, ccn, c_praut, rh_rain, vtrz, r1, pfr, m1_rain, w1, h_var, reevap, rhcz, dte (i))
             
             evaporation (i) = evaporation (i) + reevap * convt
             rain (i) = rain (i) + r1 * convt
@@ -1142,7 +1142,7 @@ end subroutine sedi_heat
 ! -----------------------------------------------------------------------
 
 subroutine warm_rain (dt, ks, ke, dp, dz, tz, qv, ql, qr, qi, qs, qg, &
-        den, denfac, ccn, c_praut, rh_rain, vtr, r1, pfr, m1_rain, w1, h_var, reevap, dte)
+        den, denfac, ccn, c_praut, rh_rain, vtr, r1, pfr, m1_rain, w1, h_var, reevap, rhcz, dte)
     
     implicit none
     
@@ -1151,6 +1151,7 @@ subroutine warm_rain (dt, ks, ke, dp, dz, tz, qv, ql, qr, qi, qs, qg, &
     real, intent (in) :: rh_rain, h_var
     real, intent (in), dimension (ks:ke) :: dp, dz, den
     real, intent (in), dimension (ks:ke) :: denfac, ccn, c_praut
+    real, intent (in), dimension (ks:ke) :: rhcz
     
     real (kind = r8), intent (inout), dimension (ks:ke) :: tz
     real, intent (inout), dimension (ks:ke) :: vtr, qv, ql, qr, qi, qs, qg, m1_rain, w1, pfr
@@ -1222,7 +1223,7 @@ subroutine warm_rain (dt, ks, ke, dp, dz, tz, qv, ql, qr, qi, qs, qg, &
         ! evaporation and accretion of rain for the first 1 / 2 time step
         ! -----------------------------------------------------------------------
         
-        call revap_racc (ks, ke, dt5, tz, qv, ql, qr, qi, qs, qg, den, denfac, rh_rain, h_var, dp, reevap)
+        call revap_racc (ks, ke, dt5, tz, qv, ql, qr, qi, qs, qg, den, denfac, rh_rain, h_var, dp, reevap, rhcz)
         
         if (do_sedi_w) then
             do k = ks, ke
@@ -1340,7 +1341,7 @@ subroutine warm_rain (dt, ks, ke, dp, dz, tz, qv, ql, qr, qi, qs, qg, &
         ! evaporation and accretion of rain for the remaing 1 / 2 time step
         ! -----------------------------------------------------------------------
         
-        call revap_racc (ks, ke, dt5, tz, qv, ql, qr, qi, qs, qg, den, denfac, rh_rain, h_var, dp, reevap)
+        call revap_racc (ks, ke, dt5, tz, qv, ql, qr, qi, qs, qg, den, denfac, rh_rain, h_var, dp, reevap, rhcz)
         
     endif
     
@@ -1406,7 +1407,7 @@ end subroutine warm_rain
 ! evaporation of rain
 ! -----------------------------------------------------------------------
 
-subroutine revap_racc (ks, ke, dt, tz, qv, ql, qr, qi, qs, qg, den, denfac, rh_rain, h_var, dp, reevap)
+subroutine revap_racc (ks, ke, dt, tz, qv, ql, qr, qi, qs, qg, den, denfac, rh_rain, h_var, dp, reevap, rhcz)
     
     implicit none
     
@@ -1414,6 +1415,7 @@ subroutine revap_racc (ks, ke, dt, tz, qv, ql, qr, qi, qs, qg, den, denfac, rh_r
     real, intent (in) :: dt ! time step (s)
     real, intent (in) :: rh_rain, h_var
     real, intent (in), dimension (ks:ke) :: den, denfac, dp
+    real, intent (in), dimension (ks:ke) :: rhcz
     real (kind = r8), intent (inout), dimension (ks:ke) :: tz
     real, intent (inout), dimension (ks:ke) :: qv, qr, ql, qi, qs, qg
     real, intent (out) :: reevap
@@ -1448,7 +1450,8 @@ subroutine revap_racc (ks, ke, dt, tz, qv, ql, qr, qi, qs, qg, den, denfac, rh_r
             tin = (tz (k) * cvm (k) - lv00 * ql (k)) / (1. + (qv (k) + ql (k)) * c1_vap + qr (k) * c1_liq + q_sol (k) * c1_ice)
             
             qpz = qv (k) + ql (k)
-            qsat = wqs2 (tin, den (k), dqsdt)
+!            qsat = wqs2 (tin, den (k), dqsdt)
+            qsat = wqs2_rhc (tin, den (k), rhcz (k), dqsdt)  !xb141
             dqh = max (ql (k), h_var * max (qpz, qcmin))
             dqh = min (dqh, 0.2 * qpz) ! new limiter
             dqv = qsat - qv (k) ! use this to prevent super - sat the gird box
@@ -2165,7 +2168,7 @@ subroutine subgrid_z_proc (ks, ke, p1, den, denfac, dts, rh_adj, tz, qv, ql, qr,
         tin = tz (k)
         rh_tem = qpz / iqs1 (tin, den (k))
 !        qsw = wqs2 (tin, den (k), dwsdt)
-        qsw = wqs2 (tin, den (k), dwsdt) * rhcz (k)  !xb141
+        qsw = wqs2_rhc (tin, den (k), rhcz (k), dwsdt)  !xb141
         dq0 = qsw - qv (k)
         if (use_rhc_cevap) then
             evap = 0.
@@ -4061,6 +4064,40 @@ real function wqs2 (ta, den, dqdt)
     
 end function wqs2
 
+!xb141 >>>>>>
+! =======================================================================
+! compute the gradient of saturated specific humidity for table ii 
+! which is tuned by rhc
+! =======================================================================
+real function wqs2_rhc (ta, den, rhc, dqdt)
+    
+    implicit none
+    
+    ! pure water phase; universal dry / moist formular using air density
+    ! input "den" can be either dry or moist air density
+    
+    real, intent (in) :: ta, den, rhc
+    real, intent (out) :: dqdt
+    real :: es, ap1, tmin
+    integer :: it
+    
+    tmin = table_ice - 160.
+    
+    if (.not. tables_are_initialized) call qsmith_init
+    
+    ap1 = 10. * dim (ta, tmin) + 1.
+    ap1 = min (2621., ap1)
+    it = ap1
+    es = tablew (it) + (ap1 - it) * desw (it)
+    wqs2_rhc = es / (rvgas * ta * den) * rhc
+    it = ap1 - 0.5
+    ! finite diff, del_t = 0.1:
+    dqdt = 10. * (desw (it) + (ap1 - it) * (desw (it + 1) - desw (it))) / (rvgas * ta * den)
+    
+end function wqs2_rhc
+!xb141 <<<<<
+
+! =======================================================================
 ! =======================================================================
 ! compute the gradient of saturated specific humidity for table ii
 ! it is the same as "wqs2", but written as vector function

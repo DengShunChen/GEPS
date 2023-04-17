@@ -83,7 +83,7 @@
 !  ---  inputs:
            ( nmmiph,nx,nxj,lev,ncld,plt,                               &
              pst,dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,        &
-             itimestep,sgeo,phi,rhc,                                   &
+             itimestep,sgeo,phi,rhc_mp,                                &
 !  ---  inputs/outputs:
              tt,qt,qa,ut,vt,vvel,                                      &
 !  ---  outputs:
@@ -124,7 +124,7 @@
       real,     intent(in)    :: tpi,dta,jj
       real,     intent(in)    :: plt(nx,lev),phii(nx,lev+1),phi(nx,lev)
       real,     intent(in)    :: area
-      real,     intent(in)    :: rhc(nxj,lev)
+      real,     intent(in)    :: rhc_mp(nx,lev)
       real,     intent(in)    :: sgeo(nx)
       real,     intent(inout) :: vvel(nx,lev) !mb/s
       real(kind=RTYPE), intent(in):: q0(nx,lev*ncld),pst(nx),          &
@@ -152,7 +152,7 @@
       real,dimension(:,:),allocatable ::                                &
               qv2d,qc2d,qr2d,qi2d,qs2d,qg2d,qnc2d,qni2d,qnr2d,          &
               rew2d,rer2d,rei2d,res2d,reg2d,                            &
-              t2d,dp2d,dz2d,cld2d,w2d,u2d,v2d
+              t2d,dp2d,dz2d,cld2d,w2d,u2d,v2d,rhc2d
       real    qmin, qnmin
 ! New Thompson MP
       real,dimension(:,:),allocatable ::                                &
@@ -505,7 +505,7 @@
            tten3d(nxj,1,lev),                                           &
            rew2d(nxj,lev),rei2d(nxj,lev),rer2d(nxj,lev),res2d(nxj,lev), &
            reg2d(nxj,lev),land2d(nxj,1),rain2d(nxj,1),snow2d(nxj,1),    &
-           ice2d(nxj,1),graupel2d(nxj,1),garea(nxj,1) )
+           ice2d(nxj,1),graupel2d(nxj,1),garea(nxj,1),rhc2d(nxj,lev) )
         if ( effr_in ) allocate                                         &
            ( dp2d(nxj,lev),rho2d(nxj,lev),qc2d(nxj,lev),qr2d(nxj,lev),  &
              qi2d(nxj,lev),qs2d(nxj,lev),qg2d(nxj,lev),mask1d(nxj),     &
@@ -561,6 +561,7 @@
             v3d  (i,1,k) = vt(i,k)                 !meridional wind (m/s)
             dp3d (i,1,k) = (dsigma(k,1)*pst(i)+dsigma(k,2))*100. !difference of interface pressure (Pa)
             dz3d (i,1,k) = (phii(i,kc)-phii(i,kc+1))/con_g       !differences of height (m), dz<0
+            rhc2d(i,  k) = rhc_mp(i,k)
             if ( effr_in ) dp2d(i,k) = dp3d(i,1,k)
           enddo
         enddo
@@ -571,7 +572,7 @@
                   cldten3d, tten3d, t3d, w3d, u3d, v3d, uten3d, vten3d, &
                   dz3d, dp3d, garea, dta, land2d,                       &
                   rain2d, snow2d, ice2d, graupel2d,                     &
-                  rhc, hydrostatic, phys_hydrostatic,               &
+                  rhc2d, hydrostatic, phys_hydrostatic,                 &
                   1, nxj, 1, 1, 1, lev, 1, lev )
 
         do k = 1, lev
@@ -645,7 +646,7 @@
          ( qv3d,qc3d,qr3d,qi3d,qs3d,qg3d,cld3d,qnc3d,t3d,w3d,u3d,v3d,   &
            dp3d,dz3d,qvten3d,qcten3d,qrten3d,qiten3d,qsten3d,qgten3d,   &
            cldten3d,uten3d,vten3d,tten3d,rew2d,rei2d,rer2d,res2d,reg2d, &
-           land2d,rain2d,snow2d,ice2d,graupel2d,garea )
+           land2d,rain2d,snow2d,ice2d,graupel2d,garea,rhc2d )
         if ( effr_in ) deallocate                                       &
            ( dp2d,rho2d,qc2d,qr2d,qi2d,qs2d,qg2d,mask1d,t2d )
       endif  ! end of nmmiph.eq.11
@@ -659,7 +660,7 @@
            v2d(nxj,lev),dp2d(nxj,lev),dz2d(nxj,lev),                    &
            q_con(nxj,lev),cappa(nxj,lev),te(nxj,lev),                   &
            hs(nxj),land1d(nxj),gsize(nxj),rain1d(nxj),snow1d(nxj),      &
-           ice1d(nxj),graupel1d(nxj),water1d(nxj) )
+           ice1d(nxj),graupel1d(nxj),water1d(nxj),rhc2d(nxj,lev) )
 #ifdef EXT_DIAG
         allocate                                                        &
          ( prefluxr(nxj,lev),prefluxi(nxj,lev),prefluxs(nxj,lev),       &
@@ -727,6 +728,7 @@
             v2d  (i,k) = vt(i,k)                 !meridional wind (m/s)
             dp2d (i,k) = (dsigma(k,1)*pst(i)+dsigma(k,2))*100. !difference of interface pressure (Pa)
             dz2d (i,k) = (phii(i,kc)-phii(i,kc+1))/con_g       !differences of height (m), dz<0
+            rhc2d(i,k) = rhc_mp(i,k)
           enddo
         enddo
 
@@ -743,7 +745,7 @@
                   prefluxr, prefluxi, prefluxs, prefluxg,               &
                   cond0, dep0, evap0, sub0,                             &
 #endif
-                  rhc, last_step, do_inline_mp )
+                  rhc2d, last_step, do_inline_mp )
 
         ! GFDL MP v3
         if ( nmmiph .eq. 13 )                                           &
@@ -758,7 +760,7 @@
                   prefluxw, prefluxr, prefluxi, prefluxs, prefluxg,     &
                   cond0, dep0, evap0, sub0,                             &
 #endif
-                  rhc, last_step, do_inline_mp )
+                  rhc2d, last_step, do_inline_mp )
 
         qmin = 1.0e-15     !minimum of q (kg/kg)
         do k = 1, lev
@@ -794,7 +796,7 @@
         deallocate                                                      &
          ( qv2d,qc2d,qr2d,qi2d,qs2d,qg2d,qnc2d,qni2d,cld2d,w2d,t2d,u2d, &
            v2d,dp2d,dz2d,q_con,cappa,te,hs,gsize,rain1d,snow1d,ice1d,   &
-           graupel1d,water1d,land1d )
+           graupel1d,water1d,land1d,rhc2d )
 #ifdef EXT_DIAG
         deallocate                                                      &
          ( prefluxw,prefluxr,prefluxi,prefluxs,prefluxg,cond0,dep0,     &
