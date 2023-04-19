@@ -415,12 +415,12 @@
             dz2d (i,k) = (phii(i,k+1)-phii(i,k))/con_g          !layer width (m)
 
             ! 1st guess number concentration where mass non-zero
-            if ( kdt .eq. 1 ) then
-              if ( qi2d(i,k) .gt. 0. )                                  &
-                qni2d(i,k) = make_IceNumber(qi2d(i,k)*rho,t2d(i,k))/rho
-              if ( qr2d(i,k) .gt. 0. )                                  &
-                qnr2d(i,k) = make_RainNumber(qr2d(i,k)*rho,t2d(i,k))/rho
-            endif
+!            if ( kdt .eq. 1 ) then
+!              if ( qi2d(i,k) .gt. 0. )                                  &
+!                qni2d(i,k) = make_IceNumber(qi2d(i,k)*rho,t2d(i,k))/rho
+!              if ( qr2d(i,k) .gt. 0. )                                  &
+!                qnr2d(i,k) = make_RainNumber(qr2d(i,k)*rho,t2d(i,k))/rho
+!            endif
           enddo
         enddo
 

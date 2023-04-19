@@ -44,6 +44,10 @@
                                 ,ifilin_ocaf,read_ocaf,read_ocaf0      &
                                 ,wtfn12,wsfn12,time_weights,mask1st
       USE mo_netcdf,         ONLY:lkvl,set_ocndepth
+! for Thompson MP
+      use physcons,          only: con_rd,con_eps
+      use module_mp_thompson_make_number_concentrations,                &
+                             only: make_IceNumber, make_RainNumber
 !-----------------------------------------------------------------------
 
 
@@ -106,6 +110,8 @@
       real, parameter:: specified_ice_thickness  = 2.0
       real lontest(nxp,my_max)
       integer nxjpart      
+! for Thompson MP
+      real  tem,rho
 
       lmax=26
 !
@@ -1203,6 +1209,30 @@
 !        call mpe_unify(hflux,nx,my,2,mpe_double)
 !        call mpe_unify(qflux,nx,my,2,mpe_double)
       endif    ! end of ( .not. restrt ) for u10 v10 t2 being output at tau=0
+
+! for Thompson : 1st guess number concentration where mass non-zero
+      if ( .not.restrt .and. nmmiph.eq.9 ) then
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          do k = 1, lev
+            do i = 1, nxj
+              rho = con_eps*(plt(i,k,jj)*100.)/                         &
+                   (con_rd*tt(i,k,jj)*(qt(i,k,jj)+con_eps))
+              tem = qt(i,(ntiw-1)*lev+k,jj)
+              if ( tem .gt. 0. ) then
+                 qt(i,(ntinc-1)*lev+k,jj) =                             &
+                      make_IceNumber(tem*rho,tt(i,k,jj)) / rho
+              endif
+              tem = qt(i,(ntrw-1)*lev+k,jj)
+              if ( tem .gt. 0. ) then
+                 qt(i,(ntrnc-1)*lev+k,jj) =                             &
+                      make_RainNumber(tem*rho,tt(i,k,jj)) / rho
+              endif
+            enddo
+          enddo
+        enddo
+      endif
 !
 !  output initial fileds
 !
