@@ -187,7 +187,7 @@
       use radn
       use physpara
 !
-      use physcons, only :con_rd,con_fvirt,con_rerth,con_rv
+      use physcons, only :con_rd,con_fvirt,con_rerth,con_rv,con_pi
 ! for slavepp
       use phygrid,  only :dtcup,ducup,dvcup,dtshl,dushl,dvshl,dtlsp
 ! for land_noah_new
@@ -440,6 +440,8 @@
       real      phii(nxp,lev+1)
       real      qti(nxp,lev),qtrw(nxp,lev),qtsw(nxp,lev),qtgl(nxp,lev)
       real      icem,ntnc(nxp,lev,2) !1:ice, 2:liquid
+      real      ice00(nxp,lev)
+      real      qni
 ! for updating low boundary condition
       integer   ls(nxp,my_max)
       real      sstc(nxp,my_max),z0ocn(nxp,my_max)
@@ -1343,6 +1345,15 @@
 !=======================================================================
 !  cumulus scheme
 !=======================================================================
+      ! save old array for Thompson
+      if ( nmmiph .eq. 9 ) then
+        do k=1,lev
+          do i = 1, nxj
+            ice00(i,k) = qt(i,(ntiw-1)*lev+k,jj)
+          enddo
+        enddo
+      endif
+
       if ( docup .and. (nmcup.eq. 1) )                               &
         call cupcwb (j,nxjp(j),nxp,my,lev,ktcup,dta,grav,rgas,cp,hltm,etop,prevap  &
                  , sgeo(1,jj),pst(1,jj),plt(1,1,jj),pk(1,1,jj),pk2(1,1,jj)   &
@@ -1717,6 +1728,19 @@
                      , dsigma,tg(1,jj),pk(1,1,jj),pst(1,jj),sgeo(1,jj),phi     &
                      , plt(1,1,jj),tt(1,1,jj), qt(1,1,jj),nshl(j)              &
                      , rcup(1,jj),ncld )
+
+      ! ice number concentration modification for Thompson
+      if ( nmmiph .eq. 9 ) then
+        icem = 4./3.*con_pi*3.2768*1.e-14*890.
+        do k=1,lev
+          do i=1,nxj
+            qni = (qt(i,(ntiw-1)*lev+k,jj)-ice00(i,k))/icem
+            if ( qni .gt. 0. ) then
+              qt(i,(ntinc-1)*lev+k,jj) = qt(i,(ntinc-1)*lev+k,jj) + qni
+            endif
+          enddo
+        enddo
+      endif
 
 !=======================================================================
 ! cloud microphysics
