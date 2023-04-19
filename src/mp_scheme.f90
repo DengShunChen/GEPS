@@ -167,7 +167,7 @@
       real    dt_inner
       real    rho
       logical sedi_semi,ext_diag,first_time_step,reset_dBZ,aero_ind_fdb,&
-              diagflag
+              diagflag,convert_dry_rho
       integer do_radar_ref,rand_perturb_on,has_reqc,has_reqi,has_reqs,  &
               kme_stoch,istep,nsteps,errflg,decfl
       character errmsg
@@ -323,6 +323,7 @@
         reset_dBZ=.false.        !if true, set melti=.true.
         aero_ind_fdb=.false.     !(not sure)
         diagflag=.false.         !if diagflag=true and do_radar_ref=1, call calc_refl10cm
+        convert_dry_rho=.false.
         do_radar_ref=0
         rand_perturb_on=0        !if!=0, use SPP
         if ( effr_in ) then
@@ -381,17 +382,40 @@
             qg2d (i,k) = qt(i,(ntgl-1) *lev+kc)
             qni2d(i,k) = qt(i,(ntinc-1)*lev+kc)
             qnr2d(i,k) = qt(i,(ntrnc-1)*lev+kc)
-            prsl (i,k) = plt(i,kc)*100.                 !layer pressure (Pa)
+
+            !> - Convert specific humidity to water vapor mixing ratio.
+            !> - Also, hydrometeor variables are mass or number mixing ratio
+            !> - either kg of species per kg of dry air, or per kg of (dry + vapor).
+            qv2d (i,k) = qv2d (i,k)/(1. - qv2d(i,k))
+            if ( convert_dry_rho ) then
+              ! q convert to : hydrometeor mass / dry mass
+              qc2d (i,k) = qc2d (i,k)/(1. - qv2d(i,k))
+              qr2d (i,k) = qr2d (i,k)/(1. - qv2d(i,k))
+              qi2d (i,k) = qi2d (i,k)/(1. - qv2d(i,k))
+              qs2d (i,k) = qs2d (i,k)/(1. - qv2d(i,k))
+              qg2d (i,k) = qg2d (i,k)/(1. - qv2d(i,k))
+              ! N convert to : # / dry mass
+              qni2d(i,k) = qni2d(i,k)/(1. - qv2d(i,k))
+              qnr2d(i,k) = qnr2d(i,k)/(1. - qv2d(i,k))
+            endif
+
+            ! Ensure non-negative mass mixing ratios of all water variables
+            if ( qv2d(i,k) .lt. 0. ) qv2d(i,k) = 1.E-10  !should *never* be identically zero
+            if ( qc2d(i,k) .lt. 0. ) qc2d(i,k) = 0.
+            if ( qr2d(i,k) .lt. 0. ) qr2d(i,k) = 0.
+            if ( qi2d(i,k) .lt. 0. ) qi2d(i,k) = 0.
+            if ( qs2d(i,k) .lt. 0. ) qs2d(i,k) = 0.
+            if ( qg2d(i,k) .lt. 0. ) qg2d(i,k) = 0.
+
+            prsl (i,k) = plt(i,kc)*100.                         !layer pressure (Pa)
             t2d  (i,k) = tt(i,kc)
-            w2d  (i,k) = - vvel(i,kc)*100.*                             &
-                         (1.+con_fvirt*qt(i,kc))*tt(i,kc)/              &
-                         prsl(i,k)*con_rd/con_g         !vertical velocity (m/s)
-            dz2d (i,k) = (phii(i,k+1)-phii(i,k))/con_g  !layer depth (m)
+            rho        = con_eps*prsl(i,k)/                             &
+                         (con_rd*t2d(i,k)*(qv2d(i,k)+con_eps))  !air density (kg m-3)
+            w2d  (i,k) = - vvel(i,kc)*100./(rho*con_g)          !vertical velocity (m/s)
+            dz2d (i,k) = (phii(i,k+1)-phii(i,k))/con_g          !layer width (m)
 
             ! 1st guess number concentration where mass non-zero
             if ( kdt .eq. 1 ) then
-              rho = con_eps*prsl(i,k)/                                  &
-                    (con_rd*t2d(i,k)*(qv2d(i,k)+con_eps))  !air density (kg m-3)
               if ( qi2d(i,k) .gt. 0. )                                  &
                 qni2d(i,k) = make_IceNumber(qi2d(i,k)*rho,t2d(i,k))/rho
               if ( qr2d(i,k) .gt. 0. )                                  &
@@ -399,7 +423,6 @@
             endif
           enddo
         enddo
-
 
         call new_thompson_driver                                        &
                    ( qv2d,qc2d,qr2d,qi2d,qs2d,qg2d,qni2d,qnr2d,         &
@@ -470,6 +493,19 @@
         do k = 1, lev
           kc = lev - k + 1
           do i = 1, nxj
+            qv2d (i,kc) = qv2d (i,kc)/(1. + qv2d(i,kc))
+            if ( convert_dry_rho ) then
+              ! q convert back to : hydrometeor mass / ( dry mass + vapor mass )
+              qc2d (i,kc) = qc2d (i,kc)/(1. + qv2d(i,kc))
+              qr2d (i,kc) = qr2d (i,kc)/(1. + qv2d(i,kc))
+              qi2d (i,kc) = qi2d (i,kc)/(1. + qv2d(i,kc))
+              qs2d (i,kc) = qs2d (i,kc)/(1. + qv2d(i,kc))
+              qg2d (i,kc) = qg2d (i,kc)/(1. + qv2d(i,kc))
+              ! N convert back to : # / ( dry mass + vapor mass )
+              qni2d(i,kc) = qni2d(i,kc)/(1. + qv2d(i,kc))
+              qnr2d(i,kc) = qnr2d(i,kc)/(1. + qv2d(i,kc))
+            endif
+
             if ( qc2d(i,kc) .lt. qmin ) qc2d(i,kc) = qmin
             if ( qr2d(i,kc) .lt. qmin ) qr2d(i,kc) = qmin
             if ( qi2d(i,kc) .lt. qmin ) qi2d(i,kc) = qmin
