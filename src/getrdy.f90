@@ -111,7 +111,7 @@
       real lontest(nxp,my_max)
       integer nxjpart      
 ! for Thompson MP
-      real  tem,rho
+      real  tem,rho,ttr,ttv
 
       lmax=26
 !
@@ -1217,17 +1217,23 @@
           nxj=nxdef_2d(j)
           do k = 1, lev
             do i = 1, nxj
-              rho = con_eps*(plt(i,k,jj)*100.)/                         &
-                   (con_rd*tt(i,k,jj)*(qt(i,k,jj)+con_eps))
+              ! virtual temperature :
+              ttv = tt(i,k,jj)*pk(i,k,jj)
+              ! real temperature :
+              ttr = ttv/(1.0+0.608*qt(i,k,jj))
+              ! air density :
+              rho = plt(i,k,jj)*100./(con_rd*ttv)
+
               tem = qt(i,(ntiw-1)*lev+k,jj)
               if ( tem .gt. 0. ) then
                  qt(i,(ntinc-1)*lev+k,jj) =                             &
-                      make_IceNumber(tem*rho,tt(i,k,jj)) / rho
+                      make_IceNumber(tem*rho,ttr)/rho
               endif
+
               tem = qt(i,(ntrw-1)*lev+k,jj)
               if ( tem .gt. 0. ) then
                  qt(i,(ntrnc-1)*lev+k,jj) =                             &
-                      make_RainNumber(tem*rho,tt(i,k,jj)) / rho
+                      make_RainNumber(tem*rho,ttr)/rho
               endif
             enddo
           enddo
