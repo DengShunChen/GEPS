@@ -253,6 +253,8 @@ SRCS_f90  = \
   rstrantq.f90 \
   samfdeepcnv.f90 \
   samfshalcnv.f90 \
+  samfdeepcnv_kh.f90 \
+  samfshalcnv_kh.f90 \
   sascnv.f90 \
   sascnv_n.f90 \
   sascnv_sa.f90 \

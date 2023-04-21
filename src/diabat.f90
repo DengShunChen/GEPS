@@ -1489,7 +1489,14 @@
 
         ! scale-aware SAS
         if( nmcup .eq. 6)                                 &
-          call samfdeepcnv(nxjp(j),nxp,lev,dta,del,prsl,psfc,phil       &
+          call samfdeepcnv(nxjp(j),nxp,lev,dta,del,prsl,psfc,phil        &
+            ,qtr,qti,qtc,ttc,utc,vtc,cldwrk(1,jj),rcup(1,jj),kbot(1,jj)  &
+            ,ktop(1,jj),kuo(1,jj),islimsk,garea,dotc,ncld,cnvw,cnvc      &
+            ,snow_flxn,ptun,pqun)
+
+        ! KH scale-aware SAS
+        if( nmcup .eq. 7)                                 &
+          call samfdeepcnv_kh(nxjp(j),nxp,lev,dta,del,prsl,psfc,phil     &
             ,qtr,qti,qtc,ttc,utc,vtc,cldwrk(1,jj),rcup(1,jj),kbot(1,jj)  &
             ,ktop(1,jj),kuo(1,jj),islimsk,garea,dotc,ncld,cnvw,cnvc      &
             ,snow_flxn,ptun,pqun)
@@ -1678,6 +1685,13 @@
         ! scale-aware shalcon
         if( nmshl.eq.3 ) then
           call samfshalcnv(nxjp(j),nxp,lev,dta,del,prsl,psfc,phil,qtr   &
+            ,qti,qtc,ttc,utc,vtc,rcup2,kbot(1,jj),ktop(1,jj),kuo(1,jj)  &
+            ,islimsk,garea,dotc,ncld,hpbl(1,jj),cnvw,cnvc)
+        endif
+
+        ! KH scale-aware shalcon
+        if( nmshl.eq.4 ) then
+          call samfshalcnv_kh(nxjp(j),nxp,lev,dta,del,prsl,psfc,phil,qtr&
             ,qti,qtc,ttc,utc,vtc,rcup2,kbot(1,jj),ktop(1,jj),kuo(1,jj)  &
             ,islimsk,garea,dotc,ncld,hpbl(1,jj),cnvw,cnvc)
         endif
