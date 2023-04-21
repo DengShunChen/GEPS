@@ -58,6 +58,9 @@
 !byl                wss3(levp,2,3,jtrun,jtmax),cc3(nx+2,levp,3,my_max)
 
       character lrec*26,rfile*55,ctau*6,topostd*4,topohgt*4,key*34
+!helio>
+      character f71*50
+!helio<
 #ifdef RSM
       character*12 dtgrsm
       integer idtgrsm
@@ -134,16 +137,29 @@
       endif
 !------------------------------------------------------------
 !helio>
-      if (my/2.eq.200) then
-          open(71,file='global_idw.t200.816.400.dat',&
-                 form='unformatted',access='direct',recl=8*nx*my*8)
-      else if (my/2.eq.384) then
-          open(71,file='global_idw.t384.1552.768.dat',&
-                 form='unformatted',access='direct',recl=8*nx*my*8)
-      else if (my/2.eq.640) then
-          open(71,file='global_idw.t640.2576.1280.dat',&
-                 form='unformatted',access='direct',recl=8*nx*my*8)
-      end if
+!     if (my/2.eq.200) then
+!         open(71,file='global_idw.t200.816.400.dat',&
+!                form='unformatted',access='direct',recl=8*nx*my*8)
+!     else if (my/2.eq.384) then
+!         open(71,file='global_idw.t384.1552.768.dat',&
+!                form='unformatted',access='direct',recl=8*nx*my*8)
+!     else if (my/2.eq.640) then
+!         open(71,file='global_idw.t640.2576.1280.dat',&
+!                form='unformatted',access='direct',recl=8*nx*my*8)
+!     end if
+       if ( nco .gt. 999 ) then
+        write(f71,105) nco,nx,my
+       else
+        if ( nx .gt. 999 .and. my .gt. 999 ) write(f71,106) nco,nx,my
+        if ( nx .gt. 999 .and. my .le. 999 ) write(f71,107) nco,nx,my
+        if ( nx .le. 999 .and. my .le. 999 ) write(f71,108) nco,nx,my
+       endif
+ 105  format('global_idw.t',i4.4,'.',i4.4,'.',i4.4,'.dat')
+ 106  format('global_idw.t',i3.3,'.',i4.4,'.',i4.4,'.dat')
+ 107  format('global_idw.t',i3.3,'.',i4.4,'.',i3.3,'.dat')
+ 108  format('global_idw.t',i3.3,'.',i3.3,'.',i3.3,'.dat')
+
+      open(71,file=f71,form='unformatted',access='direct',recl=8*nx*my*8)
 
       read(71,rec=1) outp
       close(71)
