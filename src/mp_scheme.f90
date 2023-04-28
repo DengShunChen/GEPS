@@ -147,8 +147,9 @@
                 qti(nx,lev),qtsw(nx,lev),qtgl(nx,lev),ntnc(nx,lev,2),  &
                 refl10(nx,lev)
       real      rainncv(nx),snowncv(nx),graupelncv(nx)
-      real      icem
+      real      icem,tem
       logical   lradar
+      logical   convert_dry_q,q_remove_cond
       real,dimension(:),allocatable ::                                  &
               land1d
       real,dimension(:,:),allocatable ::                                &
@@ -210,6 +211,8 @@
               acphysc, acphyse, acphysd, acphyss, acphysm, acphysf,     &
               preci3d, precs3d, precg3d, prech3d, precr3d
 #endif
+      convert_dry_q = .true.
+      q_remove_cond = .false.
 !
 ! define rhc for GFDL MP v1 & v2
 !     rhc = 1.0                 ! default
@@ -382,21 +385,30 @@
             qg2d (i,k) = qt(i,(ntgl-1) *lev+kc)
             qni2d(i,k) = qt(i,(ntinc-1)*lev+kc)
             qnr2d(i,k) = qt(i,(ntrnc-1)*lev+kc)
+            prsl (i,k) = plt(i,kc)*100.                         !layer pressure (Pa)
+            t2d  (i,k) = tt(i,kc)
+            dz2d (i,k) = (phii(i,k+1)-phii(i,k))/con_g          !layer width (m)
 
             !> - Convert specific humidity to water vapor mixing ratio.
             !> - Also, hydrometeor variables are mass or number mixing ratio
             !> - either kg of species per kg of dry air, or per kg of (dry + vapor).
-            qv2d (i,k) = qv2d (i,k)/(1. - qv2d(i,k))
-            if ( convert_dry_rho ) then
-              ! q convert to : hydrometeor mass / dry mass
-              qc2d (i,k) = qc2d (i,k)/(1. - qv2d(i,k))
-              qr2d (i,k) = qr2d (i,k)/(1. - qv2d(i,k))
-              qi2d (i,k) = qi2d (i,k)/(1. - qv2d(i,k))
-              qs2d (i,k) = qs2d (i,k)/(1. - qv2d(i,k))
-              qg2d (i,k) = qg2d (i,k)/(1. - qv2d(i,k))
-              ! N convert to : # / dry mass
-              qni2d(i,k) = qni2d(i,k)/(1. - qv2d(i,k))
-              qnr2d(i,k) = qnr2d(i,k)/(1. - qv2d(i,k))
+            if ( convert_dry_q ) then
+              if ( q_remove_cond ) then
+                ! q convert to : hydrometeor mass / ( dry mass )
+                tem = qv2d(i,k) + qc2d(i,k) + qr2d(i,k) + qi2d(i,k) +   &
+                      qs2d(i,k) + qg2d(i,k)
+              else
+                ! q convert to : hydrometeor mass / ( dry mass + condensates )
+                tem = qv2d(i,k)
+              endif
+              qv2d (i,k) = qv2d (i,k)/(1. - tem)
+              qc2d (i,k) = qc2d (i,k)/(1. - tem)
+              qr2d (i,k) = qr2d (i,k)/(1. - tem)
+              qi2d (i,k) = qi2d (i,k)/(1. - tem)
+              qs2d (i,k) = qs2d (i,k)/(1. - tem)
+              qg2d (i,k) = qg2d (i,k)/(1. - tem)
+              qni2d(i,k) = qni2d(i,k)/(1. - tem)
+              qnr2d(i,k) = qnr2d(i,k)/(1. - tem)
             endif
 
             ! Ensure non-negative mass mixing ratios of all water variables
@@ -407,12 +419,15 @@
             if ( qs2d(i,k) .lt. 0. ) qs2d(i,k) = 0.
             if ( qg2d(i,k) .lt. 0. ) qg2d(i,k) = 0.
 
-            prsl (i,k) = plt(i,kc)*100.                         !layer pressure (Pa)
-            t2d  (i,k) = tt(i,kc)
-            rho        = con_eps*prsl(i,k)/                             &
-                         (con_rd*t2d(i,k)*(qv2d(i,k)+con_eps))  !air density (kg m-3)
-            w2d  (i,k) = - vvel(i,kc)*100./(rho*con_g)          !vertical velocity (m/s)
-            dz2d (i,k) = (phii(i,k+1)-phii(i,k))/con_g          !layer width (m)
+            if ( convert_dry_q ) then
+              ! dry air density : rho = 0.622*p/(Rd*T*(0.622+qv))
+              rho = con_eps*prsl(i,k)/                                  &
+                    (con_rd*t2d(i,k)*(con_eps+qv2d(i,k)))
+            else
+              ! moist air density : rho = p/(Rd*T*(1+0.608*qv))
+              rho = prsl(i,k)/(con_rd*t2d(i,k)*(1+con_fvirt*qv2d(i,k)))
+            endif
+            w2d(i,k) = - vvel(i,kc)*100./(rho*con_g)          !vertical velocity (m/s)
 
             ! 1st guess number concentration where mass non-zero
 !            if ( kdt .eq. 1 ) then
@@ -493,36 +508,32 @@
         do k = 1, lev
           kc = lev - k + 1
           do i = 1, nxj
-            qv2d (i,kc) = qv2d (i,kc)/(1. + qv2d(i,kc))
-            if ( convert_dry_rho ) then
-              ! q convert back to : hydrometeor mass / ( dry mass + vapor mass )
-              qc2d (i,kc) = qc2d (i,kc)/(1. + qv2d(i,kc))
-              qr2d (i,kc) = qr2d (i,kc)/(1. + qv2d(i,kc))
-              qi2d (i,kc) = qi2d (i,kc)/(1. + qv2d(i,kc))
-              qs2d (i,kc) = qs2d (i,kc)/(1. + qv2d(i,kc))
-              qg2d (i,kc) = qg2d (i,kc)/(1. + qv2d(i,kc))
-              ! N convert back to : # / ( dry mass + vapor mass )
-              qni2d(i,kc) = qni2d(i,kc)/(1. + qv2d(i,kc))
-              qnr2d(i,kc) = qnr2d(i,kc)/(1. + qv2d(i,kc))
+            if ( convert_dry_q ) then
+              if ( q_remove_cond ) then
+                tem = qv2d(i,kc) + qc2d(i,kc) + qr2d(i,kc) +            &
+                      qi2d(i,kc) + qs2d(i,kc) + qg2d(i,kc)
+              else
+                tem = qv2d(i,kc)
+              endif
+              qv2d (i,kc) = qv2d (i,kc)/(1. + tem)
+              qc2d (i,kc) = qc2d (i,kc)/(1. + tem)
+              qr2d (i,kc) = qr2d (i,kc)/(1. + tem)
+              qi2d (i,kc) = qi2d (i,kc)/(1. + tem)
+              qs2d (i,kc) = qs2d (i,kc)/(1. + tem)
+              qg2d (i,kc) = qg2d (i,kc)/(1. + tem)
+              qni2d(i,kc) = qni2d(i,kc)/(1. + tem)
+              qnr2d(i,kc) = qnr2d(i,kc)/(1. + tem)
             endif
 
-            if ( qc2d(i,kc) .lt. qmin ) qc2d(i,kc) = qmin
-            if ( qr2d(i,kc) .lt. qmin ) qr2d(i,kc) = qmin
-            if ( qi2d(i,kc) .lt. qmin ) qi2d(i,kc) = qmin
-            if ( qs2d(i,kc) .lt. qmin ) qs2d(i,kc) = qmin
-            if ( qg2d(i,kc) .lt. qmin ) qg2d(i,kc) = qmin
-            if ( qni2d(i,kc) .lt. qnmin ) qni2d(i,kc) = qnmin
-            if ( qnr2d(i,kc) .lt. qnmin ) qnr2d(i,kc) = qnmin
-
-            qt(i,              k) = qv2d (i,kc)
-            qt(i,(ntcw-1) *lev+k) = qc2d (i,kc)
-            qt(i,(ntrw-1) *lev+k) = qr2d (i,kc)
-            qt(i,(ntiw-1) *lev+k) = qi2d (i,kc)
-            qt(i,(ntsw-1) *lev+k) = qs2d (i,kc)
-            qt(i,(ntgl-1) *lev+k) = qg2d (i,kc)
-            qt(i,(ntinc-1)*lev+k) = qni2d(i,kc)
-            qt(i,(ntrnc-1)*lev+k) = qnr2d(i,kc)
-            tt(i,              k) = t2d  (i,kc)
+            qt(i,              k) = max( qv2d (i,kc) , qmin  )
+            qt(i,(ntcw-1) *lev+k) = max( qc2d (i,kc) , qmin  )
+            qt(i,(ntrw-1) *lev+k) = max( qr2d (i,kc) , qmin  )
+            qt(i,(ntiw-1) *lev+k) = max( qi2d (i,kc) , qmin  )
+            qt(i,(ntsw-1) *lev+k) = max( qs2d (i,kc) , qmin  )
+            qt(i,(ntgl-1) *lev+k) = max( qg2d (i,kc) , qmin  )
+            qt(i,(ntinc-1)*lev+k) = max( qni2d(i,kc) , qnmin )
+            qt(i,(ntrnc-1)*lev+k) = max( qnr2d(i,kc) , qnmin )
+            tt(i,k) = t2d(i,kc)
 
             re_cloud(i,k) = rew2d(i,k)*1.E+6   ! m to micron
             re_ice  (i,k) = rei2d(i,k)*1.E+6   ! m to micron
@@ -926,6 +937,7 @@
             qs3d (i,k,1) = qt(i,(ntsw-1)*lev+kc)
             qg3d (i,k,1) = qt(i,(ntgl-1)*lev+kc)
             qh3d (i,k,1) = qt(i,(nthl-1)*lev+kc)
+
             p3d  (i,k,1) = 100.0*plt(i,kc)                   !layer mean pressure (from mb to Pa)
 !            pii3d(i,k,1) = pk(i,kc)                          !exner function, =(plt/1000)**(Rd/cp)
             pii3d(i,k,1) = 1.
@@ -933,11 +945,33 @@
             th3d (i,k,1) = tt(i,kc)                          !real temperature (K)
             z3d  (i,k,1) = phi(i,kc)/con_g                   !layer geopotential height above sea level (m)
             dz3d (i,k,1) = (phii(i,k+1)-phii(i,k))/con_g     !layer thickness (m)
-            ! use virtural temperature : Tv = (1+(Rv/Rd-1)*q)*T = (1+con_fvirt*q)*T
-            rho3d(i,k,1) = p3d(i,k,1)/con_rd/tt(i,kc)                   &
-                          /(1+con_fvirt*qt(i,kc))            !density of air (kg/m^3)
-            w3d  (i,k,1) = -vvel(i,kc)*100.*(1.+con_fvirt*qt(i,kc))     &
-                          *tt(i,kc)/p3d(i,k,1)*con_rd/con_g  !vertical velocity (m/s)
+
+            if ( convert_dry_q ) then
+              if ( q_remove_cond ) then
+                ! q convert to : hydrometeor mass / ( dry mass )
+                tem = qv3d(i,k,1) + qc3d(i,k,1) + qr3d(i,k,1) +         &
+                      qi3d(i,k,1) + qs3d(i,k,1) + qg3d(i,k,1) +         &
+                      qh3d(i,k,1)
+              else
+                ! q convert to : hydrometeor mass / ( dry mass + condensates )
+                tem = qv3d(i,k,1)
+              endif
+              qv3d (i,k,1) = qv3d(i,k,1)/(1.-tem)
+              qc3d (i,k,1) = qc3d(i,k,1)/(1.-tem)
+              qr3d (i,k,1) = qr3d(i,k,1)/(1.-tem)
+              qi3d (i,k,1) = qi3d(i,k,1)/(1.-tem)
+              qs3d (i,k,1) = qs3d(i,k,1)/(1.-tem)
+              qg3d (i,k,1) = qg3d(i,k,1)/(1.-tem)
+              qh3d (i,k,1) = qh3d(i,k,1)/(1.-tem)
+              ! dry air density : rho = 0.622*p/(Rd*T*(0.622+qv))
+              rho3d(i,k,1) = con_eps*p3d(i,k,1)/                        &
+                             (con_rd*tt(i,kc)*(con_eps+qv3d(i,k,1)))
+            else
+              ! moist air density : rho = p/(Rd*T*(1+0.608*qv))
+              rho3d(i,k,1) = p3d(i,k,1)/                                &
+                             (con_rd*tt(i,kc)*(1+con_fvirt*qv3d(i,k,1)))
+            endif
+            w3d  (i,k,1) = -vvel(i,kc)*100./(rho3d(i,k,1)*con_g)
           enddo
         enddo
 
@@ -967,6 +1001,23 @@
         do k = 1, lev
           kc = lev - k + 1
           do i = 1, nxj
+            if ( convert_dry_q ) then
+              if ( q_remove_cond ) then
+                tem = qv3d(i,kc,1) + qc3d(i,kc,1) + qr3d(i,kc,1) +      &
+                      qi3d(i,kc,1) + qs3d(i,kc,1) + qg3d(i,kc,1) +      &
+                      qh3d(i,kc,1)
+              else
+                tem = qv3d(i,kc,1)
+              endif
+              qv3d (i,kc,1) = qv3d(i,kc,1)/(1.+tem)
+              qc3d (i,kc,1) = qc3d(i,kc,1)/(1.+tem)
+              qr3d (i,kc,1) = qr3d(i,kc,1)/(1.+tem)
+              qi3d (i,kc,1) = qi3d(i,kc,1)/(1.+tem)
+              qs3d (i,kc,1) = qs3d(i,kc,1)/(1.+tem)
+              qg3d (i,kc,1) = qg3d(i,kc,1)/(1.+tem)
+              qh3d (i,kc,1) = qh3d(i,kc,1)/(1.+tem)
+            endif
+
             qt(i,             k) = qv3d(i,kc,1)
             qt(i,(ntcw-1)*lev+k) = qc3d(i,kc,1)
             qt(i,(ntrw-1)*lev+k) = qr3d(i,kc,1)
