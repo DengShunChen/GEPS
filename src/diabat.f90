@@ -29,7 +29,7 @@
 ! sit
                     , itimestep,lrun_sitvdiff,ic_sit                           &
 !xb110>
-                    , flash,tsflw,vvel)
+                    , flash,tsflw,vvel,totallp)
 !xb110<
 !--------------------------------------------------------------------------------
 !#######################################################################
@@ -226,7 +226,7 @@
                 e(nxp,lev,my_max),eps(nxp,lev,my_max),                    &
                 dtrad(nxp,lev,my_max),ss(nxp,my_max),                     &
                 rs(nxp,my_max),plt(nxp,lev,my_max),                       &
-                rainlp(nxp,my_max),                                       &
+                rainlp(nxp,my_max),totallp(nxp,my_max),                   &
                 gwclim(nxp,my_max),acld(lev,my),std(nxp,my_max),          &
                 asol(nxp,my_max),olr(nxp,my_max),drag(nxp,lev,my_max),    &
                 ugws(nxp,my_max),vgws(nxp,my_max),                        &
@@ -2341,6 +2341,7 @@
         nxj=nxdef_2d(j)
         do i = 1,nxj
           totalp(i,jj) = (rcup(i,jj)  + rlsp(i,jj))*rainfc
+          totallp(i,jj)= rlsp(i,jj)*rainfc
           raincu(i,jj) = raincu(i,jj) + rcup(i,jj)*rainfc
           rainlp(i,jj) = rainlp(i,jj) + rlsp(i,jj)*rainfc
           raincu1(i,jj)= raincu1(i,jj)+ rcup(i,jj)*rainfc

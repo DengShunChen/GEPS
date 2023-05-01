@@ -84,6 +84,7 @@
       real(kind=RTYPE) glob(nx,my)
       real      hf24(nxp,my_max),qf24(nxp,my_max),ss24(nxp,my_max),rs24(nxp,my_max), &
                 asol24(nxp,my_max),olr24(nxp,my_max),rain24(nxp,my_max),             &
+                rainlp24(nxp,my_max),totallp(nxp,my_max),                            &
                 drag(nxp,lev,my_max),ugws(nxp,my_max),vgws(nxp,my_max),              &
                 pklev(nxp,my_max)
 
@@ -100,7 +101,9 @@
       character rfile*55, ctau*6
 !!      real      tbar(lev),qbar(lev*ncld),qbrrow(ncld,my)
       integer,  parameter :: ktop=4
-      real      fac(ktop), wkj(my,4), wkmf(jtrun), windmax3
+      real      fac(ktop), wkj(my,4), wkmf(jtrun), windmax3, sumdry  &
+               ,sumdryi  ,sumdryt(nxp,my_max)  ,qtot(nxp,my_max)     &
+               ,sumwati  ,sumwat   ,sumwatt(nxp,my_max)  
       data      windmax3/130./
 !
       logical   histim, tchange, flag, forward
@@ -140,7 +143,7 @@
       integer i,j,k,m,n,jj,kk,mf,kw,nxj,nml,lmax,leng,nxmy, &
               jlim,mlst,mlmax2,itaui,itaue,itauo,itaup,     &
               ntau,itau,lcwb,lphy,ifromtau,itotau,istat,    &
-              istst,ii ,n_stable,n_unstable,nc_stable
+              istst,ii ,n_stable,n_unstable,nc_stable,nxjf
 
       real    www,dtx,dta,dth,dtq,thdai,tkei,tpei,dsigp,    &
               cosw,tengi,dt24,tg2,dtx_tau,hfiltx,sqhaf,     &
@@ -462,6 +465,8 @@
           enddo
         enddo
       enddo
+
+
       call mpe_unify(wkj,my,4,1,mpe_double)
 !
       cosw=0.
@@ -478,6 +483,40 @@
       cosw  = cosw*lev
       thdai = thdai/cosw
       tengi = tengi/cosw
+      !
+      sumdryi=0.
+      sumwati=0.
+      sumdryt=0.
+      sumwatt=0.
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        nxjf=nxdef(j)
+        do i = 1,nxj
+          do k = 1, lev
+            dsigp = dsigma(k,1)*pt(i,jj)+dsigma(k,2)
+            qtot=0.
+            do n = 1, ncld-1
+               kk=k+(n-1)*lev
+               qtot(i,jj)=qtot(i,jj)+qt(i,kk,jj)*cosl(j)*nx/nxjf
+            enddo
+            sumdryt(i,jj) = sumdryt(i,jj)+dsigp*(1.-qtot(i,jj))
+            sumwatt(i,jj) = sumwatt(i,jj)+dsigp*qtot(i,jj)
+          enddo
+          sumdryi = sumdryi + sumdryt(i,jj)
+          sumwati = sumwati + sumwatt(i,jj)
+        enddo
+      enddo
+      call mpe_global_sum(sumdryi,1,mpe_double)
+      call mpe_global_sum(sumwati,1,mpe_double)
+      if( myrank .eq. 0 ) then
+        open(35,file='pdry.txt',form='formatted',status='unknown', &
+           position='append')
+        write(35,*)sumdryi,sumwati
+        close(35)
+        print*,'dry air mass at initial = ',sumdryi,' hPa'
+        print*,'water  mass at initial = ',sumwati,' hPa'
+      endif
 !
       if( myrank .eq. 0 ) &
         print*,'qgini, thdai, tengi= ',qgini, thdai, tengi
@@ -498,6 +537,8 @@
           asol24(i,jj) = 0.
           olr24(i,jj)  = 0.
           rain24(i,jj) = 0.
+          rainlp24(i,jj) = 0.
+          totallp(i,jj) = 0.
           raincu(i,jj) = 0.
           rainlp(i,jj) = 0.
           raincu6(i,jj)= 0.
@@ -543,10 +584,11 @@
       n_stable=0
       n_unstable=0
       hfiltx=hfilt
+      hfiltm=mwhd
       if(dta.gt.720)then
 !!        dt_chg=1800.
         nc_stable=1
-        sptendmax2=0.3405
+        sptendmax2=0.3605
         sptendmax1=0.2605
       else if(dta.le.720 .and. dta.gt.450 )then
 !!        dt_chg=720.
@@ -847,7 +889,7 @@
         enddo
       enddo
 !        
-      hfiltm=hfiltx*mwhd
+
       call whdiffu ( dth,my,my_max,nx,jtrun,jtmax,lev,ncld     &
                    ,hfiltm,rad,cosl,ut,vt,vormid,divmid,temmid     &
                    ,eps4,trefs)
@@ -1109,6 +1151,11 @@
                    ,poly,dpoly,vornow,divnow,ut,vt,nsizey)
         call transr1(jtrun,jtmax,nx,my,my_max,poly,plnow,pt,nsizey)!
       else
+        mlst=ilist(1)
+        if(mlst .ne. 0) then
+          plten(1,mlst,1) = 0.0
+          plten(1,mlst,2) = 0.0
+        endif
         do i = 1, 2
           do m = 1, mlistnum
             mf=mlist(m)
@@ -1120,7 +1167,40 @@
         call transr1(jtrun,jtmax,nx,my,my_max,poly,pltemp,pt,nsizey)
 
       endif ! two_loop
-
+      
+      sumdry=0.
+      sumwat=0.
+      sumdryt=0.
+      sumwatt=0.
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        nxjf=nxdef(j)
+        do i = 1,nxj
+          do k = 1, lev
+            dsigp = dsigma(k,1)*pt(i,jj)+dsigma(k,2)
+            qtot=0.
+            do n = 1, ncld-1
+               kk=k+(n-1)*lev
+               qtot(i,jj)=qtot(i,jj)+qt(i,kk,jj)*cosl(j)*nx/nxjf
+            enddo
+            sumdryt(i,jj) = sumdryt(i,jj)+dsigp*(1.-qtot(i,jj))
+            sumwatt(i,jj) = sumwatt(i,jj)+dsigp*qtot(i,jj)
+          enddo
+          sumdry = sumdry + sumdryt(i,jj)
+          sumwat = sumwat + sumwatt(i,jj)
+        enddo
+      enddo
+      call mpe_global_sum(sumdry,1,mpe_double)
+      call mpe_global_sum(sumwat,1,mpe_double)
+      if( myrank .eq. 0 ) then
+        open(35,file='pdry.txt',form='formatted',status='unknown', &
+           position='append')
+        write(35,*)sumdry,sumwat
+        close(35)
+        print*,'dry air mass = ',sumdry,' hPa'
+        print*,'water mass = ',sumwat,' hPa'
+      endif
 
 
       !  stochastic_physics
@@ -1163,7 +1243,7 @@
                       , itimestep,lrun_sitvdiff,ic_sit                          &
 !xb110>
 !byl                      , rmr,smr,flash)
-                      , flash,tsflw,vvel)
+                      , flash,tsflw,vvel,totallp)
 !xb110<
 !--------------------------------------------------------------------------------
 !
@@ -1340,6 +1420,7 @@
             asol24(i,jj)= asol24(i,jj)+asol(i,jj)*dtx
             olr24(i,jj) = olr24(i,jj)+olr(i,jj)*dtx
             rain24(i,jj)= rain24(i,jj)+totalp(i,jj)
+            rainlp24(i,jj)=rainlp24(i,jj)+totallp(i,jj)
             flash24(i,jj)=flash24(i,jj)+flash(i,jj)*dtx
           enddo
         enddo
@@ -1437,20 +1518,20 @@
                                  ,n_unstable
         if( mod(tau+0.001, 1.) .lt. dtx_tau)then
           if(n_stable .gt. nc_stable)then
-            hfiltx=0.75*hfilt
+            hfiltx=0.8*hfilt
             alphax=alpha
             if(myrank .eq. 0)print *,'** stable change hfilt=',hfiltx,  &
-                             ' and keep alpha=',alpha
+                             ' and keep alpha=',alphax
           else if(n_unstable .gt. nc_stable)then
-            hfiltx=1.5*hfilt
-            alphax=alpha
+            hfiltx=hfilt
+            alphax=alpha+0.05
             if(myrank .eq. 0)print *,'** unstable change hfilt=',hfiltx,&
-                             ' and alpha=',alpha
+                             ' and alpha=',alphax
           else
             hfiltx=hfilt
             alphax=alpha
             if(myrank .eq. 0)print *,'** keep hfilt=',hfiltx,           &
-                             ' and alpha=',alpha
+                             ' and alpha=',alphax
           endif
           n_unstable=0
           n_stable=0
@@ -1837,7 +1918,7 @@
 !         call mpe_unify(olr24,nx,my,2,mpe_double)
 !         call mpe_unify(rain24,nx,my,2,mpe_double)
 #ifndef NO_OUT
-          call out24(nx,my,my_max,hf24,qf24,ss24,rs24,asol24,olr24,rain24,dt24 &
+          call out24(nx,my,my_max,hf24,qf24,ss24,rs24,asol24,olr24,rain24,rainlp24,dt24 &
                   ,ifilout,glob,itau,idtg,ggdef,flash24)
 #endif
           if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. (dailyClm_option.ge.1)) then
@@ -1887,6 +1968,7 @@
               asol24 (i,jj) = 0.0
               olr24  (i,jj) = 0.0
               rain24 (i,jj) = 0.0
+              rainlp24 (i,jj) = 0.0
               flash24(i,jj) = 0.0
             enddo
           enddo
@@ -2037,5 +2119,6 @@
 !
       ! finilize stochastic_physics
       call destroy_stochastic_physics()
+      close(35)
 
       end subroutine intgrt

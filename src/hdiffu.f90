@@ -99,11 +99,7 @@
           mf=mlist(m)
           do n=mf,jtrun
             c1=1.+dta*facv*hfilt*eps4(n,m)**powd
-            if ( KL .le. hdk1 ) then
-              c2=1.+dta*facd*hfilt2*eps4(n,m)
-            else
-              c2=1.+dta*facd*hfilt*eps4(n,m)**powd
-            endif
+            c2=1.+dta*facd*hfilt*eps4(n,m)**powd
             vordiss(k,1,n,m)=(1.-1./c1)*vornow(k,1,n,m)
             vordiss(k,2,n,m)=(1.-1./c1)*vornow(k,2,n,m)
             divdiss(k,1,n,m)=(1.-1./c2)*divnow(k,1,n,m)
@@ -133,10 +129,10 @@
             vornow(k,2,n,m)=vornow(k,2,n,m)/c1
             divnow(k,1,n,m)=divnow(k,1,n,m)/c2
             divnow(k,2,n,m)=divnow(k,2,n,m)/c2
-!            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
-!            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
-            temnow(k,1,n,m)=temnow(k,1,n,m)/c3
-            temnow(k,2,n,m)=temnow(k,2,n,m)/c3
+            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
+            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
+!            temnow(k,1,n,m)=temnow(k,1,n,m)/c3
+!            temnow(k,2,n,m)=temnow(k,2,n,m)/c3
           enddo
         enddo
  100  continue
@@ -287,10 +283,10 @@
             vornow(k,2,n,m)=vornow(k,2,n,m)/c1
             divnow(k,1,n,m)=divnow(k,1,n,m)/c2
             divnow(k,2,n,m)=divnow(k,2,n,m)/c2
-!            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
-!            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
-            temnow(k,1,n,m)=temnow(k,1,n,m)/c3
-            temnow(k,2,n,m)=temnow(k,2,n,m)/c3
+            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
+            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
+!            temnow(k,1,n,m)=temnow(k,1,n,m)/c3
+!            temnow(k,2,n,m)=temnow(k,2,n,m)/c3
           enddo
         enddo
  100  continue
@@ -368,7 +364,7 @@
       nf=jtrun-1
 !
       factop = 30.
-      fl   = factop/float(hdk2(3)-hdk2(2))
+      fl   = factop/float(hdk2(1)-hdk1)
       hfilt6 = (radsq/(nf*(nf+1)))**3.
       hfilt4 = (radsq/(nf*(nf+1)))**2.
       hfilt2 = radsq/(nf*(nf+1))
@@ -389,7 +385,7 @@
 
         KL=Llist(k)
 !
-        kfac = min(fl*max(float(hdk2(3)-KL),0.),factop)!    &
+        kfac = min(fl*max(float(hdk2(1)-KL),0.),factop)!    &
 !              + min(1.*max(float(hdk2(3)-KL),0.),4.)
         if ( KL .le. hdk1 ) kfac = kfac*(1.+vd*exp(-0.5*k))
 !        facd = mwhd * max(amp,kfac)
@@ -430,10 +426,10 @@
             vornow(k,2,n,m)=vornow(k,2,n,m)/c1
             divnow(k,1,n,m)=divnow(k,1,n,m)/c2
             divnow(k,2,n,m)=divnow(k,2,n,m)/c2
-!            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
-!            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
-            temnow(k,1,n,m)=temnow(k,1,n,m)/c3
-            temnow(k,2,n,m)=temnow(k,2,n,m)/c3
+            temnow(k,1,n,m)=(temnow(k,1,n,m)+(c3-1.)*trefs(k,1,n,m))/c3
+            temnow(k,2,n,m)=(temnow(k,2,n,m)+(c3-1.)*trefs(k,2,n,m))/c3
+!            temnow(k,1,n,m)=temnow(k,1,n,m)/c3
+!            temnow(k,2,n,m)=temnow(k,2,n,m)/c3
           enddo
         enddo
  100  continue
