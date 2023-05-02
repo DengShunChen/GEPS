@@ -1751,9 +1751,15 @@
 !    ---  outputs:
                clouds,cldsa,mtopa,mbota                                 &
               ) 
-       elseif ( icmphys == 16 ) then   ! Goddard (GCE) 4ICE
+       elseif ( icmphys == 15 .or. icmphys == 16 ) then   ! Goddard (GCE)
+         if (kdt == 1) then
+           phy_f3d(:,:,1) = 10.
+           phy_f3d(:,:,2) = 50.
+           phy_f3d(:,:,3) = 250.
+           phy_f3d(:,:,4) = 1000.
+         endif
          if ( me == 0 .and. myrank == 0 )                               &
-           print *,'### call Goddard (GCE) 4ICE cloud ###'
+           print *,'### call Goddard (GCE) cloud ###'
            call progcld_gce                                             &
 !    ---  inputs:
              ( plyr, plvl, tlyr, tvly, qlyr, qstl, rhly, tracer1,       &

@@ -192,6 +192,8 @@
           icmphys = 12                  ! GFDL microphysics version 2
         elseif ( nmmiph == 13 ) then
           icmphys = 13                  ! GFDL microphysics version 3
+        elseif ( nmmiph == 15 ) then
+          icmphys = 15                  ! Goddard (GCE) 3ICE microphysics
         elseif ( nmmiph == 16 ) then
           icmphys = 16                  ! Goddard (GCE) 4ICE microphysics
         endif

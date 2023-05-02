@@ -1860,7 +1860,7 @@
       if ( dolsp .and. (nmmiph.eq.6 .or.       & ! WSM6
            nmmiph.eq.8 .or. nmmiph.eq.9 .or.   & ! Thompson
            nmmiph.eq.11 .or. nmmiph.eq.12 .or. nmmiph.eq.13 .or. & !GFDL MP
-           nmmiph.eq.16) ) then !Goddard MP
+           nmmiph.eq.15 .or. nmmiph.eq.16) ) then !Goddard MP
 
 ! for microphysics
       area = tem1*tem2  !area of grid box (m^2)

@@ -337,6 +337,8 @@
             print *,'   --- GFDL microphysics version 2'
           elseif (icmphys == 13) then
             print *,'   --- GFDL microphysics version 3'
+          elseif (icmphys == 15) then
+            print *,'   --- Goddard (GCE) 3ICE microphysics'
           elseif (icmphys == 16) then
             print *,'   --- Goddard (GCE) 4ICE microphysics'
           else
