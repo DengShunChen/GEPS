@@ -104,12 +104,14 @@
       use module_mp_thompson_make_number_concentrations,                &
                                only: make_IceNumber, make_RainNumber
 ! for GFDL MP v1
-      use module_mp_gfdl,      only: gfdl_cloud_microphys_driver,      &
+      use module_mp_gfdl,      only: gfdl_cloud_microphys_driver,       &
                                      cloud_diagnosis
 ! for GFDL MP v2
-      use module_mp_gfdl_v2,   only: gfdlv2_driver => gfdl_cld_mp_driver
+      use module_mp_gfdl_v2,   only: gfdlv2_driver =>gfdl_cld_mp_driver,&
+                                     sedi_w_v2 => do_sedi_w
 ! for GFDL MP v3
-      use module_mp_gfdl_v3,   only: gfdlv3_driver => gfdl_cld_mp_driver
+      use module_mp_gfdl_v3,   only: gfdlv3_driver =>gfdl_cld_mp_driver,&
+                                     sedi_w_v3 => do_sedi_w
 ! for Goddard (GCE) 4ICE MP
       use module_mp_gce4ice,   only: gsfcgce_4ice_nuwrf
       use physcons,            only: con_rd,con_fvirt,con_g,con_eps
@@ -732,10 +734,11 @@
 
         hydrostatic = .false.       !flag for hydrostatic solver
         phys_hydrostatic = .true.   !flag for hydrostatic heating from physics 
-        sedi_w = .false.
         consv_te = .false.          !flag for energy conservation
         last_step = .true.          !flag for final clean-up (not sure)
         do_inline_mp = .false.      !flag for inline GFDLMP
+        if(nmmiph.eq.12) sedi_w = sedi_w_v2  !flag for w momentum transportation during sedimentation
+        if(nmmiph.eq.13) sedi_w = sedi_w_v3  !flag for w momentum transportation during sedimentation
 
         te    = 0.0
         q_con = 0.0  !not sure
@@ -767,14 +770,6 @@
         do k = 1, lev
           kc = lev - k + 1
           do i = 1, nxj
-            if ( sedi_w ) then
-              prsl(i,k) = 100.0 * plt(i,k)            !layer mean pressure (from mb to Pa)
-              w2d(i,k)  = -vvel(i,k)*(1.+con_fvirt*qt(i,k))*tt(i,k)     &
-                         /prsl(i,k)*con_rd/con_g      !vertical velocity (m/s)
-            else
-              w2d(i,k)  = 0.
-            endif
-
             qv2d (i,k) = qt(i,             k)
             qc2d (i,k) = qt(i,(ntcw-1)*lev+k)
             qr2d (i,k) = qt(i,(ntrw-1)*lev+k)
@@ -790,6 +785,15 @@
             dp2d (i,k) = (dsigma(k,1)*pst(i)+dsigma(k,2))*100. !difference of interface pressure (Pa)
             dz2d (i,k) = (phii(i,kc)-phii(i,kc+1))/con_g       !differences of height (m), dz<0
             rhc2d(i,k) = rhc_mp(i,k)
+
+            if ( sedi_w ) then
+              prsl(i,k) = 100.0 * plt(i,k)            !layer mean pressure (from mb to Pa)
+              ! use moist air density : rho = p/(Rd*T*(1+0.608*qv))
+              rho = prsl(i,k)/(con_rd*t2d(i,k)*(1+con_fvirt*qv2d(i,k)))
+              w2d(i,k) = - vvel(i,k)*100./(rho*con_g) !vertical velocity (m/s)
+            else
+              w2d(i,k)  = 0.
+            endif
           enddo
         enddo
 
@@ -826,7 +830,7 @@
         qmin = 1.0e-15     !minimum of q (kg/kg)
         do k = 1, lev
           do i = 1, nxj
-            qt(i,             k) = qv2d(i,k)
+            qt(i,             k) = max( qv2d(i,k) , qmin )
             qt(i,(ntcw-1)*lev+k) = max( qc2d(i,k) , qmin )
             qt(i,(ntrw-1)*lev+k) = max( qr2d(i,k) , qmin )
             qt(i,(ntiw-1)*lev+k) = max( qi2d(i,k) , qmin )
@@ -838,8 +842,9 @@
             vt(i,k)  = v2d  (i,k)
 
             if ( sedi_w ) then
-              vvel(i,k)  = -w2d(i,k)*prsl(i,k)*con_g/con_rd             &
-                           /((1+con_fvirt*qt(i,k))*tt(i,k))
+              ! use moist air density : rho = p/(Rd*T*(1+0.608*qv))
+              rho = prsl(i,k)/(con_rd*tt(i,k)*(1+con_fvirt*qt(i,k)))
+              vvel(i,k) = - w2d(i,k)*rho*con_g/100.  !convert back to hPa/s
             endif
           enddo
         enddo
