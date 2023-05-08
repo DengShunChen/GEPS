@@ -1,4 +1,3 @@
-!#define update_dp
 !--------------------------
       subroutine mp_init                                               &
 !--------------------------
@@ -83,13 +82,10 @@
 !--------------------------
 !  ---  inputs:
            ( nmmiph,nx,nxj,lev,ncld,plt,ptop,                          &
-             pst,dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,        &
+             dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,            &
              itimestep,sgeo,phi,rhc_mp,                                &
 !  ---  inputs/outputs:
-             tt,qt,qa,ut,vt,vvel,                                      &
-#ifdef update_dp
-             pk,pk2,sigma,                                             &
-#endif
+             tt,qt,qa,ut,vt,vvel,pst,                                  &
 !  ---  outputs:
              re_cloud,re_ice,re_snow,re_rain,                          &
              rlsp,sr )
@@ -135,20 +131,15 @@
       real,     intent(in)    :: ptop
       real,     intent(in)    :: rhc_mp(nx,lev)
       real,     intent(in)    :: sgeo(nx)
-      real,     intent(inout) :: vvel(nx,lev) !mb/s
-#ifndef update_dp
-      real,     intent(in)    :: pst(nx),plt(nx,lev)
-#endif
+      real,     intent(in)    :: plt(nx,lev)
       real(kind=RTYPE), intent(in):: q0(nx,lev*ncld),dsigma(lev,2)
 !  ---  inputs/outputs:
       real(kind=RTYPE), intent(inout) :: tt(nx,lev)
       real,     intent(inout) :: qa(nx,lev)
+      real,     intent(inout) :: vvel(nx,lev) !mb/s
       real(kind=RTYPE), intent(inout) :: ut(nx,lev),vt(nx,lev)
-      real(kind=RTYPE), intent(inout):: qt(nx,lev*ncld)
-#ifdef update_dp
-      real(kind=RTYPE), intent(inout) :: pk(nx,lev),pk2(nx,lev),sigma(lev+1,2)
-      real(kind=RTYPE), intent(inout) :: pst(nx),plt(nx,lev)
-#endif
+      real(kind=RTYPE), intent(inout) :: qt(nx,lev*ncld)
+      real(kind=RTYPE), intent(inout) :: pst(nx)
 !  ---  outputs:
       real,     intent(inout)   :: re_cloud(nx,lev),re_ice(nx,lev),   &
                                    re_snow(nx,lev),re_rain(nx,lev)
@@ -211,11 +202,6 @@
                 qv3d,qc3d,qr3d,qi3d,qs3d,qg3d,cld3d,qnc3d,t3d,w3d,u3d,  &
                 v3d,dp3d,dz3d,qvten3d,qcten3d,qrten3d,qiten3d,qsten3d,  &
                 qgten3d,cldten3d,uten3d,vten3d,tten3d
-#ifdef update_dp
-      integer ktop,kbot
-      real    capa,capap1,opok,ptopk
-      real    prsi(nxj,lev),pk2d(nxj,lev)
-#endif
 ! Goddard (GCE) 4ICE MP
       real    rhowater,rhosnow,dx
       real,dimension(:,:),allocatable ::                                &
@@ -865,52 +851,13 @@
           enddo
         enddo
 
-#ifdef update_dp
-        capa = 1.0/3.5
-        opok  = 1.0/1000.0**capa
-        capap1= 1.0+capa
-        ptopk= ptop*opok*ptop**capa
-
         ! calculate new terrain pressure pst (hPa)
         do i = 1, nxj
-          prsi(i,1) = ptop + dp2d(i,1)/100.
-          do k = 2, lev
-            prsi(i,k) = prsi(i,k-1) + dp2d(i,k)/100.
-          enddo
-          pst(i) = prsi(i,lev)
-        enddo
-
-        ! calculate new pk, pk2, plt
-        do k = 1, lev
-          do i = 1, nxj
-            call vlog(pk2d(i,k),prsi(i,k),1)
-            call vexp(pk2d(i,k),capa*pk2d(i,k),1)
-            pk2(i,k) = pk2d(i,k)
+          pst(i) = ptop
+          do k = 1, lev
+            pst(i) = pst(i) + dp2d(i,k)/100.
           enddo
         enddo
-
-        kbot = 1
-        k = 1
-        do i = 1, nxj
-          prsi(i,kbot) = sigma(2,1)*pst(i)+sigma(2,2)+ptop
-          pk2(i,k) = opok*pk2(i,k)
-          pk (i,k) = (prsi(i,kbot)*pk2(i,k)-ptopk)                      &
-                    /(capap1*(prsi(i,kbot)-ptop))
-          plt(i,k) = 1000.0*pk(i,k)*pk(i,k)*pk(i,k)*sqrt(pk(i,k))
-        enddo
-
-        do k = 2, lev
-          ktop = kbot
-          kbot = 3 - ktop
-          do i = 1, nxj
-            prsi(i,kbot) = sigma(k+1,1)*pst(i)+sigma(k+1,2)+ptop
-            pk2(i,k) = opok*pk2(i,k)
-            pk (i,k) = (prsi(i,kbot)*pk2(i,k)-prsi(i,ktop)*pk2(i,k-1))  &
-                      /(capap1*(prsi(i,kbot)-prsi(i,ktop)))
-            plt(i,k) = 1000.0*pk(i,k)*pk(i,k)*pk(i,k)*sqrt(pk(i,k))
-          enddo
-        enddo
-#endif
 
         do i = 1, nxj
           rlsp(i) = water1d(i)+rain1d(i)+snow1d(i)+ice1d(i)+graupel1d(i)     !total large scale precipitation (mm)
