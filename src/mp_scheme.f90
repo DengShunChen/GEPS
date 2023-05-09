@@ -81,11 +81,11 @@
       subroutine mp_scheme                                             &
 !--------------------------
 !  ---  inputs:
-           ( nmmiph,nx,nxj,lev,ncld,plt,                               &
-             pst,dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,        &
-             itimestep,sgeo,phi,rhc,                                   &
+           ( nmmiph,nx,nxj,lev,ncld,plt,ptop,                          &
+             dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,            &
+             itimestep,sgeo,phi,rhc_mp,                                &
 !  ---  inputs/outputs:
-             tt,qt,qa,ut,vt,vvel,                                      &
+             tt,qt,qa,ut,vt,vvel,pst,                                  &
 !  ---  outputs:
              re_cloud,re_ice,re_snow,re_rain,                          &
              rlsp,sr )
@@ -101,16 +101,20 @@
       use module_mp_thompson_new,                                       &
                                only: new_thompson_driver => mp_gt_driver&
                                      , cal_cldfra3, cfflag_thom
+      use module_mp_thompson_make_number_concentrations,                &
+                               only: make_IceNumber, make_RainNumber
 ! for GFDL MP v1
-      use module_mp_gfdl,      only: gfdl_cloud_microphys_driver,      &
+      use module_mp_gfdl,      only: gfdl_cloud_microphys_driver,       &
                                      cloud_diagnosis
 ! for GFDL MP v2
-      use module_mp_gfdl_v2,   only: gfdlv2_driver => gfdl_cld_mp_driver
+      use module_mp_gfdl_v2,   only: gfdlv2_driver =>gfdl_cld_mp_driver,&
+                                     sedi_w_v2 => do_sedi_w
 ! for GFDL MP v3
-      use module_mp_gfdl_v3,   only: gfdlv3_driver => gfdl_cld_mp_driver
+      use module_mp_gfdl_v3,   only: gfdlv3_driver =>gfdl_cld_mp_driver,&
+                                     sedi_w_v3 => do_sedi_w
 ! for Goddard (GCE) 4ICE MP
       use module_mp_gce4ice,   only: gsfcgce_4ice_nuwrf
-      use physcons,            only: con_rd,con_fvirt,con_g
+      use physcons,            only: con_rd,con_fvirt,con_g,con_eps
       use physpara,            only: effr_in
       use const,               only: RTYPE
 
@@ -122,18 +126,20 @@
       integer,  intent(in)    :: islimsk(nx)
       integer,  intent(in)    :: itimestep
       real,     intent(in)    :: tpi,dta,jj
-      real,     intent(in)    :: plt(nx,lev),phii(nx,lev+1),phi(nx,lev)
+      real,     intent(in)    :: phii(nx,lev+1),phi(nx,lev)
       real,     intent(in)    :: area
-      real,     intent(in)    :: rhc(nxj,lev)
+      real,     intent(in)    :: ptop
+      real,     intent(in)    :: rhc_mp(nx,lev)
       real,     intent(in)    :: sgeo(nx)
-      real,     intent(inout) :: vvel(nx,lev) !mb/s
-      real(kind=RTYPE), intent(in):: q0(nx,lev*ncld),pst(nx),          &
-                                     dsigma(lev,2)
+      real,     intent(in)    :: plt(nx,lev)
+      real(kind=RTYPE), intent(in):: q0(nx,lev*ncld),dsigma(lev,2)
 !  ---  inputs/outputs:
       real(kind=RTYPE), intent(inout) :: tt(nx,lev)
       real,     intent(inout) :: qa(nx,lev)
+      real,     intent(inout) :: vvel(nx,lev) !mb/s
       real(kind=RTYPE), intent(inout) :: ut(nx,lev),vt(nx,lev)
-      real(kind=RTYPE), intent(inout):: qt(nx,lev*ncld)
+      real(kind=RTYPE), intent(inout) :: qt(nx,lev*ncld)
+      real(kind=RTYPE), intent(inout) :: pst(nx)
 !  ---  outputs:
       real,     intent(inout)   :: re_cloud(nx,lev),re_ice(nx,lev),   &
                                    re_snow(nx,lev),re_rain(nx,lev)
@@ -145,14 +151,15 @@
                 qti(nx,lev),qtsw(nx,lev),qtgl(nx,lev),ntnc(nx,lev,2),  &
                 refl10(nx,lev)
       real      rainncv(nx),snowncv(nx),graupelncv(nx)
-      real      icem
+      real      icem,tem
       logical   lradar
+      logical   convert_dry_q,q_remove_cond
       real,dimension(:),allocatable ::                                  &
               land1d
       real,dimension(:,:),allocatable ::                                &
               qv2d,qc2d,qr2d,qi2d,qs2d,qg2d,qnc2d,qni2d,qnr2d,          &
               rew2d,rer2d,rei2d,res2d,reg2d,                            &
-              t2d,dp2d,dz2d,cld2d,w2d,u2d,v2d
+              t2d,dp2d,dz2d,cld2d,w2d,u2d,v2d,rhc2d
       real    qmin, qnmin
 ! New Thompson MP
       real,dimension(:,:),allocatable ::                                &
@@ -163,8 +170,9 @@
       real,dimension(:),allocatable :: spp_prt_list,spp_stddev_cutoff
       character(len=3),dimension(:),allocatable :: spp_var_list
       real    dt_inner
+      real    rho
       logical sedi_semi,ext_diag,first_time_step,reset_dBZ,aero_ind_fdb,&
-              diagflag
+              diagflag,convert_dry_rho
       integer do_radar_ref,rand_perturb_on,has_reqc,has_reqi,has_reqs,  &
               kme_stoch,istep,nsteps,errflg,decfl
       character errmsg
@@ -207,6 +215,8 @@
               acphysc, acphyse, acphysd, acphyss, acphysm, acphysf,     &
               preci3d, precs3d, precg3d, prech3d, precr3d
 #endif
+      convert_dry_q = .true.
+      q_remove_cond = .false.
 !
 ! define rhc for GFDL MP v1 & v2
 !     rhc = 1.0                 ! default
@@ -320,6 +330,7 @@
         reset_dBZ=.false.        !if true, set melti=.true.
         aero_ind_fdb=.false.     !(not sure)
         diagflag=.false.         !if diagflag=true and do_radar_ref=1, call calc_refl10cm
+        convert_dry_rho=.false.
         do_radar_ref=0
         rand_perturb_on=0        !if!=0, use SPP
         if ( effr_in ) then
@@ -378,12 +389,57 @@
             qg2d (i,k) = qt(i,(ntgl-1) *lev+kc)
             qni2d(i,k) = qt(i,(ntinc-1)*lev+kc)
             qnr2d(i,k) = qt(i,(ntrnc-1)*lev+kc)
-            prsl (i,k) = plt(i,kc)*100.                 !layer pressure (Pa)
+            prsl (i,k) = plt(i,kc)*100.                         !layer pressure (Pa)
             t2d  (i,k) = tt(i,kc)
-            w2d  (i,k) = - vvel(i,kc)*100.*                             &
-                         (1.+con_fvirt*qt(i,kc))*tt(i,kc)/              &
-                         prsl(i,k)*con_rd/con_g         !vertical velocity (m/s)
-            dz2d (i,k) = (phii(i,k+1)-phii(i,k))/con_g  !layer depth (m)
+            dz2d (i,k) = (phii(i,k+1)-phii(i,k))/con_g          !layer width (m)
+
+            !> - Convert specific humidity to water vapor mixing ratio.
+            !> - Also, hydrometeor variables are mass or number mixing ratio
+            !> - either kg of species per kg of dry air, or per kg of (dry + vapor).
+            if ( convert_dry_q ) then
+              if ( q_remove_cond ) then
+                ! q convert to : hydrometeor mass / ( dry mass )
+                tem = qv2d(i,k) + qc2d(i,k) + qr2d(i,k) + qi2d(i,k) +   &
+                      qs2d(i,k) + qg2d(i,k)
+              else
+                ! q convert to : hydrometeor mass / ( dry mass + condensates )
+                tem = qv2d(i,k)
+              endif
+              qv2d (i,k) = qv2d (i,k)/(1. - tem)
+              qc2d (i,k) = qc2d (i,k)/(1. - tem)
+              qr2d (i,k) = qr2d (i,k)/(1. - tem)
+              qi2d (i,k) = qi2d (i,k)/(1. - tem)
+              qs2d (i,k) = qs2d (i,k)/(1. - tem)
+              qg2d (i,k) = qg2d (i,k)/(1. - tem)
+              qni2d(i,k) = qni2d(i,k)/(1. - tem)
+              qnr2d(i,k) = qnr2d(i,k)/(1. - tem)
+            endif
+
+            ! Ensure non-negative mass mixing ratios of all water variables
+            if ( qv2d(i,k) .lt. 0. ) qv2d(i,k) = 1.E-10  !should *never* be identically zero
+            if ( qc2d(i,k) .lt. 0. ) qc2d(i,k) = 0.
+            if ( qr2d(i,k) .lt. 0. ) qr2d(i,k) = 0.
+            if ( qi2d(i,k) .lt. 0. ) qi2d(i,k) = 0.
+            if ( qs2d(i,k) .lt. 0. ) qs2d(i,k) = 0.
+            if ( qg2d(i,k) .lt. 0. ) qg2d(i,k) = 0.
+
+            if ( convert_dry_q ) then
+              ! dry air density : rho = 0.622*p/(Rd*T*(0.622+qv))
+              rho = con_eps*prsl(i,k)/                                  &
+                    (con_rd*t2d(i,k)*(con_eps+qv2d(i,k)))
+            else
+              ! moist air density : rho = p/(Rd*T*(1+0.608*qv))
+              rho = prsl(i,k)/(con_rd*t2d(i,k)*(1+con_fvirt*qv2d(i,k)))
+            endif
+            w2d(i,k) = - vvel(i,kc)*100./(rho*con_g)          !vertical velocity (m/s)
+
+            ! 1st guess number concentration where mass non-zero
+!            if ( kdt .eq. 1 ) then
+!              if ( qi2d(i,k) .gt. 0. )                                  &
+!                qni2d(i,k) = make_IceNumber(qi2d(i,k)*rho,t2d(i,k))/rho
+!              if ( qr2d(i,k) .gt. 0. )                                  &
+!                qnr2d(i,k) = make_RainNumber(qr2d(i,k)*rho,t2d(i,k))/rho
+!            endif
           enddo
         enddo
 
@@ -456,23 +512,32 @@
         do k = 1, lev
           kc = lev - k + 1
           do i = 1, nxj
-            if ( qc2d(i,kc) .lt. qmin ) qc2d(i,kc) = qmin
-            if ( qr2d(i,kc) .lt. qmin ) qr2d(i,kc) = qmin
-            if ( qi2d(i,kc) .lt. qmin ) qi2d(i,kc) = qmin
-            if ( qs2d(i,kc) .lt. qmin ) qs2d(i,kc) = qmin
-            if ( qg2d(i,kc) .lt. qmin ) qg2d(i,kc) = qmin
-            if ( qni2d(i,kc) .lt. qnmin ) qni2d(i,kc) = qnmin
-            if ( qnr2d(i,kc) .lt. qnmin ) qnr2d(i,kc) = qnmin
+            if ( convert_dry_q ) then
+              if ( q_remove_cond ) then
+                tem = qv2d(i,kc) + qc2d(i,kc) + qr2d(i,kc) +            &
+                      qi2d(i,kc) + qs2d(i,kc) + qg2d(i,kc)
+              else
+                tem = qv2d(i,kc)
+              endif
+              qv2d (i,kc) = qv2d (i,kc)/(1. + tem)
+              qc2d (i,kc) = qc2d (i,kc)/(1. + tem)
+              qr2d (i,kc) = qr2d (i,kc)/(1. + tem)
+              qi2d (i,kc) = qi2d (i,kc)/(1. + tem)
+              qs2d (i,kc) = qs2d (i,kc)/(1. + tem)
+              qg2d (i,kc) = qg2d (i,kc)/(1. + tem)
+              qni2d(i,kc) = qni2d(i,kc)/(1. + tem)
+              qnr2d(i,kc) = qnr2d(i,kc)/(1. + tem)
+            endif
 
-            qt(i,              k) = qv2d (i,kc)
-            qt(i,(ntcw-1) *lev+k) = qc2d (i,kc)
-            qt(i,(ntrw-1) *lev+k) = qr2d (i,kc)
-            qt(i,(ntiw-1) *lev+k) = qi2d (i,kc)
-            qt(i,(ntsw-1) *lev+k) = qs2d (i,kc)
-            qt(i,(ntgl-1) *lev+k) = qg2d (i,kc)
-            qt(i,(ntinc-1)*lev+k) = qni2d(i,kc)
-            qt(i,(ntrnc-1)*lev+k) = qnr2d(i,kc)
-            tt(i,              k) = t2d  (i,kc)
+            qt(i,              k) = max( qv2d (i,kc) , qmin  )
+            qt(i,(ntcw-1) *lev+k) = max( qc2d (i,kc) , qmin  )
+            qt(i,(ntrw-1) *lev+k) = max( qr2d (i,kc) , qmin  )
+            qt(i,(ntiw-1) *lev+k) = max( qi2d (i,kc) , qmin  )
+            qt(i,(ntsw-1) *lev+k) = max( qs2d (i,kc) , qmin  )
+            qt(i,(ntgl-1) *lev+k) = max( qg2d (i,kc) , qmin  )
+            qt(i,(ntinc-1)*lev+k) = max( qni2d(i,kc) , qnmin )
+            qt(i,(ntrnc-1)*lev+k) = max( qnr2d(i,kc) , qnmin )
+            tt(i,k) = t2d(i,kc)
 
             re_cloud(i,k) = rew2d(i,k)*1.E+6   ! m to micron
             re_ice  (i,k) = rei2d(i,k)*1.E+6   ! m to micron
@@ -480,7 +545,7 @@
           enddo
         enddo
         do i = 1, nxj
-          rlsp(i) = icencv(i)+rainncv(i)+snowncv(i)+graupelncv(i)  !total large scale precipitation (mm)
+          rlsp(i) = rainncv(i)  !total large scale precipitation (kg/m^2=mm)
         enddo
 
         deallocate                                                      &
@@ -505,7 +570,7 @@
            tten3d(nxj,1,lev),                                           &
            rew2d(nxj,lev),rei2d(nxj,lev),rer2d(nxj,lev),res2d(nxj,lev), &
            reg2d(nxj,lev),land2d(nxj,1),rain2d(nxj,1),snow2d(nxj,1),    &
-           ice2d(nxj,1),graupel2d(nxj,1),garea(nxj,1) )
+           ice2d(nxj,1),graupel2d(nxj,1),garea(nxj,1),rhc2d(nxj,lev) )
         if ( effr_in ) allocate                                         &
            ( dp2d(nxj,lev),rho2d(nxj,lev),qc2d(nxj,lev),qr2d(nxj,lev),  &
              qi2d(nxj,lev),qs2d(nxj,lev),qg2d(nxj,lev),mask1d(nxj),     &
@@ -561,6 +626,7 @@
             v3d  (i,1,k) = vt(i,k)                 !meridional wind (m/s)
             dp3d (i,1,k) = (dsigma(k,1)*pst(i)+dsigma(k,2))*100. !difference of interface pressure (Pa)
             dz3d (i,1,k) = (phii(i,kc)-phii(i,kc+1))/con_g       !differences of height (m), dz<0
+            rhc2d(i,  k) = rhc_mp(i,k)
             if ( effr_in ) dp2d(i,k) = dp3d(i,1,k)
           enddo
         enddo
@@ -571,7 +637,7 @@
                   cldten3d, tten3d, t3d, w3d, u3d, v3d, uten3d, vten3d, &
                   dz3d, dp3d, garea, dta, land2d,                       &
                   rain2d, snow2d, ice2d, graupel2d,                     &
-                  rhc, hydrostatic, phys_hydrostatic,               &
+                  rhc2d, hydrostatic, phys_hydrostatic,                 &
                   1, nxj, 1, 1, 1, lev, 1, lev )
 
         do k = 1, lev
@@ -645,7 +711,7 @@
          ( qv3d,qc3d,qr3d,qi3d,qs3d,qg3d,cld3d,qnc3d,t3d,w3d,u3d,v3d,   &
            dp3d,dz3d,qvten3d,qcten3d,qrten3d,qiten3d,qsten3d,qgten3d,   &
            cldten3d,uten3d,vten3d,tten3d,rew2d,rei2d,rer2d,res2d,reg2d, &
-           land2d,rain2d,snow2d,ice2d,graupel2d,garea )
+           land2d,rain2d,snow2d,ice2d,graupel2d,garea,rhc2d )
         if ( effr_in ) deallocate                                       &
            ( dp2d,rho2d,qc2d,qr2d,qi2d,qs2d,qg2d,mask1d,t2d )
       endif  ! end of nmmiph.eq.11
@@ -659,7 +725,7 @@
            v2d(nxj,lev),dp2d(nxj,lev),dz2d(nxj,lev),                    &
            q_con(nxj,lev),cappa(nxj,lev),te(nxj,lev),                   &
            hs(nxj),land1d(nxj),gsize(nxj),rain1d(nxj),snow1d(nxj),      &
-           ice1d(nxj),graupel1d(nxj),water1d(nxj) )
+           ice1d(nxj),graupel1d(nxj),water1d(nxj),rhc2d(nxj,lev) )
 #ifdef EXT_DIAG
         allocate                                                        &
          ( prefluxr(nxj,lev),prefluxi(nxj,lev),prefluxs(nxj,lev),       &
@@ -670,10 +736,11 @@
 
         hydrostatic = .false.       !flag for hydrostatic solver
         phys_hydrostatic = .true.   !flag for hydrostatic heating from physics 
-        sedi_w = .false.
         consv_te = .false.          !flag for energy conservation
         last_step = .true.          !flag for final clean-up (not sure)
         do_inline_mp = .false.      !flag for inline GFDLMP
+        if(nmmiph.eq.12) sedi_w = sedi_w_v2  !flag for w momentum transportation during sedimentation
+        if(nmmiph.eq.13) sedi_w = sedi_w_v3  !flag for w momentum transportation during sedimentation
 
         te    = 0.0
         q_con = 0.0  !not sure
@@ -705,14 +772,6 @@
         do k = 1, lev
           kc = lev - k + 1
           do i = 1, nxj
-            if ( sedi_w ) then
-              prsl(i,k) = 100.0 * plt(i,k)            !layer mean pressure (from mb to Pa)
-              w2d(i,k)  = -vvel(i,k)*(1.+con_fvirt*qt(i,k))*tt(i,k)     &
-                         /prsl(i,k)*con_rd/con_g      !vertical velocity (m/s)
-            else
-              w2d(i,k)  = 0.
-            endif
-
             qv2d (i,k) = qt(i,             k)
             qc2d (i,k) = qt(i,(ntcw-1)*lev+k)
             qr2d (i,k) = qt(i,(ntrw-1)*lev+k)
@@ -727,6 +786,16 @@
             v2d  (i,k) = vt(i,k)                 !meridional wind (m/s)
             dp2d (i,k) = (dsigma(k,1)*pst(i)+dsigma(k,2))*100. !difference of interface pressure (Pa)
             dz2d (i,k) = (phii(i,kc)-phii(i,kc+1))/con_g       !differences of height (m), dz<0
+            rhc2d(i,k) = rhc_mp(i,k)
+
+            if ( sedi_w ) then
+              prsl(i,k) = 100.0 * plt(i,k)            !layer mean pressure (from mb to Pa)
+              ! use moist air density : rho = p/(Rd*T*(1+0.608*qv))
+              rho = prsl(i,k)/(con_rd*t2d(i,k)*(1+con_fvirt*qv2d(i,k)))
+              w2d(i,k) = - vvel(i,k)*100./(rho*con_g) !vertical velocity (m/s)
+            else
+              w2d(i,k)  = 0.
+            endif
           enddo
         enddo
 
@@ -743,7 +812,7 @@
                   prefluxr, prefluxi, prefluxs, prefluxg,               &
                   cond0, dep0, evap0, sub0,                             &
 #endif
-                  rhc, last_step, do_inline_mp )
+                  rhc2d, last_step, do_inline_mp )
 
         ! GFDL MP v3
         if ( nmmiph .eq. 13 )                                           &
@@ -758,12 +827,12 @@
                   prefluxw, prefluxr, prefluxi, prefluxs, prefluxg,     &
                   cond0, dep0, evap0, sub0,                             &
 #endif
-                  rhc, last_step, do_inline_mp )
+                  rhc2d, last_step, do_inline_mp )
 
         qmin = 1.0e-15     !minimum of q (kg/kg)
         do k = 1, lev
           do i = 1, nxj
-            qt(i,             k) = qv2d(i,k)
+            qt(i,             k) = max( qv2d(i,k) , qmin )
             qt(i,(ntcw-1)*lev+k) = max( qc2d(i,k) , qmin )
             qt(i,(ntrw-1)*lev+k) = max( qr2d(i,k) , qmin )
             qt(i,(ntiw-1)*lev+k) = max( qi2d(i,k) , qmin )
@@ -775,9 +844,18 @@
             vt(i,k)  = v2d  (i,k)
 
             if ( sedi_w ) then
-              vvel(i,k)  = -w2d(i,k)*prsl(i,k)*con_g/con_rd             &
-                           /((1+con_fvirt*qt(i,k))*tt(i,k))
+              ! use moist air density : rho = p/(Rd*T*(1+0.608*qv))
+              rho = prsl(i,k)/(con_rd*tt(i,k)*(1+con_fvirt*qt(i,k)))
+              vvel(i,k) = - w2d(i,k)*rho*con_g/100.  !convert back to hPa/s
             endif
+          enddo
+        enddo
+
+        ! calculate new terrain pressure pst (hPa)
+        do i = 1, nxj
+          pst(i) = ptop
+          do k = 1, lev
+            pst(i) = pst(i) + dp2d(i,k)/100.
           enddo
         enddo
 
@@ -794,7 +872,7 @@
         deallocate                                                      &
          ( qv2d,qc2d,qr2d,qi2d,qs2d,qg2d,qnc2d,qni2d,cld2d,w2d,t2d,u2d, &
            v2d,dp2d,dz2d,q_con,cappa,te,hs,gsize,rain1d,snow1d,ice1d,   &
-           graupel1d,water1d,land1d )
+           graupel1d,water1d,land1d,rhc2d )
 #ifdef EXT_DIAG
         deallocate                                                      &
          ( prefluxw,prefluxr,prefluxi,prefluxs,prefluxg,cond0,dep0,     &
@@ -874,18 +952,41 @@
             qs3d (i,k,1) = qt(i,(ntsw-1)*lev+kc)
             qg3d (i,k,1) = qt(i,(ntgl-1)*lev+kc)
             qh3d (i,k,1) = qt(i,(nthl-1)*lev+kc)
+
             p3d  (i,k,1) = 100.0*plt(i,kc)                   !layer mean pressure (from mb to Pa)
-!            pii3d(i,k,1) = pk(i,kc)                          !exner function, =(p/psfc)**(Rd/cp)
+!            pii3d(i,k,1) = pk(i,kc)                          !exner function, =(plt/1000)**(Rd/cp)
             pii3d(i,k,1) = 1.
-!            th3d (i,k,1) = tt(i,kc)*pk(i,kc)                 !potential temperature (K)
-            th3d (i,k,1) = tt(i,kc)                          !temperature (K)
+!            th3d (i,k,1) = tt(i,kc)/pk(i,kc)                 !potential temperature (K)
+            th3d (i,k,1) = tt(i,kc)                          !real temperature (K)
             z3d  (i,k,1) = phi(i,kc)/con_g                   !layer geopotential height above sea level (m)
             dz3d (i,k,1) = (phii(i,k+1)-phii(i,k))/con_g     !layer thickness (m)
-            ! use virtural temperature : Tv = (1+(Rv/Rd-1)*q)*T = (1+con_fvirt*q)*T
-            rho3d(i,k,1) = p3d(i,k,1)/con_rd/tt(i,kc)                   &
-                          /(1+con_fvirt*qt(i,kc))            !density of air (kg/m^3)
-            w3d  (i,k,1) = -vvel(i,kc)*100.*(1.+con_fvirt*qt(i,kc))     &
-                          *tt(i,kc)/p3d(i,k,1)*con_rd/con_g  !vertical velocity (m/s)
+
+            if ( convert_dry_q ) then
+              if ( q_remove_cond ) then
+                ! q convert to : hydrometeor mass / ( dry mass )
+                tem = qv3d(i,k,1) + qc3d(i,k,1) + qr3d(i,k,1) +         &
+                      qi3d(i,k,1) + qs3d(i,k,1) + qg3d(i,k,1) +         &
+                      qh3d(i,k,1)
+              else
+                ! q convert to : hydrometeor mass / ( dry mass + condensates )
+                tem = qv3d(i,k,1)
+              endif
+              qv3d (i,k,1) = qv3d(i,k,1)/(1.-tem)
+              qc3d (i,k,1) = qc3d(i,k,1)/(1.-tem)
+              qr3d (i,k,1) = qr3d(i,k,1)/(1.-tem)
+              qi3d (i,k,1) = qi3d(i,k,1)/(1.-tem)
+              qs3d (i,k,1) = qs3d(i,k,1)/(1.-tem)
+              qg3d (i,k,1) = qg3d(i,k,1)/(1.-tem)
+              qh3d (i,k,1) = qh3d(i,k,1)/(1.-tem)
+              ! dry air density : rho = 0.622*p/(Rd*T*(0.622+qv))
+              rho3d(i,k,1) = con_eps*p3d(i,k,1)/                        &
+                             (con_rd*tt(i,kc)*(con_eps+qv3d(i,k,1)))
+            else
+              ! moist air density : rho = p/(Rd*T*(1+0.608*qv))
+              rho3d(i,k,1) = p3d(i,k,1)/                                &
+                             (con_rd*tt(i,kc)*(1+con_fvirt*qv3d(i,k,1)))
+            endif
+            w3d  (i,k,1) = -vvel(i,kc)*100./(rho3d(i,k,1)*con_g)
           enddo
         enddo
 
@@ -915,6 +1016,23 @@
         do k = 1, lev
           kc = lev - k + 1
           do i = 1, nxj
+            if ( convert_dry_q ) then
+              if ( q_remove_cond ) then
+                tem = qv3d(i,kc,1) + qc3d(i,kc,1) + qr3d(i,kc,1) +      &
+                      qi3d(i,kc,1) + qs3d(i,kc,1) + qg3d(i,kc,1) +      &
+                      qh3d(i,kc,1)
+              else
+                tem = qv3d(i,kc,1)
+              endif
+              qv3d (i,kc,1) = qv3d(i,kc,1)/(1.+tem)
+              qc3d (i,kc,1) = qc3d(i,kc,1)/(1.+tem)
+              qr3d (i,kc,1) = qr3d(i,kc,1)/(1.+tem)
+              qi3d (i,kc,1) = qi3d(i,kc,1)/(1.+tem)
+              qs3d (i,kc,1) = qs3d(i,kc,1)/(1.+tem)
+              qg3d (i,kc,1) = qg3d(i,kc,1)/(1.+tem)
+              qh3d (i,kc,1) = qh3d(i,kc,1)/(1.+tem)
+            endif
+
             qt(i,             k) = qv3d(i,kc,1)
             qt(i,(ntcw-1)*lev+k) = qc3d(i,kc,1)
             qt(i,(ntrw-1)*lev+k) = qr3d(i,kc,1)
@@ -922,7 +1040,8 @@
             qt(i,(ntsw-1)*lev+k) = qs3d(i,kc,1)
             qt(i,(ntgl-1)*lev+k) = qg3d(i,kc,1)
             qt(i,(nthl-1)*lev+k) = qh3d(i,kc,1)
-            tt(i,k) = th3d(i,kc,1)
+!            tt(i,k) = th3d(i,kc,1)          !real temperature
+!            tt(i,k) = th3d(i,kc,1)*pk(i,k)  !potential temperature
 
             re_cloud(i,k) = rew3d(i,k,1)  !micron
             re_rain (i,k) = rer3d(i,k,1)  !micron
@@ -931,7 +1050,7 @@
           enddo
         enddo
         do i = 1, nxj
-          rlsp(i) = rain2d(i,1)+snow2d(i,1)+graupel2d(i,1)+hail2d(i,1)  !total large scale precipitation (mm)
+          rlsp(i) = rain2d(i,1)  !total large scale precipitation (kg/m^2=mm)
           sr(i)   = sr2d(i,1)
         enddo
 

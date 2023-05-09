@@ -278,6 +278,7 @@
       ntrac=ncld
       if ( nmmiph .eq. 6 ) ntrac=ncld-3
       if ( nmmiph .eq. 8 ) ntrac=ncld-4
+      if ( nmmiph .eq. 9 ) ntrac=5
       if ( nmmiph .eq.11 .or. nmmiph.eq.12 .or. nmmiph.eq.13 ) ntrac=7
       if ( nmmiph .eq.16 ) ntrac=8
 
@@ -637,12 +638,8 @@
             q1(i,kc,1) = qt(i,             k)
             q1(i,kc,2) = qt(i,lev*(ntcw-1)+k)
             q1(i,kc,3) = qt(i,lev*(ntiw-1)+k)
-            q1(i,kc,4) = qt(i,lev*(ntrw-1)+k)
-            q1(i,kc,5) = qt(i,lev*(ntsw-1)+k)
-            q1(i,kc,6) = qt(i,lev*(ntgl-1)+k)
-            q1(i,kc,7) = qt(i,lev*(ntinc-1)+k)
-            q1(i,kc,8) = qt(i,lev*(ntrnc-1)+k)
-            q1(i,kc,9) = qt(i,lev*(ntoz-1)+k)
+            q1(i,kc,4) = qt(i,lev*(ntinc-1)+k)
+            q1(i,kc,5) = qt(i,lev*(ntoz-1)+k)
           enddo
         enddo
       else if ( nmmiph.eq.11 .or. nmmiph.eq.12 .or. nmmiph.eq.13 ) then ! GFDL MP
@@ -805,12 +802,8 @@
           do i=1,nxj
             qt(i,lev*(ntcw-1)+k) = q1(i,kc,2)
             qt(i,lev*(ntiw-1)+k) = q1(i,kc,3)
-            qt(i,lev*(ntrw-1)+k) = q1(i,kc,4)
-            qt(i,lev*(ntsw-1)+k) = q1(i,kc,5)
-            qt(i,lev*(ntgl-1)+k) = q1(i,kc,6)
-            qt(i,lev*(ntinc-1)+k)= q1(i,kc,7)
-            qt(i,lev*(ntrnc-1)+k)= q1(i,kc,8)
-            qt(i,lev*(ntoz-1)+k) = q1(i,kc,9)
+            qt(i,lev*(ntinc-1)+k)= q1(i,kc,4)
+            qt(i,lev*(ntoz-1)+k) = q1(i,kc,5)
           enddo
         enddo
       else if ( nmmiph.eq.11 .or. nmmiph.eq.12 .or. nmmiph.eq.13 ) then ! GFDL MP
