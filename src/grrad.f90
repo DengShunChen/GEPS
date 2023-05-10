@@ -1745,8 +1745,10 @@
 !    ---  inputs:
              ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,cnvw1,cnvc1,          &
                tracer1(:,:,ntcw),tracer1(:,:,ntrw),tracer1(:,:,ntiw),   &
-               tracer1(:,:,ntsw),tracer1(:,:,ntgl),qa,                  &
-               cldcov,slmsk,snowd,                                      &
+               tracer1(:,:,ntsw),tracer1(:,:,ntgl),                     &
+               cldcov,slmsk,                                            &
+               phy_f3d(:,:,1),phy_f3d(:,:,2),phy_f3d(:,:,3),            &
+               phy_f3d(:,:,4),effr_in,                                  &
                xlat,xlon,im,lmk,lmp,                                    &
 !    ---  outputs:
                clouds,cldsa,mtopa,mbota                                 &
