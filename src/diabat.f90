@@ -1,3 +1,4 @@
+!#define update_dp
       subroutine diabat ( docup,dodry,dolsp,dopbl,dorad,doshl,dograv,tofd      &
                     , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw       &
                     , idg,jdg,ldiag,dt,tau,hours,julian,year,yrd               &
@@ -1887,16 +1888,24 @@
 
       call mp_scheme                                                   &
 !  ---  inputs:
-           ( nmmiph,nxp,nxjp(j),lev,ncld,plt(1,1,jj),                  &
-             pst(1,jj),dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,  &
+           ( nmmiph,nxp,nxjp(j),lev,ncld,plt(1,1,jj),ptop,             &
+             dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,            &
              itimestep,sgeo(1,jj),phi,rhc_mp,                          &
 !  ---  inputs/outputs:
              tt(1,1,jj),qt(1,1,jj),clds(1,1,jj),                       &
              ut(1,1,jj),vt(1,1,jj),vvel(1,1,jj),                       &
+             pst(1,jj),                                                &
 !  ---  outputs:
              ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),fqp1(1,1,jj),        &
              rlsp(1,jj),sr(1,jj) )
-!    
+!
+#ifdef update_dp
+      if ( nmmiph.eq.12 .or. nmmiph.eq.13 ) then
+        ! compute new time step pk, pk2, and plt
+        call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pst(1,jj), &
+                            pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
+      endif
+#endif
       endif
 
 !
