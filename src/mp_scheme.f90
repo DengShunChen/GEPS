@@ -85,6 +85,7 @@
            ( nmmiph,nx,nxj,lev,ncld,plt,ptop,                          &
              dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,            &
              itimestep,sgeo,phi,rhc_mp,                                &
+             snr,                                                      &
 !  ---  inputs/outputs:
              tt,qt,qa,ut,vt,vvel,pst,                                  &
 !  ---  outputs:
@@ -109,9 +110,11 @@
                                      cloud_diagnosis
 ! for GFDL MP v2
       use module_mp_gfdl_v2,   only: gfdlv2_driver =>gfdl_cld_mp_driver,&
+                                     cloud_diagnosis_v2,                &
                                      sedi_w_v2 => do_sedi_w
 ! for GFDL MP v3
       use module_mp_gfdl_v3,   only: gfdlv3_driver =>gfdl_cld_mp_driver,&
+                                     cloud_diagnosis_v3,                &
                                      sedi_w_v3 => do_sedi_w
 ! for Goddard (GCE) 4ICE MP
       use module_mp_gce4ice,   only: gsfcgce_4ice_nuwrf
@@ -132,6 +135,7 @@
       real,     intent(in)    :: ptop
       real,     intent(in)    :: rhc_mp(nx,lev)
       real,     intent(in)    :: sgeo(nx)
+      real,     intent(in)    :: snr(nx)
       real,     intent(in)    :: plt(nx,lev)
       real(kind=RTYPE), intent(in):: q0(nx,lev*ncld),dsigma(lev,2)
 !  ---  inputs/outputs:
@@ -164,7 +168,7 @@
       real,dimension(:,:),allocatable ::                                &
               qv2d,qc2d,qr2d,qi2d,qs2d,qg2d,qnc2d,qni2d,qnr2d,          &
               rew2d,rer2d,rei2d,res2d,reg2d,                            &
-              t2d,dp2d,dz2d,cld2d,w2d,u2d,v2d,rhc2d
+              t2d,dp2d,dz2d,cld2d,w2d,u2d,v2d,rhc2d,p2d
       real    qmin, qnmin
 ! 2M Thompson MP
       real,dimension(:,:),allocatable ::                                &
@@ -188,9 +192,9 @@
       logical   hydrostatic,phys_hydrostatic,sedi_w
      !GFDL MP v2 & v3
       real, dimension(:), allocatable ::                                &
-                gsize,hs,water1d,rain1d,snow1d,ice1d,graupel1d
+                gsize,hs,water1d,rain1d,snow1d,ice1d,graupel1d,snr1d
       real, dimension(:,:), allocatable ::                              &
-                q_con,cappa,te
+                q_con,cappa,te,dp2d_ef
 #ifdef EXT_DIAG
       real, dimension(:), allocatable ::                                &
                 cond0,dep0,evap0,sub0
@@ -722,7 +726,7 @@
       endif  ! end of nmmiph.eq.11
 
 !     GFDL MP v2 & v3
-      if ( nmmiph .eq. 12 .or. nmmiph .eq. 13) then
+      if ( nmmiph .eq. 12 .or. nmmiph .eq. 13 ) then
         allocate                                                        &
          ( qv2d(nxj,lev),qc2d(nxj,lev),qr2d(nxj,lev),qi2d(nxj,lev),     &
            qs2d(nxj,lev),qg2d(nxj,lev),cld2d(nxj,lev),qnc2d(nxj,lev),   &
@@ -731,6 +735,9 @@
            q_con(nxj,lev),cappa(nxj,lev),te(nxj,lev),                   &
            hs(nxj),land1d(nxj),gsize(nxj),rain1d(nxj),snow1d(nxj),      &
            ice1d(nxj),graupel1d(nxj),water1d(nxj),rhc2d(nxj,lev) )
+        if ( effr_in ) allocate                                         &
+         ( rew2d(nxj,lev),rei2d(nxj,lev),rer2d(nxj,lev),res2d(nxj,lev), &
+           reg2d(nxj,lev),snr1d(nxj),p2d(nxj,lev),dp2d_ef(nxj,lev) )
 #ifdef EXT_DIAG
         allocate                                                        &
          ( prefluxr(nxj,lev),prefluxi(nxj,lev),prefluxs(nxj,lev),       &
@@ -856,6 +863,39 @@
           enddo
         enddo
 
+        ! calculate cloud effective radii
+        if ( effr_in ) then
+          do k = 1, lev
+            do i = 1, nxj
+              p2d    (i,k) = 100.0 * plt(i,k)                      !layer mean pressure (from mb to Pa)
+              dp2d_ef(i,k) = (dsigma(k,1)*pst(i)+dsigma(k,2))*100. !difference of interface pressure (Pa)
+              snr1d  (i)   = snr(i)                                !snow depth (mm)
+            enddo
+          enddo
+
+          if ( nmmiph .eq. 12 )                                         &
+            call cloud_diagnosis_v2                                     &
+               ( 1, nxj, 1, lev, land1d, p2d, dp2d_ef, t2d,             &
+                 qc2d, qi2d, qr2d, qs2d, qg2d, qnc2d,                   &
+                 rew2d, rei2d, rer2d, res2d, reg2d, snr1d )
+
+          if ( nmmiph .eq. 13 )                                         &
+            call cloud_diagnosis_v3                                     &
+               ( 1, nxj, 1, lev, land1d, p2d, dp2d_ef, t2d,             &
+                 qc2d, qi2d, qr2d, qs2d, qg2d, qnc2d,                   &
+                 rew2d, rei2d, rer2d, res2d, reg2d, snr1d )
+
+          do k = 1, lev
+            kc = lev - k + 1
+            do i = 1, nxj
+              re_cloud(i,k)   = rew2d(i,kc)   !(micron)
+              re_ice(i,k)     = rei2d(i,kc)   !(micron)
+              re_rain(i,k)    = rer2d(i,kc)   !(micron)
+              re_snow(i,k)    = res2d(i,kc)   !(micron)
+            enddo
+          enddo
+        endif
+
 #ifdef update_dp
         ! calculate new terrain pressure pst (hPa)
         do i = 1, nxj
@@ -880,6 +920,8 @@
          ( qv2d,qc2d,qr2d,qi2d,qs2d,qg2d,qnc2d,qni2d,cld2d,w2d,t2d,u2d, &
            v2d,dp2d,dz2d,q_con,cappa,te,hs,gsize,rain1d,snow1d,ice1d,   &
            graupel1d,water1d,land1d,rhc2d )
+        if ( effr_in ) deallocate                                       &
+         ( rew2d,rei2d,rer2d,res2d,reg2d,snr1d,p2d,dp2d_ef )
 #ifdef EXT_DIAG
         deallocate                                                      &
          ( prefluxw,prefluxr,prefluxi,prefluxs,prefluxg,cond0,dep0,     &
