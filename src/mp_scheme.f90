@@ -89,7 +89,7 @@
 !  ---  inputs:
            ( nmmiph,nx,nxj,lev,ncld,plt,ptop,                          &
              dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,            &
-             itimestep,sgeo,phi,rhc_mp,                                &
+             itimestep,sgeo,phi,rhc_mp,pk,                             &
 !  ---  inputs/outputs:
              tt,qt,qa,ut,vt,vvel,pst,                                  &
 !  ---  outputs:
@@ -138,6 +138,7 @@
       real,     intent(in)    :: area
       real,     intent(in)    :: ptop
       real,     intent(in)    :: rhc_mp(nx,lev)
+      real,     intent(in)    :: pk(nx,lev)
       real,     intent(in)    :: sgeo(nx)
       real,     intent(in)    :: plt(nx,lev)
       real(kind=RTYPE), intent(in):: q0(nx,lev*ncld),dsigma(lev,2)
@@ -968,10 +969,8 @@
             if(nmmiph.eq.16) qh3d (i,k,1) = qt(i,(nthl-1)*lev+kc)
 
             p3d  (i,k,1) = 100.0*plt(i,kc)                   !layer mean pressure (from mb to Pa)
-!            pii3d(i,k,1) = pk(i,kc)                          !exner function, =(plt/1000)**(Rd/cp)
-            pii3d(i,k,1) = 1.
-!            th3d (i,k,1) = tt(i,kc)/pk(i,kc)                 !potential temperature (K)
-            th3d (i,k,1) = tt(i,kc)                          !real temperature (K)
+            pii3d(i,k,1) = pk(i,kc)                          !exner function, =(plt/1000)**(Rd/cp)
+            th3d (i,k,1) = tt(i,kc)/pk(i,kc)                 !potential temperature (K)
             z3d  (i,k,1) = phi(i,kc)/con_g                   !layer geopotential height above sea level (m)
             dz3d (i,k,1) = (phii(i,k+1)-phii(i,k))/con_g     !layer thickness (m)
 
@@ -1017,7 +1016,7 @@
         enddo
 
         if ( nmmiph .eq. 15 )                                           &
-        call gsfcgce                                                    &
+          call gsfcgce                                                  &
                  ( th3d, qv3d, qc3d, qr3d, qi3d, qs3d,                  &
                    rho3d, pii3d, p3d, dta, z3d,                         &
                    ht, dz3d, con_g,                                     &
@@ -1034,7 +1033,7 @@
                    ihail, ice2 )
 
         if ( nmmiph .eq. 16 )                                           &
-        call gsfcgce_4ice_nuwrf                                         &
+          call gsfcgce_4ice_nuwrf                                       &
                  ( th3d, qv3d, qc3d, qr3d, qi3d, qs3d, qh3d, qg3d,      &
                    rho3d, pii3d, p3d, dta, z3d,                         &
                    ht, dz3d, con_g, w3d,                                &
@@ -1083,16 +1082,24 @@
             qt(i,(ntiw-1)*lev+k) = qi3d(i,kc,1)
             qt(i,(ntsw-1)*lev+k) = qs3d(i,kc,1)
             qt(i,(ntgl-1)*lev+k) = qg3d(i,kc,1)
-!            tt(i,k) = th3d(i,kc,1)          !real temperature
 !            tt(i,k) = th3d(i,kc,1)*pk(i,k)  !potential temperature
 
-            if(nmmiph.eq.16) then
+            if ( nmmiph .eq. 15 ) then
+              ! Goddard 3ICE with default effective raddi
+              re_cloud(i,k) = 10.0          !micron
+              re_rain (i,k) = 1000.0        !micron
+              re_ice  (i,k) = 50.0          !micron
+              re_snow (i,k) = 250.0         !micron
+            endif
+
+            if ( nmmiph .eq. 16 ) then
               qt(i,(nthl-1)*lev+k) = qh3d(i,kc,1)
               re_cloud(i,k) = rew3d(i,k,1)  !micron
               re_rain (i,k) = rer3d(i,k,1)  !micron
               re_ice  (i,k) = rei3d(i,k,1)  !micron
               re_snow (i,k) = res3d(i,k,1)  !micron
             endif
+
           enddo
         enddo
         do i = 1, nxj
