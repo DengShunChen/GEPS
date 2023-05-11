@@ -278,7 +278,7 @@
       ntrac=ncld
       if ( nmmiph .eq. 6 ) ntrac=ncld-3
       if ( nmmiph .eq. 8 ) ntrac=ncld-4
-      if ( nmmiph .eq. 9 ) ntrac=5
+      if ( nmmiph .eq.18 ) ntrac=5
       if ( nmmiph .eq.11 .or. nmmiph.eq.12 .or. nmmiph.eq.13 ) ntrac=7
       if ( nmmiph .eq.16 ) ntrac=8
 
@@ -631,7 +631,7 @@
             q1(i,kc,5) = qt(i,lev*(ntoz-1)+k)
           enddo
         enddo
-      else if ( nmmiph .eq. 9 ) then ! New Thompson
+      else if ( nmmiph .eq. 18 ) then ! 2M Thompson
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
@@ -796,7 +796,7 @@
             qt(i,lev*(ntoz-1)+k) = q1(i,kc,5)
           enddo
         enddo
-      else if ( nmmiph .eq. 9 ) then ! New Thompson
+      else if ( nmmiph .eq. 18 ) then ! 2M Thompson
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj

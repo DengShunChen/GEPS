@@ -1347,7 +1347,7 @@
 !  cumulus scheme
 !=======================================================================
       ! save old array for Thompson
-      if ( nmmiph .eq. 9 ) then
+      if ( nmmiph .eq. 18 ) then
         do k=1,lev
           do i = 1, nxj
             ice00(i,k) = qt(i,(ntiw-1)*lev+k,jj)
@@ -1731,7 +1731,7 @@
                      , rcup(1,jj),ncld )
 
       ! ice number concentration modification for Thompson
-      if ( nmmiph .eq. 9 ) then
+      if ( nmmiph .eq. 18 ) then
         icem = 4./3.*con_pi*3.2768*1.e-14*890.
         do k=1,lev
           do i=1,nxj
@@ -1859,7 +1859,7 @@
       endif !( dolsp .and. nmmiph.eq.2 )
 !
       if ( dolsp .and. (nmmiph.eq.6 .or.       & ! WSM6
-           nmmiph.eq.8 .or. nmmiph.eq.9 .or.   & ! Thompson
+           nmmiph.eq.8 .or. nmmiph.eq.18 .or.  & ! Thompson
            nmmiph.eq.11 .or. nmmiph.eq.12 .or. nmmiph.eq.13 .or. & !GFDL MP
            nmmiph.eq.16) ) then !Goddard MP
 

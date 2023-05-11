@@ -191,7 +191,7 @@
        tracer(i,kc,ntoz) = tracer(i,kc,ntoz)*fac_o3
       end do
       end do
-      if ( nmmiph.eq.6 .or. nmmiph.eq.8 .or. nmmiph.eq.9 ) then
+      if ( nmmiph.eq.6 .or. nmmiph.eq.8 .or. nmmiph.eq.18 ) then
         nclds=3
 ! for MP WSM6 & Thompson effective radius
         do k = 1, lev

@@ -417,7 +417,7 @@ contains
 !key=571~575 for number concentration of cloud droplet, ice, rain, snow, and graupel
 !key=572 : inc (ntinc=7)
 !key=573 : rnc (ntrnc=8)
-      if ( nmmiph .eq. 9 ) then
+      if ( nmmiph .eq. 18 ) then
         cspec=(/'500','551','553','552','554','555','572','573'/)
       elseif ( nmmiph .eq. 16 ) then
         cspec=(/'500','551','553','552','554','555','556','   '/)
@@ -427,10 +427,8 @@ contains
 !
       if ( ntoz .gt. 0 ) then
         ntrchk = ntoz - 1
-!        if ( nmmiph .eq. 9 ) ntrchk = 6  !Thompson with single-moment output
       else
         ntrchk = ncld
-!        if ( nmmiph .eq. 9 ) ntrchk = 6  !Thompson with single-moment output
       endif
 !
       do k = 1, lev+1

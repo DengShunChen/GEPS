@@ -1662,7 +1662,7 @@
 !   --- outputs:
             clouds,cldsa,mtopa,mbota                 &
            )
-       elseif ( icmphys == 9 ) then   ! New Thompson
+       elseif ( icmphys == 18 ) then   ! 2M Thompson
          if ( me == 0 .and. myrank == 0 )                               &
            print *,'### call New Thompson cloud ###'
 

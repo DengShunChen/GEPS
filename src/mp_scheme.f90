@@ -10,7 +10,7 @@
       use module_mp_wsm6,     only : wsm6init
 ! for Thompson
       use module_mp_thompson, only : thompson_init => thompson_init
-! for New Thompson
+! for 2M Thompson
       use module_mp_thompson_new,                                       &
                               only : new_thompson_init => thompson_init
 ! for GFDL MP v1
@@ -43,8 +43,8 @@
           if ( myrank .eq. 0 )                                         &
              print *,'Thompson cloud microphysics initialized'
         endif
-! New Thompson
-        if ( nmmiph .eq. 9 ) then
+! 2M Thompson
+        if ( nmmiph .eq. 18 ) then
           call new_thompson_init ( is_aerosol_aware,                    &
                    merra2_aerosol_aware, myrank, 0, errmsg, errflg )
           if ( myrank .eq. 0 )                                          &
@@ -98,7 +98,7 @@
       use module_mp_wsm6,      only: wsm6
 ! for thompson
       use module_mp_thompson,  only: thompson_driver => mp_gt_driver
-! for New Thompson
+! for 2M Thompson
       use module_mp_thompson_new,                                       &
                                only: new_thompson_driver => mp_gt_driver&
                                      , cal_cldfra3, cfflag_thom
@@ -166,7 +166,7 @@
               rew2d,rer2d,rei2d,res2d,reg2d,                            &
               t2d,dp2d,dz2d,cld2d,w2d,u2d,v2d,rhc2d
       real    qmin, qnmin
-! New Thompson MP
+! 2M Thompson MP
       real,dimension(:,:),allocatable ::                                &
               nwfa,nifa,pfils,pflls,vt_dbz_wt
       real,dimension(:),allocatable :: nwfasfc,nifasfc,rainnc,snownc,   &
@@ -313,8 +313,8 @@
 
       endif
 
-!     New Thompson
-      if ( nmmiph .eq. 9 ) then
+!     2M Thompson
+      if ( nmmiph .eq. 18 ) then
         allocate                                                        &
          ( t2d(nx,lev),qv2d(nx,lev),qc2d(nx,lev),qr2d(nx,lev),          &
            qi2d(nx,lev),qs2d(nx,lev),qg2d(nx,lev),qni2d(nx,lev),        &
@@ -559,7 +559,7 @@
            rew2d,rei2d,res2d,rainnc,snownc,icenc,graupelnc,icencv,      &
            rand_pert,spp_prt_list,spp_stddev_cutoff,spp_var_list )
         if ( cfflag_thom .eq. 2 ) deallocate ( cld2d,land1d,gridkm )
-      endif  !end of if nmmiph=9
+      endif  !end of if nmmiph=18
 
 !     GFDL MP v1
       if ( nmmiph .eq. 11 ) then

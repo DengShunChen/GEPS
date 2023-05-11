@@ -1211,7 +1211,7 @@
       endif    ! end of ( .not. restrt ) for u10 v10 t2 being output at tau=0
 
 ! for Thompson : 1st guess number concentration where mass non-zero
-      if ( .not.restrt .and. nmmiph.eq.9 ) then
+      if ( .not.restrt .and. nmmiph.eq.18 ) then
         do jj = 1, jlistnum
           j=jlist1(jj)
           nxj=nxdef_2d(j)
