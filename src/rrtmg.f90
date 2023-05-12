@@ -216,8 +216,8 @@
         enddo
       endif
 
-      if ( nmmiph.eq.16 ) then
-! for MP Goddard (GCE) 4ICE effective radius
+      if ( nmmiph.eq.15 .or. nmmiph.eq.16) then
+! for MP Goddard (GCE) effective radius
         nclds = 6
         do k = 1, lev
           do i = 1, nxj

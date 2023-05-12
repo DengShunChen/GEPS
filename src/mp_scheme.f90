@@ -68,6 +68,11 @@
           if ( myrank .eq. 0 )                                         &
              print *, 'GFDL cloud microphysics version 3 initialized'
         endif
+! Goddard (GCE) 3ICE MP
+        if ( nmmiph .eq. 15 ) then
+          if ( myrank .eq. 0 )                                         &
+             print *,'Goddard (GCE) 3ICE cloud microphysics initialized'
+        endif
 ! Goddard (GCE) 4ICE MP
         if ( nmmiph .eq. 16 ) then
           if ( myrank .eq. 0 )                                         &
@@ -84,7 +89,7 @@
 !  ---  inputs:
            ( nmmiph,nx,nxj,lev,ncld,plt,ptop,                          &
              dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,            &
-             itimestep,sgeo,phi,rhc_mp,                                &
+             itimestep,sgeo,phi,rhc_mp,pk,                             &
              snr,                                                      &
 !  ---  inputs/outputs:
              tt,qt,qa,ut,vt,vvel,pst,                                  &
@@ -116,6 +121,8 @@
       use module_mp_gfdl_v3,   only: gfdlv3_driver =>gfdl_cld_mp_driver,&
                                      cloud_diagnosis_v3,                &
                                      sedi_w_v3 => do_sedi_w
+! for Goddard (GCE) 3ICE MP
+      use module_mp_gsfcgce,   only: gsfcgce
 ! for Goddard (GCE) 4ICE MP
       use module_mp_gce4ice,   only: gsfcgce_4ice_nuwrf
       use physcons,            only: con_rd,con_fvirt,con_g,con_eps
@@ -134,6 +141,7 @@
       real,     intent(in)    :: area
       real,     intent(in)    :: ptop
       real,     intent(in)    :: rhc_mp(nx,lev)
+      real,     intent(in)    :: pk(nx,lev)
       real,     intent(in)    :: sgeo(nx)
       real,     intent(in)    :: snr(nx)
       real,     intent(in)    :: plt(nx,lev)
@@ -211,7 +219,8 @@
                 qv3d,qc3d,qr3d,qi3d,qs3d,qg3d,cld3d,qnc3d,t3d,w3d,u3d,  &
                 v3d,dp3d,dz3d,qvten3d,qcten3d,qrten3d,qiten3d,qsten3d,  &
                 qgten3d,cldten3d,uten3d,vten3d,tten3d
-! Goddard (GCE) 4ICE MP
+! Goddard (GCE) MP
+      integer ihail,ICE2
       real    rhowater,rhosnow,dx
       real,dimension(:,:),allocatable ::                                &
               ht,hail2d,rainnc2d,snownc2d,graupelnc2d,hailnc2d,sr2d
@@ -929,18 +938,20 @@
 #endif
       endif  !end if nmmiph.eq.12 .or nmmiph.eq.13
 
-!     Goddard (GCE) 4ICE MP
-      if ( nmmiph .eq. 16 ) then
+!     Goddard (GCE) MP
+      if ( (nmmiph .eq. 15) .or. (nmmiph .eq. 16) ) then
         allocate                                                        &
          ( th3d(nx,lev,1),qv3d(nx,lev,1),qc3d(nx,lev,1),qr3d(nx,lev,1), &
-           qi3d(nx,lev,1),qs3d(nx,lev,1),qg3d(nx,lev,1),qh3d(nx,lev,1), &
-           rho3d(nx,lev,1),pii3d(nx,lev,1),p3d(nx,lev,1),z3d(nx,lev,1), &
-           ht(nx,1),dz3d(nx,lev,1),w3d(nx,lev,1),rainnc2d(nx,1),        &
-           snownc2d(nx,1),graupelnc2d(nx,1),hailnc2d(nx,1),rain2d(nx,1),&
-           snow2d(nx,1),graupel2d(nx,1),hail2d(nx,1),sr2d(nx,1),        &
+           qi3d(nx,lev,1),qs3d(nx,lev,1),qg3d(nx,lev,1),rho3d(nx,lev,1),&
+           pii3d(nx,lev,1),p3d(nx,lev,1),z3d(nx,lev,1),dz3d(nx,lev,1),  &
+           rainnc2d(nx,1),snownc2d(nx,1),graupelnc2d(nx,1),             &
+           rain2d(nx,1),snow2d(nx,1),graupel2d(nx,1),sr2d(nx,1),        &
+           refl_10cm(nx,lev,1),ht(nx,1) )
+        if ( nmmiph.eq.16 ) allocate                                    &
+         ( qh3d(nx,lev,1),w3d(nx,lev,1),                                &
+           hailnc2d(nx,1),hail2d(nx,1),land2d(nx,1),                    &
            rew3d(nx,lev,1),rer3d(nx,lev,1),rei3d(nx,lev,1),             &
-           res3d(nx,lev,1),reg3d(nx,lev,1),reh3d(nx,lev,1),             &
-           land2d(nx,1),refl_10cm(nx,lev,1) )
+           res3d(nx,lev,1),reg3d(nx,lev,1),reh3d(nx,lev,1) )
 
         th3d = 0.
         qv3d = 0.
@@ -949,31 +960,37 @@
         qi3d = 0.
         qs3d = 0.
         qg3d = 0.
-        qh3d = 0.
         rho3d = 0.
         pii3d = 0.
         p3d = 0.
         z3d = 0.
         ht = 0.
         dz3d = 0.
-        w3d = 0.
         rain2d = 0.
         snow2d = 0.
         graupel2d = 0.
-        hail2d = 0.
         rainnc2d = 0.
         snownc2d = 0.
         graupelnc2d = 0.
-        hailnc2d = 0.
         sr2d = 0.
-        rew3d = 0.
-        rer3d = 0.
-        rei3d = 0.
-        res3d = 0.
-        reg3d = 0.
-        reh3d = 0.
-        land2d = 0.
         refl_10cm = 0.
+
+        if ( nmmiph .eq. 16 ) then
+          qh3d = 0.
+          w3d = 0.
+          hail2d = 0.
+          hailnc2d = 0.
+          rew3d = 0.
+          rer3d = 0.
+          rei3d = 0.
+          res3d = 0.
+          reg3d = 0.
+          reh3d = 0.
+          land2d = 0.
+        endif
+
+        ihail = 0  !run gsfcgce with graupel option
+        ICE2  = 0  !run gsfcgce with snow, ice and hail/graupel
 
         diagflag = .false.          !if diagflag=true and do_radar_ref=1, call calc_refl10cm
         do_radar_ref = 0
@@ -981,15 +998,6 @@
         dx = sqrt(area)             !grid length (m)
         rhowater = 1000.            !water density (kg/m^3), but not used
         rhosnow = 100.              !snow density (kg/m^3), but not used
-
-        do i = 1, nxj
-          ht(i,1) = sgeo(i)/con_g   !terrain geopotential height above sea level (m)
-          if( islimsk(i) .eq. 1 ) then
-            land2d(i,1) = 1.        !land
-          else
-            land2d(i,1) = 2.        !ocean & seaice
-          endif
-        enddo
 
         do k = 1, lev
           kc = lev - k + 1
@@ -1000,13 +1008,11 @@
             qi3d (i,k,1) = qt(i,(ntiw-1)*lev+kc)
             qs3d (i,k,1) = qt(i,(ntsw-1)*lev+kc)
             qg3d (i,k,1) = qt(i,(ntgl-1)*lev+kc)
-            qh3d (i,k,1) = qt(i,(nthl-1)*lev+kc)
+            if(nmmiph.eq.16) qh3d (i,k,1) = qt(i,(nthl-1)*lev+kc)
 
             p3d  (i,k,1) = 100.0*plt(i,kc)                   !layer mean pressure (from mb to Pa)
-!            pii3d(i,k,1) = pk(i,kc)                          !exner function, =(plt/1000)**(Rd/cp)
-            pii3d(i,k,1) = 1.
-!            th3d (i,k,1) = tt(i,kc)/pk(i,kc)                 !potential temperature (K)
-            th3d (i,k,1) = tt(i,kc)                          !real temperature (K)
+            pii3d(i,k,1) = pk(i,kc)                          !exner function, =(plt/1000)**(Rd/cp)
+            th3d (i,k,1) = tt(i,kc)/pk(i,kc)                 !potential temperature (K)
             z3d  (i,k,1) = phi(i,kc)/con_g                   !layer geopotential height above sea level (m)
             dz3d (i,k,1) = (phii(i,k+1)-phii(i,k))/con_g     !layer thickness (m)
 
@@ -1014,8 +1020,8 @@
               if ( q_remove_cond ) then
                 ! q convert to : hydrometeor mass / ( dry mass )
                 tem = qv3d(i,k,1) + qc3d(i,k,1) + qr3d(i,k,1) +         &
-                      qi3d(i,k,1) + qs3d(i,k,1) + qg3d(i,k,1) +         &
-                      qh3d(i,k,1)
+                      qi3d(i,k,1) + qs3d(i,k,1) + qg3d(i,k,1)
+                if(nmmiph.eq.16) tem = tem + qh3d(i,k,1)
               else
                 ! q convert to : hydrometeor mass / ( dry mass + condensates )
                 tem = qv3d(i,k,1)
@@ -1026,7 +1032,7 @@
               qi3d (i,k,1) = qi3d(i,k,1)/(1.-tem)
               qs3d (i,k,1) = qs3d(i,k,1)/(1.-tem)
               qg3d (i,k,1) = qg3d(i,k,1)/(1.-tem)
-              qh3d (i,k,1) = qh3d(i,k,1)/(1.-tem)
+              if(nmmiph.eq.16) qh3d (i,k,1) = qh3d(i,k,1)/(1.-tem)
               ! dry air density : rho = 0.622*p/(Rd*T*(0.622+qv))
               rho3d(i,k,1) = con_eps*p3d(i,k,1)/                        &
                              (con_rd*tt(i,kc)*(con_eps+qv3d(i,k,1)))
@@ -1035,11 +1041,41 @@
               rho3d(i,k,1) = p3d(i,k,1)/                                &
                              (con_rd*tt(i,kc)*(1+con_fvirt*qv3d(i,k,1)))
             endif
-            w3d  (i,k,1) = -vvel(i,kc)*100./(rho3d(i,k,1)*con_g)
+            if(nmmiph.eq.16) w3d(i,k,1) = -vvel(i,kc)*100./             &
+                                          (rho3d(i,k,1)*con_g)
           enddo
         enddo
 
-        call gsfcgce_4ice_nuwrf                                         &
+        do i = 1, nxj
+          ht(i,1) = sgeo(i)/con_g   !terrain geopotential height above sea level (m)
+          if ( nmmiph .eq. 16 ) then
+            if( islimsk(i) .eq. 1 ) then
+              land2d(i,1) = 1.        !land
+            else
+              land2d(i,1) = 2.        !ocean & seaice
+            endif
+          endif
+        enddo
+
+        if ( nmmiph .eq. 15 )                                           &
+          call gsfcgce                                                  &
+                 ( th3d, qv3d, qc3d, qr3d, qi3d, qs3d,                  &
+                   rho3d, pii3d, p3d, dta, z3d,                         &
+                   ht, dz3d, con_g,                                     &
+                   rhowater, rhosnow,                                   &
+                   itimestep,                                           &
+!                   ids,ide, jds,jde, kds,kde,                           & ! domain dims
+                   1, nx , 1, 1, 1, lev,                                & ! memory dims
+                   1, nxj, 1, 1, 1, lev,                                & ! tile   dims
+                   rainnc2d, rain2d,                                    &
+                   snownc2d, snow2d, sr2d,                              &
+                   graupelnc2d, graupel2d,                              &
+                   refl_10cm, diagflag, do_radar_ref,                   &
+                   .false., qg3d,                                       &
+                   ihail, ice2 )
+
+        if ( nmmiph .eq. 16 )                                           &
+          call gsfcgce_4ice_nuwrf                                       &
                  ( th3d, qv3d, qc3d, qr3d, qi3d, qs3d, qh3d, qg3d,      &
                    rho3d, pii3d, p3d, dta, z3d,                         &
                    ht, dz3d, con_g, w3d,                                &
@@ -1068,8 +1104,8 @@
             if ( convert_dry_q ) then
               if ( q_remove_cond ) then
                 tem = qv3d(i,kc,1) + qc3d(i,kc,1) + qr3d(i,kc,1) +      &
-                      qi3d(i,kc,1) + qs3d(i,kc,1) + qg3d(i,kc,1) +      &
-                      qh3d(i,kc,1)
+                      qi3d(i,kc,1) + qs3d(i,kc,1) + qg3d(i,kc,1)
+                if(nmmiph.eq.16) tem = tem + qh3d(i,kc,1)
               else
                 tem = qv3d(i,kc,1)
               endif
@@ -1079,7 +1115,7 @@
               qi3d (i,kc,1) = qi3d(i,kc,1)/(1.+tem)
               qs3d (i,kc,1) = qs3d(i,kc,1)/(1.+tem)
               qg3d (i,kc,1) = qg3d(i,kc,1)/(1.+tem)
-              qh3d (i,kc,1) = qh3d(i,kc,1)/(1.+tem)
+              if(nmmiph.eq.16) qh3d (i,kc,1) = qh3d(i,kc,1)/(1.+tem)
             endif
 
             qt(i,             k) = qv3d(i,kc,1)
@@ -1088,14 +1124,24 @@
             qt(i,(ntiw-1)*lev+k) = qi3d(i,kc,1)
             qt(i,(ntsw-1)*lev+k) = qs3d(i,kc,1)
             qt(i,(ntgl-1)*lev+k) = qg3d(i,kc,1)
-            qt(i,(nthl-1)*lev+k) = qh3d(i,kc,1)
-!            tt(i,k) = th3d(i,kc,1)          !real temperature
 !            tt(i,k) = th3d(i,kc,1)*pk(i,k)  !potential temperature
 
-            re_cloud(i,k) = rew3d(i,k,1)  !micron
-            re_rain (i,k) = rer3d(i,k,1)  !micron
-            re_ice  (i,k) = rei3d(i,k,1)  !micron
-            re_snow (i,k) = res3d(i,k,1)  !micron
+            if ( nmmiph .eq. 15 ) then
+              ! Goddard 3ICE with default effective raddi
+              re_cloud(i,k) = 10.0          !micron
+              re_rain (i,k) = 1000.0        !micron
+              re_ice  (i,k) = 50.0          !micron
+              re_snow (i,k) = 250.0         !micron
+            endif
+
+            if ( nmmiph .eq. 16 ) then
+              qt(i,(nthl-1)*lev+k) = qh3d(i,kc,1)
+              re_cloud(i,k) = rew3d(i,k,1)  !micron
+              re_rain (i,k) = rer3d(i,k,1)  !micron
+              re_ice  (i,k) = rei3d(i,k,1)  !micron
+              re_snow (i,k) = res3d(i,k,1)  !micron
+            endif
+
           enddo
         enddo
         do i = 1, nxj
@@ -1104,11 +1150,14 @@
         enddo
 
         deallocate                                                      &
-         ( th3d,qv3d,qc3d,qr3d,qs3d,qi3d,qg3d,qh3d,rho3d,pii3d,p3d,z3d, &
-           ht,dz3d,w3d,rainnc2d,snownc2d,graupelnc2d,hailnc2d,rain2d,   &
-           snow2d,graupel2d,hail2d,sr2d,rew3d,rer3d,rei3d,res3d,reg3d,  &
-           reh3d,land2d,refl_10cm )
-      endif  !end of if nmmiph=16
+         ( th3d,qv3d,qc3d,qr3d,qs3d,qi3d,qg3d,pii3d,p3d,z3d,dz3d,       &
+           rainnc2d,snownc2d,graupelnc2d,rain2d,snow2d,graupel2d,       &
+           sr2d,refl_10cm )
+        if ( nmmiph .eq. 16 ) deallocate                                &
+         ( qh3d,rho3d,ht,w3d,hailnc2d,hail2d,land2d,                    &
+           rew3d,rer3d,rei3d,res3d,reg3d,reh3d )
+
+      endif  !end of if nmmiph=15 .or. nmmiph=16
 
       return
 !--------------------------

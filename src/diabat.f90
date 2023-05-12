@@ -1861,7 +1861,7 @@
       if ( dolsp .and. (nmmiph.eq.6 .or.       & ! WSM6
            nmmiph.eq.8 .or. nmmiph.eq.18 .or.  & ! Thompson
            nmmiph.eq.11 .or. nmmiph.eq.12 .or. nmmiph.eq.13 .or. & !GFDL MP
-           nmmiph.eq.16) ) then !Goddard MP
+           nmmiph.eq.15 .or. nmmiph.eq.16) ) then !Goddard MP
 
 ! for microphysics
       area = tem1*tem2  !area of grid box (m^2)
@@ -1890,7 +1890,7 @@
 !  ---  inputs:
            ( nmmiph,nxp,nxjp(j),lev,ncld,plt(1,1,jj),ptop,             &
              dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,            &
-             itimestep,sgeo(1,jj),phi,rhc_mp,                          &
+             itimestep,sgeo(1,jj),phi,rhc_mp,pk(1,1,jj),               &
              snr(1,jj),                                                &
 !  ---  inputs/outputs:
              tt(1,1,jj),qt(1,1,jj),clds(1,1,jj),                       &

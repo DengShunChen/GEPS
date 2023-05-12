@@ -280,7 +280,9 @@
       if ( nmmiph .eq. 8 ) ntrac=ncld-4
       if ( nmmiph .eq.18 ) ntrac=5
       if ( nmmiph .eq.11 .or. nmmiph.eq.12 .or. nmmiph.eq.13 ) ntrac=7
-      if ( nmmiph .eq.16 ) ntrac=8
+      if ( nmmiph .eq.15 ) ntrac=5
+      if ( nmmiph .eq.16 ) ntrac=5
+!      if ( nmmiph .eq.16 ) ntrac=8
 
       allocate(q1(nx,lev,ntrac))
 !
@@ -655,6 +657,17 @@
             q1(i,kc,7) = qt(i,lev*(ntoz-1)+k)
           enddo
         enddo
+      else if ( nmmiph.eq.15 .or. nmmiph.eq.16 ) then ! Goddard MP
+        do k=1,lev
+          kc=lev-k+1
+          do i=1,nxj
+            q1(i,kc,1) = qt(i,             k)
+            q1(i,kc,2) = qt(i,lev*(ntcw-1)+k)
+            q1(i,kc,3) = qt(i,lev*(ntiw-1)+k)
+            q1(i,kc,4) = qt(i,lev*(ntrw-1)+k)
+            q1(i,kc,5) = qt(i,lev*(ntoz-1)+k)
+          enddo
+        enddo
       else
         do nc=1,ntrac
           do k=1,lev
@@ -816,6 +829,16 @@
             qt(i,lev*(ntsw-1)+k) = q1(i,kc,5)
             qt(i,lev*(ntgl-1)+k) = q1(i,kc,6)
             qt(i,lev*(ntoz-1)+k) = q1(i,kc,7)
+          enddo
+        enddo
+      else if ( nmmiph.eq.15 .or. nmmiph.eq.16 ) then ! Goddard MP
+        do k=1,lev
+          kc=lev-k+1
+          do i=1,nxj
+            qt(i,lev*(ntcw-1)+k) = q1(i,kc,2)
+            qt(i,lev*(ntiw-1)+k) = q1(i,kc,3)
+            qt(i,lev*(ntrw-1)+k) = q1(i,kc,4)
+            qt(i,lev*(ntoz-1)+k) = q1(i,kc,5)
           enddo
         enddo
       else
