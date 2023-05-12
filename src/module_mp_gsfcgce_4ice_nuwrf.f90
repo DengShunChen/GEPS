@@ -26,122 +26,122 @@
 !on 12/09/2014
 !Di
 
-      MODULE module_mp_gce4ice
+MODULE module_mp_gce4ice
 
 #if (WRF_CHEM == 1)
-      use module_gocart_coupling
+   use module_gocart_coupling
 #endif
-      USE module_mp_radar
+   USE module_mp_radar
 
-      INTEGER, PARAMETER, PRIVATE:: chunk = 16
+   INTEGER, PARAMETER, PRIVATE:: chunk = 16
 
-!      LOGICAL, EXTERNAL :: wrf_dm_on_monitor
+!   LOGICAL, EXTERNAL :: wrf_dm_on_monitor
 
 !JJS 20140117 vvvvv
-      PRIVATE  ! privatize all variables/subroutines in this module excepting public parameter below
-      PUBLIC :: gsfcgce_4ice_nuwrf
+   PRIVATE  ! privatize all variables/subroutines in this module excepting public parameter below
+   PUBLIC :: gsfcgce_4ice_nuwrf
 !JJS 20140117 ^^^^^
 
 !JJS 1/3/2008     vvvvv
 
 !  common /bt/
-      REAL,    PRIVATE ::          rd1,  rd2,   al,   cp
+   REAL,    PRIVATE ::          rd1,  rd2,   al,   cp
 
 !  common /cont/
-      REAL,    PRIVATE ::          c38, c358, c610, c149,               &
-                                  c879, c172, c409,  c76,               &
-                                  c218, c580, c141
+   REAL,    PRIVATE ::          c38, c358, c610, c149,             &
+                               c879, c172, c409,  c76,             &
+                               c218, c580, c141
 !  common /b3cs/
-      REAL,    PRIVATE ::           ag,   bg,   as,   bs,               &
-                                    aw,   bw,  bgh,  bgq,               &
-                                   bsh,  bsq,  bwh,  bwq,               &
-                                    ah,   bh,  bh3,  bhh,               &
-                                   bhh5, bhq,  bh3_2
+   REAL,    PRIVATE ::           ag,   bg,   as,   bs,             &
+                                 aw,   bw,  bgh,  bgq,             &
+                                bsh,  bsq,  bwh,  bwq,             &
+                                 ah,   bh,  bh3,  bhh,             &
+                                bhh5, bhq,  bh3_2
 
 !  common /size/
-      REAL,    PRIVATE ::          tnw,  tns,  tng, tnh,                &
-                                  roqs, roqg, roqr, roqh
+   REAL,    PRIVATE ::          tnw,  tns,  tng, tnh,              &
+                               roqs, roqg, roqr, roqh
 
 !  common /rterv/
-      REAL,    PRIVATE ::           zrc,  zgc,  zsc, zhc, vrc,          &
-                                   vrc0, vrc1, vrc2, vrc3,              &
-                                    vgc,  vsc, vhc
+   REAL,    PRIVATE ::           zrc,  zgc,  zsc, zhc, vrc,        &  
+                                vrc0, vrc1, vrc2, vrc3,            &
+                             	 vgc,  vsc, vhc
 !  common /rterv_2/ 
-      REAL,    PRIVATE ::         zgc2, vgc2
+    REAL,    PRIVATE ::         zgc2, vgc2
 
 !  common /bsnw/
-      REAL,    PRIVATE ::              rn11a
+   REAL,    PRIVATE ::              rn11a
 
-      REAL,    PRIVATE ::          rn17, rn19b,                         &
-                                   bnd3, rn23a,                         &
-                                   rn23b, rn30b,                        &
-                                   rn30c 
+   REAL,    PRIVATE ::          rn17, rn19b,                       &
+                               	bnd3, rn23a,                   &
+                               rn23b, rn30b,                       &
+                               rn30c 
 
 !  common /rsnw/
-      REAL,    PRIVATE ::        alv,   alf,   als,    t0,   t00,       &
-                                 avc,   afc,   asc,   esi,   rn1, rn2,  &
-                                bnd2,   rn3,   rn4,   rn5,  rn50,       &
-                                rn51,  rn52,  rn53,   rn6,  rn60,       &
-                                rn61,  rn62,  rn63,   rn7,   rn8,       &
-                                 rn9,  rn10, rn101, rn102, rn10a,       &
-                               rn10b, rn10c,  rn11,  rn12,  rn14,       &
-                                rn15, rn15a,  rn16, rn171, rn172,       &
-                               rn17a, rn17b, rn17c,  rn18, rn18a,       &
-                                rn19, rn191, rn192, rn19a,  rn20,       &
-                               rn20a, rn20b,  rn30, rn30a,  rn21,       &
-                               bnd21,  rn22,  rn23, rn231, rn232,       &
-                                rn25,  rn31,  beta,  rn32,  rn33,       &
-                               rn331, rn332,  rn34,  rn35,rnn30a,       &
+    REAL,    PRIVATE ::          alv,   alf,   als,    t0,   t00,     &
+                                 avc,   afc,   asc,   esi,   rn1, rn2,     &
+                                bnd2,   rn3,   rn4,   rn5,  rn50,     &
+                                rn51,  rn52,  rn53,   rn6,  rn60,     &
+                                rn61,  rn62,  rn63,   rn7,   rn8,     &
+                                 rn9,  rn10, rn101, rn102, rn10a,     &
+                               rn10b, rn10c,  rn11,  rn12,  rn14,     &
+                                rn15, rn15a,  rn16, rn171, rn172,     &
+                               rn17a, rn17b, rn17c,  rn18, rn18a,     &
+                                rn19, rn191, rn192, rn19a,  rn20,     &
+                               rn20a, rn20b,  rn30, rn30a,  rn21,     &
+                               bnd21,  rn22,  rn23, rn231, rn232,     &
+                                rn25,  rn31,  beta,  rn32,  rn33,     &
+                               rn331, rn332,  rn34,  rn35,rnn30a,     &
                                rnn191,rnn192
-      REAL, PRIVATE, DIMENSION( 31 ) ::    rn12a, rn12b, rn13, rn25a
+   REAL,    PRIVATE, DIMENSION( 31 ) ::    rn12a, rn12b, rn13, rn25a
 
 !  common /rsnw2h/
-      REAL, PRIVATE ::        hn9,  hn10,  hn10a, hn14,  hn15a, hn16,   &
-                             hn17, hn17a, hn19,  hn19a, hn20,  hn20b
-      REAL, PRIVATE ::       gn17,gn17a,gn17a2                                     !4ice revised
+    REAL,    PRIVATE ::         hn9,  hn10,  hn10a, hn14,  hn15a, hn16,  &
+                                hn17, hn17a, hn19,  hn19a, hn20,  hn20b  
+    REAL,    PRIVATE ::         gn17,gn17a,gn17a2                                     !4ice revised
 
 !  common /rainmap/ 
-      REAL, PRIVATE ::         draimax
+    REAL,    PRIVATE ::         draimax
 
 !  common /snomap/ 
-      real, PRIVATE ::  xs,sno11,sno00,dsno11,dsno00,sexp11,sexp00,stt, &
-                        stexp,sbase,tslopes,dsnomin,dsnomin4,slim
+  real, PRIVATE ::  xs,sno11,sno00,dsno11,dsno00,sexp11,sexp00,stt,   &
+                stexp,sbase,tslopes,dsnomin,dsnomin4,slim
 !  common /grpmap/
-      real, PRIVATE ::  xg,grp11,grp00,dgrp11,dgrp00,gexp11,gexp00,gtt, &
-                        gtexp,gbase,tslopeg,dgrpmin,dgrpmin4,glim
+  real, PRIVATE ::  xg,grp11,grp00,dgrp11,dgrp00,gexp11,gexp00,gtt,   &
+                gtexp,gbase,tslopeg,dgrpmin,dgrpmin4,glim
 !  common /haimap/
-      real, PRIVATE ::  hai00,hai11,htt0,htt1,haixp 
+  real, PRIVATE :: hai00,hai11,htt0,htt1,haixp 
 
 !  common /b3cg_2/ 
-      REAL, PRIVATE ::  ag2, bg2, bgh2, bgq2, roqg2, qrog2
+    REAL,    PRIVATE ::         ag2, bg2, bgh2, bgq2, roqg2, qrog2
 
 !  common /rsnw2/ 
-      REAL, PRIVATE ::  rn142, rn152, rn15a2, rn17a2, rn192_2
+    REAL,    PRIVATE ::         rn142, rn152, rn15a2, rn17a2, rn192_2
 
 !  common /icemass/
-      REAL, PRIVATE ::          ami50, ami40, ami100
+    REAL,    PRIVATE ::          ami50, ami40, ami100
 
 !  common /BergCon/
-      REAL, PRIVATE, DIMENSION( 31 ) ::    BergCon1,  BergCon2,         &
+   REAL,    PRIVATE, DIMENSION( 31 ) ::    BergCon1,  BergCon2,       &
                                            BergCon3,  BergCon4
-      REAL, PRIVATE    :: cmin
-      REAL, PRIVATE    :: cpi
+  REAL, PRIVATE    :: cmin
+  REAL, PRIVATE    :: cpi
 !
-      REAL, PRIVATE, DIMENSION( 31 )  ::      aa1,  aa2
-      DATA aa1/.7939e-7, .7841e-6, .3369e-5, .4336e-5, .5285e-5,        &
-               .3728e-5, .1852e-5, .2991e-6, .4248e-6, .7434e-6,        &
-               .1812e-5, .4394e-5, .9145e-5, .1725e-4, .3348e-4,        &
-               .1725e-4, .9175e-5, .4412e-5, .2252e-5, .9115e-6,        &
-               .4876e-6, .3473e-6, .4758e-6, .6306e-6, .8573e-6,        &
-               .7868e-6, .7192e-6, .6513e-6, .5956e-6, .5333e-6,        &
-               .4834e-6/
-      DATA aa2/.4006, .4831, .5320, .5307, .5319,                       &
-               .5249, .4888, .3894, .4047, .4318,                       &
-               .4771, .5183, .5463, .5651, .5813,                       &
-               .5655, .5478, .5203, .4906, .4447,                       &
-               .4126, .3960, .4149, .4320, .4506,                       &
-               .4483, .4460, .4433, .4413, .4382,                       &
-               .4361/
+   REAL,    PRIVATE, DIMENSION( 31 )  ::      aa1,  aa2
+   DATA aa1/.7939e-7, .7841e-6, .3369e-5, .4336e-5, .5285e-5,         &
+           .3728e-5, .1852e-5, .2991e-6, .4248e-6, .7434e-6,          &
+           .1812e-5, .4394e-5, .9145e-5, .1725e-4, .3348e-4,          &
+           .1725e-4, .9175e-5, .4412e-5, .2252e-5, .9115e-6,          &
+           .4876e-6, .3473e-6, .4758e-6, .6306e-6, .8573e-6,          &
+           .7868e-6, .7192e-6, .6513e-6, .5956e-6, .5333e-6,          &
+           .4834e-6/
+   DATA aa2/.4006, .4831, .5320, .5307, .5319,                        &
+           .5249, .4888, .3894, .4047, .4318,                         &
+           .4771, .5183, .5463, .5651, .5813,                         &
+           .5655, .5478, .5203, .4906, .4447,                         &
+           .4126, .3960, .4149, .4320, .4506,                         &
+           .4483, .4460, .4433, .4413, .4382,                         &
+           .4361/
 
 !+---+-----------------------------------------------------------------+
 !..The following 6 variables moved here to facilitate reflectivity
@@ -161,120 +161,162 @@
 
 !JJS 1/3/2008     ^^^^^
 
-      CONTAINS
+CONTAINS
 
 !--------------------------------------------------------------------
 !  NASA/GSFC GCE
 !  Tao et al, 2001, Meteo. & Atmos. Phy., 97-137
 !--------------------------------------------------------------------
-      SUBROUTINE gsfcgce_4ice_nuwrf                                     &
-                 ( th, qv, ql, qr, qi, qs, qh, qg                       & ! 4ICE
-                  ,rho, pii, p, dt_in, z                                &
-                  ,ht, dz8w, grav, w                                    &
-                  ,rhowater, rhosnow                                    &
-                  ,itimestep, xland, dx                                 &
-!                  ,ids,ide, jds,jde, kds,kde                            & ! domain dims
-                  ,ims,ime, jms,jme, kms,kme                            & ! memory dims
-                  ,its,ite, jts,jte, kts,kte                            & ! tile   dims
-                  ,rainnc, rainncv                                      &
-                  ,snownc, snowncv, sr                                  &
-                  ,graupelnc, graupelncv                                &
-                  ,hailnc, hailncv                                      &
-                  ,refl_10cm, diagflag, do_radar_ref                    &
-                  ,re_cloud_gsfc, re_rain_gsfc, re_ice_gsfc             &
-                  ,re_snow_gsfc, re_graupel_gsfc, re_hail_gsfc          &
+  SUBROUTINE gsfcgce_4ice_nuwrf(   th                               &
+                       ,qv, ql ,qr, qi, qs, qh, qg                  & ! 4ice
+                       ,rho, pii, p, dt_in, z                       &
+                       ,ht, dz8w, grav, w                           &
+                       ,rhowater, rhosnow                           &
+                       ,itimestep, xland, dx                        &
+!                       ,ids,ide, jds,jde, kds,kde                   & ! domain dims
+                       ,ims,ime, jms,jme, kms,kme                   & ! memory dims
+                       ,its,ite, jts,jte, kts,kte                   & ! tile   dims
+                       ,rainnc, rainncv                             &
+                       ,snownc, snowncv, sr                         &
+                       ,graupelnc, graupelncv                       &
+                       ,hailnc, hailncv                             & !Hail
+                       ,refl_10cm, diagflag, do_radar_ref           &
+                       ,re_cloud_gsfc, re_rain_gsfc, re_ice_gsfc    &
+                       ,re_snow_gsfc, re_graupel_gsfc, re_hail_gsfc & ! cloud effective radius
 #ifdef EXT_DIAG
-                  ,physc, physe, physd, physs, physm, physf             &
-                  ,acphysc, acphyse, acphysd, acphyss, acphysm, acphysf &
-                  ,preci3d, precs3d, precg3d, prech3d, precr3d          &
+                       ,physc, physe, physd, physs, physm, physf    &
+                       ,acphysc, acphyse, acphysd, acphyss, acphysm, acphysf &
+                       ,preci3d, precs3d, precg3d, prech3d, precr3d &
 #endif
 #if ( WRF_CHEM == 1)
 !JJS 20110525     vvvvv
-                  ,aero, icn_diag, nc_diag, gid                         &
+                       ,aero, icn_diag, nc_diag, gid               &
 !JJS 20110525     ^^^^^
 ! EMK
-                  ,chem_opt                                             &
-                  ,gsfcgce_gocart_coupling                              &
+                       ,chem_opt                                   &
+                       ,gsfcgce_gocart_coupling                    &
 #endif
 !NUWRF END
-                  ,f_qg  )
+                       ,f_qg  )
 
 
 !-------------------------------------------------------------------
-      IMPLICIT NONE
+  IMPLICIT NONE
 !-------------------------------------------------------------------
 !
 ! JJS 2/15/2005
 !
-!      INTEGER, INTENT(IN)  ::   ids,ide, jds,jde, kds,kde
-      INTEGER, INTENT(IN)  ::   ims,ime, jms,jme, kms,kme ,             &
-                                its,ite, jts,jte, kts,kte 
-      INTEGER, INTENT(IN)  ::   itimestep
+!  INTEGER,      INTENT(IN   )    ::   ids,ide, jds,jde, kds,kde , &
+  INTEGER,      INTENT(IN   )    ::   ims,ime, jms,jme, kms,kme , &
+                                      its,ite, jts,jte, kts,kte 
+  INTEGER,      INTENT(IN   )    ::   itimestep
   
-      REAL, DIMENSION( ims:ime , kms:kme , jms:jme ), INTENT(INOUT) ::  &
-             th, qv, ql, qr, qi, qs, qg, qh
+  REAL, DIMENSION( ims:ime , kms:kme , jms:jme ),                 &
+        INTENT(INOUT) ::                                          &
+                                                              th, &
+                                                              qv, &
+                                                              ql, &
+                                                              qr, &
+                                                              qi, &
+                                                              qs, &
+                                                              qg, &
+                                                              qh
 
 !NUWRF BEGIN
 #if ( WRF_CHEM == 1)
 ! JJS 20110525 vvvvv
 ! for inline Gocart coupling
-      INTEGER, PARAMETER :: num_go = 14  ! number of the gocart aerosol species
-      REAL, DIMENSION( ims:ime, kms:kme, jms:jme, num_go), intent(in) ::&
-             aero
-      REAL, DIMENSION( ims:ime, kms:kme, jms:jme), intent(out) ::       &
-             icn_diag, nc_diag
-      INTEGER, INTENT(IN) ::   gid
+  INTEGER, PARAMETER :: num_go = 14  ! number of the gocart aerosol species
+  REAL, DIMENSION( ims:ime, kms:kme, jms:jme, num_go), intent(in) :: aero
+  REAL, DIMENSION( ims:ime, kms:kme, jms:jme), intent(out) :: icn_diag, nc_diag
+  INTEGER,      INTENT(IN   )    ::   gid
 ! JJS 20110525 ^^^^^
-      integer, intent(in) :: chem_opt ! EMK
-      integer, intent(in) :: gsfcgce_gocart_coupling ! EMK
+  integer,intent(in) :: chem_opt ! EMK
+  integer,intent(in) :: gsfcgce_gocart_coupling ! EMK
 #endif
 !NUWRF END
 
 !
-      REAL, DIMENSION( ims:ime , kms:kme , jms:jme ), INTENT(IN) ::     &
-             rho, pii, p, dz8w, z, w
+  REAL, DIMENSION( ims:ime , kms:kme , jms:jme ),                 &
+        INTENT(IN   ) ::                                          &
+                                                             rho, &
+                                                             pii, &
+                                                               p, &
+                                                            dz8w, &
+                                                               z, &
+                                                               w
 
 #ifdef EXT_DIAG
-      REAL, DIMENSION( ims:ime , kms:kme , jms:jme ), INTENT(INOUT) ::  &
-             physc, physe, physd, physs, physm, physf,                  &
-             acphysc, acphyse, acphysd, acphyss, acphysm, acphysf,      &
-             preci3d, precs3d, precg3d, prech3d, precr3d
+  REAL, DIMENSION( ims:ime , kms:kme , jms:jme ),                 &
+        INTENT(INOUT) ::                                          &
+                                                           physc, &
+                                                           physe, &
+                                                           physd, &
+                                                           physs, &
+                                                           physm, &
+                                                           physf, &
+                                                           acphysc, &
+                                                           acphyse, &
+                                                           acphysd, &
+                                                           acphyss, &
+                                                           acphysm, &
+                                                           acphysf, &
+                                                         preci3d, &
+                                                         precs3d, &
+                                                         precg3d, &
+                                                         prech3d, &
+                                                         precr3d
 #endif
 
-      REAL, DIMENSION( ims:ime , jms:jme ), INTENT(INOUT) ::            &
-             rainnc,  snownc,  graupelnc,  hailnc,                      &
-             rainncv, snowncv, graupelncv, hailncv, sr
+  REAL, DIMENSION( ims:ime , jms:jme ),                           &
+        INTENT(INOUT) ::                               rainnc,    &
+                                                       rainncv,   &
+                                                       snownc,    &   
+                                                       snowncv,   &
+                                                       sr,        &
+                                                       graupelnc, &
+                                                       graupelncv,&
+                                                       hailnc, &
+                                                       hailncv
 
 !JJS 20140225   for calculation of effective radius of cloud species
-      REAL , DIMENSION( ims:ime , jms:jme ) , INTENT(IN)   :: XLAND
-      REAL, DIMENSION( ims:ime , kms:kme , jms:jme ), INTENT(INOUT) ::  &
-             re_cloud_gsfc, re_rain_gsfc, re_ice_gsfc, re_snow_gsfc,    &
-             re_graupel_gsfc, re_hail_gsfc
+  REAL , DIMENSION( ims:ime , jms:jme ) , INTENT(IN)   :: XLAND
+  REAL, DIMENSION( ims:ime , kms:kme , jms:jme ),                 &
+        INTENT(INOUT) ::                               re_cloud_gsfc, &
+                                                       re_rain_gsfc,  &
+                                                       re_ice_gsfc,   &
+                                                       re_snow_gsfc,  &
+                                                       re_graupel_gsfc, &
+                                                       re_hail_gsfc
 !JJS 20140225  ^^^^^
 
 !+---+-----------------------------------------------------------------+
-      REAL, DIMENSION(ims:ime, kms:kme, jms:jme), INTENT(INOUT)::       &  ! GT
-             refl_10cm
-      LOGICAL, OPTIONAL, INTENT(IN) :: diagflag
-      INTEGER, OPTIONAL, INTENT(IN) :: do_radar_ref
+  REAL, DIMENSION(ims:ime, kms:kme, jms:jme), INTENT(INOUT)::           &  ! GT
+                                                       refl_10cm
+  LOGICAL, OPTIONAL, INTENT(IN) :: diagflag
+  INTEGER, OPTIONAL, INTENT(IN) :: do_radar_ref
 !+---+-----------------------------------------------------------------+
 
-      REAL , DIMENSION( ims:ime , jms:jme ) , INTENT(IN) ::       ht
+  REAL , DIMENSION( ims:ime , jms:jme ) , INTENT(IN) ::       ht
 
-      REAL, INTENT(IN) :: dt_in, grav, rhowater, rhosnow, dx
+  REAL, INTENT(IN   ) ::                                   dt_in, &
+                                                            grav, &
+                                                        rhowater, &
+                                                         rhosnow, &
+                                                              dx 
 
-      LOGICAL, INTENT(IN), OPTIONAL :: F_QG
+  LOGICAL, INTENT(IN), OPTIONAL :: F_QG
 
 !  LOCAL VAR
 
 !
-      INTEGER ::  itaobraun, istatmin, new_ice_sat, id
-      INTEGER ::  improve
+  INTEGER ::  itaobraun, istatmin, new_ice_sat, id
+  INTEGER ::  improve
 
-      INTEGER :: i, j, k, ip, ii, ic
-      INTEGER :: iskip, ih, icount, ibud, i24h 
-      REAL    :: hour
-      REAL    :: dth, dqv, dqrest, dqall, dqall1, rhotot, a1, a2 
+  INTEGER :: i, j, k, ip, ii, ic
+  INTEGER :: iskip, ih, icount, ibud, i24h 
+  REAL    :: hour
+  REAL    :: dth, dqv, dqrest, dqall, dqall1, rhotot, a1, a2 
 
 #ifndef EXT_DIAG
       REAL, DIMENSION( ims:ime , kms:kme , jms:jme ) ::                 &
@@ -283,20 +325,20 @@
              preci3d, precs3d, precg3d, prech3d, precr3d
 #endif
  
-      REAL, DIMENSION(CHUNK, kms:kme):: th2d, qv2d, ql2d, qr2d
-      REAL, DIMENSION(CHUNK, kms:kme):: qi2d, qs2d, qg2d, qh2d
-      REAL, DIMENSION(CHUNK, kms:kme):: rho2d, pii2d, p2d, w2d
-      REAL, DIMENSION(CHUNK, kms:kme):: refc2d, refr2d, refi2d
-      REAL, DIMENSION(CHUNK, kms:kme):: refs2d, refg2d, refh2d
-      REAL, DIMENSION(CHUNK, kms:kme):: physc2d, physe2d, physd2d
-      REAL, DIMENSION(CHUNK, kms:kme):: physs2d, physm2d, physf2d
-      REAL, DIMENSION(CHUNK, kms:kme):: acphysc2d, acphyse2d, acphysd2d
-      REAL, DIMENSION(CHUNK, kms:kme):: acphyss2d, acphysm2d, acphysf2d
-      REAL, DIMENSION(CHUNK) :: xland1d
-      REAL, DIMENSION(CHUNK, kms:kme):: refl_10cm2d
+  REAL, DIMENSION(CHUNK, kms:kme):: th2d, qv2d, ql2d, qr2d
+  REAL, DIMENSION(CHUNK, kms:kme):: qi2d, qs2d, qg2d, qh2d
+  REAL, DIMENSION(CHUNK, kms:kme):: rho2d, pii2d, p2d, w2d
+  REAL, DIMENSION(CHUNK, kms:kme):: refc2d, refr2d, refi2d
+  REAL, DIMENSION(CHUNK, kms:kme):: refs2d, refg2d, refh2d
+  REAL, DIMENSION(CHUNK, kms:kme):: physc2d, physe2d, physd2d
+  REAL, DIMENSION(CHUNK, kms:kme):: physs2d, physm2d, physf2d
+  REAL, DIMENSION(CHUNK, kms:kme):: acphysc2d, acphyse2d, acphysd2d
+  REAL, DIMENSION(CHUNK, kms:kme):: acphyss2d, acphysm2d, acphysf2d
+  REAL, DIMENSION(CHUNK) :: xland1d
+  REAL, DIMENSION(CHUNK, kms:kme):: refl_10cm2d
 #if ( WRF_CHEM == 1)
-      REAL, DIMENSION(CHUNK, kms:kme, num_go):: aero3d
-      REAL, DIMENSION(CHUNK, kms:kme):: icn_diag2d, nc_diag2d
+  REAL, DIMENSION(CHUNK, kms:kme, num_go):: aero3d
+  REAL, DIMENSION(CHUNK, kms:kme):: icn_diag2d, nc_diag2d
 #endif
 
 !-----------------------------------------------------------------------
@@ -310,43 +352,43 @@
 ! itaobraun: 0 for Tao's constantis, 1 for Braun's constants
 !c        if ( itaobraun.eq.1 ) --> betah=0.5*beta=-.46*0.5=-0.23;   cn0=1.e-6
 !c        if ( itaobraun.eq.0 ) --> betah=0.5*beta=-.6*0.5=-0.30;    cn0=1.e-8
-      itaobraun = 0
+   itaobraun = 0
 
 ! Use Steve's new improvement   9/18/2009
 
-      improve = 8
+    improve = 8
 
 !c  new_ice_sat = 0, 1, 2, or 3 
-      new_ice_sat = 9
+    new_ice_sat = 9
 
 !c istatmin
-      istatmin = 180
+    istatmin = 180
 
 !c id = 0  without in-line staticstics
 !c id = 1  with in-line staticstics
-      id = 0
+    id = 0
 
 !c ibud = 0 no calculation of dth, dqv, dqrest and dqall
 !c ibud = 1 yes
-      ibud = 0
+    ibud = 0
 
 !c  set up constants used internally in GCE
 
-      call consat_s ( itaobraun)
+   call consat_s ( itaobraun)
 
 ! calculte fallflux and precipiation in MKS system
 
-      call fall_flux(    dt_in,ql, qr, qi, qs, qg, qh, p,               &
-                         rho, th, pii, z, dz8w, ht, rainnc,             &
-                         rainncv, grav,itimestep,                       &
-                         preci3d, precs3d, precg3d, prech3d, precr3d,   &
-                         snownc, snowncv, sr,                           &
-                         graupelnc, graupelncv,                         &
-                         hailnc, hailncv,                               &
-                         vgc, vgc2,vhc,bhq,                             &
-                         improve,                                       &
-                         ims,ime, jms,jme, kms,kme,                     & ! memory dims
-                         its,ite, jts,jte, kts,kte               )        ! tile   dims
+   call fall_flux(    dt_in,ql, qr, qi, qs, qg, qh, p,        &
+                      rho, th, pii, z, dz8w, ht, rainnc,      &
+                      rainncv, grav,itimestep,                &
+                      preci3d, precs3d, precg3d, prech3d, precr3d,     &
+                      snownc, snowncv, sr,                    &
+                      graupelnc, graupelncv,                  &
+                      hailnc, hailncv,                        &
+                      vgc, vgc2,vhc,bhq,                      &
+                      improve,                                &
+                      ims,ime, jms,jme, kms,kme,              & ! memory dims
+                      its,ite, jts,jte, kts,kte               ) ! tile   dims
 !-----------------------------------------------------------------------
       ! EMK NUWRF...Moved this WRF radar reflectivity initialization to after
       ! fall_flux, as the rhohail and rhograul variables are set in that
@@ -463,35 +505,33 @@
           ENDDO
          enddo
 
-      IF ( min(CHUNK,ite-ii+1) .gt. 0 ) THEN
-      call saticel_s                                                    &
-           ( dt_in, dx, itaobraun, istatmin,                            &
-             new_ice_sat, id, improve,                                  &
-             th2d, qv2d, ql2d, qr2d,                                    &
-             qi2d, qs2d, qg2d, qh2d,                                    &
-             rho2d, pii2d, p2d, w2d,                                    &
-             itimestep, xland1d,                                        &
-             refl_10cm2d, diagflag, do_radar_ref,                       & ! GT added for reflectivity calcs
-!             ids,ide, jds,jde, kds,kde,                                 & ! domain dims
-             ims,ime, jms,jme, kms,kme,                                 & ! memory dims
-             its,ite, jts,jte, kts,kte,                                 & ! tile   dims
+   IF ( min(CHUNK,ite-ii+1) .gt. 0 ) THEN
+   call saticel_s( dt_in, dx, itaobraun, istatmin,               &
+                   new_ice_sat, id, improve,                     &
+                   th2d, qv2d, ql2d, qr2d,                       &
+                   qi2d, qs2d, qg2d, qh2d,                       &
+                   rho2d, pii2d, p2d, w2d,                       & 
+                   itimestep, xland1d,                           &
+                   refl_10cm2d, diagflag, do_radar_ref,         & ! GT added for reflectivity calcs
+!                   ids,ide, jds,jde, kds,kde,                    & ! domain dims
+                   ims,ime, jms,jme, kms,kme,                    & ! memory dims
+                   its,ite, jts,jte, kts,kte,                    & ! tile   dims
 !NUWRF BEGIN
-             refc2d, refr2d, refi2d, refs2d, refg2d, refh2d,            & ! cloud effective radius
-             physc2d, physe2d, physd2d, physs2d, physm2d, physf2d,      &
-             acphysc2d, acphyse2d, acphysd2d, acphyss2d, acphysm2d,     &
-             acphysf2d                                                  &
+                   refc2d, refr2d, refi2d, refs2d, refg2d, refh2d,  & ! cloud effective radius
+                   physc2d, physe2d, physd2d, physs2d, physm2d, physf2d,  &
+                   acphysc2d, acphyse2d, acphysd2d, acphyss2d, acphysm2d, acphysf2d  &
 
 #if ( WRF_CHEM == 1)
 !JJS 20110525     vvvvv
-             ,aero3d, icn_diag2d, nc_diag2d, gid,                       &
+                   ,aero3d, icn_diag2d, nc_diag2d, gid,          &
 !JJS 20110525     ^^^^^
 !EMK
-             chem_opt,                                                  &
-             gsfcgce_gocart_coupling                                    &
+                   chem_opt,                                     &
+                   gsfcgce_gocart_coupling                       &
 #endif   
-             ,ii, j, min(CHUNK,ite-ii+1) )
+                  ,ii, j, min(CHUNK,ite-ii+1))
 !NUWRF END
-      ENDIF
+   ENDIF
 
          do k = kts, kte
           DO ic=1,min(CHUNK,ite-ii+1)
@@ -533,9 +573,9 @@
          ENDIF
       ENDDO ! ip_loop
 
-      END SUBROUTINE gsfcgce_4ice_nuwrf
+  END SUBROUTINE gsfcgce_4ice_nuwrf
 
-      SUBROUTINE fall_flux ( dt, ql, qr, qi, qs, qg, qh, p,       &
+  SUBROUTINE fall_flux ( dt, ql, qr, qi, qs, qg, qh, p,       &
                       rho, th, pi_mks, z, dz8w, topo, rainnc, &
                       rainncv, grav, itimestep,               &
                       preci3d, precs3d, precg3d, prech3d, precr3d,     &
@@ -553,76 +593,76 @@
 ! modified by Tao 11/12/2010
 !-----------------------------------------------------------------------
 
-      IMPLICIT NONE
-      INTEGER, INTENT(IN   )               :: improve,            &
+  IMPLICIT NONE
+  INTEGER, INTENT(IN   )               :: improve,            &
                                           ims,ime, jms,jme, kms,kme,  &
                                           its,ite, jts,jte, kts,kte 
-      INTEGER, INTENT(IN   )               :: itimestep
-      REAL, DIMENSION( ims:ime , kms:kme , jms:jme ), INTENT(INOUT) ::  &
-             ql, qr, qi, qs, qg, qh      
-      REAL, DIMENSION( ims:ime , kms:kme , jms:jme ), INTENT(IN) ::     &
-             th, pi_mks      
+  INTEGER, INTENT(IN   )               :: itimestep
+  REAL,    DIMENSION( ims:ime , kms:kme , jms:jme ),                  &
+           INTENT(INOUT)               :: ql, qr, qi, qs, qg, qh      
+  REAL,    DIMENSION( ims:ime , kms:kme , jms:jme ),                  &
+           INTENT(IN)                  :: th, pi_mks      
 
-      REAL, DIMENSION( ims:ime , jms:jme ), INTENT(INOUT) ::            &
-             rainnc, rainncv,                                           &
-             snownc, snowncv, sr,                                       &
-             graupelnc, graupelncv,                                     &
-             hailnc, hailncv
-      REAL, DIMENSION( ims:ime , kms:kme , jms:jme ), INTENT(IN) ::     &
-             rho, z, dz8w, p     
+  REAL,    DIMENSION( ims:ime , jms:jme ),                            &
+           INTENT(INOUT)               :: rainnc, rainncv,            &
+                                          snownc, snowncv, sr,        &
+                                          graupelnc, graupelncv,      &
+                                          hailnc, hailncv
+  REAL,    DIMENSION( ims:ime , kms:kme , jms:jme ),                  &
+           INTENT(IN   )               :: rho, z, dz8w, p     
 
-      REAL, INTENT(IN) :: dt, grav, vgc, vgc2, vhc, bhq
+  REAL,    INTENT(IN   )               :: dt, grav, vgc, vgc2, vhc, bhq
 
 
-      REAL, DIMENSION( ims:ime , jms:jme ), INTENT(IN) :: topo   
-      REAL, DIMENSION( ims:ime , kms:kme , jms:jme ), INTENT(OUT) ::    &
-             preci3d, precs3d, precg3d, prech3d, precr3d
+  REAL,    DIMENSION( ims:ime , jms:jme ),                            &
+           INTENT(IN   )               :: topo   
+  REAL,    DIMENSION( ims:ime , kms:kme , jms:jme ),                  &
+           INTENT(OUT)               :: preci3d, precs3d, precg3d, prech3d, precr3d
 
 ! temperary vars
  
-      REAL, DIMENSION( kts:kte )     :: fv
-      REAL                           :: tmp1, term0
-      REAL                           :: pptrain, pptsnow,               &
-                                        pptgraul, pptice, ppthail
-      REAL :: qrz, qiz
-      REAL, DIMENSION( kts:kte )     :: qcz, qsz, qgz, qhz,             &
-                                        zz, dzw, prez, rhoz,            &
-                                        orhoz,r00
-      REAL, DIMENSION( kts:kte )     :: csed, rsed, ised, ssed, gsed,   &
-                                        hsed
+  REAL,    DIMENSION( kts:kte )           :: fv
+  REAL                                    :: tmp1, term0
+  REAL                                :: pptrain, pptsnow,        &
+                                         pptgraul, pptice, ppthail
+  REAL :: qrz, qiz
+  REAL,    DIMENSION( kts:kte )       :: qcz, qsz, qgz, qhz,  &
+                                         zz, dzw, prez, rhoz,      &
+                                         orhoz,r00
+  REAL,    DIMENSION( kts:kte )       :: csed, rsed, ised, ssed, gsed, hsed
 
-      REAL, DIMENSION( kts:kte )     :: thz, piz
+  REAL,    DIMENSION( kts:kte )       :: thz, piz
 
-      INTEGER :: k, i, j
+   INTEGER                    :: k, i, j
 !
 
-      REAL, DIMENSION( kts:kte )    :: vtr, vts, vtg, vth, vti
+  REAL, DIMENSION( kts:kte )    :: vtr, vts, vtg, vth, vti
 
-      REAL                          :: dtb, pi, consta, constc, gambp4, &
-                                       gamdp4, gam4pt5, gam4bbar
+  REAL                          :: dtb, pi, consta, constc, gambp4,    &
+                                   gamdp4, gam4pt5, gam4bbar
 
 ! New local variable
-      REAL                          :: y1, y2, vr, vs, vg
-      REAL                          :: vgcr, vgcr2, vscf, vhcr, vhcr2
-      REAL                          :: tair, tairc, fexp
-      REAL                          :: ftns, ftnsQ, ftng, ftngQ
-      REAL                          :: const_vt, const_d, const_m,      &
-                                       bb1, bb2
-      REAL,    DIMENSION(7)         :: aice, vice
-      REAL                          :: ftns0, ftng0
-      REAL                          :: fros, fros0
-      REAL                          :: qhz2,qgz2
+  REAL                          :: y1, y2, vr, vs, vg
+  REAL                          :: vgcr, vgcr2, vscf,   &
+                                   vhcr, vhcr2
+  REAL                          :: tair, tairc, fexp
+  REAL                          :: ftns, ftnsQ, ftng, ftngQ
+  REAL                          :: const_vt, const_d, const_m, bb1, bb2
+  REAL,    DIMENSION(7)         :: aice, vice
+  REAL                          :: ftns0, ftng0
+  REAL                          :: fros, fros0
+  REAL                          :: qhz2,qgz2
 
 !  DATA tslopes/0./, tslopeg/0./
 !  DATA const_vt//, const_d//, const_m//
-      DATA aice/1.e-6, 1.e-5, 1.e-4, 1.e-3, 0.01, 0.1, 1./  ! g/m**3
-      DATA vice/5.,15.,30.,35.,40.,45.,50./  ! cm/s
-      DATA ftns/1./, ftng/1./
+  DATA aice/1.e-6, 1.e-5, 1.e-4, 1.e-3, 0.01, 0.1, 1./  ! g/m**3
+  DATA vice/5.,15.,30.,35.,40.,45.,50./  ! cm/s
+  DATA ftns/1./, ftng/1./
 
 
 !  will be defined later using consat values 
-      REAL     ::     rhowater 
-      REAL     ::     rhosnow 
+   REAL     ::     rhowater 
+   REAL     ::     rhosnow 
 !JJS 20140116  These variables are declared in the beginning of the module.
 !JJS 20140116  No need to declared again here.
 !   REAL     ::     xnor
@@ -631,25 +671,25 @@
 !   REAL     ::     xnog, rhograul
 !
 
-      REAL    , PARAMETER ::                              &
+   REAL    , PARAMETER ::                              &
 !             constb = 0.8, constd = 0.25, o6 = 1./6.,           &
              constb = 0.8, constd = 0.11, o6 = 1./6.,            &
              cdrag = 0.6
-      REAL    , PARAMETER ::     abar = 19.3, bbar = 0.37,           &
-                                 p0 = 1.0e5
-      REAL    , PARAMETER ::     rhoe_s = 1.29
+  REAL    , PARAMETER ::     abar = 19.3, bbar = 0.37,           &
+                                      p0 = 1.0e5
+  REAL    , PARAMETER ::     rhoe_s = 1.29
 
 ! for terminal velocity flux
-      INTEGER             :: min_q, max_q
-      REAL                :: t_del_tv, del_tv, flux, fluxin, fluxout
-      LOGICAL             :: notlast
+  INTEGER                       :: min_q, max_q
+  REAL                          :: t_del_tv, del_tv, flux, fluxin, fluxout
+  LOGICAL                       :: notlast
 
 !-----------------------------------------------------------------------
 !  This program calculates precipitation fluxes due to terminal velocities.
 !-----------------------------------------------------------------------
 
-      dtb=dt
-      pi=acos(-1.)
+   dtb=dt
+   pi=acos(-1.)
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       xnor = tnw*1.0e8
@@ -663,15 +703,15 @@
       xnoh = tnh*1.0e8      
       rhohail = roqh*1000.
 
-      consta=2115.0*0.01**(1-constb)
-!      constc=152.93*0.01**(1-constd)
-      constc=78.63*0.01**(1-constd)
+   consta=2115.0*0.01**(1-constb)
+!   constc=152.93*0.01**(1-constd)
+   constc=78.63*0.01**(1-constd)
 
 !  Gamma function
-      gambp4=gammagce(constb+4.)
-      gamdp4=gammagce(constd+4.)
-      gam4pt5=gammagce(4.5)
-      gam4bbar=gammagce(4.+bbar)
+   gambp4=gammagce(constb+4.)
+   gamdp4=gammagce(constd+4.)
+   gam4pt5=gammagce(4.5)
+   gam4bbar=gammagce(4.+bbar)
 !
 !      cmin=1.e-10
 !
@@ -701,44 +741,44 @@
 !$OMP PRIVATE(notlast) &
 !$OMP SCHEDULE(dynamic)
 
-      j_loop:  do j = jts, jte
-      i_loop:  do i = its, ite
+ j_loop:  do j = jts, jte
+ i_loop:  do i = its, ite
 
-      do k = kts, kte
-        preci3d(i,k,j)=0.
-        precs3d(i,k,j)=0.
-        precg3d(i,k,j)=0.
-        prech3d(i,k,j)=0.
-        precr3d(i,k,j)=0.
-        ised(k)=0.
-        ssed(k)=0.
-        gsed(k)=0.
-        hsed(k)=0.
-        rsed(k)=0.
-      end do
+   do k = kts, kte
+      preci3d(i,k,j)=0.
+      precs3d(i,k,j)=0.
+      precg3d(i,k,j)=0.
+      prech3d(i,k,j)=0.
+      precr3d(i,k,j)=0.
+      ised(k)=0.
+      ssed(k)=0.
+      gsed(k)=0.
+      hsed(k)=0.
+      rsed(k)=0.
+   end do
 
-      pptrain = 0.
-      pptsnow = 0.
-      pptgraul = 0.
-      ppthail = 0.
-      pptice  = 0.
+   pptrain = 0.
+   pptsnow = 0.
+   pptgraul = 0.
+   ppthail = 0.
+   pptice  = 0.
 
-      ! in MKS system
-      do k = kts, kte
-        qcz(k)=ql(i,k,j)             !Di
-        qsz(k)=qs(i,k,j)
-        qhz(k)=qh(i,k,j)
-        rhoz(k)=rho(i,k,j)
-        r00(k)=rhoz(k)*0.001         !rho in cgs
-        thz(k)=th(i,k,j)
-        piz(k)=pi_mks(i,k,j)
-        orhoz(k)=1./rhoz(k)
-        prez(k)=p(i,k,j)
-        fv(k)=sqrt(rhoe_s/rhoz(k))
-!        fv(k)=sqrt(rho(i,1,j)/rhoz(k))
-        zz(k)=z(i,k,j)
-        dzw(k)=dz8w(i,k,j)
-      enddo !k
+   ! in MKS system
+   do k = kts, kte
+      qcz(k)=ql(i,k,j)             !Di
+      qsz(k)=qs(i,k,j)
+      qhz(k)=qh(i,k,j)
+      rhoz(k)=rho(i,k,j)
+      r00(k)=rhoz(k)*0.001         !rho in cgs
+      thz(k)=th(i,k,j)
+      piz(k)=pi_mks(i,k,j)
+      orhoz(k)=1./rhoz(k)
+      prez(k)=p(i,k,j)
+      fv(k)=sqrt(rhoe_s/rhoz(k))
+!      fv(k)=sqrt(rho(i,1,j)/rhoz(k))
+      zz(k)=z(i,k,j)
+      dzw(k)=dz8w(i,k,j)
+   enddo !k
 
       DO k = kts, kte
          qgz(k)=qg(i,k,j)
@@ -747,10 +787,10 @@
 !
 !-- rain
 !
-      t_del_tv=0.
-      del_tv=dtb
-      notlast=.true.
-      DO while (notlast)
+    t_del_tv=0.
+    del_tv=dtb
+    notlast=.true.
+    DO while (notlast)
 !
       min_q=kte
       max_q=kts-1
@@ -830,16 +870,16 @@
       else
          notlast=.false.
       endif
-      ENDDO ! DO WHILE
+    ENDDO ! DO WHILE
 
 !
 !-- snow
 !
-      t_del_tv=0.
-      del_tv=dtb
-      notlast=.true.
+    t_del_tv=0.
+    del_tv=dtb
+    notlast=.true.
 
-      DO while (notlast)
+    DO while (notlast)
 !
       min_q=kte
       max_q=kts-1
@@ -931,17 +971,17 @@
          notlast=.false.
       endif
 
-      ENDDO
+    ENDDO
 
 !
 !--- graupel
 !
 
-      t_del_tv=0.
-      del_tv=dtb
-      notlast=.true.
+    t_del_tv=0.
+    del_tv=dtb
+    notlast=.true.
 !
-      DO while (notlast)
+    DO while (notlast)
 !
       min_q=kte
       max_q=kts-1
@@ -1030,16 +1070,16 @@
          notlast=.false.
       endif
 !
-      ENDDO
+    ENDDO
 !
 !--- hail
 !
 
-      t_del_tv=0.
-      del_tv=dtb
-      notlast=.true.
+    t_del_tv=0.
+    del_tv=dtb
+    notlast=.true.
 !
-      DO while (notlast)
+    DO while (notlast)
 !
       min_q=kte
       max_q=kts-1
@@ -1106,17 +1146,17 @@
          notlast=.false.
       endif
 !
-      ENDDO
+    ENDDO
 
 !
 !-- cloud ice  (03/21/02) follow Vaughan T.J. Phillips at GFDL
 !
 
-      t_del_tv=0.
-      del_tv=dtb
-      notlast=.true.
+    t_del_tv=0.
+    del_tv=dtb
+    notlast=.true.
 !
-      DO while (notlast)
+    DO while (notlast)
 !
       min_q=kte
       max_q=kts-1
@@ -1196,15 +1236,15 @@
          notlast=.false.
       endif
 !
-      ENDDO !notlast
+   ENDDO !notlast
 
-      do k = kts, kte
+   do k = kts, kte
             preci3d(i,k,j)=ised(k)
             precs3d(i,k,j)=ssed(k)
             precg3d(i,k,j)=gsed(k)
             prech3d(i,k,j)=hsed(k)
             precr3d(i,k,j)=rsed(k)
-      end do
+   end do
 
 !   prnc(i,j)=prnc(i,j)+pptrain
 !   psnowc(i,j)=psnowc(i,j)+pptsnow
@@ -1215,51 +1255,50 @@
 !   write(6,*) 'i=',i,' j=',j,'   ', pptrain, pptsnow, pptgraul, pptice
 !   call flush(6)
 
-      snowncv(i,j) = pptsnow
-      snownc(i,j) = snownc(i,j) + pptsnow
-      graupelncv(i,j) = pptgraul
-      graupelnc(i,j) = graupelnc(i,j) + pptgraul 
-      hailncv(i,j) = ppthail
-      hailnc(i,j) = hailnc(i,j) + ppthail
-      RAINNCV(i,j) = pptrain + pptsnow + pptgraul + pptice + ppthail
-      RAINNC(i,j)  = RAINNC(i,j) + pptrain + pptsnow + pptgraul + pptice + ppthail
-      sr(i,j) = 0.
-      if (RAINNCV(i,j) .gt. 0.) sr(i,j) = (pptsnow + pptgraul + pptice + ppthail) / RAINNCV(i,j) 
+   snowncv(i,j) = pptsnow
+   snownc(i,j) = snownc(i,j) + pptsnow
+   graupelncv(i,j) = pptgraul
+   graupelnc(i,j) = graupelnc(i,j) + pptgraul 
+   hailncv(i,j) = ppthail
+   hailnc(i,j) = hailnc(i,j) + ppthail
+   RAINNCV(i,j) = pptrain + pptsnow + pptgraul + pptice + ppthail
+   RAINNC(i,j)  = RAINNC(i,j) + pptrain + pptsnow + pptgraul + pptice + ppthail
+   sr(i,j) = 0.
+   if (RAINNCV(i,j) .gt. 0.) sr(i,j) = (pptsnow + pptgraul + pptice + ppthail) / RAINNCV(i,j) 
 
-      ENDDO i_loop
-      ENDDO j_loop
+  ENDDO i_loop
+  ENDDO j_loop
 
  
-      END SUBROUTINE fall_flux
+  END SUBROUTINE fall_flux
 
 !-----------------------------------------------------------------------
 !c Correction of negative values  
-      SUBROUTINE negcor ( X, rho, dz8w,                                 &
-                          ims,ime, jms,jme, kms,kme,                    & ! memory dims
-                          itimestep, ics,                               &
-                          its,ite, jts,jte, kts,kte               )       ! tile   dims
+   SUBROUTINE negcor ( X, rho, dz8w,                         &
+                      ims,ime, jms,jme, kms,kme,              & ! memory dims
+                      itimestep, ics,                         &
+                      its,ite, jts,jte, kts,kte               ) ! tile   dims
 !-----------------------------------------------------------------------
-      REAL, DIMENSION( ims:ime , kms:kme , jms:jme ), INTENT(INOUT) ::  &
-             X   
-      REAL, DIMENSION( ims:ime , kms:kme , jms:jme ), INTENT(IN   ) ::  &
-             rho, dz8w  
-      integer, INTENT(IN   ) ::                                         &
-             itimestep, ics 
+  REAL, DIMENSION( ims:ime , kms:kme , jms:jme ),                 &
+        INTENT(INOUT) ::                                     X   
+  REAL, DIMENSION( ims:ime , kms:kme , jms:jme ),                 &
+        INTENT(IN   ) ::                              rho, dz8w  
+  integer, INTENT(IN   ) ::                           itimestep, ics 
 
 !c Local variables
 !  REAL, DIMENSION( kts:kte ) ::  Y1, Y2
-      REAL   ::   A0, A1, A2
+  REAL   ::   A0, A1, A2
 
-      A1=0.
-      A2=0.
-      do k=kts,kte
-        do j=jts,jte
-          do i=its,ite
-            A1=A1+max(X(i,k,j), 0.)*rho(i,k,j)*dz8w(i,k,j)
-            A2=A2+max(-X(i,k,j), 0.)*rho(i,k,j)*dz8w(i,k,j)
-          enddo
+  A1=0.
+  A2=0.
+  do k=kts,kte
+     do j=jts,jte
+        do i=its,ite
+        A1=A1+max(X(i,k,j), 0.)*rho(i,k,j)*dz8w(i,k,j)
+        A2=A2+max(-X(i,k,j), 0.)*rho(i,k,j)*dz8w(i,k,j)
         enddo
-      enddo
+     enddo
+  enddo
 
 !  A1=0.0
 !  A2=0.0
@@ -1268,52 +1307,52 @@
 !     A2=A2+Y2(k)
 !  enddo
 
-      A0=0.0
+  A0=0.0
 
-      if (A1.NE.0.0.and.A1.GT.A2) then 
-        A0=(A1-A2)/A1
+  if (A1.NE.0.0.and.A1.GT.A2) then 
+     A0=(A1-A2)/A1
 
-      if (mod(itimestep,540).eq.0) then
-        if (ics.eq.1) then
-          write(61,*) 'kms=',kms,'  kme=',kme,'  kts=',kts,'  kte=',kte
-          write(61,*) 'jms=',jms,'  jme=',jme,'  jts=',jts,'  jte=',jte 
-          write(61,*) 'ims=',ims,'  ime=',ime,'  its=',its,'  ite=',ite 
-        endif 
-        if (ics.eq.1) then
-          write(61,*) 'qv timestep=',itimestep
-          write(61,*) '  A1=',A1,'   A2=',A2,'   A0=',A0
-        else if (ics.eq.2) then
-          write(61,*) 'ql timestep=',itimestep
-          write(61,*) '  A1=',A1,'   A2=',A2,'   A0=',A0
-        else if (ics.eq.3) then
-          write(61,*) 'qr timestep=',itimestep
-          write(61,*) '  A1=',A1,'   A2=',A2,'   A0=',A0
-        else if (ics.eq.4) then
-          write(61,*) 'qi timestep=',itimestep
-          write(61,*) '  A1=',A1,'   A2=',A2,'   A0=',A0
-        else if (ics.eq.5) then
-          write(61,*) 'qs timestep=',itimestep
-          write(61,*) '  A1=',A1,'   A2=',A2,'   A0=',A0
-        else if (ics.eq.6) then
-          write(61,*) 'qg timestep=',itimestep
-          write(61,*) '  A1=',A1,'   A2=',A2,'   A0=',A0
-        else
-          write(61,*) 'wrong cloud specieis number'
-        endif 
-      endif 
+  if (mod(itimestep,540).eq.0) then
+     if (ics.eq.1) then
+        write(61,*) 'kms=',kms,'  kme=',kme,'  kts=',kts,'  kte=',kte
+        write(61,*) 'jms=',jms,'  jme=',jme,'  jts=',jts,'  jte=',jte 
+        write(61,*) 'ims=',ims,'  ime=',ime,'  its=',its,'  ite=',ite 
+     endif 
+     if (ics.eq.1) then
+         write(61,*) 'qv timestep=',itimestep
+         write(61,*) '  A1=',A1,'   A2=',A2,'   A0=',A0
+     else if (ics.eq.2) then
+             write(61,*) 'ql timestep=',itimestep
+             write(61,*) '  A1=',A1,'   A2=',A2,'   A0=',A0
+     else if (ics.eq.3) then
+             write(61,*) 'qr timestep=',itimestep
+             write(61,*) '  A1=',A1,'   A2=',A2,'   A0=',A0
+     else if (ics.eq.4) then
+             write(61,*) 'qi timestep=',itimestep
+             write(61,*) '  A1=',A1,'   A2=',A2,'   A0=',A0
+     else if (ics.eq.5) then
+             write(61,*) 'qs timestep=',itimestep
+             write(61,*) '  A1=',A1,'   A2=',A2,'   A0=',A0
+     else if (ics.eq.6) then
+             write(61,*) 'qg timestep=',itimestep
+             write(61,*) '  A1=',A1,'   A2=',A2,'   A0=',A0
+     else
+             write(61,*) 'wrong cloud specieis number'
+     endif 
+  endif 
 
-      do k=kts,kte
+     do k=kts,kte
         do j=jts,jte
            do i=its,ite
            X(i,k,j)=A0*AMAX1(X(i,k,j), 0.0)
            enddo
         enddo
-      enddo
-      endif
+     enddo
+  endif
 
-      END SUBROUTINE negcor
+  END SUBROUTINE negcor
 
-      SUBROUTINE consat_s ( itaobraun)  
+  SUBROUTINE consat_s ( itaobraun)  
 
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !                                                                      c
@@ -1347,21 +1386,21 @@
 !   July 25 2010                                                       c
 !   Tao November 12 2010                                               c
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-      IMPLICIT NONE
+  IMPLICIT NONE
 
 !        itaobraun=0   ! see Tao and Simpson (1993)
 !        itaobraun=1   ! see Tao et al. (2003)
 
-      integer ::  itaobraun
-      real    :: cn0
+ integer ::  itaobraun
+ real    :: cn0
 
-      integer k
-      real :: ga3, ga4, ga5, ga7, ga8, ga9, ga3g2, ga4g2, ga5g2, ga6d
-      real :: ga3h, ga4h, ga5hh, bc1, dc1, esc, egs, erc, amc, ehs, ehg
-      real :: ehw, ehi, ehr, sc13, ga6, ga5gh2, egc, cpi2, grvt, tca, dwv
-      real :: dva, amw, ars, rw, cw, ci, cd1, cd2, ga3b, ga4b, ga6b, ga5bh
-      real :: ga3g, ga4g, ga5gh, ga3d, ga4d, ga5dh, ac1, ac2, ac3, cc1, eri
-      real :: ami, ESR, eiw, ui50, ri50, cmn, y1, egi, egr, apri, bpri
+ integer k
+ real :: ga3, ga4, ga5, ga7, ga8, ga9, ga3g2, ga4g2, ga5g2, ga6d      
+ real :: ga3h, ga4h, ga5hh, bc1, dc1, esc, egs, erc, amc, ehs, ehg
+ real :: ehw, ehi, ehr, sc13, ga6, ga5gh2, egc, cpi2, grvt, tca, dwv
+ real :: dva, amw, ars, rw, cw, ci, cd1, cd2, ga3b, ga4b, ga6b, ga5bh
+ real :: ga3g, ga4g, ga5gh, ga3d, ga4d, ga5dh, ac1, ac2, ac3, cc1, eri
+ real :: ami, ESR, eiw, ui50, ri50, cmn, y1, egi, egr, apri, bpri
 
 !JJS 1/3/2008  vvvvv
 !JJS   the following common blocks have been moved to the top of
@@ -1792,7 +1831,7 @@
       rn232   = rn232 * sc13
       rn332   = rn332 * sc13
 
-      END SUBROUTINE consat_s 
+  END SUBROUTINE consat_s 
 
 !JJS
 !JJS      REAL FUNCTION GAMMA(X)
@@ -1802,18 +1841,18 @@
 !JJS      END
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !JJS      real function GAMMLN (xx)
-      real function gammagce (xx)
+  real function gammagce (xx)
 !**********************************************************************
-      implicit none
+  implicit none
  
-      real*8 cof(6),stp,half,one,fpf,x,tmp,ser
-      data cof,stp /  76.18009173,-86.50532033,24.01409822, &
-            -1.231739516,.120858003e-2,-.536382e-5, 2.50662827465 /
-      data half,one,fpf / .5, 1., 5.5 /
+  real*8 cof(6),stp,half,one,fpf,x,tmp,ser
+  data cof,stp /  76.18009173,-86.50532033,24.01409822, &
+     -1.231739516,.120858003e-2,-.536382e-5, 2.50662827465 /
+  data half,one,fpf / .5, 1., 5.5 /
 !
-      real xx
-      real gammln
-      integer j
+  real xx
+  real gammln
+  integer j
 
       x=xx-one
       tmp=x+fpf
@@ -1828,10 +1867,10 @@
       gammagce=exp(gammln)
 !JJS
 
-      END FUNCTION gammagce
+ END FUNCTION gammagce
 
 !DIR$ ATTRIBUTES FORCEINLINE :: sgmap
-      SUBROUTINE sgmap(isg,qcs,qcg,qcg2,qch,qch2,r00,tairc,ftnsg)
+  SUBROUTINE sgmap(isg,qcs,qcg,qcg2,qch,qch2,r00,tairc,ftnsg)
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 ! compute base snow/graupel intercept scaling factor - ftnsg
 ! isg -- flag 
@@ -1841,18 +1880,18 @@
 ! tns is the actual intercept
 !
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-      IMPLICIT NONE
+  IMPLICIT NONE
 
 !      common/size/ tnw,tns,tng,roqs,roqg,roqr  !defined in the beginning of the module
-      integer, intent(in)  :: isg
+  integer, intent(in)  :: isg
 !  integer, intent(in)  :: i, j, k
 !  INTEGER, INTENT(IN)  :: ims,ime, jms,jme, kms,kme,  &
 !                          its,ite, jts,jte, kts,kte
-      real,    intent(in)  :: r00, tairc
+  real,    intent(in)  :: r00, tairc
 !  real,    DIMENSION( ims:ime, jms:jme, kms:kme ), intent(in)  :: qcs,qcg, qch
 !  real,    DIMENSION( its:ite, jts:jte, kts:kte ), intent(in)  :: qcs,qcg, qch
-      real,    intent(in)  :: qcs,qcg,qcg2,qch,qch2
-      real,    intent(out) :: ftnsg
+  real,    intent(in)  :: qcs,qcg,qcg2,qch,qch2
+  real,    intent(out) :: ftnsg
 
   
 ! LOCAL variables
@@ -1864,30 +1903,30 @@
 !  real ::  xg,grp11,grp00,dgrp11,dgrp00,gexp11,gexp00,gtt,   &
 !                gtexp,gbase,tslopeg,dgrpmin, glim
 
-      real :: taird, qsg, qsg1, xx, fexp  !, cpi, cmin Di
-      real :: ftnsT, sno1, dsno1, sexp1, ftnsQ, tnsmax, densno
-      real :: ftngT, grp1, dgrp1, gexp1, ftngQ, tngmax
-      real :: hx, gx, hgx
-      real :: kk
-      real :: hai2, dhai1
+  real :: taird, qsg, qsg1, xx, fexp  !, cpi, cmin Di
+  real :: ftnsT, sno1, dsno1, sexp1, ftnsQ, tnsmax, densno
+  real :: ftngT, grp1, dgrp1, gexp1, ftngQ, tngmax
+  real :: hx, gx, hgx
+  real :: kk
+  real :: hai2, dhai1
 !  CPI=4.*ATAN(1.)
 !  cmin=1.e-20  !4ice
 
-      ftnsg=1.
+  ftnsg=1.
 
 !  if (isg.eq.1.or.isg.eq.3) qsg=qcs(i,k,j)
 !  if (isg.eq.2.) qsg = qcg(i,k,j)  
-      if (isg.eq.1.or.isg.eq.3) qsg=qcs
+  if (isg.eq.1.or.isg.eq.3) qsg=qcs
 !NUWRF EMK...Fix options 2 and 4.
-      if (isg.eq.2) qsg = qcg
-      if (isg.eq.4) qsg = qch
+  if (isg.eq.2) qsg = qcg
+  if (isg.eq.4) qsg = qch
 
-      if (qsg .gt. cmin) then
+  if (qsg .gt. cmin) then
       
-      qsg1=qsg*r00*1.e6
+     qsg1=qsg*r00*1.e6
 
 !     if (isg.eq.1) then                          !snow
-      if(isg.eq.1.or.isg.eq.3)then  !snow 4ice
+     if(isg.eq.1.or.isg.eq.3)then  !snow 4ice
         taird=min(0.,max(stt,tairc)+0.0)
         ftnsT=exp(-1.*tslopes*taird)
         sno1=sno11
@@ -1946,7 +1985,7 @@
              tngmax=r00*qsg/dgrpmin4
              if (ftnsg*tng.gt.tngmax) ftnsg=tngmax/tng
 
-      elseif(isg.eq.4)then  !hail
+	elseif(isg.eq.4)then  !hail
              hai2=hai00
              if(tairc.le.htt0.and.tairc.ge.htt1) &  !fin18
                 hai2=hai11+(hai00-hai11)*((tairc-htt1)/(htt0-htt1))**haixp   !fin18
@@ -1955,50 +1994,50 @@
              if(qsg1.ge.hai2)    &
                 ftnsg=1.0-0.80*min(max((qsg1-hai2)/dhai1,0.),1.) !  fin16
 
-      endif !isg
+     endif !isg
 
-      endif !qsg
+  endif !qsg
 
-      end subroutine sgmap
+  end subroutine sgmap
 
 !     compute fall speed of cloud rain and ice
-      SUBROUTINE vqrqi(isg,r00,fv,qri,ql,tair,ww1)
+  SUBROUTINE vqrqi(isg,r00,fv,qri,ql,tair,ww1)
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 ! compute fall speed of cloud rain and ice
 ! isg=1, for rain
 ! isg=2, for ice
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-      implicit none
+  implicit none
 
-      integer, intent(in) :: isg
-      real, intent(in) :: r00, fv,qri,ql,tair
-      real, intent(inout) :: ww1 
+  integer, intent(in) :: isg
+  real, intent(in) :: r00, fv,qri,ql,tair
+  real, intent(inout) :: ww1 
 
 ! LOCAL variables
-      integer :: ic 
-      real  :: y1,vr,vs,vg
-      real  :: const_vt, const_d, const_m !cpi, cmin Di
-      real  :: bb1, bb2,ice_fall
-      real  :: bin_factor, ftnw, ftnwmin
-      real, dimension(7) ::  aice, vice
-      data aice/1.e-6, 1.e-5, 1.e-4, 1.e-3, 0.01, 0.1, 1./
-      data vice/5,15,30,35,40,45,50/
+  integer :: ic 
+  real  :: y1,vr,vs,vg
+  real  :: const_vt, const_d, const_m !cpi, cmin Di
+  real  :: bb1, bb2,ice_fall
+  real  :: bin_factor, ftnw, ftnwmin
+  real, dimension(7) ::  aice, vice
+  data aice/1.e-6, 1.e-5, 1.e-4, 1.e-3, 0.01, 0.1, 1./
+  data vice/5,15,30,35,40,45,50/
 
 !  cmin=1.e-40
 !  CPI=4.*ATAN(1.)
-      ice_fall=0.
-      const_vt=1.49e4
-      const_d=11.9
-      const_m=1./5.38e7
+     ice_fall=0.
+     const_vt=1.49e4
+     const_d=11.9
+     const_m=1./5.38e7
 
-      y1=r00*qri
-      ww1=0.
+  y1=r00*qri
+  ww1=0.
 
-      if (y1 .gt. cmin) then
+  if (y1 .gt. cmin) then
 
-      if (isg.eq.1) then                             !  rain
+    if (isg.eq.1) then                             !  rain
 
-         ftnw=1.                                                       
+       ftnw=1.                                                       
            if(ql.lt.cmin .and. tair .gt. t0)then                      
              bin_factor=0.11*(1000.*qri)**(-1.27) + 0.98      
              bin_factor=min(bin_factor, 1.30)       
@@ -2014,7 +2053,7 @@
                ww1=max(fv*vr, 0.e0)
 
 
-      else if (isg.eq.2) then                         ! cloud ice
+    else if (isg.eq.2) then                         ! cloud ice
 
             y1=1.e6*r00*qri                            ! to g/m**3
 
@@ -2026,41 +2065,40 @@
                   ww1=ww1*100. !cm/s
                   if (ww1 .gt. 50.) ww1=50.               ! SLang
             endif  !y1
-      endif  !isg
-      endif !y1
+    endif  !isg
+  endif !y1
 
-      end subroutine vqrqi
+  end subroutine vqrqi
 
-      SUBROUTINE saticel_s (dt, dx, itaobraun, istatmin,                &
-                       new_ice_sat, id, improve,                        &
-                       ptwrf, qvwrf, qlwrf, qrwrf,                      &
-                       qiwrf, qswrf, qgwrf, qhwrf,                      &
-                       rho_mks, pi_mks, p0_mks, w_mks,                  &
-                       itimestep, xland,                                &
-                       refl_10cm, diagflag, do_radar_ref,               & ! GT added for reflectivity calcs
-!                       ids,ide, jds,jde, kds,kde,                       &
-                       ims,ime, jms,jme, kms,kme,                       &
-                       its,ite, jts,jte, kts,kte,                       &
+  SUBROUTINE saticel_s (dt, dx, itaobraun, istatmin,                   &
+                       new_ice_sat, id, improve,                       &
+                       ptwrf, qvwrf, qlwrf, qrwrf,                     &
+                       qiwrf, qswrf, qgwrf, qhwrf,                     &
+                       rho_mks, pi_mks, p0_mks, w_mks,                 &
+                       itimestep, xland,                               &
+                       refl_10cm, diagflag, do_radar_ref,              & ! GT added for reflectivity calcs
+!                       ids,ide, jds,jde, kds,kde,                      &
+                       ims,ime, jms,jme, kms,kme,                      &
+                       its,ite, jts,jte, kts,kte,                      &
 !NUWRF BEGIN
-                       re_cloud_gsfc, re_rain_gsfc, re_ice_gsfc,        &
-                       re_snow_gsfc, re_graupel_gsfc, re_hail_gsfc,     & ! cloud effective radius
-                       physc, physe, physd, physs, physm, physf,        &
-                       acphysc, acphyse, acphysd, acphyss, acphysm,     &
-                       acphysf                                          &
+                       re_cloud_gsfc, re_rain_gsfc, re_ice_gsfc,       &
+                       re_snow_gsfc, re_graupel_gsfc, re_hail_gsfc,    & ! cloud effective radius
+                       physc, physe, physd, physs, physm, physf,       &
+                       acphysc, acphyse, acphysd, acphyss, acphysm, acphysf &
 #if ( WRF_CHEM == 1)
 !JJS 20110525 vvvvv
                        ,aero, icn_diag, nc_diag, gid,                   &
 !JJS 20110525 ^^^^^
 ! EMK
-                       chem_opt,                                        &
-                       gsfcgce_gocart_coupling                          &
+                       chem_opt,                                       &
+                       gsfcgce_gocart_coupling                        &
 #endif
-                       ,ii,j,irestrict )
+                       ,ii,j,irestrict)
 !NUWRF END
 
 !-----------------------------------------------------------------------
 !  USE module_dm
-      IMPLICIT NONE
+  IMPLICIT NONE
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !                                                                         c
 !   History:                                                              c
@@ -2142,63 +2180,62 @@
 !
 
 !cc   using scott braun's way for pint, pidep computations
-      INTEGER, INTENT(IN   ) :: itaobraun, improve, new_ice_sat
-      integer, intent(in)  ::   id
-      integer, intent(in)  ::   itimestep,istatmin  
-      real, intent(in)     ::   dt  ! timestep (second)
-      real, intent(in)     ::   dx  ! grid resolution (meters)
-      real     ::   thresh_evap
+  INTEGER, INTENT(IN   ) :: itaobraun, improve, new_ice_sat
+  integer, intent(in)  ::   id
+  integer, intent(in)  ::   itimestep,istatmin  
+  real, intent(in)     ::   dt  ! timestep (second)
+  real, intent(in)     ::   dx  ! grid resolution (meters)
+  real     ::   thresh_evap
 !cc
 
 !JJS 20090623 vvvvv
-!      integer, intent(in) :: ids,ide,jds,jde,kds,kde
-      integer, intent(in) :: ims,ime,jms,jme,kms,kme
-      integer, intent(in) :: its,ite,jts,jte,kts,kte
-      integer, intent(in) :: ii,j,irestrict ! global i-index inside local i-loops: ii+i-1
-      integer i, k, kp     
+!  integer, intent(in) :: ids,ide,jds,jde,kds,kde
+  integer, intent(in) :: ims,ime,jms,jme,kms,kme
+  integer, intent(in) :: its,ite,jts,jte,kts,kte
+  integer, intent(in) :: ii,j,irestrict ! global i-index inside local i-loops: ii+i-1
+  integer i, k, kp     
 
-      real, dimension(CHUNK) :: afcp, alvr, ascp, avcp, rp0, pi0, pir,  &
-                                pr0, r00, rrs, rrq, fv0, fvs, cp409,    &
-                                rr0, zrr, zsr, zgr, zhr,                &
-                                cp580, cs580, cv409, vscf, vgcf, vgcf2, &
-                                vhcr, dwvp, r3f, r4f, r5f, r6f, &
-                                r12r, r14f ,r14f2, r15af, r15af2, r15f, &
-                                r18r,                                   &
-                                r22f, r25rt, r32rt, r331r, r332rf,      &
-                                r34f
+  real, dimension(CHUNK) :: afcp, alvr, ascp, avcp, rp0, pi0, pir,  &
+                            pr0, r00, rrs, rrq, fv0, fvs, cp409, &
+                            rr0, zrr, zsr, zgr, zhr, &
+                            cp580, cs580, cv409, vscf, vgcf, vgcf2, &
+                            vhcr, dwvp, r3f, r4f, r5f, r6f, &
+                            r12r, r14f ,r14f2, r15af, r15af2, r15f, r18r, &
+                            r22f, r25rt, r32rt, r331r, r332rf, &
+                            r34f
 
-      real :: bg3, bg3_2, bgh5, bgh5_2, bs3 ,bs6, bsh5, bw3 ,bw6 ,bwh5, &
+  real :: bg3, bg3_2, bgh5, bgh5_2, bs3 ,bs6, bsh5, bw3 ,bw6 ,bwh5, &
           cmin, cmin1, cmin2, d2t, del, f2 ,f3, ft, qb0, r25a, r_nci, &
           sccc, sddd, seee, sfff, smmm, ssss, tb0, temp, ucog ,ucog2, &
           ucor ,ucos, ucoh, uwet, rdt, bnd1, c_nci, &
           r10t, r20t, r23t
 
-      real :: a_1, a_2, a_3, a_4
-      real :: a_11, a_22, a_33, a_44
-      real :: zdry, zwet, zwet0
-      real :: vap_frac
+  real :: a_1, a_2, a_3, a_4
+  real :: a_11, a_22, a_33, a_44
+  real :: zdry, zwet, zwet0
+  real :: vap_frac
 !JJS 20090623 ^^^^^
 
-      real, dimension (CHUNK, kts:kte) ::  fv
-      real, dimension (CHUNK, kts:kte) ::  dpt, dqv
-      real, dimension (CHUNK, kts:kte) ::  qcl, qrn,             &
+  real, dimension (CHUNK, kts:kte) ::  fv
+  real, dimension (CHUNK, kts:kte) ::  dpt, dqv
+  real, dimension (CHUNK, kts:kte) ::  qcl, qrn,             &
                                        qci, qcs, qcg, qch
-      real, dimension (CHUNK, kts:kte) ::  qsz, qgz,qhz
+  real, dimension (CHUNK, kts:kte) ::  qsz, qgz,qhz
 !JJS
-      real, dimension (CHUNK, kms:kme), INTENT(INOUT) ::                &
-                                                   ptwrf, qvwrf,        &
-                                                   qlwrf, qrwrf,        &
-                                                   qiwrf, qswrf,        &
+  real, dimension (CHUNK, kms:kme), INTENT(INOUT)                       &
+                                               ::  ptwrf, qvwrf,       &
+                                                   qlwrf, qrwrf,       &
+                                                   qiwrf, qswrf,       &
                                                    qgwrf, qhwrf
 
 !JJS in MKS
-      real, dimension (CHUNK, kms:kme), INTENT(IN   ) ::                &
-                                                  rho_mks,              &
-                                                  pi_mks,               &
-                                                  p0_mks,               &
+  real, dimension (CHUNK, kms:kme), INTENT(IN   )                      &
+                                              ::  rho_mks,            &
+                                                  pi_mks,             &
+                                                  p0_mks,             &
                                                   w_mks
 !JJS      COMMON /BADV/
-      real, dimension (CHUNK) ::                                        &
+  real, dimension (CHUNK) ::                                  &              
            vg,      zg,       &
            ps,      pg,       &
           prn,     psn,       &
@@ -2216,7 +2253,7 @@
         asss
 
 !JJS      COMMON/BSAT/
-     real, dimension (CHUNK) ::        &
+  real, dimension (CHUNK) ::        &
         praut,   pracw,       &
          psfw,    psfi,       &
         dgacs,   dgacw,       &
@@ -2232,7 +2269,7 @@
           egs
 
 !JJS      COMMON/BSAT1/
-      real, dimension (CHUNK) ::        &
+  real, dimension (CHUNK) ::        &
            pt,      qv,       &
            qc,      qr,       &
            qi,      qs,       &
@@ -2251,7 +2288,7 @@
        
 
 !JJS      COMMON/BSAT2H/
-      real, dimension (CHUNK) ::        &
+  real, dimension (CHUNK) ::        &
          phfr,phmlt,                          & !4ice
          dhacw,qhacw,dhacr,qhacr,whacr,       & !4ice
          dhaci,whaci,dhacs,phacs,whacs,       & !4ice
@@ -2259,43 +2296,43 @@
          pvaph,primh,scv,dwv,tca                !4ice
 
 !JJS      COMMON/B5/ 
-      real, dimension (CHUNK,kts:kte) ::  rho !only in satice in cgs
+  real, dimension (CHUNK,kts:kte) ::  rho !only in satice in cgs
 
 !JJS      COMMON/B6/
-      real, dimension (CHUNK, kts:kte) ::  p0, pi, f0, ww1
-      real, dimension (CHUNK, kts:kte) ::    & 
+  real, dimension (CHUNK, kts:kte) ::  p0, pi, f0, ww1
+  real, dimension (CHUNK, kts:kte) ::    & 
            fd,      fe,           &
            st,      sv,           &
            sq,      sc,           &
            se,     sqa
 
 !JJS      COMMON/BI/ IT(its:ite,jts:jte), ICS(its:ite,jts:jte,4)
-      integer, dimension (CHUNK) ::        it  
-      integer, dimension (CHUNK, 4) ::    ics 
+  integer, dimension (CHUNK) ::        it  
+  integer, dimension (CHUNK, 4) ::    ics 
 
-      integer :: i24h
-      real :: r2is, r2ig, r2ih
+  integer :: i24h
+  real :: r2is, r2ig, r2ih
   
 
 !JJS      COMMON/MICRO/
-      real, dimension (CHUNK, kms:kme), INTENT(INOUT)  ::  &
+  real, dimension (CHUNK, kms:kme), INTENT(INOUT)  ::  &
           physc,   physe,   physd,                  &
           physs,   physm,   physf,                  &
           acphysc,   acphyse,   acphysd,            &
           acphyss,   acphysm,   acphysf
 
 ! EMK NUWRF
-      real, dimension(CHUNK, kts:kte) :: dbz
+  real, dimension(CHUNK, kts:kte) :: dbz
 
 !JJS  9/30/2009 for Steve's new improvement
 
-      integer  ::  ihalmos
-      real     ::  xnsplnt, xmsplnt
-      real     ::  hmtemp1, hmtemp2, hmtemp3, hmtemp4
-      real     ::  ftnw, ftnwmin
-      real     ::  xssi, fssi, rssi, xsubi, wssi
-      real     ::  dmicrons, dmicrong, dvair, alpha
-      real,   dimension (CHUNK) :: tairN, tairI,    &
+  integer  ::  ihalmos
+  real     ::  xnsplnt, xmsplnt
+  real     ::  hmtemp1, hmtemp2, hmtemp3, hmtemp4
+  real     ::  ftnw, ftnwmin
+  real     ::  xssi, fssi, rssi, xsubi, wssi
+  real     ::  dmicrons, dmicrong, dvair, alpha
+  real,   dimension (CHUNK) :: tairN, tairI,    &
                                           ftns,  ftng,    &
                                          ftns0, ftng0,    &
                                          ftnh,  ftnh0,    &
@@ -2309,74 +2346,74 @@
                                           pracg,qracg,    &
                                           qrimh,pg2h      !4ice revised
 
-      real,   dimension (CHUNK) :: y1, y2, y3, y4,  &
+  real,   dimension (CHUNK) :: y1, y2, y3, y4,  &
                                y5, y6, y7, y8 
 ! for Xiping's new dbz code
-      real     ::  hfact, sfact, yy1
-      real     ::  xncld, esat, rv, rlapse_m
-      real     ::  delT, bhi  !Di deleted cpi
-      real     ::  rc, ra, cna
-      real     ::  xccld, xknud, cunnf, diffar
-      real     ::  qgz2, qhz2
+  real     ::  hfact, sfact, yy1
+  real     ::  xncld, esat, rv, rlapse_m
+  real     ::  delT, bhi  !Di deleted cpi
+  real     ::  rc, ra, cna
+  real     ::  xccld, xknud, cunnf, diffar
+  real     ::  qgz2, qhz2
 
-      real :: r11t, r19t, r19at, r30t, r33t
-      real, dimension(CHUNK) :: r7rf, r8rf, r9rf, r16rf
-      real, dimension(CHUNK) :: r101r, r102rf, r191r, r192rf, r192rf2
-      real, dimension(CHUNK) :: r231r, r232rf
-      real, dimension(CHUNK) :: h9r, h10r, h14r, h15ar, h16r, h17r, h17aq,   &
+  real :: r11t, r19t, r19at, r30t, r33t
+  real, dimension(CHUNK) :: r7rf, r8rf, r9rf, r16rf
+  real, dimension(CHUNK) :: r101r, r102rf, r191r, r192rf, r192rf2
+  real, dimension(CHUNK) :: r231r, r232rf
+  real, dimension(CHUNK) :: h9r, h10r, h14r, h15ar, h16r, h17r, h17aq,   &
               h19aq, h19rt, h10ar, h20t, h20bq
-      real, dimension(CHUNK) :: bin_factor, rim_frac
-      real     :: term1, term2, fdwv, dwv0  !JDC water vapor diffusivity correction term
-      integer  :: iter
+  real, dimension(CHUNK) :: bin_factor, rim_frac
+  real     :: term1, term2, fdwv, dwv0  !JDC water vapor diffusivity correction term
+  integer  :: iter
 
 !NUWRF BEGIN
 
 #if ( WRF_CHEM == 1)
 ! JJS 20110525 vvvvv
 ! for inline Gocart coupling
-      INTEGER,      INTENT(IN   )    ::   gid
-      INTEGER, PARAMETER :: num_go = 14  ! number of the gocart aerosol species
-      REAL, DIMENSION( CHUNK, kms:kme, num_go), intent(in) :: aero
-      REAL, DIMENSION( CHUNK, kms:kme ), intent(out) :: icn_diag !IN concentration [#/Litre]
-      REAL, DIMENSION( CHUNK, kms:kme ), intent(out) :: nc_diag !cloud concentration [#/cm3]
-      integer,intent(in) :: chem_opt ! EMK
-      integer,intent(in) :: gsfcgce_gocart_coupling ! EMK
+  INTEGER,      INTENT(IN   )    ::   gid
+  INTEGER, PARAMETER :: num_go = 14  ! number of the gocart aerosol species
+  REAL, DIMENSION( CHUNK, kms:kme, num_go), intent(in) :: aero
+  REAL, DIMENSION( CHUNK, kms:kme ), intent(out) :: icn_diag !IN concentration [#/Litre]
+  REAL, DIMENSION( CHUNK, kms:kme ), intent(out) :: nc_diag !cloud concentration [#/cm3]
+  integer,intent(in) :: chem_opt ! EMK
+  integer,intent(in) :: gsfcgce_gocart_coupling ! EMK
 
 ! Local Variables
 
-      real :: e_sat, e_dry  !saturated and dry air water vapor [hPa, mb]
-      real :: rh_rad     ! relative humidity [%]
-      real :: super_sat  !super saturation [%]
-      real :: ccn_out(CHUNK)  ! CCN conc [#/cm3] ! EMK TEST
-      real :: icn_out(CHUNK)  ! IN conc [#/Litter] ! EMK TEST
-      real :: P_liu_daum  ! autoconversion rate [g/cm3 s-1]    !
-      real :: re_liu_daum ! effective radius of cloud [micron]   !
-      real,parameter :: min_icn = 0.01 !minimum # conc of IN [#/Litre]
+  real :: e_sat, e_dry  !saturated and dry air water vapor [hPa, mb]
+  real :: rh_rad     ! relative humidity [%]
+  real :: super_sat  !super saturation [%]
+  real :: ccn_out(CHUNK)  ! CCN conc [#/cm3] ! EMK TEST
+  real :: icn_out(CHUNK)  ! IN conc [#/Litter] ! EMK TEST
+  real :: P_liu_daum  ! autoconversion rate [g/cm3 s-1]    !
+  real :: re_liu_daum ! effective radius of cloud [micron]   !
+  real,parameter :: min_icn = 0.01 !minimum # conc of IN [#/Litre]
 
 ! JJS 20110525 ^^^^^
 #endif
 
 !JJS 20140226  variables for the calculation of effective radius of cloud species
-      real, dimension (CHUNK, kms:kme) , INTENT(INOUT   )                 &
-                                  ::  re_cloud_gsfc, re_rain_gsfc,  &
-                                      re_ice_gsfc, re_snow_gsfc,    &
-                                      re_graupel_gsfc, re_hail_gsfc
-      REAL , DIMENSION( CHUNK ) , INTENT(IN)   :: XLAND
-      real, parameter :: roqi = 0.9179    ! ice density
-      real, parameter :: ccn_over_land = 1500  ! [#/cm3] climatological value
-      real, parameter :: ccn_over_water = 150  ! [#/cm3] climatological value
-      real :: L_cloud    ! cloud water [g/cm3] !
-      real :: I_cloud    ! cloud water [g/cm3] !
-      real :: mu, ccn_ref, lambda
-      real :: gamfac1, gamfac3
+  real, dimension (CHUNK, kms:kme) , INTENT(INOUT   )                 &
+                                              ::  re_cloud_gsfc, re_rain_gsfc,  &
+                                                  re_ice_gsfc, re_snow_gsfc,    &
+                                                  re_graupel_gsfc, re_hail_gsfc
+  REAL , DIMENSION( CHUNK ) , INTENT(IN)   :: XLAND
+  real, parameter :: roqi = 0.9179    ! ice density
+  real, parameter :: ccn_over_land = 1500  ! [#/cm3] climatological value
+  real, parameter :: ccn_over_water = 150  ! [#/cm3] climatological value
+  real :: L_cloud    ! cloud water [g/cm3] !
+  real :: I_cloud    ! cloud water [g/cm3] !
+  real :: mu, ccn_ref, lambda
+  real :: gamfac1, gamfac3
 !JJS 20140226  ^^^^^
 !NUWRF END
 
 !+---+-----------------------------------------------------------------+
-      REAL, DIMENSION(CHUNK, kms:kme), INTENT(INOUT):: refl_10cm  ! GT
+  REAL, DIMENSION(CHUNK, kms:kme), INTENT(INOUT):: refl_10cm  ! GT
 
-      LOGICAL, OPTIONAL, INTENT(IN) :: diagflag
-      INTEGER, OPTIONAL, INTENT(IN) :: do_radar_ref
+  LOGICAL, OPTIONAL, INTENT(IN) :: diagflag
+  INTEGER, OPTIONAL, INTENT(IN) :: do_radar_ref
 !+---+-----------------------------------------------------------------+
 
 ! JDC dwv0 is water vapor diffusivity at STP
@@ -2384,8 +2421,8 @@
 
 !JJS20090623      save  
 
-      if (itimestep.eq.1) then
-        do k = kts, kte
+    if (itimestep.eq.1) then
+       do k = kts, kte
 !dir$ vector aligned
          DO i=1,irestrict
              physc(i,k)=0.
@@ -2403,10 +2440,9 @@
        ENDDO
        enddo !k
 !      if ( wrf_dm_on_monitor() .and. i.eq.its .and. j.eq.jts ) then
-!         write(6, *) '    latent heating variables have been '//        &
-!                     'initialized to 0. at timestep = ', itimestep
+!       write(6, *) '    latent heating variables have been initialized to 0. at timestep = ', itimestep
 !      endif
-      endif
+   endif
 
 !JJS  convert from mks to cgs, and move from WRF grid to GCE grid
       do k=kts,kte
@@ -2517,7 +2553,7 @@
 
 !C    ******************************************************************
 
-      do 1000 k=kts,kte
+  do 1000 k=kts,kte
        kp=k+1
        tb0=0.
        qb0=0.
@@ -2768,10 +2804,10 @@
 !     ***   COMPUTE ZR,ZS,ZG,VR,VS,VG      *****************************
 
             if (qr(i) .gt. cmin) then
-               dd(i)=r00(i)*qr(i)
-               y1(i)=sqrt(dd(i))
-               y2(i)=sqrt(y1(i))
-               zr(i)=zrc/y2(i)
+	       dd(i)=r00(i)*qr(i)
+	       y1(i)=sqrt(dd(i))
+	       y2(i)=sqrt(y1(i))
+	       zr(i)=zrc/y2(i)
             endif
 
             call vqrqi(1,r00(i),fv0(i),qr(i),qc(i),tair(i),vr(i))
@@ -2789,27 +2825,26 @@
             call sgmap(1,qs(i),qg(i),qgz2,qh(i),qhz2,r00(i),tairc(i),ftns0(i))
             call sgmap(3,qs(i),qg(i),qgz2,qh(i),qhz2,r00(i),tairc(i),fros0(i))
 
-           if (qs(i) .gt. cmin) then
-               dd(i)=r00(i)*qs(i)
-               y1(i)=dd(i)**.25
+	    if (qs(i) .gt. cmin) then
+	       dd(i)=r00(i)*qs(i)
+	       y1(i)=dd(i)**.25
                ftns(i)=1.
                ftns(i)=ftns0(i)**0.25
-               fros(i)=1                         !improve4
-               fros(i)=fros0(i)**0.25            !improve4
-               ZS(i)=ZSC/Y1(i)*ftns(i)*fros(i)   !improve4
+               fros(i)=1                                        !improve4
+               fros(i)=fros0(i)**0.25        !improve4
+               ZS(i)=ZSC/Y1(i)*ftns(i)*fros(i)            !improve4
                ftns(i)=ftns0(i)**bsq
-               fros(i)=fros0(i)**bsq             !improve4
+               fros(i)=fros0(i)**bsq         !improve4
                VS(i)=MAX(vscf(i)*DD(i)**BSQ/ftns(i)/fros(i), 0.)
             endif
 
             ftng(i)=1.
             ftng0(i)=1.
-            call sgmap(2,qs(i),qg(i),qgz2,qh(i),qhz2,r00(i),tairc(i),   &
-                       ftng0(i))
+            call sgmap(2,qs(i),qg(i),qgz2,qh(i),qhz2,r00(i),tairc(i),ftng0(i))
 
-            if (qg(i) .gt. cmin) then
-               dd(i)=r00(i)*qg(i)
-               y1(i)=dd(i)**.25
+	    if (qg(i) .gt. cmin) then
+	       dd(i)=r00(i)*qg(i)
+	       y1(i)=dd(i)**.25
                ftng(i)=1.
                ftng(i)=ftng0(i)**0.25
 
@@ -2817,15 +2852,14 @@
                if(dd(i).gt.qrog2) zg(i)=zgc2/y1(i)*ftng(i)
 
                ftng(i)=ftng0(i)**bgq
-               vg(i)=max(vgcf(i)*dd(i)**bgq/ftng(i), 0.0)
+	       vg(i)=max(vgcf(i)*dd(i)**bgq/ftng(i), 0.0)
                if(dd(i).gt.qrog2)then
                ftng(i)=ftng0(i)**bgq2
                vg(i)=max(vgcf2(i)*dd(i)**bgq2/ftng(i), 0.e0)
               endif !improve4
            endif !qg
            
-           call sgmap(4,qs(i),qg(i),qgz2,qh(i),qhz2,r00(i),tairc(i),    &
-                      ftnh0(i))
+           call sgmap(4,qs(i),qg(i),qgz2,qh(i),qhz2,r00(i),tairc(i),ftnh0(i))
 
            if (qh(i) .gt. cmin) then
               dd(i)=r00(i)*qh(i)
@@ -2868,8 +2902,8 @@
           ftns(i)=1.
           ftng(i)=1.
           ftnh(i)=1.
-          ftns(i)=ftns0(i)
-          ftng(i)=ftng0(i)
+	  ftns(i)=ftns0(i)
+	  ftng(i)=ftng0(i)
 
           if (tair(i).lt.t0) then
 
@@ -2952,8 +2986,7 @@
                 L_cloud = qc(i) * rho(i,k)             ! cloud water [g/cm3]
                 !  g/g        g/cm3
                 !             call auto_conversion( L_cloud, nc_cgs(i,k), P_liu_daum, re_liu_daum )
-                call auto_conversion( L_cloud, ccn_out(i), P_liu_daum,  &
-                                      re_liu_daum )
+                call auto_conversion( L_cloud, ccn_out(i), P_liu_daum, re_liu_daum )
 
                 praut(i) = P_liu_daum / rho(i,k)  !autoconversion rate [g/g s-1]
              else
@@ -3045,8 +3078,8 @@
                   ! used to access a value in an array.  
                   ! We will simply pass a bogus value of j=1 in the call
                   ! below.
-                  call mass2icn(p0(i,k)*0.001,tair(i),aero(i,k,:),      &
-                       icn_out(i),i,1,k)
+                  call mass2icn(p0(i,k)*0.001,tair(i),aero(i,k,:), icn_out(i),&
+                       i,1,k)
 
                   icn_out(i) = min(1.e3, max(0.01e0 ,  icn_out(i)) )
                   r_nci = icn_out(i) * 1.e-3  !DeMotto's formuale
@@ -3127,7 +3160,7 @@
         dd(i)=Y1(i)*(Y3(i)/ZS(i)**5+Y4(i)/ZS(i)**3        &
                +Y5(i)/ZS(i))
         whacs(i)=r2ih*r2is*min(h9r(i)*dd(i)*ftnh(i)*ftns(i)*fros(i), &
-                 qs(i)/d2t)
+				 qs(i)/d2t)
         if(qs(i).le.cmin) whacs(i)=0.
         if(qh(i).le.cmin) whacs(i)=0.
 
@@ -3140,9 +3173,10 @@
         y5(i)=.05*y3(i)*y4(i)
         dd(i)=Y1(i)*(Y3(i)/ZG(i)**5+Y4(i)/ZG(i)**3        &
                +Y5(i)/ZG(i))
-        whacg(i)=r2ih*r2ig*min(h10r(i)*dd(i)*ftnh(i)*ftng(i),qg(i)/d2t)
+        whacg(i)=r2ih*r2ig*min(h10r(i)*dd(i)*ftnh(i)*ftng(i),  &
+				 qg(i)/d2t)
         if(r00(i)*qg(i).gt.qrog2)  &
-           whacg(i)=whacg(i)/roqg*roqg2*0.5        !reduce ehg for high dens grp
+	 whacg(i)=whacg(i)/roqg*roqg2*0.5        !reduce ehg for high dens grp
         if(qg(i).le.cmin) whacg(i)=0.
         if(qh(i).le.cmin) whacg(i)=0.
 
@@ -3199,7 +3233,8 @@
         y5(i)=1.0                                                      !4ice
         if(vh(i).gt.0.) y5(i)=abs((vh(i)-vi(i))/vh(i))         !4ice
         y2(i)=1./zh(i)**bh3                                          !4ice
-        whaci(i)=r2ih*min(y5(i)*h15ar(i)*qi(i)*y2(i)*ftnh(i),qi(i)/d2t)   !4ice
+        whaci(i)=r2ih*min(y5(i)*h15ar(i)*qi(i)*y2(i)*ftnh(i),  &
+	qi(i)/d2t)   !4ice
         if(qh(i).le.cmin) whaci(i)=0.
 
         y1(i)=abs( vg(i)-vr(i) )
@@ -3232,8 +3267,8 @@
         y3(i)=5./y2(i)
         y4(i)=.08*y3(i)*y3(i)
         y5(i)=.05*y3(i)*y4(i)
-        DD(i)=h16r(i)*Y1(i)*ftnh(i)*(Y3(i)/ZR(i)**5+&
-              Y4(i)/ZR(i)**3+Y5(i)/ZR(i))
+        DD(i)=h16r(i)*Y1(i)*ftnh(i)*(Y3(i)/ZR(i)**5   &
+		+Y4(i)/ZR(i)**3+Y5(i)/ZR(i))
         dhacr(i)=r2ih*max(dd(i), 0.0)
         if(qh(i).le.cmin) dhacr(i)=0.
         if(qr(i).le.cmin) dhacr(i)=0.
@@ -3293,7 +3328,7 @@
 !dir$ vector aligned
         DO i=1,irestrict
 
-!********   HANDLING THE NEGATIVE CLOUD WATER (QC)    ******************
+ !********   HANDLING THE NEGATIVE CLOUD WATER (QC)    ******************
         y1(i)=qc(i)/d2t
           psacw(i)=min(y1(i), psacw(i))
           pihms(i)=min(y1(i), pihms(i))
@@ -3736,8 +3771,8 @@
                 xncld=qc(i)/4.e-9                         !cloud number
                 esat=0.6112*exp(17.67*tairc(i)/(tairc(i)+243.5))*10.
                 rv=0.622*esat/(p0(i,k)/1000.-esat)
-                rlapse_m=980.616*(1.+2.5e6*rv/287./tair(i))/            &
-                  (1004.67+2.5e6*2.5e6*rv*0.622/(287.*tair(i)*tair(i)))
+                rlapse_m=980.616*(1.+2.5e6*rv/287./tair(i))/          &     
+                       (1004.67+2.5e6*2.5e6*rv*0.622/(287.*tair(i)*tair(i)))
                 delT=rlapse_m*ww1(i,k)                     !Roger
                 if (delT.lt.0.) delT=0.
                 Bhi=1.01e-2 
@@ -3832,7 +3867,7 @@
                 fssi=min(ssi(i),fssi)
 !               r_nci=min(1.e-3*exp(-.639+12.96*fssi),1.) 
                 r_nci=max(1.e-3*exp(-.639+12.96*fssi),0.528e-3)
-                if (r_nci.gt.15.) r_nci=15.   
+       	        if (r_nci.gt.15.) r_nci=15.   
 
 ! Cooper curve
                 if( tairc(i) .lt. -40.0 ) then
@@ -3865,8 +3900,8 @@
                 end if
 #endif
 
-                pidep(i)=max(R32RT(i)*1.e4*fssi*sqrt(r_nci)*y3(i)/      & !meyers
-                         dd(i)*fdwv, -qi(i))                    !fix SEL
+                pidep(i)=max(R32RT(i)*1.e4*fssi*sqrt(r_nci)*y3(i)/     & !meyers
+                dd(i)*fdwv, -qi(i))                    !fix SEL
                 if(qi(i).le.cmin) pidep(i)=0.
                 dd(i)=max(1.e-9*r_nci/r00(i)-qci(i,k)*1.e-9/ami50, 0.) 
                 pint(i)=max(min(dd(i),dm(i)),0.)
@@ -4081,8 +4116,8 @@
            if (qr(i) .gt. 0.0) then
              tair(i)=(pt(i)+tb0)*pi0(i)
              rtair(i)=1./(tair(i)-c358)
-             y2(i)=exp( c172-c409*rtair(i) )
-             esw(i)=c610*y2(i)
+	     y2(i)=exp( c172-c409*rtair(i) )
+	     esw(i)=c610*y2(i)
              qsw(i)=rp0(i)*y2(i)
              ssw(i)=(qv(i)+qb0)/qsw(i)-1.
              dm(i)=qv(i)+qb0-qsw(i)
@@ -4213,15 +4248,13 @@
             sccc=cnd(i)
             seee=dd(i)+ern(i)
             sddd=dep(i)+amax1(pint(i),0.0)+psdep(i)+pgdep(i)+phdep(i)
-            ssss=dd1(i)-amin1(pint(i),0.0)+pssub(i)+pgsub(i)+phsub(i)+  &
-                 pmlts(i)+pmltg(i)
-            smmm=psmlt(i)+pgmlt(i)+pimlt(i)+qracs(i)+phmlt(i)+qracg(i)  &
+            ssss=dd1(i)-amin1(pint(i),0.0)+pssub(i)+pgsub(i)+phsub(i)+pmlts(i)+pmltg(i)
+            smmm=psmlt(i)+pgmlt(i)+pimlt(i)+qracs(i)+phmlt(i)+qracg(i) &
                  -del*whacr(i)
-            sfff=psacw(i)*d2t+piacr(i)*d2t+psfw(i)*d2t+pgfr(i)*d2t      &
-                +dgacw(i)*d2t+dgacr(i)*d2t+psacr(i)*d2t+pihom(i)        &
-                +pidw(i)+pimm(i)+pcfr(i)+pihms(i)*d2t                   &
-                +pihmg(i)*d2t+phfr(i)*d2t+dhacw(i)*d2t                  &
-                +dhacr(i)*d2t+pihmh(i)*d2t
+            sfff=psacw(i)*d2t+piacr(i)*d2t+psfw(i)*d2t+pgfr(i)*d2t   &
+                +dgacw(i)*d2t+dgacr(i)*d2t+psacr(i)*d2t+pihom(i) &
+                +pidw(i)+pimm(i)+pcfr(i)+pihms(i)*d2t    &
+                +pihmg(i)*d2t+phfr(i)*d2t+dhacw(i)*d2t+dhacr(i)*d2t+pihmh(i)*d2t
 
 ! for snapsot diabatic heating rate (deg K / s)
             physc(i,k) = avc * sccc / d2t       !K/s
@@ -4314,25 +4347,25 @@
 !JJS 20140305 vvvvv  Calculate effective radius for all cloud species
 !   eff_rad is a function of the slope parameter (Lambda)
 
-      ! rain
+    ! rain
       if (qrn(i,k) .lt. cmin) then
          re_rain_gsfc(i,k) = 0.e0
       else
          re_rain_gsfc(i,k) = eff_rad(zr(i))
       endif
-      ! snow
+    ! snow
       if (qcs(i,k) .lt. cmin) then
          re_snow_gsfc(i,k) = 0.e0
       else
          re_snow_gsfc(i,k) = eff_rad(zs(i))
       endif
-      ! graupel
+    ! graupel
       if (qcg(i,k) .lt. cmin) then
          re_graupel_gsfc(i,k) = 0.e0
       else
          re_graupel_gsfc(i,k) = eff_rad(zg(i))
       endif
-      ! hail
+    ! hail
       if (qch(i,k) .lt. cmin) then
          re_hail_gsfc(i,k) = 0.e0
       else
@@ -4341,12 +4374,12 @@
 
 ! for cloud water
 
-      if (qcl(i,k) .lt. cmin) then
-        re_cloud_gsfc(i,k) = 0.e0
-      else
-        L_cloud = qcl(i,k) * rho(i,k)             ! cloud water [g/cm3]
+   if (qcl(i,k) .lt. cmin) then
+      re_cloud_gsfc(i,k) = 0.e0
+   else
+      L_cloud = qcl(i,k) * rho(i,k)             ! cloud water [g/cm3]
 #if (WRF_CHEM == 1)
-      ! when running with WRF_Chem and using aerosol coupling in Goddard MP
+   ! when running with WRF_Chem and using aerosol coupling in Goddard MP
            ! cpi: const_pi = 4.*atan(1.)         ~ 3.1415
            ! roqr: 1.0 g/cm**3, liquid water density
            ! roqi: 0.9179, ice density
@@ -4361,7 +4394,7 @@
                             gamfac1)**(1.e0/3.e0)  ! [1/cm]
                    re_cloud_gsfc(i,k) = 1.e0/lambda * gamfac3 * 1.e4  !effective radius [micron]
              else
-     ! when running with WRF_Chem but no aerosol coupling in Goddard MP
+   ! when running with WRF_Chem but no aerosol coupling in Goddard MP
                if (xland(i) .eq. 1.0) then
                   ccn_ref = ccn_over_land
                else if (xland(i) .eq. 2.0) then
@@ -4369,8 +4402,7 @@
                else
                   print *,' xland is not 1. or 2., run stopped'
                   ! EMK NUWRF
-!                  call wrf_error_fatal &
-!                       (' xland is not 1. or 2., run stopped')
+!                  call wrf_error_fatal(' xland is not 1. or 2., run stopped')
 !                  stop
                endif
                  ! for cloud water, estimate lambda (slope of gamma distribution)
@@ -4382,7 +4414,7 @@
                       re_cloud_gsfc(i,k) = 1.e0/lambda * gamfac3 * 1.e4  !effective radius [micron]
             endif ! chem_opt and gsfcgce_gocart_coupling
 #else
-     ! Not running with WRF_Chem
+   ! Not running with WRF_Chem
             ! ccn_over_land = 1500  ! [#/cm3] climatological value
             ! ccn_over_water = 150  ! [#/cm3] climatological value
             if (xland(i) .eq. 1.0) then
@@ -4392,8 +4424,7 @@
             else
                print *,' xland is not 1. or 2., run stopped'
                ! EMK NUWRF
-!               call wrf_error_fatal &
-!                    (' xland is not 1. or 2., run stopped')
+!               call wrf_error_fatal(' xland is not 1. or 2., run stopped')
 !               stop
             endif
            ! for cloud water, estimate lambda (slope of gamma distribution)
@@ -4404,13 +4435,13 @@
                             gamfac1)**(1.e0/3.e0)  ! [1/cm]
                    re_cloud_gsfc(i,k) = 1.e0/lambda * gamfac3 * 1.e4  !effective radius [micron]
 #endif
-      endif ! qcl(i,k) < cmin test
+   endif ! qcl(i,k) < cmin test
       
 ! for cloud ice
 
-      if (qci(i,k) .lt. cmin) then
-        re_ice_gsfc(i,k) = 0.e0
-      else
+   if (qci(i,k) .lt. cmin) then
+      re_ice_gsfc(i,k) = 0.e0
+   else
 #if (WRF_CHEM == 1)
 !  ! when running with WRF_Chem and using aerosol coupling in Goddard MP
 !      I_cloud = qci(i,k) * rho(i,k)             ! cloud ice [g/cm3]
@@ -4425,24 +4456,24 @@
 !                  gamfac1)**(1.e0/3.e0)  ! [1/cm]
 !         re_ice_gsfc(i,k) = 1.e0/lambda * gamfac3 * 1.e4  !effective radius [micron]
 !      else
-        ! when running with WRF_Chem but no aerosol coupling in Goddard MP
+  ! when running with WRF_Chem but no aerosol coupling in Goddard MP
         ! for cloud ice effective radius depends on temperature profile, formula from GCE
          re_ice_gsfc(i,k) = 125.e0 +(tair(i)-243.16)*5.e0     ! [micron]
          if (tair(i) .gt. 243.16) re_ice_gsfc(i,k) = 125.e0
          if (tair(i) .lt. 223.16) re_ice_gsfc(i,k) = 25.e0
 !      endif ! chem_opt and gsfcgce_gocart_coupling
 #else
-     ! Not running with WRF_Chem
+  ! Not running with WRF_Chem
      ! for cloud ice effective radius depends on temperature profile, formula from GCE
       re_ice_gsfc(i,k) = 125.e0 +(tair(i)-243.16)*5.e0     ! [micron]
       if (tair(i) .gt. 243.16) re_ice_gsfc(i,k) = 125.e0
       if (tair(i) .lt. 223.16) re_ice_gsfc(i,k) = 25.e0
 #endif
-      endif ! qci(i,k) < cmin test
+   endif ! qci(i,k) < cmin test
 
 !JJS 20140305 ^^^^^  Calculate effective radius for all cloud species
 
-      ENDDO
+ ENDDO
 
  1000 continue
 
@@ -4480,10 +4511,10 @@
         ENDIF
 !+---+-----------------------------------------------------------------+
      
-      END SUBROUTINE saticel_s
+  END SUBROUTINE saticel_s
   
-      SUBROUTINE auto_conversion( L, N, P , re)
-      implicit none
+  SUBROUTINE auto_conversion( L, N, P , re)
+  implicit none
 !-----------------------------------------------------------------------------------------------------
 ! Comments:
 !  This subroutine compute auto conversion rate folloing Li and Daum [2004], which account for
@@ -4497,46 +4528,44 @@
 ! Liu, Y. and P. H. Daum, 2004: Parameterization of the autoconversion process. Part I: Analytical
 !   formulation of the Kessler-type parameterizations. J. Atmos. Sci, 61, 1539-1548.
 !-----------------------------------------------------------------------------------------------------
-      real,intent(in) :: L    ! cloud liquid water [g cm-3]
-      real,intent(in) :: N    ! total number concentration [# cm-3]
-      real,intent(out) :: P   ! auto conversion rate [g cm-3 s-1]
-      real,intent(out) :: re  ! cloud effective radius [micron]
+ real,intent(in) :: L    ! cloud liquid water [g cm-3]
+ real,intent(in) :: N    ! total number concentration [# cm-3]
+ real,intent(out) :: P   ! auto conversion rate [g cm-3 s-1]
+ real,intent(out) :: re  ! cloud effective radius [micron]
 
-      real :: mu   ! mu of gamma PSD [-]
-      real :: eta  ! eta function [cm3 g-2 s-1]
-      real :: beta, beta1, beta2     ! beta function [-]
-      real :: gamfac , gfac1 , gfac2 ! gamma function [-]
-      real :: R6_6power  ! mean radius of the sixth moment [cm]
-      real :: R6_thresh ! threshold of  mean radius of the sixth moment [cm]
-      real :: R6        ! mean radius of the sixth moment [cm]
-      real :: Heaviside_func  ! Heaviside step function (0 or 1)
-      real :: lambda    ! slope of gamma size ditribution [1/cm]
-!      real :: No        ! intercept  [cm-4]
+ real :: mu   ! mu of gamma PSD [-]
+ real :: eta  ! eta function [cm3 g-2 s-1]
+ real :: beta, beta1, beta2     ! beta function [-]
+ real :: gamfac , gfac1 , gfac2 ! gamma function [-]
+ real :: R6_6power  ! mean radius of the sixth moment [cm]
+ real :: R6_thresh ! threshold of  mean radius of the sixth moment [cm]
+ real :: R6        ! mean radius of the sixth moment [cm]
+ real :: Heaviside_func  ! Heaviside step function (0 or 1)
+ real :: lambda    ! slope of gamma size ditribution [1/cm]
+! real :: No        ! intercept  [cm-4]
 
-      real,parameter :: Rc = 10.e0 * 1.e-4 ! threshold of particle radus (10 micron) [cm]
-      real,parameter :: const_pi    = 3.14159e0 ! pai
-      real,parameter :: const_kappa = 1.9e11    ! coefficient for water droplet collection kernel [cm-3 s-1]
+ real,parameter :: Rc = 10.e0 * 1.e-4 ! threshold of particle radus (10 micron) [cm]
+ real,parameter :: const_pi    = 3.14159e0 ! pai
+ real,parameter :: const_kappa = 1.9e11    ! coefficient for water droplet collection kernel [cm-3 s-1]
                                            ! from Long [1974, JAS].
-!      real,parameter :: const_kappa = 1.9e11*10000.e0 !10000 is to adjust the order to keseller
+! real,parameter :: const_kappa = 1.9e11*10000.e0 !10000 is to adjust the order to keseller
 
 
-      real,parameter :: const_rho_liq = 1.e0    ! density of liquid water [g cm-3]
-      real,parameter :: &
-            eta_func = ((3.e0/(4.e0*const_pi*const_rho_liq))**2) * & 
-                        const_kappa  ! eta function [cm3 g-2 s-1]
-                                     ! a part of (eq 27b)
+ real,parameter :: const_rho_liq = 1.e0    ! density of liquid water [g cm-3]
+ real,parameter :: eta_func = ((3.e0/(4.e0*const_pi*const_rho_liq))**2) * const_kappa  ! eta function [cm3 g-2 s-1]
+                                                                                       ! a part of (eq 27b)
 
-      logical,parameter :: no_thresh = .true.  ! logic to choose no threshold parameterization or not.
+ logical,parameter :: no_thresh = .true.  ! logic to choose no threshold parameterization or not.
 
 !
 ! When no particel, no autoconversion.
 !
 ! EMK BUG FIX...Prevent overflow for small but non-zero values of L
 ! if( N <= 0.e0 .or. L <= 0.e0 ) then
-      if( N <= 0.e0 .or. L <= 1.0e-32 ) then
-        P = 0.e0
-        return
-      endif
+ if( N <= 0.e0 .or. L <= 1.0e-32 ) then
+   P = 0.e0
+   return
+ endif
 
 !
 ! check bad values of N and L
@@ -4555,89 +4584,87 @@
 !
 
 ! orig
-      mu = MIN(15.e0, (1000.E0/N + 2.e0))
+ mu = MIN(15.e0, (1000.E0/N + 2.e0))
 
 
 !
 ! gamma functions
 !
-      gfac1 = gamma_toshi(mu+4.e0)
-      gfac2 = gamma_toshi(mu+1.e0)
-      gamfac = (gfac1/gfac2)
+ gfac1 = gamma_toshi(mu+4.e0)
+ gfac2 = gamma_toshi(mu+1.e0)
+ gamfac = (gfac1/gfac2)
 
 !
 ! estimate lambda (slope of gamma distribution)
 !
-      lambda = (4.e0/3.e0*const_pi*const_rho_liq*N/L*gamfac) &
-               **(1.e0/3.e0)  ! [1/cm]
+ lambda = (4.e0/3.e0*const_pi*const_rho_liq*N/L*gamfac)**(1.e0/3.e0)  ! [1/cm]
 
 
-      THRESH: if( no_thresh ) then !-------------------------------------------
+ THRESH: if( no_thresh ) then !-------------------------------------------
 
 !
 ! threshold of particle radius (mean radius of the sixth moment )
 !
-      gfac1 = gamma_toshi(mu+7.e0)
-      gfac2 = gamma_toshi(mu+1.e0)
-      gamfac = (gfac1/gfac2)
+ gfac1 = gamma_toshi(mu+7.e0)
+ gfac2 = gamma_toshi(mu+1.e0)
+ gamfac = (gfac1/gfac2)
 
-      R6_6power = (1.e0 / lambda)**6.e0 * gamfac   ![cm] (eq. A3)
+ R6_6power = (1.e0 / lambda)**6.e0 * gamfac   ![cm] (eq. A3)
 
 !
 ! auto conversion rate (eq. 26a)
 !
-      P = const_kappa *   N     * R6_6power *    L      ! [g cm-3 s-1 ]
+ P = const_kappa *   N     * R6_6power *    L      ! [g cm-3 s-1 ]
 !    [cm-3 s-1]  * [#/cm3] *   [cm6]   * [g/cm3]
 
 
-      else  !with threshold ---------------------------------------------------
+ else  !with threshold ---------------------------------------------------
 
 !
 ! Estimate eta under gamma PSD
 !
-      beta1 = (6.e0+mu)*(5.e0+mu)*(4.e0+mu)
-      beta2 = (3.e0+mu)*(2.e0+mu)*(1.e0+mu)
-      beta  = beta1 / beta2
+ beta1 = (6.e0+mu)*(5.e0+mu)*(4.e0+mu)
+ beta2 = (3.e0+mu)*(2.e0+mu)*(1.e0+mu)
+ beta  = beta1 / beta2
 
-      eta = eta_func * beta  ! eta function (eq 27b) [cm3 g-2 s-1]
+ eta = eta_func * beta  ! eta function (eq 27b) [cm3 g-2 s-1]
 
 !
 ! threshold of particle radius (mean radius of the sixth moment )
 !
-      R6_thresh = beta * Rc  ![cm] (pg 1545)
+ R6_thresh = beta * Rc  ![cm] (pg 1545)
 
 !
 ! mean radius of the sixth moment
 !
-      gfac1 = gamma_toshi(6.e0+mu+1.e0)
-      gfac2 = gamma_toshi(1.e0+mu)
-      gamfac = (gfac1/gfac2)**(1.e0/6.e0)
+ gfac1 = gamma_toshi(6.e0+mu+1.e0)
+ gfac2 = gamma_toshi(1.e0+mu)
+ gamfac = (gfac1/gfac2)**(1.e0/6.e0)
 
-      R6 = (1.e0 / lambda) * gamfac   ![cm] (eq. A3)
+ R6 = (1.e0 / lambda) * gamfac   ![cm] (eq. A3)
 
 !
 ! Heaviside step function
 !
-      if ( R6 - R6_thresh <= 0.e0 ) then
-        Heaviside_func = 0.e0
-      elseif( R6 - R6_thresh > 0.e0 ) then
-        Heaviside_func = 1.e0
-      else
-      ! NUWRF EMK...User WRF's library to gracefully stop MPI.
-!        write(wrf_err_message,*) &
-!        'MSG: auto_conversion: Strange value of R6= ',R6
-!        call wrf_error_fatal(trim(wrf_err_message))
+ if    ( R6 - R6_thresh <= 0.e0 ) then
+    Heaviside_func = 0.e0
+ elseif( R6 - R6_thresh > 0.e0 ) then
+    Heaviside_func = 1.e0
+ else
+    ! NUWRF EMK...User WRF's library to gracefully stop MPI.
+!    write(wrf_err_message,*)'MSG: auto_conversion: Strange value of R6= ',R6
+!    call wrf_error_fatal(trim(wrf_err_message))
 !   print*, 'MSG: auto_conversion: Strange value of R6= ', R6 ; stop
-      endif
+ endif
 
 !
 ! auto conversion rate [g cm-3 s-1 ] (eq. 27a)
 !
-      P = eta * (1.e0/N) * (L**3) *  Heaviside_func
+ P = eta * (1.e0/N) * (L**3) *  Heaviside_func
 
 !    [cm3 g-2 s-1] * [cm3] * [g3/cm9]
 
-      endif THRESH !------------------------------------------------------------
+ endif THRESH !------------------------------------------------------------
 
 
 ! optional
@@ -4645,11 +4672,11 @@
 !
 ! estimate effective radius
 !
-      gfac1 = gamma_toshi(mu+4.e0)
-      gfac2 = gamma_toshi(mu+3.e0)
-      gamfac = (gfac1/gfac2)
+ gfac1 = gamma_toshi(mu+4.e0)
+ gfac2 = gamma_toshi(mu+3.e0)
+ gamfac = (gfac1/gfac2)
 
-      re = 1.e0/lambda * gamfac * 1.e4  !effective radius [micron]
+ re = 1.e0/lambda * gamfac * 1.e4  !effective radius [micron]
 
 !
 ! estimate No
@@ -4657,10 +4684,10 @@
 ! call gamma_function(mu+1.e0 ,gfac1)
 ! No = N * (lambda**(mu+1)) / gfac1
 
-      END subroutine auto_conversion
+ END subroutine auto_conversion
 
 !DIR$ ATTRIBUTES FORCEINLINE :: gamma_toshi
-      real function gamma_toshi(x)
+ real function gamma_toshi(x)
 
 !---------------------------------------------------------------------------------------------------
 ! Comments:
@@ -4673,35 +4700,35 @@
 !
 ! References:
 !----------------------------------------------------------------------------------------------------
-      implicit double precision (a-h,o-z)
-      dimension g(26)
-      data g/1.0d0,0.5772156649015329d0, &
-             -0.6558780715202538d0, -0.420026350340952d-1, &
-             0.1665386113822915d0,-.421977345555443d-1, &
-             -.96219715278770d-2, .72189432466630d-2, &
-             -.11651675918591d-2, -.2152416741149d-3, &
-             .1280502823882d-3, -.201348547807d-4, &
-             -.12504934821d-5, .11330272320d-5, &
-             -.2056338417d-6, .61160950d-8, &
-             .50020075d-8, -.11812746d-8, &
-             .1043427d-9, .77823d-11, &
-             -.36968d-11, .51d-12, &
-             -.206d-13, -.54d-14, .14d-14, .1d-15/
-      real :: x
+ implicit double precision (a-h,o-z)
+ dimension g(26)
+ data g/1.0d0,0.5772156649015329d0, &
+       -0.6558780715202538d0, -0.420026350340952d-1, &
+        0.1665386113822915d0,-.421977345555443d-1, &
+        -.96219715278770d-2, .72189432466630d-2, &
+        -.11651675918591d-2, -.2152416741149d-3, &
+        .1280502823882d-3, -.201348547807d-4, &
+        -.12504934821d-5, .11330272320d-5, &
+        -.2056338417d-6, .61160950d-8, &
+         .50020075d-8, -.11812746d-8, &
+        .1043427d-9, .77823d-11, &
+        -.36968d-11, .51d-12, &
+        -.206d-13, -.54d-14, .14d-14, .1d-15/
+ real :: x
 
-      pi=3.141592653589793d0
-      if (x.eq.int(x)) then
-      if (x.gt.0.0d0) then
+ pi=3.141592653589793d0
+ if (x.eq.int(x)) then
+     if (x.gt.0.0d0) then
          ga=1.0d0
          m1=int(x)-1
         do k=2,m1
            ga=ga*k
         enddo
-      else
+     else
         ga=1.0d+300
-      endif
-      else
-      if (dabs(dble(x)).gt.1.0d0) then
+     endif
+  else
+     if (dabs(dble(x)).gt.1.0d0) then
          z=dabs(dble(x))
          m=int(z)
          r=1.0d0
@@ -4709,56 +4736,53 @@
            r=r*(z-k)
         enddo
         z=z-m
-      else
+     else
         z=dble(x)
-      endif
-      gr=g(26)
-      do k=25,1,-1
+     endif
+     gr=g(26)
+     do k=25,1,-1
         gr=gr*z+g(k)
-      enddo
-      ga=1.0d0/(gr*z)
-      if (dabs(dble(x)).gt.1.0d0) then
+     enddo
+     ga=1.0d0/(gr*z)
+     if (dabs(dble(x)).gt.1.0d0) then
          ga=ga*r
          if (x.lt.0.0d0) ga=-pi/(x*ga*dsin(pi*x))
-      endif
-      endif
+     endif
+  endif
 
-      gamma_toshi = real(ga)
+  gamma_toshi = real(ga)
 
-      end function gamma_toshi
+  end function gamma_toshi
 
-      SUBROUTINE Find_NaN_Inf_Double(Warning_MSG, real_input,           &
-                                     i_in,j_in,k_in)
-      implicit none
+ SUBROUTINE Find_NaN_Inf_Double(Warning_MSG, real_input, i_in,j_in,k_in)
+ implicit none
 
-      real,intent(inout) :: real_input  !anykind of Non-dimensional input Real parameters
-      integer,intent(in) :: i_in, j_in, k_in
-      character*(*),intent(in) :: Warning_MSG
+ real,intent(inout) :: real_input  !anykind of Non-dimensional input Real parameters
+ integer,intent(in) :: i_in, j_in, k_in
+ character*(*),intent(in) :: Warning_MSG
 
 !
 ! Find Infinity
 !
 !if( exp(-abs(real_input)) == 0.) then ! this formulae is bit slow 
 
-      if( 1e+10/real_input == 0. ) then
-      print*,'MSG Find_NaN_Inf: '//Warning_MSG//'Infinity at',          &
-             i_in,j_in,k_in
-      real_input = 0.
-      return
-      endif
+ if( 1e+10/real_input == 0. ) then
+    print*,'MSG Find_NaN_Inf: '//Warning_MSG//'Infinity at',i_in,j_in,k_in
+    real_input = 0.
+    return
+ endif
 
 !
 ! Find NaN
 ! 
-      if( real_input==0. .or. real_input>0. .or. real_input<0. .or.     &
-          real_input>=0. .or. real_input<=0. ) then
-      else
-      print*,'MSG Find_NaN_Inf: '//Warning_MSG//'NaN at',i_in,j_in,k_in
-      real_input = 0.
-      return
-      endif
+ if( real_input==0. .or. real_input>0. .or. real_input<0. .or. real_input>=0. .or. real_input<=0. ) then
+ else
+    print*,'MSG Find_NaN_Inf: '//Warning_MSG//'NaN at',i_in,j_in,k_in
+    real_input = 0.
+    return
+ endif
 
-      END SUBROUTINE Find_NaN_Inf_Double
+ END SUBROUTINE Find_NaN_Inf_Double
 
 !+---+-----------------------------------------------------------------+
 
@@ -4867,10 +4891,10 @@
          ze_snow(k) = 1.e-22
          ze_graupel(k) = 1.e-22
          if (L_qr(k)) ze_rain(k) = N0_r(k)*xcrg(4)*ilamr(k)**xcre(4)
-         if (L_qs(k)) ze_snow(k) = (0.176/0.93) * (6.0/PIx)*(6.0/PIx)   &
+         if (L_qs(k)) ze_snow(k) = (0.176/0.93) * (6.0/PIx)*(6.0/PIx)     &
                                  * (xam_s/900.0)*(xam_s/900.0)          &
                                  * N0_s(k)*xcsg(4)*ilams(k)**xcse(4)
-         if (L_qg(k)) ze_graupel(k) = (0.176/0.93) * (6.0/PIx)*(6.0/PIx)&
+         if (L_qg(k)) ze_graupel(k) = (0.176/0.93) * (6.0/PIx)*(6.0/PIx)  &
                                     * (xam_g/900.0)*(xam_g/900.0)       &
                                     * N0_g(k)*xcgg(4)*ilamg(k)**xcge(4)
       enddo
@@ -4937,7 +4961,7 @@
 
 !JJS 20140225
 ! Calculate cloud droplet effective radius
-     real function eff_rad(lambda)
+   real function eff_rad(lambda)
 
 #ifndef NO_IEEE_MODULE
       use, intrinsic :: ieee_arithmetic
@@ -4972,6 +4996,8 @@
 !
        eff_rad = 1.5e0 / (lambda*100.) * 1.0e+6  ! [micron]
 
-      end function eff_rad
+   end function eff_rad
 
-      END MODULE  module_mp_gce4ice
+END MODULE  module_mp_gce4ice
+
+
