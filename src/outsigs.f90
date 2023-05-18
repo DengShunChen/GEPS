@@ -42,10 +42,8 @@
       lenc=nx*my
       if ( ntoz .gt. 0 ) then
         nclds=ntoz-1
-!        if ( nmmiph .eq. 9 ) nclds = 6  !Thompson with single-moment output
       else
         nclds=ncld
-!        if ( nmmiph .eq. 9 ) nclds = 6  !Thompson with single-moment output
       endif
 
 !
@@ -154,7 +152,7 @@
 !
         wrk1=0.
         do ntrac=2,nclds
-          if ( .not. (nmmiph.eq.9 .and. ntrac.gt.6) ) then  !exclude ice&rain concentration for Thompson
+          if ( .not. (nmmiph.eq.18 .and. ntrac.gt.6) ) then  !exclude ice&rain concentration for 2M Thompson
           do jj = 1, jlistnum
             j=jlist1(jj)
             nxj=nxdef_2d(j)
@@ -195,9 +193,9 @@
               write(typ,'(A1,i2.2,"555")')mlayer,kl     ! graupel
             else if(ntrac.eq.nthl .and. nmmiph.eq.16) then
               write(typ,'(A1,i2.2,"556")')mlayer,kl     ! hail
-            else if(ntrac.eq.ntinc .and. nmmiph.eq.9) then
+            else if(ntrac.eq.ntinc .and. nmmiph.eq.18) then
               write(typ,'(A1,i2.2,"572")')mlayer,kl     ! ice concentration
-            else if(ntrac.eq.ntrnc .and. nmmiph.eq.9) then
+            else if(ntrac.eq.ntrnc .and. nmmiph.eq.18) then
               write(typ,'(A1,i2.2,"573")')mlayer,kl     ! rain concentration
             else
               goto 27

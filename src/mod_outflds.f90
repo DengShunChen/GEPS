@@ -437,7 +437,7 @@ contains
 !key=571~575 for number concentration of cloud droplet, ice, rain, snow, and graupel
 !key=572 : inc (ntinc=7)
 !key=573 : rnc (ntrnc=8)
-      if ( nmmiph .eq. 9 ) then
+      if ( nmmiph .eq. 18 ) then
         allocate ( cspec(8),cspe0(8),cspe1(8),cspe2(8),cspe3(8) )
         cspec=(/'500','551','553','552','554','555','572','573'/)
         cspe0=(/  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  /)

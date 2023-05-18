@@ -530,12 +530,14 @@
 !-----------------------------------------------------------------------
       if ( nmmiph .eq. 11 .or. nmmiph .eq. 12 .or. nmmiph .eq. 13 ) then
         ntrac_req = 6   ! only six species of hydrometeors for GFDL MP
-      elseif ( nmmiph .eq. 9 ) then
-        ntrac_req = 6   ! only six species of hydrometeors for New Thompson MP
+      elseif ( nmmiph .eq. 18 ) then
+        ntrac_req = 6   ! only six species of hydrometeors for 2M Thompson MP
       elseif ( nmmiph .eq. 8 ) then
         ntrac_req = 6   ! only six species of hydrometeors for Thompson MP
+      elseif ( nmmiph .eq. 15 ) then
+        ntrac_req = 6   ! only six species of hydrometeors for Goddard 3ICE MP
       elseif ( nmmiph .eq. 16 ) then
-        ntrac_req = 6   ! only six species of hydrometeors for Goddard MP
+        ntrac_req = 6   ! only six species of hydrometeors for Goddard 4ICE MP
       else
         ntrac_req = nmmiph
       endif
@@ -550,9 +552,10 @@
            call dmsexit(-1)
         endif
 !
-        if ( nmmiph.eq.6 .or. nmmiph.eq.8 .or. nmmiph.eq.9 .or.         &
+        if ( nmmiph.eq.6 .or.                                           &
+             nmmiph.eq.8 .or. nmmiph.eq.18 .or.                         &
              nmmiph.eq.11 .or. nmmiph.eq.12 .or. nmmiph.eq.13 .or.      &
-             nmmiph.eq.16 )                                             &
+             nmmiph.eq.15 .or. nmmiph.eq.16 )                           &
           call mp_init(nmmiph,myrank)
 !
       endif

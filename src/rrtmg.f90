@@ -191,7 +191,7 @@
        tracer(i,kc,ntoz) = tracer(i,kc,ntoz)*fac_o3
       end do
       end do
-      if ( nmmiph.eq.6 .or. nmmiph.eq.8 .or. nmmiph.eq.9 ) then
+      if ( nmmiph.eq.6 .or. nmmiph.eq.8 .or. nmmiph.eq.18 ) then
         nclds=3
 ! for MP WSM6 & Thompson effective radius
         do k = 1, lev
@@ -216,8 +216,8 @@
         enddo
       endif
 
-      if ( nmmiph.eq.16 ) then
-! for MP Goddard (GCE) 4ICE effective radius
+      if ( nmmiph.eq.15 .or. nmmiph.eq.16) then
+! for MP Goddard (GCE) effective radius
         nclds = 6
         do k = 1, lev
           do i = 1, nxj

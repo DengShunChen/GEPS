@@ -329,14 +329,16 @@
             print *,'   --- WSM6 microphysics'
           elseif (icmphys == 8) then
             print *,'   --- Thompson microphysics'
-          elseif (icmphys == 9) then
-            print *,'   --- New Thompson microphysics'
+          elseif (icmphys == 18) then
+            print *,'   --- 2M Thompson microphysics'
           elseif (icmphys == 11) then
             print *,'   --- GFDL microphysics version 1'
           elseif (icmphys == 12) then
             print *,'   --- GFDL microphysics version 2'
           elseif (icmphys == 13) then
             print *,'   --- GFDL microphysics version 3'
+          elseif (icmphys == 15) then
+            print *,'   --- Goddard (GCE) 3ICE microphysics'
           elseif (icmphys == 16) then
             print *,'   --- Goddard (GCE) 4ICE microphysics'
           else
@@ -2546,8 +2548,9 @@
 
 !  ---  inputs:
      &     ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,cnvw,cnvc,              &
-     &       qw,qr,qi,qs,qg,qa,                                         &
-     &       cldtot,slmsk,snowd,                                        &
+     &       qw,qr,qi,qs,qg,                                            &
+     &       cldcov,slmsk,                                              &
+     &       effr_cw,effr_iw,effr_sw,effr_rw,effr_in,                   &
      &       xlat,xlon,IX,NLAY,NLP1,                                    &
 !  ---  outputs:
      &       clouds,clds,mtop,mbot                                      &
@@ -2632,8 +2635,8 @@
 !  ====================    end of description    =====================  !
 
       use physpara,           only : icmphys
-      use cld_eff_rad_v2,     only : cld_eff_rad
-      use module_mp_gfdl_v3,  only : cld_eff_rad_v3
+!      use cld_eff_rad_v2,     only : cld_eff_rad
+!      use module_mp_gfdl_v3,  only : cld_eff_rad_v3
 !
       implicit none
 
@@ -2644,11 +2647,16 @@
      &       tlyr, tvly, qlyr, qstl, rhly,  cnvw, cnvc
 
       real (kind=kind_phys), dimension(:,:), intent(inout) ::           &
-     &       qw, qr, qi, qs, qg, qa
-      real (kind=kind_phys), dimension(:,:), intent(inout) :: cldtot
+     &       qw, qr, qi, qs, qg
+      real (kind=kind_phys), dimension(:,:), intent(inout) :: cldcov
 
       real (kind=kind_phys), dimension(:),   intent(in) :: xlat, xlon,  &
-     &       slmsk, snowd
+     &       slmsk
+
+      real (kind=kind_phys), dimension(:,:), intent(in) :: effr_cw,     &
+     &       effr_iw, effr_rw, effr_sw
+
+      logical, intent(in) :: effr_in
 
 !  ---  outputs
       real (kind=kind_phys), dimension(:,:,:), intent(out) :: clouds
@@ -2658,7 +2666,7 @@
       integer,               dimension(:,:),   intent(out) :: mtop,mbot
 
 !  ---  local variables:
-      real (kind=kind_phys), dimension(IX,NLAY) :: cldcnv,              &
+      real (kind=kind_phys), dimension(IX,NLAY) :: cldcnv, cldtot,      &
      &       cwp, cip, crp, csp, cgp, rew, rei, res, rer, reg, delp,    &
      &       tem2d, clwf
 
@@ -2666,6 +2674,8 @@
 
       real (kind=kind_phys) :: clwmin, clwm, clwt, onemrh, value,       &
      &       tem1, tem2, tem3
+
+      real, parameter :: qmin = 1.0e-12  !minimum mass mixing ratio (kg / kg)
 
       integer :: i, k, id, nf
 
@@ -2679,29 +2689,63 @@
           enddo
         enddo
       enddo
-!     clouds(:,:,:) = 0.0
 
-      if ( icmphys .eq. 12 ) then
+      do k = 1, NLAY
+        do i = 1, IX
+          cldcnv(i,k) = 0.0
+          cwp   (i,k) = 0.0
+          cip   (i,k) = 0.0
+          crp   (i,k) = 0.0
+          csp   (i,k) = 0.0
+          if ( effr_in ) then
+            rew (i,k) = effr_cw (i,k)
+            rei (i,k) = effr_iw (i,k)
+            rer (i,k) = effr_rw (i,k)
+            res (i,k) = effr_sw (i,k)
+          else
+            rew (i,k) = reliq_def            ! default liq radius to 10 micron
+            rei (i,k) = reice_def            ! default ice radius to 50 micron
+            rer (i,k) = rrain_def            ! default rain radius to 1000 micron
+            res (i,k) = rsnow_def            ! default snow radius to 250 micron
+          endif
+          tem2d (i,k) = min( 1.0, max( 0.0, (con_ttp-tlyr(i,k))*0.05 ) )
+          cldtot(i,k) = cldcov(i,k)
+        enddo
+      enddo
+
+!  ---  compute liquid/ice condensate path in g/m**2
+
+      do k = 1, NLAY
+        do i = 1, IX
+          if ( ivflip == 0 ) then          ! input data from toa to sfc
+            delp(i,k) = plvl(i,k+1) - plvl(i,k)
+          else                             ! input data from sfc to toa
+            delp(i,k) = plvl(i,k) - plvl(i,k+1)
+          endif
+
+          if ( qw(i,k) .gt. qmin ) cwp(i,k) = qw(i,k) * gfac * delp(i,k)
+          if ( qi(i,k) .gt. qmin ) cip(i,k) = qi(i,k) * gfac * delp(i,k)
+          if ( qr(i,k) .gt. qmin ) crp(i,k) = qr(i,k) * gfac * delp(i,k)
+          if ( qs(i,k)+qg(i,k) .gt. qmin ) &
+                         csp(i,k) = (qs(i,k)+qg(i,k)) * gfac * delp(i,k)
+        enddo
+      enddo
+
+!      if ( icmphys .eq. 12 ) then
 !      call cld_eff_rad (1, IX, 1, NLAY, slmsk, plyr*100,                &
 !     &                  abs(plvl(:,1:NLAY)-plvl(:,2:NLAY+1))*100,       &
 !     &                  tlyr, qw, qi, qr, qs, qg, qa, cwp, cip, crp,    &
 !     &                  csp, cgp, rew, rei, rer, res, reg, cldtot,      &
-!     &                  cldtot, snowd, cnvw=cnvw)
-!      cldcnv = cnvc
-      call cld_eff_rad (1, IX, 1, NLAY, slmsk, plyr*100,                &
-     &                  abs(plvl(:,1:NLAY)-plvl(:,2:NLAY+1))*100,       &
-     &                  tlyr, qw, qi, qr, qs, qg, qa, cwp, cip, crp,    &
-     &                  csp, cgp, rew, rei, rer, res, reg, cldtot,      &
-     &                  snowd, cnvw=cnvw, cnvc=cnvc)
-      cldcnv = 0.0
-      elseif ( icmphys .eq. 13 ) then
-      call cld_eff_rad_v3 (1, IX, 1, NLAY, slmsk, plyr*100,             &
-     &                  abs(plvl(:,1:NLAY)-plvl(:,2:NLAY+1))*100,       &
-     &                  tlyr, qw, qi, qr, qs, qg, qa, cwp, cip, crp,    &
-     &                  csp, cgp, rew, rei, rer, res, reg, cldtot,      &
-     &                  snowd, cnvw=cnvw, cnvc=cnvc)
-      cldcnv = 0.0
-      endif
+!     &                  snowd, cnvw=cnvw, cnvc=cnvc)
+!      cldcnv = 0.0
+!      elseif ( icmphys .eq. 13 ) then
+!      call cld_eff_rad_v3 (1, IX, 1, NLAY, slmsk, plyr*100,             &
+!     &                  abs(plvl(:,1:NLAY)-plvl(:,2:NLAY+1))*100,       &
+!     &                  tlyr, qw, qi, qr, qs, qg, qa, cwp, cip, crp,    &
+!     &                  csp, cgp, rew, rei, rer, res, reg, cldtot,      &
+!     &                  snowd, cnvw=cnvw, cnvc=cnvc)
+!      cldcnv = 0.0
+!      endif
 
 
 !  ---  find top pressure for each cloud domain for given latitude

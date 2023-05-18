@@ -1662,7 +1662,7 @@
 !   --- outputs:
             clouds,cldsa,mtopa,mbota                 &
            )
-       elseif ( icmphys == 9 ) then   ! New Thompson
+       elseif ( icmphys == 18 ) then   ! 2M Thompson
          if ( me == 0 .and. myrank == 0 )                               &
            print *,'### call New Thompson cloud ###'
 
@@ -1745,15 +1745,23 @@
 !    ---  inputs:
              ( plyr,plvl,tlyr,tvly,qlyr,qstl,rhly,cnvw1,cnvc1,          &
                tracer1(:,:,ntcw),tracer1(:,:,ntrw),tracer1(:,:,ntiw),   &
-               tracer1(:,:,ntsw),tracer1(:,:,ntgl),qa,                  &
-               cldcov,slmsk,snowd,                                      &
+               tracer1(:,:,ntsw),tracer1(:,:,ntgl),                     &
+               cldcov,slmsk,                                            &
+               phy_f3d(:,:,1),phy_f3d(:,:,2),phy_f3d(:,:,3),            &
+               phy_f3d(:,:,4),effr_in,                                  &
                xlat,xlon,im,lmk,lmp,                                    &
 !    ---  outputs:
                clouds,cldsa,mtopa,mbota                                 &
               ) 
-       elseif ( icmphys == 16 ) then   ! Goddard (GCE) 4ICE
+       elseif ( icmphys == 15 .or. icmphys == 16 ) then   ! Goddard (GCE)
+         if (kdt == 1) then
+           phy_f3d(:,:,1) = 10.
+           phy_f3d(:,:,2) = 50.
+           phy_f3d(:,:,3) = 250.
+           phy_f3d(:,:,4) = 1000.
+         endif
          if ( me == 0 .and. myrank == 0 )                               &
-           print *,'### call Goddard (GCE) 4ICE cloud ###'
+           print *,'### call Goddard (GCE) cloud ###'
            call progcld_gce                                             &
 !    ---  inputs:
              ( plyr, plvl, tlyr, tvly, qlyr, qstl, rhly, tracer1,       &

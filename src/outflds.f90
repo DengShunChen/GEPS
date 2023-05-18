@@ -119,10 +119,8 @@
 !
       if ( ntoz .gt. 0 ) then
         nclds=ntoz-1
-!        if ( nmmiph .eq. 9 ) nclds = 6  !Thompson with single-moment output
       else
         nclds=ncld
-!        if ( nmmiph .eq. 9 ) nclds = 6  !Thompson with single-moment output
       endif
 !  
       wk_xy = 0.
@@ -469,7 +467,7 @@
         endif
 !        
 !  output for combination of all condensates
-        if ( nmmiph .eq. 9 ) nclds = 6  !do not combine number concentraction for Thompson
+        if ( nmmiph .eq. 18 ) nclds = 6  !do not combine number concentraction for 2M Thompson
         tmp=0.
         do jj = 1, jlistnum
           j=jlist1(jj)

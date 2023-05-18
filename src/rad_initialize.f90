@@ -184,14 +184,16 @@
           icmphys = 6                   ! WSM6 microphysics
         elseif ( nmmiph == 8 ) then
           icmphys = 8                   ! Thompson microphysics
-        elseif ( nmmiph == 9 ) then
-          icmphys = 9                   ! new Thompson microphysics
+        elseif ( nmmiph == 18 ) then
+          icmphys = 18                  ! 2M Thompson microphysics
         elseif ( nmmiph == 11 ) then
           icmphys = 11                  ! GFDL microphysics version 1
         elseif ( nmmiph == 12 ) then
           icmphys = 12                  ! GFDL microphysics version 2
         elseif ( nmmiph == 13 ) then
           icmphys = 13                  ! GFDL microphysics version 3
+        elseif ( nmmiph == 15 ) then
+          icmphys = 15                  ! Goddard (GCE) 3ICE microphysics
         elseif ( nmmiph == 16 ) then
           icmphys = 16                  ! Goddard (GCE) 4ICE microphysics
         endif
