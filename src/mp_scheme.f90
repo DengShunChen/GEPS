@@ -1082,7 +1082,7 @@
             qt(i,(ntiw-1)*lev+k) = qi3d(i,kc,1)
             qt(i,(ntsw-1)*lev+k) = qs3d(i,kc,1)
             qt(i,(ntgl-1)*lev+k) = qg3d(i,kc,1)
-!            tt(i,k) = th3d(i,kc,1)*pk(i,k)  !potential temperature
+            tt(i,k) = th3d(i,kc,1)*pk(i,k)  !convert back to real temperature
 
             if ( nmmiph .eq. 15 ) then
               ! Goddard 3ICE with default effective raddi
