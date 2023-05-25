@@ -165,6 +165,8 @@
 
       logical, save :: lgfdlmprad =.true.  ! GFDL MP and radiation consistency flag
       logical, save :: effr_in =.true. ! flag for using effective radii of hydrometeors in radiation process (GFDLMP)
+      logical, save :: is_aerosol_aware =.false. ! flag for aerosol-aware Thompson MP
+      logical, save :: merra2_aerosol_aware =.false. ! flag for MERRA2 aerosol-aware Thompson MP
 
 ! ............................................. !
 !  -2.5- for module radiation_surface           !

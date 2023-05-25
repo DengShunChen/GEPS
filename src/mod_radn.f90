@@ -11,7 +11,7 @@
                ntoz,iovr_sw,iovr_lw,isubc_sw,isubc_lw,              &
                icliq_sw,icice_sw,icliq_lw,icice_lw,                 &
                iflip,me,irad,ntcw,ioutsigr,ntiw,ntrw,ntsw,          &
-               ntgl,ntinc,ntrnc
+               ntgl,ntinc,ntrnc,nthl
                  
       integer, save :: idate(8) 
       logical, save :: sashal,crick_proof,ccnorm,norad_precip

@@ -6,7 +6,7 @@
                         , t2,q2,rh2,rh10,u10,v10,fm,fh,fm10,fh2,srflag  &
                         , rld,stbo                                      &
                         , km,smc,stc,canopy,runoff,sigmaf,istyp,ivegtyp &
-                        , ncld,dsigma,islopetyp,slc,sncover,snwdph       &
+                        , ncld,dsigma,islopetyp,slc,sncover,snwdph      &
                         , shdmax,shdmin,snoalb,albedo2                  &
                         , sld,zice,cice,xtice,hpbl,asl,atl,xmu,gfx      &
                         , kpbl,nmpbl,nmmiph,jj,isot,ivegsrc,sfemis_g    &
@@ -155,7 +155,7 @@
       use mpe
       use rank
       use index
-      use radn,   only:ntcw,ntiw,ntinc,ntoz,ntrw,ntsw,ntgl
+      use radn,   only:ntcw,ntiw,ntinc,ntrnc,ntoz,ntrw,ntsw,ntgl
       use const,  only:RTYPE 
 !ch   use paramt
 
@@ -278,7 +278,11 @@
       ntrac=ncld
       if ( nmmiph .eq. 6 ) ntrac=ncld-3
       if ( nmmiph .eq. 8 ) ntrac=ncld-4
-      if ( nmmiph .eq.11 ) ntrac=7
+      if ( nmmiph .eq.18 ) ntrac=5
+      if ( nmmiph .eq.11 .or. nmmiph.eq.12 .or. nmmiph.eq.13 ) ntrac=7
+      if ( nmmiph .eq.15 ) ntrac=5
+      if ( nmmiph .eq.16 ) ntrac=5
+!      if ( nmmiph .eq.16 ) ntrac=8
 
       allocate(q1(nx,lev,ntrac))
 !
@@ -629,7 +633,18 @@
             q1(i,kc,5) = qt(i,lev*(ntoz-1)+k)
           enddo
         enddo
-      else if ( nmmiph .eq. 11 ) then ! GFDL MP
+      else if ( nmmiph .eq. 18 ) then ! 2M Thompson
+        do k=1,lev
+          kc=lev-k+1
+          do i=1,nxj
+            q1(i,kc,1) = qt(i,             k)
+            q1(i,kc,2) = qt(i,lev*(ntcw-1)+k)
+            q1(i,kc,3) = qt(i,lev*(ntiw-1)+k)
+            q1(i,kc,4) = qt(i,lev*(ntinc-1)+k)
+            q1(i,kc,5) = qt(i,lev*(ntoz-1)+k)
+          enddo
+        enddo
+      else if ( nmmiph.eq.11 .or. nmmiph.eq.12 .or. nmmiph.eq.13 ) then ! GFDL MP
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
@@ -640,6 +655,17 @@
             q1(i,kc,5) = qt(i,lev*(ntsw-1)+k)
             q1(i,kc,6) = qt(i,lev*(ntgl-1)+k)
             q1(i,kc,7) = qt(i,lev*(ntoz-1)+k)
+          enddo
+        enddo
+      else if ( nmmiph.eq.15 .or. nmmiph.eq.16 ) then ! Goddard MP
+        do k=1,lev
+          kc=lev-k+1
+          do i=1,nxj
+            q1(i,kc,1) = qt(i,             k)
+            q1(i,kc,2) = qt(i,lev*(ntcw-1)+k)
+            q1(i,kc,3) = qt(i,lev*(ntiw-1)+k)
+            q1(i,kc,4) = qt(i,lev*(ntrw-1)+k)
+            q1(i,kc,5) = qt(i,lev*(ntoz-1)+k)
           enddo
         enddo
       else
@@ -783,7 +809,17 @@
             qt(i,lev*(ntoz-1)+k) = q1(i,kc,5)
           enddo
         enddo
-      else if ( nmmiph .eq. 11 ) then ! GFDL MP
+      else if ( nmmiph .eq. 18 ) then ! 2M Thompson
+        do k=1,lev
+          kc=lev-k+1
+          do i=1,nxj
+            qt(i,lev*(ntcw-1)+k) = q1(i,kc,2)
+            qt(i,lev*(ntiw-1)+k) = q1(i,kc,3)
+            qt(i,lev*(ntinc-1)+k)= q1(i,kc,4)
+            qt(i,lev*(ntoz-1)+k) = q1(i,kc,5)
+          enddo
+        enddo
+      else if ( nmmiph.eq.11 .or. nmmiph.eq.12 .or. nmmiph.eq.13 ) then ! GFDL MP
         do k=1,lev
           kc=lev-k+1
           do i=1,nxj
@@ -793,6 +829,16 @@
             qt(i,lev*(ntsw-1)+k) = q1(i,kc,5)
             qt(i,lev*(ntgl-1)+k) = q1(i,kc,6)
             qt(i,lev*(ntoz-1)+k) = q1(i,kc,7)
+          enddo
+        enddo
+      else if ( nmmiph.eq.15 .or. nmmiph.eq.16 ) then ! Goddard MP
+        do k=1,lev
+          kc=lev-k+1
+          do i=1,nxj
+            qt(i,lev*(ntcw-1)+k) = q1(i,kc,2)
+            qt(i,lev*(ntiw-1)+k) = q1(i,kc,3)
+            qt(i,lev*(ntrw-1)+k) = q1(i,kc,4)
+            qt(i,lev*(ntoz-1)+k) = q1(i,kc,5)
           enddo
         enddo
       else
