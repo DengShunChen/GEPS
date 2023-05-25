@@ -1,3 +1,4 @@
+#define EffectRad_GCE3
 !WRF:MODEL_LAYER:PHYSICS
 !
 
@@ -47,6 +48,7 @@ MODULE module_mp_gsfcgce
 !  common /rsnw1/
    REAL,    PRIVATE ::         rn10b, rn10c, rnn191, rnn192,  rn30,     &
                              rnn30a,  rn33,  rn331,  rn332
+   REAL,    PRIVATE :: cpi
 
 !
    REAL,    PRIVATE, DIMENSION( 31 )  ::      aa1,  aa2
@@ -105,6 +107,11 @@ CONTAINS
                        snownc, snowncv, sr,                        &
                        graupelnc, graupelncv,                      &
                        refl_10cm, diagflag, do_radar_ref,          &
+#ifdef EffectRad_GCE3
+                       xland,                                      &
+                       re_cloud_gsfc, re_rain_gsfc, re_ice_gsfc,   &
+                       re_snow_gsfc, re_graupel_gsfc,              &
+#endif
 !                       f_qg, qg, pgold,                            &
                        f_qg, qg,                                   &
                        ihail, ice2                                 &
@@ -155,6 +162,14 @@ CONTAINS
                                                        graupelnc, &
                                                        graupelncv 
 
+#ifdef EffectRad_GCE3
+!JJS 20140225   for calculation of effective radius of cloud species
+      REAL , DIMENSION( ims:ime , jms:jme ) , INTENT(IN)   :: xland
+      REAL, DIMENSION( ims:ime , kms:kme , jms:jme ), INTENT(INOUT) ::  &
+             re_cloud_gsfc, re_rain_gsfc, re_ice_gsfc, re_snow_gsfc,    &
+             re_graupel_gsfc
+!JJS 20140225  ^^^^^
+#endif
 !+---+-----------------------------------------------------------------+
   REAL, DIMENSION(ims:ime, kms:kme, jms:jme), INTENT(INOUT)::           &  ! GT
                                                        refl_10cm
@@ -343,6 +358,11 @@ CONTAINS
 !                   ids,ide, jds,jde, kds,kde,                   & ! domain dims
                    ims,ime, jms,jme, kms,kme,                   & ! memory dims
                    its,ite, jts,jte, kts,kte                    & ! tile   dims
+#ifdef EffectRad_GCE3
+                  ,xland,                                       &
+                   re_cloud_gsfc, re_rain_gsfc, re_ice_gsfc,    & ! cloud effective radius
+                   re_snow_gsfc, re_graupel_gsfc                & ! cloud effective radius
+#endif
                                                                 ) 
 
 
@@ -1244,6 +1264,11 @@ CONTAINS
 !                       ids,ide, jds,jde, kds,kde, &
                        ims,ime, jms,jme, kms,kme, &
                        its,ite, jts,jte, kts,kte  &
+#ifdef EffectRad_GCE3
+                      ,xland,                                           &
+                       re_cloud_gsfc, re_rain_gsfc, re_ice_gsfc,        &
+                       re_snow_gsfc, re_graupel_gsfc                    & ! cloud effective radius
+#endif
                            )
     IMPLICIT NONE
 !ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -1499,6 +1524,27 @@ CONTAINS
 
 !JJS 1/3/2008  ^^^^^
 
+#ifdef EffectRad_GCE3
+!JJS 20140226  variables for the calculation of effective radius of cloud species
+      real, dimension (ims:ime, kms:kme, jms:jme) , INTENT(INOUT)   &
+                                  ::  re_cloud_gsfc, re_rain_gsfc,  &
+                                      re_ice_gsfc, re_snow_gsfc,    &
+                                      re_graupel_gsfc
+      REAL , DIMENSION(ims:ime,jms:jme) , INTENT(IN)   :: xland
+      real, parameter :: roqi = 0.9179    ! ice density
+      real, parameter :: ccn_over_land = 1500  ! [#/cm3] climatological value
+      real, parameter :: ccn_over_water = 150  ! [#/cm3] climatological value
+      real :: L_cloud    ! cloud water [g/cm3] !
+      real :: I_cloud    ! cloud water [g/cm3] !
+      real :: mu, ccn_ref, lambda
+      real :: gamfac1, gamfac3
+!      real :: ccn_out(CHUNK)  ! CCN conc [#/cm3] ! EMK TEST
+!      real :: icn_out(CHUNK)  ! IN conc [#/Litter] ! EMK TEST
+      real :: P_liu_daum  ! autoconversion rate [g/cm3 s-1]    !
+      real :: re_liu_daum ! effective radius of cloud [micron]   !
+      real,parameter :: min_icn = 0.01 !minimum # conc of IN [#/Litre]
+!JJS 20140226  ^^^^^
+#endif
 !+---+-----------------------------------------------------------------+
   REAL, DIMENSION(ims:ime, kms:kme, jms:jme), INTENT(INOUT):: refl_10cm  ! GT
 
@@ -2840,6 +2886,71 @@ CONTAINS
 
 !JJS modified by JJS on 5/1/2007  ^^^^^
 
+#ifdef EffectRad_GCE3
+!xb141 20230525 : code from GCE 4ICE
+!JJS 20140305 vvvvv  Calculate effective radius for all cloud species
+!   eff_rad is a function of the slope parameter (Lambda)
+
+      ! rain
+      if (qrn(i,j,k) .lt. cmin) then
+         re_rain_gsfc(i,k,j) = 0.
+      else
+         re_rain_gsfc(i,k,j) = eff_rad(zr(i,j))
+      endif
+
+      ! snow
+      if (qcs(i,j,k) .lt. cmin) then
+         re_snow_gsfc(i,k,j) = 0.e0
+      else
+         re_snow_gsfc(i,k,j) = eff_rad(zs(i,j))
+      endif
+
+      ! graupel
+      if (qcg(i,j,k) .lt. cmin) then
+         re_graupel_gsfc(i,k,j) = 0.e0
+      else
+         re_graupel_gsfc(i,k,j) = eff_rad(zg(i,j))
+      endif
+
+      ! cloud water
+      if (qcl(i,j,k) .lt. cmin) then
+         re_cloud_gsfc(i,k,j) = 0.e0
+      else
+         L_cloud = qcl(i,j,k) * rho(i,j,k)             ! cloud water [g/cm3]
+         ! Not running with WRF_Chem
+            ! ccn_over_land = 1500  ! [#/cm3] climatological value
+            ! ccn_over_water = 150  ! [#/cm3] climatological value
+            if (xland(i,j) .eq. 1.0) then
+               ccn_ref = ccn_over_land
+            else if (xland(i,j) .eq. 2.0) then
+               ccn_ref = ccn_over_water
+            else
+               print *,' xland is not 1. or 2., run stopped'
+               ! EMK NUWRF
+!               call wrf_error_fatal(' xland is not 1. or 2., run stopped')
+!               stop
+            endif
+           ! for cloud water, estimate lambda (slope of gamma distribution)
+                   mu = min(15.e0, (1000.E0/ccn_ref + 2.e0))
+                   gamfac3 = ( gamma_toshi(mu+4.e0) / gamma_toshi(mu+3.e0) )
+                   gamfac1 = ( gamma_toshi(mu+4.e0) / gamma_toshi(mu+1.e0) )
+                   lambda = (4.e0/3.e0*cpi*roqr*ccn_ref/L_cloud*   &
+                            gamfac1)**(1.e0/3.e0)  ! [1/cm]
+                   re_cloud_gsfc(i,k,j) = 1.e0/lambda * gamfac3 * 1.e4  !effective radius [micron]
+      endif ! qcl(i,k) < cmin test
+
+      ! cloud ice
+      if (qci(i,j,k) .lt. cmin) then
+         re_ice_gsfc(i,k,j) = 0.e0
+      else
+        ! Not running with WRF_Chem
+        ! for cloud ice effective radius depends on temperature profile, formula from GCE
+         re_ice_gsfc(i,k,j) = 125.e0 +(tair(i,j)-243.16)*5.e0     ! [micron]
+         if (tair(i,j) .gt. 243.16) re_ice_gsfc(i,k,j) = 125.e0
+         if (tair(i,j) .lt. 223.16) re_ice_gsfc(i,k,j) = 25.e0
+      endif ! qci(i,k) < cmin test
+#endif
+
  2000 continue
 
  1000 continue
@@ -3115,5 +3226,113 @@ CONTAINS
       end subroutine refl10cm_gsfc
 
 !+---+-----------------------------------------------------------------+
+
+#ifdef EffectRad_GCE3
+real function gamma_toshi(x)
+!---------------------------------------------------------------------------------------------------
+! Comments:
+!   compute the gamma function T(x) for single precision floating point.
+!       input :  x  --- argument of a(x)
+!                       ( x is not equal to 0,-1,-2,... )
+!
+! History:
+! 09/2009  Toshi Matsui@NASA GSFC ; Adapted to SDSU
+!
+! References:
+!----------------------------------------------------------------------------------------------------
+ implicit double precision (a-h,o-z)
+ dimension g(26)
+ data g/1.0d0,0.5772156649015329d0, &
+       -0.6558780715202538d0, -0.420026350340952d-1, &
+        0.1665386113822915d0,-.421977345555443d-1, &
+        -.96219715278770d-2, .72189432466630d-2, &
+        -.11651675918591d-2, -.2152416741149d-3, &
+        .1280502823882d-3, -.201348547807d-4, &
+        -.12504934821d-5, .11330272320d-5, &
+        -.2056338417d-6, .61160950d-8, &
+         .50020075d-8, -.11812746d-8, &
+        .1043427d-9, .77823d-11, &
+        -.36968d-11, .51d-12, &
+        -.206d-13, -.54d-14, .14d-14, .1d-15/
+ real :: x
+
+ pi=3.141592653589793d0
+ if (x.eq.int(x)) then
+     if (x.gt.0.0d0) then
+         ga=1.0d0
+         m1=int(x)-1
+        do k=2,m1
+           ga=ga*k
+        enddo
+     else
+        ga=1.0d+300
+     endif
+  else
+     if (dabs(dble(x)).gt.1.0d0) then
+         z=dabs(dble(x))
+         m=int(z)
+         r=1.0d0
+        do k=1,m
+           r=r*(z-k)
+        enddo
+        z=z-m
+     else
+        z=dble(x)
+     endif
+     gr=g(26)
+     do k=25,1,-1
+        gr=gr*z+g(k)
+     enddo
+     ga=1.0d0/(gr*z)
+     if (dabs(dble(x)).gt.1.0d0) then
+         ga=ga*r
+         if (x.lt.0.0d0) ga=-pi/(x*ga*dsin(pi*x))
+     endif
+  endif
+
+  gamma_toshi = real(ga)
+
+  end function gamma_toshi
+
+!JJS 20140225
+! Calculate cloud droplet effective radius
+   real function eff_rad(lambda)
+
+!#ifndef NO_IEEE_MODULE
+!      use, intrinsic :: ieee_arithmetic
+!#endif
+      implicit none
+
+!---------------------------------------------------------------------------------------------------
+! Comments:
+! Compute drop effective radius from slope parameters (lambda) of expoential size distribution.
+!
+! History:
+! 02/2014  Toshi Matsui@NASA GSFC ; Initial
+!
+! References:
+!----------------------------------------------------------------------------------------------------
+      real,intent(in)  :: lambda   ! intercept parameter [1/cm]
+
+!
+! for no particles.
+!
+!#ifndef NO_IEEE_MODULE
+!       if ( lambda <= 0.e0  .or. ieee_is_nan(lambda) ) then
+!#else
+       if ( lambda <= 0.e0                           ) then
+!#endif
+          eff_rad = 0.e0
+          return
+       endif
+
+!
+! compute drop effective radius for exponential distribution N(D) = N0*exp(-lam*D)
+!
+       eff_rad = 1.5e0 / (lambda*100.) * 1.0e+6  ! [micron]
+
+   end function eff_rad
+!+---+-----------------------------------------------------------------+
+#endif
 
 END MODULE  module_mp_gsfcgce

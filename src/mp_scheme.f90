@@ -1,3 +1,4 @@
+#define EffectRad_GCE3
 !#define update_dp
 !--------------------------
       subroutine mp_init                                               &
@@ -904,12 +905,14 @@
            pii3d(nx,lev,1),p3d(nx,lev,1),z3d(nx,lev,1),dz3d(nx,lev,1),  &
            rainnc2d(nx,1),snownc2d(nx,1),graupelnc2d(nx,1),             &
            rain2d(nx,1),snow2d(nx,1),graupel2d(nx,1),sr2d(nx,1),        &
-           refl_10cm(nx,lev,1),ht(nx,1) )
+           refl_10cm(nx,lev,1),ht(nx,1),land2d(nx,1) )
+        allocate                                                        &
+         ( rew3d(nx,lev,1),rer3d(nx,lev,1),rei3d(nx,lev,1),             &
+           res3d(nx,lev,1),reg3d(nx,lev,1) )
+
         if ( nmmiph.eq.16 ) allocate                                    &
          ( qh3d(nx,lev,1),w3d(nx,lev,1),                                &
-           hailnc2d(nx,1),hail2d(nx,1),land2d(nx,1),                    &
-           rew3d(nx,lev,1),rer3d(nx,lev,1),rei3d(nx,lev,1),             &
-           res3d(nx,lev,1),reg3d(nx,lev,1),reh3d(nx,lev,1) )
+           hailnc2d(nx,1),hail2d(nx,1),reh3d(nx,lev,1) )
 
         th3d = 0.
         qv3d = 0.
@@ -932,19 +935,19 @@
         graupelnc2d = 0.
         sr2d = 0.
         refl_10cm = 0.
+        land2d = 0.
+        rew3d = 0.
+        rer3d = 0.
+        rei3d = 0.
+        res3d = 0.
+        reg3d = 0.
 
         if ( nmmiph .eq. 16 ) then
           qh3d = 0.
           w3d = 0.
           hail2d = 0.
           hailnc2d = 0.
-          rew3d = 0.
-          rer3d = 0.
-          rei3d = 0.
-          res3d = 0.
-          reg3d = 0.
           reh3d = 0.
-          land2d = 0.
         endif
 
         ihail = 0  !run gsfcgce with graupel option
@@ -1006,12 +1009,10 @@
 
         do i = 1, nxj
           ht(i,1) = sgeo(i)/con_g   !terrain geopotential height above sea level (m)
-          if ( nmmiph .eq. 16 ) then
-            if( islimsk(i) .eq. 1 ) then
-              land2d(i,1) = 1.        !land
-            else
-              land2d(i,1) = 2.        !ocean & seaice
-            endif
+          if( islimsk(i) .eq. 1 ) then
+            land2d(i,1) = 1.        !land
+          else
+            land2d(i,1) = 2.        !ocean & seaice
           endif
         enddo
 
@@ -1029,6 +1030,11 @@
                    snownc2d, snow2d, sr2d,                              &
                    graupelnc2d, graupel2d,                              &
                    refl_10cm, diagflag, do_radar_ref,                   &
+#ifdef EffectRad_GCE3
+                   land2d,                                              &
+                   rew3d, rer3d, rei3d,                                 &
+                   res3d, reg3d,                                        &
+#endif
                    .false., qg3d,                                       &
                    ihail, ice2 )
 
@@ -1085,11 +1091,18 @@
             tt(i,k) = th3d(i,kc,1)*pk(i,k)  !convert back to real temperature
 
             if ( nmmiph .eq. 15 ) then
-              ! Goddard 3ICE with default effective raddi
+#ifdef EffectRad_GCE3
+              re_cloud(i,k) = rew3d(i,k,1)  !micron
+              re_rain (i,k) = rer3d(i,k,1)  !micron
+              re_ice  (i,k) = rei3d(i,k,1)  !micron
+              re_snow (i,k) = res3d(i,k,1)  !micron
+#else
+              ! Goddard 3ICE with constant effective radii
               re_cloud(i,k) = 10.0          !micron
               re_rain (i,k) = 1000.0        !micron
               re_ice  (i,k) = 50.0          !micron
               re_snow (i,k) = 250.0         !micron
+#endif
             endif
 
             if ( nmmiph .eq. 16 ) then
@@ -1110,9 +1123,9 @@
         deallocate                                                      &
          ( th3d,qv3d,qc3d,qr3d,qs3d,qi3d,qg3d,pii3d,p3d,z3d,dz3d,       &
            rainnc2d,snownc2d,graupelnc2d,rain2d,snow2d,graupel2d,       &
-           sr2d,refl_10cm )
+           sr2d,refl_10cm,land2d )
         if ( nmmiph .eq. 16 ) deallocate                                &
-         ( qh3d,rho3d,ht,w3d,hailnc2d,hail2d,land2d,                    &
+         ( qh3d,rho3d,ht,w3d,hailnc2d,hail2d,                           &
            rew3d,rer3d,rei3d,res3d,reg3d,reh3d )
 
       endif  !end of if nmmiph=15 .or. nmmiph=16
