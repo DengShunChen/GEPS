@@ -96,7 +96,7 @@
       real,     intent(in)    :: sgeo(nx)
 #endif
 !      real,     intent(in)    :: sd(nx,lev+1)
-      real,     intent(inout) :: sd(nx,lev+1)
+      real(kind=RTYPE), intent(inout) :: sd(nx,lev+1)
       real(kind=RTYPE), intent(in):: q0(nx,lev*ncld),pst(nx),          &
                                      dsigma(lev,2)
 !  ---  inputs/outputs:

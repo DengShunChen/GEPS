@@ -94,6 +94,7 @@ SRCS_f90  = \
   init_block.f90 \
   initial.f90 \
   intgrt.f90 \
+  intgrt_3tl.f90 \
   invmtx.f90 \
   ioserver.f90 \
   iounitdef.f90 \

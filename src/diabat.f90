@@ -1,4 +1,4 @@
-      subroutine diabat ( docup,dodry,dolsp,dopbl,dorad,doshl,dograv,tofd      &
+      subroutine diabat ( fwd,docup,dodry,dolsp,dopbl,dorad,doshl,dograv,tofd  &
                     , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw       &
                     , idg,jdg,ldiag,dt,tau,hours,julian,year,yrd               &
                     , frad,ozon,njump,itypbl,ktcup,ktpbl,ktshl,grav            &
@@ -188,7 +188,7 @@
 !
       use physcons, only :con_rd,con_fvirt,con_rerth,con_rv
 ! for slavepp
-      use phygrid,  only :dtcup,ducup,dvcup,dtshl,dushl,dvshl,dtlsp
+      use phygrid,  only :dtcup,ducup,dvcup,dtshl,dushl,dvshl,dtlsp,dulsp,dvlsp
 ! for land_noah_new
       use namelist_soilveg, only :MAX_SLOPETYP,MAX_SOILTYP,MAX_VEGTYP
       use mod_stochastic_physics, only : sppt3d, shum3d, ssst3d
@@ -208,7 +208,7 @@
 
       logical   docup,dodry,dolsp,dopbl,dorad,doshl,dograv,ozon,     &
                 land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max),  &
-                docgrav,tofd
+                docgrav,tofd,fwd
 
       real      tice,hice,qgini,thdai,tengi,ptop,                    &
                 hltm,evaprh,s0,stbo,cp,rgas,grav,frad,               &
@@ -578,8 +578,14 @@
 !     define local control variables
 !
       fluxcl = .true.
-      dta    = dt
-      rainfc = 1.0
+      if (fwd) then
+        dta    = dt
+        rainfc = 1.0
+      else
+        dta    = 2.0*dt
+        rainfc = 0.5
+      endif
+!
       if (itimestep .le. 1) then
          doozon = .true.
          kdt    = 1
@@ -1800,7 +1806,7 @@
                       qtc,qtr,ttc,           &
                       ftp (1,1,jj),fqp (1,1,jj),fpsp (1,jj),&
                       ftp1(1,1,jj),fqp1(1,1,jj),fpsp1(1,jj),&
-                      rhc,lprnt)
+                      rhc,lprnt,fwd)
 !
           call precpd(nxjp(j),nxp,lev,dta,del,prsl,psfc, &
                       qtc, qtr, ttc,           &
@@ -1838,11 +1844,19 @@
       if ( dolsp .and. (nmmiph.eq.6 .or. nmmiph.eq.8 .or. nmmiph.eq.11) ) then
 
 ! for GFDL MP
-      do i = 1, nxj
-        area(i) = tem1*tem2  !area of grid box
-      enddo
+        do i = 1, nxj
+          area(i) = tem1*tem2  !area of grid box
+        enddo
+        do k = 1, lev
+          do i = 1, nxj
+            ttc(i,k)  = tt(i,k,jj)
+            utc(i,k)  = ut(i,k,jj)
+            vtc(i,k)  = vt(i,k,jj)
+          enddo
+        enddo
 
-      call mp_scheme                                                   &
+
+        call mp_scheme                                                 &
 !  ---  inputs:
            ( nmmiph,nxp,nxjp(j),lev,ncld,plt(1,1,jj),                  &
              pst(1,jj),dsigma,phii,islimsk,q0,kdt,ntcw,ntrw,ntiw,ntsw, &
@@ -1851,12 +1865,31 @@
              sgeo(1,jj),                                               &
 #endif
 !  ---  inputs/outputs:
-             tt(1,1,jj),qt(1,1,jj),clds(1,1,jj),                       &
-             ut(1,1,jj),vt(1,1,jj),sd(1,1,jj),                         &
+             ttc       ,qt(1,1,jj),clds(1,1,jj),                       &
+             utc       ,vtc       ,sd(1,1,jj),                         &
 !  ---  outputs:
              ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),fqp1(1,1,jj),        &
              rlsp(1,jj),sr(1,jj) )
 !    
+        do k = 1, lev
+          do i = 1, nxj
+            dttmp = ttc(i,k)-tt(i,k,jj)
+            dutmp = utc(i,k)-ut(i,k,jj)
+            dvtmp = vtc(i,k)-vt(i,k,jj)
+            if ( kdt .eq. 1 .or. .not. doslavepp ) then
+              tt(i,k,jj) = ttc(i,k)
+              ut(i,k,jj) = utc(i,k)
+              vt(i,k,jj) = vtc(i,k)
+            else
+              tt(i,k,jj) = 0.5*( dttmp + dtlsp(i,k,jj) )+tt(i,k,jj)
+              ut(i,k,jj) = 0.5*( dutmp + dulsp(i,k,jj) )+ut(i,k,jj)
+              vt(i,k,jj) = 0.5*( dvtmp + dvlsp(i,k,jj) )+vt(i,k,jj)
+            endif
+            dtlsp(i,k,jj)  = dttmp
+            dulsp(i,k,jj)  = dutmp
+            dvlsp(i,k,jj)  = dvtmp
+          enddo
+        enddo
       endif
 
 !

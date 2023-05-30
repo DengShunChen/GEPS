@@ -85,8 +85,7 @@
       real      hf24(nxp,my_max),qf24(nxp,my_max),ss24(nxp,my_max),rs24(nxp,my_max), &
                 asol24(nxp,my_max),olr24(nxp,my_max),rain24(nxp,my_max),             &
                 rainlp24(nxp,my_max),totallp(nxp,my_max),                            &
-                drag(nxp,lev,my_max),ugws(nxp,my_max),vgws(nxp,my_max),              &
-                pklev(nxp,my_max)
+                drag(nxp,lev,my_max),ugws(nxp,my_max),vgws(nxp,my_max)
 
        integer  kn
       character*26 ihdg
@@ -106,7 +105,7 @@
                ,sumwati  ,sumwat   ,sumwatt(nxp,my_max)  
       data      windmax3/130./
 !
-      logical   histim, tchange, flag, forward
+      logical   histim, tchange, flag, forward, fwd
 !
       logical   wrestrt
       data      wrestrt/.false./
@@ -148,8 +147,7 @@
       real    www,dtx,dta,dth,dtq,thdai,tkei,tpei,dsigp,    &
               cosw,tengi,dt24,tg2,dtx_tau,hfiltx,sqhaf,     &
               dt1,sptend,wmax,xx,dtaup,hfiltm,              &
-              sptendmax2,sptendmax1,dt_chg,prslp,alphax,    &
-              tfilt
+              sptendmax2,sptendmax1,dt_chg,prslp,alphax
       integer itimestep,recn
 
 ! for io quilting
@@ -429,7 +427,6 @@
       itaup=taup+0.1
       tau=taui
       dtx=dt
-      itter=1
 !
       dta = dtx
       itter=1
@@ -498,13 +495,13 @@
             qtot=0.
             do n = 1, ncld-1
                kk=k+(n-1)*lev
-               qtot(i,jj)=qtot(i,jj)+qt(i,kk,jj)*cosl(j)*nx/nxjf
+               qtot(i,jj)=qtot(i,jj)+qt(i,kk,jj)
             enddo
             sumdryt(i,jj) = sumdryt(i,jj)+dsigp*(1.-qtot(i,jj))
             sumwatt(i,jj) = sumwatt(i,jj)+dsigp*qtot(i,jj)
           enddo
-          sumdryi = sumdryi + sumdryt(i,jj)
-          sumwati = sumwati + sumwatt(i,jj)
+          sumdryi = sumdryi + sumdryt(i,jj)*cosl(j)*nx/nxjf
+          sumwati = sumwati + sumwatt(i,jj)*cosl(j)*nx/nxjf
         enddo
       enddo
       call mpe_global_sum(sumdryi,1,mpe_double)
@@ -712,7 +709,7 @@
         enddo
         do k = 1, lev*ncld
           do i = 1,nxj
-            qp(i,k,jj) = qt(i,k,jj)
+            qm(i,k,jj) = qt(i,k,jj)
           enddo
         enddo
         do i = 1,nxj
@@ -744,6 +741,7 @@
 
        deldm=0.
        forward = .true.
+       fwd= .true.
 
 !
 !
@@ -819,8 +817,10 @@
 
 !CWB2021 ndsl single precision test
       call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlrp,vdmerdrp,dth,forward)
-      call ndslfv_monoadvv_fgnl(vdzonl,vdmerd,ddtemp,pdot,pt &
-                          ,nxjp,dth,3,forward)
+      do itt = 1,itter
+        call ndslfv_monoadvv_fgnl(vdzonl,vdmerd,ddtemp,pdot,pt &
+                            ,nxjp,ndsldtah,3,forward)
+      enddo
 
        forward = .false.
 !CWB2021 ndsl single precision test
@@ -932,7 +932,7 @@
 !!        call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld              &
         call gridnl_hybrid_ndsl (nxjp(j),nxp,lev,ncld                   &
         , cp,radsq,um(1,1,jj),vm(1,1,jj),rdivm(1,1,jj),tm(1,1,jj)       &
-        , qp(1,1,jj),phi(1,1,jj),ptm(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
+        , qm(1,1,jj),phi(1,1,jj),ptm(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
         , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)          &
         , diveng(1,1,jj),vdmerdg(1,1,jj),vdzonlg(1,1,jj),pten(1,1,jj)   &
         , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),vvel(1,1,jj)  &
@@ -957,10 +957,10 @@
       enddo !jj = 1,jlistnum
 !
 
-! transpose partial to full: ut -> ut_sl, vt -> vt_sl, ut -> uum_sl, vt -> vvm_sl, tt -> ttm_sl, qp -> qm_sl
+! transpose partial to full: ut -> ut_sl, vt -> vt_sl, ut -> uum_sl, vt -> vvm_sl, tt -> ttm_sl, qm -> qm_sl
 
 !#ifdef MULTIPLE
-!      call mpe2d_transpose_ndsl_p2f_multi(um   ,vm   ,ut   ,vt   ,tt   ,qp   , &
+!      call mpe2d_transpose_ndsl_p2f_multi(um   ,vm   ,ut   ,vt   ,tt   ,qm   , &
 !                                    ut_sl,vt_sl,uum_sl,vvm_sl,ttm_sl,qm_sl, &
 !                                    nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm,6)
 !#else
@@ -976,7 +976,7 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !!      call mpe2d_transpose_ndsl_p2f(pten,pten_sl, &
 !!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f(qp,qm_sl,    &
+      call mpe2d_transpose_ndsl_p2f(qm,qm_sl,    &
                                     nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !#endif
 
@@ -988,10 +988,10 @@
 !     Semi-Lagrangian
 !       Horizontal Advection
 
-        do itt = 1,itter
+!        do itt = 1,itter
         call ndslfv_monoadvh(ttm_sl,qm_sl,pten_sl,uum_sl,vvm_sl  &
-                             ,nxdef,ndsldtah,xy,levp)
-        enddo
+                             ,nxdef,ndsldta,xy,levp)
+!        enddo
 
 !ch>
 ! transpose full to partial: ttm_sl -> ddtemp,  pten_sl -> pten, uum_sl -> vdzonl
@@ -1024,7 +1024,9 @@
 !       Vertical Advection
 !
 !       call ndslfv_monoadvv(ddtemp,qt,vdzonl,vdmerd,pdot,ptm      &
-        call ndslfv_monoadvv(tt,qt,ut,vt,pdot,ptm,nxjp,ndsldta,forward)
+        do itt = 1,itter
+          call ndslfv_monoadvv(tt,qt,ut,vt,pdot,ptm,nxjp,ndsldtah,forward)
+        enddo
 
 !CWB2021 ndsl single precision test
 
@@ -1179,6 +1181,7 @@
         do i = 1,nxj
           do k = 1, lev
             dsigp = dsigma(k,1)*pt(i,jj)+dsigma(k,2)
+            dsigp = dsigp*cosl(j)*nx/nxjf
             qtot=0.
             do n = 1, ncld-1
                kk=k+(n-1)*lev
@@ -1210,7 +1213,7 @@
 !
         if (yesdia)  then
 
-          call diabat ( docup,dodry,dolsp,dopbl,dorad,doshl,dograv,tofd         &
+          call diabat ( fwd,docup,dodry,dolsp,dopbl,dorad,doshl,dograv,tofd     &
                       , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw      &
                       , idg,jdg,ldiag,dtx,tau,hours,julian,year,yrd             &
                       , frad,ozon,njump,itypbl,ktcup,ktpbl,ktshl,grav           &
@@ -1220,7 +1223,7 @@
                       , rainlp,raincu6,rainlp6,raincu3,rainlp3,raincu1,rainlp1  &
                       , hflux,qflux,ustar,tstar,qstar,e                         &
                       , eps,o3l,dtrad,ss,rs,plt,pk,pk2                          &
-                      , ptp,    up,    vp,   ttp,qp                             &
+                      , ptp,    up,    vp,   ttp,qm                             &
                       , pt ,    ut,    vt,    tt,qt                             &
                       , gwclim,tice,hice,qgini,thdai,tengi                      &
                       , acld,std,asol,olr,drag,ugws,vgws                        &
