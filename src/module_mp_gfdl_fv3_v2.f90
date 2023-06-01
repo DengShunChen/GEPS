@@ -361,6 +361,10 @@ module module_mp_gfdl_v2
     ! 5: wyser, 1998
     ! 6: Heymsfield et al.,2014  !not finished (by xb141)
     
+    integer :: ccnflag = 1
+    ! 1: default in GFDL MP v2
+    ! 2: same as use_ccn=f in GFDL MP v1, ccn=ccn0/den
+    ! 3: same as use_ccn=t in GFDL MP v1, ccn=ccn0/densfc
     ! -----------------------------------------------------------------------
     ! namelist
     ! -----------------------------------------------------------------------
@@ -396,7 +400,7 @@ module module_mp_gfdl_v2
         do_cond_timescale, mp_time, consv_checker, te_err, use_park_cloud, &
         use_gi_cloud, use_rhc_cevap, use_rhc_revap, inflag, do_warm_rain_mp, &
         rh_thres, f_dq_p, f_dq_m, do_cld_adj, liq_ice_combine, snow_grauple_combine, &
-        rewflag, reiflag
+        rewflag, reiflag, ccnflag
     
 contains
 
@@ -794,8 +798,16 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
                 ccn_o * (1. - min (1., abs (hs (i)) / (10. * grav)))) * 1.e6
 #endif
             do k = ks, ke
-                ccn (k) = ccn0 / den (k)
-                c_praut (k) = cpaut * (ccn (k) * rhor) ** (- 1. / 3.)
+                if ( ccnflag .eq. 2 ) then  ! use_ccn=f
+                    ccn (k) = ccn0 / den(k)
+                    c_praut (k) = cpaut * (ccn0 * rhor) ** (- 1. / 3.)
+                elseif ( ccnflag .eq. 3 ) then  ! use_ccn=t
+                    ccn (k) = ccn0 * rdgas * tz (ke) / p1 (ke)
+                    c_praut (k) = cpaut * (ccn (k) * rhor) ** (- 1. / 3.)
+                else  ! default
+                    ccn (k) = ccn0 / den (k)
+                    c_praut (k) = cpaut * (ccn (k) * rhor) ** (- 1. / 3.)
+                endif
             enddo
         endif
         
