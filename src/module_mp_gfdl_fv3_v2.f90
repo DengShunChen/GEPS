@@ -361,6 +361,10 @@ module module_mp_gfdl_v2
     ! 5: wyser, 1998
     ! 6: Heymsfield et al.,2014  !not finished (by xb141)
     
+    integer :: ccnflag = 1
+    ! 1: default in GFDL MP v2
+    ! 2: same as use_ccn=f in GFDL MP v1, ccn=ccn0/den
+    ! 3: same as use_ccn=t in GFDL MP v1, ccn=ccn0/densfc
     ! -----------------------------------------------------------------------
     ! namelist
     ! -----------------------------------------------------------------------
@@ -396,7 +400,7 @@ module module_mp_gfdl_v2
         do_cond_timescale, mp_time, consv_checker, te_err, use_park_cloud, &
         use_gi_cloud, use_rhc_cevap, use_rhc_revap, inflag, do_warm_rain_mp, &
         rh_thres, f_dq_p, f_dq_m, do_cld_adj, liq_ice_combine, snow_grauple_combine, &
-        rewflag, reiflag
+        rewflag, reiflag, ccnflag
     
 contains
 
@@ -447,8 +451,8 @@ subroutine gfdl_cld_mp_driver                                              &
 #endif
     real, intent (inout), dimension (is:ie) :: rain, snow, ice, graupel
     ! logical :: used
-    real, dimension (is:ie) :: w_var
-    real, dimension (is:ie, ks:ke) :: vt_r, vt_s, vt_g, vt_i
+!    real, dimension (is:ie) :: w_var
+!    real, dimension (is:ie, ks:ke) :: vt_r, vt_s, vt_g, vt_i
     real, dimension (is:ie, ks:ke) :: m2_rain, m2_sol
 #ifndef EXT_DIAG
     real, dimension (is:ie, ks:ke) :: prefluxr, prefluxi, prefluxs, prefluxg
@@ -511,7 +515,8 @@ subroutine gfdl_cld_mp_driver                                              &
 #ifdef oldmask
         land, &
 #endif
-        w_var, vt_r, vt_s, vt_g, vt_i, q_con, cappa, consv_te, te, &
+!        w_var, vt_r, vt_s, vt_g, vt_i, 
+        q_con, cappa, consv_te, te, &
         prefluxr, prefluxi, prefluxs, prefluxg, condensation, deposition, &
         evaporation, sublimation, rhc, last_step, do_inline_mp)
     
@@ -538,7 +543,8 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
 #ifdef oldmask
         land, &
 #endif
-        w_var, vt_r, vt_s, vt_g, vt_i, q_con, cappa, consv_te, te, &
+!        w_var, vt_r, vt_s, vt_g, vt_i, 
+        q_con, cappa, consv_te, te, &
         prefluxr, prefluxi, prefluxs, prefluxg, condensation, deposition, &
         evaporation, sublimation, rhc, last_step, do_inline_mp )
     
@@ -568,8 +574,8 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
     real, intent (inout), dimension (is:ie) :: condensation, deposition
     real, intent (inout), dimension (is:ie) :: evaporation, sublimation
     
-    real, intent (out), dimension (is:ie) :: w_var
-    real, intent (out), dimension (is:ie, ks:ke) :: vt_r, vt_s, vt_g, vt_i
+!    real, intent (out), dimension (is:ie) :: w_var
+!    real, intent (out), dimension (is:ie, ks:ke) :: vt_r, vt_s, vt_g, vt_i
     real, intent (out), dimension (is:ie, ks:ke) :: m2_rain, m2_sol
     real, intent (out), dimension (is:ie, ks:ke) :: te
     ! local:
@@ -794,8 +800,16 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
                 ccn_o * (1. - min (1., abs (hs (i)) / (10. * grav)))) * 1.e6
 #endif
             do k = ks, ke
-                ccn (k) = ccn0 / den (k)
-                c_praut (k) = cpaut * (ccn (k) * rhor) ** (- 1. / 3.)
+                if ( ccnflag .eq. 2 ) then  ! use_ccn=f
+                    ccn (k) = ccn0 / den(k)
+                    c_praut (k) = cpaut * (ccn0 * rhor) ** (- 1. / 3.)
+                elseif ( ccnflag .eq. 3 ) then  ! use_ccn=t
+                    ccn (k) = ccn0 * rdgas * tz (ke) / p1 (ke)
+                    c_praut (k) = cpaut * (ccn (k) * rhor) ** (- 1. / 3.)
+                else  ! default
+                    ccn (k) = ccn0 / den (k)
+                    c_praut (k) = cpaut * (ccn (k) * rhor) ** (- 1. / 3.)
+                endif
             enddo
         endif
         
