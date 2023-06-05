@@ -451,8 +451,8 @@ subroutine gfdl_cld_mp_driver                                              &
 #endif
     real, intent (inout), dimension (is:ie) :: rain, snow, ice, graupel
     ! logical :: used
-    real, dimension (is:ie) :: w_var
-    real, dimension (is:ie, ks:ke) :: vt_r, vt_s, vt_g, vt_i
+!    real, dimension (is:ie) :: w_var
+!    real, dimension (is:ie, ks:ke) :: vt_r, vt_s, vt_g, vt_i
     real, dimension (is:ie, ks:ke) :: m2_rain, m2_sol
 #ifndef EXT_DIAG
     real, dimension (is:ie, ks:ke) :: prefluxr, prefluxi, prefluxs, prefluxg
@@ -515,7 +515,8 @@ subroutine gfdl_cld_mp_driver                                              &
 #ifdef oldmask
         land, &
 #endif
-        w_var, vt_r, vt_s, vt_g, vt_i, q_con, cappa, consv_te, te, &
+!        w_var, vt_r, vt_s, vt_g, vt_i, 
+        q_con, cappa, consv_te, te, &
         prefluxr, prefluxi, prefluxs, prefluxg, condensation, deposition, &
         evaporation, sublimation, rhc, last_step, do_inline_mp)
     
@@ -542,7 +543,8 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
 #ifdef oldmask
         land, &
 #endif
-        w_var, vt_r, vt_s, vt_g, vt_i, q_con, cappa, consv_te, te, &
+!        w_var, vt_r, vt_s, vt_g, vt_i, 
+        q_con, cappa, consv_te, te, &
         prefluxr, prefluxi, prefluxs, prefluxg, condensation, deposition, &
         evaporation, sublimation, rhc, last_step, do_inline_mp )
     
@@ -572,8 +574,8 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
     real, intent (inout), dimension (is:ie) :: condensation, deposition
     real, intent (inout), dimension (is:ie) :: evaporation, sublimation
     
-    real, intent (out), dimension (is:ie) :: w_var
-    real, intent (out), dimension (is:ie, ks:ke) :: vt_r, vt_s, vt_g, vt_i
+!    real, intent (out), dimension (is:ie) :: w_var
+!    real, intent (out), dimension (is:ie, ks:ke) :: vt_r, vt_s, vt_g, vt_i
     real, intent (out), dimension (is:ie, ks:ke) :: m2_rain, m2_sol
     real, intent (out), dimension (is:ie, ks:ke) :: te
     ! local:
