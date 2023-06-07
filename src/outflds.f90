@@ -20,7 +20,7 @@
       use index
       use mod_outflds
       use radn, only : ntcw,ntiw,ntoz
-      use const, only : RTYPE
+      use const, only : RTYPE,nmmiph
 
       implicit  none
 
@@ -466,7 +466,8 @@
             ,whtlevq,pkout,plog,pllp,tmp,bt1,pres3d,glob,ggdef,ntoz,lwrite)
         endif
 !        
-!  output for combination of all cloud water and cloud ice
+!  output for combination of all condensates
+        if ( nmmiph .eq. 18 ) nclds = 6  !do not combine number concentraction for 2M Thompson
         tmp=0.
         do jj = 1, jlistnum
           j=jlist1(jj)
