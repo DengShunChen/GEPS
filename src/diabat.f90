@@ -1,5 +1,4 @@
-!#define update_dp
-      subroutine diabat ( docup,dodry,dolsp,dopbl,dorad,doshl,dograv,tofd      &
+      subroutine diabat ( fwd,docup,dodry,dolsp,dopbl,dorad,doshl,dograv,tofd  &
                     , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw       &
                     , idg,jdg,ldiag,dt,tau,hours,julian,year,yrd               &
                     , frad,ozon,njump,itypbl,ktcup,ktpbl,ktshl,grav            &
@@ -30,7 +29,7 @@
 ! sit
                     , itimestep,lrun_sitvdiff,ic_sit                           &
 !xb110>
-                    , flash,tsflw,vvel)
+                    , flash,tsflw,vvel,totallp)
 !xb110<
 !--------------------------------------------------------------------------------
 !#######################################################################
@@ -189,7 +188,7 @@
 !
       use physcons, only :con_rd,con_fvirt,con_rerth,con_rv,con_pi
 ! for slavepp
-      use phygrid,  only :dtcup,ducup,dvcup,dtshl,dushl,dvshl,dtlsp
+      use phygrid,  only :dtcup,ducup,dvcup,dtshl,dushl,dvshl,dtlsp,dulsp,dvlsp
 ! for land_noah_new
       use namelist_soilveg, only :MAX_SLOPETYP,MAX_SOILTYP,MAX_VEGTYP
       use mod_stochastic_physics, only : sppt3d, shum3d, ssst3d
@@ -209,7 +208,7 @@
 
       logical   docup,dodry,dolsp,dopbl,dorad,doshl,dograv,ozon,     &
                 land(nxp,my_max),ocean(nxp,my_max),ice(nxp,my_max),  &
-                docgrav,tofd
+                docgrav,tofd,fwd
 
       real      tice,hice,qgini,thdai,tengi,ptop,                    &
                 hltm,evaprh,s0,stbo,cp,rgas,grav,frad,               &
@@ -227,7 +226,7 @@
                 e(nxp,lev,my_max),eps(nxp,lev,my_max),                    &
                 dtrad(nxp,lev,my_max),ss(nxp,my_max),                     &
                 rs(nxp,my_max),plt(nxp,lev,my_max),                       &
-                rainlp(nxp,my_max),                                       &
+                rainlp(nxp,my_max),totallp(nxp,my_max),                   &
                 gwclim(nxp,my_max),acld(lev,my),std(nxp,my_max),          &
                 asol(nxp,my_max),olr(nxp,my_max),drag(nxp,lev,my_max),    &
                 ugws(nxp,my_max),vgws(nxp,my_max),                        &
@@ -515,6 +514,7 @@
       ptu = 0.
       pqu = 0.
       cnvwn = 0.
+      dtradn = 0.
 !xb110<
 !ps
 !CWB2015 
@@ -582,8 +582,14 @@
 !     define local control variables
 !
       fluxcl = .true.
-      dta    = dt
-      rainfc = 1.0
+      if (fwd) then
+        dta    = dt
+        rainfc = 1.0
+      else
+        dta    = 2.0*dt
+        rainfc = 0.5
+      endif
+!
       if (itimestep .le. 1) then
          doozon = .true.
          kdt    = 1
@@ -596,10 +602,11 @@
 !     set hours, iter, icrad, julian, uprad, doozon
 !------------------------------------------------------------------------------
 
+
       rsolhr = hours
-      hours = hours + dt/3600.0
-      if ( hours .gt. 24.0 )  then
-         hours = mod ( hours,24.0 )
+      hours = hours + dt/3600.
+      if ( abs(24.-hours) .lt. 1.e-6 )  then
+         hours = 0. 
          julian= julian + 1
          if ( julian .gt. yrd ) julian = julian - yrd
          doozon = .true.
@@ -1840,7 +1847,7 @@
                       qtc,qtr,ttc,           &
                       ftp (1,1,jj),fqp (1,1,jj),fpsp (1,jj),&
                       ftp1(1,1,jj),fqp1(1,1,jj),fpsp1(1,jj),&
-                      rhc,lprnt)
+                      rhc,lprnt,fwd)
 !
           call precpd(nxjp(j),nxp,lev,dta,del,prsl,psfc, &
                       qtc, qtr, ttc,           &
@@ -1903,15 +1910,24 @@
       enddo
 #endif
 
-      call mp_scheme                                                   &
+! for slavepp
+        do k = 1, lev
+          do i = 1, nxj
+            ttc(i,k)  = tt(i,k,jj)
+            utc(i,k)  = ut(i,k,jj)
+            vtc(i,k)  = vt(i,k,jj)
+          enddo
+        enddo
+
+        call mp_scheme                                                 &
 !  ---  inputs:
            ( nmmiph,nxp,nxjp(j),lev,ncld,plt(1,1,jj),ptop,             &
              dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,            &
              itimestep,sgeo(1,jj),phi,rhc_mp,pk(1,1,jj),               &
              snr(1,jj),                                                &
 !  ---  inputs/outputs:
-             tt(1,1,jj),qt(1,1,jj),clds(1,1,jj),                       &
-             ut(1,1,jj),vt(1,1,jj),vvel(1,1,jj),                       &
+             ttc       ,qt(1,1,jj),clds(1,1,jj),                       &
+             utc       ,vtc       ,vvel(1,1,jj),                       &
              pst(1,jj),                                                &
 !  ---  outputs:
              ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),fqp1(1,1,jj),        &
@@ -1924,6 +1940,26 @@
                             pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
       endif
 #endif
+!    
+        do k = 1, lev
+          do i = 1, nxj
+            dttmp = ttc(i,k)-tt(i,k,jj)
+            dutmp = utc(i,k)-ut(i,k,jj)
+            dvtmp = vtc(i,k)-vt(i,k,jj)
+            if ( kdt .eq. 1 .or. .not. doslavepp ) then
+              tt(i,k,jj) = ttc(i,k)
+              ut(i,k,jj) = utc(i,k)
+              vt(i,k,jj) = vtc(i,k)
+            else
+              tt(i,k,jj) = 0.5*( dttmp + dtlsp(i,k,jj) )+tt(i,k,jj)
+              ut(i,k,jj) = 0.5*( dutmp + dulsp(i,k,jj) )+ut(i,k,jj)
+              vt(i,k,jj) = 0.5*( dvtmp + dvlsp(i,k,jj) )+vt(i,k,jj)
+            endif
+            dtlsp(i,k,jj)  = dttmp
+            dulsp(i,k,jj)  = dutmp
+            dvlsp(i,k,jj)  = dvtmp
+          enddo
+        enddo
       endif
 
 !
@@ -2408,6 +2444,7 @@
         nxj=nxdef_2d(j)
         do i = 1,nxj
           totalp(i,jj) = (rcup(i,jj)  + rlsp(i,jj))*rainfc
+          totallp(i,jj)= rlsp(i,jj)*rainfc
           raincu(i,jj) = raincu(i,jj) + rcup(i,jj)*rainfc
           rainlp(i,jj) = rainlp(i,jj) + rlsp(i,jj)*rainfc
           raincu1(i,jj)= raincu1(i,jj)+ rcup(i,jj)*rainfc

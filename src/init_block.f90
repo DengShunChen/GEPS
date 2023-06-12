@@ -104,6 +104,8 @@
       doslavepp=.false.
 ! dy-core two loop sequence
       two_loop=.false.
+! dy-core two time level
+      ttl=.true.
 ! output data for RSM (Also, RSM compiling flag is necessary)
       outrsm=.false.
       rsmoutinv=6
@@ -320,7 +322,7 @@
 !  sponge layer 
       spl1=20.
       spl2=100.
-      vd=2.
+      vd=0.1
       endif
 !
       tmeans=300.
@@ -333,6 +335,10 @@
 ! for forward weighting Semi-Implicit
 !
       alpha=0.7
+!
+! for Robert time filter in three time level
+!
+      tfilt=0.04
 !
 ! for two time level 
 !

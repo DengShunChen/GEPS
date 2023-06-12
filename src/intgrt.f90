@@ -62,7 +62,7 @@
       integer   nfxr
 !  for Semi-Lagrangian
 !
-      real(kind=RTYPE) ndsldta,ndsldtah,facm(2,2),                 &
+      real(kind=RTYPE) ndsldta,ndsldtah,dth,dta,facm(2,2),         &
                 diveng(nxp,lev,my_max),                            &
                 qm_sl(nx,levp*ncld,my_max),                        &
                 pten_sl(nx,levp,my_max),                           &
@@ -84,26 +84,28 @@
       real(kind=RTYPE) glob(nx,my)
       real      hf24(nxp,my_max),qf24(nxp,my_max),ss24(nxp,my_max),rs24(nxp,my_max), &
                 asol24(nxp,my_max),olr24(nxp,my_max),rain24(nxp,my_max),             &
-                drag(nxp,lev,my_max),ugws(nxp,my_max),vgws(nxp,my_max),              &
-                pklev(nxp,my_max)
+                rainlp24(nxp,my_max),totallp(nxp,my_max),                            &
+                drag(nxp,lev,my_max),ugws(nxp,my_max),vgws(nxp,my_max)
 
        integer  kn
       character*26 ihdg
 
       real      tmin(nxp,my_max),tmax(nxp,my_max)!,td(nxp,my_max),temp
 !
-      real(kind=RTYPE) pltemp(jtrun,jtmax,2),cc(nx+2,levp,1,my_max)
-      real      ww1(nx,my_max)
+      real(kind=RTYPE) pltemp(jtrun,jtmax,2),cc(nx+2,levp,1,my_max), &
+                       ww1(nx,my_max)
 !byl      real      dlgeo(nxp,my_max),dtgeo(nxp,my_max)
 !byl      real      cc3(nx+2,levp,3,my_max),wss3(levp,2,3,jtrun,jtmax)
 !
       character rfile*55, ctau*6
 !!      real      tbar(lev),qbar(lev*ncld),qbrrow(ncld,my)
       integer,  parameter :: ktop=4
-      real      fac(ktop), wkj(my,4), wkmf(jtrun), windmax3
+      real      fac(ktop), wkj(my,4), wkmf(jtrun), windmax3, sumtot  &
+               ,sumtoti  ,sumtott(nxp,my_max)  ,qtot(nxp,my_max)     &
+               ,sumwati  ,sumwat   ,sumwatt(nxp,my_max)  
       data      windmax3/130./
 !
-      logical   histim, tchange, flag, forward
+      logical   histim, tchange, flag, forward, fwd
 !
       logical   wrestrt
       data      wrestrt/.false./
@@ -140,13 +142,12 @@
       integer i,j,k,m,n,jj,kk,mf,kw,nxj,nml,lmax,leng,nxmy, &
               jlim,mlst,mlmax2,itaui,itaue,itauo,itaup,     &
               ntau,itau,lcwb,lphy,ifromtau,itotau,istat,    &
-              istst,ii ,n_stable,n_unstable,nc_stable
+              istst,ii ,n_stable,n_unstable,nc_stable,nxjf
 
-      real    www,dtx,dta,dth,dtq,thdai,tkei,tpei,dsigp,    &
+      real    www,dtx,dtq,thdai,tkei,tpei,dsigp,            &
               cosw,tengi,dt24,tg2,dtx_tau,hfiltx,sqhaf,     &
               dt1,sptend,wmax,xx,dtaup,hfiltm,              &
-              sptendmax2,sptendmax1,dt_chg,prslp,alphax,    &
-              tfilt
+              sptendmax2,sptendmax1,dt_chg,prslp,alphax
       integer itimestep,recn
 
 ! for io quilting
@@ -365,6 +366,7 @@
       sld=0.
       recn=1
       rdivm=0.
+      flash=0.
 !
 !
 ! read mountant variables for topographic gravity wave drag
@@ -426,7 +428,6 @@
       itaup=taup+0.1
       tau=taui
       dtx=dt
-      itter=1
 !
       dta = dtx
       itter=1
@@ -462,6 +463,8 @@
           enddo
         enddo
       enddo
+
+
       call mpe_unify(wkj,my,4,1,mpe_double)
 !
       cosw=0.
@@ -478,6 +481,41 @@
       cosw  = cosw*lev
       thdai = thdai/cosw
       tengi = tengi/cosw
+      !
+      sumtoti=0.
+      sumwati=0.
+      sumtott=0.
+      sumwatt=0.
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        nxjf=nxdef(j)
+        do i = 1,nxj
+          do k = 1, lev
+            dsigp = dsigma(k,1)*pt(i,jj)+dsigma(k,2)
+            qtot=0.
+            do n = 1, ncld-1
+               kk=k+(n-1)*lev
+               qtot(i,jj)=qtot(i,jj)+qt(i,kk,jj)
+            enddo
+            sumtott(i,jj) = sumtott(i,jj)+dsigp
+            sumwatt(i,jj) = sumwatt(i,jj)+dsigp*qtot(i,jj)
+          enddo
+          sumtoti = sumtoti + sumtott(i,jj)*cosl(j)*nx/nxjf
+          sumwati = sumwati + sumwatt(i,jj)*cosl(j)*nx/nxjf
+        enddo
+      enddo
+      call mpe_global_sum(sumtoti,1,mpe_double)
+      call mpe_global_sum(sumwati,1,mpe_double)
+      if( myrank .eq. 0 ) then
+        open(35,file='pdry.txt',form='formatted',status='unknown', &
+           position='append')
+        write(35,*)sumtoti-sumwati,sumwati,sumtoti
+        close(35)
+        print*,'dry air mass at initial = ',sumtoti-sumwati,' hPa'
+        print*,'water  mass at initial = ',sumwati,' hPa'
+        print*,'total air mass at initial = ',sumtoti,' hPa'
+      endif
 !
       if( myrank .eq. 0 ) &
         print*,'qgini, thdai, tengi= ',qgini, thdai, tengi
@@ -498,6 +536,8 @@
           asol24(i,jj) = 0.
           olr24(i,jj)  = 0.
           rain24(i,jj) = 0.
+          rainlp24(i,jj) = 0.
+          totallp(i,jj) = 0.
           raincu(i,jj) = 0.
           rainlp(i,jj) = 0.
           raincu6(i,jj)= 0.
@@ -543,10 +583,11 @@
       n_stable=0
       n_unstable=0
       hfiltx=hfilt
+      hfiltm=mwhd
       if(dta.gt.720)then
 !!        dt_chg=1800.
         nc_stable=1
-        sptendmax2=0.3405
+        sptendmax2=0.3605
         sptendmax1=0.2605
       else if(dta.le.720 .and. dta.gt.450 )then
 !!        dt_chg=720.
@@ -670,7 +711,7 @@
         enddo
         do k = 1, lev*ncld
           do i = 1,nxj
-            qp(i,k,jj) = qt(i,k,jj)
+            qm(i,k,jj) = qt(i,k,jj)
           enddo
         enddo
         do i = 1,nxj
@@ -702,6 +743,7 @@
 
        deldm=0.
        forward = .true.
+       fwd= .true.
 
 !
 !
@@ -777,8 +819,10 @@
 
 !CWB2021 ndsl single precision test
       call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlrp,vdmerdrp,dth,forward)
-      call ndslfv_monoadvv_fgnl(vdzonl,vdmerd,ddtemp,pdot,pt &
-                          ,nxjp,dth,3,forward)
+      do itt = 1,itter
+        call ndslfv_monoadvv_fgnl(vdzonl,vdmerd,ddtemp,pdot,pt &
+                            ,nxjp,ndsldtah,3,forward)
+      enddo
 
        forward = .false.
 !CWB2021 ndsl single precision test
@@ -787,6 +831,7 @@
       call mpe2d_unify_nx(ww1,deldm)
       call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1         &
                   ,plten,nsizey)            
+
       do jj = 1, jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
@@ -847,7 +892,7 @@
         enddo
       enddo
 !        
-      hfiltm=hfiltx*mwhd
+
       call whdiffu ( dth,my,my_max,nx,jtrun,jtmax,lev,ncld     &
                    ,hfiltm,rad,cosl,ut,vt,vormid,divmid,temmid     &
                    ,eps4,trefs)
@@ -890,7 +935,7 @@
 !!        call gridnl_hybrid_ndsl_2tl (nxjp(j),nxp,lev,ncld              &
         call gridnl_hybrid_ndsl (nxjp(j),nxp,lev,ncld                   &
         , cp,radsq,um(1,1,jj),vm(1,1,jj),rdivm(1,1,jj),tm(1,1,jj)       &
-        , qp(1,1,jj),phi(1,1,jj),ptm(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
+        , qm(1,1,jj),phi(1,1,jj),ptm(1,jj),dtpl(1,jj),dlpl(1,jj),sinl(j)&
         , pk(1,1,jj),pk2(1,1,jj),dsigma,sigma,onocos(j),cor(j)          &
         , diveng(1,1,jj),vdmerdg(1,1,jj),vdzonlg(1,1,jj),pten(1,1,jj)   &
         , deldm(1,jj),sdpbl(1,jj),sd(1,1,jj),pdot(1,1,jj),vvel(1,1,jj)  &
@@ -915,10 +960,10 @@
       enddo !jj = 1,jlistnum
 !
 
-! transpose partial to full: ut -> ut_sl, vt -> vt_sl, ut -> uum_sl, vt -> vvm_sl, tt -> ttm_sl, qp -> qm_sl
+! transpose partial to full: ut -> ut_sl, vt -> vt_sl, ut -> uum_sl, vt -> vvm_sl, tt -> ttm_sl, qm -> qm_sl
 
 !#ifdef MULTIPLE
-!      call mpe2d_transpose_ndsl_p2f_multi(um   ,vm   ,ut   ,vt   ,tt   ,qp   , &
+!      call mpe2d_transpose_ndsl_p2f_multi(um   ,vm   ,ut   ,vt   ,tt   ,qm   , &
 !                                    ut_sl,vt_sl,uum_sl,vvm_sl,ttm_sl,qm_sl, &
 !                                    nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm,6)
 !#else
@@ -934,7 +979,7 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !!      call mpe2d_transpose_ndsl_p2f(pten,pten_sl, &
 !!                                    nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f(qp,qm_sl,    &
+      call mpe2d_transpose_ndsl_p2f(qm,qm_sl,    &
                                     nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !#endif
 
@@ -946,10 +991,10 @@
 !     Semi-Lagrangian
 !       Horizontal Advection
 
-        do itt = 1,itter
+!        do itt = 1,itter
         call ndslfv_monoadvh(ttm_sl,qm_sl,pten_sl,uum_sl,vvm_sl  &
-                             ,nxdef,ndsldtah,xy,levp)
-        enddo
+                             ,nxdef,ndsldta,xy,levp)
+!        enddo
 
 !ch>
 ! transpose full to partial: ttm_sl -> ddtemp,  pten_sl -> pten, uum_sl -> vdzonl
@@ -982,7 +1027,9 @@
 !       Vertical Advection
 !
 !       call ndslfv_monoadvv(ddtemp,qt,vdzonl,vdmerd,pdot,ptm      &
-        call ndslfv_monoadvv(tt,qt,ut,vt,pdot,ptm,nxjp,ndsldta,forward)
+        do itt = 1,itter
+          call ndslfv_monoadvv(tt,qt,ut,vt,pdot,ptm,nxjp,ndsldtah,forward)
+        enddo
 
 !CWB2021 ndsl single precision test
 
@@ -1109,6 +1156,11 @@
                    ,poly,dpoly,vornow,divnow,ut,vt,nsizey)
         call transr1(jtrun,jtmax,nx,my,my_max,poly,plnow,pt,nsizey)!
       else
+        mlst=ilist(1)
+        if(mlst .ne. 0) then
+          plten(1,mlst,1) = 0.0
+          plten(1,mlst,2) = 0.0
+        endif
         do i = 1, 2
           do m = 1, mlistnum
             mf=mlist(m)
@@ -1120,7 +1172,41 @@
         call transr1(jtrun,jtmax,nx,my,my_max,poly,pltemp,pt,nsizey)
 
       endif ! two_loop
-
+      
+      sumtot=0.
+      sumwat=0.
+      sumtott=0.
+      sumwatt=0.
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        nxjf=nxdef(j)
+        do i = 1,nxj
+          do k = 1, lev
+            dsigp = dsigma(k,1)*pt(i,jj)+dsigma(k,2)
+            qtot=0.
+            do n = 1, ncld-1
+               kk=k+(n-1)*lev
+               qtot(i,jj)=qtot(i,jj)+qt(i,kk,jj)
+            enddo
+            sumtott(i,jj) = sumtott(i,jj)+dsigp
+            sumwatt(i,jj) = sumwatt(i,jj)+dsigp*qtot(i,jj)
+          enddo
+          sumtot = sumtot + sumtott(i,jj)*cosl(j)*nx/nxjf
+          sumwat = sumwat + sumwatt(i,jj)*cosl(j)*nx/nxjf
+        enddo
+      enddo
+      call mpe_global_sum(sumtot,1,mpe_double)
+      call mpe_global_sum(sumwat,1,mpe_double)
+      if( myrank .eq. 0 ) then
+        open(35,file='pdry.txt',form='formatted',status='unknown', &
+           position='append')
+        write(35,*)sumtot-sumwat,sumwat,sumtot
+        close(35)
+        print*,'dry air mass = ',sumtot-sumwat,' hPa'
+        print*,'water mass = ',sumwat,' hPa'
+        print*,'total air mass = ',sumtot,' hPa'
+      endif
 
 
       !  stochastic_physics
@@ -1130,7 +1216,7 @@
 !
         if (yesdia)  then
 
-          call diabat ( docup,dodry,dolsp,dopbl,dorad,doshl,dograv,tofd         &
+          call diabat ( fwd,docup,dodry,dolsp,dopbl,dorad,doshl,dograv,tofd     &
                       , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw      &
                       , idg,jdg,ldiag,dtx,tau,hours,julian,year,yrd             &
                       , frad,ozon,njump,itypbl,ktcup,ktpbl,ktshl,grav           &
@@ -1140,7 +1226,7 @@
                       , rainlp,raincu6,rainlp6,raincu3,rainlp3,raincu1,rainlp1  &
                       , hflux,qflux,ustar,tstar,qstar,e                         &
                       , eps,o3l,dtrad,ss,rs,plt,pk,pk2                          &
-                      , ptp,    up,    vp,   ttp,qp                             &
+                      , ptp,    up,    vp,   ttp,qm                             &
                       , pt ,    ut,    vt,    tt,qt                             &
                       , gwclim,tice,hice,qgini,thdai,tengi                      &
                       , acld,std,asol,olr,drag,ugws,vgws                        &
@@ -1163,7 +1249,7 @@
                       , itimestep,lrun_sitvdiff,ic_sit                          &
 !xb110>
 !byl                      , rmr,smr,flash)
-                      , flash,tsflw,vvel)
+                      , flash,tsflw,vvel,totallp)
 !xb110<
 !--------------------------------------------------------------------------------
 !
@@ -1340,6 +1426,7 @@
             asol24(i,jj)= asol24(i,jj)+asol(i,jj)*dtx
             olr24(i,jj) = olr24(i,jj)+olr(i,jj)*dtx
             rain24(i,jj)= rain24(i,jj)+totalp(i,jj)
+            rainlp24(i,jj)=rainlp24(i,jj)+totallp(i,jj)
             flash24(i,jj)=flash24(i,jj)+flash(i,jj)*dtx
           enddo
         enddo
@@ -1437,20 +1524,20 @@
                                  ,n_unstable
         if( mod(tau+0.001, 1.) .lt. dtx_tau)then
           if(n_stable .gt. nc_stable)then
-            hfiltx=0.75*hfilt
+            hfiltx=0.8*hfilt
             alphax=alpha
             if(myrank .eq. 0)print *,'** stable change hfilt=',hfiltx,  &
-                             ' and keep alpha=',alpha
+                             ' and keep alpha=',alphax
           else if(n_unstable .gt. nc_stable)then
-            hfiltx=1.5*hfilt
-            alphax=alpha
+            hfiltx=hfilt
+            alphax=alpha+0.05
             if(myrank .eq. 0)print *,'** unstable change hfilt=',hfiltx,&
-                             ' and alpha=',alpha
+                             ' and alpha=',alphax
           else
             hfiltx=hfilt
             alphax=alpha
             if(myrank .eq. 0)print *,'** keep hfilt=',hfiltx,           &
-                             ' and alpha=',alpha
+                             ' and alpha=',alphax
           endif
           n_unstable=0
           n_stable=0
@@ -1837,7 +1924,7 @@
 !         call mpe_unify(olr24,nx,my,2,mpe_double)
 !         call mpe_unify(rain24,nx,my,2,mpe_double)
 #ifndef NO_OUT
-          call out24(nx,my,my_max,hf24,qf24,ss24,rs24,asol24,olr24,rain24,dt24 &
+          call out24(nx,my,my_max,hf24,qf24,ss24,rs24,asol24,olr24,rain24,rainlp24,dt24 &
                   ,ifilout,glob,itau,idtg,ggdef,flash24)
 #endif
           if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. (dailyClm_option.ge.1)) then
@@ -1887,6 +1974,7 @@
               asol24 (i,jj) = 0.0
               olr24  (i,jj) = 0.0
               rain24 (i,jj) = 0.0
+              rainlp24 (i,jj) = 0.0
               flash24(i,jj) = 0.0
             enddo
           enddo
@@ -2037,5 +2125,6 @@
 !
       ! finilize stochastic_physics
       call destroy_stochastic_physics()
+      close(35)
 
       end subroutine intgrt

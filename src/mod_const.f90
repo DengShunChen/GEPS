@@ -56,7 +56,7 @@
          capa,cp,rad,radsq,grav,omega,rgas,stbo,s0,hltm,   &
          ptop,dt,tau,taui,taue,tauo,                       &
          hours,frad,evaprh,qgini,                          &
-         tice,hice,cutfreq,taup,hfilt,                     &
+         tice,hice,cutfreq,taup,hfilt,tfilt,               &
          taureg,cgw,domfc,otgreen,cgwd,cmbk,spl1,spl2
     real(kind=RTYPE) :: ptmean,ptmeans,qmin
     !sit
@@ -78,7 +78,7 @@
             dolsp, dograv,doshl, dodry, donnmi,ozon,       &
             restrt,hdiff, cstar, update,doincr,hybrid,     &
             doo3l, docgrav, doclx, tofd, doslavepp,        &
-            two_loop
+            two_loop,ttl
 
     ! for stochastic physics
     logical :: dosppt       =.false.

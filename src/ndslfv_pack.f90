@@ -1952,6 +1952,51 @@
 !
       return
       end subroutine ndslfv_update
+!
+      subroutine ndslfv_update_3tl (lonsperlat,vdzonl,vdmerd,vdzonlr,vdmerdr,deltim)
+
+!  update all horizontal components into momentum eqs
+!  for Semi-Lagrangian vertical advection for 3tl
+
+      use index
+      use param, only : nx,my,lev,my_max
+      use const, only : onocos,radsq,RTYPE
+      use grid , only : dlphi,dtphi
+
+      integer,intent(in):: lonsperlat(my)
+      real(kind=RTYPE),   intent(in):: deltim
+
+!ch   real    vdmerd(nx+3,lev,my_max),vdzonl(nx+3,lev,my_max)
+      real(kind=RTYPE) vdmerd(nxp,lev,my_max),vdzonl(nxp,lev,my_max)
+      real(kind=RTYPE) vdmerdr(nxp,lev,my_max),vdzonlr(nxp,lev,my_max)
+      integer i,ii,k,lan,lat,lons_lat
+      integer dt2
+
+      dt2 = 2. * deltim
+!
+!$omp parallel do                                                   &
+!$omp private(lan,lat,lons_lat,i,k)                                 &
+!$omp schedule(dynamic)
+      do lan=1,jlistnum
+!
+        lat = jlist1(lan)
+        lons_lat = lonsperlat(lat)
+!
+        do k=1,lev
+         do i=1,lons_lat
+           vdzonl(i,k,lan) = (vdzonlr(i,k,lan)-dlphi(i,k,lan)/radsq) &
+                             * dt2 + vdzonl(i,k,lan)
+           vdmerd(i,k,lan) = (vdmerdr(i,k,lan)-dtphi(i,k,lan)/radsq  &
+                             / onocos(lat))*dt2 + vdmerd(i,k,lan)
+         enddo
+        enddo
+      enddo
+!$omp end parallel do
+!
+! ===============================
+!
+      return
+      end subroutine ndslfv_update_3tl
 
 !-------------------------------------------------------------------------
 !CWB2021 note, the double precision is called by reducepick/reduceintp

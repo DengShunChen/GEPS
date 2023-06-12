@@ -152,7 +152,7 @@
         enddo
         do k = 1, lev*ncld
           do i = 1, nxj
-            qp(i,k,jj) = qt(i,k,jj)
+            qm(i,k,jj) = qt(i,k,jj)
           enddo
         enddo
 !!        do i = 1, nxj
@@ -173,7 +173,7 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f(ttp,ttm_sl,  &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f(qp,qm_sl,    &
+      call mpe2d_transpose_ndsl_p2f(qm,qm_sl,    &
                                     nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !#endif
 

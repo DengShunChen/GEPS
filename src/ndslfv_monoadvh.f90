@@ -98,6 +98,10 @@
       mass  = 0
       cons0 = 0.0
       cons1 = 1.0
+      qqlon = 0.
+      rrlon = 0.
+      uulon = 0.
+      vvlon = 0.
 !
 !      levh = ncld * lev
 !
@@ -633,6 +637,9 @@
       mass  = 0
       cons0 = 0.0
       cons1 = 1.0
+      qqlon = 0.
+      uulon = 0.
+      vvlon = 0.
 !
 !      levh = ncld * lev
 !
@@ -1164,6 +1171,9 @@
       mass  = 0
       cons0 = 0.0
       cons1 = 1.0
+      qqlon = 0.
+      uulon = 0.
+      vvlon = 0.
 !
 !      levh = ncld * levs
 !

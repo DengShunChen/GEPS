@@ -1,5 +1,5 @@
       subroutine gscond (im,ix,km,dt,prsl,ps,q,cwm,t          &
-      ,                  tp, qp, psp,tp1,qp1,psp1, u, lprnt)
+      ,                  tp, qp, psp,tp1,qp1,psp1, u, lprnt, fwd)
 !
 !     ******************************************************************
 !     *                                                                *
@@ -68,7 +68,7 @@
       ,                      aa, ab, ac, ad, ae, af, ag                 &
       ,                      el2orc, albycp, vprs(im), rdt2
       integer iw(im,km), i, k, iwik
-      logical lprnt
+      logical lprnt,fwd
 !
 !--- merge qsatq in here
       real vpsat(191),pqs,qqq,tem,t1
@@ -240,9 +240,15 @@
           u00ik = u(i,k)
           tik   = t(i,k)
           pres  = prsl(i,k)   * h1000
-          pp0   = (pres / ps(i)) * psp1(i)
-          at    = (tik-tp1(i,k)) * rdt
-          aq    = (qik-qp1(i,k)) * rdt
+          if ( fwd ) then
+            pp0   = (pres / ps(i)) * psp1(i)
+            at    = (tik-tp1(i,k)) * rdt
+            aq    = (qik-qp1(i,k)) * rdt
+          else
+           pp0   = (pres / ps(i)) * psp(i)
+           at    = (tik-tp(i,k)) * rdt
+           aq    = (qik-qp(i,k)) * rdt
+          endif
           ap    = (pres-pp0)    * rdt
 ! tik and tp just across 2-time level
 !         at    = (tik-tp(i,k)) * rdt2
