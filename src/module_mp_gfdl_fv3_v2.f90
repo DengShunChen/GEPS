@@ -406,8 +406,6 @@ subroutine gfdl_cld_mp_driver                                              &
     
     real, intent (inout), dimension (is:ie, ks:ke) :: te
     ! logical :: used
-    real, dimension (is:ie) :: w_var
-    real, dimension (is:ie, ks:ke) :: vt_r, vt_s, vt_g, vt_i
     real, dimension (is:ie, ks:ke) :: m2_rain, m2_sol
     
     if (last_step) then
@@ -462,7 +460,7 @@ subroutine gfdl_cld_mp_driver                                              &
     call mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, qg, &
         qa, qnl, qni, dz, is, ie, ks, ke, dts, &
         rain, snow, graupel, ice, m2_rain, m2_sol, gsize, hs, &
-        w_var, vt_r, vt_s, vt_g, vt_i, q_con, cappa, consv_te, te, &
+        q_con, cappa, consv_te, te, &
         prefluxr, prefluxi, prefluxs, prefluxg, condensation, deposition, &
         evaporation, sublimation, last_step, do_inline_mp)
     
@@ -486,7 +484,7 @@ end subroutine gfdl_cld_mp_driver
 subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
         qg, qa, qnl, qni, dz, is, ie, ks, ke, dt_in, &
         rain, snow, graupel, ice, m2_rain, m2_sol, gsize, hs, &
-        w_var, vt_r, vt_s, vt_g, vt_i, q_con, cappa, consv_te, te, &
+        q_con, cappa, consv_te, te, &
         prefluxr, prefluxi, prefluxs, prefluxg, condensation, deposition, &
         evaporation, sublimation, last_step, do_inline_mp)
     
@@ -512,8 +510,6 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
     real, intent (inout), dimension (is:ie) :: condensation, deposition
     real, intent (inout), dimension (is:ie) :: evaporation, sublimation
     
-    real, intent (out), dimension (is:ie) :: w_var
-    real, intent (out), dimension (is:ie, ks:ke) :: vt_r, vt_s, vt_g, vt_i
     real, intent (out), dimension (is:ie, ks:ke) :: m2_rain, m2_sol
     real, intent (out), dimension (is:ie, ks:ke) :: te
     ! local:

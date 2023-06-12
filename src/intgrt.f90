@@ -62,7 +62,7 @@
       integer   nfxr
 !  for Semi-Lagrangian
 !
-      real(kind=RTYPE) ndsldta,ndsldtah,facm(2,2),                 &
+      real(kind=RTYPE) ndsldta,ndsldtah,dth,dta,facm(2,2),         &
                 diveng(nxp,lev,my_max),                            &
                 qm_sl(nx,levp*ncld,my_max),                        &
                 pten_sl(nx,levp,my_max),                           &
@@ -92,16 +92,16 @@
 
       real      tmin(nxp,my_max),tmax(nxp,my_max)!,td(nxp,my_max),temp
 !
-      real(kind=RTYPE) pltemp(jtrun,jtmax,2),cc(nx+2,levp,1,my_max)
-      real      ww1(nx,my_max)
+      real(kind=RTYPE) pltemp(jtrun,jtmax,2),cc(nx+2,levp,1,my_max), &
+                       ww1(nx,my_max)
 !byl      real      dlgeo(nxp,my_max),dtgeo(nxp,my_max)
 !byl      real      cc3(nx+2,levp,3,my_max),wss3(levp,2,3,jtrun,jtmax)
 !
       character rfile*55, ctau*6
 !!      real      tbar(lev),qbar(lev*ncld),qbrrow(ncld,my)
       integer,  parameter :: ktop=4
-      real      fac(ktop), wkj(my,4), wkmf(jtrun), windmax3, sumdry  &
-               ,sumdryi  ,sumdryt(nxp,my_max)  ,qtot(nxp,my_max)     &
+      real      fac(ktop), wkj(my,4), wkmf(jtrun), windmax3, sumtot  &
+               ,sumtoti  ,sumtott(nxp,my_max)  ,qtot(nxp,my_max)     &
                ,sumwati  ,sumwat   ,sumwatt(nxp,my_max)  
       data      windmax3/130./
 !
@@ -144,7 +144,7 @@
               ntau,itau,lcwb,lphy,ifromtau,itotau,istat,    &
               istst,ii ,n_stable,n_unstable,nc_stable,nxjf
 
-      real    www,dtx,dta,dth,dtq,thdai,tkei,tpei,dsigp,    &
+      real    www,dtx,dtq,thdai,tkei,tpei,dsigp,            &
               cosw,tengi,dt24,tg2,dtx_tau,hfiltx,sqhaf,     &
               dt1,sptend,wmax,xx,dtaup,hfiltm,              &
               sptendmax2,sptendmax1,dt_chg,prslp,alphax
@@ -366,6 +366,7 @@
       sld=0.
       recn=1
       rdivm=0.
+      flash=0.
 !
 !
 ! read mountant variables for topographic gravity wave drag
@@ -481,9 +482,9 @@
       thdai = thdai/cosw
       tengi = tengi/cosw
       !
-      sumdryi=0.
+      sumtoti=0.
       sumwati=0.
-      sumdryt=0.
+      sumtott=0.
       sumwatt=0.
       do jj = 1, jlistnum
         j=jlist1(jj)
@@ -497,22 +498,23 @@
                kk=k+(n-1)*lev
                qtot(i,jj)=qtot(i,jj)+qt(i,kk,jj)
             enddo
-            sumdryt(i,jj) = sumdryt(i,jj)+dsigp*(1.-qtot(i,jj))
+            sumtott(i,jj) = sumtott(i,jj)+dsigp
             sumwatt(i,jj) = sumwatt(i,jj)+dsigp*qtot(i,jj)
           enddo
-          sumdryi = sumdryi + sumdryt(i,jj)*cosl(j)*nx/nxjf
+          sumtoti = sumtoti + sumtott(i,jj)*cosl(j)*nx/nxjf
           sumwati = sumwati + sumwatt(i,jj)*cosl(j)*nx/nxjf
         enddo
       enddo
-      call mpe_global_sum(sumdryi,1,mpe_double)
+      call mpe_global_sum(sumtoti,1,mpe_double)
       call mpe_global_sum(sumwati,1,mpe_double)
       if( myrank .eq. 0 ) then
         open(35,file='pdry.txt',form='formatted',status='unknown', &
            position='append')
-        write(35,*)sumdryi,sumwati
+        write(35,*)sumtoti-sumwati,sumwati,sumtoti
         close(35)
-        print*,'dry air mass at initial = ',sumdryi,' hPa'
+        print*,'dry air mass at initial = ',sumtoti-sumwati,' hPa'
         print*,'water  mass at initial = ',sumwati,' hPa'
+        print*,'total air mass at initial = ',sumtoti,' hPa'
       endif
 !
       if( myrank .eq. 0 ) &
@@ -829,6 +831,7 @@
       call mpe2d_unify_nx(ww1,deldm)
       call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1         &
                   ,plten,nsizey)            
+
       do jj = 1, jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
@@ -1170,9 +1173,9 @@
 
       endif ! two_loop
       
-      sumdry=0.
+      sumtot=0.
       sumwat=0.
-      sumdryt=0.
+      sumtott=0.
       sumwatt=0.
       do jj = 1, jlistnum
         j=jlist1(jj)
@@ -1181,28 +1184,28 @@
         do i = 1,nxj
           do k = 1, lev
             dsigp = dsigma(k,1)*pt(i,jj)+dsigma(k,2)
-            dsigp = dsigp*cosl(j)*nx/nxjf
             qtot=0.
             do n = 1, ncld-1
                kk=k+(n-1)*lev
-               qtot(i,jj)=qtot(i,jj)+qt(i,kk,jj)*cosl(j)*nx/nxjf
+               qtot(i,jj)=qtot(i,jj)+qt(i,kk,jj)
             enddo
-            sumdryt(i,jj) = sumdryt(i,jj)+dsigp*(1.-qtot(i,jj))
+            sumtott(i,jj) = sumtott(i,jj)+dsigp
             sumwatt(i,jj) = sumwatt(i,jj)+dsigp*qtot(i,jj)
           enddo
-          sumdry = sumdry + sumdryt(i,jj)
-          sumwat = sumwat + sumwatt(i,jj)
+          sumtot = sumtot + sumtott(i,jj)*cosl(j)*nx/nxjf
+          sumwat = sumwat + sumwatt(i,jj)*cosl(j)*nx/nxjf
         enddo
       enddo
-      call mpe_global_sum(sumdry,1,mpe_double)
+      call mpe_global_sum(sumtot,1,mpe_double)
       call mpe_global_sum(sumwat,1,mpe_double)
       if( myrank .eq. 0 ) then
         open(35,file='pdry.txt',form='formatted',status='unknown', &
            position='append')
-        write(35,*)sumdry,sumwat
+        write(35,*)sumtot-sumwat,sumwat,sumtot
         close(35)
-        print*,'dry air mass = ',sumdry,' hPa'
+        print*,'dry air mass = ',sumtot-sumwat,' hPa'
         print*,'water mass = ',sumwat,' hPa'
+        print*,'total air mass = ',sumtot,' hPa'
       endif
 
 

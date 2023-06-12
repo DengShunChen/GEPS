@@ -10,8 +10,9 @@
       implicit  none
 
       integer   my,my_max,nx,jtrun,jtmax,lev,ncld
-      real      dta,rad
+      real      rad
 
+      real(kind=RTYPE) dta
       real(kind=RTYPE) cosl(my),ut(nxp,lev,my_max),vt(nxp,lev,my_max),  &
                 vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),   &
                 temnow(levp,2,jtrun,jtmax),eps4(jtrun,jtmax),            &
@@ -168,10 +169,10 @@
 
       integer   my,my_max,nx,jtrun,jtmax,lev,ncld
       real      rad
-      real      dta
 
-      real(kind=RTYPE)      vordiss(levp,2,jtrun,jtmax),divdiss(levp,2,jtrun,jtmax), &
-                diss_est(nxp,lev,my_max)
+      real(kind=RTYPE) dta
+      real(kind=RTYPE) vordiss(levp,2,jtrun,jtmax),divdiss(levp,2,jtrun,jtmax), &
+                       diss_est(nxp,lev,my_max)
 
       real(kind=RTYPE) vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),  &
                        temnow(levp,2,jtrun,jtmax),trefs(levp,2,jtrun,jtmax),   &
@@ -186,7 +187,7 @@
       integer   jj,j,nxj,k,i,m,n,mf,nc,kk,KL
       real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu
       real      hfilt,hfilt2,nf,dec,coefu,factop,powd,kfac
-      real      c1,c2,c3
+      real      c1,c2,c3,trtmp(2)
       logical   windchk
 
       data      windmax1/80./, windmax2/100./, windmax3/130./
@@ -249,21 +250,7 @@
 !!        fact = 1. * (kfac + 1.*max(float(hdk1-KL),0.))
 !
 
-!  if doskeb = .true. estimate the dissipation of kinectic energy for SKEB
-!
-      if ( doskeb ) then
-        do m=1,mlistnum
-          mf=mlist(m)
-          do n=mf,jtrun
-            c1=1.+dta*facv*hfilt*eps4(n,m)**powd
-            c2=1.+dta*facd*hfilt*eps4(n,m)**powd
-            vordiss(k,1,n,m)=(1.-1./c1)*vornow(k,1,n,m)
-            vordiss(k,2,n,m)=(1.-1./c1)*vornow(k,2,n,m)
-            divdiss(k,1,n,m)=(1.-1./c2)*divnow(k,1,n,m)
-            divdiss(k,2,n,m)=(1.-1./c2)*divnow(k,2,n,m)
-          enddo
-        enddo
-      endif 
+
 !
 !  difuse vorticity, divergence and temperature fields
 !
@@ -281,7 +268,12 @@
               c3=1.+dta*fact*hfilt*eps4(n,m)**powd
 !            endif
 
-
+!  if doskeb = .true. estimate the dissipation of kinectic energy for SKEB
+            vordiss(k,1,n,m)=(1.-1./c1)*vornow(k,1,n,m)
+            vordiss(k,2,n,m)=(1.-1./c1)*vornow(k,2,n,m)
+            divdiss(k,1,n,m)=(1.-1./c2)*divnow(k,1,n,m)
+            divdiss(k,2,n,m)=(1.-1./c2)*divnow(k,2,n,m)
+!
             vornow(k,1,n,m)=vornow(k,1,n,m)/c1
             vornow(k,2,n,m)=vornow(k,2,n,m)/c1
             divnow(k,1,n,m)=divnow(k,1,n,m)/c2
@@ -336,8 +328,9 @@
       implicit  none
 
       integer   my,my_max,nx,jtrun,jtmax,lev,ncld
-      real      dta,rad
-
+      real      rad
+ 
+      real(kind=RTYPE) dta
       real(kind=RTYPE) vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),  &
                        temnow(levp,2,jtrun,jtmax),trefs(levp,2,jtrun,jtmax),   &
                        ut(nxp,lev,my_max),vt(nxp,lev,my_max),                  &
@@ -481,8 +474,9 @@
       implicit  none
 
       integer   my,my_max,nx,jtrun,jtmax,lev,ncld
-      real      dta,rad
+      real      rad
 
+      real(kind=RTYPE) dta
       real(kind=RTYPE) vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),  &
                        temnow(levp,2,jtrun,jtmax),trefs(levp,2,jtrun,jtmax),   &
                        ut(nxp,lev,my_max),vt(nxp,lev,my_max),                  &
@@ -743,13 +737,14 @@
 !
       use index
       use mpe
+      use const, only : RTYPE
 !
       implicit  none
 
 !
       integer   jtrun,jtmax,lev,ncld
 
-      real      dissest(lev,2,jtrun,jtmax)
+      real(kind=RTYPE) dissest(lev,2,jtrun,jtmax)
 !
       real      wvn_top
 

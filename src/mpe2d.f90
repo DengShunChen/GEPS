@@ -751,10 +751,11 @@
  
       use index
       use mpi
+      use const, only: RTYPE
  
       implicit none
 
-      real a(nx,lev)
+      real(kind=RTYPE) a(nx,lev)
       real b1(nxp,lev)
       real b2(nxp,lev,nsizex)
       integer j,nx,lev,i,i2,ii,k,IERR

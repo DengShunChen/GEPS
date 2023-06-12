@@ -93,16 +93,16 @@
 !                                 prsi(nx,lev+1)
       real,     intent(in)    :: area(nx)  ! area of grid box (m^2)
 #if defined (GFDLMP_v2)
-      real,     intent(in)    :: sgeo(nx)
+      real(kind=RTYPE), intent(in)    :: sgeo(nx)
 #endif
 !      real,     intent(in)    :: sd(nx,lev+1)
       real(kind=RTYPE), intent(inout) :: sd(nx,lev+1)
       real(kind=RTYPE), intent(in):: q0(nx,lev*ncld),pst(nx),          &
                                      dsigma(lev,2)
 !  ---  inputs/outputs:
-      real(kind=RTYPE), intent(inout) :: tt(nx,lev)
+      real,     intent(inout) :: tt(nx,lev)
       real,     intent(inout) :: qa(nx,lev)  ! only changed in GFDL MP
-      real(kind=RTYPE), intent(inout) :: ut(nx,lev),vt(nx,lev)
+      real,     intent(inout) :: ut(nx,lev),vt(nx,lev)
       real(kind=RTYPE), intent(inout):: qt(nx,lev*ncld)
 !  ---  outputs:
       real,     intent(inout)   :: re_cloud(nx,lev),re_ice(nx,lev),    &

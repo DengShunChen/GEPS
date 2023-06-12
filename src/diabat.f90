@@ -511,6 +511,7 @@
       ptu = 0.
       pqu = 0.
       cnvwn = 0.
+      dtradn = 0.
 !xb110<
 !ps
 !CWB2015 
@@ -598,10 +599,11 @@
 !     set hours, iter, icrad, julian, uprad, doozon
 !------------------------------------------------------------------------------
 
+
       rsolhr = hours
-      hours = hours + dt/3600.0
-      if ( hours .gt. 24.0 )  then
-         hours = mod ( hours,24.0 )
+      hours = hours + dt/3600.
+      if ( abs(24.-hours) .lt. 1.e-6 )  then
+         hours = 0. 
          julian= julian + 1
          if ( julian .gt. yrd ) julian = julian - yrd
          doozon = .true.
