@@ -1,4 +1,5 @@
 #define EffectRad_GCE3
+!#define vti_DM08
 !WRF:MODEL_LAYER:PHYSICS
 !
 
@@ -193,7 +194,10 @@ CONTAINS
 
 !jjs  REAL, DIMENSION( its:ite , jts:jte )                            &
 !jjs                               ::        rain, snow, graupel,ice
-
+#ifdef vti_DM08
+!xb141: for cloud ice terminal velocity (DM08) in fall_flux
+  REAL, DIMENSION( ims:ime , kms:kme , jms:jme ) :: tt
+#endif
 !
 !  INTEGER :: IHAIL, itaobraun, ice2, istatmin, new_ice_sat, id
   INTEGER ::  itaobraun, istatmin, new_ice_sat, id
@@ -299,9 +303,23 @@ CONTAINS
 !      CALL wrf_error_fatal3 ( "module_mp_lin.b" , 130 ,  'module_mp_lin: Improper use of Lin et al scheme; no ice phase. Please chose another one.')
 !   ENDIF
 
+#ifdef vti_DM08
+!xb141: for cloud ice terminal velocity (DM08) in fall_flux
+   do i = ims, ime
+     do k = kms, kme
+       do j = jms, jme
+         tt(i,k,j) = th(i,k,j) * pii(i,k,j)  !convert to real temperature
+       enddo
+     enddo
+   enddo
+#endif
+
 ! calculte fallflux and precipiation in MKS system
 
    call fall_flux(dt_in, qr, qi, qs, qg, p,                   &
+#ifdef vti_DM08
+                      tt,                                     &
+#endif
                       rho, z, dz8w, ht, rainnc,               &
                       rainncv, grav,itimestep,                &
                       rhowater, rhosnow,                      &
@@ -370,6 +388,9 @@ CONTAINS
 
 !-----------------------------------------------------------------------
    SUBROUTINE fall_flux ( dt, qr, qi, qs, qg, p,              &
+#ifdef vti_DM08
+                      tt,                                     &
+#endif
                       rho, z, dz8w, topo, rainnc,             &
                       rainncv, grav, itimestep,               &
                       rhowater, rhosnow,                      &
@@ -396,6 +417,10 @@ CONTAINS
                                           graupelnc, graupelncv
   REAL,    DIMENSION( ims:ime , kms:kme , jms:jme ),                  &
            INTENT(IN   )               :: rho, z, dz8w, p
+#ifdef vti_DM08
+  REAL,    DIMENSION( ims:ime , kms:kme , jms:jme ),                  &
+           INTENT(IN   )               :: tt
+#endif
 
   REAL,    INTENT(IN   )               :: dt, grav, rhowater, rhosnow
 
@@ -447,6 +472,16 @@ CONTAINS
   INTEGER                       :: min_q, max_q
   REAL                          :: t_del_tv, del_tv, flux, fluxin, fluxout ,tmpqrz
   LOGICAL                       :: notlast
+
+#ifdef vti_DM08
+! for velocity constants :
+    real, parameter :: aa = - 4.14122e-5
+    real, parameter :: bb = - 0.00538922
+    real, parameter :: cc = - 0.0516344
+    real, parameter :: dd = 0.00216078
+    real, parameter :: ee = 1.9714
+    real            :: tc
+#endif
 
 !  if (itimestep.eq.1) then
 !     write(6, *) 'in fall_flux'
@@ -778,7 +813,15 @@ CONTAINS
          if (qiz(k) .gt. 1.0e-8) then
             min_q=min0(min_q,k)
             max_q=max0(max_q,k)
+#ifdef vti_DM08
+!xb141 >>> Deng and Mace (2008, grl), which gives smaller fall speed than HD90 formula
+            tc = tt(i,k,j) - 273.16
+            vti(k) = (3. + log10(rhoz(k)*qiz(k))) * (tc*(aa*tc + bb)+cc) + dd*tc + ee
+            vti(k) = 0.01 * 0.9 * exp(log(10.)*vti(k))
+!xb141 <<<
+#else
             vti(k)= 3.29 * (rhoz(k)* qiz(k))** 0.16  ! Heymsfield and Donner
+#endif
             if (k .eq. 1) then
                del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vti(k))
             else
