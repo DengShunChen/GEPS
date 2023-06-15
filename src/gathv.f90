@@ -8,7 +8,8 @@
       implicit  none
 
       integer   mn,nx,lev,ipt(mn)
-      real(kind=RTYPE) fyy(nx*lev),f(nx*lev),tp1(mn,4)
+      real(kind=RTYPE) fyy(nx*lev),f(nx*lev)
+      real      tp1(mn,4)
       integer   i,inx
 !
       do 20 i=1,mn

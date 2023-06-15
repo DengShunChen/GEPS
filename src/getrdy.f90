@@ -118,6 +118,7 @@
       real  tem,rho,ttr,ttv
 
       lmax=26
+      cc=0.
 !
       nxmy   = nx*my
       mlmax2 = mlmax * 2

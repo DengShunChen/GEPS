@@ -171,8 +171,7 @@
       real      rad
 
       real(kind=RTYPE) dta
-      real(kind=RTYPE) vordiss(levp,2,jtrun,jtmax),divdiss(levp,2,jtrun,jtmax), &
-                       diss_est(nxp,lev,my_max)
+      real(kind=RTYPE) vordiss(levp,2,jtrun,jtmax),divdiss(levp,2,jtrun,jtmax)
 
       real(kind=RTYPE) vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),  &
                        temnow(levp,2,jtrun,jtmax),trefs(levp,2,jtrun,jtmax),   &
@@ -187,7 +186,7 @@
       integer   jj,j,nxj,k,i,m,n,mf,nc,kk,KL
       real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu
       real      hfilt,hfilt2,nf,dec,coefu,factop,powd,kfac
-      real      c1,c2,c3,trtmp(2)
+      real      c1,c2,c3
       logical   windchk
 
       data      windmax1/80./, windmax2/100./, windmax3/130./
@@ -469,7 +468,7 @@
       use mpe
       use rank
       use const, only : hdk1,hdk2,radsq,vd,RTYPE
-      use param, only : octahedral,mwhd
+      use param, only : octahedral
 
       implicit  none
 

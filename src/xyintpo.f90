@@ -584,8 +584,8 @@
              , anlslp(nx,my)                                       & 
              , hld1(nx,my),hld2(nx,my)                             &
              , tens(lmax+2)
-      dimension phistd(lmax),puvphi(lmax)
-      real(kind=RTYPE) presp(nx,lmax+2,my),pdiff(nx,my)
+      dimension phistd(lmax),puvphi(lmax),pdiff(nx,my)
+      real(kind=RTYPE) presp(nx,lmax+2,my)
 !c
       data cp/1004.24/, grav/9.80616/
 !c

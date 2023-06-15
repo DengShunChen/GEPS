@@ -112,6 +112,15 @@
            ptend=0.
 
 !CWB2018
+           ut=0.
+           vt=0.
+           up=0.
+           vp=0.
+           tt=0.
+           ttp=0.
+           qt=0.
+           qp=0.
+           qm=0.
            sd=0.
            vvel=0.
            fa1=0.

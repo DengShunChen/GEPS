@@ -6,14 +6,18 @@
 ! transpose (nx partial,lev full) to (nx full,lev partial), num variable packed
 
       use index, only : jlist1,nxjlen_all,nxjlen
+      use const, only : RTYPE,MPI_RTYPE
 
       implicit none
 
       include 'mpif.h'
       integer  nx,nxp,lev,levp,my,my_max,jlen,nsizex,comm
-      real*8   ain(nxp,lev,num,my_max),aout(nx,levp,num,my_max)
-      real*8   b1(nxp,jlen,num,lev),b2(nxp,jlen,num,levp,nsizex)
+      real(kind=RTYPE) ain(nxp,lev,num,my_max),aout(nx,levp,num,my_max)
+      real(kind=RTYPE) b1(nxp,jlen,num,lev),b2(nxp,jlen,num,levp,nsizex)
       integer  nlen,j,i,k,ierr,jlistnum,num,n,i1,i2,j1
+
+      b1=0.
+      b2=0.
 
       do k=1,lev
       do n=1,num
@@ -27,8 +31,8 @@
       enddo
 
       nlen=nxp*levp*jlen*num
-      call MPI_ALLTOALL( b1 ,nlen, MPI_DOUBLE_PRECISION, &
-                         b2, nlen, MPI_DOUBLE_PRECISION, &
+      call MPI_ALLTOALL( b1 ,nlen, MPI_RTYPE, &
+                         b2, nlen, MPI_RTYPE, &
                          comm, IERR )
 
       do n=1,num
@@ -203,6 +207,9 @@
       real(kind=RTYPE)   ain(nx,levp,num,my_max),aout(nxp,lev,num,my_max)
       real(kind=RTYPE)   b1(levp,num,jlen,nxp,nsizex),b2(levp,num,jlen,nxp,nsizex)
       integer  nlen,j,jj,i,k,KL,ierr,jlistnum,num,n,i1,i2,j1
+
+      b1=0.
+      b2=0.
 
       do j=1,jlistnum
          j1=jlist1(j)
@@ -755,7 +762,7 @@
  
       implicit none
 
-      real(kind=RTYPE) a(nx,lev)
+      real a(nx,lev)
       real b1(nxp,lev)
       real b2(nxp,lev,nsizex)
       integer j,nx,lev,i,i2,ii,k,IERR

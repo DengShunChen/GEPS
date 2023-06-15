@@ -212,6 +212,7 @@
 !
       lmax  = 16
       nfxr  = 33
+      cc    = 0.
 !
 !      data facm/1.,0.,1.5,-0.5/
       data facm/ 1.   , 0.  , &
