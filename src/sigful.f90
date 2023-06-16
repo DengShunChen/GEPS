@@ -411,19 +411,19 @@
         do  i = 1,nxj
 !ch         ut(i,k,jj)=ut_tmp(i,k) 
 !cjh        ut(i,k,jj)=ut_tmp(n,k) 
-            utmp(i,k)=ut_tmp(n,k)*pk(i,k,jj)
-            ut(i,k,jj) = ut_tmp(n,k)
+            utmp(i,k)=ut_tmp(n,k)
+            ut(i,k,jj) = ut_tmp(n,k)/pk(i,k,jj)
             n=n+1
         enddo
         enddo
 
 !
-      call qsatq_2d( nxjp(j),nxp,lev,utmp,plt(1,1,jj),vtmp)
+!      call qsatq_2d( nxjp(j),nxp,lev,utmp,plt(1,1,jj),vtmp)
 !
-      do 160 k = 1, lev
-      do 160 i = 1, nxj
-       vt(i,k,jj) = vtmp(i,k)
-  160 continue
+!      do 160 k = 1, lev
+!      do 160 i = 1, nxj
+!       vt(i,k,jj) = vtmp(i,k)
+!  160 continue
 !
   170 continue
 !
