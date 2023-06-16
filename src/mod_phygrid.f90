@@ -181,8 +181,8 @@
 !
 
 !helio>
-           allocate (ls_full(nx,my),ls_redu(nx,my), stat=ierr)
-           allocate (outp(nx,my,8), stat=ierr)
+           allocate (ls_full(nx,my_max),ls_redu(nx,my_max), stat=ierr)
+           allocate (outp(nx,my_max,8), stat=ierr)
            if (ierr/= 0) then
                write(6,*) 'mod_phygrid : allocate fail 9 '
                stop
