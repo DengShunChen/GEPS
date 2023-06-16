@@ -465,7 +465,7 @@ contains
     integer :: n, k, nscale, ncx, ml, ms, ns, i, j
     real :: rerth, pi, var, radsq, correLsq, rkT, rnn1
     type(random_pattern), intent(inout) :: rpattern(nscale)
-    integer :: irand, i
+    integer :: irand
     real :: dt
     real(kind=RTYPE), allocatable :: noise(:,:)
     integer(8) count, count_rate, count_max, count_trunc
