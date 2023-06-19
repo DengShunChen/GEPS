@@ -1105,8 +1105,8 @@
               dz = zi(i,k) - zi(i,k-1)
               tem = 0.5 * (sqrt(wu2(i,k)) + sqrt(wu2(i,k-1)))
               wc(i) = wc(i) + tem * dz
-              tem  = 0.01 * dot(i,k)   * to(i,k)   / po1(i,k)
-              tem1 = 0.01 * dot(i,k-1) * to(i,k-1) / po1(i,k-1)
+              tem  = 10. * dot(i,k)   * to(i,k)   / po1(i,k)
+              tem1 = 10. * dot(i,k-1) * to(i,k-1) / po1(i,k-1)
               wbar(i) = wbar(i) + (-0.5 * rd/g) * (tem + tem1) * dz !grid-scale vertical velocity
               sumx(i) = sumx(i) + dz
             endif
