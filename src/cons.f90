@@ -81,8 +81,8 @@
 ! output data for RSM (Also, RSM compiling flag is necessary)
                       , outrsm,rsmoutinv,rlon1,rlon2,rlat1,rlat2,rgrdsz &
                       , cmbk,cgwd,nmmiph,spl1,spl2                      &
-                      , weightSIT,dSITdt_intv,mwhd,doclx,doslavepp   &
-                      , outdms,outgrb2,alpha,two_loop,ttl,tfilt
+                      , weightSIT,dSITdt_intv,mwhd,doclx,doslavepp      &
+                      , outdms,outgrb2,alpha,two_loop,ttl,tfilt,mass_dp
 !
       real    si(lev+1)
       logical flag

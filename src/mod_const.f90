@@ -78,7 +78,7 @@
             dolsp, dograv,doshl, dodry, donnmi,ozon,       &
             restrt,hdiff, cstar, update,doincr,hybrid,     &
             doo3l, docgrav, doclx, tofd, doslavepp,        &
-            two_loop,ttl
+            two_loop,ttl,mass_dp
 
     ! for stochastic physics
     logical :: dosppt       =.false.

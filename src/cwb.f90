@@ -259,3 +259,68 @@
    10 continue
       return
       end
+
+      subroutine ptot(pdrym,sumwatm,sumtotm,lprint)
+
+      use index
+      use mpe
+      use rank
+      use const
+      use param
+      use grid
+
+      implicit none
+
+      integer i,j,k,n,jj,kk,nxj,nxjf,kn,lprint
+      real    sumtot   ,sumwat    ,dsigp                    &
+             ,sumtotm  ,sumwatm   ,pdrym                    &
+             ,sumtott(nxp,my_max) ,sumwatt(nxp,my_max)      &
+             ,qtot(nxp,my_max)
+      
+!          kn=0
+          sumtot=0.
+          sumwat=0.
+          sumtott=0.
+          sumwatt=0.
+          do jj = 1, jlistnum
+            j=jlist1(jj)
+            nxj=nxdef_2d(j)
+            nxjf=nxdef(j)
+            do i = 1,nxj
+              do k = 1, lev
+                dsigp = dsigma(k,1)*pt(i,jj)+dsigma(k,2)
+                qtot=0.
+                do n = 1, ncld-1
+                   kk=k+(n-1)*lev
+                   qtot(i,jj)=qtot(i,jj)+qt(i,kk,jj)
+                enddo
+                sumtott(i,jj) = sumtott(i,jj)+dsigp
+                sumwatt(i,jj) = sumwatt(i,jj)+dsigp*qtot(i,jj)
+              enddo
+!              kn     = kn + 1
+              sumtot = sumtot + sumtott(i,jj)*cosl(j)*nx/nxjf
+              sumwat = sumwat + sumwatt(i,jj)*cosl(j)*nx/nxjf
+            enddo
+          enddo
+
+!          call mpe_global_sum(kn,1,mpe_integer)
+          call mpe_global_sum(sumtot,1,mpe_double)
+          call mpe_global_sum(sumwat,1,mpe_double)
+
+          kn      = nx * my
+          sumtotm = sumtot / float(kn)
+          sumwatm = sumwat / float(kn)
+          pdrym   = sumtotm - sumwatm
+
+          if( myrank .eq. 0 .and. lprint .eq. 1) then
+            open(35,file='pdry.txt',form='formatted',status='unknown', &
+               position='append')
+            write(35,*)pdrym,sumwatm,sumtotm
+            close(35)
+            print*,'dry air mass = ',pdrym,' hPa'
+            print*,'water mass = ',sumwatm,' hPa'
+            print*,'total air mass = ',sumtotm,' hPa'
+          endif
+
+      return
+      end

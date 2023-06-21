@@ -100,9 +100,9 @@
       character rfile*55, ctau*6
 !!      real      tbar(lev),qbar(lev*ncld),qbrrow(ncld,my)
       integer,  parameter :: ktop=4
-      real      fac(ktop), wkj(my,4), wkmf(jtrun), windmax3, sumtot  &
-               ,sumtoti  ,sumtott(nxp,my_max)  ,qtot(nxp,my_max)     &
-               ,sumwati  ,sumwat   ,sumwatt(nxp,my_max)  
+      real      fac(ktop), wkj(my,4), wkmf(jtrun), windmax3          &
+               ,pdryi       ,pdry      ,pcorr                        &
+               ,sumtotm     ,sumwatm
       data      windmax3/130./
 !
       logical   histim, tchange, flag, forward, fwd
@@ -368,6 +368,8 @@
       recn=1
       rdivm=0.
       flash=0.
+      pdryi=0.
+      pdry=0.
 !
 !
 ! read mountant variables for topographic gravity wave drag
@@ -483,40 +485,6 @@
       thdai = thdai/cosw
       tengi = tengi/cosw
       !
-      sumtoti=0.
-      sumwati=0.
-      sumtott=0.
-      sumwatt=0.
-      do jj = 1, jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-        nxjf=nxdef(j)
-        do i = 1,nxj
-          do k = 1, lev
-            dsigp = dsigma(k,1)*pt(i,jj)+dsigma(k,2)
-            qtot=0.
-            do n = 1, ncld-1
-               kk=k+(n-1)*lev
-               qtot(i,jj)=qtot(i,jj)+qt(i,kk,jj)
-            enddo
-            sumtott(i,jj) = sumtott(i,jj)+dsigp
-            sumwatt(i,jj) = sumwatt(i,jj)+dsigp*qtot(i,jj)
-          enddo
-          sumtoti = sumtoti + sumtott(i,jj)*cosl(j)*nx/nxjf
-          sumwati = sumwati + sumwatt(i,jj)*cosl(j)*nx/nxjf
-        enddo
-      enddo
-      call mpe_global_sum(sumtoti,1,mpe_double)
-      call mpe_global_sum(sumwati,1,mpe_double)
-      if( myrank .eq. 0 ) then
-        open(35,file='pdry.txt',form='formatted',status='unknown', &
-           position='append')
-        write(35,*)sumtoti-sumwati,sumwati,sumtoti
-        close(35)
-        print*,'dry air mass at initial = ',sumtoti-sumwati,' hPa'
-        print*,'water  mass at initial = ',sumwati,' hPa'
-        print*,'total air mass at initial = ',sumtoti,' hPa'
-      endif
 !
       if( myrank .eq. 0 ) &
         print*,'qgini, thdai, tengi= ',qgini, thdai, tengi
@@ -601,6 +569,9 @@
         sptendmax2=0.4305
         sptendmax1=0.3305
       endif
+
+      ! sureface pressure correction
+      if ( mass_dp ) call ptot(pdryi,sumwatm,sumtotm,0)
 
 !
 !      if(typhoon)then
@@ -719,6 +690,7 @@
           ptp(i,jj)= pt(i,jj)
         enddo
       enddo
+
 !
 ! Transfer Spectral to Gridpoint for u,v,t,q,ps at n-1
 !
@@ -745,6 +717,7 @@
        deldm=0.
        forward = .true.
        fwd= .true.
+
 
 !
 !
@@ -867,6 +840,7 @@
         plten(1,mlst,1) = 0.0
         plten(1,mlst,2) = 0.0
       endif
+
       do m = 1, mlistnum
          mf=mlist(m)
          if ( mf.eq.1 ) then
@@ -1037,6 +1011,7 @@
         call mpe2d_unify_nx(ww1,deldm) 
         call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1    &
                   ,plten,nsizey)
+
         if ( two_loop ) then
 !
 !  after phyical parameterization,transform grid point u,v,t,q to
@@ -1060,6 +1035,28 @@
                    ,temten,1,nsizey)
           call rstrandz (jtrun,jtmax,nx,my,my_max,levp,vdmerd,vdzonl   &
                    ,weight,cim,onocos,poly,dpoly,divten,vorten,nsizey)
+
+          ! sureface pressure correction
+          if ( mass_dp ) then
+            do i = 1, 2
+              do m = 1, mlistnum
+                mf=mlist(m)
+                do n = mf, jtrun
+                  pltemp(n,m,i)= dta*plten(n,m,i)+plnow(n,m,i)
+                enddo
+              enddo
+            enddo
+            call transr1(jtrun,jtmax,nx,my,my_max,poly,pltemp,pt,nsizey)
+
+            call ptot(pdry,sumwatm,sumtotm,0)
+            pcorr = (pdryi-pdry) * sqrt(2.)
+
+            mlst=ilist(1)
+            if(mlst .ne. 0) then
+              plten(1,mlst,1) = plten(1,mlst,1) + pcorr / dta
+              plten(1,mlst,2) = plten(1,mlst,2) + pcorr / dta
+            endif
+          endif
 !
 !
       if (lsimpl)  then
@@ -1077,11 +1074,11 @@
 !  zero out global mean tendencies for divergence, vorticity, and
 !  terrain pressure to ensure consistency with gauss's theorem.
 !
-      mlst=ilist(1)
-      if(mlst .ne. 0) then
-        plten(1,mlst,1) = 0.0
-        plten(1,mlst,2) = 0.0
-      endif
+!      mlst=ilist(1)
+!      if(mlst .ne. 0) then
+!        plten(1,mlst,1) = 0.0
+!        plten(1,mlst,2) = 0.0
+!      endif
       do m = 1, mlistnum
          mf=mlist(m)
          if ( mf.eq.1 ) then
@@ -1157,11 +1154,6 @@
                    ,poly,dpoly,vornow,divnow,ut,vt,nsizey)
         call transr1(jtrun,jtmax,nx,my,my_max,poly,plnow,pt,nsizey)!
       else
-        mlst=ilist(1)
-        if(mlst .ne. 0) then
-          plten(1,mlst,1) = 0.0
-          plten(1,mlst,2) = 0.0
-        endif
         do i = 1, 2
           do m = 1, mlistnum
             mf=mlist(m)
@@ -1171,43 +1163,7 @@
           enddo
         enddo
         call transr1(jtrun,jtmax,nx,my,my_max,poly,pltemp,pt,nsizey)
-
       endif ! two_loop
-      
-      sumtot=0.
-      sumwat=0.
-      sumtott=0.
-      sumwatt=0.
-      do jj = 1, jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-        nxjf=nxdef(j)
-        do i = 1,nxj
-          do k = 1, lev
-            dsigp = dsigma(k,1)*pt(i,jj)+dsigma(k,2)
-            qtot=0.
-            do n = 1, ncld-1
-               kk=k+(n-1)*lev
-               qtot(i,jj)=qtot(i,jj)+qt(i,kk,jj)
-            enddo
-            sumtott(i,jj) = sumtott(i,jj)+dsigp
-            sumwatt(i,jj) = sumwatt(i,jj)+dsigp*qtot(i,jj)
-          enddo
-          sumtot = sumtot + sumtott(i,jj)*cosl(j)*nx/nxjf
-          sumwat = sumwat + sumwatt(i,jj)*cosl(j)*nx/nxjf
-        enddo
-      enddo
-      call mpe_global_sum(sumtot,1,mpe_double)
-      call mpe_global_sum(sumwat,1,mpe_double)
-      if( myrank .eq. 0 ) then
-        open(35,file='pdry.txt',form='formatted',status='unknown', &
-           position='append')
-        write(35,*)sumtot-sumwat,sumwat,sumtot
-        close(35)
-        print*,'dry air mass = ',sumtot-sumwat,' hPa'
-        print*,'water mass = ',sumwat,' hPa'
-        print*,'total air mass = ',sumtot,' hPa'
-      endif
 
 
       !  stochastic_physics
@@ -1274,6 +1230,17 @@
 !        if ( mod(itimestep,2) .eq. 0 ) xy = -1 * xy
         xy = -1 * xy
         if ( .not. two_loop ) then
+          ! sureface pressure correction
+          if ( mass_dp ) then
+            call ptot(pdry,sumwatm,sumtotm,0)
+            pcorr = (pdryi-pdry) * sqrt(2.)
+
+            mlst=ilist(1)
+            if(mlst .ne. 0) then
+              plten(1,mlst,1) = plten(1,mlst,1) + pcorr / dta
+              plten(1,mlst,2) = plten(1,mlst,2) + pcorr / dta
+            endif
+          endif
 !
 !  after phyical parameterization,transform grid point u,v,t,q to
 !  spectrum
@@ -1313,11 +1280,11 @@
 !  zero out global mean tendencies for divergence, vorticity, and
 !  terrain pressure to ensure consistency with gauss's theorem.
 !
-      mlst=ilist(1)
-      if(mlst .ne. 0) then
-        plten(1,mlst,1) = 0.0
-        plten(1,mlst,2) = 0.0
-      endif
+!      mlst=ilist(1)
+!      if(mlst .ne. 0) then
+!        plten(1,mlst,1) = 0.0
+!        plten(1,mlst,2) = 0.0
+!      endif
       do m = 1, mlistnum
          mf=mlist(m)
          if ( mf.eq.1 ) then
