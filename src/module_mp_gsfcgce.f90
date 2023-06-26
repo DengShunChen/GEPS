@@ -577,9 +577,11 @@ CONTAINS
             vtr(k)=consta*gambp4*sqrhoz(k)/tmp1**constb
             vtr(k)=vtr(k)/6.
             if (k .eq. 1) then
-               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vtr(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vtr(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vtr(k))
             else
-               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vtr(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vtr(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vtr(k))
             endif
          else
             vtr(k)=0.
@@ -608,7 +610,8 @@ CONTAINS
             flux=(fluxin-fluxout)/rhoz(k)/dzw(k)
 !            tmpqrz=qrz(k)
             qrz(k)=qrz(k)+del_tv*flux
-            qrz(k)=amax1(0.,qrz(k))
+!            qrz(k)=amax1(0.,qrz(k))
+            qrz(k)=dmax1(0.,qrz(k))
             qr(i,k,j)=qrz(k)
             fluxin=fluxout
          enddo
@@ -646,9 +649,11 @@ CONTAINS
             vts(k)=constc*gamdp4*sqrhoz(k)/tmp1**constd
             vts(k)=vts(k)/6.
             if (k .eq. 1) then
-               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vts(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vts(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vts(k))
             else
-               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vts(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vts(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vts(k))
             endif
          else
             vts(k)=0.
@@ -677,7 +682,8 @@ CONTAINS
             fluxout=rhoz(k)*vts(k)*qsz(k)
             flux=(fluxin-fluxout)/rhoz(k)/dzw(k)
             qsz(k)=qsz(k)+del_tv*flux
-            qsz(k)=amax1(0.,qsz(k))
+!            qsz(k)=amax1(0.,qsz(k))
+            qsz(k)=dmax1(0.,qsz(k))
             qs(i,k,j)=qsz(k)
             fluxin=fluxout
          enddo
@@ -730,9 +736,11 @@ CONTAINS
               vtg(k)=gam4pt5*term0*sqrt(1./tmp1)
               vtg(k)=vtg(k)/6.
               if (k .eq. 1) then
-                 del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vtg(k))
+!                 del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vtg(k))
+                 del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vtg(k))
               else
-                 del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vtg(k))
+!                 del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vtg(k))
+                 del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vtg(k))
               endif !k
             else
 ! added by JJS
@@ -746,9 +754,11 @@ CONTAINS
               term0=abar*gam4bbar/6.
               vtg(k)=term0*tmp1*(p0/prez(k))**0.4
               if (k .eq. 1) then
-                 del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vtg(k))
+!                 del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vtg(k))
+                 del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vtg(k))
               else
-                 del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vtg(k))
+!                 del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vtg(k))
+                 del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vtg(k))
               endif !k
             endif !ihail
          else
@@ -778,7 +788,8 @@ CONTAINS
             fluxout=rhoz(k)*vtg(k)*qgz(k)
             flux=(fluxin-fluxout)/rhoz(k)/dzw(k)
             qgz(k)=qgz(k)+del_tv*flux
-            qgz(k)=amax1(0.,qgz(k))
+!            qgz(k)=amax1(0.,qgz(k))
+            qgz(k)=dmax1(0.,qgz(k))
             qg(i,k,j)=qgz(k)
             fluxin=fluxout
          enddo
@@ -823,9 +834,11 @@ CONTAINS
             vti(k)= 3.29 * (rhoz(k)* qiz(k))** 0.16  ! Heymsfield and Donner
 #endif
             if (k .eq. 1) then
-               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vti(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vti(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vti(k))
             else
-               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vti(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vti(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vti(k))
             endif
          else
             vti(k)=0.
@@ -855,7 +868,8 @@ CONTAINS
             fluxout=rhoz(k)*vti(k)*qiz(k)
             flux=(fluxin-fluxout)/rhoz(k)/dzw(k)
             qiz(k)=qiz(k)+del_tv*flux
-            qiz(k)=amax1(0.,qiz(k))
+!            qiz(k)=amax1(0.,qiz(k))
+            qiz(k)=dmax1(0.,qiz(k))
             qi(i,k,j)=qiz(k)
             fluxin=fluxout
          enddo
@@ -1009,7 +1023,8 @@ CONTAINS
      do k=kts,kte
         do j=jts,jte
            do i=its,ite
-           X(i,k,j)=A0*AMAX1(X(i,k,j), 0.0)
+!           X(i,k,j)=A0*AMAX1(X(i,k,j), 0.0)
+           X(i,k,j)=A0*DMAX1(X(i,k,j), 0.0)
            enddo
         enddo
      enddo

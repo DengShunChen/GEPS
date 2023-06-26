@@ -767,9 +767,11 @@ CONTAINS
            if (.not. vtr(k) .gt. 0.0) cycle ! EMK NUWRF Bug fix
 
             if (k .eq. 1) then
-               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vtr(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vtr(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vtr(k))
             else
-               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vtr(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vtr(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vtr(k))
             endif
 !         else
 !            vtr(k)=0.
@@ -798,7 +800,8 @@ CONTAINS
             flux=(fluxin-fluxout)/rhoz(k)/dzw(k)
 !            tmpqrz=qrz(k)
             qrz(k)=qrz(k)+del_tv*flux
-            qrz(k)=amax1(0.,qrz(k))
+!            qrz(k)=amax1(0.,qrz(k))
+            qrz(k)=dmax1(0.,qrz(k))
             qr(i,k,j)=qrz(k)
             fluxin=fluxout
          enddo
@@ -864,9 +867,11 @@ CONTAINS
             endif
 
             if (k .eq. 1) then
-               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vts(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vts(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vts(k))
             else
-               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vts(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vts(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vts(k))
             endif
          endif
       enddo
@@ -893,7 +898,8 @@ CONTAINS
             fluxout=rhoz(k)*vts(k)*qsz(k)
             flux=(fluxin-fluxout)/rhoz(k)/dzw(k)
             qsz(k)=qsz(k)+del_tv*flux
-            qsz(k)=amax1(0.,qsz(k))
+!            qsz(k)=amax1(0.,qsz(k))
+            qsz(k)=dmax1(0.,qsz(k))
             qs(i,k,j)=qsz(k)
             fluxin=fluxout
          enddo
@@ -975,7 +981,8 @@ CONTAINS
                     call sgmap(2,y1,r00,tairc,ftng0)
                     ftng=ftng0**bgq
                  endif
-                 vtg(k)=amax1(vgcr*(r00*y1)**bgq/ftng, 0.0)
+!                 vtg(k)=amax1(vgcr*(r00*y1)**bgq/ftng, 0.0)
+                 vtg(k)=dmax1(vgcr*(r00*y1)**bgq/ftng, 0.0)
                                        ! bg, vgcr, bgq are defined in new consat_s
                  vtg(k)=vtg(k) * 0.01  ! convert back to MKS
      
@@ -983,9 +990,11 @@ CONTAINS
             endif !ihail
 
             if (k .eq. 1) then
-               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vtg(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vtg(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vtg(k))
             else
-               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vtg(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vtg(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vtg(k))
             endif 
 !
          endif !qgz
@@ -1013,7 +1022,8 @@ CONTAINS
             fluxout=rhoz(k)*vtg(k)*qgz(k)
             flux=(fluxin-fluxout)/rhoz(k)/dzw(k)
             qgz(k)=qgz(k)+del_tv*flux
-            qgz(k)=amax1(0.,qgz(k))
+!            qgz(k)=amax1(0.,qgz(k))
+            qgz(k)=dmax1(0.,qgz(k))
             qg(i,k,j)=qgz(k)
             fluxin=fluxout
          enddo
@@ -1097,9 +1107,11 @@ CONTAINS
           ! EMK:  Avoid division by zero
           if ((vti(k) .gt. 1.0e-20)) then
             if (k .eq. 1) then
-               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vti(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-topo(i,j))/vti(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-topo(i,j))/vti(k))
             else
-               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vti(k))
+!               del_tv=amin1(del_tv,0.9*(zz(k)-zz(k-1))/vti(k))
+               del_tv=dmin1(del_tv,0.9*(zz(k)-zz(k-1))/vti(k))
             endif
          end if
 !         else
@@ -1130,7 +1142,8 @@ CONTAINS
             fluxout=rhoz(k)*vti(k)*qiz(k)
             flux=(fluxin-fluxout)/rhoz(k)/dzw(k)
             qiz(k)=qiz(k)+del_tv*flux
-            qiz(k)=amax1(0.,qiz(k))
+!            qiz(k)=amax1(0.,qiz(k))
+            qiz(k)=dmax1(0.,qiz(k))
             qi(i,k,j)=qiz(k)
             fluxin=fluxout
          enddo
@@ -1255,7 +1268,8 @@ CONTAINS
      do k=kts,kte
         do j=jts,jte
            do i=its,ite
-           X(i,k,j)=A0*AMAX1(X(i,k,j), 0.0)
+!           X(i,k,j)=A0*AMAX1(X(i,k,j), 0.0)
+           X(i,k,j)=A0*DMAX1(X(i,k,j), 0.0)
            enddo
         enddo
      enddo
@@ -4611,8 +4625,10 @@ CONTAINS
 !!!!!!!!!!!DDDDDDDDDDDDDD double check by Lang 02/23/2016
               sccc=cnd(i,j)
               seee=dd(i,j) + ern(i,j)
-              sddd=dep(i,j) + amax1(pint(i,j),0.0) + psdep(i,j) + pgdep(i,j)
-              ssss=dd1(i,j) - amin1(pint(i,j),0.0) + pssub(i,j) + pgsub(i,j) + pmlts(i,j) + pmltg(i,j)
+!              sddd=dep(i,j) + amax1(pint(i,j),0.0) + psdep(i,j) + pgdep(i,j)
+              sddd=dep(i,j) + dmax1(pint(i,j),0.0) + psdep(i,j) + pgdep(i,j)
+!              ssss=dd1(i,j) - amin1(pint(i,j),0.0) + pssub(i,j) + pgsub(i,j) + pmlts(i,j) + pmltg(i,j)
+              ssss=dd1(i,j) - dmin1(pint(i,j),0.0) + pssub(i,j) + pgsub(i,j) + pmlts(i,j) + pmltg(i,j)
               smmm=psmlt(i,j) + pgmlt(i,j) + pimlt(i,j) + qracs(i,j) 
               sfff=psacw(i,j)*d2t + piacr(i,j)*d2t + psfw(i,j)*d2t + pgfr(i,j)*d2t   &
                   +dgacw(i,j)*d2t + dgacr(i,j)*d2t + psacr(i,j)*d2t + pihom(i,j) &
@@ -4719,13 +4735,15 @@ CONTAINS
          IF (TAIR(I,J).LT.273.16) THEN
 !            ZDRY = MAX(1.e-4,A_11+A_33+ZE_CLD) ! Xiping's  !rain,snow,cloud ice,cloud water,graupel
             ZDRY = MAX(1.e-4,A_11+A_22+A_33+ZE_CLD) !rain,snow,cloud ice,cloud water,graupel
-            DBZ(I,K,J) = 10.*ALOG10(ZDRY)
+!            DBZ(I,K,J) = 10.*ALOG10(ZDRY)
+            DBZ(I,K,J) = 10.*DLOG10(ZDRY)
          ELSE         
 !            A_44 = A_11+UWET*(A_22+A_33)**.95         ! old formula
 !            A_44 = A_11+UWET*A_33**.95+ZE_CLD         ! Xiping's
             A_44 = A_11+UWET*(A_22+A_33)**.95+ZE_CLD
             ZWET = MAX(1.e-4,A_44)
-            DBZ(I,K,J) = 10.*ALOG10(ZWET)
+!            DBZ(I,K,J) = 10.*ALOG10(ZWET)
+            DBZ(I,K,J) = 10.*DLOG10(ZWET)
          ENDIF
 
       else ! using old dbz formula from Tao
