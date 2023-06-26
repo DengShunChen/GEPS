@@ -1,3 +1,4 @@
+#define GCE3_NUWRF
 #define EffectRad_GCE3
 !#define update_dp
 !--------------------------
@@ -123,7 +124,11 @@
                                      cloud_diagnosis_v3,                &
                                      sedi_w_v3 => do_sedi_w
 ! for Goddard (GCE) 3ICE MP
+#ifdef GCE3_NUWRF
+      use module_mp_gsfcgce_3ice_nuwrf, only: gsfcgce_3ice_nuwrf
+#else
       use module_mp_gsfcgce,   only: gsfcgce
+#endif
 ! for Goddard (GCE) 4ICE MP
       use module_mp_gce4ice,   only: gsfcgce_4ice_nuwrf
       use physcons,            only: con_rd,con_fvirt,con_g,con_eps
@@ -947,14 +952,13 @@
            pii3d(nx,lev,1),p3d(nx,lev,1),z3d(nx,lev,1),dz3d(nx,lev,1),  &
            rainnc2d(nx,1),snownc2d(nx,1),graupelnc2d(nx,1),             &
            rain2d(nx,1),snow2d(nx,1),graupel2d(nx,1),sr2d(nx,1),        &
-           refl_10cm(nx,lev,1),ht(nx,1),land2d(nx,1) )
+           refl_10cm(nx,lev,1),ht(nx,1),land2d(nx,1),w3d(nx,lev,1) )
         allocate                                                        &
          ( rew3d(nx,lev,1),rer3d(nx,lev,1),rei3d(nx,lev,1),             &
            res3d(nx,lev,1),reg3d(nx,lev,1) )
 
         if ( nmmiph.eq.16 ) allocate                                    &
-         ( qh3d(nx,lev,1),w3d(nx,lev,1),                                &
-           hailnc2d(nx,1),hail2d(nx,1),reh3d(nx,lev,1) )
+         ( qh3d(nx,lev,1),hailnc2d(nx,1),hail2d(nx,1),reh3d(nx,lev,1) )
 
         th3d = 0.
         qv3d = 0.
@@ -983,10 +987,10 @@
         rei3d = 0.
         res3d = 0.
         reg3d = 0.
+        w3d = 0.
 
         if ( nmmiph .eq. 16 ) then
           qh3d = 0.
-          w3d = 0.
           hail2d = 0.
           hailnc2d = 0.
           reh3d = 0.
@@ -1044,8 +1048,8 @@
               rho3d(i,k,1) = p3d(i,k,1)/                                &
                              (con_rd*tt(i,kc)*(1+con_fvirt*qv3d(i,k,1)))
             endif
-            if(nmmiph.eq.16) w3d(i,k,1) = -vvel(i,kc)*100./             &
-                                          (rho3d(i,k,1)*con_g)
+
+            w3d(i,k,1) = -vvel(i,kc)*100./(rho3d(i,k,1)*con_g)  !(m/s)
           enddo
         enddo
 
@@ -1059,6 +1063,24 @@
         enddo
 
         if ( nmmiph .eq. 15 )                                           &
+#ifdef GCE3_NUWRF
+          call gsfcgce_3ice_nuwrf                                       &
+                 ( th3d, qv3d, qc3d, qr3d, qi3d, qs3d,                  &
+                   rho3d, pii3d, p3d, dta, z3d,                         &
+                   ht, dz3d, con_g, w3d,                                &
+                   rhowater, rhosnow,                                   &
+                   itimestep, land2d,                                   &
+!                   ids,ide, jds,jde, kds,kde,                           & ! domain dims
+                   1, nx , 1, 1, 1, lev,                                & ! memory dims
+                   1, nxj, 1, 1, 1, lev,                                & ! tile   dims
+                   rainnc2d, rain2d,                                    &
+                   snownc2d, snow2d, sr2d,                              &
+                   graupelnc2d, graupel2d,                              &
+                   refl_10cm, diagflag, do_radar_ref,                   &
+                   .false., qg3d,                                       &
+                   ihail, ice2,                                         &
+                   rew3d, rer3d, rei3d, res3d, reg3d )
+#else
           call gsfcgce                                                  &
                  ( th3d, qv3d, qc3d, qr3d, qi3d, qs3d,                  &
                    rho3d, pii3d, p3d, dta, z3d,                         &
@@ -1079,6 +1101,7 @@
 #endif
                    .false., qg3d,                                       &
                    ihail, ice2 )
+#endif
 
         if ( nmmiph .eq. 16 )                                           &
           call gsfcgce_4ice_nuwrf                                       &
@@ -1163,12 +1186,11 @@
         enddo
 
         deallocate                                                      &
-         ( th3d,qv3d,qc3d,qr3d,qs3d,qi3d,qg3d,pii3d,p3d,z3d,dz3d,       &
+         ( th3d,qv3d,qc3d,qr3d,qs3d,qi3d,qg3d,pii3d,p3d,z3d,dz3d,rho3d, &
            rainnc2d,snownc2d,graupelnc2d,rain2d,snow2d,graupel2d,       &
-           sr2d,refl_10cm,land2d )
+           ht,sr2d,refl_10cm,land2d,w3d,rew3d,rer3d,rei3d,res3d,reg3d )
         if ( nmmiph .eq. 16 ) deallocate                                &
-         ( qh3d,rho3d,ht,w3d,hailnc2d,hail2d,                           &
-           rew3d,rer3d,rei3d,res3d,reg3d,reh3d )
+         ( qh3d,hailnc2d,hail2d,reh3d )
 
       endif  !end of if nmmiph=15 .or. nmmiph=16
 
