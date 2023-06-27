@@ -335,26 +335,26 @@ CONTAINS
 
   i24h=nint(86400./dt_in)
   if (mod(itimestep,i24h).eq.1) then
-     write(6,*) 'ihail=',ihail,'  ice2=',ice2
+!     write(6,*) 'ihail=',ihail,'  ice2=',ice2
      if (ice2.eq.0) then
-        write(6,*) 'Running 3-ice scheme in GSFCGCE with'
+!        write(6,*) 'Running 3-ice scheme in GSFCGCE with'
         if (ihail.eq.0) then 
-           write(6,*) '     ice, snow and graupel'
+!           write(6,*) '     ice, snow and graupel'
         else if (ihail.eq.1) then
-                write(6,*) '     ice, snow and hail'
+!                write(6,*) '     ice, snow and hail'
         else
 !             write(6,*) 'ihail has to be either 1 or 0'
 !             call wrf_error_fatal ('gsfcgce_2ice in namelist.input has to be either 1 or 0')
              stop
         endif !ihail
      else if (ice2.eq.1) then
-             write(6,*) 'Running 2-ice scheme in GSFCGCE with'
-             write(6,*) '     ice and snow'
+!             write(6,*) 'Running 2-ice scheme in GSFCGCE with'
+!             write(6,*) '     ice and snow'
      else if (ice2.eq.2) then
-             write(6,*) 'Running 2-ice scheme in GSFCGCE with'
-             write(6,*) '     ice and graupel'
+!             write(6,*) 'Running 2-ice scheme in GSFCGCE with'
+!             write(6,*) '     ice and graupel'
      else if (ice2.eq.3) then
-             write(6,*) 'Running warm rain only scheme in GSFCGCE without any ice'
+!             write(6,*) 'Running warm rain only scheme in GSFCGCE without any ice'
      else
 !             write(6,*) 'gsfcgce_2ice in namelist.input has to be 0, 1, 2, or 3'
 !             call wrf_error_fatal ('gsfcgce_2ice in namelist.input has to be 0, 1, 2, or 3')
@@ -390,7 +390,7 @@ CONTAINS
 !    if (itimestep .eq. 1) call makelut_ccn_icn
 ! EMK 2011/08/25
       if (mod(itimestep,i24h).eq.1)   &
-         print *, 'in mp_gsfcgce_3ice_nuwrf, chem_opt, gsfcgce_gocart_coupling  = ', chem_opt, gsfcgce_gocart_coupling
+!         print *, 'in mp_gsfcgce_3ice_nuwrf, chem_opt, gsfcgce_gocart_coupling  = ', chem_opt, gsfcgce_gocart_coupling
       if (first_makelut) then
          ! EMK...Only execute when GOCART and coupling turned on.
          if ( (chem_opt == 300 .or. chem_opt == 301 .or. &
@@ -1236,34 +1236,34 @@ CONTAINS
   if (A1.NE.0.0.and.A1.GT.A2) then 
      A0=(A1-A2)/A1
 
-  if (mod(itimestep,540).eq.0) then
-     if (ics.eq.1) then
-        write(61,*) 'kms=',kms,'  kme=',kme,'  kts=',kts,'  kte=',kte
-        write(61,*) 'jms=',jms,'  jme=',jme,'  jts=',jts,'  jte=',jte 
-        write(61,*) 'ims=',ims,'  ime=',ime,'  its=',its,'  ite=',ite 
-     endif 
-     if (ics.eq.1) then
-         write(61,*) 'qv timestep=',itimestep
-         write(61,*) '  A1=',A1,'   A2=',A2,'   A0=',A0
-     else if (ics.eq.2) then
-             write(61,*) 'ql timestep=',itimestep
-             write(61,*) '  A1=',A1,'   A2=',A2,'   A0=',A0
-     else if (ics.eq.3) then
-             write(61,*) 'qr timestep=',itimestep
-             write(61,*) '  A1=',A1,'   A2=',A2,'   A0=',A0
-     else if (ics.eq.4) then
-             write(61,*) 'qi timestep=',itimestep
-             write(61,*) '  A1=',A1,'   A2=',A2,'   A0=',A0
-     else if (ics.eq.5) then
-             write(61,*) 'qs timestep=',itimestep
-             write(61,*) '  A1=',A1,'   A2=',A2,'   A0=',A0
-     else if (ics.eq.6) then
-             write(61,*) 'qg timestep=',itimestep
-             write(61,*) '  A1=',A1,'   A2=',A2,'   A0=',A0
-     else
-             write(61,*) 'wrong cloud specieis number'
-     endif 
-  endif 
+!  if (mod(itimestep,540).eq.0) then
+!     if (ics.eq.1) then
+!        write(61,*) 'kms=',kms,'  kme=',kme,'  kts=',kts,'  kte=',kte
+!        write(61,*) 'jms=',jms,'  jme=',jme,'  jts=',jts,'  jte=',jte 
+!        write(61,*) 'ims=',ims,'  ime=',ime,'  its=',its,'  ite=',ite 
+!     endif 
+!     if (ics.eq.1) then
+!         write(61,*) 'qv timestep=',itimestep
+!         write(61,*) '  A1=',A1,'   A2=',A2,'   A0=',A0
+!     else if (ics.eq.2) then
+!             write(61,*) 'ql timestep=',itimestep
+!             write(61,*) '  A1=',A1,'   A2=',A2,'   A0=',A0
+!     else if (ics.eq.3) then
+!             write(61,*) 'qr timestep=',itimestep
+!             write(61,*) '  A1=',A1,'   A2=',A2,'   A0=',A0
+!     else if (ics.eq.4) then
+!             write(61,*) 'qi timestep=',itimestep
+!             write(61,*) '  A1=',A1,'   A2=',A2,'   A0=',A0
+!     else if (ics.eq.5) then
+!             write(61,*) 'qs timestep=',itimestep
+!             write(61,*) '  A1=',A1,'   A2=',A2,'   A0=',A0
+!     else if (ics.eq.6) then
+!             write(61,*) 'qg timestep=',itimestep
+!             write(61,*) '  A1=',A1,'   A2=',A2,'   A0=',A0
+!     else
+!             write(61,*) 'wrong cloud specieis number'
+!     endif 
+!  endif 
 
      do k=kts,kte
         do j=jts,jte
