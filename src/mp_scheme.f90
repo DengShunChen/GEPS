@@ -1156,7 +1156,7 @@
             tt(i,k) = th3d(i,kc,1)*pk(i,k)  !convert back to real temperature
 
             if ( nmmiph .eq. 15 ) then
-#ifdef EffectRad_GCE3
+#if defined(EffectRad_GCE3) || defined(GCE3_NUWRF)
               re_cloud(i,k) = rew3d(i,k,1)  !micron
               re_rain (i,k) = rer3d(i,k,1)  !micron
               re_ice  (i,k) = rei3d(i,k,1)  !micron
