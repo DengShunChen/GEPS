@@ -1444,9 +1444,10 @@
         enddo
       endif    !(end if nmcup=5)
 
-      if ( docup .and. (nmcup.eq.2 .or. nmcup.eq.3 .or. nmcup.eq. 6) ) then
-        ! setting for nmcup=2,3 and new shallow convection
-        ! setting for nmcup=6 and scale-aware shallow convection
+      if ( docup .and. (nmcup.eq.2 .or. nmcup.eq.3 .or. nmcup.eq.6 .or. nmcup.eq.7) ) then
+        ! setting for nmcup=2,3 and new deep convection
+        ! setting for nmcup=6 and scale-aware deep convection
+        ! setting for nmcup=7 and K.H. scale-aware deep convection
         ! original :        
         !    call random_number(XKT2)
         ! CWB 2007-09-27 change random number seed dynamically >>>
@@ -1656,7 +1657,7 @@
 !=======================================================================
 ! shallow convection 
 !=======================================================================
-      if( doshl .and. (nmshl.eq.2 .or. nmshl.eq.3) ) then
+      if( doshl .and. (nmshl.eq.2 .or. nmshl.eq.3 .or. nmshl.eq.4) ) then
         do i=1,nxj
           psfc(i)  = pst(i,jj)*0.1        ! change to cb
         enddo
