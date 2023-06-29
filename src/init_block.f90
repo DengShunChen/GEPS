@@ -52,6 +52,7 @@
 !!      hice=3.336e5
       evaprh=0.98
       hfilt=1.
+      factop=60.
 
       nnmiit=3
       nnmivm=3

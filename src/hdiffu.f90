@@ -162,7 +162,7 @@
       use mpe
       use rank
       use const, only : hdk1,hdk2,radsq,doskeb,onocos,wcfac,wdfac      &
-                      , poly,dpoly,hord,vd,RTYPE
+                      , poly,dpoly,hord,vd,factop,RTYPE
       use param, only : octahedral
 
       implicit  none
@@ -185,7 +185,7 @@
 
       integer   jj,j,nxj,k,i,m,n,mf,nc,kk,KL
       real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu
-      real      hfilt,hfilt2,nf,dec,coefu,factop,powd,kfac
+      real      hfilt,hfilt2,nf,dec,coefu,powd,kfac
       real      c1,c2,c3
       logical   windchk
 
@@ -221,7 +221,6 @@
       powd = float(hord) / 2.
       hfilt  = (radsq/(nf*(nf+1)))**powd
       hfilt2 = radsq/(nf*(nf+1))
-      factop = 60.
       coefu = factop/float(hdk2(1)-hdk1)
       if ( octahedral ) then
         hfilt  = hfilt/(6.*dta)
@@ -467,7 +466,7 @@
       use index
       use mpe
       use rank
-      use const, only : hdk1,hdk2,radsq,vd,RTYPE
+      use const, only : hdk1,hdk2,radsq,vd,factop,RTYPE
       use param, only : octahedral
 
       implicit  none
@@ -488,7 +487,7 @@
 
       integer   jj,j,nxj,k,i,m,n,mf,nc,kk,KL
       real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu
-      real      hfilt2,hfilt4,hfilt6,nf,kfac,fl,factop
+      real      hfilt2,hfilt4,hfilt6,nf,kfac,fl
       real      c1,c2,c3,c4
       logical   windchk
 
@@ -513,7 +512,6 @@
 !
       nf=jtrun-1
 !
-      factop = 60.
       fl   = factop/float(hdk2(1)-hdk1)
       hfilt6 = (radsq/(nf*(nf+1)))**3.
       hfilt4 = (radsq/(nf*(nf+1)))**2.

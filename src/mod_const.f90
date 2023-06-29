@@ -57,7 +57,8 @@
          ptop,dt,tau,taui,taue,tauo,                       &
          hours,frad,evaprh,qgini,                          &
          tice,hice,cutfreq,taup,hfilt,tfilt,               &
-         taureg,cgw,domfc,otgreen,cgwd,cmbk,spl1,spl2
+         taureg,cgw,domfc,otgreen,cgwd,cmbk,spl1,spl2,     &
+         factop
     real(kind=RTYPE) :: ptmean,ptmeans,qmin
     !sit
     real :: fsit         !fsit>0., turn on sit_vdiff when mod(tau/fsit)<0.001

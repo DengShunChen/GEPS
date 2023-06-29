@@ -213,6 +213,7 @@
       lmax  = 16
       nfxr  = 33
       cc    = 0.
+      istat = 0
 !
 !      data facm/1.,0.,1.5,-0.5/
       data facm/ 1.   , 0.  , &
@@ -556,8 +557,10 @@
       if(dta.gt.720)then
 !!        dt_chg=1800.
         nc_stable=1
-        sptendmax2=0.3605
-        sptendmax1=0.2605
+!        sptendmax2=0.3605
+!        sptendmax1=0.2605
+        sptendmax2=0.4005
+        sptendmax1=0.3005
       else if(dta.le.720 .and. dta.gt.450 )then
 !!        dt_chg=720.
         nc_stable=2
@@ -571,7 +574,10 @@
       endif
 
       ! sureface pressure correction
-      if ( mass_dp ) call ptot(pdryi,sumwatm,sumtotm,0)
+      if ( mass_dp ) then
+        qp(:,:,:) = qt(:,:,:)
+        call ptot(pdryi,sumwatm,sumtotm,pltemp,0)
+      endif
 
 !
 !      if(typhoon)then
@@ -1048,7 +1054,7 @@
             enddo
             call transr1(jtrun,jtmax,nx,my,my_max,poly,pltemp,pt,nsizey)
 
-            call ptot(pdry,sumwatm,sumtotm,0)
+            call ptot(pdry,sumwatm,sumtotm,pltemp,0)
             pcorr = (pdryi-pdry) * sqrt(2.)
 
             mlst=ilist(1)
@@ -1171,8 +1177,8 @@
 !
 !  for physical parameterization,output spectrum u,v,t,q to grid point
 !
+        qp(:,:,:) = qt(:,:,:)
         if (yesdia)  then
-
           call diabat ( fwd,docup,dodry,dolsp,dopbl,dorad,doshl,dograv,tofd     &
                       , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw      &
                       , idg,jdg,ldiag,dtx,tau,hours,julian,year,yrd             &
@@ -1232,7 +1238,15 @@
         if ( .not. two_loop ) then
           ! sureface pressure correction
           if ( mass_dp ) then
-            call ptot(pdry,sumwatm,sumtotm,0)
+            call ptot(pdry,sumwatm,sumtotm,pltemp,0)
+            do i = 1, 2
+              do m = 1, mlistnum
+                mf=mlist(m)
+                do n = mf, jtrun
+                  plten(n,m,i) =  (pltemp(n,m,i)-plnow(n,m,i))/dta
+                enddo
+              enddo
+            enddo
             pcorr = (pdryi-pdry) * sqrt(2.)
 
             mlst=ilist(1)
@@ -1988,7 +2002,10 @@
 !CWB2016   
             if(.not. io_quilting)then
 !CWB2017             call sendmsg ('gfs',ifromtau,itotau,istat)
-              if(itau.eq.itotau) call sendmsg ('gfs',ifromtau,itotau,istat)
+              if(itau.eq.itotau) then
+                   if ( myrank .eq. 0 ) print *,'here we are'
+                   call sendmsg ('gfs',ifromtau,itotau,istat)
+              endif
             else
               istat=0
             endif

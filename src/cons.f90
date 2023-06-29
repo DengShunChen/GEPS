@@ -82,8 +82,9 @@
                       , outrsm,rsmoutinv,rlon1,rlon2,rlat1,rlat2,rgrdsz &
                       , cmbk,cgwd,nmmiph,spl1,spl2                      &
                       , weightSIT,dSITdt_intv,mwhd,doclx,doslavepp      &
-                      , outdms,outgrb2,alpha,two_loop,ttl,tfilt,mass_dp
-!
+                      , outdms,outgrb2,alpha,two_loop,ttl,tfilt,mass_dp &
+                      , factop
+!                       
       real    si(lev+1)
       logical flag
       character*10 fulldtg,Wfulldtg
