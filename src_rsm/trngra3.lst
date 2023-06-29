@@ -1,0 +1,799 @@
+
+ Fujitsu Fortran Version 4.6.1  Thu Jun 29 14:23:15 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm
+   Source file       : trngra3.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "trngra3"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine trngra3 (jtrun,jtmax,nx,lev,my,my_max,cim,poly,dpoly,s &
+               2                                            ,dlpl,dtpl,nsize)
+               3                     !
+               4                     !  subroutine to transform spectral terrain pressure to grid point
+               5                     !  fields of zonal and meridional derivatives of terrain pressure
+               6                     !
+               7                     ! *** input ***
+               8                     !
+               9                     !  jtrun: zonal wavenumber resolution limit
+              10                     !  jtmax: maximum amount of zonal waves located in each pe
+              11                     !  nx: e-w dimension no.
+              12                     !  my: n-s dimension no.
+              13                     !  my_max: maximum amount of n-s grids located in each pe
+              14                     !  cim: zonal wavenumber array
+              15                     !  poly: legendre polynomials
+              16                     !  dpoly: d(poly)/d(sin(lat))
+              17                     !  s: spectral coefficient array
+              18                     !  nsiz: pe number
+              19                     !
+              20                     ! **** output ****
+              21                     !
+              22                     !  dlpl: d(pt)/d(longitude)
+              23                     !  dtpl: d(pt)/d(sin(lat))
+              24                     !
+              25                     ! ****************************************************
+              26                     !
+              27                           use const, only : RTYPE
+              28                           use index
+              29                     !     use paramt
+              30                           use fftcom
+              31                     !
+              32                           implicit none
+              33                     !
+              34                           integer jtrun,jtmax,nx,lev,my,my_max,nsize
+              35                           real(kind=RTYPE) poly(jtrun,my/2,jtmax),dpoly(jtrun,my/2,jtmax)
+              36                           real(kind=RTYPE) s(lev,2,jtrun,jtmax)
+              37                           real(kind=RTYPE) cim(jtmax)
+              38                     
+              39                           real(kind=RTYPE) dlpl(nxp,levF,my_max),dtpl(nxp,levF,my_max)
+              40                     !
+              41                           integer myhalf,k,m,mf,l,j,jj,i,jtrunj,mm,mp,mlst,nxj
+              42                           real(kind=RTYPE) cc(nx+2,lev,2,my_max)
+              43                     !
+              44                           real(kind=RTYPE) gwk1(nx+2,lev,2,my_max)
+              45                     !
+              46                           real(kind=RTYPE) twcc_fk(my_max,jtmax*nsize,lev,2)
+              47                           real(kind=RTYPE) twdd_fk(my_max,jtmax*nsize,lev,2)
+              48                     
+              49                           real(kind=RTYPE) wcu_fk(my_max*nsize,jtmax,lev,2),wcv_fk(my_max*nsize,jtmax,lev,2)
+              50                           real(kind=RTYPE) wcu_t(lev,2,my),wcv_t(lev,2,my)
+              51                     
+              52                           real ws3(lev,2,2,jtrun)
+              53                           real ws4(lev,2,2,jtrun)
+              54                           real(kind=RTYPE) dummy
+              55                     
+              56                     !
+              57                           myhalf=my/2
+              58                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1334
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wcv_fk, wcu_fk
+                                   <<< Loop-information  End >>>
+              59        pp   2v            wcu_fk=0.
+              60         p   2v            wcv_fk=0.
+              61                     !
+              62     1                     do m=1,mlistnum
+              63     1                        mf=mlist(m)
+              64     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      s, ws4, ws3
+                                   <<< Loop-information  End >>>
+              65     2  pp                 do L=mf,jtrun
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 64, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ws4, ws3, s
+                                   <<< Loop-information  End >>>
+              66     3   p    v            do k=1,lev
+              67     3   p    v            ws3(k,1,1,L) = +s(k,2,L,m)
+              68     3   p    v            ws3(k,2,1,L) = -s(k,1,L,m)
+              69     3   p    v            ws4(k,1,2,L) = -s(k,1,L,m)
+              70     3   p    v            ws4(k,2,2,L) = -s(k,2,L,m)
+              71     3   p    v            enddo
+              72     2   p                 enddo
+              73     1               
+              74     1               !     do j=1,my*lev*2
+              75     1               !     wcu_t(j,1,1)=0.
+              76     1               !     wcv_t(j,1,1)=0.
+              77     1               !     enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1334
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wcv_t, wcu_t
+                                   <<< Loop-information  End >>>
+              78     1  pp   2v            wcu_t=0.
+              79     1   p   2v            wcv_t=0.
+              80     1               
+              81     2                     do L=mf,jtrun
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ws3, ws4, wcv_t, wcu_t
+                                   <<< Loop-information  End >>>
+              82     3  pp                  do j=1,myhalf
+              83     4   p                  if ( mf.le.mtrundef(j) ) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 48, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ws4, wcv_t, ws3, wcu_t
+                                   <<< Loop-information  End >>>
+              84     5   p    v            do k=1,lev
+              85     5   p    v            wcu_t(k,1,j) = wcu_t(k,1,j) + ws3(k,1,1,L)*poly(L,j,m)*cim(m)
+              86     5   p    v            wcu_t(k,2,j) = wcu_t(k,2,j) + ws3(k,2,1,L)*poly(L,j,m)*cim(m)
+              87     5   p    v            wcv_t(k,1,j) = wcv_t(k,1,j) + ws4(k,1,2,L)*dpoly(L,j,m)
+              88     5   p    v            wcv_t(k,2,j) = wcv_t(k,2,j) + ws4(k,2,2,L)*dpoly(L,j,m)
+              89     5   p    v            enddo
+              90     4   p                  endif
+              91     3   p                 enddo
+              92     2                     enddo
+              93     1               
+              94     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      s, ws3, ws4
+                                   <<< Loop-information  End >>>
+              95     2  pp                 do L=mf,jtrun,2
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.30, ITR: 80, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ws3, s, ws4
+                                   <<< Loop-information  End >>>
+              96     3   p   2v            do k=1,lev
+              97     3   p   2v            ws3(k,1,1,L) = +s(k,2,L,m)
+              98     3   p   2v            ws3(k,2,1,L) = -s(k,1,L,m)
+              99     3   p   2v            ws4(k,1,2,L) = +s(k,1,L,m)
+             100     3   p   2v            ws4(k,2,2,L) = +s(k,2,L,m)
+             101     3   p   2v            enddo
+             102     2   p                 enddo
+             103     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      s, ws4, ws3
+                                   <<< Loop-information  End >>>
+             104     2  pp                 do L=mf+1,jtrun,2
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 64, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ws4, ws3, s
+                                   <<< Loop-information  End >>>
+             105     3   p    v            do k=1,lev
+             106     3   p    v            ws3(k,1,1,L) = -s(k,2,L,m)
+             107     3   p    v            ws3(k,2,1,L) = +s(k,1,L,m)
+             108     3   p    v            ws4(k,1,2,L) = -s(k,1,L,m)
+             109     3   p    v            ws4(k,2,2,L) = -s(k,2,L,m)
+             110     3   p    v            enddo
+             111     2   p                 enddo
+             112     1               
+             113     2                     do L=mf,jtrun
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ws3, ws4, wcv_t, wcu_t
+                                   <<< Loop-information  End >>>
+             114     3  pp                 do jj=myhalf+1,my
+             115     3   p                 j=my-jj+1
+             116     4   p                 if ( mf.le.mtrundef(j) ) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 48, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ws4, wcv_t, ws3, wcu_t
+                                   <<< Loop-information  End >>>
+             117     5   p    v            do k=1,lev
+             118     5   p    v            wcu_t(k,1,jj) = wcu_t(k,1,jj) + ws3(k,1,1,L)*poly(L,j,m)*cim(m)
+             119     5   p    v            wcu_t(k,2,jj) = wcu_t(k,2,jj) + ws3(k,2,1,L)*poly(L,j,m)*cim(m)
+             120     5   p    v            wcv_t(k,1,jj) = wcv_t(k,1,jj) + ws4(k,1,2,L)*dpoly(L,j,m)
+             121     5   p    v            wcv_t(k,2,jj) = wcv_t(k,2,jj) + ws4(k,2,2,L)*dpoly(L,j,m)
+             122     5   p    v            enddo
+             123     4   p                 endif
+             124     3   p                 enddo
+             125     2                     enddo
+             126     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wcv_t, wcu_t
+                                   <<< Loop-information  End >>>
+             127     2                     do j=1,my
+             128     2                     jj=jlist2(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 485
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.71, ITR: 40, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wcv_t, wcu_t
+                                   <<< Loop-information  End >>>
+             129     3  pp    v            do k=1,lev
+             130     3   p    v            wcu_fk(jj,m,k,1)=wcu_t(k,1,j)
+             131     3   p    v            wcu_fk(jj,m,k,2)=wcu_t(k,2,j)
+             132     3   p    v            wcv_fk(jj,m,k,1)=wcv_t(k,1,j)
+             133     3   p    v            wcv_fk(jj,m,k,2)=wcv_t(k,2,j)
+             134     3   p    v            enddo
+             135     2                     enddo
+             136     1               
+             137     1                     enddo
+             138                     
+             139                            call mpe_transpose_rs1_sp(wcu_fk,twcc_fk,my_max,jtmax,lev*2,nsize,col_comm)
+             140                            call mpe_transpose_rs1_sp(wcv_fk,twdd_fk,my_max,jtmax,lev*2,nsize,col_comm)
+             141                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 4
+                                   <<< Loop-information  End >>>
+             142     1  pp                 do jj=1,jlistnum
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cc
+                                   <<< Loop-information  End >>>
+             143     2   p   2v            do k=1,lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    COLLAPSED
+                                   <<< Loop-information  End >>>
+             144     3   p   2v            do i=1,nx+2
+             145     3   p   2v            cc(i,k,1,jj)= 0.
+             146     3   p   2v            cc(i,k,2,jj)= 0.
+             147     3   p   2v            enddo
+             148     2   p   2v            enddo
+             149     1   p                 enddo
+             150                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+             151     1  pp                 do jj=1,jlistnum
+             152     1   p                   j      = jlist1(jj)
+             153     1   p                   jtrunj = mtrundef(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      nlist, cc
+                                   <<< Loop-information  End >>>
+             154     2   p                 do k=1,lev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.42, ITR: 6, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cc, nlist
+                                   <<< Loop-information  End >>>
+             155     3   p                 do m=1,jtrunj
+             156     3   p                    mm= 2*m-1
+             157     3   p                    mp= mm+1
+             158     3   p                    mlst=nlist(m)
+             159     3   p                    cc(mm,k,1,jj)=twcc_fk(jj,mlst,k,1)
+             160     3   p                    cc(mp,k,1,jj)=twcc_fk(jj,mlst,k,2)
+             161     3   p                    cc(mm,k,2,jj)=twdd_fk(jj,mlst,k,1)
+             162     3   p                    cc(mp,k,2,jj)=twdd_fk(jj,mlst,k,2)
+             163     3   p                 enddo
+             164     2   p                 enddo
+             165     1   p                 enddo
+             166                     
+             167     1                     if( lreduce.eq.0 ) then
+             168     1               #ifdef SP
+             169     1                     call rfftmlt_sp(cc,gwk1,trigs,ifax,1,nx+2,nx,jlistnum*lev*2,1)
+             170     1               #else
+             171     1                     call rfftmlt(cc,gwk1,trigs,ifax,1,nx+2,nx,jlistnum*lev*2,1)
+             172     1               #endif
+             173     1                     else
+             174     1               !$omp  parallel do default(none)                                &
+             175     1               !$omp  private(jj,j,nxj,gwk1)                                   &
+             176     1               !$omp  shared(jlistnum,jlist1,nxdef,cc,trigsj,ifaxj,nx,lev)     &
+             177     1               !$omp  schedule(dynamic)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 4
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             178     2   p                 do jj=1,jlistnum
+             179     2   p                   j= jlist1(jj)
+             180     2   p                   nxj=nxdef(j)
+             181     2               #ifdef SP
+             182     2                       call rfftmlt_sp(cc(1,1,1,jj),gwk1(1,1,1,jj),trigsj(1,j),ifaxj(1,j),1,nx+2,nxj,lev*2,1)
+             183     2               #else
+             184     2   p                   call rfftmlt(cc(1,1,1,jj),gwk1(1,1,1,jj),trigsj(1,j),ifaxj(1,j),1,nx+2,nxj,lev*2,1)
+             185     2               #endif
+             186     2   p                 enddo
+             187     1               !$omp end parallel do
+             188     1                     endif
+             189                     
+             190                     !     do 22 jj=1,jlistnum
+             191                     !     j=jlist1(jj)
+             192                     !     nxj=nxdef(j)
+             193                     !     do 22 k=1,lev
+             194                     !     do 22 i=1,nxj
+             195                     !     dlpl(i,k,jj)= -cc(i,k,1,jj)
+             196                     !     dtpl(i,k,jj)= -cc(i,k,2,jj)
+             197                     !  22 continue
+             198                     
+             199                     !ch
+             200                           call ujoinsr(cc,dlpl,dtpl,dummy,dummy,nx,my_max,levF,jlistnum,2,1)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.66, ITR: 112, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      dlpl, dtpl
+                                   <<< Loop-information  End >>>
+             201        pp   2v            dlpl= -dlpl
+             202         p   2v            dtpl= -dtpl
+             203                     
+             204                           return
+             205                           end
+
+ Procedure information
+   Lines      : 205
+   Statements : 127
+   Stack(byte): 4960
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : trngra3
+   Attribute and Cross reference of name
+     cc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 42
+      |(Definition)     : 145  146  159  160  161  162  171  184  200
+      |(Reference)      : 174
+     cim
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  37
+      |(Definition)     : 
+      |(Reference)      : 85  86  118  119
+     col_comm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 139  140
+      |(Reference)      : 
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 27
+     dlpl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  39
+      |(Definition)     : 200  201
+      |(Reference)      : 201
+     dpoly
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  35
+      |(Definition)     : 
+      |(Reference)      : 87  88  120  121
+     dtpl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  39
+      |(Definition)     : 200  202
+      |(Reference)      : 202
+     dummy
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 54
+      |(Definition)     : 200  200
+      |(Reference)      : 
+     fftcom
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 30
+     gwk1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 44
+      |(Definition)     : 171  184
+      |(Reference)      : 174
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 41
+      |(Definition)     : 144
+      |(Reference)      : 145  146
+     ifax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 171
+      |(Reference)      : 
+     ifaxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 184
+      |(Reference)      : 174
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 28
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 41
+      |(Definition)     : 82  115  127  152  179
+      |(Reference)      : 83  85  85  85  86  86  86  87  87  87  88  88  88  116  118  119  120  121  128  130  131  132  133  153  174  180  184  184
+     jj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 41
+      |(Definition)     : 114  128  142  151  178
+      |(Reference)      : 115  118  118  119  119  120  120  121  121  130  131  132  133  145  146  152  159  159  160  160  161  161  162  162  174  179  184  184
+     jlist1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 152  174  179
+     jlist2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 128
+     jlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 200
+      |(Reference)      : 142  151  171  174  178
+     jtmax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  34
+      |(Definition)     : 139  140
+      |(Reference)      : 35  35  36  37  46  47  49  49
+     jtrun
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  34
+      |(Definition)     : 
+      |(Reference)      : 35  35  36  52  53  65  81  95  104  113
+     jtrunj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 41
+      |(Definition)     : 153
+      |(Reference)      : 155
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 41
+      |(Definition)     : 66  84  96  105  117  129  143  154
+      |(Reference)      : 67  67  68  68  69  69  70  70  85  85  85  86  86  86  87  87  87  88  88  88  97  97  98  98  99  99  100  100  106  106  107  107  108  108  109  109  118  118  118  119  119  119  120  120  120  121  121  121  130  130  131  131  132  132  133  133  145  146  159  159  160  160  161  161  162  162
+     l
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 41
+      |(Definition)     : 65  81  95  104  113
+      |(Reference)      : 67  67  68  68  69  69  70  70  85  85  86  86  87  87  88  88  97  97  98  98  99  99  100  100  106  106  107  107  108  108  109  109  118  118  119  119  120  120  121  121
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  34
+      |(Definition)     : 
+      |(Reference)      : 36  42  44  46  47  49  49  50  50  52  53  66  84  96  105  117  129  139  140  143  154  171  174  184
+     levf
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 200
+      |(Reference)      : 39  39
+     lreduce
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 167
+     m
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 41
+      |(Definition)     : 62  155
+      |(Reference)      : 63  67  68  69  70  85  85  86  86  87  88  97  98  99  100  106  107  108  109  118  118  119  119  120  121  130  131  132  133  156  158
+     mf
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 41
+      |(Definition)     : 63
+      |(Reference)      : 65  81  83  95  104  113  116
+     mlist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 63
+     mlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 62
+     mlst
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 41
+      |(Definition)     : 158
+      |(Reference)      : 159  160  161  162
+     mm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 41
+      |(Definition)     : 156
+      |(Reference)      : 157  159  161
+     mp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 41
+      |(Definition)     : 157
+      |(Reference)      : 160  162
+     mpe_transpose_rs1_sp
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 139  140
+     mtrundef
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 83  116  153
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  34
+      |(Definition)     : 
+      |(Reference)      : 35  35  50  50  57  114  115  127
+     my_max
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  34
+      |(Definition)     : 139  140  200
+      |(Reference)      : 39  39  42  44  46  47  49  49
+     myhalf
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 41
+      |(Definition)     : 57
+      |(Reference)      : 82  114
+     nlist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 158
+     nsize
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  34
+      |(Definition)     : 139  140
+      |(Reference)      : 46  47  49  49
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  34
+      |(Definition)     : 171  200
+      |(Reference)      : 42  44  144  171  174  184
+     nxdef
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 174  180
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 41
+      |(Definition)     : 180  184
+      |(Reference)      : 174
+     nxp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 39  39
+     poly
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  35
+      |(Definition)     : 
+      |(Reference)      : 85  86  118  119
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 27  35  36  37  39  42  44  46  47  49  50  54
+     rfftmlt
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 171  184
+     s
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  36
+      |(Definition)     : 
+      |(Reference)      : 67  68  69  70  97  98  99  100  106  107  108  109
+     trigs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 171
+      |(Reference)      : 
+     trigsj
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 184
+      |(Reference)      : 174
+     trngra3
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     twcc_fk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 46
+      |(Definition)     : 139
+      |(Reference)      : 159  160
+     twdd_fk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 47
+      |(Definition)     : 140
+      |(Reference)      : 161  162
+     ujoinsr
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 200
+     wcu_fk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 49
+      |(Definition)     : 59  130  131  139
+      |(Reference)      : 
+     wcu_t
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 50
+      |(Definition)     : 78  85  86  118  119
+      |(Reference)      : 85  86  118  119  130  131
+     wcv_fk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 49
+      |(Definition)     : 60  132  133  140
+      |(Reference)      : 
+     wcv_t
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 50
+      |(Definition)     : 79  87  88  120  121
+      |(Reference)      : 87  88  120  121  132  133
+     ws3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 52
+      |(Definition)     : 67  68  97  98  106  107
+      |(Reference)      : 85  86  118  119
+     ws4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 53
+      |(Definition)     : 69  70  99  100  108  109
+      |(Reference)      : 87  88  120  121
+
+ Total information
+   Procedures       : 1
+   Total lines      : 205
+   Total statements : 127
+   Total stack(byte): 4960
+   Total prefetch num: 0
+

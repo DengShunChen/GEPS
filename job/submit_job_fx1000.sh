@@ -2,13 +2,13 @@
 #PJM -L "node=8:noncont"
 #PJM -L rscgrp=small
 #PJM -x PJM_CACHE_MODE=4
-#PJM -L elapse=6:00:00
+#PJM -L elapse=10:00:00
 #PJM -L node-mem=unlimited
 #PJM --no-stging
 #PJM --mpi "proc=384"
 #PJM -j 
 #PJM -g sum
-#PJM -N TCo383-CFSR
+#PJM -N TCo383-MASOP
 #PJM -o %j.log
 #PJM -e %j.err
 
@@ -32,6 +32,6 @@ export MPI=$((${NPEX}*${NPEY}))
 #==============================================================================================================#
 source /users/xa09/sample/setup_mpi+omp.fx1000 $OMP
 
-./regression_383GFSR.ksh
+./regression_383_ndy.ksh
 
 echo "Ending at: " `date`

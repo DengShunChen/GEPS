@@ -1,0 +1,480 @@
+
+ Fujitsu Fortran Version 4.6.1  Thu Jun 29 14:23:01 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm
+   Source file       : grdtpw.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "grdtpw"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine grdtpw ( mn,dt,hltm,tice,hice,czh,land,ocean,snow,ts &
+               2                                             , tgclim,tg,gwclim,gwr,gwet,ss,rs,hflux,qflux &
+               3                                             , snr,totalp )
+               4                     !
+               5                     !#######################################################################
+               6                     !           subroutine description
+               7                     !
+               8                     ! 1. function description
+               9                     !
+              10                     !    this subroutine predicts ground temperature for land points with
+              11                     !    energy budget concept including newton cooling term, and ground
+              12                     !    water for land and snow points with water mass budget concept.
+              13                     !
+              14                     ! 2. parameter specification
+              15                     !
+              16                     !    mn : dimension of horizontal-direction
+              17                     !    dt : time step for tg updates                         (s)     i
+              18                     !  hltm : water vapor latent heat constant                 (j/kg)  i
+              19                     !  tice : temperature of melting point               (mn)  (k)     i
+              20                     !  hice : latent heat of snow melting                      (j/kg)  i
+              21                     !   czh : ground thermal capacity                          (j/k m2)i
+              22                     ! land  : logic for bare soil land                   (mn)          i
+              23                     ! ocean : logic for open water (=ture for open water)(mn)          i
+              24                     ! snow  : logic for snow covered area                (mn)          i
+              25                     !   ts  : surface air temperature                    (mn)   (k)    i
+              26                     ! tgclim: ground real temp. climatolagy              (mn)  (k)     i
+              27                     !    tg : ground real temp. (sea or land)            (mn)  (k)     i/o
+              28                     ! gwclim: soil water climatology                     (mn)  (mm)    i
+              29                     !   gwr : soil water for land and ice points         (mn)  (mm)    i/o
+              30                     !  gwet : ground wetness ( = gwr/20.0 )              (mn)          i/o
+              31                     !    ss : net short wave flux down to ground surface (mn)  (wat/m2)i
+              32                     !    rs : net long  wave flux up from ground surface (mn)  (wat/m2)i
+              33                     ! hflux : upward surface heat flux                   (mn)  (wat/m2)i
+              34                     ! qflux : upward surface moisture flux               (mn)  (wat/m2)i
+              35                     !  snr  : snow depth in water state                  (mn)   (mm)   i/o
+              36                     ! totalp: total precipitation during dt              (mn)   (mm)   i
+              37                     !
+              38                     ! 4. local veriable
+              39                     !
+              40                     !  betatg : newton cooling restorine rate (=1/(100 hr))     (1/s)
+              41                     !     fhs : net budget of total flux                        (wat/m2)
+              42                     !
+              43                     ! 5. calling modules
+              44                     !
+              45                     !     pbltke
+              46                     !
+              47                     ! 6. usage
+              48                     !
+              49                     !     call grdtpw ( mn,dt,hltm,tice,hice,czh,land,ocean,snow,ts
+              50                     !    1            , tgclim,tg,gwclim,gwr,gwet,ss,rs,hflux,qflux
+              51                     !    2            , snr,totalp )
+              52                     !
+              53                     ! 7. modules called
+              54                     !
+              55                     ! 8. limitation
+              56                     !
+              57                     ! 9. date
+              58                     !
+              59                     !    created       jan. 1992
+              60                     !    modified      may  1993
+              61                     !
+              62                     ! 10. author
+              63                     !
+              64                     !     f. wang,  c.s. liou
+              65                     !     modify to f90 by C-H Lee and sort by River Chen in 2015
+              66                     !
+              67                     !#######################################################################
+              68                           implicit  none
+              69                     !
+              70                     ! input & output variable
+              71                           integer   mn
+              72                           real      dt,hltm,tice,hice
+              73                           real      czh(mn),ts(mn),tgclim(mn),                            &
+              74                                     tg(mn),gwclim(mn),gwr(mn),gwet(mn),ss(mn),rs(mn),     &
+              75                                     hflux(mn),qflux(mn),snr(mn),totalp(mn)
+              76                     
+              77                           logical   land(mn),ocean(mn),snow(mn)
+              78                     !-----------------------------------------------------------------------
+              79                     !
+              80                           integer   ij
+              81                           real      belnd,beice,alp,deltg,betg,fhs,tmp,fgtg
+              82                           real      dtywtr,gwrcc,rainr,water,cbhice,snomlt
+              83                     
+              84                     
+              85                           belnd= 6.2832/(3600.*100.)
+              86                           beice= 6.2832/(3600.*360.)
+              87                           alp  = 0.5
+              88                           deltg= 5.0
+              89                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 78
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ocean, rs, ss, hflux, qflux, czh, land
+                                   <<<      snow, ts, tgclim, tg, totalp, snr
+                                   <<<      gwclim, gwr, gwet
+                                   <<< Loop-information  End >>>
+              90     1  pp    v            do 100 ij = 1, mn
+              91     2   p    v              if ( .not. ocean(ij))  then
+              92     3   p    v                if ( land(ij) ) then
+              93     3   p    v                   betg = belnd
+              94     3   p    v                else
+              95     3   p    v                   betg = beice
+              96     3   p    v                endif
+              97     2   p    v                fhs = ss(ij) - rs(ij) - qflux(ij) - hflux(ij)
+              98     2   p    v                tmp = (tg(ij)+ dt*(fhs/czh(ij)+betg*tgclim(ij)))/(1.+betg*dt)
+              99     2               !
+             100     2               !         apply time filter when fhs is large (kalnay & kanamitsu,1988)
+             101     2               !         criterion: alpha*(p-1) >= 1.,  p=3.5
+             102     2               !
+             103     2   p    v                fgtg = dt*fhs/(czh(ij)*deltg)
+             104     3   p    v                if ( abs(fgtg) .ge. 0.4 )  then
+             105     3   p    v                  tg(ij) = (1.0-alp)*tmp + alp*tg(ij)
+             106     3   p    v                else
+             107     3   p    v                  tg(ij) = tmp
+             108     3   p    v                endif
+             109     2               !
+             110     2               ! snr: mm
+             111     2               ! totalp: mm
+             112     2               ! dtywtr: kg/m3
+             113     2               ! snomlt: mm
+             114     2               ! cbhice: (j/m2k)/(j/kg)=kg/m2k
+             115     2               !
+             116     2   p    v                 dtywtr = 1000.0
+             117     2   p    v                 gwrcc  = 20.0
+             118     2               !
+             119     3   p    v                 if (land(ij).or.snow(ij))  then
+             120     4   p    v                   if (ts(ij).lt.tice)  then
+             121     4   p    v                     snr(ij) = snr(ij) + totalp(ij)
+             122     4   p    v                     rainr   = 0.0
+             123     4   p    v                   else
+             124     4   p    v                     rainr   = totalp(ij)
+             125     4   p    v                   endif
+             126     4   p    v                   if (tg(ij).lt.tice)  then
+             127     4   p    v                     water = rainr
+             128     4   p    v                   else
+             129     4   p    v                     cbhice  = czh(ij)/hice
+             130     4   p    v                     snomlt  = min(cbhice*(tg(ij)-tice)/dtywtr*1000.,snr(ij))
+             131     4   p    v                     tg(ij)  = tg(ij) - snomlt/1000.*dtywtr/cbhice
+             132     4   p    v                     snr(ij) = snr(ij) - snomlt
+             133     4   p    v                     water   = rainr + snomlt
+             134     4   p    v                   endif
+             135     3   p    v                   gwr(ij) = (gwr(ij) + dt*(water/dt- qflux(ij)/hltm + betg  &
+             136     3                                   * gwclim(ij))) / (1.0 + dt*(water/dt/gwrcc+betg))
+             137     3   p    v                   gwr(ij) = max( 0.01, min( gwrcc, gwr(ij) ) )
+             138     3   p    v                   gwet(ij)= gwr(ij)/gwrcc
+             139     3   p    v                 else
+             140     3   p    v                   tg(ij) = min( tg(ij),tice )
+             141     3   p    v                 endif
+             142     2   p    v              endif
+             143     1   p    v       100  continue
+             144                     !
+             145                           return
+             146                           end
+
+ Procedure information
+   Lines      : 146
+   Statements : 56
+   Stack(byte): 944
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : grdtpw
+   Attribute and Cross reference of name
+     abs
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 104
+     alp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 81
+      |(Definition)     : 87
+      |(Reference)      : 105  105
+     beice
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 81
+      |(Definition)     : 86
+      |(Reference)      : 95
+     belnd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 81
+      |(Definition)     : 85
+      |(Reference)      : 93
+     betg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 81
+      |(Definition)     : 93  95
+      |(Reference)      : 98  98  135  135
+     cbhice
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 82
+      |(Definition)     : 129
+      |(Reference)      : 130  131
+     czh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  73
+      |(Definition)     : 
+      |(Reference)      : 98  103  129
+     deltg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 81
+      |(Definition)     : 88
+      |(Reference)      : 103
+     dt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  72
+      |(Definition)     : 
+      |(Reference)      : 98  98  103  135  135  135  135
+     dtywtr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 82
+      |(Definition)     : 116
+      |(Reference)      : 130  131
+     fgtg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 81
+      |(Definition)     : 103
+      |(Reference)      : 104
+     fhs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 81
+      |(Definition)     : 97
+      |(Reference)      : 98  103
+     grdtpw
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     gwclim
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  73
+      |(Definition)     : 
+      |(Reference)      : 135
+     gwet
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  73
+      |(Definition)     : 138
+      |(Reference)      : 
+     gwr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  73
+      |(Definition)     : 135  137
+      |(Reference)      : 135  137  138
+     gwrcc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 82
+      |(Definition)     : 117
+      |(Reference)      : 135  137  138
+     hflux
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  73
+      |(Definition)     : 
+      |(Reference)      : 97
+     hice
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  72
+      |(Definition)     : 
+      |(Reference)      : 129
+     hltm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  72
+      |(Definition)     : 
+      |(Reference)      : 135
+     ij
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 80
+      |(Definition)     : 90
+      |(Reference)      : 91  92  97  97  97  97  98  98  98  103  105  105  107  119  119  120  121  121  121  124  126  129  130  130  131  131  132  132  135  135  135  135  137  137  138  138  140  140
+     land
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  77
+      |(Definition)     : 
+      |(Reference)      : 92  119
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 137
+     min
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 130  137  140
+     mn
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  71
+      |(Definition)     : 
+      |(Reference)      : 73  73  73  73  73  73  73  73  73  73  73  73  73  77  77  77  90
+     ocean
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  77
+      |(Definition)     : 
+      |(Reference)      : 91
+     qflux
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  73
+      |(Definition)     : 
+      |(Reference)      : 97  135
+     rainr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 82
+      |(Definition)     : 122  124
+      |(Reference)      : 127  133
+     rs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  73
+      |(Definition)     : 
+      |(Reference)      : 97
+     snomlt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 82
+      |(Definition)     : 130
+      |(Reference)      : 131  132  133
+     snow
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  77
+      |(Definition)     : 
+      |(Reference)      : 119
+     snr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  73
+      |(Definition)     : 121  132
+      |(Reference)      : 121  130  132
+     ss
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  73
+      |(Definition)     : 
+      |(Reference)      : 97
+     tg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  73
+      |(Definition)     : 105  107  131  140
+      |(Reference)      : 98  105  126  130  131  140
+     tgclim
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  73
+      |(Definition)     : 
+      |(Reference)      : 98
+     tice
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  72
+      |(Definition)     : 
+      |(Reference)      : 120  126  130  140
+     tmp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 81
+      |(Definition)     : 98
+      |(Reference)      : 105  107
+     totalp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  73
+      |(Definition)     : 
+      |(Reference)      : 121  124
+     ts
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  73
+      |(Definition)     : 
+      |(Reference)      : 120
+     water
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 82
+      |(Definition)     : 127  133
+      |(Reference)      : 135  135
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+        100  execution     (Definition) 143  
+                           (Reference)  90
+
+ Total information
+   Procedures       : 1
+   Total lines      : 146
+   Total statements : 56
+   Total stack(byte): 944
+   Total prefetch num: 0
+

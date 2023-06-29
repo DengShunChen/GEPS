@@ -1,0 +1,538 @@
+
+ Fujitsu Fortran Version 4.6.1  Thu Jun 29 14:23:19 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm
+   Source file       : cududv_n.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "cududv_n"
+  (inc)(line-no.)(nest)(optimize)
+               1                         subroutine cududv_n(nxj,klon,klev,ktopm2,ktype,kcbot,kctop,ldcum,  &
+               2                                         ztmst,paph,puen,pven,pmfu,pmfd,puu,pud,pvu,pvd,ptenu, &
+               3                                         ptenv,jin)
+               4                     !---------------------------------------------------------------------------
+               5                       USE shr_kind_mod, only: r8 => shr_kind_r8
+               6                       USE mo_constants, ONLY: g ! gravity acceleration
+               7                     !---------------------------------------------------------------------------
+               8                         implicit none
+               9                         integer  klon,klev,ktopm2,nxj,jin
+              10                         integer  ktype(klon), kcbot(klon), kctop(klon)
+              11                         logical  ldcum(klon)
+              12                         real     ztmst
+              13                         real     paph(klon,klev+1)
+              14                         real     puen(klon,klev),  pven(klon,klev),&
+              15                                  pmfu(klon,klev),  pmfd(klon,klev),&
+              16                                  puu(klon,klev),   pud(klon,klev),&
+              17                                  pvu(klon,klev),   pvd(klon,klev)
+              18                         real     ptenu(klon,klev), ptenv(klon,klev)
+              19                     
+              20                     !local variables
+              21                         real     zuen(klon,klev) , zven(klon,klev) , zmfuu(klon,klev), &
+              22                                  zmfdu(klon,klev), zmfuv(klon,klev), zmfdv(klon,klev)
+              23                     
+              24                         integer  ik , ikb , jk , jl
+              25                         real     zzp, zdtdt
+              26                     
+              27                         real     zdudt(klon,klev), zdvdt(klon,klev), zdp(klon,klev)
+              28                     !
+              29                     !xb110>
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.22, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      zdudt, zmfdv, zmfdu, zmfuv, zmfuu, zdvdt
+                                   <<<      zdp, zven, zuen
+                                   <<< Loop-information  End >>>
+              30        pp    v          zuen = 0.
+              31         p    v          zven = 0.
+              32         p    v          zdp  = 0.
+              33         p    v          zmfuu = 0.
+              34         p    v          zmfuv = 0.
+              35         p    v          zmfdu = 0.
+              36         p    v          zmfdv = 0.
+              37         p    v          zdudt = 0.
+              38         p    v          zdvdt = 0.
+              39                     !xb110<
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ldcum, paph, puen, pven, zdp, zuen, zven
+                                   <<< Loop-information  End >>>
+              40     1  pp               do jk = 1 , klev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.48, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ldcum, paph, puen, pven, zuen, zven, zdp
+                                   <<< Loop-information  End >>>
+              41     2   p    v             do jl = 1, nxj
+              42     3   p    v              if ( ldcum(jl) ) then
+              43     3   p    v                zuen(jl,jk) = puen(jl,jk)
+              44     3   p    v                zven(jl,jk) = pven(jl,jk)
+              45     3   p    v                zdp(jl,jk) = g/(paph(jl,jk+1)-paph(jl,jk))
+              46     3   p    v              end if
+              47     2   p    v            end do
+              48     1   p               end do
+              49                     !----------------------------------------------------------------------
+              50                     !*    1.0          CALCULATE FLUXES AND UPDATE U AND V TENDENCIES
+              51                     ! ----------------------------------------------
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ldcum, puu, zuen, pvu, pud, zven, pvd
+                                   <<<      pmfu, pmfd, zmfuv, zmfdu, zmfuu, zmfdv
+                                   <<< Loop-information  End >>>
+              52     1  pp               do jk = ktopm2 , klev
+              53     1   p                 ik = jk - 1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.80, ITR: 80, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pvd, puu, ldcum, zuen, pmfu, pvu, zven
+                                   <<<      zmfuu, zmfuv, pud, pmfd, zmfdu, zmfdv
+                                   <<< Loop-information  End >>>
+              54     2   p    v             do jl = 1, nxj
+              55     3   p    v              if ( ldcum(jl) ) then
+              56     3   p    v                zmfuu(jl,jk) = pmfu(jl,jk)*(puu(jl,jk)-zuen(jl,ik))
+              57     3   p    v                zmfuv(jl,jk) = pmfu(jl,jk)*(pvu(jl,jk)-zven(jl,ik))
+              58     3   p    v                zmfdu(jl,jk) = pmfd(jl,jk)*(pud(jl,jk)-zuen(jl,ik))
+              59     3   p    v                zmfdv(jl,jk) = pmfd(jl,jk)*(pvd(jl,jk)-zven(jl,ik))
+              60     3   p    v              end if
+              61     2   p    v            end do
+              62     1   p               end do
+              63                         ! linear fluxes below cloud
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ldcum, kcbot, paph, ktype, zmfuu, zmfuv
+                                   <<<      zmfdu, zmfdv
+                                   <<< Loop-information  End >>>
+              64     1                     do jk = ktopm2 , klev
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 223
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.02, ITR: 48, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ktype, ldcum, paph, kcbot, zmfuu, zmfuv
+                                   <<<      zmfdu, zmfdv
+                                   <<< Loop-information  End >>>
+              65     2  pp    v             do jl = 1, nxj
+              66     3   p    v                if ( ldcum(jl) .and. jk > kcbot(jl) ) then
+              67     3   p    v                  ikb = kcbot(jl)
+              68     3   p    v                  zzp = ((paph(jl,klev+1)-paph(jl,jk))/(paph(jl,klev+1)-paph(jl,ikb)))
+              69     3   p    v                  if ( ktype(jl) == 3 ) zzp = zzp*zzp
+              70     3   p    v                  zmfuu(jl,jk) = zmfuu(jl,ikb)*zzp
+              71     3   p    v                  zmfuv(jl,jk) = zmfuv(jl,ikb)*zzp
+              72     3   p    v                  zmfdu(jl,jk) = zmfdu(jl,ikb)*zzp
+              73     3   p    v                  zmfdv(jl,jk) = zmfdv(jl,ikb)*zzp
+              74     3   p    v                end if
+              75     2   p    v              end do
+              76     1                     end do
+              77                     !----------------------------------------------------------------------
+              78                     !*    2.0          COMPUTE TENDENCIES
+              79                     ! ------------------
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ldcum, zmfdv, zmfuv, zmfdu, zmfuu, zdp
+                                   <<<      zdudt, zdvdt
+                                   <<< Loop-information  End >>>
+              80     1  pp               do jk = ktopm2 , klev
+              81     2   p                 if ( jk < klev ) then
+              82     2   p                   ik = jk + 1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.40, ITR: 96, MVE: 6, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      zmfdv, zmfuv, ldcum, zmfdu, zmfuu, zdp
+                                   <<<      zdudt, zdvdt
+                                   <<< Loop-information  End >>>
+              83     3   p    v             do jl = 1, nxj
+              84     4   p    v                if ( ldcum(jl) ) then
+              85     4   p    v                  zdudt(jl,jk) = zdp(jl,jk) * &
+              86     4                       &                  (zmfuu(jl,ik)-zmfuu(jl,jk)+zmfdu(jl,ik)-zmfdu(jl,jk))
+              87     4   p    v                  zdvdt(jl,jk) = zdp(jl,jk) * &
+              88     4                       &                  (zmfuv(jl,ik)-zmfuv(jl,jk)+zmfdv(jl,ik)-zmfdv(jl,jk))
+              89     4   p    v                end if
+              90     3   p    v              end do
+              91     2   p                 else
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.66, ITR: 96, MVE: 6, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      zmfdu, zdp, zmfuv, zmfdv, ldcum, zmfuu
+                                   <<<      zdudt, zdvdt
+                                   <<< Loop-information  End >>>
+              92     3   p    v             do jl = 1, nxj
+              93     4   p    v                if ( ldcum(jl) ) then
+              94     4   p    v                  zdudt(jl,jk) = -zdp(jl,jk)*(zmfuu(jl,jk)+zmfdu(jl,jk))
+              95     4   p    v                  zdvdt(jl,jk) = -zdp(jl,jk)*(zmfuv(jl,jk)+zmfdv(jl,jk))
+              96     4   p    v                end if
+              97     3   p    v              end do
+              98     2   p                 end if
+              99     1   p               end do
+             100                     !---------------------------------------------------------------------
+             101                     !*  3.0        UPDATE TENDENCIES
+             102                     !   -----------------
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ldcum, ptenu, zdudt, ptenv, zdvdt
+                                   <<< Loop-information  End >>>
+             103     1  pp               do jk = ktopm2 , klev
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.66, ITR: 88, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ldcum, ptenu, zdudt, ptenv, zdvdt
+                                   <<< Loop-information  End >>>
+             104     2   p    v             do jl = 1, nxj
+             105     3   p    v              if ( ldcum(jl) ) then
+             106     3   p    v                ptenu(jl,jk) = ptenu(jl,jk) + zdudt(jl,jk)
+             107     3   p    v                ptenv(jl,jk) = ptenv(jl,jk) + zdvdt(jl,jk)
+             108     3   p    v              end if
+             109     2   p    v            end do
+             110     1   p               end do
+             111                     !----------------------------------------------------------------------
+             112                         return
+             113                         end subroutine cududv_n
+
+ Procedure information
+   Lines      : 113
+   Statements : 85
+   Stack(byte): 1888
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : cududv_n
+   Attribute and Cross reference of name
+     cududv_n
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 113
+     g
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 6  45
+     ik
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 24
+      |(Definition)     : 53  82
+      |(Reference)      : 56  57  58  59  85  85  87  87
+     ikb
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 24
+      |(Definition)     : 67
+      |(Reference)      : 68  70  71  72  73
+     jin
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  9
+      |(Definition)     : 
+      |(Reference)      : 
+     jk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 24
+      |(Definition)     : 40  52  64  80  103
+      |(Reference)      : 43  43  44  44  45  45  45  53  56  56  56  57  57  57  58  58  58  59  59  59  66  68  70  71  72  73  81  82  85  85  85  85  87  87  87  87  94  94  94  94  95  95  95  95  106  106  106  107  107  107
+     jl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 24
+      |(Definition)     : 41  54  65  83  92  104
+      |(Reference)      : 42  43  43  44  44  45  45  45  55  56  56  56  56  57  57  57  57  58  58  58  58  59  59  59  59  66  66  67  68  68  68  68  69  70  70  71  71  72  72  73  73  84  85  85  85  85  85  85  87  87  87  87  87  87  93  94  94  94  94  95  95  95  95  105  106  106  106  107  107  107
+     kcbot
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  10
+      |(Definition)     : 
+      |(Reference)      : 66  67
+     kctop
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  10
+      |(Definition)     : 
+      |(Reference)      : 
+     klev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  9
+      |(Definition)     : 
+      |(Reference)      : 13  14  14  14  14  14  14  14  14  18  18  21  21  21  21  21  21  27  27  27  40  52  64  68  68  80  81  103
+     klon
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  9
+      |(Definition)     : 
+      |(Reference)      : 10  10  10  11  13  14  14  14  14  14  14  14  14  18  18  21  21  21  21  21  21  27  27  27
+     ktopm2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  9
+      |(Definition)     : 
+      |(Reference)      : 52  64  80  103
+     ktype
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  10
+      |(Definition)     : 
+      |(Reference)      : 69
+     ldcum
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  11
+      |(Definition)     : 
+      |(Reference)      : 42  55  66  84  93  105
+     mo_constants
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 6
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  9
+      |(Definition)     : 
+      |(Reference)      : 41  54  65  83  92  104
+     paph
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  13
+      |(Definition)     : 
+      |(Reference)      : 45  45  68  68  68  68
+     pmfd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  14
+      |(Definition)     : 
+      |(Reference)      : 58  59
+     pmfu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  14
+      |(Definition)     : 
+      |(Reference)      : 56  57
+     ptenu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  18
+      |(Definition)     : 106
+      |(Reference)      : 106
+     ptenv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  18
+      |(Definition)     : 107
+      |(Reference)      : 107
+     pud
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  14
+      |(Definition)     : 
+      |(Reference)      : 58
+     puen
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  14
+      |(Definition)     : 
+      |(Reference)      : 43
+     puu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  14
+      |(Definition)     : 
+      |(Reference)      : 56
+     pvd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  14
+      |(Definition)     : 
+      |(Reference)      : 59
+     pven
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  14
+      |(Definition)     : 
+      |(Reference)      : 44
+     pvu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  14
+      |(Definition)     : 
+      |(Reference)      : 57
+     r8
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 5
+     shr_kind_mod
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 5
+     shr_kind_r8
+      |(Class and Type) : use name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 5
+     zdp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 27
+      |(Definition)     : 32  45
+      |(Reference)      : 85  87  94  95
+     zdtdt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 25
+      |(Definition)     : 
+      |(Reference)      : 
+     zdudt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 27
+      |(Definition)     : 37  85  94
+      |(Reference)      : 106
+     zdvdt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 27
+      |(Definition)     : 38  87  95
+      |(Reference)      : 107
+     zmfdu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 21
+      |(Definition)     : 35  58  72
+      |(Reference)      : 72  85  85  94
+     zmfdv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 21
+      |(Definition)     : 36  59  73
+      |(Reference)      : 73  87  87  95
+     zmfuu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 21
+      |(Definition)     : 33  56  70
+      |(Reference)      : 70  85  85  94
+     zmfuv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 21
+      |(Definition)     : 34  57  71
+      |(Reference)      : 71  87  87  95
+     ztmst
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  12
+      |(Definition)     : 
+      |(Reference)      : 
+     zuen
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 21
+      |(Definition)     : 30  43
+      |(Reference)      : 56  58
+     zven
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 21
+      |(Definition)     : 31  44
+      |(Reference)      : 57  59
+     zzp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 25
+      |(Definition)     : 68  69
+      |(Reference)      : 69  69  70  71  72  73
+
+ Total information
+   Procedures       : 1
+   Total lines      : 113
+   Total statements : 85
+   Total stack(byte): 1888
+   Total prefetch num: 0
+

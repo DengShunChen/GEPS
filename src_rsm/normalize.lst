@@ -1,0 +1,347 @@
+
+ Fujitsu Fortran Version 4.6.1  Thu Jun 29 14:23:01 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm
+   Source file       : normalize.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "normalize"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine normalize(fxtotal,nx,x,y)
+               2                     
+               3                           implicit none
+               4                     
+               5                           integer  nx
+               6                           real     x(nx)
+               7                           real     y(nx)
+               8                           real     fxtotal,newsum
+               9                     
+              10                     !
+              11                     ! new sum should be added
+              12                     !
+              13                           newsum=fxtotal
+              14                     !
+              15          i                call reassignsum(x,nx,newsum,y)
+              16                     !
+              17                           return
+              18                           end
+
+ Procedure information
+   Lines      : 18
+   Statements : 10
+   Stack(byte): 1120
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : normalize
+   Attribute and Cross reference of name
+     fxtotal
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  8
+      |(Definition)     : 
+      |(Reference)      : 13
+     newsum
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 8
+      |(Definition)     : 13  15
+      |(Reference)      : 
+     normalize
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  5
+      |(Definition)     : 15
+      |(Reference)      : 6  7
+     reassignsum
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 15
+     x
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  6
+      |(Definition)     : 15
+      |(Reference)      : 
+     y
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  7
+      |(Definition)     : 15
+      |(Reference)      : 
+
+ External subroutine subprogram "reassignsum"
+  (inc)(line-no.)(nest)(optimize)
+              19                     !
+              20                     !
+              21                           subroutine reassignsum(x,n,newsum,y)
+              22                     
+              23                           implicit  none
+              24                           integer   n,i
+              25                           real      x(n),y(n),ave,var
+              26                           real      newsum
+              27                     
+              28                           call avevar(x,n,ave,var)
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1334
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      x, y
+                                   <<< Loop-information  End >>>
+              29     1  pp   2v            do i=1,n
+              30     1   p   2v              y(i)=x(i)-ave
+              31     1   p   2v            enddo
+              32                           newsum=newsum/n
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1334
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 256, MVE: 9, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      y
+                                   <<< Loop-information  End >>>
+              33     1  pp   2v            do i=1,n
+              34     1   p   2v              y(i)=y(i)+newsum
+              35     1   p   2v            enddo
+              36                           return
+              37                           end
+
+ Procedure information
+   Lines      : 19
+   Statements : 15
+   Stack(byte): 784
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : reassignsum
+   Attribute and Cross reference of name
+     ave
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 25
+      |(Definition)     : 28
+      |(Reference)      : 30
+     avevar
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 28
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 24
+      |(Definition)     : 29  33
+      |(Reference)      : 30  30  34  34
+     n
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 21  24
+      |(Definition)     : 28
+      |(Reference)      : 25  25  29  32  33
+     newsum
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 21  26
+      |(Definition)     : 32
+      |(Reference)      : 32  34
+     reassignsum
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 21
+      |(Reference)      : 
+     var
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 25
+      |(Definition)     : 28
+      |(Reference)      : 
+     x
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 21  25
+      |(Definition)     : 28
+      |(Reference)      : 30
+     y
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 21  25
+      |(Definition)     : 30  34
+      |(Reference)      : 34
+
+ External subroutine subprogram "avevar"
+  (inc)(line-no.)(nest)(optimize)
+              38                     !
+              39                     !
+              40                           SUBROUTINE avevar(data,n,ave,var)
+              41                     
+              42                           implicit  none
+              43                           INTEGER   n
+              44                           REAL      ave,var,data(n)
+              45                           INTEGER   j
+              46                           REAL      s,ep
+              47                     
+              48                           ave=0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1067
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+              49     1  pp    v            do 11 j=1,n
+              50     1   p    v              ave=ave+data(j)
+              51     1   p    v      11    continue
+              52                           ave=ave/n
+              53                           var=0.0
+              54                           ep=0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 889
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+              55     1  pp    v            do 12 j=1,n
+              56     1   p    v              s=data(j)-ave
+              57     1   p    v              ep=ep+s
+              58     1   p    v              var=var+s*s
+              59     1   p    v      12    continue
+              60                           var=(var-ep**2/n)/(n-1)
+              61                           return
+              62                           END
+              63                     !  (C) Copr. 1986-92 Numerical Recipes Software $!6)$3D#21)8.
+
+ Procedure information
+   Lines      : 26
+   Statements : 21
+   Stack(byte): 41072
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : avevar
+   Attribute and Cross reference of name
+     ave
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 40  44
+      |(Definition)     : 48  50  52
+      |(Reference)      : 50  52  56
+     avevar
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 40
+      |(Reference)      : 
+     data
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 40  44
+      |(Definition)     : 
+      |(Reference)      : 50  56
+     ep
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 46
+      |(Definition)     : 54  57
+      |(Reference)      : 57  60
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 45
+      |(Definition)     : 49  55
+      |(Reference)      : 50  56
+     n
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 40  43
+      |(Definition)     : 
+      |(Reference)      : 44  49  52  55  60  60
+     s
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 46
+      |(Definition)     : 56
+      |(Reference)      : 57  58  58
+     var
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 40  44
+      |(Definition)     : 53  58  60
+      |(Reference)      : 58  60
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+         11  execution     (Definition) 51  
+                           (Reference)  49
+         12  execution     (Definition) 59  
+                           (Reference)  55
+
+ Total information
+   Procedures       : 3
+   Total lines      : 63
+   Total statements : 46
+   Total stack(byte): 42976
+   Total prefetch num: 0
+

@@ -1,0 +1,767 @@
+
+ Fujitsu Fortran Version 4.6.1  Thu Jun 29 14:23:58 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm
+   Source file       : dmswrit.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "dmswrit"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine dmswrit(nx,my,lrec,lenc,kflag,ifile,z,istat)
+               2                     
+               3                     !CWB2021 single precision test, writing dms output in 32 bits float format
+               4                     
+               5                     !
+               6                     !  subroutine to read data in pressure level fields
+               7                     !
+               8                     ! **** input ****
+               9                     !
+              10                     !  lrec: field identifaction label
+              11                     !  lenc: no. of data values in a 2-d lrec field
+              12                     !  ifile: path/file name containing initial fields
+              13                     !
+              14                     ! **** output ****
+              15                     !
+              16                     !  z: array containing gaussian grid 2-d field
+              17                     !  istat: status code. .ne. zero means bad read
+              18                     !
+              19                           use param, only : io_quilting
+              20                           use mpe
+              21                           use rank
+              22                           use const, only : RTYPE
+              23                     !     use index
+              24                     
+              25                           implicit  none
+              26                     
+              27                           integer   nx,my,lenc,istat
+              28                           logical   t_flg
+              29                     !CWB2021
+              30                           real(kind=RTYPE) z(nx,my)
+              31                           character lrec*26,ifile*80,kflag*1
+              32                     !
+              33                     ! working array
+              34                     !
+              35                           character key*34
+              36                     !
+              37                           write(key,1000)lrec,kflag,lenc
+              38                      1000 format(a26,a1,i7.7)
+              39                     !
+              40                           t_flg=.false.
+              41                     
+              42                     !< remove io_quilting
+              43                     !
+              44                     !      if(io_quilting)then
+              45                     !
+              46                     !        if(myrank .eq. 0) then
+              47                     !          ntag=ntag+1
+              48                     !          call mpe_send_key(key,ntag,istat)
+              49                     !          ntag=ntag+1
+              50                     !          call mpe_send_data(z,nx*my,ntag,istat)
+              51                     !#ifdef VERBOSE
+              52                     !          print *,'dmsput key=',key,' ok'
+              53                     !#endif
+              54                     !        endif
+              55                     !
+              56                     !      else
+              57                     !>
+              58                     
+              59     1                      if(myrank .eq. 0) then
+              60     1               !CWB2021
+              61     1               !       if(key(27:27).eq.'R')then
+              62     1               !          z4=z
+              63     1               !          call dmsput(ifile,key//char(0),z4,istat)
+              64     1               !       endif
+              65     1               !       if(key(27:27).eq.'H')then
+              66     1                         call dmsput(ifile,key//char(0),z,istat)
+              67     1               !       endif
+              68     1                      t_flg=.true.
+              69     1                      endif
+              70                     
+              71                            call mpe_bcast(istat,1,0,mpe_integer)
+              72                     !
+              73     1                      if(istat.ne.0)then
+              74     1                        if(myrank .eq. 0)print *,'dmsput key=',key,' error'
+              75     1                        call mpe_finalize
+              76     1                        call dmsexit(-1)
+              77     1                      else
+              78     1               #ifdef VERBOSE
+              79     1                        if(myrank .eq. 0) print *,'dmsput key=',key,' ok'
+              80     1               #endif
+              81     1                      endif
+              82                     
+              83                     !       endif  !remove io_quilting
+              84                     !
+              85                           return
+              86                           end
+
+ Procedure information
+   Lines      : 86
+   Statements : 27
+   Stack(byte): 736
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : dmswrit
+   Attribute and Cross reference of name
+     char
+      |(Class and Type) : intrinsic function name, CHARACTER((unknown),1)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 66
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 22
+     dmsexit
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 76
+     dmsput
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 66
+     dmswrit
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     ifile
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  31
+      |(Definition)     : 66
+      |(Reference)      : 
+     io_quilting
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 19
+     istat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  27
+      |(Definition)     : 66  71
+      |(Reference)      : 73
+     key
+      |(Class and Type) : variable name, CHARACTER(34,1)
+      |(Attributes)     : 
+      |(Declaration)    : 35
+      |(Definition)     : 37
+      |(Reference)      : 66  74
+     kflag
+      |(Class and Type) : variable name, CHARACTER(1,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  31
+      |(Definition)     : 
+      |(Reference)      : 37
+     lenc
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  27
+      |(Definition)     : 
+      |(Reference)      : 37
+     lrec
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  31
+      |(Definition)     : 
+      |(Reference)      : 37
+     mpe
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 20
+     mpe_bcast
+      |(Class and Type) : generic name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 71
+     mpe_finalize
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 75
+     mpe_integer
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 71
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  27
+      |(Definition)     : 
+      |(Reference)      : 30
+     myrank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 59  74
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  27
+      |(Definition)     : 
+      |(Reference)      : 30
+     param
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 19
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 22  30
+     rank
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 21
+     t_flg
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 28
+      |(Definition)     : 40  68
+      |(Reference)      : 
+     z
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  30
+      |(Definition)     : 66
+      |(Reference)      : 
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+       1000  format        (Definition) 38  
+                           (Reference)  37
+
+ External subroutine subprogram "dmswrit_mfc"
+  (inc)(line-no.)(nest)(optimize)
+              87                     
+              88                     !---------------------------------------------------------
+              89                     !CWB2016
+              90                     ! write dmsdata by rank 0, bypassing io_quilting server
+              91                     
+              92                           subroutine dmswrit_mfc(nx,my,lrec,lenc,kflag,ifile,z,istat)
+              93                     !
+              94                     !  subroutine to read data in pressure level fields
+              95                     !
+              96                     ! **** input ****
+              97                     !
+              98                     !  lrec: field identifaction label
+              99                     !  lenc: no. of data values in a 2-d lrec field
+             100                     !  ifile: path/file name containing initial fields
+             101                     !
+             102                     ! **** output ****
+             103                     !
+             104                     !  z: array containing gaussian grid 2-d field
+             105                     !  istat: status code. .ne. zero means bad read
+             106                     !
+             107                           use param, only : io_quilting
+             108                           use mpe
+             109                           use rank
+             110                           use const, only : RTYPE
+             111                     !     use index
+             112                     
+             113                           implicit  none
+             114                     
+             115                           integer   nx,my,lenc,istat
+             116                           logical   t_flg
+             117                           real(kind=RTYPE) z(nx,my)
+             118                     !CWB2021
+             119                           character lrec*26,ifile*80,kflag*1
+             120                     !
+             121                     ! working array
+             122                     !
+             123                           character key*34
+             124                     !
+             125                           write(key,1000)lrec,kflag,lenc
+             126                      1000 format(a26,a1,i7.7)
+             127                     !
+             128                           t_flg=.false.
+             129                     
+             130     1                      if(myrank .eq. 0) then
+             131     1               !CWB2021
+             132     1               !       if(key(27:27).eq.'R')then
+             133     1               !          z4=z
+             134     1               !          call dmsput(ifile,key//char(0),z4,istat)
+             135     1               !       endif
+             136     1               !       if(key(27:27).eq.'H')then
+             137     1                         call dmsput(ifile,key//char(0),z,istat)
+             138     1               !       endif
+             139     1                      t_flg=.true.
+             140     1                      endif
+             141                     
+             142                            call mpe_bcast(istat,1,0,mpe_integer)
+             143                     !
+             144     1                      if(istat.ne.0)then
+             145     1                        if(myrank .eq. 0)print *,'dmsput key=',key,' error'
+             146     1                        call mpe_finalize
+             147     1                        call dmsexit(-1)
+             148     1                      else
+             149     1               
+             150     1               #ifdef VERBOSE
+             151     1                        if(myrank .eq. 0) print *,'dmsput key=',key,' ok'
+             152     1               #endif
+             153     1                      endif
+             154                     
+             155                     !
+             156                           return
+             157                           end
+
+ Procedure information
+   Lines      : 71
+   Statements : 27
+   Stack(byte): 736
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : dmswrit_mfc
+   Attribute and Cross reference of name
+     char
+      |(Class and Type) : intrinsic function name, CHARACTER((unknown),1)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 137
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 110
+     dmsexit
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 147
+     dmsput
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 137
+     dmswrit_mfc
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 92
+      |(Reference)      : 
+     ifile
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 92  119
+      |(Definition)     : 137
+      |(Reference)      : 
+     io_quilting
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 107
+     istat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 92  115
+      |(Definition)     : 137  142
+      |(Reference)      : 144
+     key
+      |(Class and Type) : variable name, CHARACTER(34,1)
+      |(Attributes)     : 
+      |(Declaration)    : 123
+      |(Definition)     : 125
+      |(Reference)      : 137  145
+     kflag
+      |(Class and Type) : variable name, CHARACTER(1,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 92  119
+      |(Definition)     : 
+      |(Reference)      : 125
+     lenc
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 92  115
+      |(Definition)     : 
+      |(Reference)      : 125
+     lrec
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 92  119
+      |(Definition)     : 
+      |(Reference)      : 125
+     mpe
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 108
+     mpe_bcast
+      |(Class and Type) : generic name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 142
+     mpe_finalize
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 146
+     mpe_integer
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 142
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 92  115
+      |(Definition)     : 
+      |(Reference)      : 117
+     myrank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 130  145
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 92  115
+      |(Definition)     : 
+      |(Reference)      : 117
+     param
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 107
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 110  117
+     rank
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 109
+     t_flg
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 116
+      |(Definition)     : 128  139
+      |(Reference)      : 
+     z
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 92  117
+      |(Definition)     : 137
+      |(Reference)      : 
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+       1000  format        (Definition) 126  
+                           (Reference)  125
+
+ External subroutine subprogram "dmswrit_split"
+  (inc)(line-no.)(nest)(optimize)
+             158                     !---------------------------------------------------------
+             159                     !CWB2016
+             160                     ! write dmsdata by rank 0, bypassing io_quilting server
+             161                     
+             162                           subroutine dmswrit_split(nx,my,lrec,lenc,kflag,ifile,z,istat)
+             163                     !
+             164                     !  subroutine to read data in pressure level fields
+             165                     !
+             166                     ! **** input ****
+             167                     !
+             168                     !  lrec: field identifaction label
+             169                     !  lenc: no. of data values in a 2-d lrec field
+             170                     !  ifile: path/file name containing initial fields
+             171                     !
+             172                     ! **** output ****
+             173                     !
+             174                     !  z: array containing gaussian grid 2-d field
+             175                     !  istat: status code. .ne. zero means bad read
+             176                     !
+             177                           use param, only : io_quilting
+             178                           use mpe
+             179                           use rank
+             180                           use index, only : col_rank
+             181                           use const, only : RTYPE
+             182                     
+             183                           implicit  none
+             184                     
+             185                           integer   nx,my,lenc,istat
+             186                           logical   t_flg
+             187                           real(kind=RTYPE) z(nx,my)
+             188                     !CWB2021
+             189                           character lrec*26,ifile*80,kflag*1
+             190                     !
+             191                     ! working array
+             192                     !
+             193                           character key*34
+             194                     !
+             195                           write(key,1000)lrec,kflag,lenc
+             196                      1000 format(a26,a1,i7.7)
+             197                     !
+             198                           t_flg=.false.
+             199                     
+             200                     !       if(myrank .eq. iroot) then
+             201                     !CWB2021
+             202                     !       if(key(27:27).eq.'R')then
+             203                     !          z4=z
+             204                     !          call dmsput(ifile,key//char(0),z4,istat)
+             205                     !       endif
+             206                     !       if(key(27:27).eq.'H')then
+             207                               call dmsput(ifile,key//char(0),z,istat)
+             208                     !       endif
+             209                            t_flg=.true.
+             210                     !       endif
+             211                     
+             212                     !       call mpe_bcast_col(istat,1,0,mpe_integer)
+             213                     !
+             214     1                      if(istat.ne.0)then
+             215     1               !!         if(col_rank .eq. 0)print *,'dmsput key=',key,' error'
+             216     1                        print *,'dmsput key=',key,' error'
+             217     1               !!         call mpe_finalize
+             218     1                        call dmsexit(-1)
+             219     1                      else
+             220     1               !!         if(col_rank .eq. 0) print *,'dmsput key=',key,' ok'
+             221     1               #ifdef VERBOSE
+             222     1                        print *,'dmsput key=',key,' ok'
+             223     1               #endif
+             224     1                      endif
+             225                     
+             226                     !
+             227                           return
+             228                           end
+             229                     
+
+ Procedure information
+   Lines      : 72
+   Statements : 24
+   Stack(byte): 736
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : dmswrit_split
+   Attribute and Cross reference of name
+     char
+      |(Class and Type) : intrinsic function name, CHARACTER((unknown),1)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 207
+     col_rank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 180
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 181
+     dmsexit
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 218
+     dmsput
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 207
+     dmswrit_split
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 162
+      |(Reference)      : 
+     ifile
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 162  189
+      |(Definition)     : 207
+      |(Reference)      : 
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 180
+     io_quilting
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 177
+     istat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 162  185
+      |(Definition)     : 207
+      |(Reference)      : 214
+     key
+      |(Class and Type) : variable name, CHARACTER(34,1)
+      |(Attributes)     : 
+      |(Declaration)    : 193
+      |(Definition)     : 195
+      |(Reference)      : 207  216
+     kflag
+      |(Class and Type) : variable name, CHARACTER(1,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 162  189
+      |(Definition)     : 
+      |(Reference)      : 195
+     lenc
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 162  185
+      |(Definition)     : 
+      |(Reference)      : 195
+     lrec
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 162  189
+      |(Definition)     : 
+      |(Reference)      : 195
+     mpe
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 178
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 162  185
+      |(Definition)     : 
+      |(Reference)      : 187
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 162  185
+      |(Definition)     : 
+      |(Reference)      : 187
+     param
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 177
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 181  187
+     rank
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 179
+     t_flg
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 186
+      |(Definition)     : 198  209
+      |(Reference)      : 
+     z
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 162  187
+      |(Definition)     : 207
+      |(Reference)      : 
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+       1000  format        (Definition) 196  
+                           (Reference)  195
+
+ Total information
+   Procedures       : 3
+   Total lines      : 229
+   Total statements : 78
+   Total stack(byte): 2208
+   Total prefetch num: 0
+

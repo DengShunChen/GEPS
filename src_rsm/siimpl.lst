@@ -1,0 +1,823 @@
+
+ Fujitsu Fortran Version 4.6.1  Thu Jun 29 14:23:21 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm
+   Source file       : siimpl.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "siimpl"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine siimpl( jtrun,jtmax,lev,dta,ptmean,dsigma,spalm,eps4    &
+               2                                     , eigval,evecin,evectr,arrhyd,arsddt,temold,divold,plold &
+               3                                     , temnow,divnow,plnow,temten,divten,plten,alpha )
+               4                     !
+               5                     !
+               6                     !  computes corrections to explicit tendencies to convert model to a
+               7                     !  semi-implicit model
+               8                     !
+               9                     !  *** input ***
+              10                     !
+              11                     !  dta: time step in seconds
+              12                     !  ptmean: mean terrain pressure chosen for best stability properties
+              13                     !  dsigma: thickness of sigma layers
+              14                     !  spalm: mean energy conversion terms for each level
+              15                     !  eps4: spherical harmonic laplacian operator
+              16                     !  eigval: gravity mode phase speed eigenvalues
+              17                     !  evecin: inverse of gravity mode eigenvector matrix
+              18                     !  evectr: gravity mode eigenvector matrix
+              19                     !  arrhyd: linearized hydrostatic matrix
+              20                     !  arsddt: linerized vertical temperature advection matrix
+              21                     !  temold: (t-dt) spectral temperature
+              22                     !  divold: (t-dt) spectral divergence
+              23                     !  plold: (t-dt) spectral terrain pressure
+              24                     !  temnow: current time temperature
+              25                     !  divnow: current time divergence
+              26                     !  plnow: current time terrain pressure
+              27                     !  temten: explicit temperature tendency
+              28                     !  divten: explicit divergence tendency
+              29                     !  plten: explicit terrain pressure tendency
+              30                     !
+              31                     ! *** output ***
+              32                     !
+              33                     !  temten: semi-implicit temperature tendency
+              34                     !  divten: semi-implicit divergence tendency
+              35                     !  plten: semi-implicit terrain pressure tendency
+              36                     !
+              37                     ! **************************************************
+              38                     !
+              39                     
+              40                     !CWB2017 2dMPI version
+              41                     
+              42                           use index
+              43                           use paramt
+              44                           use const,only : eps4L,RTYPE
+              45                           use spec ,only : plnowL,ploldL,pltenL,jtwvp
+              46                     
+              47                           implicit  none
+              48                           integer   jtrun,jtmax,lev
+              49                     
+              50                           real(kind=RTYPE) dsigma(lev,2),eps4(jtrun,jtmax),eigval(lev),evecin(lev,lev) &
+              51                           ,     evectr(lev,lev),arrhyd(lev,lev),arsddt(lev,lev),spalm(lev)
+              52                     
+              53                           real(kind=RTYPE) temold(levp,2,jtrun,jtmax),divold(levp,2,jtrun,jtmax) &
+              54                           ,                temnow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax) &
+              55                           ,                temten(levp,2,jtrun,jtmax),divten(levp,2,jtrun,jtmax)
+              56                           real(kind=RTYPE) plold(jtrun,jtmax,2),plnow(jtrun,jtmax,2),plten(jtrun,jtmax,2)
+              57                     
+              58                           real(kind=RTYPE) divavg(lev,2),phiave(lev,2,jtrun),eps4e(lev,jtrun)
+              59                     
+              60                           integer   m,mf,k,n,l,j
+              61                           real      alpha
+              62                           real(kind=RTYPE) dta,dd,odd,dd2,ptmean,tem,s1,s2,d1,d2,dp
+              63                     
+              64                           real(kind=RTYPE) wrk1(lev,2,jtp),wrk2(lev,2,jtp),wrk3(lev,2,jtp),&
+              65                                            wrk4(lev,2,jtp),wrk5(lev,2,jtp),wrk6(lev,2,jtp)
+              66                     
+              67                           dd = alpha*dta
+              68                           odd= 1.0/dd
+              69                           dd2= dd*dd
+              70                     
+              71                     #ifdef MULTIPLE
+              72                           call mpe2d_reshape_pl_multi(plten, plnow, plold, pltenL, plnowL, ploldL)
+              73                     
+              74                           call mpe2d_transpose_siimpl_multi(temold,temnow,temten,divold,divnow,divten, &
+              75                                                        wrk1  ,wrk2  ,wrk3  ,wrk4  ,wrk5  ,wrk6  , &
+              76                                                        levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist,nsizex,row_comm)
+              77                     #else
+              78                           call mpe2d_reshape_pl(plten, pltenL)
+              79                           call mpe2d_reshape_pl(plnow, plnowL)
+              80                           call mpe2d_reshape_pl(plold, ploldL)
+              81                     
+              82                           call mpe2d_transpose_siimpl(temold, &
+              83                                                        wrk1 , &
+              84                                                        levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist,nsizex,row_comm)
+              85                           call mpe2d_transpose_siimpl(temnow, &
+              86                                                        wrk2 , &
+              87                                                        levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist,nsizex,row_comm)
+              88                           call mpe2d_transpose_siimpl(temten, &
+              89                                                        wrk3 , &
+              90                                                        levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist,nsizex,row_comm)
+              91                           call mpe2d_transpose_siimpl(divold, &
+              92                                                        wrk4 , &
+              93                                                        levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist,nsizex,row_comm)
+              94                           call mpe2d_transpose_siimpl(divnow, &
+              95                                                        wrk5 , &
+              96                                                        levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist,nsizex,row_comm)
+              97                           call mpe2d_transpose_siimpl(divten, &
+              98                                                        wrk6 , &
+              99                                                        levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist,nsizex,row_comm)
+             100                     #endif
+             101                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      eigval, wrk3, wrk2, wrk1, eps4e, divavg
+                                   <<< Loop-information  End >>>
+             102     1                     do 700 m = 1,jtlen
+             103     1                     n=jtwvp(m)
+             104     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 800
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.36, ITR: 48, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      eigval, eps4e
+                                   <<< Loop-information  End >>>
+             105     2  pp   2v            do 100 k = 1, lev
+             106     2   p   2v            tem= dd2*eigval(k)
+             107     2   p   2v            eps4e(k,n)= 1.0/(1.0+tem*eps4L(m))
+             108     2   p   2v        100 continue
+             109     1               
+             110     2                       if (n.ne.1) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 433
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 48, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wrk1, wrk3, wrk2, divavg
+                                   <<< Loop-information  End >>>
+             111     3  pp    v                do k=1,lev
+             112     3   p    v                   divavg(k,1)= wrk1(k,1,m)+dd*wrk3(k,1,m)-wrk2(k,1,m)
+             113     3   p    v                   divavg(k,2)= wrk1(k,2,m)+dd*wrk3(k,2,m)-wrk2(k,2,m)
+             114     3   p    v                enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<< Loop-information  End >>>
+             115     3  pp                     do 130 k = 1, lev
+             116     3   p                       s1= spalm(k)*(ploldL(m,1)+dd*pltenL(m,1)-plnowL(m,1))
+             117     3   p                       s2= spalm(k)*(ploldL(m,2)+dd*pltenL(m,2)-plnowL(m,2))
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      divavg
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 0
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 1  FILL 1
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             118     4   p   8v                  do 125 L = 1, lev
+             119     4   p   8v                    s1= s1+arrhyd(k,L)*divavg(L,1)
+             120     4   p   8v                    s2= s2+arrhyd(k,L)*divavg(L,2)
+             121     4   p   8v        125       continue
+             122     3   p                       phiave(k,1,n)= eps4L(m)*s1
+             123     3   p                       phiave(k,2,n)= eps4L(m)*s2
+             124     3   p                       wrk6(k,1,m)= dd*(phiave(k,1,n)+wrk6(k,1,m))  &
+             125     3                                          - wrk5(k,1,m)+wrk4(k,1,m)
+             126     3   p                       wrk6(k,2,m)= dd*(phiave(k,2,n)+wrk6(k,2,m))  &
+             127     3                                          - wrk5(k,2,m)+wrk4(k,2,m)
+             128     3   p             130     continue
+             129     2                       endif
+             130     1               !
+             131     1               ! transform time averaged divergence to eigenspace and compute
+             132     1               ! semi-implicit values
+             133     1               !
+             134     2                       if (n.eq.1) then
+             135     2               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1231
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wrk6
+                                   <<< Loop-information  End >>>
+             136     3  pp   2v                do 160 l = 1, lev
+             137     3   p   2v                  wrk6(l,1,m)= 0.0
+             138     3   p   2v                  wrk6(l,2,m)= 0.0
+             139     3   p   2v        160     continue
+             140     2               
+             141     2                       else
+             142     2               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<< Loop-information  End >>>
+             143     3  pp                     do 170 L = 1, lev
+             144     3   p                       d1= evecin(L,1)*wrk6(1,1,m)
+             145     3   p                       d2= evecin(L,1)*wrk6(1,2,m)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wrk6
+                                   <<< Loop-information  End >>>
+             146     4   p   8v                  do 162 k = 2, lev
+             147     4   p   8v                    d1= d1+evecin(L,k)*wrk6(k,1,m)
+             148     4   p   8v                    d2= d2+evecin(L,k)*wrk6(k,2,m)
+             149     4   p   8v        162       continue
+             150     3   p                       divavg(L,1)= d1*eps4e(L,n)
+             151     3   p                       divavg(L,2)= d2*eps4e(L,n)
+             152     3   p             170     continue
+             153     2               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<< Loop-information  End >>>
+             154     3  pp                     do 195 k = 1, lev
+             155     3   p                       s1= evectr(k,1)*divavg(1,1)
+             156     3   p                       s2= evectr(k,1)*divavg(1,2)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      divavg
+                                   <<< Loop-information  End >>>
+             157     4   p   8v                  do 193 L = 2, lev
+             158     4   p   8v                    s1= s1+evectr(k,L)*divavg(L,1)
+             159     4   p   8v                    s2= s2+evectr(k,L)*divavg(L,2)
+             160     4   p   8v        193       continue
+             161     3   p                       wrk6(k,1,m)= s1
+             162     3   p                       wrk6(k,2,m)= s2
+             163     3   p             195     continue
+             164     2                       endif
+             165     1               !
+             166     1               ! add contributions of time averaged divergence to temperature
+             167     1               ! tendency
+             168     1               !
+             169     2                       if (n.ne.1) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 3
+                                   <<< Loop-information  End >>>
+             170     3  pp                     do 205 k = 1, lev
+             171     3   p                       s1=wrk3(k,1,m)
+             172     3   p                       s2=wrk3(k,2,m)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wrk6
+                                   <<< Loop-information  End >>>
+             173     4   p   8v                  do 200 L = 1, lev
+             174     4   p   8v                    s1= s1-arsddt(k,L)*wrk6(L,1,m)
+             175     4   p   8v                    s2= s2-arsddt(k,L)*wrk6(L,2,m)
+             176     4   p   8v        200       continue
+             177     3   p                       wrk3(k,1,m)= s1
+             178     3   p                       wrk3(k,2,m)= s2
+             179     3   p             205     continue
+             180     2                       endif
+             181     1               !
+             182     1               ! add contribution of vertically integrated time-averaged divergence
+             183     1               ! to surface pressure tendency.  convert time-averaged divergence to
+             184     1               ! semi-implicit divergence tendency.
+             185     1               !
+             186     2                       if (n.ne.1) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      dsigma, wrk5, wrk4, wrk6
+                                   <<< Loop-information  End >>>
+             187     3  pp                    do 230 j = 1, 2
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.18, ITR: 256, MVE: 2, POL: L)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wrk5, wrk4, wrk6, dsigma
+                                   <<< Loop-information  End >>>
+             188     4   p   8v               do 230 k = 1, lev
+             189     4   p   8v                dp= dsigma(k,1)*ptmean+dsigma(k,2)
+             190     4   p   8v                pltenL(m,j)= pltenL(m,j)-dp*wrk6(k,j,m)
+             191     4   p   8v                wrk6(k,j,m)=(wrk5(k,j,m)+wrk6(k,j,m)-wrk4(k,j,m))*odd
+             192     3   p   8v        230    continue
+             193     2                       endif
+             194     1               
+             195     1                 700 continue   ! end of large m loop
+             196                     
+             197                           call mpe2d_reshape_pl_back(pltenL, plten)
+             198                     
+             199                     #ifdef MULTIPLE
+             200                           call mpe2d_transpose_siimpl_back_multi(wrk3,wrk6,temten,divten,levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist,nsizex,row_comm)
+             201                     #else
+             202                           call mpe2d_transpose_siimpl_back(wrk3,temten,levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist,nsizex,row_comm)
+             203                           call mpe2d_transpose_siimpl_back(wrk6,divten,levp,jtrun,jtmax,lev,jtp,jtf,mlistnum,mlist,nsizex,row_comm)
+             204                     #endif
+             205                     
+             206                           return
+             207                           end
+
+ Procedure information
+   Lines      : 207
+   Statements : 104
+   Stack(byte): 3648
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : siimpl
+   Attribute and Cross reference of name
+     alpha
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  61
+      |(Definition)     : 
+      |(Reference)      : 67
+     arrhyd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  50
+      |(Definition)     : 
+      |(Reference)      : 119  120
+     arsddt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  50
+      |(Definition)     : 
+      |(Reference)      : 174  175
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 44
+     d1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 62
+      |(Definition)     : 144  147
+      |(Reference)      : 147  150
+     d2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 62
+      |(Definition)     : 145  148
+      |(Reference)      : 148  151
+     dd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 62
+      |(Definition)     : 67
+      |(Reference)      : 68  69  69  112  113  116  117  124  126
+     dd2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 62
+      |(Definition)     : 69
+      |(Reference)      : 106
+     divavg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 58
+      |(Definition)     : 112  113  150  151
+      |(Reference)      : 119  120  155  156  158  159
+     divnow
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  53
+      |(Definition)     : 94
+      |(Reference)      : 
+     divold
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  53
+      |(Definition)     : 91
+      |(Reference)      : 
+     divten
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  53
+      |(Definition)     : 97  203
+      |(Reference)      : 
+     dp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 62
+      |(Definition)     : 189
+      |(Reference)      : 190
+     dsigma
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  50
+      |(Definition)     : 
+      |(Reference)      : 189  189
+     dta
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  62
+      |(Definition)     : 
+      |(Reference)      : 67
+     eigval
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  50
+      |(Definition)     : 
+      |(Reference)      : 106
+     eps4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  50
+      |(Definition)     : 
+      |(Reference)      : 
+     eps4L
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 44  107  122  123
+     eps4e
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 58
+      |(Definition)     : 107
+      |(Reference)      : 150  151
+     evecin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  50
+      |(Definition)     : 
+      |(Reference)      : 144  145  147  148
+     evectr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  50
+      |(Definition)     : 
+      |(Reference)      : 155  156  158  159
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 42
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 60
+      |(Definition)     : 187
+      |(Reference)      : 190  190  190  191  191  191  191
+     jtf
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 82  85  88  91  94  97  202  203
+      |(Reference)      : 
+     jtlen
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 102
+     jtmax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  48
+      |(Definition)     : 82  85  88  91  94  97  202  203
+      |(Reference)      : 50  53  53  53  53  53  53  56  56  56
+     jtp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 82  85  88  91  94  97  202  203
+      |(Reference)      : 64  64  64  64  64  64
+     jtrun
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  48
+      |(Definition)     : 82  85  88  91  94  97  202  203
+      |(Reference)      : 50  53  53  53  53  53  53  56  56  56  58  58
+     jtwvp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 45  103
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 60
+      |(Definition)     : 105  111  115  146  154  170  188
+      |(Reference)      : 106  107  112  112  112  112  113  113  113  113  116  117  119  120  122  123  124  124  124  124  124  126  126  126  126  126  147  147  148  148  155  156  158  159  161  162  171  172  174  175  177  178  189  189  190  191  191  191  191
+     l
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 60
+      |(Definition)     : 118  136  143  157  173
+      |(Reference)      : 119  119  120  120  137  138  144  145  147  148  150  150  151  151  158  158  159  159  174  174  175  175
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  48
+      |(Definition)     : 82  85  88  91  94  97  202  203
+      |(Reference)      : 50  50  50  50  50  50  50  50  50  50  50  58  58  58  64  64  64  64  64  64  105  111  115  118  136  143  146  154  157  170  173  188
+     levp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 82  85  88  91  94  97  202  203
+      |(Reference)      : 53  53  53  53  53  53
+     m
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 60
+      |(Definition)     : 102
+      |(Reference)      : 103  107  112  112  112  113  113  113  116  116  116  117  117  117  122  123  124  124  124  124  126  126  126  126  137  138  144  145  147  148  161  162  171  172  174  175  177  178  190  190  190  191  191  191  191
+     mf
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 60
+      |(Definition)     : 
+      |(Reference)      : 
+     mlist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 82  85  88  91  94  97  202  203
+      |(Reference)      : 
+     mlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 82  85  88  91  94  97  202  203
+      |(Reference)      : 
+     mpe2d_reshape_pl
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 78  79  80
+     mpe2d_reshape_pl_back
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 197
+     mpe2d_transpose_siimpl
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 82  85  88  91  94  97
+     mpe2d_transpose_siimpl_back
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 202  203
+     n
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 60
+      |(Definition)     : 103
+      |(Reference)      : 107  110  122  123  124  126  134  150  151  169  186
+     nsizex
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 82  85  88  91  94  97  202  203
+      |(Reference)      : 
+     odd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 62
+      |(Definition)     : 68
+      |(Reference)      : 191
+     paramt
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 43
+     phiave
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 58
+      |(Definition)     : 122  123
+      |(Reference)      : 124  126
+     plnow
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  56
+      |(Definition)     : 79
+      |(Reference)      : 
+     plnowL
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 79
+      |(Reference)      : 45  116  117
+     plold
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  56
+      |(Definition)     : 80
+      |(Reference)      : 
+     ploldL
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 80
+      |(Reference)      : 45  116  117
+     plten
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  56
+      |(Definition)     : 78  197
+      |(Reference)      : 
+     pltenL
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 78  190  197
+      |(Reference)      : 45  116  117  190
+     ptmean
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  62
+      |(Definition)     : 
+      |(Reference)      : 189
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 44  50  53  56  58  62  64
+     row_comm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 82  85  88  91  94  97  202  203
+      |(Reference)      : 
+     s1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 62
+      |(Definition)     : 116  119  155  158  171  174
+      |(Reference)      : 119  122  158  161  174  177
+     s2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 62
+      |(Definition)     : 117  120  156  159  172  175
+      |(Reference)      : 120  123  159  162  175  178
+     siimpl
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     spalm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  50
+      |(Definition)     : 
+      |(Reference)      : 116  117
+     spec
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 45
+     tem
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 62
+      |(Definition)     : 106
+      |(Reference)      : 107
+     temnow
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  53
+      |(Definition)     : 85
+      |(Reference)      : 
+     temold
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  53
+      |(Definition)     : 82
+      |(Reference)      : 
+     temten
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  53
+      |(Definition)     : 88  202
+      |(Reference)      : 
+     wrk1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 64
+      |(Definition)     : 82
+      |(Reference)      : 112  113
+     wrk2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 64
+      |(Definition)     : 85
+      |(Reference)      : 112  113
+     wrk3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 64
+      |(Definition)     : 88  177  178  202
+      |(Reference)      : 112  113  171  172
+     wrk4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 64
+      |(Definition)     : 91
+      |(Reference)      : 124  126  191
+     wrk5
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 64
+      |(Definition)     : 94
+      |(Reference)      : 124  126  191
+     wrk6
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 64
+      |(Definition)     : 97  124  126  137  138  161  162  191  203
+      |(Reference)      : 124  126  144  145  147  148  174  175  190  191
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+        100  execution     (Definition) 108  
+                           (Reference)  105
+        125  execution     (Definition) 121  
+                           (Reference)  118
+        130  execution     (Definition) 128  
+                           (Reference)  115
+        160  execution     (Definition) 139  
+                           (Reference)  136
+        162  execution     (Definition) 149  
+                           (Reference)  146
+        170  execution     (Definition) 152  
+                           (Reference)  143
+        193  execution     (Definition) 160  
+                           (Reference)  157
+        195  execution     (Definition) 163  
+                           (Reference)  154
+        200  execution     (Definition) 176  
+                           (Reference)  173
+        205  execution     (Definition) 179  
+                           (Reference)  170
+        230  execution     (Definition) 192  
+                           (Reference)  187  188
+        700  execution     (Definition) 195  
+                           (Reference)  102
+
+ Total information
+   Procedures       : 1
+   Total lines      : 207
+   Total statements : 104
+   Total stack(byte): 3648
+   Total prefetch num: 0
+

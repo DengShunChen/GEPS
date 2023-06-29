@@ -1,0 +1,3525 @@
+
+ Fujitsu Fortran Version 4.6.1  Thu Jun 29 14:24:53 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm
+   Source file       : cons.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "cons"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine cons
+               2                     !
+               3                     !***********************************************************************
+               4                     !  this subroutine defines several important constants and arrays
+               5                     !  used by the spectral forecast model.  they include physical
+               6                     !  parameters, model vertical structure, matrix operators used in
+               7                     !  the semi-implicit algorthm, and polynomial arrays used in the
+               8                     !  spherical harmonic transforms.
+               9                     !
+              10                     !
+              11                     ! **** output: ***
+              12                     !
+              13                     !  restrt: logical variable set to .true. if initial tau is greater
+              14                     !          than zero.
+              15                     !
+              16                     !  modify to f90 in 2015 by C-H Lee and sort by River Chen in 2015
+              17                     !***********************************************************************
+              18                     !
+              19                           use param
+              20                           use mpe
+              21                           use rank
+              22                           use index
+              23                           use const
+              24                           use spec
+              25                           use fftcom
+              26                           use mod_typhoon
+              27                           use mod_sit_control,       ONLY:sit_nml
+              28                     !-----------------------------------------------------------------------
+              29                           use radn
+              30                           use noah
+              31                     !-----------------------------------------------------------------------
+              32                           ! for ECHAM4 Tiedtke cumulus scheme
+              33                           USE mo_cumulus_flux, only : cuparam
+              34                           USE mo_constants,    only : inicon
+              35                           USE mo_convect_tables, only : set_lookup_tables
+              36                           ! for stochastic_physics
+              37                           use mod_stochastic_physics, only : ncep_seeds, &
+              38                                        sppt, sppt_seed, sppt_decort, sppt_lscale, &
+              39                                        sppt_sigtop1, sppt_sigtop2, sppt_sigbot1, sppt_sigbot2, &
+              40                                        sppt_sfclimit, sppt_logit, &
+              41                                        shum, shum_seed, shum_decort, shum_lscale, &
+              42                                        shum_sigefold, &
+              43                                        skeb, skeb_seed, skeb_decort, skeb_lscale, &
+              44                                        skeb_sigtop1, skeb_sigtop2, skeb_sigbot1, skeb_sigbot2, &
+              45                                        skeb_vdof,skebnorm, skebfilt, &
+              46                                        ssst, ssst_seed, ssst_decort, ssst_lscale, &
+              47                                        init_stochastic_physics
+              48                           use mod_grb2_param, only:grbmem,grbnumm
+              49                     
+              50                           implicit  none
+              51                     
+              52                           integer i,j,k,n,jj,nn,istat,istat1,istat2,istat3,irstat,ii,Wntyph,nc,Wltyph
+              53                           integer ix,jy,ip,istat_r,istat_w,ierror,ltyph,io
+              54                           integer ifromtau,itotau,itau,itaui,l,nxj,m,mf,my2
+              55                           integer tflag,Wflag,ntrac_req
+              56                     
+              57                           real    pi,rm,rl,rlm,one,onem,r2d, pnm_max,pnmcut,sumreduce
+              58                           real    reducefactor,d2r,cew,clon,cns,clat,prslp
+              59                     
+              60                           integer*8 idtg8
+              61                     
+              62                           real(kind=RTYPE) pnm(jtrun+1,jtrun+1)
+              63                     
+              64                     !
+              65                           namelist /modlst/ ksgeo,ptmean,dt,taui,taue                       &
+              66                                           , tauo,frad,ktpbl,ktshl,ktcup,njump,evaprh,lsimpl &
+              67                                           , yesdia,dopbl,docup,dorad,dolsp,dograv           &
+              68                                           , doshl,dodry,donnmi,idg,jdg,ldiag,nnmiit,nnmivm  &
+              69                                           , cutfreq,hdiff,itypbl,cstar,taup,hfilt           &
+              70                                           , ptmeans,update,taureg,doincr,numreduce          &
+              71                                           , nmcup,nmpbl,nmland,nmshl,cgw,ggdef,gmdef        &
+              72                                           , nmgwor,tofd,nmgwcv,mtnvar,docgrav               &
+              73                                           , ictm,isol,ico2,iaer,ialb,irad,iems,ntcw         &
+              74                                           , ntoz,iovr_sw,iovr_lw,isubc_sw,isubc_lw          &
+              75                                           , sashal,crick_proof,ccnorm,norad_precip,me,doo3l &
+              76                                           , ioutsigr,domfc,out_green,isot,ivegsrc           &
+              77                                           , otgreen,out_hp,dosppt,dospptout, doshum, dossst &
+              78                                           , doskeb, doskebout, ndsladvh2,hord               &
+              79                                           , ldailyFCTsst,ldailyFCTicesndpt,lFCTweight       &
+              80                                           , dailyClm_option,lopgsst,do_sit,fsit,pdfcloud,updatetg    &
+              81                     ! output data for RSM (Also, RSM compiling flag is necessary)
+              82                                           , outrsm,rsmoutinv,rlon1,rlon2,rlat1,rlat2,rgrdsz &
+              83                                           , cmbk,cgwd,nmmiph,spl1,spl2                      &
+              84                                           , weightSIT,dSITdt_intv,mwhd,doclx,doslavepp   &
+              85                                           , outdms,outgrb2,alpha,two_loop,ttl,tfilt
+              86                     !
+              87                           real    si(lev+1)
+              88                           logical flag
+              89                           character*10 fulldtg,Wfulldtg
+              90                           character*80 filist
+              91                           character cdtg*12
+              92                           character*80 pathname,logicname,truefile
+              93                           character*64 type_r,type_w,argument
+              94                           integer istat4,istat5,istat6,istat7
+              95                     
+              96                           data pathname/'NWPETCGLB'/
+              97                           data logicname/'filist'/
+              98                     
+              99                     
+             100                           namelist /filst/ ifilin,cwbout,bckfile,namlsts &
+             101                                          , ifilout,crdate,ocards,phyout,cntrl &
+             102                                          , ifilin_ncep, ifilin_sst, ifilin_nc &
+             103                                          , ifilin_ClmANA,ifilin_ClmFCT,ifilout_grb
+             104                     
+             105                           namelist /typ/ write_tau, write_mem, trk_intv, min_trk_pres
+             106                     
+             107                           namelist /stochy_physics/ ncep_seeds, &
+             108                                        use_zmtnblck, &
+             109                                        sppt, sppt_seed, sppt_decort, sppt_lscale, &
+             110                                        sppt_sigtop1, sppt_sigtop2, sppt_sigbot1, sppt_sigbot2, &
+             111                                        sppt_sfclimit, sppt_logit, &
+             112                                        shum, shum_seed, shum_decort, shum_lscale, &
+             113                                        shum_sigefold, &
+             114                                        skeb, skeb_seed, skeb_decort, skeb_lscale, &
+             115                                        skeb_sigtop1, skeb_sigtop2, skeb_sigbot1, skeb_sigbot2, &
+             116                                        skeb_vdof, skebnorm, skebfilt, &
+             117                                        ssst, ssst_seed, ssst_decort, ssst_lscale
+             118                           namelist /grb_conf/ grbmem,grbnumm
+             119                     
+             120                     ! for ECHAM4 Tiedtke cumulus scheme
+             121                           call cuparam
+             122                           call inicon
+             123                           call set_lookup_tables
+             124                     
+             125                           capa= 1.0/3.5
+             126                           rgas= capa*cp
+             127                           pi  = 4.0*atan(1.0)
+             128                           radsq= rad*rad
+             129                     !
+             130                           call gpvs
+             131                     !----------------------------------------------------------------!
+             132                     !
+             133                     !  read namlist of path/file name(operation)
+             134                     !
+             135                           call getfname(pathname,logicname,truefile,istat)
+             136     1                     if(istat.ne.0)then
+             137     1                       print *,'getfname : error','RANK=',myrank
+             138     1                       call mpe_finalize
+             139     1                       call dmsexit(-1)
+             140     1                     else
+             141     1                       if(myrank .eq. 0) print *,truefile
+             142     1                     endif
+             143                     !
+             144                           open (unit=12,file=trim(truefile),form='formatted')
+             145                     !!      open (unit=77,file='output.dat',form='formatted')
+             146                     !
+             147                           read (12,filst,end=110)
+             148                     !
+             149                       110 continue
+             150                           close(12)
+             151                     !
+             152                           if(myrank .eq. 0) print filst
+             153                     !
+             154                     !  read namelist for model parameters
+             155                     !
+             156                           open (unit=1,file=trim(namlsts),form='formatted')
+             157                     !
+             158                           read (1,modlst,end=120)
+             159                       120 continue
+             160                           read (1,typ,end=121)
+             161                       121 continue
+             162                           ! read stochastic_physics
+             163                           read (1,stochy_physics,end=122)
+             164                       122 continue
+             165                           read (1,grb_conf,end=123)
+             166                       123 continue
+             167                           close(1)
+             168                     !
+             169                           open (unit=1,file=trim(namlsts),form='formatted')
+             170                     
+             171     1                     if(do_sit) then
+             172     1                       read (1,sit_nml,end=130)
+             173     2                       if(myrank .eq. 0) then
+             174     2                         print *, 'chlee debug...'
+             175     2                         print sit_nml
+             176     2                       endif
+             177     2                       if(.NOT. ldailyFCTsst)then
+             178     2                         print *,'do_sit=.true., auto set: ldailyFCTsst=.true.' &
+             179     2                             ,',dailyClm_option=1, check ifilin_sst & ifilin_ClmANA'&
+             180     2                             ,'is in filelist.'
+             181     2                         ldailyFCTsst=.true.
+             182     2                         dailyClm_option=1
+             183     2                       endif
+             184     1                 130 continue
+             185     1                     endif
+             186                           close(1)
+             187                     
+             188                     !
+             189                           open (unit=2,file=trim(crdate),form='formatted')
+             190                     !
+             191                     ! read in idtg*12
+             192                           read(2,'(i8.8)')idtg8
+             193                           close(2)
+             194                     ! transfer idtg8 to idtg*12
+             195     1                     if(idtg8.gt.60000000)then
+             196     1                       idtg = 190000000000 + idtg8*100
+             197     1                     else
+             198     1                       idtg = 200000000000 + idtg8*100
+             199     1                     endif
+             200                     !
+             201                           write(cdtg,900)idtg
+             202                      900  format(i12.12)
+             203                     !
+             204                           if(myrank .eq. 0) print*,' dtg=',cdtg
+             205                     !-----------------------------------------------------------------------
+             206                           read(cdtg,'(i4,i2,i2,i2,i2)') idate(1),idate(2),idate(3),idate(5)&
+             207                                                        ,ii
+             208                     !-----------------------------------------------------------------------
+             209                     !
+             210                           call days (cdtg,julian,hours)
+             211                     !
+             212                           flag =.false.
+             213     1                     if(myrank .eq. 0)then
+             214     1                       call recmsg('gfs',ifromtau,itotau,istat)
+             215     1                       flag =.true.
+             216     1                     endif
+             217                     !ch   call mpe_broadcast(istat,1,flag,mpe_integer)
+             218                           call mpe_bcast(istat,1,0,mpe_integer)
+             219                     
+             220     1                     if(istat.eq.-1)then
+             221     1                       if(myrank.eq.0) print *,'RECMSG ERROR','RANK=',myrank
+             222     1                       call mpe_finalize
+             223     1                       call dmsexit(-1)
+             224     1                     else if(istat.eq.1)then
+             225     1                       call mpe_finalize
+             226     1                       call dmsexit(0)
+             227     1                     endif
+             228                     !
+             229                     !ch   call mpe_broadcast(ifromtau,1,flag,mpe_integer)
+             230                     !ch   call mpe_broadcast(itotau,1,flag,mpe_integer)
+             231                           call mpe_bcast(ifromtau,1,0,mpe_integer)
+             232                           call mpe_bcast(itotau,1,0,mpe_integer)
+             233                     !
+             234                           taui=float(ifromtau)
+             235                           taue=float(itotau)
+             236                           tauo=float(itotau)+0.000001
+             237                     !
+             238                           tau   = 0.0
+             239                           restrt=.false.
+             240     1                     if (taui.gt.0.0)  then
+             241     1                       itaui=ifromtau
+             242     1                       itau= int(taui) + 0.001
+             243     1                       itau= min(itau,itaui)
+             244     1                       taui= float(itau)
+             245     1                       restrt=.true.
+             246     1                       if(myrank .eq. 0) print*,' restarting at tau=',itau
+             247     1                       hours = hours+taui
+             248     1                       julian= julian+hours/24.0+0.001
+             249     1                       hours = mod(hours,24.)
+             250     1                     endif
+             251                     !
+             252                           if(myrank .eq. 0) print modlst
+             253                           if(myrank .eq. 0) print typ
+             254                           if(myrank .eq. 0) print stochy_physics
+             255                     !
+             256     1                     if (taui .ge. taue)  then
+             257     1                       if(myrank .eq. 0)  &
+             258     1                        print *,'******** aborting run, taui.ge.taue ******* '
+             259     1                       stop
+             260     1                     endif
+             261                     
+             262                     !
+             263                     !  build pointer arrays for locating zonal and total wavenumber
+             264                     !  values in the one-dimensional spherical harmonic arrays.
+             265                     !
+             266                     !  original allocation system only for spectral space
+             267                     !
+             268                           call sortml (jtrun,mlmax,msort,lsort,mlsort)
+             269                     !
+             270                     !  new allocation system in parallization for both spectral
+             271                     !  and grid spaces
+             272                     !
+             273                     
+             274                           call make_list
+             275                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+             276     1  pp                 do 150 m =1,mlistnum
+             277     1   p                  mf=mlist(m)
+             278     1               !
+             279     1   p                  rm=mf-1
+             280     1   p                  if (mf.eq.1)  rm= 0.0
+             281     1   p                  cim(m) = rm
+             282     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    UNSWITCHING
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      eps4
+                                   <<< Loop-information  End >>>
+             283     2   p    s            do 150 l=mf,jtrun
+             284     2   p    v             rl = l
+             285     2   p    v             rlm= rl-1.0
+             286     2   p    v             if (mf.eq.1)  rm= 0.0
+             287     2   p    v             eps4(l,m)= rl*rlm/radsq
+             288     3   p    s             if ( l.eq.1 ) then
+             289     3   p    m              wdfac(1,m) = 0. ; wcfac(1,m) = 0.
+             290     3   p    s             else
+             291     3   p    s              wdfac(l,m) = 1.0/(radsq*eps4(l,m))
+             292     3   p    s              wcfac(l,m) = cim(m)*wdfac(l,m)
+             293     3   p    v             endif
+             294     1   p    v        150 continue
+             295                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 800
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.66, ITR: 80, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      aki, bki, sigma
+                                   <<< Loop-information  End >>>
+             296     1  pp   2v            do k=1,lev+1
+             297     1   p   2v              sigma(k,1) = bki(k)
+             298     1   p   2v              sigma(k,2) = aki(k)
+             299     1   p   2v            enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 593
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.75, ITR: 72, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sigma, dsigma
+                                   <<< Loop-information  End >>>
+             300     1  pp    v            do k=1,lev
+             301     1   p    v              dsigma(k,1) = sigma(k+1,1) - sigma(k,1)
+             302     1   p    v              dsigma(k,2) = sigma(k+1,2) - sigma(k,2)
+             303     1   p    v            enddo
+             304                     !--------------------------------------------------------------------------
+             305                     !   for rrtmg
+             306                     !--------------------------------------------------------------------------
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 843
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.75, ITR: 176, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sigma, si
+                                   <<< Loop-information  End >>>
+             307     1  pp   2v            do k=1,lev+1
+             308     1   p   2v               si(lev+2-k)=sigma(k,1)+sigma(k,2)/1000.
+             309     1   p   2v            enddo
+             310                     !--------------------------------------------------------------------------
+             311                     !     build matrices for semi-implicit and normal mode initialization
+             312                     !
+             313                            call matrix_hybrid_cwb ( cp,sigma,dsigma,ptop,ptmean,tmean,spalm &
+             314                                       , eigval,evecin,evectr,arrhyd,arsddt,pmcor,tmcor )
+             315                     !
+             316                     !  gaussian quadrature weights and latitudes
+             317                     !
+             318                           one = 1.0
+             319                           onem= -one
+             320                           call gausl3 (my,onem,one,weight,sinl)
+             321                     !
+             322                           my2= my/2
+             323                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.33, ITR: 5, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sinl, onocos, weight, cosl
+                                   <<< Loop-information  End >>>
+             324     1   s    s            do 180 j = 1, my2
+             325     1   s    s            sinl(my+1-j)  = -sinl(j)
+             326     1   s    s            weight(my+1-j)= weight(j)
+             327     1   m    m            onocos(j)     = 1.0/(1.0-sinl(j)*sinl(j))
+             328     1   s    s            onocos(my+1-j)= onocos(j)
+             329     1   m    m            cosl(j)       = 1.0/sqrt(onocos(j))
+             330     1   s    s            cosl(my+1-j)  = cosl(j)
+             331     1   p    v        180 continue
+             332                     !  define ndslfv
+             333                     !
+             334                           call ndslfv_init(nx,my,ncld,cosl,weight(1))
+             335                     !
+             336                     !  horizontal diffusion settings for sponge layer
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sigma
+                                   <<< Loop-information  End >>>
+             337     1   s    v            do k = 1, lev
+             338     1   p    v              prslp=sigma(k,2)+sigma(k,1)*1000.+ptop
+             339     1   p    v              if ( prslp .le. spl1  ) hdk1=k
+             340     1   p    v              if ( prslp .le. spl2  ) hdk2(1)=k
+             341     1   p    v              if ( prslp .le.  50.  ) hdk2(2)=k
+             342     1   p    v              if ( prslp .le. 200.  ) hdk2(3)=k
+             343     1   p    v            enddo
+             344                     !
+             345                     !
+             346                     !  define coriolis parameter for each latitude
+             347                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1143
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.66, ITR: 192, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sinl, cor
+                                   <<< Loop-information  End >>>
+             348     1  pp   2v            do 190 j=1,my
+             349     1   p   2v            cor(j)= 2.0*omega*sinl(j)
+             350     1   p   2v        190 continue
+             351                     !
+             352                           r2d=180./pi
+             353     1                     if( numreduce.gt.0 ) then
+             354     1                       lreduce=1
+             355     1                       pnm_max=0.0
+             356     2                       do j=1,my2
+             357     2                         call pnmy (jtrun,sinl(j),pnm)
+             358     3                         do m=1,jtrun
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1143
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+             359     4  pp    v                  do n=m,jtrun
+             360     4   p    v                    pnm_max = max ( pnm_max, abs(pnm(n,m)) )
+             361     4   p    v                  enddo
+             362     3                         enddo
+             363     2                       enddo
+             364     1                       pnmcut = pnm_max / (10.**numreduce)
+             365     1                       if(myrank.eq.0)print *,' pnm_max pnmcut ',pnm_max,pnmcut
+             366     2                       do j=1,my2
+             367     2                         call pnmy (jtrun,sinl(j),pnm)
+             368     2                         call reducegrid(pnm,jtrun,pnmcut,j,mtrundef(j),nxdef(j),  &
+             369     2                                         octahedral)
+             370     2               #ifdef VERBOSE
+             371     2                         if(myrank.eq.0)print *,'j=',j,' mtrundef,nxdef=',mtrundef(j), &
+             372     2                                            nxdef(j),asin(sinl(j))*r2d
+             373     2               #endif
+             374     2                       enddo
+             375     1                     else
+             376     1                       lreduce=0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1231
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      nxdef, mtrundef
+                                   <<< Loop-information  End >>>
+             377     2  pp   2v              do j=1,my2
+             378     2   p   2v                mtrundef(j)=jtrun
+             379     2   p   2v                nxdef(j)=nx
+             380     2   p   2v              enddo
+             381     1                     endif
+             382                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      mtrundef, nxdef
+                                   <<< Loop-information  End >>>
+             383     1   s   2s            do j=1,my2
+             384     1   s   2s              jj = my + 1 - j
+             385     1   s   2s              mtrundef(jj)=mtrundef(j)
+             386     1   s   2s              nxdef(jj)   =nxdef(j)
+             387     1   s   2s            enddo
+             388                     
+             389                     !for 2dMPI
+             390                           call make_list_nx  ! making nx index for reduce/non_reduce
+             391                     
+             392                     !
+             393                           sumreduce=0.0
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 942
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 16)
+                                   <<< Loop-information  End >>>
+             394     1  pp    v            do j=1,my
+             395     1   p    v              sumreduce=sumreduce+nxdef(j)
+             396     1   p    v            enddo
+             397                           reducefactor=sumreduce/float(nx*my)
+             398                           if(myrank.eq.0)print *,' numreduce lreduce reducefactor' &
+             399                                         ,numreduce,lreduce,reducefactor
+             400                     !
+             401                     !  initialize ifax and trigs for rfftmlt routine
+             402                     !
+             403                           call fftfax (nx,ifax,trigs)
+             404                     !
+             405     1                     do j=1,my
+             406     1                       nxj = nxdef(j)
+             407     1                       call fftfax (nxj,ifaxj(1,j),trigsj(1,j))
+             408     1                     enddo
+             409                     !
+             410                           lessl_fft=.false.
+             411     1                     if (ibm_fft.eq.1) then
+             412     1                       nn = nx
+             413     1                       if (iand(nn,1).eq.1) go to 111   ! not an even number
+             414     2                       if (mod(nn,9).eq.0) then
+             415     2                         if (mod(nn/9,3).eq.0) go to 111   ! radix of 3**i, i>2
+             416     2                       endif
+             417     2                       if (mod(nn,5).eq.0) then
+             418     2                         if (mod(nn/5,5).eq.0) go to 111   ! radix of 5**i, i>1
+             419     2                       endif
+             420     2                       if (mod(nn,7).eq.0) then
+             421     2                         if (mod(nn/7,7).eq.0) go to 111   ! radix of 7**i, i>1
+             422     2                       endif
+             423     2                       if (mod(nn,11).eq.0) then
+             424     2                         if (mod(nn/11,11).eq.0) go to 111 ! radix of 11**i, i>1
+             425     2                       endif
+             426     1                       if (mod(nn,13).eq.0) go to 111   ! radix of 13
+             427     1                       if (mod(nn,17).eq.0) go to 111
+             428     1                       if (mod(nn,19).eq.0) go to 111
+             429     1                       if (mod(nn,23).eq.0) go to 111
+             430     1                       if (mod(nn,29).eq.0) go to 111
+             431     1                       lessl_fft=.true.
+             432     1                 111   continue
+             433     1                     endif
+             434                     !
+             435                     !  define associated legendre polynomials and their derivatives
+             436                     !
+             437                           call lgndr (my2,jtrun,jtmax,sinl,poly,dpoly)
+             438                     !
+             439                     !  specify the dms read-in and write-out only for 34 keys
+             440                     !
+             441     1                     if( myrank .eq. 0 ) then
+             442     1                      type_r="RORDER"//char(0)
+             443     1                      type_w="WORDER"//char(0)
+             444     1                      argument="34"//char(0)
+             445     1                      call dmscfg(type_r,argument,istat_r)
+             446     1                      call dmscfg(type_w,argument,istat_w)
+             447     1                      istat = abs(istat_r) + abs(istat_w)
+             448     1                     endif
+             449                     !ch   call mpe_broadcast(istat,1,flag,mpe_integer)
+             450                           call mpe_bcast(istat,1,0,mpe_integer)
+             451     1                     if(istat.ne.0)then
+             452     1                       if(myrank.eq.0) print *,'dmscfg error'
+             453     1                       call mpe_finalize
+             454     1                       call dmsexit(-1)
+             455     1                     endif
+             456                     !
+             457                     !  open back ground dmsfile
+             458                     !
+             459     1                     if(myrank.eq.0) then
+             460     1                     call dmsmsg("ALL",istat)
+             461     1                     call dmsopn(bckfile,"r",istat1)
+             462     1                     endif
+             463                     !
+             464                     !  open the input file.  this too will be replaced by the appropriate
+             465                     !  dbms operation when available
+             466                     !
+             467                           if(col_rank .eq. 0) call dmsopn(ifilin,"w",istat2)
+             468                     !
+             469                           if(myrank .lt. lev) call dmsopn(ifilout,"w",istat3)
+             470                     !
+             471     1                     if(myrank.eq.0) then
+             472     1                     istat = abs(istat1) + abs(istat2) + abs(istat3)
+             473     1               !
+             474     1               ! ldailyFCTsst=true, restore sst, snow depth, sea ice fraction from ncep
+             475     1               ! data
+             476     1               ! open ncep data dms
+             477     1               !
+             478     1                      istat4=0; istat5=0; istat6=0; istat7=0
+             479     2                      if(ldailyFCTsst) then
+             480     2                         call dmsopn(ifilin_sst,"r",istat4)
+             481     2                         istat = istat + abs(istat4)
+             482     2                       endif
+             483     2                       if(ldailyFCTicesndpt) then
+             484     2                         call dmsopn(ifilin_ncep,"r",istat5)
+             485     2                         istat = istat + abs(istat5)
+             486     2                       endif
+             487     2                       if(dailyClm_option .ge. 1) then
+             488     2                         call dmsopn(ifilin_ClmANA,"r",istat6)
+             489     3                         if(dailyClm_option .eq. 2) then
+             490     3                           call dmsopn(ifilin_ClmFCT,"r",istat7)
+             491     3                         endif
+             492     2                         istat = istat + abs(istat6)+abs(istat7)
+             493     2                       endif
+             494     1               
+             495     1                     end if
+             496                     !ch   call mpe_broadcast(istat,1,flag,mpe_integer)
+             497                           call mpe_bcast(istat,1,0,mpe_integer)
+             498     1                     if(istat.ne.0)then
+             499     2                       if(myrank.eq.0) then
+             500     2                        print *,'dmsopn error'
+             501     2                        if(istat1.ne.0) print*,' BCKFILE=',bckfile,' dms open failed !'
+             502     2                        if(istat2.ne.0) print*,' IFILEIN=',ifilin,' dms open failed!'
+             503     2                        if(istat3.ne.0) print*,' IFILEOUT=',ifilout,' dms open failed!'
+             504     2                        if(istat4.ne.0) print*,' IFILE_SST=',ifilin_sst,' dms open failed!'
+             505     2                        if(istat5.ne.0) print*,' IFILE_NCEP=',ifilin_ncep,' dms open failed!'
+             506     2                        if(istat6.ne.0) print*,' IFILE_ClmANA=',ifilin_ClmANA,' dmsopen failed!'
+             507     2                        if(istat7.ne.0) print*,' IFILE_ClmFCT=',ifilin_ClmFCT,' dmsopen failed!'
+             508     2                       endif
+             509     1                       call mpe_finalize
+             510     1                       call dmsexit(-1)
+             511     1                     endif
+             512                     !
+             513                     !
+             514                     ! read file of output directives specifying desired output
+             515                     ! fields.
+             516                     !
+             517                           open (unit=4,file=trim(ocards),form='formatted')
+             518                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 1  FILL 4
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             519     1                     do 80 k=1,nout
+             520     1                     numout= k
+             521     1                     read (4,800,iostat=io)  outdir(numout)
+             522     1                 800 format (a16)
+             523     1                     if (io.ne.0)  go to 85
+             524     1                     if (outdir(numout).eq.'nomodata')  go to 85
+             525     1                  80 continue
+             526                        85 numout= numout-1
+             527                           close(4)
+             528                     !-----------------------------------------------------------------------
+             529                     !  for cloud microphysics initialization
+             530                     !-----------------------------------------------------------------------
+             531     1                     if ( nmmiph .eq. 11 .or. nmmiph .eq. 12 .or. nmmiph .eq. 13 ) then
+             532     1                       ntrac_req = 6   ! only six species of hydrometeors for GFDL MP
+             533     1                     elseif ( nmmiph .eq. 18 ) then
+             534     1                       ntrac_req = 6   ! only six species of hydrometeors for 2M Thompson MP
+             535     1                     elseif ( nmmiph .eq. 8 ) then
+             536     1                       ntrac_req = 6   ! only six species of hydrometeors for Thompson MP
+             537     1                     elseif ( nmmiph .eq. 15 ) then
+             538     1                       ntrac_req = 6   ! only six species of hydrometeors for Goddard 3ICE MP
+             539     1                     elseif ( nmmiph .eq. 16 ) then
+             540     1                       ntrac_req = 6   ! only six species of hydrometeors for Goddard 4ICE MP
+             541     1                     else
+             542     1                       ntrac_req = nmmiph
+             543     1                     endif
+             544     1                     if ( ntoz .gt. 0 ) then
+             545     1                       ntrac_req = ntrac_req + 1
+             546     1                       ntoz = ncld
+             547     1                     endif
+             548     1                     if ( dolsp ) then
+             549     2                       if ( ncld .lt. ntrac_req ) then
+             550     2                          if ( myrank .ge. 0 ) print *,'not enough number of tracers'
+             551     2                          call mpe_finalize
+             552     2                          call dmsexit(-1)
+             553     2                       endif
+             554     1               !
+             555     1                       if ( nmmiph.eq.6 .or.                                           &
+             556     1                            nmmiph.eq.8 .or. nmmiph.eq.18 .or.                         &
+             557     1                            nmmiph.eq.11 .or. nmmiph.eq.12 .or. nmmiph.eq.13 .or.      &
+             558     1                            nmmiph.eq.15 .or. nmmiph.eq.16 )                           &
+             559     1                         call mp_init(nmmiph,myrank)
+             560     1               !
+             561     1                     endif
+             562                     
+             563                     !-----------------------------------------------------------------------
+             564                     !  for rrtmg scheme : rad_initialize
+             565                     !-----------------------------------------------------------------------
+             566     1                     if (irad .eq. 2) then
+             567     1                      call rad_initialize (si,lev,ictm, isol, ico2, iaer, ialb,        &
+             568     1                      iems, ntcw, nmmiph, ntoz, iovr_sw, iovr_lw, isubc_sw, isubc_lw,  &
+             569     1                      icliq_sw, icice_sw, icliq_lw, icice_lw, sashal, crick_proof,     &
+             570     1                      ccnorm, norad_precip, idate, iflip, me, myrank)
+             571     1               
+             572     1                     if(myrank .eq. 0) print *,'after rad_initialize ..'
+             573     1                     if(myrank .eq. 0) print *,'ntoz=',ntoz,' iflip=',iflip
+             574     1                     if(myrank .eq. 0) print *,'me=',me,' lev=',lev,' ictm=',ictm,   &
+             575     1                        ' isol=', isol,' ico2=',ico2, ' iaer=',iaer, ' ialb=',ialb,    &
+             576     1                        ' iems=', iems,' ntcw=',ntcw,' nmmiph=', nmmiph,               &
+             577     1                        ' iovr_sw=',iovr_sw,' iovr_lw=', iovr_lw,                      &
+             578     1                        ' isubc_sw=',isubc_sw,' isubc_lw=', isubc_lw,                  &
+             579     1                        ' icliq_sw=',icliq_sw,' icice_sw=', icice_sw,                  &
+             580     1                        ' icliq_lw=',icliq_lw,' icice_lw=', icice_lw
+             581     1                     endif
+             582                     !-----------------------------------------------------------------------
+             583                     !  for stochastic_physics initialization
+             584                     !-----------------------------------------------------------------------
+             585                           call init_stochastic_physics(dt)
+             586                     !-----------------------------------------------------------------------
+             587                     !
+             588                     ! check if typhoon exit
+             589                     !
+             590                           tflag=0
+             591                           Wflag=0
+             592                           call getenv('GLB_TYPHINI',typhpath)
+             593                           call getenv('GLB_WTYPHINI',Wtyphpath)
+             594                     !
+             595                           write(otyphfile,'(a7,i8.8,a4)')'typhoon',idtg8,'.dat'    ! for old a8 tyname
+             596                           write(oWtyphfile,'(a8,i8.8,a4)')'Wtyphoon',idtg8,'.dat'  ! for old a8 tyname
+             597                           write(ntyphfile,'(a7,i8.8,a4)')'typhoon',idtg8,'.txt'    ! for new a15 tyname
+             598                           write(nWtyphfile,'(a8,i8.8,a4)')'Wtyphoon',idtg8,'.txt'  ! for new a15 tyname
+             599                     !
+             600                           call chlen(typhpath,64,ltyph)
+             601                           call chlen(Wtyphpath,64,Wltyph)
+             602                     !
+             603                           typhoon=.false.
+             604                           inquire (file=typhpath(1:ltyph)//'/'//otyphfile,exist=olexist)
+             605                           inquire (file=Wtyphpath(1:Wltyph)//'/'//oWtyphfile,exist=oWlexist)
+             606                           inquire (file=typhpath(1:ltyph)//'/'//ntyphfile,exist=nlexist)
+             607                           inquire (file=Wtyphpath(1:Wltyph)//'/'//nWtyphfile,exist=nWlexist)
+             608                     
+             609     1                     if(nlexist)then
+             610     1                       tflag=1
+             611     1                       if(myrank.eq.0) print*,'typhfile= ',typhpath(1:ltyph)//'/'//ntyphfile,' exist'
+             612     1                       open( unit=14, file=typhpath(1:ltyph)//'/'//ntyphfile, &
+             613     1                            status='old', iostat=ierror )
+             614     2                       if( ierror .ne. 0 ) then
+             615     2                         if(myrank.eq.0)print*,' open typhoon file fail, model go on'
+             616     2                         if(myrank.eq.0)print *,typhpath(1:ltyph),ntyphfile
+             617     2                         go to 666
+             618     2                       end if
+             619     1                     else if(olexist)then
+             620     1                       tflag=2
+             621     1                       if(myrank.eq.0) print*,'typhfile=',typhpath(1:ltyph)//'/'//otyphfile,' exist'
+             622     1                       open( unit=14, file=typhpath(1:ltyph)//'/'//otyphfile, &
+             623     1                            status='old', iostat=ierror )
+             624     2                       if( ierror .ne. 0 ) then
+             625     2                         if(myrank.eq.0)print*,' open typhoon file fail, model go on'
+             626     2                         if(myrank.eq.0)print *,typhpath(1:ltyph),otyphfile
+             627     2                         go to 666
+             628     2                       end if
+             629     1                     endif
+             630                     
+             631     1                     if(nWlexist)then
+             632     1                       Wflag=1
+             633     1                       if(myrank.eq.0) print*,'Wtyphfile= ',Wtyphpath(1:Wltyph)//'/'//nWtyphfile,' exist'
+             634     1                       open( unit=15, file=Wtyphpath(1:Wltyph)//'/'//nWtyphfile, &
+             635     1                            status='old', iostat=ierror )
+             636     2                       if( ierror .ne. 0 ) then
+             637     2                         if(myrank.eq.0)print*,' open typhoon file fail, model go on'
+             638     2                         if(myrank.eq.0)print *,Wtyphpath(1:Wltyph),nWtyphfile
+             639     2                         go to 666
+             640     2                       end if
+             641     1                     else if(oWlexist)then
+             642     1                       Wflag=2
+             643     1                       if(myrank.eq.0) print*,'Wtyphfile=',Wtyphpath(1:Wltyph)//'/'//oWtyphfile,' exist'
+             644     1                       open( unit=15, file=Wtyphpath(1:Wltyph)//'/'//oWtyphfile, &
+             645     1                            status='old', iostat=ierror )
+             646     2                       if( ierror .ne. 0 ) then
+             647     2                         if(myrank.eq.0)print*,' open typhoon file fail, model go on'
+             648     2                         if(myrank.eq.0)print *,Wtyphpath(1:Wltyph),oWtyphfile
+             649     2                         go to 666
+             650     2                       end if
+             651     1                     endif
+             652                     !
+             653                             pi=4.0*atan(1.0)
+             654                             d2r=pi/180.
+             655                             r2d=1./d2r
+             656                     
+             657                             tlon(1)=0.
+             658                     !          nxj=nxdef(j)
+             659                     !        nxj=nx        ! findtrack do in full grid
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 696
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tlon
+                                   <<< Loop-information  End >>>
+             660     1  pp   2v              do i=2,nx
+             661     1   p   2v                tlon(i)=tlon(1)+float(i-1)*360./nx
+             662     1   p   2v              enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 45
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    MULTI-OPERATION FUNCTION
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sinl, tlat
+                                   <<< Loop-information  End >>>
+             663     1  pp   2v              do j=1,my
+             664     1   p   2v                tlat(j)=asin(sinl(j))*r2d
+             665     1   p   2v              enddo
+             666                     !
+             667                           ntyph=0
+             668     1                     if(tflag .eq.1)then        ! for a15 tyname
+             669     1                       read(14,'(a10)')fulldtg
+             670     1                       read(14,'(i2)')ntyph
+             671     1                       if(myrank.eq.0)print*,' number of typhoons = ', ntyph
+             672     1                     else if(tflag .eq.2)then   ! for a8 tyname
+             673     1                       read(14,'(i2)')ntyph
+             674     1                       if(myrank.eq.0)print*,' number of typhoons = ', ntyph
+             675     1                     endif
+             676                     
+             677     1                     if(tflag .eq.1 .or. tflag .eq.2)then
+             678     2                       do n = 1, ntyph
+             679     3                         if(tflag .eq.1)then        ! for a15 tyname
+             680     3                         read(14,'(a15,1x,f4.1,1x,a1,1x,f5.1,1x,a1,1x)',iostat=irstat) &
+             681     3                              typhnam,clat,cns,clon,cew
+             682     3                         else if(tflag .eq.2)then   ! for a8 tyname
+             683     3                         read(14,'(a8,1x,f4.1,1x,a1,1x,f5.1,1x,a1,1x)',iostat=irstat)  &
+             684     3                              typhnam,clat,cns,clon,cew
+             685     3                         endif
+             686     2               
+             687     3                         if(irstat.ne.0)then
+             688     3                          if(myrank.eq.0)print*,'read data error, set no typhoon exist'
+             689     3                          go to 666
+             690     3                         endif
+             691     2               !
+             692     2                         typname(n)=typhnam
+             693     2                         nrec(n)=0
+             694     2                         clattyp(n)=clat
+             695     2                         clontyp(n)=clon
+             696     2                         typhoon=.true.
+             697     2                         if(myrank.eq.0)print*,'typh-name= ',typhnam
+             698     2                         if(myrank.eq.0)print*,' at clon,clat= ',clontyp(n),clattyp(n)
+             699     2                         jytyp(1,n)=(clat-tlat(1))/(180./my)+1.005
+             700     2               !          nxj=nxdef(jytyp(1,n))
+             701     2                         nxj=nx        ! findtrack do in full grid
+             702     2                         ixtyp(1,n)=clon/(360./nxj)+1.005
+             703     2                         ix=ixtyp(1,n)
+             704     2                         jy=jytyp(1,n)
+             705     2                         tflat(0,1,n)=clattyp(n)
+             706     2                         tflon(0,1,n)=clontyp(n)
+             707     2               !          xshift(n)=tlon(ix)-clon
+             708     2               !          yshift(n)=tlat(jy)-clat
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             709     3       f                 do ip=2,5
+             710     3       f                   ixtyp(ip,n)=ixtyp(1,n)
+             711     3       f                   jytyp(ip,n)=jytyp(1,n)
+             712     3       f                   tflat(0,ip,n)=clattyp(n)
+             713     3       f                   tflon(0,ip,n)=clontyp(n)
+             714     3       f                 enddo
+             715     2                         if(myrank.eq.0)print*,' tflat = ',tflat(0,1:5,n)
+             716     2                         if(myrank.eq.0)print*,' tflon = ',tflon(0,1:5,n)
+             717     2                         if(myrank.eq.0)print*,' position at ix,jy= ',ix,jy
+             718     2                         if(myrank.eq.0)print*,' position at tlat,tlon= ',tlat(jy) &
+             719     2                                              ,  tlon(ix)
+             720     2               !
+             721     2                       enddo  ! end of do n
+             722     1                       close(14)
+             723     1               !
+             724     1                     endif     ! end if(tflag=1 or tflag=2)
+             725                     !
+             726                           Wntyph=0
+             727     1                     if(Wflag .eq.1)then        ! for a15 tyname
+             728     1                       read(15,'(a10)')Wfulldtg
+             729     1                       read(15,'(i2)')Wntyph
+             730     1                       if(myrank.eq.0)print*,' number of Wtyphoons = ', Wntyph
+             731     1                     else if(Wflag .eq.2)then   ! for a8 tyname
+             732     1                       read(15,'(i2)')Wntyph
+             733     1                       if(myrank.eq.0)print*,' number of Wtyphoons = ', Wntyph
+             734     1                     endif
+             735                     
+             736     1                     if(Wflag .eq.1 .or. Wflag .eq.2)then
+             737     2                       do n = 1, Wntyph
+             738     3                         if(Wflag .eq.1)then        ! for a15 tyname
+             739     3                         read(15,'(a15,1x,f4.1,1x,a1,1x,f5.1,1x,a1,1x)',iostat=irstat) &
+             740     3                              typhnam,clat,cns,clon,cew
+             741     3                         else if(Wflag .eq.2)then   ! for a8 tyname
+             742     3                         read(15,'(a8,1x,f4.1,1x,a1,1x,f5.1,1x,a1,1x)',iostat=irstat)  &
+             743     3                              typhnam,clat,cns,clon,cew
+             744     3                         endif
+             745     2               
+             746     3                         if(irstat.ne.0)then
+             747     3                          if(myrank.eq.0)print*,'read data error, set no typhoon exist'
+             748     3                          go to 666
+             749     3                         endif
+             750     2               !
+             751     2                         nc=n+ntyph
+             752     2                         typname(nc)=typhnam
+             753     2                         nrec(nc)=0
+             754     2                         clattyp(nc)=clat
+             755     2                         clontyp(nc)=360.-clon
+             756     2                         typhoon=.true.
+             757     2                         if(myrank.eq.0)print*,'typh-name= ',typhnam
+             758     2                         if(myrank.eq.0)print*,' at Atlantic clon,clat= ',clontyp(nc),clattyp(nc)
+             759     2                         jytyp(1,nc)=(clat-tlat(1))/(180./my)+1.005
+             760     2               !          nxj=nxdef(jytyp(1,nc))
+             761     2                         nxj=nx        ! findtrack do in full grid
+             762     2                         ixtyp(1,nc)=clontyp(nc)/(360./nxj)+1.005
+             763     2                         ix=ixtyp(1,nc)
+             764     2                         jy=jytyp(1,nc)
+             765     2                         tflat(0,1,nc)=clattyp(nc)
+             766     2                         tflon(0,1,nc)=clontyp(nc)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             767     3       f                 do ip=2,5
+             768     3       f                   ixtyp(ip,nc)=ixtyp(1,nc)
+             769     3       f                   jytyp(ip,nc)=jytyp(1,nc)
+             770     3       f                   tflat(0,ip,nc)=clattyp(nc)
+             771     3       f                   tflon(0,ip,nc)=clontyp(nc)
+             772     3       f                 enddo
+             773     2                         if(myrank.eq.0)print*,' tflat = ',tflat(0,1:5,nc)
+             774     2                         if(myrank.eq.0)print*,' tflon = ',tflon(0,1:5,nc)
+             775     2                         if(myrank.eq.0)print*,' position at ix,jy= ',ix,jy
+             776     2                         if(myrank.eq.0)print*,' position at tlat,tlon= ',tlat(jy) &
+             777     2                                              ,  tlon(ix)
+             778     2               !
+             779     2                       enddo  ! end of do n
+             780     1                       ntyph=nc
+             781     1                       close(15)
+             782     1               !
+             783     1                     endif     ! end if(Wflag=1 or Wflag=2)
+             784                     !
+             785                      666  continue
+             786                     
+             787                     !for 2dMPI >>
+             788                     
+             789                           allocate (eps4L(jtp),                 &
+             790                                     plnowL(jtp,2),              &
+             791                                     ploldL(jtp,2),              &
+             792                                     pltenL(jtp,2), stat=ierror)
+             793                     
+             794     1                     if (ierror/= 0) then
+             795     1                         write(6,*) 'cons : allocate fail 1 '
+             796     1                         stop
+             797     1                     end if
+             798                     
+             799                           call mpe2d_reshape_eps4(eps4, eps4L)
+             800                     
+             801                     !   checking owner of idg and jdg, so no need for rcup/rlsp/tg to call mpe_unify
+             802                     !   in diabat to print out vertical profile at selected point (idg,jdg)
+             803                     
+             804                          idg_jdg_owner=.false.
+             805     1                    do jj=1,jlistnum
+             806     1                       j=jlist1(jj)
+             807     1                       nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      map2to1
+                                   <<< Loop-information  End >>>
+             808     2                    do ii=1,nxj
+             809     2                       i=map2to1(ii,j)
+             810     3                       if((i .eq. idg) .and. (j .eq. jdg))then
+             811     3                         idg_listnum=ii
+             812     3                         jdg_listnum=jj
+             813     3                         idg_jdg_owner=.true.
+             814     3                         goto 990
+             815     3                       endif
+             816     2                    enddo
+             817     1                    enddo
+             818                     990  continue
+             819                     
+             820                     !for 2dMPI <<
+             821                     
+             822                           return
+             823                           end
+
+ Procedure information
+   Lines      : 823
+   Statements : 543
+   Stack(byte): 76592
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : cons
+   Attribute and Cross reference of name
+     abs
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 360  447  447  472  472  472  481  485  492  492
+     aki
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 298
+     alpha
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     argument
+      |(Class and Type) : variable name, CHARACTER(64,1)
+      |(Attributes)     : 
+      |(Declaration)    : 93
+      |(Definition)     : 444  445  446
+      |(Reference)      : 
+     arrhyd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 313
+      |(Reference)      : 
+     arsddt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 313
+      |(Reference)      : 
+     asin
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 664
+     atan
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 127  653
+     bckfile
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 100
+      |(Definition)     : 461
+      |(Reference)      : 501
+     bki
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 297
+     capa
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 125
+      |(Reference)      : 126
+     ccnorm
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : SAVE, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 567
+      |(Reference)      : 
+     cdtg
+      |(Class and Type) : variable name, CHARACTER(12,1)
+      |(Attributes)     : 
+      |(Declaration)    : 91
+      |(Definition)     : 201  210
+      |(Reference)      : 204  206
+     cew
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 58
+      |(Definition)     : 680  683  739  742
+      |(Reference)      : 
+     cgw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     cgwd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     char
+      |(Class and Type) : intrinsic function name, CHARACTER((unknown),1)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 442  443  444
+     chlen
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 600  601
+     cim
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 281
+      |(Reference)      : 292
+     clat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 58
+      |(Definition)     : 680  683  739  742
+      |(Reference)      : 694  699  754  759
+     clattyp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 694  754
+      |(Reference)      : 698  705  712  758  765  770
+     clon
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 58
+      |(Definition)     : 680  683  739  742
+      |(Reference)      : 695  702  755
+     clontyp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 695  755
+      |(Reference)      : 698  706  713  758  762  766  771
+     cmbk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     cns
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 58
+      |(Definition)     : 680  683  739  742
+      |(Reference)      : 
+     cntrl
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 100
+      |(Definition)     : 
+      |(Reference)      : 
+     col_rank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 467
+     cons
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 23
+     cor
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 349
+      |(Reference)      : 
+     cosl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 329  330  334
+      |(Reference)      : 330
+     cp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 313
+      |(Reference)      : 126
+     crdate
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 100
+      |(Definition)     : 
+      |(Reference)      : 189
+     crick_proof
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : SAVE, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 567
+      |(Reference)      : 
+     cstar
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     cuparam
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 33  121
+     cutfreq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     cwbout
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 100
+      |(Definition)     : 
+      |(Reference)      : 
+     d2r
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 58
+      |(Definition)     : 654
+      |(Reference)      : 655
+     dSITdt_intv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     dailyClm_option
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 182
+      |(Reference)      : 487  489
+     days
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 210
+     dmscfg
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 445  446
+     dmsexit
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 139  223  226  454  510  552
+     dmsmsg
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 460
+     dmsopn
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 461  467  469  480  484  488  490
+     do_sit
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 171
+     docgrav
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     doclx
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     docup
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     dodry
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     dograv
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     doincr
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     dolsp
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 548
+     domfc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     donnmi
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     doo3l
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     dopbl
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     dorad
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     doshl
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     doshum
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     doskeb
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     doskebout
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     doslavepp
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     dosppt
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     dospptout
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     dossst
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     dpoly
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 437
+      |(Reference)      : 
+     dsigma
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 301  302  313
+      |(Reference)      : 
+     dt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 585
+      |(Reference)      : 
+     eigval
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 313
+      |(Reference)      : 
+     eps4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 287  799
+      |(Reference)      : 291
+     eps4L
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 789  799
+      |(Reference)      : 
+     evaprh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     evecin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 313
+      |(Reference)      : 
+     evectr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 313
+      |(Reference)      : 
+     fftcom
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 25
+     fftfax
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 403  407
+     filist
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : 
+      |(Declaration)    : 90
+      |(Definition)     : 
+      |(Reference)      : 
+     filst
+      |(Class and Type) : namelist name
+      |(Attributes)     : 
+      |(Declaration)    : 100
+      |(Definition)     : 
+      |(Reference)      : 147  152
+     flag
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 88
+      |(Definition)     : 212  215
+      |(Reference)      : 
+     float
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 234  235  236  244  397  661
+     frad
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     fsit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     fulldtg
+      |(Class and Type) : variable name, CHARACTER(10,1)
+      |(Attributes)     : 
+      |(Declaration)    : 89
+      |(Definition)     : 669
+      |(Reference)      : 
+     gausl3
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 320
+     getenv
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 592  593
+     getfname
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 135
+     ggdef
+      |(Class and Type) : variable name, CHARACTER(4,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     gmdef
+      |(Class and Type) : variable name, CHARACTER(4,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     gpvs
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 130
+     grb_conf
+      |(Class and Type) : namelist name
+      |(Attributes)     : 
+      |(Declaration)    : 118
+      |(Definition)     : 
+      |(Reference)      : 165
+     grbmem
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 118
+      |(Definition)     : 
+      |(Reference)      : 48
+     grbnumm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 118
+      |(Definition)     : 
+      |(Reference)      : 48
+     hdiff
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     hdk1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 339
+      |(Reference)      : 
+     hdk2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 340  341  342
+      |(Reference)      : 
+     hfilt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     hord
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     hours
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 210  247  249
+      |(Reference)      : 247  248  249
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 52
+      |(Definition)     : 660  809
+      |(Reference)      : 661  661  810
+     iaer
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 567
+      |(Reference)      : 574
+     ialb
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 567
+      |(Reference)      : 574
+     iand
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 413
+     ibm_fft
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 411
+     icice_lw
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 567
+      |(Reference)      : 574
+     icice_sw
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 567
+      |(Reference)      : 574
+     icliq_lw
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 567
+      |(Reference)      : 574
+     icliq_sw
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 567
+      |(Reference)      : 574
+     ico2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 567
+      |(Reference)      : 574
+     ictm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 567
+      |(Reference)      : 574
+     idate
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 206  206  206  206  567
+      |(Reference)      : 
+     idg
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 810
+     idg_jdg_owner
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 804  813
+      |(Reference)      : 
+     idg_listnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 811
+      |(Reference)      : 
+     idtg
+      |(Class and Type) : variable name, INTEGER(8)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 196  198
+      |(Reference)      : 201
+     idtg8
+      |(Class and Type) : variable name, INTEGER(8)
+      |(Attributes)     : 
+      |(Declaration)    : 60
+      |(Definition)     : 192
+      |(Reference)      : 195  196  198  595  596  597  598
+     iems
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 567
+      |(Reference)      : 574
+     ierror
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 53
+      |(Definition)     : 612  622  634  644  789
+      |(Reference)      : 614  624  636  646  794
+     ifax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 403
+      |(Reference)      : 
+     ifaxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 407
+      |(Reference)      : 
+     ifilin
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 100
+      |(Definition)     : 467
+      |(Reference)      : 502
+     ifilin_ClmANA
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 100
+      |(Definition)     : 488
+      |(Reference)      : 506
+     ifilin_ClmFCT
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 100
+      |(Definition)     : 490
+      |(Reference)      : 507
+     ifilin_nc
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 100
+      |(Definition)     : 
+      |(Reference)      : 
+     ifilin_ncep
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 100
+      |(Definition)     : 484
+      |(Reference)      : 505
+     ifilin_sst
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 100
+      |(Definition)     : 480
+      |(Reference)      : 504
+     ifilout
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 100
+      |(Definition)     : 469
+      |(Reference)      : 503
+     ifilout_grb
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 100
+      |(Definition)     : 
+      |(Reference)      : 
+     iflip
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 567
+      |(Reference)      : 573
+     ifromtau
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 54
+      |(Definition)     : 214  231
+      |(Reference)      : 234  241
+     ii
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 52
+      |(Definition)     : 206  808
+      |(Reference)      : 809  811
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 22
+     inicon
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 34  122
+     init_stochastic_physics
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 37  585
+     int
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 242
+     io
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 53
+      |(Definition)     : 521
+      |(Reference)      : 523
+     ioutsigr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     iovr_lw
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 567
+      |(Reference)      : 574
+     iovr_sw
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 567
+      |(Reference)      : 574
+     ip
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 53
+      |(Definition)     : 709  767
+      |(Reference)      : 710  711  712  713  768  769  770  771
+     irad
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 566
+     irstat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 52
+      |(Definition)     : 680  683  739  742
+      |(Reference)      : 687  746
+     isol
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 567
+      |(Reference)      : 574
+     isot
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     istat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 52
+      |(Definition)     : 135  214  218  447  450  460  472  481  485  492  497
+      |(Reference)      : 136  220  224  451  481  485  492  498
+     istat1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 52
+      |(Definition)     : 461
+      |(Reference)      : 472  501
+     istat2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 52
+      |(Definition)     : 467
+      |(Reference)      : 472  502
+     istat3
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 52
+      |(Definition)     : 469
+      |(Reference)      : 472  503
+     istat4
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 94
+      |(Definition)     : 478  480
+      |(Reference)      : 481  504
+     istat5
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 94
+      |(Definition)     : 478  484
+      |(Reference)      : 485  505
+     istat6
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 94
+      |(Definition)     : 478  488
+      |(Reference)      : 492  506
+     istat7
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 94
+      |(Definition)     : 478  490
+      |(Reference)      : 492  507
+     istat_r
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 53
+      |(Definition)     : 445
+      |(Reference)      : 447
+     istat_w
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 53
+      |(Definition)     : 446
+      |(Reference)      : 447
+     isubc_lw
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 567
+      |(Reference)      : 574
+     isubc_sw
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 567
+      |(Reference)      : 574
+     itau
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 54
+      |(Definition)     : 242  243
+      |(Reference)      : 243  244  246
+     itaui
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 54
+      |(Definition)     : 241
+      |(Reference)      : 243
+     itotau
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 54
+      |(Definition)     : 214  232
+      |(Reference)      : 235  236
+     itypbl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     ivegsrc
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     ix
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 53
+      |(Definition)     : 703  763
+      |(Reference)      : 717  718  775  776
+     ixtyp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 702  710  762  768
+      |(Reference)      : 703  710  763  768
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 52
+      |(Definition)     : 324  348  356  366  368  377  383  394  405  663  806
+      |(Reference)      : 325  325  326  326  327  327  327  328  328  329  329  330  330  349  349  357  367  368  368  378  379  384  385  386  395  406  407  407  664  664  807  809  810
+     jdg
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 810
+     jdg_listnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 812
+      |(Reference)      : 
+     jj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 52
+      |(Definition)     : 384  805
+      |(Reference)      : 385  386  806  812
+     jlist1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 806
+     jlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 805
+     jtmax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 437
+      |(Reference)      : 
+     jtp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 789  789  789  789
+     jtrun
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 268  357  367  368  437
+      |(Reference)      : 62  62  283  358  359  378
+     julian
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 210  248
+      |(Reference)      : 248
+     jy
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 53
+      |(Definition)     : 704  764
+      |(Reference)      : 717  718  775  776
+     jytyp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 699  711  759  769
+      |(Reference)      : 704  711  764  769
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 52
+      |(Definition)     : 296  300  307  337  519
+      |(Reference)      : 297  297  298  298  301  301  301  302  302  302  308  308  308  338  338  339  340  341  342  520
+     ksgeo
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     ktcup
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     ktpbl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     ktshl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     l
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 54
+      |(Definition)     : 283
+      |(Reference)      : 284  287  288  291  291  292  292
+     lFCTweight
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     ldailyFCTicesndpt
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 483
+     ldailyFCTsst
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 181
+      |(Reference)      : 177  479
+     ldiag
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     lessl_fft
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 410  431
+      |(Reference)      : 
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 567
+      |(Reference)      : 87  296  300  307  308  337  469  574
+     lgndr
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 437
+     logicname
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : initialized
+      |(Declaration)    : 92  97
+      |(Definition)     : 135
+      |(Reference)      : 
+     lopgsst
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     lreduce
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 354  376
+      |(Reference)      : 398
+     lsimpl
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     lsort
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 268
+      |(Reference)      : 
+     ltyph
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 53
+      |(Definition)     : 600
+      |(Reference)      : 604  606  611  612  616  621  622  626
+     m
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 54
+      |(Definition)     : 276  358
+      |(Reference)      : 277  281  287  289  289  291  291  292  292  292  359  360
+     make_list
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 274
+     make_list_nx
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 390
+     map2to1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 809
+     matrix_hybrid_cwb
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 313
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 360
+     me
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 567
+      |(Reference)      : 574
+     mf
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 54
+      |(Definition)     : 277
+      |(Reference)      : 279  280  283  286
+     min
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 243
+     min_trk_pres
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 105
+      |(Definition)     : 
+      |(Reference)      : 
+     mlist
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 277
+     mlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 276
+     mlmax
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 268
+      |(Reference)      : 
+     mlsort
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 268
+      |(Reference)      : 
+     mo_constants
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 34
+     mo_convect_tables
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 35
+     mo_cumulus_flux
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 33
+     mod
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 249  414  415  417  418  420  421  423  424  426  427  428  429  430
+     mod_grb2_param
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 48
+     mod_sit_control
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 27
+     mod_stochastic_physics
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 37
+     mod_typhoon
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 26
+     modlst
+      |(Class and Type) : namelist name
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 158  252
+     mp_init
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 555
+     mpe
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 20
+     mpe2d_reshape_eps4
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 799
+     mpe_bcast
+      |(Class and Type) : generic name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 218  231  232  450  497
+     mpe_finalize
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 138  222  225  453  509  551
+     mpe_integer
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 218  231  232  450  497
+     msort
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 268
+      |(Reference)      : 
+     mtnvar
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     mtrundef
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 368  378  385
+      |(Reference)      : 385
+     mwhd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 320  334
+      |(Reference)      : 322  325  326  328  330  348  384  394  397  405  663  699  759
+     my2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 54
+      |(Definition)     : 322  437
+      |(Reference)      : 324  356  366  377  383
+     myrank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 555  567
+      |(Reference)      : 137  141  152  173  204  213  221  221  246  252  253  254  257  365  398  441  452  459  469  471  499  550  572  573  574  611  615  616  621  625  626  633  637  638  643  647  648  671  674  688  697  698  715  716  717  718  730  733  747  757  758  773  774  775  776
+     n
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 52
+      |(Definition)     : 359  678  737
+      |(Reference)      : 360  692  693  694  695  698  698  699  702  703  704  705  705  706  706  710  710  711  711  712  712  713  713  715  716  751
+     nWlexist
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 607
+      |(Reference)      : 631
+     nWtyphfile
+      |(Class and Type) : variable name, CHARACTER(24,1)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 598
+      |(Reference)      : 607  633  634  638
+     namlsts
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 100
+      |(Definition)     : 
+      |(Reference)      : 156  169
+     nc
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 52
+      |(Definition)     : 751
+      |(Reference)      : 752  753  754  755  758  758  759  762  762  763  764  765  765  766  766  768  768  769  769  770  770  771  771  773  774  780
+     ncep_seeds
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     ncld
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 334
+      |(Reference)      : 546  549
+     ndsladvh2
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     ndslfv_init
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 334
+     njump
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     nlexist
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 606
+      |(Reference)      : 609
+     nmcup
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     nmgwcv
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     nmgwor
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     nmland
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     nmmiph
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 555  567
+      |(Reference)      : 531  531  531  533  535  537  539  542  555  555  555  555  555  555  555  555  574
+     nmpbl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     nmshl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     nn
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 52
+      |(Definition)     : 412
+      |(Reference)      : 413  414  415  417  418  420  421  423  424  426  427  428  429  430
+     nnmiit
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     nnmivm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     noah
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 30
+     norad_precip
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : SAVE, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 567
+      |(Reference)      : 
+     nout
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 519
+     nrec
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 693  753
+      |(Reference)      : 
+     ntcw
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 567
+      |(Reference)      : 574
+     ntoz
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : SAVE, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 546  567
+      |(Reference)      : 544  573
+     ntrac_req
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 55
+      |(Definition)     : 532  534  536  538  540  542  545
+      |(Reference)      : 545  549
+     ntyph
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 667  670  673  780
+      |(Reference)      : 671  674  678  751
+     ntyphfile
+      |(Class and Type) : variable name, CHARACTER(24,1)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 597
+      |(Reference)      : 606  611  612  616
+     numout
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 520  526
+      |(Reference)      : 521  524  526
+     numreduce
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 353  364  398
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 334  403
+      |(Reference)      : 379  397  412  660  661  701  761
+     nxdef
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 368  379  386
+      |(Reference)      : 386  395  406
+     nxdef_2d
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 807
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 54
+      |(Definition)     : 406  407  701  761  807
+      |(Reference)      : 702  762  808
+     oWlexist
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 605
+      |(Reference)      : 641
+     oWtyphfile
+      |(Class and Type) : variable name, CHARACTER(24,1)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 596
+      |(Reference)      : 605  643  644  648
+     ocards
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 100
+      |(Definition)     : 
+      |(Reference)      : 517
+     octahedral
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 368
+      |(Reference)      : 
+     olexist
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 604
+      |(Reference)      : 619
+     omega
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 349
+     one
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 57
+      |(Definition)     : 318  320
+      |(Reference)      : 319
+     onem
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 57
+      |(Definition)     : 319  320
+      |(Reference)      : 
+     onocos
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 327  328
+      |(Reference)      : 328  329
+     otgreen
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     otyphfile
+      |(Class and Type) : variable name, CHARACTER(24,1)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 595
+      |(Reference)      : 604  621  622  626
+     out_green
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     out_hp
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     outdir
+      |(Class and Type) : variable name, CHARACTER(16,1)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 521
+      |(Reference)      : 524
+     outdms
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     outgrb2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     outrsm
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     param
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 19
+     pathname
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : initialized
+      |(Declaration)    : 92  96
+      |(Definition)     : 135
+      |(Reference)      : 
+     pdfcloud
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     phyout
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 100
+      |(Definition)     : 
+      |(Reference)      : 
+     pi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 57
+      |(Definition)     : 127  653
+      |(Reference)      : 352  654
+     plnowL
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 789
+      |(Reference)      : 
+     ploldL
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 789
+      |(Reference)      : 
+     pltenL
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 789
+      |(Reference)      : 
+     pmcor
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 313
+      |(Reference)      : 
+     pnm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 62
+      |(Definition)     : 357  367  368
+      |(Reference)      : 360
+     pnm_max
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 57
+      |(Definition)     : 355  360
+      |(Reference)      : 360  364  365
+     pnmcut
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 57
+      |(Definition)     : 364  368
+      |(Reference)      : 365
+     pnmy
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 357  367
+     poly
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 437
+      |(Reference)      : 
+     prslp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 58
+      |(Definition)     : 338
+      |(Reference)      : 339  340  341  342
+     ptmean
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 313
+      |(Reference)      : 
+     ptmeans
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     ptop
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 313
+      |(Reference)      : 338
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 62
+     r2d
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 57
+      |(Definition)     : 352  655
+      |(Reference)      : 664
+     rad
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 128  128
+     rad_initialize
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 567
+     radn
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 29
+     radsq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 128
+      |(Reference)      : 287  291
+     rank
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 21
+     recmsg
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 214
+     reducefactor
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 58
+      |(Definition)     : 397
+      |(Reference)      : 398
+     reducegrid
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 368
+     restrt
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 239  245
+      |(Reference)      : 
+     rgas
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 126
+      |(Reference)      : 
+     rgrdsz
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     rl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 57
+      |(Definition)     : 284
+      |(Reference)      : 285  287
+     rlat1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     rlat2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     rlm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 57
+      |(Definition)     : 285
+      |(Reference)      : 287
+     rlon1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     rlon2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     rm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 57
+      |(Definition)     : 279  280  286
+      |(Reference)      : 281
+     rsmoutinv
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     sashal
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : SAVE, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 567
+      |(Reference)      : 
+     set_lookup_tables
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 35  123
+     shum
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     shum_decort
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     shum_lscale
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     shum_seed
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     shum_sigefold
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     si
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 87
+      |(Definition)     : 308  567
+      |(Reference)      : 
+     sigma
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 297  298  313
+      |(Reference)      : 301  301  302  302  308  308  338  338
+     sinl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 320  325  357  367  437
+      |(Reference)      : 325  327  327  349  664
+     sit_nml
+      |(Class and Type) : namelist name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 27  172  175
+     skeb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     skeb_decort
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     skeb_lscale
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     skeb_seed
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     skeb_sigbot1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     skeb_sigbot2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     skeb_sigtop1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     skeb_sigtop2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     skeb_vdof
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     skebfilt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     skebnorm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     sortml
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 268
+     spalm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 313
+      |(Reference)      : 
+     spec
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 24
+     spl1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 339
+     spl2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 340
+     sppt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     sppt_decort
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     sppt_logit
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     sppt_lscale
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     sppt_seed
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     sppt_sfclimit
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     sppt_sigbot1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     sppt_sigbot2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     sppt_sigtop1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     sppt_sigtop2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     sqrt
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 329
+     ssst
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     ssst_decort
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     ssst_lscale
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     ssst_seed
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 37
+     stochy_physics
+      |(Class and Type) : namelist name
+      |(Attributes)     : 
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 163  254
+     sumreduce
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 57
+      |(Definition)     : 393  395
+      |(Reference)      : 395  397
+     tau
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 238
+      |(Reference)      : 
+     taue
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 235
+      |(Reference)      : 256
+     taui
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 234  244
+      |(Reference)      : 240  242  247  256
+     tauo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 236
+      |(Reference)      : 
+     taup
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     taureg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     tfilt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     tflag
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 55
+      |(Definition)     : 590  610  620
+      |(Reference)      : 668  672  677  677  679  682
+     tflat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 705  712  765  770
+      |(Reference)      : 715  773
+     tflon
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 706  713  766  771
+      |(Reference)      : 716  774
+     tlat
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 664
+      |(Reference)      : 699  718  759  776
+     tlon
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 657  661
+      |(Reference)      : 661  718  776
+     tmcor
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 313
+      |(Reference)      : 
+     tmean
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 313
+      |(Reference)      : 
+     tofd
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     trigs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 403
+      |(Reference)      : 
+     trigsj
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 407
+      |(Reference)      : 
+     trim
+      |(Class and Type) : intrinsic function name, CHARACTER((unknown),1)
+      |(Attributes)     : PURE
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 144  156  169  189  517
+     trk_intv
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 105
+      |(Definition)     : 
+      |(Reference)      : 
+     truefile
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : 
+      |(Declaration)    : 92
+      |(Definition)     : 135
+      |(Reference)      : 141  144
+     ttl
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     two_loop
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     typ
+      |(Class and Type) : namelist name
+      |(Attributes)     : 
+      |(Declaration)    : 105
+      |(Definition)     : 
+      |(Reference)      : 160  253
+     type_r
+      |(Class and Type) : variable name, CHARACTER(64,1)
+      |(Attributes)     : 
+      |(Declaration)    : 93
+      |(Definition)     : 442  445
+      |(Reference)      : 
+     type_w
+      |(Class and Type) : variable name, CHARACTER(64,1)
+      |(Attributes)     : 
+      |(Declaration)    : 93
+      |(Definition)     : 443  446
+      |(Reference)      : 
+     typhnam
+      |(Class and Type) : variable name, CHARACTER(15,1)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 680  683  739  742
+      |(Reference)      : 692  697  752  757
+     typhoon
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 603  696  756
+      |(Reference)      : 
+     typhpath
+      |(Class and Type) : variable name, CHARACTER(120,1)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 592  600
+      |(Reference)      : 604  606  611  612  616  621  622  626
+     typname
+      |(Class and Type) : variable name, CHARACTER(15,1)
+      |(Attributes)     : DIMENSION, common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 692  752
+      |(Reference)      : 
+     update
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     updatetg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     use_zmtnblck
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 107
+      |(Definition)     : 
+      |(Reference)      : 
+     Wflag
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 55
+      |(Definition)     : 591  632  642
+      |(Reference)      : 727  731  736  736  738  741
+     Wfulldtg
+      |(Class and Type) : variable name, CHARACTER(10,1)
+      |(Attributes)     : 
+      |(Declaration)    : 89
+      |(Definition)     : 728
+      |(Reference)      : 
+     Wltyph
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 52
+      |(Definition)     : 601
+      |(Reference)      : 605  607  633  634  638  643  644  648
+     Wntyph
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 52
+      |(Definition)     : 726  729  732
+      |(Reference)      : 730  733  737
+     Wtyphpath
+      |(Class and Type) : variable name, CHARACTER(120,1)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 593  601
+      |(Reference)      : 605  607  633  634  638  643  644  648
+     wcfac
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 289  292
+      |(Reference)      : 
+     wdfac
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 289  291
+      |(Reference)      : 292
+     weight
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 320  326  334
+      |(Reference)      : 326
+     weightSIT
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+     write_mem
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 105
+      |(Definition)     : 
+      |(Reference)      : 
+     write_tau
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : namelist-group-object, use-associated
+      |(Declaration)    : 105
+      |(Definition)     : 
+      |(Reference)      : 
+     yesdia
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : common-block-object, namelist-group-object, use-associated
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+         80  execution     (Definition) 525  
+                           (Reference)  519
+         85  execution     (Definition) 526  
+                           (Reference)  523  524
+        110  execution     (Definition) 149  
+                           (Reference)  147
+        111  execution     (Definition) 432  
+                           (Reference)  413  415  418  421  424  426  427  428  429  430
+        120  execution     (Definition) 159  
+                           (Reference)  158
+        121  execution     (Definition) 161  
+                           (Reference)  160
+        122  execution     (Definition) 164  
+                           (Reference)  163
+        123  execution     (Definition) 166  
+                           (Reference)  165
+        130  execution     (Definition) 184  
+                           (Reference)  172
+        150  execution     (Definition) 294  
+                           (Reference)  276  283
+        180  execution     (Definition) 331  
+                           (Reference)  324
+        190  execution     (Definition) 350  
+                           (Reference)  348
+        666  execution     (Definition) 785  
+                           (Reference)  617  627  639  649  689  748
+        800  format        (Definition) 522  
+                           (Reference)  521
+        900  format        (Definition) 202  
+                           (Reference)  201
+        990  execution     (Definition) 818  
+                           (Reference)  814
+
+ Total information
+   Procedures       : 1
+   Total lines      : 823
+   Total statements : 543
+   Total stack(byte): 76592
+   Total prefetch num: 0
+

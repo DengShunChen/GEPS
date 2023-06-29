@@ -1,0 +1,502 @@
+
+ Fujitsu Fortran Version 4.6.1  Thu Jun 29 14:23:58 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm
+   Source file       : qprnt3.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "qprnt3"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine qprnt3 (a,t1,t2,ic,jc,kc,m,n,my_max,l,amul,add)
+               2                     !
+               3                     !  quick print a 3-d array a(m,l,n) at kc level starting at address
+               4                     !  a(ic,kc,jc).  values are recomputed with add and amul, and then
+               5                     !  are automatically scaled to allow 2 digit integer format printing.
+               6                     !
+               7                     !  ***input***
+               8                     !
+               9                     ! a    : fwa of m x n array
+              10                     ! t1,t2: title (2*8 character)
+              11                     ! ic,jc: lower left corner coords to be printed
+              12                     ! kc   : level to be printed
+              13                     ! m,n,l: first,third,second dimension respectively
+              14                     ! amul : scaling multiplier for output
+              15                     ! add  : additive constant added before output
+              16                     !
+              17                     !  ***************************************************************
+              18                     !
+              19                           use mpe
+              20                           use rank
+              21                           use index
+              22                     
+              23                           implicit  none
+              24                     !
+              25                           real      a(m,l,my_max),amul,add
+              26                           character*8 t1, t2
+              27                           integer   ic,jc,kc,m,n,l,my_max
+              28                     
+              29                           integer   ix(41),jj,j,i,ie,jl,kp,kscale,j2,ii,jli
+              30                           real      haf,xm,af,x99,fk
+              31                     !
+              32                           haf= 0.5
+              33                           ie = min0(ic+40,m)
+              34                           jl = n
+              35                     !
+              36                           xm=0.
+              37     1                     do 110 jj =1,jlistnum
+              38     1                     j=jlist1(jj)
+              39     2                     if(j.ge.jc .and. j.le.jl) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1000
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<< Loop-information  End >>>
+              40     3  pp    v            do 100 i=ic,ie
+              41     3   p    v            af= a(i,kc,jj)*amul + add
+              42     3   p    v        100 xm= max(xm,abs(af))
+              43     2                     endif
+              44     1                 110 continue
+              45                     !
+              46                           call mpe_global_max(xm,1,mpe_double)
+              47                     !
+              48                           if(xm.lt.1.e-35) xm=99.
+              49                           x99= 99.
+              50                           xm = log10(x99/xm)
+              51                           kp = xm
+              52                           if (xm.lt.0.) kp = kp - 1
+              53                     !
+              54                           kscale = - kp
+              55              s            if(myrank .eq. 0) print 190, t1,t2,kscale,amul,add,(i,i=ic,ie,2)
+              56                       190 format(1h0,2a8,'  scale=',i3,' mult=',g12.5,' add=',g12.5, /1x,22i6)
+              57                     !
+              58                           fk = 10.**kp
+              59                     !
+              60                     !     quickprint field
+              61                     !
+              62     1                     do 200 j=jl,jc,-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      a, (unknown)
+                                   <<< Loop-information  End >>>
+              63     2                     do 205 jj =1,jlistnum
+              64     2                     j2=jlist1(jj)
+              65     3                     if(j2 .eq. j) then
+              66     3                       jli= jj
+              67     3                       ii = 0
+              68     4                       if (kp.eq.0) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 593
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.87, ITR: 208, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      a, ix
+                                   <<< Loop-information  End >>>
+              69     5  pp   2v                do 300 i=ic,ie
+              70     5   p   2v                ii= ii+1
+              71     5   p   2v                af= a(i,kc,jli)*amul+add
+              72     5   p   2v                ix(ii) = af + sign(haf,af)
+              73     5   p   2v        300     continue
+              74     4                       else
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 572
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.87, ITR: 208, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      a, ix
+                                   <<< Loop-information  End >>>
+              75     5  pp   2v                do 400 i=ic,ie
+              76     5   p   2v                ii= ii+1
+              77     5   p   2v                af= a(i,kc,jli)*amul+add
+              78     5   p   2v          7     ix(ii) = af*fk + sign(haf,af)
+              79     5   p   2v        400     continue
+              80     4                       endif
+              81     3                       call mpe_send_print(ix, 41, j, mpe_integer)
+              82     3                     endif
+              83     2                 205 continue
+              84     1               !
+              85     1                 200 continue
+              86                     
+              87     1                     if(myrank .eq. 0) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 4
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+              88     2                     do j=jl,jc,-1
+              89     2                       call mpe_recv_print(ix, 41, j, mpe_integer)
+              90     2                       print 500, j, (ix(i),i=1,ii), j
+              91     2                 500   format (i4,42i3)
+              92     2                     enddo
+              93     1                     endif
+              94                     
+              95                           return
+              96                           end
+
+ Procedure information
+   Lines      : 96
+   Statements : 64
+   Stack(byte): 15552
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : qprnt3
+   Attribute and Cross reference of name
+     a
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  25
+      |(Definition)     : 
+      |(Reference)      : 41  71  77
+     abs
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 42
+     add
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  25
+      |(Definition)     : 
+      |(Reference)      : 41  55  71  77
+     af
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 30
+      |(Definition)     : 41  71  77
+      |(Reference)      : 42  72  72  78  78
+     amul
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  25
+      |(Definition)     : 
+      |(Reference)      : 41  55  71  77
+     fk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 30
+      |(Definition)     : 58
+      |(Reference)      : 78
+     haf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 30
+      |(Definition)     : 32
+      |(Reference)      : 72  78
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 29
+      |(Definition)     : 40  55  69  75  90
+      |(Reference)      : 41  55  71  77  90
+     ic
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  27
+      |(Definition)     : 
+      |(Reference)      : 33  40  55  69  75
+     ie
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 29
+      |(Definition)     : 33
+      |(Reference)      : 40  55  69  75
+     ii
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 29
+      |(Definition)     : 67  70  76
+      |(Reference)      : 70  72  76  78  90
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 21
+     ix
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 29
+      |(Definition)     : 72  78  81  89
+      |(Reference)      : 90
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 29
+      |(Definition)     : 38  62  81  88  89
+      |(Reference)      : 39  39  65  90  90
+     j2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 29
+      |(Definition)     : 64
+      |(Reference)      : 65
+     jc
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  27
+      |(Definition)     : 
+      |(Reference)      : 39  62  88
+     jj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 29
+      |(Definition)     : 37  63
+      |(Reference)      : 38  41  64  66
+     jl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 29
+      |(Definition)     : 34
+      |(Reference)      : 39  62  88
+     jli
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 29
+      |(Definition)     : 66
+      |(Reference)      : 71  77
+     jlist1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 38  64
+     jlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 37  63
+     kc
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  27
+      |(Definition)     : 
+      |(Reference)      : 41  71  77
+     kp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 29
+      |(Definition)     : 51  52
+      |(Reference)      : 52  54  58  68
+     kscale
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 29
+      |(Definition)     : 54
+      |(Reference)      : 55
+     l
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  27
+      |(Definition)     : 
+      |(Reference)      : 25
+     log10
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 50
+     m
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  27
+      |(Definition)     : 
+      |(Reference)      : 25  33
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 42
+     min0
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 33
+     mpe
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 19
+     mpe_double
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 46
+     mpe_global_max
+      |(Class and Type) : generic name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 46
+     mpe_integer
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 81  89
+     mpe_recv_print
+      |(Class and Type) : generic name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 89
+     mpe_send_print
+      |(Class and Type) : generic name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 81
+     my_max
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  27
+      |(Definition)     : 
+      |(Reference)      : 25
+     myrank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 55  87
+     n
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  27
+      |(Definition)     : 
+      |(Reference)      : 34
+     qprnt3
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     rank
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 20
+     sign
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 72  78
+     t1
+      |(Class and Type) : variable name, CHARACTER(8,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  26
+      |(Definition)     : 
+      |(Reference)      : 55
+     t2
+      |(Class and Type) : variable name, CHARACTER(8,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  26
+      |(Definition)     : 
+      |(Reference)      : 55
+     x99
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 30
+      |(Definition)     : 49
+      |(Reference)      : 50
+     xm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 30
+      |(Definition)     : 36  42  46  48  50
+      |(Reference)      : 42  48  50  51  52
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+          7  execution     (Definition) 78
+        100  execution     (Definition) 42  
+                           (Reference)  40
+        110  execution     (Definition) 44  
+                           (Reference)  37
+        190  format        (Definition) 56  
+                           (Reference)  55
+        200  execution     (Definition) 85  
+                           (Reference)  62
+        205  execution     (Definition) 83  
+                           (Reference)  63
+        300  execution     (Definition) 73  
+                           (Reference)  69
+        400  execution     (Definition) 79  
+                           (Reference)  75
+        500  format        (Definition) 91  
+                           (Reference)  90
+
+ Total information
+   Procedures       : 1
+   Total lines      : 96
+   Total statements : 64
+   Total stack(byte): 15552
+   Total prefetch num: 0
+

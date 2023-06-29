@@ -1,0 +1,213 @@
+
+ Fujitsu Fortran Version 4.6.1  Thu Jun 29 14:23:12 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm
+   Source file       : smth9.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "smth9"
+  (inc)(line-no.)(nest)(optimize)
+               1                     !-----------------------------------------------------------
+               2                     ! 9-point smoother
+               3                     !-----------------------------------------------------------
+               4                           subroutine smth9(im,jm,data,sdata,ismth)
+               5                           use const, only: RTYPE
+               6                     !
+               7                           implicit   none
+               8                           integer                   :: im,jm,ismth
+               9                           real(kind=RTYPE),dimension(im,jm) :: data,sdata
+              10                     
+              11                           integer                   ::i,j,ip1,im1,jp1,jm1
+              12                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    UNSWITCHING
+                                   <<< Loop-information  End >>>
+              13     1  pp                 do j=1,jm
+              14     1   p                   jp1=j+1
+              15     1   p                   jm1=j-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sdata
+                                   <<< Loop-information  End >>>
+              16     2   p    s            do i=1,im
+              17     2   p    v              ip1=i+1
+              18     2   p    v              im1=i-1
+              19     2   p    s              if(ip1 > im)ip1=ip1-im
+              20     2   p    m              if(im1 < 1 )im1=im1+im
+              21     2               
+              22     3   p    m              if(j==1  .or. j==jm)then
+              23     3               ! boundary by 3-point smoothing
+              24     4   p    s                if(ismth==1)then
+              25     4   p    s                 sdata(i,j)=data(i,j)+(data(ip1,j)-2.*data(i,j)+data(im1,j))/4.
+              26     4   p    s                else
+              27     4   p    s                 sdata(i,j)=data(i,j)
+              28     4   p                     endif
+              29     3   p    s              else
+              30     3               ! by 9-point smoothing
+              31     3   p    s               sdata(i,j)=data(i,j)+(data(i,jp1)+data(i,jm1)+data(ip1,j)      &
+              32     3                                  +data(im1,j)-4.*data(i,j))/8.+(data(ip1,jp1)         &
+              33     3                                  +data(ip1,jm1)+data(im1,jp1)+data(im1,jm1)           &
+              34     3                                  -4.*data(i,j))/16.
+              35     3   p    v              endif
+              36     2   p    v            enddo
+              37     1   p                 enddo
+              38                           return
+              39                           end
+
+ Procedure information
+   Lines      : 39
+   Statements : 27
+   Stack(byte): 1152
+   Prefetch num: 0
+
+ Scoping unit of external sub-program : smth9
+   Attribute and Cross reference of name
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 5
+     data
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 4  9
+      |(Definition)     : 
+      |(Reference)      : 25  25  25  25  27  31  31  31  31  31  31  31  31  31  31  31
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 11
+      |(Definition)     : 16
+      |(Reference)      : 17  18  25  25  25  27  27  31  31  31  31  31  31
+     im
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 4  8
+      |(Definition)     : 
+      |(Reference)      : 9  9  16  19  19  20
+     im1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 11
+      |(Definition)     : 18  20
+      |(Reference)      : 20  20  25  31  31  31
+     ip1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 11
+      |(Definition)     : 17  19
+      |(Reference)      : 19  19  25  31  31  31
+     ismth
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 4  8
+      |(Definition)     : 
+      |(Reference)      : 24
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 11
+      |(Definition)     : 13
+      |(Reference)      : 14  15  22  22  25  25  25  25  25  27  27  31  31  31  31  31  31
+     jm
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 4  8
+      |(Definition)     : 
+      |(Reference)      : 9  9  13  22
+     jm1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 11
+      |(Definition)     : 15
+      |(Reference)      : 31  31  31
+     jp1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 11
+      |(Definition)     : 14
+      |(Reference)      : 31  31  31
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 5  9
+     sdata
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 4  9
+      |(Definition)     : 25  27  31
+      |(Reference)      : 
+     smth9
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 4
+      |(Reference)      : 
+
+ Total information
+   Procedures       : 1
+   Total lines      : 39
+   Total statements : 27
+   Total stack(byte): 1152
+   Total prefetch num: 0
+

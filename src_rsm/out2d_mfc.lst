@@ -1,0 +1,992 @@
+
+ Fujitsu Fortran Version 4.6.1  Thu Jun 29 14:23:59 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm
+   Source file       : out2d_mfc.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "out2d_mfc"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine out2d_mfc (nx,lev,my,my_max,ifilout,itau,idtg    &
+               2                                                 ,raincu1,rainlp1,raintot,glob,t2,q2,rh2,rh10 &
+               3                                                 ,u10,v10,tmax,tmin,rld,sld,ctot,pt,ggdef )
+               4                     !
+               5                           use rank
+               6                           use mpe
+               7                           use index
+               8                           use const ,only : grav,ptop,rgas,cp ,outdms ,outgrb2 ,ifilout_grb, &
+               9                                             RTYPE,kflag
+              10                           use grid  ,only : tt,qt,plt,pk,pk2,sgeo
+              11                           use mod_grb2_param  !for write grib2 data
+              12                     !
+              13                           implicit  none
+              14                     
+              15                           integer   nx,lev,my,my_max,itau,ntau,num
+              16                           parameter (num=14)
+              17                     
+              18                           real      raintot(nxp,my_max),t2(nxp,my_max),u10(nxp,my_max),   &
+              19                                     v10(nxp,my_max),ctot(nxp,my_max)
+              20                           real(kind=RTYPE) pt(nxp,my_max)
+              21                     
+              22                           real                   q2(nxp,my_max),rh2(nxp,my_max),          &
+              23                                rh10(nxp,my_max),tmax(nxp,my_max),tmin(nxp,my_max),        &
+              24                                               rld(nxp,my_max),sld(nxp,my_max),            &
+              25                                raincu1(nxp,my_max),rainlp1(nxp,my_max)
+              26                     !
+              27                           real(kind=RTYPE) mfcout(nxp,my_max,num)
+              28                     !
+              29                           character*4 ggdef
+              30                           integer*8 idtg
+              31                           character*6 dmskey(num)
+              32                     
+              33                           integer,dimension(num):: ptp0 ,ptp1 ,ptp2 ,ptp3 ,ptp4 ,ptp5
+              34                     !
+              35                           real(kind=RTYPE) glob(nx,my),mout(nx,my)
+              36                     !
+              37                           character*80 ifilout
+              38                           character*26 ihdg,ihdg2
+              39                     !
+              40                           integer   n,levz,lenc,lenc2,i,ia,kk,j,nxj,istat,jj,llts,k
+              41                           real      tnshun,alaps,rdg,ttb,ttp,ttt,ttt1,ttt2,anlslp,apha
+              42                           real      phi(nxp,lev,my_max),hld1(nxp,my_max),hld2(nxp,my_max)
+              43                     ! for due point temperature
+              44                           real,parameter:: TdAlpha = 17.27 ,TdBeta = 237.7
+              45                           real      TdGamma
+              46                     !
+              47                           data dmskey/'b00621','b0062t','b02100','b02500','b02510', &
+              48                                       'b10200','b10210','b02171','b02181','b02150', &
+              49                                       's003x0','s003u0','x00770','ssl010'/
+              50                     
+              51                     !     grib code 0,1,2:variable   3:order  4:layer  5:above_land_height
+              52                     !                 1h  Tot                   T2M T2M  2M DW DW
+              53                     !                 p   p  T2 sh2 rh2 u10 v10 max min DPT LW SW CC SLP
+              54                           data ptp0/  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 0, 0, 0,  0 /
+              55                           data ptp1/  1,  1,  0,  1,  1,  2,  2,  0,  0,  0, 5, 4, 6,  3 /
+              56                           data ptp2/  8, 49,  0,  0,  1,  2,  3,  4,  5,  6, 3, 7, 1,  1 /
+              57                           data ptp3/  2,  1,  2,  6,  2,  2,  2,  2,  2,  2, 2, 2, 3,  2 /
+              58                           data ptp4/103,103,103,103,103,103,103,103,103,103, 1, 1, 7,101 /
+              59                           data ptp5/  0,  0,  2,  2,  2, 10, 10,  2,  2,  2, 0, 0, 0,  0 /
+              60                     
+              61                     !
+              62                           ntau=itau
+              63                           tnshun= 1.0
+              64                           lenc= nx*my
+              65                           lenc2= lev*my
+              66                           alaps = 0.0065
+              67                           rdg = rgas/grav
+              68                     !
+              69                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+              70     1  pp                 do jj = 1, jlistnum
+              71     1   p                   j=jlist1(jj)
+              72     1   p                   nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ctot, mfcout, sld, rld, tmin, tmax, v10
+                                   <<<      u10, rh2
+                                   <<<    PREFETCH(SOFT) : 20
+                                   <<<     SEQUENTIAL : 20
+                                   <<<      q2: 2, mfcout: 10, t2: 2, raintot: 2
+                                   <<<      rainlp1: 2, raincu1: 2
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 1  FILL 28
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+              73     2   p    v              do i=1,nxj
+              74     2   p    v                mfcout(i,jj,1)=raincu1(i,jj) + rainlp1(i,jj) !rain1
+              75     2   p    v                mfcout(i,jj,2)=raintot(i,jj)
+              76     2   p    v                mfcout(i,jj,3)=t2  (i,jj)
+              77     2   p    v                mfcout(i,jj,4)=q2  (i,jj)
+              78     2   p    v                mfcout(i,jj,5)=rh2 (i,jj) * 100.0  ! ( % )
+              79     2   p    v                mfcout(i,jj,6)=u10 (i,jj)
+              80     2   p    v                mfcout(i,jj,7)=v10 (i,jj)
+              81     2   p    v                mfcout(i,jj,8)=tmax(i,jj)
+              82     2   p    v                mfcout(i,jj,9)=tmin(i,jj)
+              83     2               
+              84     2   p    v                TdGamma = TdAlpha * (t2(i,jj)-273.15)  / ( TdBeta + ( t2(i,jj) - 273.15 ) ) + &
+              85     2                                    log(rh2(i,jj))
+              86     2   p    v                mfcout(i,jj,10)= ( TdBeta * TdGamma / ( TdAlpha - TdGamma ) ) + 273.15
+              87     2   p    v                mfcout(i,jj,11)=rld (i,jj)
+              88     2   p    v                mfcout(i,jj,12)=sld (i,jj)
+              89     2   p    v                mfcout(i,jj,13)=ctot(i,jj) ! total cloud cover
+              90     2   p    v              enddo
+              91     1   p                 enddo
+              92                     
+              93                          !mfcout(:,:,1)=rain1(:,:)
+              94                          !mfcout(:,:,2)=raintot(:,:)
+              95                          !mfcout(:,:,3)=t2(:,:)
+              96                          !mfcout(:,:,4)=q2(:,:)
+              97                          !mfcout(:,:,5)=rh2(:,:) * 100.0
+              98                          !mfcout(:,:,6)=u10(:,:)
+              99                          !mfcout(:,:,7)=v10(:,:)
+             100                          !mfcout(:,:,8)=tmax(:,:)
+             101                          !mfcout(:,:,9)=tmin(:,:)
+             102                          !mfcout(:,:,10)=td(:,:)
+             103                          !mfcout(:,:,11)=rld(:,:)
+             104                          !mfcout(:,:,12)=sld(:,:)
+             105                          !mfcout(:,:,13)=ctot(:,:)
+             106                     !
+             107                     !  hydrostatic equation
+             108                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pk, pk2, tt, sgeo, phi
+                                   <<< Loop-information  End >>>
+             109     1  pp                 do jj =1,jlistnum
+             110     1   p                   j=jlist1(jj)
+             111     1   p                   nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.60, ITR: 80, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pk2, pk, tt, sgeo, phi
+                                   <<< Loop-information  End >>>
+             112     2   p    v              do i=1,nxj
+             113     2   p    v                phi(i,lev,jj)= cp*tt(i,lev,jj)*(pk2(i,lev,jj)-pk(i,lev,jj)) &
+             114     2                                      + sgeo(i,jj)
+             115     2   p    v              enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      phi, pk, pk2, tt
+                                   <<< Loop-information  End >>>
+             116     2   p                   do k=lev-1,1,-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.83, ITR: 104, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tt, pk, phi, pk2
+                                   <<< Loop-information  End >>>
+             117     3   p    v                do i=1,nxj
+             118     3   p    v                  phi(i,k,jj)=phi(i,k+1,jj)+cp*(tt(i,k,jj)*(pk2(i,k,jj)-pk(i,k,jj)) &
+             119     3                                      + tt(i,k+1,jj)*(pk(i,k+1,jj)-pk2(i,k,jj)))
+             120     3   p    v                enddo
+             121     2   p                   enddo
+             122     1   p                 enddo
+             123                     !
+             124                     ! Sea level pressure(hPa)
+             125                     !
+             126                     !  compute sea level pressure
+             127                     !  The method is based on one used by ecmwf, reseach manual 2 (1988)
+             128                     !
+             129                     !  llts layer's temperature is used to derive an alternative
+             130                     !  surface skin temperature
+             131                     !
+             132                           llts = lev-5
+             133                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+             134     1  pp                 do jj = 1, jlistnum
+             135     1   p                   j=jlist1(jj)
+             136     1   p                   nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      pt, pk, tt, qt, plt, sgeo, phi, hld1
+                                   <<<      hld2, mfcout
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 0
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 1
+                                   <<<      PREDICATE : SPILL 1  FILL 1
+                                   <<< Loop-information  End >>>
+             137     2   p    v              do i=1,nxj
+             138     2   p    v                ttb  = tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt(i,lev,jj))
+             139     2   p    v                ttp  = tt(i,llts,jj)*pk(i,llts,jj)/(1.0+0.608*qt(i,llts,jj))
+             140     2   p    v                ttt1 = ttb + alaps*rdg*ttb*   &
+             141     2                             ((pt(i,jj)+ptop)/plt(i,lev,jj)-1.0)
+             142     2   p    v                ttt2 = ttp + alaps*(phi(i,llts,jj)-sgeo(i,jj))/grav
+             143     2   p    v                hld1(i,jj) = 0.25*ttt1 + 0.75*ttt2
+             144     2   p    v                hld2(i,jj) = hld1(i,jj) + alaps*sgeo(i,jj)/grav
+             145     3   p    v                if( sgeo(i,jj) .lt. 0.1 ) then
+             146     3   p    v                  anlslp = pt(i,jj) + ptop
+             147     3   p    v                else if( hld1(i,jj) .le. 290.5 .and. hld2(i,jj) .gt. 290.5 ) then
+             148     3   p    v                  apha = rgas*(290.5-hld1(i,jj))/sgeo(i,jj)
+             149     3   p    v                  ttt = sgeo(i,jj)/(rgas*hld1(i,jj))
+             150     3   p    v                  anlslp = (pt(i,jj)+ptop)*exp(ttt*(1.0-0.5*apha*ttt+0.333333*  &
+             151     3                                    apha*ttt*apha*ttt) )
+             152     3   p    v                else if( hld1(i,jj) .gt. 290.5 .and. hld2(i,jj) .gt. 290.5 ) then
+             153     3   p    v                  hld1(i,jj) = (hld1(i,jj)+290.5)*0.5
+             154     3   p    v                  anlslp = (pt(i,jj)+ptop)*exp( sgeo(i,jj)/(rgas*hld1(i,jj)) )
+             155     3   p    v                else if( hld1(i,jj) .lt. 255.0 .and. hld2(i,jj) .lt. 255.0 ) then
+             156     3   p    v                  hld1(i,jj) = (hld1(i,jj)+255.0)*0.5
+             157     3   p    v                  anlslp = (pt(i,jj)+ptop)*exp( sgeo(i,jj)/(rgas*hld1(i,jj)) )
+             158     3   p    v                else
+             159     3   p    v                  apha = alaps * rdg
+             160     3   p    v                  ttt = sgeo(i,jj)/(rgas*hld1(i,jj))
+             161     3   p    v                  anlslp = (pt(i,jj)+ptop)*exp(ttt*(1.0-0.5*apha*ttt+0.333333*  &
+             162     3                                    apha*ttt*apha*ttt) )
+             163     3   p    v                endif
+             164     2   p    v                mfcout(i,jj,14) = anlslp
+             165     2   p    v              enddo
+             166     1   p                 enddo
+             167                     !
+             168                     ! Total Precp.
+             169                     !byl      call mpe2d_unify(glob,raintot)
+             170                     
+             171                     !====== grib2 output
+             172     1                     if(outgrb2==1 )then
+             173     1                         n=1
+             174     1                         call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),mout)
+             175     2                         if(myrank==0)then
+             176     2                           call wrt_grb2_accu(ntau,ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,float(ptp5(n)),1,1,mout )
+             177     2                         endif
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             178     2   s   fs                do n=2,7
+             179     2   s   fs                  call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),mout)
+             180     3   s   fs                  if(myrank==0)then
+             181     3   s   fs                    call wrt_grb2(ntau,ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,float(ptp5(n)) ,mout )
+             182     3   s   fs                  endif
+             183     2   s   fs                enddo
+             184     1               
+             185     1                         !Tmax2m
+             186     1                         n=8
+             187     1                         call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),mout)
+             188     1                         if(myrank==0)call wrt_grb2_accu(ntau,ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,float(ptp5(n)),2,1,mout )
+             189     1                         !Tmin2m
+             190     1                         n=9
+             191     1                         call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),mout)
+             192     1                         if(myrank==0)call wrt_grb2_accu(ntau,ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,float(ptp5(n)),3,1,mout )
+             193     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FULL UNROLLING
+                                   <<< Loop-information  End >>>
+             194     2   s   fs                do n=10,num
+             195     2   s   fs                  call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),mout)
+             196     3   s   fs                  if(myrank==0)then
+             197     3   s   fs                    call wrt_grb2(ntau,ptp0(n),ptp1(n),ptp2(n),ptp3(n),ptp4(n),0,float(ptp5(n)) ,mout )
+             198     3   s   fs                  endif
+             199     2   s   fs                enddo
+             200     1                     endif
+             201                     
+             202                     
+             203     1                   if(outdms.gt.0)then
+             204     2                     do n=1,num
+             205     2                       call syslbl (dmskey(n),idtg,ntau,ggdef,ihdg)
+             206     2                       call unify_reduceintp(nx,my,my_max,mfcout(1,1,n),glob)
+             207     3                       if ( myrank .eq. n-1 ) then
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 7
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      glob, mout
+                                   <<< Loop-information  End >>>
+             208     3  pp   4v                mout=glob
+             209     3                         ihdg2=ihdg
+             210     3                       endif
+             211     2                     enddo
+             212     1               !
+             213     1                     if (myrank .lt. num ) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,mout,istat)
+             214     1                   endif ! outdms .gt. 0
+             215                     !
+             216                     !! rh10
+             217                     !!byl      call mpe2d_unify(glob,rh10)
+             218                     !      call syslbl ('b10510',idtg,ntau,ggdef,ihdg)
+             219                     !      call unify_reduceintp(nx,my,my_max,rh10,glob)
+             220                     !!byl      if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)
+             221                     !      glob=glob*100.0
+             222                     !!     call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
+             223                     !      call dmswrit_mfc(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
+             224                     
+             225                     
+             226                           return
+             227                           end
+             228                     
+
+ Procedure information
+   Lines      : 228
+   Statements : 140
+   Stack(byte): 2704
+   Prefetch num: 20
+
+ Scoping unit of external sub-program : out2d_mfc
+   Attribute and Cross reference of name
+     alaps
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 41
+      |(Definition)     : 66
+      |(Reference)      : 140  142  144  159
+     anlslp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 41
+      |(Definition)     : 146  150  154  157  161
+      |(Reference)      : 164
+     apha
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 41
+      |(Definition)     : 148  159
+      |(Reference)      : 150  150  150  161  161  161
+     const
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8
+     cp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8  113  118
+     ctot
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  18
+      |(Definition)     : 
+      |(Reference)      : 89
+     dmskey
+      |(Class and Type) : variable name, CHARACTER(6,1)
+      |(Attributes)     : DIMENSION, initialized
+      |(Declaration)    : 31  47
+      |(Definition)     : 205
+      |(Reference)      : 
+     dmswrit_split
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 213
+     exp
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 150  154  157  161
+     float
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 176  181  188  192  197
+     ggdef
+      |(Class and Type) : variable name, CHARACTER(4,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  29
+      |(Definition)     : 205
+      |(Reference)      : 
+     glob
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  35
+      |(Definition)     : 206
+      |(Reference)      : 208
+     grav
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8  67  142  144
+     grid
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 10
+     hld1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 42
+      |(Definition)     : 143  153  156
+      |(Reference)      : 144  147  148  149  152  153  154  155  156  157  160
+     hld2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 42
+      |(Definition)     : 144
+      |(Reference)      : 147  152  155
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 40
+      |(Definition)     : 73  112  117  137
+      |(Reference)      : 74  74  74  75  75  76  76  77  77  78  78  79  79  80  80  81  81  82  82  84  84  84  86  87  87  88  88  89  89  113  113  113  113  113  118  118  118  118  118  118  118  118  138  138  138  139  139  139  140  140  142  142  143  144  144  144  145  146  147  147  148  148  149  149  150  152  152  153  153  154  154  154  155  155  156  156  157  157  157  160  160  161  164
+     ia
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 40
+      |(Definition)     : 
+      |(Reference)      : 
+     idtg
+      |(Class and Type) : variable name, INTEGER(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  30
+      |(Definition)     : 205
+      |(Reference)      : 
+     ifilout
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  37
+      |(Definition)     : 213
+      |(Reference)      : 
+     ifilout_grb
+      |(Class and Type) : variable name, CHARACTER(80,1)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8
+     ihdg
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : 
+      |(Declaration)    : 38
+      |(Definition)     : 205
+      |(Reference)      : 209
+     ihdg2
+      |(Class and Type) : variable name, CHARACTER(26,1)
+      |(Attributes)     : 
+      |(Declaration)    : 38
+      |(Definition)     : 209  213
+      |(Reference)      : 
+     index
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 7
+     istat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 40
+      |(Definition)     : 213
+      |(Reference)      : 
+     itau
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  15
+      |(Definition)     : 
+      |(Reference)      : 62
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 40
+      |(Definition)     : 71  110  135
+      |(Reference)      : 72  111  136
+     jj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 40
+      |(Definition)     : 70  109  134
+      |(Reference)      : 71  74  74  74  75  75  76  76  77  77  78  78  79  79  80  80  81  81  82  82  84  84  84  86  87  87  88  88  89  89  110  113  113  113  113  113  118  118  118  118  118  118  118  118  135  138  138  138  139  139  139  140  140  142  142  143  144  144  144  145  146  147  147  148  148  149  149  150  152  152  153  153  154  154  154  155  155  156  156  157  157  157  160  160  161  164
+     jlist1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 71  110  135
+     jlistnum
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 70  109  134
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 40
+      |(Definition)     : 116
+      |(Reference)      : 118  118  118  118  118  118  118  118
+     kflag
+      |(Class and Type) : named constant, CHARACTER(1,1)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8  213
+     kk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 40
+      |(Definition)     : 
+      |(Reference)      : 
+     lenc
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 40
+      |(Definition)     : 64  213
+      |(Reference)      : 
+     lenc2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 40
+      |(Definition)     : 65
+      |(Reference)      : 
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  15
+      |(Definition)     : 
+      |(Reference)      : 42  65  113  113  113  113  116  132  138  138  138  140
+     levz
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 40
+      |(Definition)     : 
+      |(Reference)      : 
+     llts
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 40
+      |(Definition)     : 132
+      |(Reference)      : 139  139  139  142
+     log
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 84
+     mfcout
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 27
+      |(Definition)     : 74  75  76  77  78  79  80  81  82  86  87  88  89  164  174  179  187  191  195  206
+      |(Reference)      : 
+     mod_grb2_param
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 11
+     mout
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 35
+      |(Definition)     : 174  176  179  181  187  188  191  192  195  197  208  213
+      |(Reference)      : 
+     mpe
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 6
+     my
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  15
+      |(Definition)     : 174  179  187  191  195  206  213
+      |(Reference)      : 35  35  64  65
+     my_max
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  15
+      |(Definition)     : 174  179  187  191  195  206
+      |(Reference)      : 18  18  18  18  18  20  22  22  22  22  22  22  22  22  22  27  42  42  42
+     myrank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 175  180  188  192  196  207  213
+     n
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 40
+      |(Definition)     : 173  178  186  190  194  204
+      |(Reference)      : 174  176  176  176  176  176  176  179  181  181  181  181  181  181  187  188  188  188  188  188  188  191  192  192  192  192  192  192  195  197  197  197  197  197  197  205  206  207
+     ntau
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 15
+      |(Definition)     : 62  176  181  188  192  197  205
+      |(Reference)      : 
+     num
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 15  16
+      |(Definition)     : 
+      |(Reference)      : 27  31  33  194  204  213
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  15
+      |(Definition)     : 174  179  187  191  195  206  213
+      |(Reference)      : 35  35  64
+     nxdef_2d
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 72  111  136
+     nxj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 40
+      |(Definition)     : 72  111  136
+      |(Reference)      : 73  112  117  137
+     nxp
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 18  18  18  18  18  20  22  22  22  22  22  22  22  22  22  27  42  42  42
+     out2d_mfc
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     outdms
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8  203
+     outgrb2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8  172
+     phi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 42
+      |(Definition)     : 113  118
+      |(Reference)      : 118  142
+     pk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 10  113  118  118  138  139
+     pk2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 10  113  118  118
+     plt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 10  140
+     pt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  20
+      |(Definition)     : 
+      |(Reference)      : 140  146  150  154  157  161
+     ptop
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8  140  146  150  154  157  161
+     ptp0
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, initialized
+      |(Declaration)    : 33  54
+      |(Definition)     : 176  181  188  192  197
+      |(Reference)      : 
+     ptp1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, initialized
+      |(Declaration)    : 33  55
+      |(Definition)     : 176  181  188  192  197
+      |(Reference)      : 
+     ptp2
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, initialized
+      |(Declaration)    : 33  56
+      |(Definition)     : 176  181  188  192  197
+      |(Reference)      : 
+     ptp3
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, initialized
+      |(Declaration)    : 33  57
+      |(Definition)     : 176  181  188  192  197
+      |(Reference)      : 
+     ptp4
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, initialized
+      |(Declaration)    : 33  58
+      |(Definition)     : 176  181  188  192  197
+      |(Reference)      : 
+     ptp5
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION, initialized
+      |(Declaration)    : 33  59
+      |(Definition)     : 
+      |(Reference)      : 176  181  188  192  197
+     q2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  22
+      |(Definition)     : 
+      |(Reference)      : 77
+     qt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 10  138  139
+     RTYPE
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8  20  27  35
+     raincu1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  22
+      |(Definition)     : 
+      |(Reference)      : 74
+     rainlp1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  22
+      |(Definition)     : 
+      |(Reference)      : 74
+     raintot
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  18
+      |(Definition)     : 
+      |(Reference)      : 75
+     rank
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 5
+     rdg
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 41
+      |(Definition)     : 67
+      |(Reference)      : 140  159
+     rgas
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 8  67  148  149  154  157  160
+     rh10
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  22
+      |(Definition)     : 
+      |(Reference)      : 
+     rh2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  22
+      |(Definition)     : 
+      |(Reference)      : 78  84
+     rld
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  22
+      |(Definition)     : 
+      |(Reference)      : 87
+     sgeo
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 10  113  142  144  145  148  149  154  157  160
+     sld
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  22
+      |(Definition)     : 
+      |(Reference)      : 88
+     syslbl
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 205
+     TdAlpha
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 44
+      |(Definition)     : 
+      |(Reference)      : 84  86
+     TdBeta
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 44
+      |(Definition)     : 
+      |(Reference)      : 84  86
+     TdGamma
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 45
+      |(Definition)     : 84
+      |(Reference)      : 86  86
+     t2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  18
+      |(Definition)     : 
+      |(Reference)      : 76  84  84
+     tmax
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  22
+      |(Definition)     : 
+      |(Reference)      : 81
+     tmin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  22
+      |(Definition)     : 
+      |(Reference)      : 82
+     tnshun
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 41
+      |(Definition)     : 63
+      |(Reference)      : 
+     tt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 10  113  118  118  138  139
+     ttb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 41
+      |(Definition)     : 138
+      |(Reference)      : 140  140
+     ttp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 41
+      |(Definition)     : 139
+      |(Reference)      : 142
+     ttt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 41
+      |(Definition)     : 149  160
+      |(Reference)      : 150  150  150  150  161  161  161  161
+     ttt1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 41
+      |(Definition)     : 140
+      |(Reference)      : 143
+     ttt2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 41
+      |(Definition)     : 142
+      |(Reference)      : 143
+     u10
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  18
+      |(Definition)     : 
+      |(Reference)      : 79
+     unify_reduceintp
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 174  179  187  191  195  206
+     v10
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  18
+      |(Definition)     : 
+      |(Reference)      : 80
+     wrt_grb2
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 181  197
+     wrt_grb2_accu
+      |(Class and Type) : module subroutine name
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 176  188  192
+
+ Total information
+   Procedures       : 1
+   Total lines      : 228
+   Total statements : 140
+   Total stack(byte): 2704
+   Total prefetch num: 20
+

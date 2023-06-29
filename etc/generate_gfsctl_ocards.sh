@@ -58,7 +58,7 @@ levs2='  10
 
 ft_ini=0
 #ft_end=8784
-ft_end=360
+ft_end=240
 #ft_end=1095
 ft_gap=6
 
@@ -145,7 +145,7 @@ echo nomodata >> ocards
 if [ -f gfsctl ]; then
   rm -f gfsctl
 fi
-for ft in $(seq ${ft_ini} ${ft_gap} ${ft_end})
+for ft in $(seq ${ft_ini} 3 ${ft_end})
 do
   if [ $ft -lt 10 ]; then
     ft='000'$ft

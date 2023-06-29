@@ -1,0 +1,1157 @@
+
+ Fujitsu Fortran Version 4.6.1  Thu Jun 29 14:23:03 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm
+   Source file       : rcmpsl2c.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "rcmpsl2c"
+  (inc)(line-no.)(nest)(optimize)
+               1                           subroutine rcmpsl2c ( ns,nx,lev,u0,as,ww1,ww2,ww,ttau,cld,cldb    &
+               2                                                ,ffu,ffd )
+               3                     !
+               4                     ! **********************************************************************
+               5                     ! (1)
+               6                     ! The generalized two stream approximation for nonhomgeneous atmospheres
+               7                     ! in  the  solar  wavelengths.
+               8                     !
+               9                     ! (2)
+              10                     ! The treatment of cloud overlapping for partial cloudinesses is included
+              11                     ! by Fong(1996), which is based on the method proposed by Geleyn and
+              12                     ! Hollingsworth (1979, contrib. atmos. phys. )
+              13                     !
+              14                     ! ++ input/output variables:
+              15                     !    (1) input variables :
+              16                     !        ns    : number of grid points to calculate sw flux
+              17                     !        nx    : horizontal dimension of input array
+              18                     !        lev   : number of vertical layers
+              19                     !        u0    : cos(zenith angle)
+              20                     !        as    : ground surface albedo
+              21                     !        ww1~2 : first two coeff. of legendre polynomials for
+              22                     !                the scattering phase function
+              23                     !        ww    : single scattering albedo
+              24                     !        ttau(lev+1) : total optical depth from top to reference level
+              25                     !
+              26                     !    (2) output variables :
+              27                     !        ffu
+              28                     !        ffd
+              29                     !
+              30                     ! ++ auther :
+              31                     !    c. t. fong and fu (1996, summer)
+              32                     !    modify to f90 by C-H Lee in 2015
+              33                     !
+              34                     ! **********************************************************************
+              35                     !
+              36                           use fj_pad
+              37                     
+              38                           implicit  none
+              39                           integer   ns,nx,lev
+              40                     
+              41                           real      u0(nx),as(nx),ww1(nx*lev,2),ww2(nx*lev,2),ww(nx*lev,2), &
+              42                                     ttau(nx*(lev+1),2),cld(nx*lev),cldb(nx*lev,4)
+              43                           real      ffu(nx*(lev+1)),ffd(nx*(lev+1))
+              44                     !
+              45                     !   local working arrays
+              46                     !
+              47                     !fong include 'param.h'
+              48                     !
+              49                     !     include '../include/fj_pad.h'
+              50                           real      w1(nx*lev,2),w(nx*lev,2),tau(nx*(lev+1),2)
+              51                           real      lamdan
+              52                           real      expdt(nx*lev,2),sol(nx*(lev+1),2)
+              53                           real      rl(nx*lev,2),tl(nx*lev,2),rb(nx*lev,2),tb(nx*lev,2)
+              54                     !fj      dimension aa(nx,4,4),amtx(nx,lev*4,12),u0t(nx*lev)
+              55                           real      amtx(nx+npad,lev*4,12),u0t(nx*lev)
+              56                     
+              57                           logical edding,quadra
+              58                     !ibm
+              59                     !fj      dimension tmp1(ns*lev),tmp2(ns*lev)
+              60                           real      tmp1(ns*lev)
+              61                     !
+              62                           integer   nsn,nsn1,lev4,i,j,jk,jj,m,kini
+              63                           real      sqrt3,rsqrt3,pi,f0,fxx,fw,tmp2,x,y,z
+              64                           real      gamma1,gamma2,gamma3,gamma4,ugts1,gamman
+              65                           real      u0_mod,vh,vk,enn,axx,bxx,cxx,solm_f,solm_c,ssfc_f,ssfc_c
+              66                     
+              67                           edding = .true.
+              68                           quadra = .false.
+              69                     !
+              70                           nsn  = ns*lev
+              71                           nsn1 = ns*(lev+1)
+              72                           lev4 = lev*4
+              73                           sqrt3= sqrt(3.)
+              74                           rsqrt3= 1./sqrt3
+              75                           pi   = 4.*atan(1.)
+              76                           f0   = 1./pi
+              77                     !
+              78                     !fong01
+              79                     ! incorporate a delta-function adjustment to account for the forward
+              80                     ! diffraction  peak in the context of the two stream approximations.
+              81                     ! w1(n),  w(n), and tau(n+1) are the adjusted parameters.
+              82                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1143
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.20, ITR: 80, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      u0, sol
+                                   <<< Loop-information  End >>>
+              83     1  pp   2v            do 7 i = 1, ns
+              84     1   p   2v            sol(i,1) = u0(i)
+              85     1   p   2v            sol(i,2) = 0.
+              86     1   p   2v          7 continue
+              87                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      u0, u0t
+                                   <<< Loop-information  End >>>
+              88     1                     do j = 1, lev
+              89     1                     jk = j*ns
+              90     1                     jj = jk-ns
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1231
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 144, MVE: 5, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      u0, u0t
+                                   <<< Loop-information  End >>>
+              91     2  pp   2v            do i = 1, ns
+              92     2   p   2v             u0t(i+jj) = u0(i)
+              93     2   p   2v            enddo
+              94     1                     enddo
+              95                     !
+              96                     ! The following is used to calculate the Coefficients For Generalized
+              97                     ! Two-Stream scheme.  We can make choices between Eddington, quadrature
+              98                     ! and  hemispheric  mean  schemes  through  logical variables 'edding',
+              99                     ! 'quadra', and 'hemisp'.  The  Eddington  and  quadrature  schemes are
+             100                     ! discussed in detail by Liou (1992).  The  hemispheric  mean scheme is
+             101                     ! derived by assuming that the phase function is equal to 1 + g in  the
+             102                     ! forward scattering hemisphere and 1 - g  in  the  backward scattering
+             103                     ! hemisphere where g is the asymmetry factor.   The hemispheric mean is
+             104                     ! only used for infrared wavelengths (Toon et al. 1989).
+             105                     !
+             106                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ww2, ww, ww1, ttau, w1, w, tmp1
+                                   <<<      (unknown)
+                                   <<< Loop-information  End >>>
+             107     1                     do 40 m = 1, 2
+             108     1               !ibm
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 1600
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tau
+                                   <<< Loop-information  End >>>
+             109     2  pp   4v            do i = 1, ns
+             110     2   p   4v             tau(i,m) = 0.
+             111     2   p   4v            enddo
+             112     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 263
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED(lines: 113,122)
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.73, ITR: 32, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tau, ttau, ww1, ww2, ww, tmp1, w, w1
+                                   <<<      (unknown)
+                                   <<< Loop-information  End >>>
+             113     2   m    v            do i = 1, nsn
+             114     2   p    v             fxx = ww2(i,m) / 5.0
+             115     2   p    v             fw = 1.0 - fxx * ww(i,m)
+             116     2   p    v             w1(i,m) = ( ww1(i,m) - 3.0 * fxx ) / ( 1.0 - fxx )
+             117     2   p    v             w(i,m)  = ( 1.0 - fxx ) * ww(i,m) / fw
+             118     2   p    v             w(i,m) = min ( w(i,m), 0.999999 )
+             119     2   p    v             tmp1(i) = (ttau(i+ns,m) - ttau(i,m)) * fw
+             120     2   p    v            enddo
+             121     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED
+                                   <<< Loop-information  End >>>
+             122     2                     do i = 1, nsn
+             123     2        s             tau(i+ns,m) = tau(i,m) + tmp1(i)
+             124     2                     enddo
+             125     1               !ibm
+             126     1               !fj      call vrec(tmp2(1),u0t(1),nsn)
+             127     1               !fj      call vexp(expdt(1,m),tmp2(1),nsn)
+             128     1               !ocl norecurrence,simd
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 20
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      tau, w1, w, tmp1, u0t, expdt, tl, rl, rb
+                                   <<<      tb
+                                   <<< Loop-information  End >>>
+             129     2  pp    v            do 40 i = 1, nsn
+             130     2   p    v               tmp2 = 1.d0/u0t(i)
+             131     2   p    v               tmp2 = -tmp1(i)*tmp2
+             132     2   p    v               expdt(i,m) = exp(tmp2)
+             133     2               !ibm
+             134     2               !fj      do 40 i = 1, nsn
+             135     2               !
+             136     2               !fong02_1
+             137     2               !cc   if ( edding ) then
+             138     2   p    v      	   x = 0.25 * w1(i,m)     ! w1 = 3g
+             139     2   p    v                 y = w(i,m) * x
+             140     2   p    v                 gamma1 = 1.75 - w(i,m) - y
+             141     2   p    v                 gamma2 = - 0.25 + w(i,m) - y
+             142     2   p    v                 gamma3 = 0.5 - x * u0t(i)
+             143     2   p    v                 gamma4 = 1.0 - gamma3
+             144     2   p    v                 ugts1 = 0.5
+             145     2               !
+             146     2               !cc   elseif ( quadra ) then
+             147     2               !          x = 0.5*sqrt3 * w(i,m)
+             148     2               !          y = 0.5*rsqrt3 * w1(i,m)  ! rsqrt3 = 1/sqrt3
+             149     2               !          z = y * w(i,m)
+             150     2               !          gamma1 = sqrt3 - x - z
+             151     2               !          gamma2 = x - z
+             152     2               !          gamma3 = 0.5 - y * u0t(i)
+             153     2               !          gamma4 = 1.0 - gamma3
+             154     2               !          ugts1 = rsqrt3
+             155     2               !cc   endif
+             156     2               !fong02_1
+             157     2               !ibm  lamdan = exp( 0.5*log((gamma1 + gamma2)*(gamma1 - gamma2)) )
+             158     2   p    v            lamdan = sqrt((gamma1 + gamma2)*(gamma1 - gamma2))
+             159     2   p    v            gamman = gamma2 / ( gamma1 + lamdan )
+             160     2   p    v            z = lamdan * lamdan * u0t(i) * u0t(i) - 1.0
+             161     3   p    v            if(abs(z) .lt. 0.000001)then
+             162     3   p    v             u0_mod=u0t(i)+0.01*u0t(i)
+             163     3   p    v             z = lamdan * lamdan * u0_mod * u0_mod - 1.0
+             164     3   p    v            end if
+             165     2   p    v            vh = ( -gamma3 + u0t(i)*(gamma1*gamma3+gamma2*gamma4) ) / z
+             166     2   p    v            vk = (  gamma4 + u0t(i)*(gamma1*gamma4+gamma2*gamma3) ) / z
+             167     2   p    v            enn = exp ( - lamdan * ( tau(i+ns,m)-tau(i,m) ) )
+             168     2   p    v            axx = gamman * gamman
+             169     2   p    v            bxx = enn * enn
+             170     2   p    v            cxx = axx*bxx - 1.0
+             171     2   p    v            rl(i,m) = gamman * ( bxx - 1.0 ) / cxx
+             172     2   p    v            tl(i,m) = enn * ( axx - 1.0 ) / cxx
+             173     2   p    v            rb(i,m) = w(i,m) * ( -vk*rl(i,m) - vh*expdt(i,m)* tl(i,m) + vh )
+             174     2   p    v            tb(i,m) = w(i,m) * ( -vk*tl(i,m) - vh*expdt(i,m)* rl(i,m) + expdt(i,m)*vk )
+             175     2   p    v            rl(i,m) = max ( 0., rl(i,m) )
+             176     1   p    v         40 continue
+             177                     !fong02
+             178                     !
+             179                     !ibm
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cldb, sol, expdt
+                                   <<< Loop-information  End >>>
+             180     1                     do 26 j = 1, lev
+             181     1                     jk = j*ns
+             182     1                     jj = jk-ns
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 381
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.55, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      sol, cldb, expdt
+                                   <<< Loop-information  End >>>
+             183     2  pp    v            do 26 i = 1, ns
+             184     2   p    v            sol(i+jk,1) = expdt(i+jj,1) * ( cldb(i+jj,1)*sol(i+jj,1) +        &
+             185     2                                   (1.0-cldb(i+jj,3))*sol(i+jj,2) )
+             186     2   p    v            sol(i+jk,2) = expdt(i+jj,2) * ( (1.0-cldb(i+jj,1))*sol(i+jj,1) +  &
+             187     2                                   cldb(i+jj,3)*sol(i+jj,2) )
+             188     1   p    v         26 continue
+             189                     !ibm
+             190                     !     do 45 i = 1, nx*lev4*12
+             191                     !     amtx(i,1,1) = 0.
+             192                     !  45 continue
+             193                     !
+             194                     !fong03
+             195                     
+             196                     !fj
+             197                     !fj j = 1
+             198                     !fj
+             199                           j = 1
+             200                           kini = (j-1) * 4
+             201                           jk = j*ns
+             202                           jj = jk-ns
+             203                     
+             204                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 88
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED(lines: 205,239)
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cldb, sol, tb, amtx, rb
+                                   <<<    PREFETCH(SOFT) : 66
+                                   <<<     SEQUENTIAL : 66
+                                   <<<      rl: 4, amtx: 56, tl: 4, cldb: 2
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 22
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             205     1  pp    v            do i = 1, ns
+             206     1   p    v               amtx(i,kini+1,3)=0.
+             207     1   p    v               amtx(i,kini+1,4)=0.
+             208     1   p    v               amtx(i,kini+1,5)=0.
+             209     1   p    v               amtx(i,kini+1,7)=0.
+             210     1   p    v               amtx(i,kini+1,8)=0.
+             211     1   p    v               amtx(i,kini+1,9)=0.
+             212     1   p    v               amtx(i,kini+2,3)=0.
+             213     1   p    v               amtx(i,kini+2,4)=0.
+             214     1   p    v               amtx(i,kini+2,5)=0.
+             215     1   p    v               amtx(i,kini+2,7)=0.
+             216     1   p    v               amtx(i,kini+2,8)=0.
+             217     1   p    v               amtx(i,kini+3,3)=0.
+             218     1   p    v               amtx(i,kini+3,4)=0.
+             219     1   p    v               amtx(i,kini+3,5)=0.
+             220     1   p    v               amtx(i,kini+3,7)=0.
+             221     1   p    v               amtx(i,kini+4,3)=0.
+             222     1   p    v               amtx(i,kini+4,4)=0.
+             223     1   p    v               amtx(i,kini+4,5)=0.
+             224     1   p    v               amtx(i,kini+4,9)=0.
+             225     1   p    v               amtx(i,kini+1,6) = 1.0
+             226     1   p    v               amtx(i,kini+1,10) =  - tl(i+jj,1) * cldb(i+jj,2)
+             227     1   p    v               amtx(i,kini+1,11) =  - tl(i+jj,1) * ( 1.0 - cldb(i+jj,4) )
+             228     1   p    v               amtx(i,kini+2,6) = 1.0
+             229     1   p    v               amtx(i,kini+2,9) = - tl(i+jj,2) * ( 1.0 - cldb(i+jj,2) )
+             230     1   p    v               amtx(i,kini+2,10) = - tl(i+jj,2) * cldb(i+jj,4)
+             231     1   p    v               amtx(i,kini+3,6) = 1.0
+             232     1   p    v               amtx(i,kini+3,8) = - rl(i+jj,1) * cldb(i+jj,2)
+             233     1   p    v               amtx(i,kini+3,9) = - rl(i+jj,1) * ( 1.0 - cldb(i+jj,4) )
+             234     1   p    v               amtx(i,kini+4,6) = 1.0
+             235     1   p    v               amtx(i,kini+4,7) = - rl(i+jj,2) * ( 1.0 - cldb(i+jj,2) )
+             236     1   p    v               amtx(i,kini+4,8) = - rl(i+jj,2) * cldb(i+jj,4)
+             237     1   p    v            enddo
+             238                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED
+                                   <<< Loop-information  End >>>
+             239     1                     do i = 1, ns
+             240     1                        solm_f = cldb(i+jj,1)*sol(i+jj,1) + ( 1.0-cldb(i+jj,3) ) * sol(i+jj,2)
+             241     1                        solm_c = ( 1.0-cldb(i+jj,1) )*sol(i+jj,1) + cldb(i+jj,3) * sol(i+jj,2)
+             242     1                        amtx(i,kini+1,12) = rb(i+jj,1) * solm_f
+             243     1                        amtx(i,kini+2,12) = rb(i+jj,2) * solm_c
+             244     1                        amtx(i,kini+3,12) = tb(i+jj,1) * solm_f
+             245     1                        amtx(i,kini+4,12) = tb(i+jj,2) * solm_c
+             246     1                     enddo
+             247                     
+             248                     !fj
+             249                     !fj j = 2,lev-1
+             250                     !fj
+             251                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+             252     1  pp                 do j = 2,lev-1
+             253     1   p                    kini = (j-1) * 4
+             254     1   p                    jk = j*ns
+             255     1   p                    jj = jk-ns
+             256     1               !
+             257     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED(lines: 258,274,293,300)
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      amtx, rl, cldb, tl
+                                   <<<    PREFETCH(SOFT) : 72
+                                   <<<     SEQUENTIAL : 72
+                                   <<<      amtx: 56, cldb: 2, sol: 4, tb: 4, rb: 4
+                                   <<<      rl: 2
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 28
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             258     2   p    v               do i = 1, ns
+             259     2   p    v                  amtx(i,kini+1,3)=0.
+             260     2   p    v                  amtx(i,kini+1,7)=0.
+             261     2   p    v                  amtx(i,kini+1,8)=0.
+             262     2   p    v                  amtx(i,kini+1,9)=0.
+             263     2   p    v                  amtx(i,kini+2,5)=0.
+             264     2   p    v                  amtx(i,kini+2,7)=0.
+             265     2   p    v                  amtx(i,kini+2,8)=0.
+             266     2   p    v                  amtx(i,kini+3,4)=0.
+             267     2   p    v                  amtx(i,kini+3,5)=0.
+             268     2   p    v                  amtx(i,kini+3,7)=0.
+             269     2   p    v                  amtx(i,kini+4,3)=0.
+             270     2   p    v                  amtx(i,kini+4,4)=0.
+             271     2   p    v                  amtx(i,kini+4,5)=0.
+             272     2   p    v                  amtx(i,kini+4,9)=0.
+             273     2   p    v               enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED
+                                   <<< Loop-information  End >>>
+             274     2   p                    do i = 1, ns
+             275     2   p                       amtx(i,kini+1,4)  = - rl(i+jj,1) * cldb(i+jj,1)
+             276     2   p                       amtx(i,kini+1,5)  = - rl(i+jj,1) * ( 1.0 - cldb(i+jj,3) )
+             277     2   p                       amtx(i,kini+1,10) = - tl(i+jj,1) * cldb(i+jj,2)
+             278     2   p                       amtx(i,kini+1,11) = - tl(i+jj,1) * ( 1.0 - cldb(i+jj,4) )
+             279     2   p                       amtx(i,kini+2,3)  = - rl(i+jj,2) * ( 1.0 - cldb(i+jj,1) )
+             280     2   p                       amtx(i,kini+2,4)  = - rl(i+jj,2) * cldb(i+jj,3)
+             281     2   p                       amtx(i,kini+2,9)  = - tl(i+jj,2) * ( 1.0 - cldb(i+jj,2) )
+             282     2   p                       amtx(i,kini+2,10) = - tl(i+jj,2) * cldb(i+jj,4)
+             283     2   p                       amtx(i,kini+3,2)  = - tl(i+jj,1) * cldb(i+jj,1)
+             284     2   p                       amtx(i,kini+3,3)  = - tl(i+jj,1) * ( 1.0 - cldb(i+jj,3) )
+             285     2   p                       amtx(i,kini+3,8)  = - rl(i+jj,1) * cldb(i+jj,2)
+             286     2   p                       amtx(i,kini+3,9)  = - rl(i+jj,1) * ( 1.0 - cldb(i+jj,4) )
+             287     2   p                       amtx(i,kini+4,1)  = - tl(i+jj,2) * ( 1.0 - cldb(i+jj,1) )
+             288     2   p                       amtx(i,kini+4,2)  = - tl(i+jj,2) * cldb(i+jj,3)
+             289     2   p                       amtx(i,kini+4,7)  = - rl(i+jj,2) * ( 1.0 - cldb(i+jj,2) )
+             290     2   p                       amtx(i,kini+4,8)  = - rl(i+jj,2) * cldb(i+jj,4)
+             291     2   p                    enddo
+             292     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED
+                                   <<< Loop-information  End >>>
+             293     2   p                    do i = 1, ns
+             294     2   p                       amtx(i,kini+1,6) = 1.0
+             295     2   p                       amtx(i,kini+2,6) = 1.0
+             296     2   p                       amtx(i,kini+3,6) = 1.0
+             297     2   p                       amtx(i,kini+4,6) = 1.0
+             298     2   p                    enddo
+             299     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED
+                                   <<< Loop-information  End >>>
+             300     2   p                    do i = 1,ns
+             301     2   p                       solm_f = cldb(i+jj,1)*sol(i+jj,1) + ( 1.0-cldb(i+jj,3) ) * sol(i+jj,2)
+             302     2   p                       solm_c = ( 1.0-cldb(i+jj,1) )*sol(i+jj,1) + cldb(i+jj,3) * sol(i+jj,2)
+             303     2   p                       amtx(i,kini+1,12) = rb(i+jj,1) * solm_f
+             304     2   p                       amtx(i,kini+2,12) = rb(i+jj,2) * solm_c
+             305     2   p                       amtx(i,kini+3,12) = tb(i+jj,1) * solm_f
+             306     2   p                       amtx(i,kini+4,12) = tb(i+jj,2) * solm_c
+             307     2   p                    enddo
+             308     1   p                 enddo
+             309                     
+             310                     !fj
+             311                     !fj j = lev
+             312                     !fj
+             313                           j = lev
+             314                           kini = (j-1) * 4
+             315                           jk = j*ns
+             316                           jj = jk-ns
+             317                     !
+             318                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 67
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED(lines: 319,375,384)
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      amtx, cldb, rl, as, tl
+                                   <<<    PREFETCH(SOFT) : 72
+                                   <<<     SEQUENTIAL : 72
+                                   <<<      amtx: 52, cldb: 2, sol: 8, rb: 4, tb: 4
+                                   <<<      rl: 2
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 28
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             319     1  pp    v            do i = 1, ns
+             320     1               
+             321     1   p    v               amtx(i,kini+1,3)=0.
+             322     1   p    v               amtx(i,kini+1,4)=0.
+             323     1   p    v               amtx(i,kini+1,5)=0.
+             324     1   p    v               amtx(i,kini+1,7)=0.
+             325     1   p    v               amtx(i,kini+1,8)=0.
+             326     1   p    v               amtx(i,kini+1,9)=0.
+             327     1               
+             328     1   p    v               amtx(i,kini+2,3)=0.
+             329     1   p    v               amtx(i,kini+2,4)=0.
+             330     1   p    v               amtx(i,kini+2,5)=0.
+             331     1   p    v               amtx(i,kini+2,7)=0.
+             332     1   p    v               amtx(i,kini+2,8)=0.
+             333     1   p    v               amtx(i,kini+2,9)=0.
+             334     1               
+             335     1   p    v               amtx(i,kini+3,3)=0.
+             336     1   p    v               amtx(i,kini+3,4)=0.
+             337     1   p    v               amtx(i,kini+3,5)=0.
+             338     1   p    v               amtx(i,kini+3,7)=0.
+             339     1   p    v               amtx(i,kini+3,8)=0.
+             340     1   p    v               amtx(i,kini+3,9)=0.
+             341     1               
+             342     1   p    v               amtx(i,kini+4,3)=0.
+             343     1   p    v               amtx(i,kini+4,4)=0.
+             344     1   p    v               amtx(i,kini+4,5)=0.
+             345     1   p    v               amtx(i,kini+4,7)=0.
+             346     1   p    v               amtx(i,kini+4,8)=0.
+             347     1   p    v               amtx(i,kini+4,9)=0.
+             348     1   p    v               amtx(i,kini+1,6) = 1.0
+             349     1   p    v               amtx(i,kini+1,4) =  - rl(i+jj,1) * cldb(i+jj,1)
+             350     1   p    v               amtx(i,kini+1,5) = - rl(i+jj,1) * ( 1.0 - cldb(i+jj,3) )
+             351     1   p    v               amtx(i,kini+1,8) = amtx(i,kini+1,8) + as(i)*(- tl(i+jj,1) * cldb(i+jj,2))
+             352     1   p    v               amtx(i,kini+1,9) = amtx(i,kini+1,9) + as(i)*(- tl(i+jj,1) * ( 1.0 - cldb(i+jj,4) ))
+             353     1   p    v               amtx(i,kini+2,6) = 1.0
+             354     1               
+             355     1   p    v               amtx(i,kini+2,3) = - rl(i+jj,2) * ( 1.0 - cldb(i+jj,1) )
+             356     1   p    v               amtx(i,kini+2,4) = - rl(i+jj,2) * cldb(i+jj,3)
+             357     1   p    v               amtx(i,kini+2,7) = amtx(i,kini+2,7) + as(i)*(- tl(i+jj,2) * ( 1.0 - cldb(i+jj,2) ))
+             358     1   p    v               amtx(i,kini+2,8) = amtx(i,kini+2,8) + as(i)*(- tl(i+jj,2) * cldb(i+jj,4))
+             359     1   p    v               amtx(i,kini+3,6) = 1.0
+             360     1               
+             361     1   p    v               amtx(i,kini+3,2) = - tl(i+jj,1) * cldb(i+jj,1)
+             362     1   p    v               amtx(i,kini+3,3) = - tl(i+jj,1) * ( 1.0 - cldb(i+jj,3) )
+             363     1               
+             364     1   p    v               amtx(i,kini+3,6) = amtx(i,kini+3,6) + as(i)*(- rl(i+jj,1) * cldb(i+jj,2))
+             365     1   p    v               amtx(i,kini+3,7) = amtx(i,kini+3,7) + as(i)*(- rl(i+jj,1) * ( 1.0 - cldb(i+jj,4) ))
+             366     1   p    v               amtx(i,kini+4,6) = 1.0
+             367     1               
+             368     1   p    v               amtx(i,kini+4,1) = - tl(i+jj,2) * ( 1.0 - cldb(i+jj,1) )
+             369     1   p    v               amtx(i,kini+4,2) = - tl(i+jj,2) * cldb(i+jj,3)
+             370     1               
+             371     1   p    v               amtx(i,kini+4,5) = amtx(i,kini+4,5) + as(i)*(- rl(i+jj,2) * ( 1.0 - cldb(i+jj,2) ))
+             372     1   p    v               amtx(i,kini+4,6) = amtx(i,kini+4,6) + as(i)*(- rl(i+jj,2) * cldb(i+jj,4))
+             373     1   p    v            enddo
+             374                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED
+                                   <<< Loop-information  End >>>
+             375     1                       do i = 1, ns
+             376     1                          solm_f = cldb(i+jj,1)*sol(i+jj,1) + ( 1.0-cldb(i+jj,3) ) * sol(i+jj,2)
+             377     1                          solm_c = ( 1.0-cldb(i+jj,1) )*sol(i+jj,1) + cldb(i+jj,3) * sol(i+jj,2)
+             378     1                          amtx(i,kini+1,12) = rb(i+jj,1) * solm_f
+             379     1                          amtx(i,kini+2,12) = rb(i+jj,2) * solm_c
+             380     1                          amtx(i,kini+3,12) = tb(i+jj,1) * solm_f
+             381     1                          amtx(i,kini+4,12) = tb(i+jj,2) * solm_c
+             382     1                       enddo
+             383                     
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED
+                                   <<< Loop-information  End >>>
+             384     1                       do i = 1, ns
+             385     1                          ssfc_f = as(i) * sol(i+nsn,1) ! assume direct albedo = as
+             386     1                          ssfc_c = as(i) * sol(i+nsn,2)
+             387     1                          amtx(i,kini+1,12) = amtx(i,kini+1,12) - ( (- tl(i+jj,1) * cldb(i+jj,2))*ssfc_f +  &
+             388     1                               (- tl(i+jj,1) * ( 1.0 - cldb(i+jj,4) ))*ssfc_c )
+             389     1                          amtx(i,kini+2,12) = amtx(i,kini+2,12) - ( (- tl(i+jj,2) * ( 1.0 - cldb(i+jj,2) ))*ssfc_f +  &
+             390     1                               (- tl(i+jj,2) * cldb(i+jj,4))*ssfc_c )
+             391     1                          amtx(i,kini+3,12) = amtx(i,kini+3,12) - ( (- rl(i+jj,1) * cldb(i+jj,2))*ssfc_f +  &
+             392     1                               (- rl(i+jj,1) * ( 1.0 - cldb(i+jj,4) ))*ssfc_c )
+             393     1                          amtx(i,kini+4,12) = amtx(i,kini+4,12) - ( (- rl(i+jj,2) * ( 1.0 - cldb(i+jj,2) ))*ssfc_f +  &
+             394     1                               (- rl(i+jj,2) * cldb(i+jj,4))*ssfc_c )
+             395     1                       enddo
+             396                     !fong03
+             397                     !
+             398                     !  solve matrix
+             399                     !
+             400                           call mxslvc ( amtx, nx, ns, lev4 )
+             401                     !
+             402                     !fong04
+             403                     !
+             404                     !  compute net upward and downward fluxes at each level
+             405                     !
+             406                     !  level 1
+             407                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 640
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 80, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      amtx, ffd, sol, ffu
+                                   <<< Loop-information  End >>>
+             408     1  pp   2v            do 210 i = 1, ns
+             409     1   p   2v            ffu(i) = amtx(i,1,12) + amtx(i,2,12)
+             410     1   p   2v            ffd(i) = sol(i,1) + sol(i,2)
+             411     1   p   2v        210 continue
+             412                     !
+             413                     !  level 2 - lev
+             414                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      amtx, sol, ffd, ffu
+                                   <<< Loop-information  End >>>
+             415     1                     do 220 j = 1, lev-1
+             416     1                     kini = 2 + (j-1)*4
+             417     1                     jk = j*ns
+             418     1                     jj = jk-ns
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 433
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 48, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      amtx, ffu, sol, ffd
+                                   <<< Loop-information  End >>>
+             419     2  pp    v            do 220 i = 1, ns
+             420     2   p    v            ffd(i+jk) = amtx(i,kini+1,12) + amtx(i,kini+2,12) + sol(i+jk,1) + sol(i+jk,2)
+             421     2   p    v            ffu(i+jk) = amtx(i,kini+3,12) + amtx(i,kini+4,12)
+             422     1   p    v        220 continue
+             423                     !
+             424                     !  level lev+1 ( ground )
+             425                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 471
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.16, ITR: 88, MVE: 4, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      amtx, sol, as, ffu, ffd
+                                   <<< Loop-information  End >>>
+             426     1  pp    v            do 250 i = 1, ns
+             427     1   p    v            ffd(i+nsn) = amtx(i,lev4-1,12) + amtx(i,lev4,12) + sol(i+nsn,1) + sol(i+nsn,2)
+             428     1   p    v            ffu(i+nsn) = as(i) * ( amtx(i,lev4-1,12) + amtx(i,lev4,12) )      &
+             429     1                                  + as(i) * ( sol(i+nsn,1) + sol(i+nsn,2) )
+             430     1   p    v        250 continue
+             431                     !
+             432                           return
+             433                           end
+
+ Procedure information
+   Lines      : 433
+   Statements : 272
+   Stack(byte): 8704
+   Prefetch num: 210
+
+ Scoping unit of external sub-program : rcmpsl2c
+   Attribute and Cross reference of name
+     abs
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 161
+     amtx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 55
+      |(Definition)     : 206  207  208  209  210  211  212  213  214  215  216  217  218  219  220  221  222  223  224  225  226  227  228  229  230  231  232  233  234  235  236  242  243  244  245  259  260  261  262  263  264  265  266  267  268  269  270  271  272  275  276  277  278  279  280  281  282  283  284  285  286  287  288  289  290  294  295  296  297  303  304  305  306  321  322  323  324  325  326  328  329  330  331  332  333  335  336  337  338  339  340  342  343  344  345  346  347  348  349  350  351  352  353  355  356  357  358  359  361  362  364  365  366  368  369  371  372  378  379  380  381  387  389  391  393  400
+      |(Reference)      : 351  352  357  358  364  365  371  372  387  389  391  393  409  409  420  420  421  421  427  427  428  428
+     as
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  41
+      |(Definition)     : 
+      |(Reference)      : 351  352  357  358  364  365  371  372  385  386  428  428
+     atan
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 75
+     axx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 168
+      |(Reference)      : 170  172
+     bxx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 169
+      |(Reference)      : 170  171
+     cld
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  41
+      |(Definition)     : 
+      |(Reference)      : 
+     cldb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  41
+      |(Definition)     : 
+      |(Reference)      : 184  184  186  186  226  227  229  230  232  233  235  236  240  240  241  241  275  276  277  278  279  280  281  282  283  284  285  286  287  288  289  290  301  301  302  302  349  350  351  352  355  356  357  358  361  362  364  365  368  369  371  372  376  376  377  377  387  387  389  389  391  391  393  393
+     cxx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 170
+      |(Reference)      : 171  172
+     edding
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 57
+      |(Definition)     : 67
+      |(Reference)      : 
+     enn
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 167
+      |(Reference)      : 169  169  172
+     exp
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 132  167
+     expdt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 52
+      |(Definition)     : 132
+      |(Reference)      : 173  174  174  184  186
+     f0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 63
+      |(Definition)     : 76
+      |(Reference)      : 
+     ffd
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  43
+      |(Definition)     : 410  420  427
+      |(Reference)      : 
+     ffu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  43
+      |(Definition)     : 409  421  428
+      |(Reference)      : 
+     fj_pad
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 36
+     fw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 63
+      |(Definition)     : 115
+      |(Reference)      : 117  119
+     fxx
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 63
+      |(Definition)     : 114
+      |(Reference)      : 115  116  116  117
+     gamma1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 64
+      |(Definition)     : 140
+      |(Reference)      : 158  158  159  165  166
+     gamma2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 64
+      |(Definition)     : 141
+      |(Reference)      : 158  158  159  165  166
+     gamma3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 64
+      |(Definition)     : 142
+      |(Reference)      : 143  165  165  166
+     gamma4
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 64
+      |(Definition)     : 143
+      |(Reference)      : 165  166  166
+     gamman
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 64
+      |(Definition)     : 159
+      |(Reference)      : 168  168  171
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 62
+      |(Definition)     : 83  91  109  113  122  129  183  205  239  258  274  293  300  319  375  384  408  419  426
+      |(Reference)      : 84  84  85  92  92  110  114  115  116  116  117  117  118  118  119  119  119  123  123  123  130  131  132  138  139  140  141  142  160  160  162  162  165  166  167  167  171  172  173  173  173  173  173  174  174  174  174  174  174  175  175  184  184  184  184  184  184  186  186  186  186  186  186  206  207  208  209  210  211  212  213  214  215  216  217  218  219  220  221  222  223  224  225  226  226  226  227  227  227  228  229  229  229  230  230  230  231  232  232  232  233  233  233  234  235  235  235  236  236  236  240  240  240  240  241  241  241  241  242  242  243  243  244  244  245  245  259  260  261  262  263  264  265  266  267  268  269  270  271  272  275  275  275  276  276  276  277  277  277  278  278  278  279  279  279  280  280  280  281  281  281  282  282  282  283  283  283  284  284  284  285  285  285  286  286  286  287  287  287  288  288  288  289  289  289  290  290  290  294  295  296  297  301  301  301  301  302  302  302  302  303  303  304  304  305  305  306  306  321  322  323  324  325  326  328  329  330  331  332  333  335  336  337  338  339  340  342  343  344  345  346  347  348  349  349  349  350  350  350  351  351  351  351  351  352  352  352  352  352  353  355  355  355  356  356  356  357  357  357  357  357  358  358  358  358  358  359  361  361  361  362  362  362  364  364  364  364  364  365  365  365  365  365  366  368  368  368  369  369  369  371  371  371  371  371  372  372  372  372  372  376  376  376  376  377  377  377  377  378  378  379  379  380  380  381  381  385  385  386  386  387  387  387  387  387  387  389  389  389  389  389  389  391  391  391  391  391  391  393  393  393  393  393  393  409  409  409  410  410  410  420  420  420  420  420  421  421  421  427  427  427  427  427  428  428  428  428  428  428  428
+     j
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 62
+      |(Definition)     : 88  180  199  252  313  415
+      |(Reference)      : 89  181  200  201  253  254  314  315  416  417
+     jj
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 62
+      |(Definition)     : 90  182  202  255  316  418
+      |(Reference)      : 92  184  184  184  184  184  186  186  186  186  186  226  226  227  227  229  229  230  230  232  232  233  233  235  235  236  236  240  240  240  240  241  241  241  241  242  243  244  245  275  275  276  276  277  277  278  278  279  279  280  280  281  281  282  282  283  283  284  284  285  285  286  286  287  287  288  288  289  289  290  290  301  301  301  301  302  302  302  302  303  304  305  306  349  349  350  350  351  351  352  352  355  355  356  356  357  357  358  358  361  361  362  362  364  364  365  365  368  368  369  369  371  371  372  372  376  376  376  376  377  377  377  377  378  379  380  381  387  387  387  387  389  389  389  389  391  391  391  391  393  393  393  393
+     jk
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 62
+      |(Definition)     : 89  181  201  254  315  417
+      |(Reference)      : 90  182  184  186  202  255  316  418  420  420  420  421
+     kini
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 62
+      |(Definition)     : 200  253  314  416
+      |(Reference)      : 206  207  208  209  210  211  212  213  214  215  216  217  218  219  220  221  222  223  224  225  226  227  228  229  230  231  232  233  234  235  236  242  243  244  245  259  260  261  262  263  264  265  266  267  268  269  270  271  272  275  276  277  278  279  280  281  282  283  284  285  286  287  288  289  290  294  295  296  297  303  304  305  306  321  322  323  324  325  326  328  329  330  331  332  333  335  336  337  338  339  340  342  343  344  345  346  347  348  349  350  351  351  352  352  353  355  356  357  357  358  358  359  361  362  364  364  365  365  366  368  369  371  371  372  372  378  379  380  381  387  387  389  389  391  391  393  393  420  420  421  421
+     lamdan
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 51
+      |(Definition)     : 158
+      |(Reference)      : 159  160  160  163  163  167
+     lev
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  39
+      |(Definition)     : 
+      |(Reference)      : 41  41  41  41  41  41  43  43  50  50  50  52  52  53  53  53  53  55  55  60  70  71  72  88  180  252  313  415
+     lev4
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 62
+      |(Definition)     : 72  400
+      |(Reference)      : 427  427  428  428
+     m
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 62
+      |(Definition)     : 107
+      |(Reference)      : 110  114  115  116  116  117  117  118  118  119  119  123  123  132  138  139  140  141  167  167  171  172  173  173  173  173  173  174  174  174  174  174  174  175  175
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 175
+     min
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 118
+     mxslvc
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 400
+     npad
+      |(Class and Type) : named constant, INTEGER(4)
+      |(Attributes)     : use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 55
+     ns
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  39
+      |(Definition)     : 400
+      |(Reference)      : 60  70  71  83  89  90  91  109  119  123  167  181  182  183  201  202  205  239  254  255  258  274  293  300  315  316  319  375  384  408  417  418  419  426
+     nsn
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 62
+      |(Definition)     : 70
+      |(Reference)      : 113  122  129  385  386  427  427  427  428  428  428
+     nsn1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 62
+      |(Definition)     : 71
+      |(Reference)      : 
+     nx
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  39
+      |(Definition)     : 400
+      |(Reference)      : 41  41  41  41  41  41  41  41  43  43  50  50  50  52  52  53  53  53  53  55  55
+     pi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 63
+      |(Definition)     : 75
+      |(Reference)      : 76
+     quadra
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : 
+      |(Declaration)    : 57
+      |(Definition)     : 68
+      |(Reference)      : 
+     rb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 53
+      |(Definition)     : 173
+      |(Reference)      : 242  243  303  304  378  379
+     rcmpsl2c
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     rl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 53
+      |(Definition)     : 171  175
+      |(Reference)      : 173  174  175  232  233  235  236  275  276  279  280  285  286  289  290  349  350  355  356  364  365  371  372  391  391  393  393
+     rsqrt3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 63
+      |(Definition)     : 74
+      |(Reference)      : 
+     sol
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 52
+      |(Definition)     : 84  85  184  186
+      |(Reference)      : 184  184  186  186  240  240  241  241  301  301  302  302  376  376  377  377  385  386  410  410  420  420  427  427  428  428
+     solm_c
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 241  302  377
+      |(Reference)      : 243  245  304  306  379  381
+     solm_f
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 240  301  376
+      |(Reference)      : 242  244  303  305  378  380
+     sqrt
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 73  158
+     sqrt3
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 63
+      |(Definition)     : 73
+      |(Reference)      : 74
+     ssfc_c
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 386
+      |(Reference)      : 387  389  391  393
+     ssfc_f
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 385
+      |(Reference)      : 387  389  391  393
+     tau
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 50
+      |(Definition)     : 110  123
+      |(Reference)      : 123  167  167
+     tb
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 53
+      |(Definition)     : 174
+      |(Reference)      : 244  245  305  306  380  381
+     tl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 53
+      |(Definition)     : 172
+      |(Reference)      : 173  174  226  227  229  230  277  278  281  282  283  284  287  288  351  352  357  358  361  362  368  369  387  387  389  389
+     tmp1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 60
+      |(Definition)     : 119
+      |(Reference)      : 123  131
+     tmp2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 63
+      |(Definition)     : 130  131
+      |(Reference)      : 131  132
+     ttau
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  41
+      |(Definition)     : 
+      |(Reference)      : 119  119
+     u0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  41
+      |(Definition)     : 
+      |(Reference)      : 84  92
+     u0_mod
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 162
+      |(Reference)      : 163  163
+     u0t
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 55
+      |(Definition)     : 92
+      |(Reference)      : 130  142  160  160  162  162  165  166
+     ugts1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 64
+      |(Definition)     : 144
+      |(Reference)      : 
+     vh
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 165
+      |(Reference)      : 173  173  174
+     vk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 65
+      |(Definition)     : 166
+      |(Reference)      : 173  174  174
+     w
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 50
+      |(Definition)     : 117  118
+      |(Reference)      : 118  139  140  141  173  174
+     w1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 50
+      |(Definition)     : 116
+      |(Reference)      : 138
+     ww
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  41
+      |(Definition)     : 
+      |(Reference)      : 115  117
+     ww1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  41
+      |(Definition)     : 
+      |(Reference)      : 116
+     ww2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  41
+      |(Definition)     : 
+      |(Reference)      : 114
+     x
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 63
+      |(Definition)     : 138
+      |(Reference)      : 139  142
+     y
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 63
+      |(Definition)     : 139
+      |(Reference)      : 140  141
+     z
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 63
+      |(Definition)     : 160  163
+      |(Reference)      : 161  165  166
+   Cross reference of label
+     (Label) (label-kind)               (line-no.)
+     ------- ------------- ------------ ----------
+          7  execution     (Definition) 86  
+                           (Reference)  83
+         26  execution     (Definition) 188  
+                           (Reference)  180  183
+         40  execution     (Definition) 176  
+                           (Reference)  107  129
+        210  execution     (Definition) 411  
+                           (Reference)  408
+        220  execution     (Definition) 422  
+                           (Reference)  415  419
+        250  execution     (Definition) 430  
+                           (Reference)  426
+
+ Total information
+   Procedures       : 1
+   Total lines      : 433
+   Total statements : 272
+   Total stack(byte): 8704
+   Total prefetch num: 210
+

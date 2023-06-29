@@ -1,0 +1,1697 @@
+
+ Fujitsu Fortran Version 4.6.1  Thu Jun 29 14:23:01 2023
+
+ Compilation information
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm
+   Source file       : precpdp.f90
+
+ Option information
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
+                          -CcdRR8 -x- -xaccept=nomodule_allocatable
+                          -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
+                          -Kalign_loops -Knoarray_declaration_opt
+                          -Kassume=noshortloop -Kassume=nomemory_bandwidth
+                          -Kassume=notime_saving_compilation -Kauto
+                          -Kautoobjstack -Knocalleralloc -Kcmodel=small
+                          -Keval -Keval_noconcurrent -Knoextract_stride_store
+                          -Knofenv_access -Kfp_contract -Knofp_relaxed
+                          -Kfsimple -Kfz -Khpctag -Kilfunc=procedure
+                          -Knointentopt -Klargepage -Kloop_blocking
+                          -Kloop_fission -Kloop_nofission_stripmining
+                          -Kloop_fission_threshold=50 -Kloop_fusion
+                          -Kloop_interchange -Kloop_part_parallel
+                          -Kloop_part_simd -Kloop_perfect_nest
+                          -Kloop_noversioning -Knolto -Kmfunc=1 -Kocl
+                          -Komitfp -Knooptlib_string -Koptmsg=2
+                          -Knopc_relative_literal_loads -Kplt -Knopreex
+                          -Kprefetch_noconditional -Kprefetch_noindirect
+                          -Kprefetch_sequential=auto -Kprefetch_nostride
+                          -Kprefetch_cache_level=all -Kprefetch_noinfer
+                          -Kprefetch_strong -Kprefetch_strong_L2 -Knopreload
+                          -Ksch_post_ra -Ksch_pre_ra -Ksibling_calls
+                          -Ksimd=auto -Ksimd_packed_promotion
+                          -Ksimd_reduction_product -Ksimd_reg_size=512
+                          -Ksimd_nouncounted_loop
+                          -Ksimd_use_multiple_structures -Knostriping
+                          -Knosubscript_opt -Kswp -Kswp_freg_rate=100
+                          -Kswp_ireg_rate=100 -Kswp_preg_rate=100
+                          -Kswp_policy=auto -Ktemparraystack -Kunroll
+                          -Knounroll_and_jam -Knozfill
+                          -Kopenmp -Kopenmp_noassume_norecurrence
+                          -Kopenmp_nocollapse_except_innermost
+                          -Kopenmp_noordered_reduction -Knoopenmp_simd
+                          -Kthreadsafe -Kparallel -Kparallel_nofp_precision
+                          -Knoarray_private -Knodynamic_iteration -Kreduction
+                          -Kregion_extension
+                          -Nallextput -Nnoalloc_assign
+                          -Ncancel_overtime_compilation -Nnocheck_global
+                          -Nnocoarray -Nnocompdisp -Nnocopyarg -Nnocoverage
+                          -Nfjprof -Nfreealloc -Nf90move -Nnohook_func
+                          -Nnohook_time -Nlibomp -Nline -Nlst -Nlst=a -Nlst=d
+                          -Nlst=i -Nlst=p -Nlst=t -Nlst=x -Nnomallocfree
+                          -Nnoobsfun -Nnoprivatealloc -Nquickdbg=noargchk
+                          -Nquickdbg=nosubchk -Nquickdbg=noundef -NRnotrap
+                          -Nnorecursive -Nnoreordered_variable_stack
+                          -Nrt_notune -Nnosave -Nsetvalue=noheap
+                          -Nsetvalue=nostack -Nsetvalue=noscalar
+                          -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
+
+ External subroutine subprogram "precpdp"
+  (inc)(line-no.)(nest)(optimize)
+               1                            subroutine precpdp (im,ix,km,dt,del,prsl,ps,q,cwm,t,rn  &
+               2                           ,                   u00k,deltaq,psautco,lprnt)
+               3                     !
+               4                     !
+               5                     !     ******************************************************************
+               6                     !     *                                                                *
+               7                     !     *           subroutine for precipitation processes               *
+               8                     !     *           from suspended cloud water/ice                       *
+               9                     !     *                                                                *
+              10                     !     ******************************************************************
+              11                     !     *                                                                *
+              12                     !     *  originally created by  q. zhao                jan. 1995       *
+              13                     !     *                         -------                                *
+              14                     !     *  modified and rewritten by shrinivas moorthi   oct. 1998       *
+              15                     !     *                            -----------------                   *
+              16                     !     *  and                       hua-lu pan                          *
+              17                     !     *                            ----------                          *
+              18                     !     *                                                                *
+              19                     !     *  references:                                                   *
+              20                     !     *                                                                *
+              21                     !     *  zhao and carr (1997), monthly weather review (august)         *
+              22                     !     *  sundqvist et al., (1989) monthly weather review. (august)     *
+              23                     !     *  chuang 2013, modify sr to define frozen precipitation fraction*
+              24                     !     *                                                                *
+              25                     !     ******************************************************************
+              26                     !
+              27                     !     in this code vertical indexing runs from surface to top of the
+              28                     !     model
+              29                     !
+              30                     !     argument list:
+              31                     !     --------------
+              32                     !       im         : inner dimension over which calculation is made
+              33                     !       ix         : maximum inner dimension
+              34                     !       km         : number of vertical levels
+              35                     !       dt         : time step in seconds
+              36                     !       del(km)    : pressure layer thickness (bottom to top)
+              37                     !       prsl(km)   : pressure values for model layers (bottom to top)
+              38                     !       ps(im)     : surface pressure (centibars)
+              39                     !       q(ix,km)   : specific humidity (updated in the code)
+              40                     !       cwm(ix,km) : condensate mixing ratio (updated in the code)
+              41                     !       t(ix,km)   : temperature       (updated in the code)
+              42                     !       rn(im)     : precipitation over one time-step dt (m/dt)
+              43                     !old    sr(im)     : index (=-1 snow, =0 rain/snow, =1 rain)
+              44                     !new    sr(im)     : "snow ratio", ratio of snow to total precipitation
+              45                     !       tcw(im)    : vertically integrated liquid water (kg/m**2)
+              46                     !       cll(ix,km) : cloud cover
+              47                     !hchuang rn(im) unit in m per time step
+              48                     !        precipitation rate conversion 1 mm/s = 1 kg/m2/s
+              49                     !
+              50                           implicit none
+              51                     
+              52                           real hvap,grav,hfus,ttp,rd,rv,cp,eps,epsm1
+              53                     
+              54                           parameter(  hvap = 2.5000e+6 )
+              55                           parameter(  grav = 9.80665e+0 )
+              56                           parameter(  hfus = 3.3358e+5 )
+              57                           parameter(   ttp = 2.7316e+2 )
+              58                           parameter(    rd = 2.8705e+2 )
+              59                           parameter(    rv = 4.6150e+2 )
+              60                           parameter(    cp = 1.0046e+3 )
+              61                           parameter(   eps = rd/rv )
+              62                           parameter( epsm1 = eps-1 )
+              63                     
+              64                           real fpvs
+              65                     !
+              66                           real                  g,      h1,    h2,   h1000                 &
+              67                           ,                     h1000g, d00,   d125, d5                    &
+              68                           ,                     elwv,   eliv,  row                         &
+              69                           ,                     epsq,   dldt,  tm10, eliw                  &
+              70                           ,                     rcp,    rrow
+              71                            parameter (g=grav,         h1=1.e0,     h2=2.e0,     h1000=1000.0 &
+              72                           ,           h1000g=h1000/g, d00=0.e0,    d125=.125e0, d5=0.5e0   &
+              73                           ,           elwv=hvap,      eliv=hvap+hfus,   row=1.e3           &
+              74                           ,           epsq=2.e-12,    dldt=2274.e0,tm10=ttp-10.0           &
+              75                           ,           eliw=eliv-elwv, rcp=h1/cp,   rrow=h1/row)
+              76                     !
+              77                           real, parameter ::                 cons_0=0.0,     cons_p01=0.01 &
+              78                           ,                                  cons_20=20.0                  &
+              79                           ,                                  cons_m30=-30.0, cons_50=50.0
+              80                     !
+              81                           integer im, ix, km, lat
+              82                           real                  q(ix,km),   t(ix,km),    cwm(ix,km)        &
+              83                           ,                                 del(ix,km),  prsl(ix,km)       &
+              84                     !    &,                     cll(im,km), del(ix,km),  prsl(ix,km)      &
+              85                           ,                     ps(im),     rn(im),      sr(im)            &
+              86                           ,                     tcw(im),    dt                             &
+              87                     !hchuang code change [+1l] : add record to record information in vertical in
+              88                     !                       addition to total column precrl &
+              89                           ,                     rainp(im,km), rnp(im),                     &
+              90                                                 deltaq(ix,km),deltaqik,qtmp,qsmqr,         &
+              91                                                 cwmik,qik,prestmp
+              92                     !
+              93                     !
+              94                           real                  err(im),      ers(im),     precrl(im)      &
+              95                           ,                     precsl(im),   precrl1(im), precsl1(im)     &
+              96                           ,                     rq(im),       condt(im)                    &
+              97                           ,                     conde(im),    rconde(im),  tmt0(im)        &
+              98                           ,                     wmin(im,km),  wmink(im),   pres(im)        &
+              99                           ,                     wmini(im,km), ccr(im),     cclim(km)       &
+             100                           ,                     tt(im),       qq(im),      ww(im)          &
+             101                           ,                     wfix(km),     u00k(ix,km), es(im)          &
+             102                           ,                     zaodt,        psautco(im)
+             103                     !
+             104                           integer iw(im,km), ipr(im), iwl(im),     iwl1(im)
+             105                     !
+             106                            logical comput(im)
+             107                            logical lprnt
+             108                     !
+             109                           real                  ke,   rdt,  us, cclimit, climit, cws, csm1 &
+             110                           ,                     crs1, crs2, cr, aa2,     dtcp,   c00, cmr  &
+             111                           ,                     tem,  c1,   c2, wwn,     aa1               &
+             112                     !    &,                     tem,  c1,   c2, u00b,    u00t,   wwn &
+             113                           ,                     precrk, precsk, pres1,   qk,     qw,  qi   &
+             114                           ,                     ai,     bi, qint, fiw, wws, cwmk, expf     &
+             115                           ,                     psaut, psaci, amaxcm, tem1, tem2           &
+             116                           ,                     tmt0k, tmt15, psm1, psm2, ppr              &
+             117                           ,                     rprs,  erk,   pps, sid, rid, amaxps        &
+             118                           ,                     praut, pracw, fi, qc, amaxrq, rqkll
+             119                           integer i, k, ihpr, n
+             120                     
+             121                     !      print*, 'psautco,prautco,evpco,wminco:',
+             122                     !     &         psautco,prautco,evpco,wminco
+             123                     !
+             124                     !-----------------------preliminaries ---------------------------------
+             125                     !
+             126                     !     do k=1,km
+             127                     !       do i=1,im
+             128                     !         cll(i,k) = 0.0
+             129                     !       enddo
+             130                     !     enddo
+             131                     !
+             132                           rdt     = h1 / dt
+             133                           ke      = 2.0e-5  ! commented on 09/10/99  -- opr value
+             134                     !     ke      = 2.0e-6
+             135                     !     ke      = 1.0e-5
+             136                     !!!   ke      = 5.0e-5
+             137                     !!    ke      = 7.0e-5
+             138                     !      ke      = evpco
+             139                     !     ke      = 7.0e-5
+             140                           us      = h1
+             141                           cclimit = 1.0e-3
+             142                           climit  = 1.0e-20
+             143                           cws     = 0.025
+             144                     !
+             145                           zaodt   = 800.0 * rdt
+             146                     !
+             147                           csm1    = 5.0000e-8   * zaodt
+             148                           crs1    = 5.00000e-6  * zaodt
+             149                           crs2    = 6.66600e-10 * zaodt
+             150                           cr      = 5.0e-4      * zaodt
+             151                           aa2     = 1.25e-3     * zaodt
+             152                     !      aa1     = 4.0e-4
+             153                     !
+             154                           ke      = ke * sqrt(rdt)
+             155                     !     ke      = ke * sqrt(zaodt)
+             156                     !
+             157                           dtcp    = dt * rcp
+             158                     !
+             159                     !     c00 = 1.5e-1 * dt
+             160                     !     c00 = 10.0e-1 * dt
+             161                     !     c00 = 3.0e-1 * dt          !05/09/2000
+             162                     !     c00 = 1.0e-4 * dt          !05/09/2000
+             163                           c00 = 1.0e-4 * dt         !05/09/2000
+             164                     !     c00 = 5.0e-5 * dt          !06/28/2012
+             165                           cmr = 1.0 / 3.0e-4
+             166                     !     cmr = 1.0 / 5.0e-4
+             167                     !     c1  = 100.0
+             168                           c1  = 300.0
+             169                           c2  = 0.5
+             170                     !
+             171                     !
+             172                     !--------calculate c0 and cmr using lc at previous step-----------------
+             173                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      prsl, iw, wmini, wmin, rainp
+                                   <<< Loop-information  End >>>
+             174     1  pp                 do k=1,km
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.55, ITR: 112, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      iw, prsl, wmini, wmin, rainp
+                                   <<< Loop-information  End >>>
+             175     2   p   2v              do i=1,im
+             176     2   p   2v                tem   = (prsl(i,k)*0.01)
+             177     2               !         tem   = sqrt(tem)
+             178     2   p   2v                iw(i,k)    = 0.0
+             179     2               !         wmin(i,k)  = 1.0e-5 * tem
+             180     2               !         wmini(i,k) = 1.0e-5 * tem       ! testing for ras
+             181     2               !
+             182     2               
+             183     2               !          wmin(i,k)  = 0.5e-5 * tem
+             184     2               !          wmini(i,k) = 0.5e-5 * tem
+             185     2   p   2v                wmin(i,k)  = 1.0e-5 * tem
+             186     2   p   2v                wmini(i,k) = 1.0e-5 * tem
+             187     2               
+             188     2               
+             189     2   p   2v                rainp(i,k) = 0.0
+             190     2               
+             191     2   p   2v              enddo
+             192     1   p                 enddo
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 552
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      rnp, ccr, sr, rn, comput, precsl1
+                                   <<<      precrl1, iwl1
+                                   <<< Loop-information  End >>>
+             193     1  pp    v            do i=1,im
+             194     1               !       c0(i)  = 1.5e-1
+             195     1               !       cmr(i) = 3.0e-4
+             196     1               !
+             197     1   p    v              iwl1(i)    = 0
+             198     1   p    v              precrl1(i) = d00
+             199     1   p    v              precsl1(i) = d00
+             200     1   p    v              comput(i)  = .false.
+             201     1   p    v              rn(i)      = d00
+             202     1   p    v              sr(i)      = d00
+             203     1   p    v              ccr(i)     = d00
+             204     1               !
+             205     1   p    v              rnp(i)     = d00
+             206     1   p    v            enddo
+             207                     !------------select columns where rain can be produced--------------
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wmin, wmini, cwm, comput
+                                   <<< Loop-information  End >>>
+             208     1                     do k=1, km-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 572
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 3.33, ITR: 112, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      comput, wmin, cwm, wmini
+                                   <<< Loop-information  End >>>
+             209     2  pp   2v              do i=1,im
+             210     2   p   2v                tem = min(wmin(i,k), wmini(i,k))
+             211     2   p   2v                if (cwm(i,k) .gt. tem) comput(i) = .true.
+             212     2   p   2v              enddo
+             213     1                     enddo
+             214                           ihpr = 0
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      comput
+                                   <<< Loop-information  End >>>
+             215     1       2s            do i=1,im
+             216     2       2v              if (comput(i)) then
+             217     2       2m                 ihpr      = ihpr + 1
+             218     2       2s                 ipr(ihpr) = i
+             219     2       2v              endif
+             220     1       2v            enddo
+             221                     !***********************************************************************
+             222                     !-----------------begining of precipitation calculation-----------------
+             223                     !***********************************************************************
+             224                     !     do k=km-1,2,-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ipr, precrl1, precsl1, wmink, pres, ww
+                                   <<<      qq, tt, iwl, ers, err, precsl, comput
+                                   <<<      precrl, cwm, q, t
+                                   <<< Loop-information  End >>>
+             225     1                     do k=km,1,-1
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 157
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 1.40, ITR: 24, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      precrl1, precsl1, ipr, wmink, pres, ww
+                                   <<<      qq, tt, iwl, ers, err, precsl, comput
+                                   <<<      precrl
+                                   <<< Loop-information  End >>>
+             226     2  pp    v              do n=1,ihpr
+             227     2   p    v                precrl(n) = precrl1(n)
+             228     2   p    v                precsl(n) = precsl1(n)
+             229     2   p    v                err  (n)  = d00
+             230     2   p    v                ers  (n)  = d00
+             231     2   p    v                iwl  (n)  = 0
+             232     2               !
+             233     2   p    v                i         = ipr(n)
+             234     2   p    v                tt(n)     = t(i,k)
+             235     2   p    v                qq(n)     = q(i,k)
+             236     2   p    v                ww(n)     = cwm(i,k)
+             237     2   p    v                wmink(n)  = wmin(i,k)
+             238     2   p    v                pres(n)   = h1000 * prsl(i,k)
+             239     2               !
+             240     2   p    v                precrk = max(cons_0,    precrl1(n))
+             241     2   p    v                precsk = max(cons_0,    precsl1(n))
+             242     2   p    v                wwn    = max(ww(n), climit)
+             243     2               !         if (wwn > wmink(n) .or. (precrk+precsk) > d00) then
+             244     3   p    v                if (wwn > climit .or. (precrk+precsk) > d00) then
+             245     3   p    v                  comput(n) = .true.
+             246     3   p    v                else
+             247     3   p    v                  comput(n) = .false.
+             248     3   p    v                endif
+             249     2   p    v              enddo
+             250     1               !
+             251     1               !       es(1:ihpr) = fpvs(tt(1:ihpr))
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      comput
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 3
+                                   <<<      SIMD&FP   : SPILL 1  FILL 3
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             252     2   s    s              do n=1,ihpr
+             253     3   p    v                if (comput(n)) then
+             254     3   p    v                  i = ipr(n)
+             255     3   p    v                  conde(n)  = (h1000*dt/g) * del(i,k)
+             256     3   p    v                  condt(n)  = conde(n) * rdt
+             257     3   p    v                  rconde(n) = h1 / conde(n)
+             258     3   p    v                  qk        = max(epsq,  qq(n))
+             259     3   m    m                  tmt0(n)   = tt(n) - 273.16
+             260     3   p    v                  wwn       = max(ww(n), climit)
+             261     3               !
+             262     3               !           pl = pres(n) * 0.01
+             263     3               !           call qsatd(tt(n), pl, qc)
+             264     3               !           rq(n) = max(qq(n), epsq) / max(qc, 1.0e-10)
+             265     3               !           rq(n) = max(1.0e-10, rq(n))           ! -- relative humidity---
+             266     3               !
+             267     3               !  the global qsat computation is done in pa
+             268     3   p    v                  pres1   = pres(n)
+             269     3               !           qw      = es(n)
+             270     3   m    m                  qw      = min(pres1, fpvs(tt(n)))
+             271     3   p    v                  qw      = eps * qw / (pres1 + epsm1 * qw)
+             272     3   p    v                  qw      = max(qw,epsq)
+             273     3               !
+             274     3               !           tmt15 = min(tmt0(n), cons_m15)
+             275     3               !           ai    = 0.008855
+             276     3               !           bi    = 1.0
+             277     3               !           if (tmt0(n) .lt. -20.0) then
+             278     3               !             ai = 0.007225
+             279     3               !             bi = 0.9674
+             280     3               !           endif
+             281     3               !           qi   = qw * (bi + ai*min(tmt0(n),cons_0))
+             282     3               !           qint = qw * (1.-0.00032*tmt15*(tmt15+15.))
+             283     3               !
+             284     3   p    v                  qi   = qw
+             285     3   p    v                  qint = qw
+             286     3               !           if (tmt0(n).le.-40.) qint = qi
+             287     3               !
+             288     3               !-------------------ice-water id number iw------------------------------
+             289     4   p    v                  if(tmt0(n) < -15.) then
+             290     4   p    v                     fi = qk + deltaq(i,k) -qi
+             291     5   p    v                     if(fi > d00.or.wwn > climit) then
+             292     5   p    v                        iwl(n) = 1
+             293     5   p    v                     else
+             294     5   p    v                        iwl(n) = 0
+             295     5   p    v                     endif
+             296     4               !           endif
+             297     4   p    v                  elseif (tmt0(n) >= 0.) then
+             298     4   p    v                     iwl(n) = 0
+             299     4               !
+             300     4               !           if(tmt0(n) < 0.0.and.tmt0(n) >= -15.0) then
+             301     4   p    v                  else
+             302     4   p    v                    iwl(n) = 0
+             303     4   p    v                    if(iwl1(n) == 1.and.wwn > climit) iwl(n)=1
+             304     4   p    v                  endif
+             305     3               !
+             306     3               !           if(tmt0(n).ge.0.) then
+             307     3               !              iwl(n) = 0
+             308     3               !           endif
+             309     3               !----------------the satuation specific humidity------------------------
+             310     3   p    v                  fiw   = float(iwl(n))
+             311     3   p    v                  qc    = (h1-fiw)*qint + fiw*qi
+             312     3               !----------------the relative humidity----------------------------------
+             313     4   p    v                  if(qc <= 1.0e-10) then
+             314     4   p    v                     rq(n) = d00
+             315     4   p    v                  else
+             316     4   p    v                     rq(n) = qk / qc
+             317     4   p    v                  endif
+             318     3               !----------------cloud cover ratio ccr----------------------------------
+             319     4   p    v                  if(rq(n) >= us) then
+             320     4   p    v                    ccr(n) = us
+             321     4   p    v                  else
+             322     4   p    v                    qtmp = qk + wwn -qw
+             323     5   p    v                    if(deltaq(i,k) > epsq) then
+             324     6   p    v                      if(qtmp <= -deltaq(i,k)) then
+             325     6   p    v                        ccr(n) = d00
+             326     6   p    v                      elseif(qtmp >= deltaq(i,k)) then
+             327     6   p    v                        ccr(n) = us
+             328     6   p    v                      else
+             329     6   p    v                        ccr(n) = 0.5*qtmp/deltaq(i,k) + 0.5
+             330     6   p    v                        ccr(n) = max(ccr(n), 0.)
+             331     6   p    v                        ccr(n) = min(ccr(n), 1.)
+             332     6   p    v                      endif
+             333     5   p    v                    else
+             334     6   p    v                      if(qtmp > 0.) then
+             335     6   p    v                        ccr(n) = us
+             336     6   p    v                      else
+             337     6   p    v                        ccr(n) = d00
+             338     6   p    v                      endif
+             339     5   p    v                    endif
+             340     4   p    v                  endif
+             341     3               !
+             342     3   p    v                endif
+             343     2   p    v              enddo
+             344     1               !-------------------ice-water id number iwl------------------------------
+             345     1               !       do n=1,ihpr
+             346     1               !         if (comput(n) .and.  (ww(n) .gt. climit)) then
+             347     1               !           if (tmt0(n) .lt. -15.0
+             348     1               !    *         .or. (tmt0(n) .lt. 0.0 .and. iwl1(n) .eq. 1))
+             349     1               !    *                                      iwl(n) = 1
+             350     1               !             cll(ipr(n),k) = 1.0                           ! cloud cover!
+             351     1               !             cll(ipr(n),k) = min(1.0, ww(n)*cclim(k))      ! cloud cover!
+             352     1               !         endif
+             353     1               !       enddo
+             354     1               !
+             355     1               !---   precipitation production --  auto conversion and accretion
+             356     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 18
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      comput
+                                   <<< Loop-information  End >>>
+             357     2  pp    s              do n=1,ihpr
+             358     3   p    m                if (comput(n) .and. ccr(n) >  0.0) then
+             359     3   p    s                  wws    = ww(n)
+             360     3   p    s                  cwmk   = max(cons_0, wws)
+             361     3               !           amaxcm = max(cons_0, cwmk - wmink(n))
+             362     4   p    s                  if (iwl(n) == 1) then                 !  ice phase
+             363     4   p    s                     amaxcm = max(cons_0, cwmk - wmini(ipr(n),k))
+             364     4   p    s                     expf      = dt * exp(0.025*tmt0(n))
+             365     4               !               psaut     = min(cwmk, aa1*expf*amaxcm)
+             366     4   p    s                     psaut     = min(cwmk, psautco(ipr(n))*expf*amaxcm)
+             367     4               
+             368     4               !              psaut     = min(cwmk, 2.0e-3*expf*amaxcm)
+             369     4               !              psaut     = min(cwmk, 1.0e-3*expf*amaxcm)
+             370     4               !              psaut     = min(cwmk, 7.5e-4*expf*amaxcm)
+             371     4               !!!!!!!        psaut     = min(cwmk, 7.0e-4*expf*amaxcm)
+             372     4               !b             psaut     = min(cwmk, 6.5e-4*expf*amaxcm)
+             373     4               !!!!           psaut     = min(cwmk, 6.0e-4*expf*amaxcm)
+             374     4               !              psaut     = min(cwmk, 5.0e-4*expf*amaxcm)
+             375     4               !              psaut     = min(cwmk, 4.0e-4*expf*amaxcm)
+             376     4               
+             377     4   p    s                     ww(n)     = ww(n) - psaut
+             378     4   p    s                     cwmk      = max(cons_0, ww(n))
+             379     4               !              cwmk      = max(cons_0, ww(n)-wmini(ipr(n),k))
+             380     4   p    s                     psaci     = min(cwmk, aa2*expf*precsl1(n)*cwmk)
+             381     4               
+             382     4   p    s                     ww(n)     = ww(n) - psaci
+             383     4               
+             384     4   p    s                     precsl(n) = precsl(n) + (wws - ww(n)) * condt(n)
+             385     4   p    s                  else                                    !  liquid water
+             386     4               !
+             387     4               !          for using sundqvist precip formulation of rain
+             388     4               !
+             389     4   p    s                     amaxcm    = max(cons_0, cwmk - wmink(n))
+             390     4               !!             amaxcm    = cwmk
+             391     4   p    s                     tem1      = precsl1(n) + precrl1(n)
+             392     4   p    s                     tem2      = min(max(cons_0, 268.0-tt(n)), cons_20)
+             393     4   p    s                     tem       = (1.0+c1*sqrt(tem1*rdt)) * (1+c2*sqrt(tem2))
+             394     4               !
+             395     4   p    s                     tem2      = amaxcm * cmr * tem / max(ccr(n),cons_p01)
+             396     4   p    s                     tem2      = min(cons_50, tem2*tem2)
+             397     4   p    s                     praut     = c00  * tem * amaxcm * (1.0-exp(-tem2))
+             398     4   p    s                     praut     = min(praut, cwmk)
+             399     4   p    s                     ww(n)     = ww(n) - praut
+             400     4               !
+             401     4               !          below is for zhao's precip formulation (water)
+             402     4               !
+             403     4               !              amaxcm    = max(cons_0, cwmk - wmink(n))
+             404     4               !              praut     = min(cwmk, c00*amaxcm*amaxcm)
+             405     4               !              ww(n)     = ww(n) - praut
+             406     4               !
+             407     4               !              cwmk      = max(cons_0, ww(n))
+             408     4               !              tem1      = precsl1(n) + precrl1(n)
+             409     4               !              pracw     = min(cwmk, cr*dt*tem1*cwmk)
+             410     4               !              ww(n)     = ww(n) - pracw
+             411     4               !
+             412     4   p    s                     precrl(n) = precrl(n) + (wws - ww(n)) * condt(n)
+             413     4               !
+             414     4               !hchuang code change [+1l] : add record to record information in vertical
+             415     4               ! turn rnp in unit of ww (cwm and q, kg/kg ???)
+             416     4   p    s                     rnp(n) = rnp(n) + (wws - ww(n))
+             417     4   p    s                  endif
+             418     3   p    v                endif
+             419     2   p    v              enddo
+             420     1               !
+             421     1               !-----evaporation of precipitation-------------------------
+             422     1               !**** err & ers positive--->evaporation-- negtive--->condensation
+             423     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 104
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      comput
+                                   <<< Loop-information  End >>>
+             424     2  pp    s              do n=1,ihpr
+             425     3   p    m                if (comput(n)) then
+             426     3   p    s                  i      = ipr(n)
+             427     3   p    s                  qk     = max(epsq,  qq(n))
+             428     3   p    s                  tmt0k  = max(cons_m30, tmt0(n))
+             429     3   p    s                  precrk = max(cons_0,    precrl(n))
+             430     3   p    s                  precsk = max(cons_0,    precsl(n))
+             431     3   p    s                  amaxrq = max(cons_0,    u00k(i,k)-rq(n)) * conde(n)
+             432     3               !----------------------------------------------------------------------
+             433     3               ! increase the evaporation for strong/light prec
+             434     3               !----------------------------------------------------------------------
+             435     3   p    s                  ppr    = ke * amaxrq * sqrt(precrk)
+             436     3               !           ppr    = ke * amaxrq * sqrt(precrk*rdt)
+             437     4   p    s                  if (tmt0(n) >= 0.) then
+             438     4   p    s                    pps = 0.
+             439     4   p    s                  else
+             440     4   p    s                    pps = (crs1+crs2*tmt0k) * amaxrq * precsk / u00k(i,k)
+             441     4   p    s                  end if
+             442     3               !---------------correct if over-evapo./cond. occurs--------------------
+             443     3   p    s                  erk=precrk+precsk
+             444     3   p    s                  if(rq(n)>=1.0e-10)  erk = amaxrq * qk * rdt / rq(n)
+             445     4   p    s                  if (ppr+pps > abs(erk)) then
+             446     4   p    s                     rprs   = erk / (precrk+precsk)
+             447     4   p    s                     ppr    = precrk * rprs
+             448     4   p    s                     pps    = precsk * rprs
+             449     4   p    s                  endif
+             450     3   p    s                  ppr       = min(ppr, precrk)
+             451     3   p    s                  pps       = min(pps, precsk)
+             452     3   p    s                  err(n)    = ppr * rconde(n)
+             453     3   p    s                  ers(n)    = pps * rconde(n)
+             454     3   p    s                  precrl(n) = precrl(n) - ppr
+             455     3               !hchuang code change [+1l] : add record to record information in vertical
+             456     3               ! use err for kg/kg/dt not the ppr (mm/dt=kg/m2/dt)
+             457     3               !
+             458     3   p    s                  rnp(n) = rnp(n) - err(n)
+             459     3               !
+             460     3   p    s                  precsl(n) = precsl(n) - pps
+             461     3   p    v                endif
+             462     2   p    v              enddo
+             463     1               !--------------------melting of the snow--------------------------------
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED(lines: 464,492)
+                                   <<<    SIMD(VL: 8)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      ipr, ww, iwl, iwl1, comput, err, ers, qq
+                                   <<<      tmt0, precsl, conde, precrl, precrl1
+                                   <<<      rconde, rnp, precsl1
+                                   <<<    PREFETCH(SOFT) : 2
+                                   <<<     SEQUENTIAL : 2
+                                   <<<      tt: 2
+                                   <<<    SPILLS :
+                                   <<<      GENERAL   : SPILL 0  FILL 2
+                                   <<<      SIMD&FP   : SPILL 0  FILL 0
+                                   <<<      SCALABLE  : SPILL 0  FILL 0
+                                   <<<      PREDICATE : SPILL 0  FILL 0
+                                   <<< Loop-information  End >>>
+             464     2   s    v              do n=1,ihpr
+             465     3   p    v                if (comput(n)) then
+             466     4   p    v                  if (tmt0(n) > 0.) then
+             467     4   p    v                     amaxps = max(cons_0,    precsl(n))
+             468     4   p    v                     psm1   = csm1 * tmt0(n) * tmt0(n) * amaxps
+             469     4   p    v                     psm2   = cws * cr * max(cons_0, ww(n)) * amaxps
+             470     4   p    v                     ppr    = (psm1 + psm2) * conde(n)
+             471     5   p    v                     if (ppr > amaxps) then
+             472     5   p    v                       ppr  = amaxps
+             473     5   p    v                       psm1 = amaxps * rconde(n)
+             474     5   p    v                     endif
+             475     4   p    v                     precrl(n) = precrl(n) + ppr
+             476     4               !
+             477     4               !hchuang code change [+1l] : add record to record information in vertical
+             478     4               ! turn ppr (mm/dt=kg/m2/dt) to kg/kg/dt -> ppr/air density (kg/m3)
+             479     4   p    v                     rnp(n) = rnp(n) + ppr * rconde(n)
+             480     4               !
+             481     4   p    v                     precsl(n) = precsl(n) - ppr
+             482     4   p    v                  else
+             483     4   p    v                     psm1 = d00
+             484     4   p    v                  endif
+             485     3               !
+             486     3               !---------------update t and q------------------------------------------
+             487     3   p    v                  tt(n) = tt(n) - dtcp * (elwv*err(n)+eliv*ers(n)+eliw*psm1)
+             488     3   p    v                  qq(n) = qq(n) + dt * (err(n)+ers(n))
+             489     3   p    v                endif
+             490     2   p    v              enddo
+             491     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    FUSED
+                                   <<< Loop-information  End >>>
+             492     2                       do n=1,ihpr
+             493     2                         iwl1(n)    = iwl(n)
+             494     2                         precrl1(n) = max(cons_0, precrl(n))
+             495     2                         precsl1(n) = max(cons_0, precsl(n))
+             496     2                         i          = ipr(n)
+             497     2                         t(i,k)     = tt(n)
+             498     2                         q(i,k)     = qq(n)
+             499     2                         cwm(i,k)   = ww(n)
+             500     2                         iw(i,k)    = iwl(n)
+             501     2               !hchuang code change [+1l] : add record to record information in vertical
+             502     2               ! rnp = precrl1*rconde(n) unit in kg/kg/dt
+             503     2               !
+             504     2                         rainp(i,k) = rnp(n)
+             505     2                       enddo
+             506     1               !
+             507     1               !  move water from vapor to liquid should the liquid amount be negative
+             508     1               !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 356
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 0.68, ITR: 40, MVE: 3, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      cwm, t, q
+                                   <<< Loop-information  End >>>
+             509     2  pp    v              do i = 1, im
+             510     3   p    v                if (cwm(i,k) < 0.) then
+             511     3   p    v                  tem      = q(i,k) + cwm(i,k)
+             512     4   p    v                  if (tem >= 0.0) then
+             513     4   p    v                    q(i,k)   = tem
+             514     4   p    v                    t(i,k)   = t(i,k) - elwv * rcp * cwm(i,k)
+             515     4   p    v                    cwm(i,k) = 0.
+             516     4   p    v                  elseif (q(i,k) > 0.0) then
+             517     4   p    v                    cwm(i,k) = tem
+             518     4   p    v                    t(i,k)   = t(i,k) + elwv * rcp * q(i,k)
+             519     4   p    v                    q(i,k)   = 0.0
+             520     4   p    v                  endif
+             521     3   p    v                endif
+             522     2   p    v              enddo
+             523     1               
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 135
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      prsl, q, cwm, deltaq, (unknown)
+                                   <<< Loop-information  End >>>
+             524     2   m    s              do i = 1, im
+             525     2   p    v                  cwmik = max(cwm(i,k),climit)
+             526     2   p    v                  qik   = max(q(i,k),epsq) ! or qp1
+             527     2   p    v                  prestmp  = prsl(i,k)*h1000
+             528     2   m    s                  qw = min(prestmp, fpvs(t(i,k)))
+             529     2   p    v                  qw = eps * qw / (prestmp+ epsm1 * qw)
+             530     2   p    v                  qw = max(qw,epsq)
+             531     2   p    v                  qsmqr = qw-qik
+             532     3   p    v                  if(qsmqr > 0.0) then
+             533     4   p    v                     if(cwmik > epsq) then
+             534     4   p    m                       deltaqik = &
+             535     4                                    cwmik + qsmqr+ &
+             536     4                                    2.*sqrt(cwmik * qsmqr)
+             537     4   p                          else
+             538     4   p    m                       deltaqik = (1. - u00k(i,k)) * qw
+             539     4   p                          endif
+             540     3   p                       else ! saturation
+             541     3   p    m                    deltaqik = (1. - u00k(i,k)) * qw
+             542     3   p    v                  endif
+             543     2   p    m                  deltaqik = &
+             544     2                             min(deltaqik, cwmik+qik)
+             545     2   p    m                  deltaqik = &
+             546     2                             max(deltaqik,0.0001 * qw)
+             547     2   p    s                  deltaq(i,k)=deltaqik
+             548     2   p    v              enddo
+             549     1               !
+             550     1                     enddo                               ! k loop ends here!
+             551                     !**********************************************************************
+             552                     !-----------------------end of precipitation processes-----------------
+             553                     !**********************************************************************
+             554                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      precsl1, precrl1, ipr
+                                   <<< Loop-information  End >>>
+             555     1   s   2s            do n=1,ihpr
+             556     1   p   2v              i = ipr(n)
+             557     1   m   2v              rn(i) = (precrl1(n)  + precsl1(n)) * rrow  ! precip at surface
+             558     1               !
+             559     1               !----sr=1 if sfc prec is rain ; ----sr=-1 if sfc prec is snow
+             560     1               !----sr=0 for both of them or no sfc prec
+             561     1               !
+             562     1               !       rid = 0.
+             563     1               !       sid = 0.
+             564     1               !       if (precrl1(n)  >= 1.e-13) rid = 1.
+             565     1               !       if (precsl1(n) >= 1.e-13) sid = -1.
+             566     1               !       sr(i) = rid + sid  ! sr=1 --> rain, sr=-1 -->snow, sr=0 -->both
+             567     1               ! chuang, june 2013: change sr to define fraction of frozen precipitation instead
+             568     1               ! because wpc uses it in their winter experiment
+             569     1               
+             570     1   p   2v              rid=precrl1(n)+precsl1(n)
+             571     2   p   2v              if (rid<1.e-13) then
+             572     2   m   2m                 sr(i)=0.
+             573     2   p   2v              else
+             574     2   m   2m                 sr(i)=precsl1(n)/rid
+             575     2   p   2v              endif
+             576     1               
+             577     1   p   2v            enddo
+             578                     !
+             579                           return
+             580                           end
+
+ Procedure information
+   Lines      : 580
+   Statements : 293
+   Stack(byte): 3568
+   Prefetch num: 2
+
+ Scoping unit of external sub-program : precpdp
+   Attribute and Cross reference of name
+     aa1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 
+      |(Reference)      : 
+     aa2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 151
+      |(Reference)      : 380
+     abs
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 445
+     ai
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 
+      |(Reference)      : 
+     amaxcm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 363  389
+      |(Reference)      : 366  395  397
+     amaxps
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 467
+      |(Reference)      : 468  469  471  472  473
+     amaxrq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 431
+      |(Reference)      : 435  440  444
+     bi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 
+      |(Reference)      : 
+     c00
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 163
+      |(Reference)      : 397
+     c1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 168
+      |(Reference)      : 393
+     c2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 169
+      |(Reference)      : 393
+     cclim
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 94
+      |(Definition)     : 
+      |(Reference)      : 
+     cclimit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 141
+      |(Reference)      : 
+     ccr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 94
+      |(Definition)     : 203  320  325  327  329  330  331  335  337
+      |(Reference)      : 330  331  358  395
+     climit
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 142
+      |(Reference)      : 242  244  260  291  303  525
+     cmr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 165
+      |(Reference)      : 395
+     comput
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 106
+      |(Definition)     : 200  211  245  247
+      |(Reference)      : 216  253  358  425  465
+     conde
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 94
+      |(Definition)     : 255
+      |(Reference)      : 256  257  431  470
+     condt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 94
+      |(Definition)     : 256
+      |(Reference)      : 384  412
+     cons_0
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 77
+      |(Definition)     : 
+      |(Reference)      : 240  241  360  363  378  389  392  429  430  431  467  469  494  495
+     cons_20
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 77
+      |(Definition)     : 
+      |(Reference)      : 392
+     cons_50
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 77
+      |(Definition)     : 
+      |(Reference)      : 396
+     cons_m30
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 77
+      |(Definition)     : 
+      |(Reference)      : 428
+     cons_p01
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 77
+      |(Definition)     : 
+      |(Reference)      : 395
+     cp
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 52  60
+      |(Definition)     : 
+      |(Reference)      : 71
+     cr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 150
+      |(Reference)      : 469
+     crs1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 148
+      |(Reference)      : 440
+     crs2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 149
+      |(Reference)      : 440
+     csm1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 147
+      |(Reference)      : 468
+     cwm
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  82
+      |(Definition)     : 499  515  517
+      |(Reference)      : 211  236  510  511  514  525
+     cwmik
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 82
+      |(Definition)     : 525
+      |(Reference)      : 533  534  534  543
+     cwmk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 360  378
+      |(Reference)      : 363  366  380  380  389  398
+     cws
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 143
+      |(Reference)      : 469
+     d00
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 66  71
+      |(Definition)     : 
+      |(Reference)      : 198  199  201  202  203  205  229  230  244  291  314  325  337  483
+     d125
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 66  71
+      |(Definition)     : 
+      |(Reference)      : 
+     d5
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 66  71
+      |(Definition)     : 
+      |(Reference)      : 
+     del
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  82
+      |(Definition)     : 
+      |(Reference)      : 255
+     deltaq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  82
+      |(Definition)     : 547
+      |(Reference)      : 290  323  324  326  329
+     deltaqik
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 82
+      |(Definition)     : 534  538  541  543  545
+      |(Reference)      : 543  545  547
+     dldt
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 66  71
+      |(Definition)     : 
+      |(Reference)      : 
+     dt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  82
+      |(Definition)     : 
+      |(Reference)      : 132  157  163  255  364  488
+     dtcp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 157
+      |(Reference)      : 487
+     eliv
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 66  71
+      |(Definition)     : 
+      |(Reference)      : 71  487
+     eliw
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 66  71
+      |(Definition)     : 
+      |(Reference)      : 487
+     elwv
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 66  71
+      |(Definition)     : 
+      |(Reference)      : 71  487  514  514  518  518
+     eps
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 52  61
+      |(Definition)     : 
+      |(Reference)      : 62  271  529
+     epsm1
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 52  62
+      |(Definition)     : 
+      |(Reference)      : 271  529
+     epsq
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 66  71
+      |(Definition)     : 
+      |(Reference)      : 258  272  323  427  526  530  533
+     erk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 443  444
+      |(Reference)      : 445  446
+     err
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 94
+      |(Definition)     : 229  452
+      |(Reference)      : 458  487  488
+     ers
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 94
+      |(Definition)     : 230  453
+      |(Reference)      : 487  488
+     es
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 94
+      |(Definition)     : 
+      |(Reference)      : 
+     exp
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 364  397
+     expf
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 364
+      |(Reference)      : 366  380
+     fi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 290
+      |(Reference)      : 291
+     fiw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 310
+      |(Reference)      : 311  311
+     float
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 310
+     fpvs
+      |(Class and Type) : external function name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 270  528
+     fpvs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 64
+      |(Definition)     : 
+      |(Reference)      : 
+     g
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 66  71
+      |(Definition)     : 
+      |(Reference)      : 71  255
+     grav
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 52  55
+      |(Definition)     : 
+      |(Reference)      : 71
+     h1
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 66  71
+      |(Definition)     : 
+      |(Reference)      : 71  71  132  140  257  311
+     h1000
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 66  71
+      |(Definition)     : 
+      |(Reference)      : 71  238  255  527
+     h1000g
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 66  71
+      |(Definition)     : 
+      |(Reference)      : 
+     h2
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 66  71
+      |(Definition)     : 
+      |(Reference)      : 
+     hfus
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 52  56
+      |(Definition)     : 
+      |(Reference)      : 71
+     hvap
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 52  54
+      |(Definition)     : 
+      |(Reference)      : 71  71
+     i
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 119
+      |(Definition)     : 175  193  209  215  233  254  426  496  509  524  556
+      |(Reference)      : 176  178  185  186  189  197  198  199  200  201  202  203  205  210  210  211  211  216  218  234  235  236  237  238  255  290  323  324  326  329  431  440  497  498  499  500  504  510  511  511  513  514  514  514  515  516  517  518  518  518  519  525  526  527  528  538  541  547  557  572  574
+     ihpr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 119
+      |(Definition)     : 214  217
+      |(Reference)      : 217  218  226  252  357  424  464  492  555
+     im
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  81
+      |(Definition)     : 
+      |(Reference)      : 82  82  82  82  82  82  94  94  94  94  94  94  94  94  94  94  94  94  94  94  94  94  94  94  94  94  94  104  104  104  104  106  175  193  209  215  509  524
+     ipr
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 104
+      |(Definition)     : 218
+      |(Reference)      : 233  254  363  366  426  496  556
+     iw
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 104
+      |(Definition)     : 178  500
+      |(Reference)      : 
+     iwl
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 104
+      |(Definition)     : 231  292  294  298  302  303
+      |(Reference)      : 310  362  493  500
+     iwl1
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 104
+      |(Definition)     : 197  493
+      |(Reference)      : 303
+     ix
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  81
+      |(Definition)     : 
+      |(Reference)      : 82  82  82  82  82  82  94
+     k
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 119
+      |(Definition)     : 174  208  225
+      |(Reference)      : 176  178  185  186  189  210  210  211  234  235  236  237  238  255  290  323  324  326  329  363  431  440  497  498  499  500  504  510  511  511  513  514  514  514  515  516  517  518  518  518  519  525  526  527  528  538  541  547
+     ke
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 133  154
+      |(Reference)      : 154  435
+     km
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  81
+      |(Definition)     : 
+      |(Reference)      : 82  82  82  82  82  82  82  94  94  94  94  94  104  174  208  225
+     lat
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 81
+      |(Definition)     : 
+      |(Reference)      : 
+     lprnt
+      |(Class and Type) : variable name, LOGICAL(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 1  107
+      |(Definition)     : 
+      |(Reference)      : 
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 240  241  242  258  260  272  330  360  363  378  389  392  395  427  428  429  430  431  467  469  494  495  525  526  530  545
+     min
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 210  270  331  366  380  392  396  398  450  451  528  543
+     n
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 119
+      |(Definition)     : 226  252  357  424  464  492  555
+      |(Reference)      : 227  227  228  228  229  230  231  233  234  235  236  237  238  240  241  242  245  247  253  254  255  256  256  257  257  258  259  259  260  268  270  289  292  294  297  298  302  303  303  310  314  316  319  320  325  327  329  330  330  331  331  335  337  358  358  359  362  363  364  366  377  377  378  380  382  382  384  384  384  384  389  391  391  392  395  399  399  412  412  412  412  416  416  416  425  426  427  428  429  430  431  431  437  444  444  452  452  453  453  454  454  458  458  458  460  460  465  466  467  468  468  469  470  473  475  475  479  479  479  481  481  487  487  487  487  488  488  488  488  493  493  494  494  495  495  496  497  498  499  500  504  556  557  557  570  570  574
+     ppr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 435  447  450  470  472
+      |(Reference)      : 445  450  452  454  471  475  479  481
+     pps
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 438  440  448  451
+      |(Reference)      : 445  451  453  460
+     pracw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 
+      |(Reference)      : 
+     praut
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 397  398
+      |(Reference)      : 398  399
+     precpdp
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 1
+      |(Reference)      : 
+     precrk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 240  429
+      |(Reference)      : 244  435  443  446  447  450
+     precrl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 94
+      |(Definition)     : 227  412  454  475
+      |(Reference)      : 412  429  454  475  494
+     precrl1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 94
+      |(Definition)     : 198  494
+      |(Reference)      : 227  240  391  557  570
+     precsk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 241  430
+      |(Reference)      : 244  440  443  446  448  451
+     precsl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 94
+      |(Definition)     : 228  384  460  481
+      |(Reference)      : 384  430  460  467  481  495
+     precsl1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 94
+      |(Definition)     : 199  495
+      |(Reference)      : 228  241  380  391  557  570  574
+     pres
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 94
+      |(Definition)     : 238
+      |(Reference)      : 268
+     pres1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 268
+      |(Reference)      : 270  271
+     prestmp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 82
+      |(Definition)     : 527
+      |(Reference)      : 528  529
+     prsl
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  82
+      |(Definition)     : 
+      |(Reference)      : 176  238  527
+     ps
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  82
+      |(Definition)     : 
+      |(Reference)      : 
+     psaci
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 380
+      |(Reference)      : 382
+     psaut
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 366
+      |(Reference)      : 377
+     psautco
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  94
+      |(Definition)     : 
+      |(Reference)      : 366
+     psm1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 468  473  483
+      |(Reference)      : 470  487
+     psm2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 469
+      |(Reference)      : 470
+     q
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  82
+      |(Definition)     : 498  513  519
+      |(Reference)      : 235  511  516  518  526
+     qc
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 311
+      |(Reference)      : 313  316
+     qi
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 284
+      |(Reference)      : 290  311
+     qik
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 82
+      |(Definition)     : 526
+      |(Reference)      : 531  543
+     qint
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 285
+      |(Reference)      : 311
+     qk
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 258  427
+      |(Reference)      : 290  316  322  444
+     qq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 94
+      |(Definition)     : 235  488
+      |(Reference)      : 258  427  488  498
+     qsmqr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 82
+      |(Definition)     : 531
+      |(Reference)      : 532  534  534
+     qtmp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 82
+      |(Definition)     : 322
+      |(Reference)      : 324  326  329  334
+     qw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 270  271  272  528  529  530
+      |(Reference)      : 271  271  272  284  285  322  529  529  530  531  538  541  545
+     rainp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 82
+      |(Definition)     : 189  504
+      |(Reference)      : 
+     rconde
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 94
+      |(Definition)     : 257
+      |(Reference)      : 452  453  473  479
+     rcp
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 66  71
+      |(Definition)     : 
+      |(Reference)      : 157
+     rd
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 52  58
+      |(Definition)     : 
+      |(Reference)      : 61
+     rdt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 132
+      |(Reference)      : 145  154  256  393  444
+     rid
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 570
+      |(Reference)      : 571  574
+     rn
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  82
+      |(Definition)     : 201  557
+      |(Reference)      : 
+     rnp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 82
+      |(Definition)     : 205  416  458  479
+      |(Reference)      : 416  458  479  504
+     row
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 66  71
+      |(Definition)     : 
+      |(Reference)      : 71
+     rprs
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 446
+      |(Reference)      : 447  448
+     rq
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 94
+      |(Definition)     : 314  316
+      |(Reference)      : 319  431  444  444
+     rqkll
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 
+      |(Reference)      : 
+     rrow
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 66  71
+      |(Definition)     : 
+      |(Reference)      : 557
+     rv
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 52  59
+      |(Definition)     : 
+      |(Reference)      : 61
+     sid
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 
+      |(Reference)      : 
+     sqrt
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 154  393  393  435  534
+     sr
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 82
+      |(Definition)     : 202  572  574
+      |(Reference)      : 
+     t
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  82
+      |(Definition)     : 497  514  518  528
+      |(Reference)      : 234  514  518
+     tcw
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 82
+      |(Definition)     : 
+      |(Reference)      : 
+     tem
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 176  210  393  511
+      |(Reference)      : 185  186  211  395  397  512  513  517
+     tem1
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 391
+      |(Reference)      : 393
+     tem2
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 392  395  396
+      |(Reference)      : 393  396  396  397
+     tm10
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 66  71
+      |(Definition)     : 
+      |(Reference)      : 
+     tmt0
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 94
+      |(Definition)     : 259
+      |(Reference)      : 289  297  364  428  437  466  468  468
+     tmt0k
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 428
+      |(Reference)      : 440
+     tmt15
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 
+      |(Reference)      : 
+     tt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 94
+      |(Definition)     : 234  270  487
+      |(Reference)      : 259  392  487  497
+     ttp
+      |(Class and Type) : named constant, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 52  57
+      |(Definition)     : 
+      |(Reference)      : 71
+     u00k
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  94
+      |(Definition)     : 
+      |(Reference)      : 431  440  538  541
+     us
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 140
+      |(Reference)      : 319  320  327  335
+     wfix
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 94
+      |(Definition)     : 
+      |(Reference)      : 
+     wmin
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 94
+      |(Definition)     : 185
+      |(Reference)      : 210  237
+     wmini
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 94
+      |(Definition)     : 186
+      |(Reference)      : 210  363
+     wmink
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 94
+      |(Definition)     : 237
+      |(Reference)      : 389
+     ww
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 94
+      |(Definition)     : 236  377  382  399
+      |(Reference)      : 242  260  359  377  378  382  384  399  412  416  469  499
+     wwn
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 242  260
+      |(Reference)      : 244  291  303  322
+     wws
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 109
+      |(Definition)     : 359
+      |(Reference)      : 360  384  412  416
+     zaodt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 94
+      |(Definition)     : 145
+      |(Reference)      : 147  148  149  150  151
+
+ Total information
+   Procedures       : 1
+   Total lines      : 580
+   Total statements : 293
+   Total stack(byte): 3568
+   Total prefetch num: 2
+
