@@ -85,11 +85,13 @@
       doincr=.true.
 !
       doo3l=.true.
-!
-      domfc=384.
-      otgreen=6.
-      out_green=.false.
-      out_hp=.false.
+! about of input and output set
+      domfc    =    384.
+      otgreen  =      6.
+      out_green= .false.
+      out_hp   = .false.
+      outgrb2  =      0  !output grib2 format
+      outdms   =      1  !output dmskey 1:real-8  ,2:real-4
 ! pdf cloud
       pdfcloud=.false.
 ! stochastic physics
@@ -354,9 +356,11 @@
 !-- for sit
       ifilin_ncep   = 'ifilin_ncep'
       ifilin_sst    = 'ifilin_sst'
-      ifilin_nc     = 'ifilin_nc'
+      ifilin_nc     = '.' ! 'ifilin_nc'  change to path
       ifilin_ClmANA = 'ifilin_ClmANA'
       ifilin_ClmFCT = 'ifilin_ClmFCT'
+!-- for grib2 output path
+      ifilout_grb  = '.'
 !
 !dms
 !t512l60
@@ -458,6 +462,7 @@
       ntiw=4
       ntsw=5
       ntgl=6
+      nthl=7  ! hail
       ntoz=3
       ioutsigr=0
 !---------------------------------------------------------------------------

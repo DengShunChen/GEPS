@@ -2,7 +2,7 @@
              , lmax,numout,idtg,ifilout                              &
              , outdir,ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo        &
              , ptend,pt,plt,pk,pk2,phi,ut,vt,vvel                    &
-             , tt,qt,rdiv,rvor,tg,gwet,z0,hflux,qflux,snr            &
+             , tt,qt_org,rdiv,rvor,tg,gwet,z0,hflux,qflux,snr        &
              , raintot,raincu,rainlp,plcl,cumtop,ss,rs,alb,gwclim    &
              , acld,cosl,drag,ugws,vgws,t2,q2,rh2,rh10,u10,v10,gfx,rld,sld &
 !byl             , km,smc,slc,stc,canopy,ggdef,slptyp,v850,v700,h850,h500   &
@@ -20,8 +20,8 @@
       use index
       use mod_outflds
       use radn, only : ntcw,ntiw,ntoz
-      use const, only : RTYPE
-
+      use const, only : RTYPE,nmmiph
+      use raddiag, only:clds !cloud fraction on sigma levels
       implicit  none
 
       integer   itau,nx,my,my_max,lev,ncld,lmax,numout,ktrop,km
@@ -54,7 +54,7 @@
       real(kind=RTYPE) rdiv(nxp,lev,my_max),rvor(nxp,lev,my_max)    &
                      , ut(nxp,lev,my_max),vt(nxp,lev,my_max)        &
                      , tt(nxp,lev,my_max),qt(nxp,lev*ncld,my_max)   &
-                     , sht(nxp,lev*ncld,my_max),phi(nxp,lev,my_max) &
+                     , qt_org(nxp,lev*ncld,my_max),phi(nxp,lev,my_max) &
                      , sgeo(nxp,my_max),ptend(nxp,my_max)           &
                      , pt(nxp,my_max),vvel(nxp,lev,my_max)          &
                      , sigma(lev+1,2)                               &
@@ -137,15 +137,16 @@
 !
       call whttau (itau,numout,outdir,ntau,taudir)
       if(ntau.eq.0) return
+
 !
-!  save qt into local arrays
+!  copy qt into local qt arrays
 !
       do jj = 1, jlistnum
         j=jlist1(jj)
         nxj=nxdef_2d(j)
         do k = 1, lev*ncld
           do i = 1,nxj
-            sht(i,k,jj) = qt(i,k,jj)
+            qt(i,k,jj) = qt_org(i,k,jj)  
           enddo
         enddo
       enddo
@@ -465,7 +466,8 @@
             ,whtlevq,pkout,plog,pllp,tmp,bt1,pres3d,glob,ggdef,ntoz,lwrite)
         endif
 !        
-!  output for combination of all cloud water and cloud ice
+!  output for combination of all condensates
+        if ( nmmiph .eq. 18 ) nclds = 6  !do not combine number concentraction for 2M Thompson
         tmp=0.
         do jj = 1, jlistnum
           j=jlist1(jj)
@@ -489,6 +491,8 @@
       endif
 !
       endif     ! end of moisture output
+
+
 !
 !  geopotential height output
 !
@@ -599,6 +603,28 @@
                   ,whtlev,pkout,plog,pllp,drag,bt1,pres3d,ggdef,lwrite)
       endif
 !
+!!follow ECMWF output Fraction of cloud cover on pressure levels
+!!clouds output
+      labx='cld   '
+      call whtrec (labx,ntau,taudir,whtlev,num)
+      if(num.gt.0) then
+        tmp=0.
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          do k = 1, lev
+              do i = 1,nxj
+                tmp(i,k,jj)=clds(i,k,jj)
+              enddo
+          enddo
+          do i = 1,nxj
+            bt1(i,jj)=clds(i,lev,jj)
+          enddo
+        enddo
+          call cloudout(nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,num &
+          ,whtlev,pkout,plog,pllp,tmp,bt1,pres3d,glob,ggdef,lwrite)
+      endif
+!
       if(lwritesit) then
         labx='sit   '
         call whtrec (labx,ntau,taudir,whtlev,num)
@@ -645,37 +671,7 @@
           wk_xy(i,jj,5) = min( 100., max( 1., wk_xy(i,jj,5) ) )
         enddo
       enddo
-!
-!  get back original qt
-!
-      do jj = 1, jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-        do k = 1, lev*ncld
-          do i = 1,nxj
-            qt(i,k,jj) = sht(i,k,jj)
-          enddo
-        enddo
-      enddo
- 
-      do jj = 1, jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-        do i = 1,nxj
-          soil_xy(i,jj,1) = smc(i,1,jj)
-          soil_xy(i,jj,2) = smc(i,2,jj)
-          soil_xy(i,jj,3) = smc(i,3,jj)
-          soil_xy(i,jj,4) = smc(i,4,jj)
-          soil_xy(i,jj,5) = slc(i,1,jj)
-          soil_xy(i,jj,6) = slc(i,2,jj)
-          soil_xy(i,jj,7) = slc(i,3,jj)
-          soil_xy(i,jj,8) = slc(i,4,jj)
-          soil_xy(i,jj,9) = stc(i,1,jj)
-          soil_xy(i,jj,10) = stc(i,2,jj)
-          soil_xy(i,jj,11) = stc(i,3,jj)
-          soil_xy(i,jj,12) = stc(i,4,jj)
-        enddo
-      enddo
+
 !
       do jj =1,jlistnum
         j=jlist1(jj)
@@ -690,6 +686,27 @@
           wk_xy(i,jj,12) = qt(i,lev,jj)
         enddo
       enddo
+
+!soil variable
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        do i = 1,nxj
+          soil_xy(i,jj,1 ) = smc(i,1,jj)
+          soil_xy(i,jj,2 ) = smc(i,2,jj)
+          soil_xy(i,jj,3 ) = smc(i,3,jj)
+          soil_xy(i,jj,4 ) = smc(i,4,jj)
+          soil_xy(i,jj,5 ) = slc(i,1,jj)
+          soil_xy(i,jj,6 ) = slc(i,2,jj)
+          soil_xy(i,jj,7 ) = slc(i,3,jj)
+          soil_xy(i,jj,8 ) = slc(i,4,jj)
+          soil_xy(i,jj,9 ) = stc(i,1,jj)
+          soil_xy(i,jj,10) = stc(i,2,jj)
+          soil_xy(i,jj,11) = stc(i,3,jj)
+          soil_xy(i,jj,12) = stc(i,4,jj)
+        enddo
+      enddo
+
 !
 ! output some 2-dimension veriable to dmsfile
 !

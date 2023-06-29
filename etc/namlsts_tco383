@@ -72,6 +72,8 @@
  cgwd=1.60,
  cmbk=0.30,
  af=0.1,
+ outdms   =1,
+ outgrb2  =0, 
  &end
 
  &typ
