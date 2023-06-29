@@ -64,7 +64,7 @@
 ! inverse distance interpolation
 ! by helio
 ! --------------------------------------
-      subroutine reduceintp_idw(a,lonfd,lonf,my,j)
+      subroutine reduceintp_idw(a,lonfd,lonf,my,jj)
       use rank
       use index
       use phygrid ,only : outp,ls_full,ls_redu
@@ -117,20 +117,21 @@
       tmplist(:)  = 0.
       dlist(:)    = 0.
       axb(:)      = 0.
+      j           = jlist1(jj)
 
 
       do i = 1,lonf
         suma = 0.
         m    = 0.
 
-        dlist(1)   = outp(i,j,1)
-        dlist(2)   = outp(i,j,2)
-        dlist(3)   = outp(i,j,3)
-        dlist(4)   = outp(i,j,4)
-        al1 = int(outp(i,j,5)+0.00001)
-        al2 = int(outp(i,j,6)+0.00001)
-        al3 = int(outp(i,j,7)+0.00001)
-        al4 = int(outp(i,j,8)+0.00001)
+        dlist(1)   = outp(i,jj,1)
+        dlist(2)   = outp(i,jj,2)
+        dlist(3)   = outp(i,jj,3)
+        dlist(4)   = outp(i,jj,4)
+        al1 = int(outp(i,jj,5)+0.00001)
+        al2 = int(outp(i,jj,6)+0.00001)
+        al3 = int(outp(i,jj,7)+0.00001)
+        al4 = int(outp(i,jj,8)+0.00001)
 
         h=0
         if (al1.gt.0) then
@@ -152,10 +153,10 @@
 
         if (h.eq.0) then
 !if no value, average latitude with land sea mask
-           fdum = ls_full(i,j)
+           fdum = ls_full(i,jj)
 
            do z = 1,lonr(j)
-              rdum = ls_redu(z,j)
+              rdum = ls_redu(z,jj)
 !             if (j.eq.118) print*,'fdum',fdum,'rdum',rdum
               if (fdum.eq.0) then
                  if (my.eq.1280.and.i.eq.1802.and.j.eq.106) then
@@ -227,7 +228,7 @@
 
 !          print*,'helio AVG i',i,'j',j,'ls=',fdum,'new = ',new(i)
         else if (h.gt.0) then
-           fdum = ls_full(i,j)
+           fdum = ls_full(i,jj)
            axb(1:h) = dlist(1:h)*tmplist(h:1:-1)
 
            eab = 0.
@@ -253,7 +254,7 @@
 !     do i = 1,lonf
 !      if ((new(i).gt.0)) then
 !      else
-!      print*,'helio i = ',i,'j = ',j,'new = ',new(i),'ls = ',ls_full(i,j)
+!      print*,'helio i = ',i,'j = ',j,'new = ',new(i),'ls =',ls_full(i,jj)
 !      end if
 !     end do
 

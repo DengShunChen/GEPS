@@ -270,21 +270,20 @@
       write(lrec,16)ggdef,blnk
       call dmsreadi(nx,my,lrec,lncrec,'I',bckfile,iglob,istat)
 !helio>
-!     call unify_reducepicki(nx,my,my_max,iglob,ls)
-      ls_full(:,:) = iglob(:,:)
+
       do jj = 1, jlistnum
          j=jlist1(jj)
          ii=nxjstart(j)
          nxj=nxdef_2d(j)
+         ls_full(:,jj) = iglob(:,j)
          if(lreduce.eq.1) call reducepicki (iglob(1,j),nxdef(j),nx,1)
          do i = 1, nxj
             ls(i,jj) = iglob(ii,j)
             ii=ii+1
          enddo
+         ls_redu(:,jj) = iglob(:,j)
       enddo
-      ls_redu(:,:) = iglob(:,:)
 
-      call mpe_unify(ls_redu,nx,my,2,mpe_integer)
 !helio<
 
 
