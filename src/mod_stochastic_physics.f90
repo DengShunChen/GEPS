@@ -77,7 +77,8 @@ module mod_stochastic_physics
   real, public :: skebnorm = 1
   real, public :: skeb_vdof = 5 ! proxy for vertical correlation, 5 is close to 40 passes of the 1-2-1 filter in the GFS
   real, public :: skebfilt = 12
-  real, public, allocatable,dimension(:,:) :: skeb_vwts,skeb_vpts
+  real, public, allocatable,dimension(:,:) :: skeb_vwts
+  integer, public, allocatable,dimension(:,:) :: skeb_vpts
 
   ! SSST
   integer :: nssst
@@ -384,10 +385,10 @@ contains
       skeb_vloc(k)=sl(lev)-real(skeblevs-k)/real(skeblevs-1.0)*(sl(lev)-sl(1))
     enddo
     ! surface
-    skeb_vwts(lev,2)=0
+    skeb_vwts(lev,2)=0.
     skeb_vpts(lev,1)=skeblevs-2
     ! top
-    skeb_vwts(1,2)=1
+    skeb_vwts(1,2)=1.
     skeb_vpts(1,1)=1
     ! internal
     do k=2,lev-1
@@ -405,7 +406,7 @@ contains
       enddo
     endif
     skeb_vwts(:,1)=1.0-skeb_vwts(:,2)
-    skeb_vpts(:,2)=skeb_vpts(:,1)+1.0
+    skeb_vpts(:,2)=skeb_vpts(:,1)+1
 
   end subroutine init_skeb
 
@@ -464,7 +465,7 @@ contains
     integer :: n, k, nscale, ncx, ml, ms, ns, i, j
     real :: rerth, pi, var, radsq, correLsq, rkT, rnn1
     type(random_pattern), intent(inout) :: rpattern(nscale)
-    integer :: irand, i
+    integer :: irand
     real :: dt
     real(kind=RTYPE), allocatable :: noise(:,:)
     integer(8) count, count_rate, count_max, count_trunc

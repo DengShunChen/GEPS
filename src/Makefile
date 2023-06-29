@@ -99,6 +99,7 @@ SRCS_f90  = \
   init_block.f90 \
   initial.f90 \
   intgrt.f90 \
+  intgrt_3tl.f90 \
   invmtx.f90 \
   ioserver.f90 \
   iounitdef.f90 \
@@ -155,9 +156,14 @@ SRCS_f90  = \
   module_bfmicrophysics.f90 \
   module_mp_radar.f90 \
   module_mp_thompson_gfs.f90 \
+  module_mp_thompson_gfs_new.f90 \
+  module_mp_thompson_make_NC.f90 \
   module_mp_wsm6_fv3.f90 \
   module_mp_gfdl_fv3_v16.f90 \
   module_mp_gfdl_fv3_v2.f90 \
+  module_mp_gfdl_fv3_v3.f90 \
+  module_mp_gsfcgce.f90 \
+  module_mp_gsfcgce_4ice_nuwrf.f90 \
   cld_eff_rad.f90 \
   moninedmf.f90 \
   mpe2d.f90 \
@@ -259,6 +265,8 @@ SRCS_f90  = \
   rstrantq.f90 \
   samfdeepcnv.f90 \
   samfshalcnv.f90 \
+  samfdeepcnv_kh.f90 \
+  samfshalcnv_kh.f90 \
   sascnv.f90 \
   sascnv_n.f90 \
   sascnv_sa.f90 \

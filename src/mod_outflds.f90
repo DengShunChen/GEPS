@@ -406,7 +406,7 @@ contains
       use radn, only : ntoz
       use param, only : ncld
       use mod_grb2_param
-      use const ,only:outdms,outgrb2 , RTYPE,kflag,qmin
+      use const ,only:outdms,outgrb2 , RTYPE,kflag,qmin,nmmiph
 
       implicit  none
 
@@ -426,19 +426,45 @@ contains
       character*26 ihdg,ihdg2
       character*6 lrec(lpout)
       character*4 ggdef
-      character*3 cspec(6)
+!      character*3 cspec(8)
+      character*3,dimension(:),allocatable :: cspec
       logical :: lwrite
       integer::Ptp0,Ptp1,Ptp2,Ptp3
-      integer,dimension(6)::cspe0,cspe1,cspe2,cspe3
+!      integer,dimension(6)::cspe0,cspe1,cspe2,cspe3
+      integer,dimension(:),allocatable ::cspe0,cspe1,cspe2,cspe3
 !
-      cspec=(/'500','551','553','552','554','555'/)
-      cspe0=(/  0  ,  0  ,  0  ,  0  ,  0  ,  0  /)
-      cspe1=(/  1  ,  1  ,  1  ,  1  ,  1  ,  1  /)
-      cspe2=(/  0  , 22  , 24  , 82  , 25  , 32  /)
-      cspe3=(/  6  ,  8  ,  8  ,  8  ,  8  ,  8  /)
+!key=556 for mixing ratio of hail
+!key=571~575 for number concentration of cloud droplet, ice, rain, snow, and graupel
+!key=572 : inc (ntinc=7)
+!key=573 : rnc (ntrnc=8)
+      if ( nmmiph .eq. 18 ) then
+        allocate ( cspec(8),cspe0(8),cspe1(8),cspe2(8),cspe3(8) )
+        cspec=(/'500','551','553','552','554','555','572','573'/)
+        cspe0=(/  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  /)
+        cspe1=(/  1  ,  1  ,  1  ,  1  ,  1  ,  1  ,  1  ,  1  /)
+        cspe2=(/  0  , 22  , 24  , 82  , 25  , 32  , 207 , 104 /)  !not sure of inc
+        cspe3=(/  6  ,  8  ,  8  ,  8  ,  8  ,  8  ,  8  ,  8  /)
+      elseif ( nmmiph .eq. 16 ) then
+        allocate ( cspec(7),cspe0(7),cspe1(7),cspe2(7),cspe3(7) )
+        cspec=(/'500','551','553','552','554','555','556'/)
+        cspe0=(/  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  /)
+        cspe1=(/  1  ,  1  ,  1  ,  1  ,  1  ,  1  ,  1  /)
+        cspe2=(/  0  , 22  , 24  , 82  , 25  , 32  , 71  /)
+        cspe3=(/  6  ,  8  ,  8  ,  8  ,  8  ,  8  ,  8  /)
+      else
+        allocate ( cspec(6),cspe0(6),cspe1(6),cspe2(6),cspe3(6) )
+        cspec=(/'500','551','553','552','554','555'/)
+        cspe0=(/  0  ,  0  ,  0  ,  0  ,  0  ,  0  /)
+        cspe1=(/  1  ,  1  ,  1  ,  1  ,  1  ,  1  /)
+        cspe2=(/  0  , 22  , 24  , 82  , 25  , 32  /)
+        cspe3=(/  6  ,  8  ,  8  ,  8  ,  8  ,  8  /)
+      endif
 !
-      ntrchk=ncld
-      if ( ntoz .gt. 0 ) ntrchk=ncld-1
+      if ( ntoz .gt. 0 ) then
+        ntrchk = ntoz - 1
+      else
+        ntrchk = ncld
+      endif
 !
       do k = 1, lev+1
        tens(k) = 1.0
@@ -469,7 +495,7 @@ contains
 !
         do k = 1, lpout-1
           lpl = int(plev(k)+0.001)
-          write( lrec(k), '(i3.3,a3)' ) lpl,'550'   ! combine cloud water and cloud ice together
+          write( lrec(k), '(i3.3,a3)' ) lpl,'550'   ! combine all condensates together
         end do
         lrec(lpout) = 'h00550'
         Ptp0=0 ;Ptp1=1 ;Ptp2=235 ;Ptp3=9 !grib code 

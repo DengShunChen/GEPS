@@ -29,6 +29,12 @@
 
       integer, allocatable,save :: il(:,:),ib(:,:)
 
+!helio>
+      integer, dimension(:,:),allocatable,save :: ls_full(:,:)
+      integer, dimension(:,:),allocatable,save :: ls_redu(:,:)
+      real, dimension(:,:,:),allocatable,save :: outp(:,:,:)
+!helio<
+
       real, dimension(:,:),allocatable,save :: cof
       real, dimension(:,:),allocatable,save :: xlon
       real, dimension(:)  ,allocatable,save :: xlat
@@ -45,7 +51,7 @@
       real, dimension(:,:,:),allocatable,save :: deltaq,cnvwr,cnvcr
       real, dimension(:,:,:),allocatable,save :: dtcup,ducup,dvcup,    &
                                                  dtshl,dushl,dvshl,    &
-                                                 dtlsp
+                                                 dtlsp,dulsp,dvlsp
       real(kind=RTYPE), dimension(:,:,:),allocatable,save :: o3l
 
       contains 
@@ -159,7 +165,8 @@
            allocate (dtcup(nxp,lev,my_max),ducup(nxp,lev,my_max),    &
                      dvcup(nxp,lev,my_max),dtshl(nxp,lev,my_max),    &
                      dushl(nxp,lev,my_max),dvshl(nxp,lev,my_max),    &
-                     dtlsp(nxp,lev,my_max), stat=ierr)
+                     dtlsp(nxp,lev,my_max),dulsp(nxp,lev,my_max),    &
+                     dvlsp(nxp,lev,my_max),  stat=ierr)
 
            if (ierr/= 0) then
                write(6,*) 'mod_phygrid : allocate fail 8 '
@@ -173,7 +180,22 @@
            dushl = 0.
            dvshl = 0.
            dtlsp = 0.
+           dulsp = 0.
+           dvlsp = 0.
 !
+
+!helio>
+           allocate (ls_full(nx,my),ls_redu(nx,my), stat=ierr)
+           allocate (outp(nx,my,8), stat=ierr)
+           if (ierr/= 0) then
+               write(6,*) 'mod_phygrid : allocate fail 9 '
+               stop
+           end if
+           ls_full = 0.
+           ls_redu = 0.
+           outp = 0.
+!helio<
+
            return
 
          end subroutine
@@ -195,7 +217,11 @@
            deallocate (fpsp,fpsp1)
            deallocate (rainlp6,raincu6,rainlp3,raincu3,rainlp1,raincu1)
            deallocate (tsflw)
-           deallocate (dtcup,ducup,dvcup,dtshl,dushl,dvshl,dtlsp)
+           deallocate (dtcup,ducup,dvcup,dtshl,dushl,dvshl,dtlsp,dulsp,dvlsp)
+!helio>
+           deallocate (ls_full,ls_redu)
+           deallocate (outp)
+!helio<
 
            return
 

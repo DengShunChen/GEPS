@@ -29,11 +29,12 @@
       integer   nx,my,lmaxp,lev
 
       real      f(nx,lmaxp,my),dout(nx*lev,my),yr(nx,lmaxp,my) &
-      , yin(nx*lev,my),tensy(lmaxp)
+      , yin(nx*lev,my),tensy(lmaxp),tp1(nx*lev*4)
 !
 !sun  include '../include/paramt.h' .. change im,lm to nx,lev
 !
-      real(kind=RTYPE) fxx(nx,lmaxp),fyy(nx,lmaxp),pjy(nx*lev*4),tp1(nx*lev*4)
+      real(kind=RTYPE) fxx(nx,lmaxp),fyy(nx,lmaxp),pjy(nx*lev*4)
+
 
       integer   ipt(nx*lev)
 

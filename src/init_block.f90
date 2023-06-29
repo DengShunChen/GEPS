@@ -102,6 +102,10 @@
       doclx=.false.
 ! Semi-Lagrangian Averaging of Physical Parametrizations
       doslavepp=.false.
+! dy-core two loop sequence
+      two_loop=.false.
+! dy-core two time level
+      ttl=.true.
 ! output data for RSM (Also, RSM compiling flag is necessary)
       outrsm=.false.
       rsmoutinv=6
@@ -242,7 +246,7 @@
 !  sponge layer 
       spl1=5.
       spl2=50.
-      vd=0.1
+      vd=0.08
       else if ( lev .eq. 128 ) then
 !
 ! L128 hybrid coordinate
@@ -317,13 +321,13 @@
            .99251445,.99638192,1.0000000 /) 
       ptop=0.01
 !  sponge layer 
-      spl1=5.
-      spl2=50.
-      vd=0.4
+      spl1=20.
+      spl2=100.
+      vd=0.1
       endif
 !
-!      tmeans=300.
-      tmeans=350.
+      tmeans=300.
+!      tmeans=350.
 
 !-- for hybrid coordinates, ptmeans reset for numerical stability
 !      ptmeans=800.
@@ -331,17 +335,17 @@
 !
 ! for forward weighting Semi-Implicit
 !
-      alpha=0.75
+      alpha=0.7
+!
+! for Robert time filter in three time level
+!
+      tfilt=0.04
 !
 ! for two time level 
 !
-!    coefficient of merging PGF
-!
-      af=0.1
-!
 !    coefficient of horizontal difussion for mid-point wind
 !
-      mwhd=4.
+      mwhd=1.
 
 !
       ifilin ='ifilin'
@@ -462,6 +466,7 @@
       ntiw=4
       ntsw=5
       ntgl=6
+      nthl=7  ! hail
       ntoz=3
       ioutsigr=0
 !---------------------------------------------------------------------------

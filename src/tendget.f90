@@ -56,6 +56,8 @@
 !for 2dMPI
       real(kind=RTYPE) temten1(lev,2,jtrun,jtmax)
       real(kind=RTYPE) phiten1(lev,2,jtrun,jtmax)
+      logical forward
+      forward = .false.
       phiten1=0.
 
 !
@@ -150,7 +152,7 @@
         enddo
         do k = 1, lev*ncld
           do i = 1, nxj
-            qp(i,k,jj) = qt(i,k,jj)
+            qm(i,k,jj) = qt(i,k,jj)
           enddo
         enddo
 !!        do i = 1, nxj
@@ -171,7 +173,7 @@
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
       call mpe2d_transpose_ndsl_p2f(ttp,ttm_sl,  &
                                     nxp,nx,levf,levp,1,   myf,my_max,jlistnum,jlen,nsizex,row_comm)
-      call mpe2d_transpose_ndsl_p2f(qp,qm_sl,    &
+      call mpe2d_transpose_ndsl_p2f(qm,qm_sl,    &
                                     nxp,nx,levf,levp,ncld,myf,my_max,jlistnum,jlen,nsizex,row_comm)
 !#endif
 
@@ -256,14 +258,14 @@
             enddo
           enddo
         enddo !jj = 1,jlistnum
-      call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlr,vdmerdr,dta)
+      call ndslfv_update(nxjp,vdzonl,vdmerd,vdzonlr,vdmerdr,dta,forward)
 
 !CWB2021 ndsl single precision test
 !
 !
 !       Vertical Advection
 !
-      call ndslfv_monoadvv(ddtemp,qvadv,vdzonl,vdmerd,pdot,pt,nxjp,dta)
+      call ndslfv_monoadvv(ddtemp,qvadv,vdzonl,vdmerd,pdot,pt,nxjp,dta,forward)
 
 !CWB2021 ndsl single precision test
 

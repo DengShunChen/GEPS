@@ -287,7 +287,7 @@ module module_mp_gfdl
     logical :: fast_sat_adj = .false. !< has fast saturation adjustments
     logical :: z_slope_liq = .true. !< use linear mono slope for autocconversions
     logical :: z_slope_ice = .false. !< use linear mono slope for autocconversions
-    logical :: use_ccn = .false. !< must be true when prog_ccn is false
+    logical :: use_ccn = .true. !< must be true when prog_ccn is false
     logical :: use_ppm = .false. !< use ppm fall scheme
     logical :: mono_prof = .true. !< perform terminal fall with mono ppm scheme
     logical :: mp_print = .false. !< cloud microphysics debugging printout
@@ -355,7 +355,7 @@ subroutine gfdl_cloud_microphys_driver                                    &
               pt_dt, pt, w, uin, vin, udt, vdt,                           &
               dz, delp, area, dt_in, land,                                &
               rain, snow, ice, graupel,                                   &
-              hydrostatic, phys_hydrostatic,                              & 
+              rhc, hydrostatic, phys_hydrostatic,                     &
 !              iis, iie, jjs, jje, kks, kke, ktop, kbot, seconds,          &  !FV3 v16
 !              p, lradar, refl_10cm, reset )
               iis, iie, jjs, jje, kks, kke, ktop, kbot )
@@ -370,6 +370,8 @@ subroutine gfdl_cloud_microphys_driver                                    &
 !    integer, intent (in) :: seconds
     
     real, intent (in) :: dt_in !< physics time step
+
+    real, intent (in), dimension (:, :) :: rhc
     
     real, intent (in), dimension (:, :) :: area !< cell area
     real, intent (in), dimension (:, :) :: land !< land fraction
@@ -487,7 +489,7 @@ subroutine gfdl_cloud_microphys_driver                                    &
             rain (:, j), snow (:, j), graupel (:, j), ice (:, j), m2_rain,     &
             m2_sol, cond (:, j), area (:, j), land (:, j), udt, vdt, pt_dt,    &
             qv_dt, ql_dt, qr_dt, qi_dt, qs_dt, qg_dt, qa_dt, w_var, vt_r,      &
-            vt_s, vt_g, vt_i, qn2)
+            vt_s, vt_g, vt_i, qn2, rhc)
     enddo
     
     ! -----------------------------------------------------------------------
@@ -677,7 +679,7 @@ subroutine mpdrv (hydrostatic, uin, vin, w, delp, pt, qv, ql, qr, qi, qs,     &
         qg, qa, qn, dz, is, ie, js, je, ks, ke, ktop, kbot, j, dt_in, ntimes, &
         rain, snow, graupel, ice, m2_rain, m2_sol, cond, area1, land,         &
         u_dt, v_dt, pt_dt, qv_dt, ql_dt, qr_dt, qi_dt, qs_dt, qg_dt, qa_dt,   &
-        w_var, vt_r, vt_s, vt_g, vt_i, qn2)
+        w_var, vt_r, vt_s, vt_g, vt_i, qn2, rhc)
     
     implicit none
     
@@ -687,6 +689,7 @@ subroutine mpdrv (hydrostatic, uin, vin, w, delp, pt, qv, ql, qr, qi, qs,     &
     integer, intent (in) :: ntimes, ktop, kbot
     
     real, intent (in) :: dt_in
+    real, intent (in), dimension (is:, ks:) :: rhc
     
     real, intent (in), dimension (is:) :: area1, land
     
@@ -712,6 +715,7 @@ subroutine mpdrv (hydrostatic, uin, vin, w, delp, pt, qv, ql, qr, qi, qs,     &
     real, dimension (ktop:kbot) :: t0, den, den0, tz, p1, denfac
     real, dimension (ktop:kbot) :: ccn, c_praut, m1_rain, m1_sol, m1
     real, dimension (ktop:kbot) :: u0, v0, u1, v1, w1
+    real, dimension (ktop:kbot) :: rhcz
     
     real :: cpaut, rh_adj, rh_rain
     real :: r1, s1, i1, g1, rdt, ccn0
@@ -764,6 +768,8 @@ subroutine mpdrv (hydrostatic, uin, vin, w, delp, pt, qv, ql, qr, qi, qs,     &
             tz (k) = t0 (k)
             dp1 (k) = delp (i, j, k)
             dp0 (k) = dp1 (k) ! moist air mass * grav
+
+            rhcz (k) = rhc (i, k)
             
             ! -----------------------------------------------------------------------
             ! convert moist mixing ratios to dry mixing ratios
@@ -957,7 +963,7 @@ subroutine mpdrv (hydrostatic, uin, vin, w, delp, pt, qv, ql, qr, qi, qs,     &
             ! -----------------------------------------------------------------------
             
             call icloud (ktop, kbot, tz, p1, qvz, qlz, qrz, qiz, qsz, qgz, dp1, den, &
-                denfac, vtsz, vtgz, vtrz, qaz, rh_adj, rh_rain, dts, h_var)
+                denfac, vtsz, vtgz, vtrz, qaz, rh_adj, rh_rain, dts, h_var, rhcz)
             
         enddo
         
@@ -1497,7 +1503,7 @@ end subroutine linear_prof
 ! =======================================================================
 
 subroutine icloud (ktop, kbot, tzk, p1, qvk, qlk, qrk, qik, qsk, qgk, dp1, &
-        den, denfac, vts, vtg, vtr, qak, rh_adj, rh_rain, dts, h_var)
+        den, denfac, vts, vtg, vtr, qak, rh_adj, rh_rain, dts, h_var, rhck)
     
     implicit none
     
@@ -1508,6 +1514,7 @@ subroutine icloud (ktop, kbot, tzk, p1, qvk, qlk, qrk, qik, qsk, qgk, dp1, &
     real, intent (inout), dimension (ktop:kbot) :: tzk, qvk, qlk, qrk, qik, qsk, qgk, qak
     
     real, intent (in) :: rh_adj, rh_rain, dts, h_var
+    real, intent (in), dimension (ktop:kbot) :: rhck
     
     real, dimension (ktop:kbot) :: lcpk, icpk, tcpk, di, lhl, lhi
     real, dimension (ktop:kbot) :: cvm, q_liq, q_sol
@@ -1972,7 +1979,7 @@ subroutine icloud (ktop, kbot, tzk, p1, qvk, qlk, qrk, qik, qsk, qgk, dp1, &
     ! -----------------------------------------------------------------------
     
     call subgrid_z_proc (ktop, kbot, p1, den, denfac, dts, rh_adj, tzk, qvk, &
-        qlk, qrk, qik, qsk, qgk, qak, h_var, rh_rain)
+        qlk, qrk, qik, qsk, qgk, qak, h_var, rhck, rh_rain)
     
 end subroutine icloud
 
@@ -1981,7 +1988,7 @@ end subroutine icloud
 ! =======================================================================
 
 subroutine subgrid_z_proc (ktop, kbot, p1, den, denfac, dts, rh_adj, tz, qv, &
-    ql, qr, qi, qs, qg, qa, h_var, rh_rain)
+    ql, qr, qi, qs, qg, qa, h_var, rhcz, rh_rain)
     
     implicit none
     
@@ -1990,6 +1997,7 @@ subroutine subgrid_z_proc (ktop, kbot, p1, den, denfac, dts, rh_adj, tz, qv, &
     real, intent (in), dimension (ktop:kbot) :: p1, den, denfac
     
     real, intent (in) :: dts, rh_adj, h_var, rh_rain
+    real, intent (in), dimension (ktop:kbot) :: rhcz
     
     real, intent (inout), dimension (ktop:kbot) :: tz, qv, ql, qr, qi, qs, qg, qa
     
@@ -2098,7 +2106,8 @@ subroutine subgrid_z_proc (ktop, kbot, p1, den, denfac, dts, rh_adj, tz, qv, &
         ! -----------------------------------------------------------------------
         
         qsw = wqs2 (tz (k), den (k), dwsdt)
-        dq0 = qsw - qv (k)
+!        dq0 = qsw - qv (k)
+        dq0 = qsw * rhcz (k) - qv (k)   !xb141
         if (dq0 > 0.) then
             ! SJL 20170703 added ql factor to prevent the situation of high ql and low RH
             ! factor = min (1., fac_l2v * sqrt (max (0., ql (k)) / 1.e-5) * 10. * dq0 / qsw)
@@ -4692,14 +4701,12 @@ subroutine cloud_diagnosis                                              &
 !   --- output :
           rew, rei, rer, res, reg)
 !
-    use const, only: RTYPE
-!    
     implicit none
     
     integer, intent (in) :: is, ie, ks, ke
     integer, intent (in), dimension (is:ie) :: lsm ! land sea mask, 0: ocean, 1: land, 2: sea ice
     
-    real(kind=RTYPE), intent (in), dimension (is:ie, ks:ke) :: t
+    real, intent (in), dimension (is:ie, ks:ke) :: t
     real, intent (in), dimension (is:ie, ks:ke) :: den, delp
     real, intent (in), dimension (is:ie, ks:ke) :: qmw, qmi, qmr, qms, qmg !< units: kg / kg
     

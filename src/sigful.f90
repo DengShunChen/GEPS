@@ -38,7 +38,7 @@
       integer   ktrop,nxmy,nxlev,lncrec,lmaxp1,lmaxp2,k,itaux,itaup
       integer   istat,i,ii,jj,j,nxj,kk,lqwset,m,mf,n,llts,ntrac,nclds
 
-      real      taup,cp,rad,rgas,grav,capa,taux,ptop,ppp,fac
+      real      taup,cp,rad,rgas,grav,capa,taux,ptop,ppp,fac,ptmp
       real      alaps,rdg,ttt1,ttt2,apha,ttt,sigp,x1,opok,pk800,pk300
 
 
@@ -52,20 +52,19 @@
 !
 !  local work arrays
 !
-      real      preplt(nx,lmax+2),prett(nx,lmax+2),hld1(nx,my)         &
-               ,plog(nx,lev),hkd1(nx,lev),ut_tmp(nx,lev)
+      real      hld1(nx,my),hkd1(nx,lev)
       real     tens(lmax+2),tstd(lmax),utmp(nxp,lev),vtmp(nxp,lev)
-      real      puvphi(26)
+      real      puvphi(26),plog(nx,lev),preplt(nx,lmax+2)
 !
-      real(kind=RTYPE) cc(nx+2,levp,1+ncld,my_max)                     &
+      real(kind=RTYPE) cc(nx+2,levp,1,my_max)                          &
                ,       ut(nxp,lev,my_max),vt(nxp,lev,my_max)           &
                ,       tt(nxp,lev,my_max),sht(nxp,lev*ncld,my_max)     &
                ,       o3l(nxp,lev,my_max),phi(nxp,lev,my_max)         &
                ,       pt(nxp,my_max),sgeo(nxp,my_max)                 &
-               ,       anlslp(nxp,my_max)
+               ,       anlslp(nxp,my_max),prett(nx,lmax+2)             &
+               ,       ut_tmp(nx,lev)
       real(kind=RTYPE) hld4(nx,levp,ncld,my_max),hld3(nx,levp,my_max)  &
                ,       hld2(nx,my)
-      real      wss(levp,2,1+ncld,jtrun,jtmax)
       real      work_pr1(lev), work_pr2(lev), work_pr3(lev)
 !
       real(kind=RTYPE) plnow(jtrun,jtmax,2),dummy,ww1(nx,my_max)
@@ -92,6 +91,14 @@
       else
         nclds=ncld
       endif
+
+      !new Thompson MP without reading ice/rain number concentration
+      if ( ncld .eq. 9 ) then
+        nclds = 6
+      !Goddard MP without reading hail
+      elseif ( ncld .eq. 8 ) then
+        nclds = 6
+      endif
 !
 !CWBinit
       plnow=0.
@@ -100,6 +107,8 @@
       prett=0.
       anlslp=0.
       sht=0.
+      dummy=0.
+      cc=0.
 
       nxmy  = nx*my
       nxlev = nx*lev
@@ -306,6 +315,7 @@
       call transr(jtrun,jtmax,nx,my,my_max,levp,poly,trefs,cc,1,nsizey)
       call ujoinsr(cc,tt,dummy,dummy,dummy,nx,my_max,lev,jlistnum,1,1)
       endif
+
 !------
 !
 !  ncld > 2 needs to add another cloud micro input
@@ -394,7 +404,6 @@
   157 continue
 !
       call mpe2d_unify_nx_lev_red(plog,nx,lev,j)
-
 !ch   call vterpj( nx,lmaxp2,lev,preplt,prett,plog,ut(1,1,jj),tens)
       call vterpj( nx,lmaxp2,lev,preplt,prett,plog,ut_tmp,tens)
         do  k = 1, lev
@@ -402,18 +411,19 @@
         do  i = 1,nxj
 !ch         ut(i,k,jj)=ut_tmp(i,k) 
 !cjh        ut(i,k,jj)=ut_tmp(n,k) 
-            utmp(i,k)=ut_tmp(n,k)*(pt(i,jj)/1000.)**capa
+            utmp(i,k)=ut_tmp(n,k)
+            ut(i,k,jj) = ut_tmp(n,k)/pk(i,k,jj)
             n=n+1
         enddo
         enddo
+
 !
-      call qsatq_2d( nxjp(j),nxp,lev,utmp,plt(1,1,jj),vtmp)
+!      call qsatq_2d( nxjp(j),nxp,lev,utmp,plt(1,1,jj),vtmp)
 !
-      do 160 k = 1, lev
-      do 160 i = 1, nxj
-       ut(i,k,jj) = utmp(i,k)/pk(i,k,jj)
-       vt(i,k,jj) = vtmp(i,k)
-  160 continue
+!      do 160 k = 1, lev
+!      do 160 i = 1, nxj
+!       vt(i,k,jj) = vtmp(i,k)
+!  160 continue
 !
   170 continue
 !
@@ -583,6 +593,7 @@
 !
 !  change real temp to viture potential temp
 !
+
       do 300 jj = 1, jlistnum
       j=jlist1(jj)
       nxj=nxdef_2d(j)

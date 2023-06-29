@@ -44,6 +44,10 @@
                                 ,ifilin_ocaf,read_ocaf,read_ocaf0      &
                                 ,wtfn12,wsfn12,time_weights,mask1st
       USE mo_netcdf,         ONLY:lkvl,set_ocndepth
+! for Thompson MP
+      use physcons,          only: con_rd,con_eps
+      use module_mp_thompson_make_number_concentrations,                &
+                             only: make_IceNumber, make_RainNumber
 !-----------------------------------------------------------------------
       use mod_grb2_param , only : grbid ,grbfile ,opn_grb2 ,cls_grb2,grbnxmy
 
@@ -58,6 +62,9 @@
 !byl                wss3(levp,2,3,jtrun,jtmax),cc3(nx+2,levp,3,my_max)
 
       character lrec*26,rfile*55,ctau*6,topostd*4,topohgt*4,key*34
+!helio>
+      character f71*50
+!helio<
 #ifdef RSM
       character*12 dtgrsm
       integer idtgrsm
@@ -107,8 +114,11 @@
       integer nxjpart      
 ! for io quilting
       character:: keydoit*34
+! for Thompson MP
+      real  tem,rho,ttr,ttv
 
       lmax=26
+      cc=0.
 !
       nxmy   = nx*my
       mlmax2 = mlmax * 2
@@ -132,6 +142,26 @@
       endif
       endif
       endif
+!------------------------------------------------------------
+!helio>
+       if ( nco .gt. 999 ) then
+        write(f71,105) nco,nx,my
+       else
+        if ( nx .gt. 999 .and. my .gt. 999 ) write(f71,106) nco,nx,my
+        if ( nx .gt. 999 .and. my .le. 999 ) write(f71,107) nco,nx,my
+        if ( nx .le. 999 .and. my .le. 999 ) write(f71,108) nco,nx,my
+       endif
+ 105  format('global_idw.t',i4.4,'.',i4.4,'.',i4.4,'.dat')
+ 106  format('global_idw.t',i3.3,'.',i4.4,'.',i4.4,'.dat')
+ 107  format('global_idw.t',i3.3,'.',i4.4,'.',i3.3,'.dat')
+ 108  format('global_idw.t',i3.3,'.',i3.3,'.',i3.3,'.dat')
+
+      open(71,file=f71,form='unformatted',access='direct',recl=8*nx*my*8)
+
+      read(71,rec=1) outp
+      close(71)
+
+!helio<
 !------------------------------------------------------------
 
       if (restrt) then
@@ -1205,6 +1235,36 @@
 !        call mpe_unify(hflux,nx,my,2,mpe_double)
 !        call mpe_unify(qflux,nx,my,2,mpe_double)
       endif    ! end of ( .not. restrt ) for u10 v10 t2 being output at tau=0
+
+! for Thompson : 1st guess number concentration where mass non-zero
+      if ( .not.restrt .and. nmmiph.eq.18 ) then
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          do k = 1, lev
+            do i = 1, nxj
+              ! virtual temperature :
+              ttv = tt(i,k,jj)*pk(i,k,jj)
+              ! real temperature :
+              ttr = ttv/(1.0+0.608*qt(i,k,jj))
+              ! air density :
+              rho = plt(i,k,jj)*100./(con_rd*ttv)
+
+              tem = qt(i,(ntiw-1)*lev+k,jj)
+              if ( tem .gt. 0. ) then
+                 qt(i,(ntinc-1)*lev+k,jj) =                             &
+                      make_IceNumber(tem*rho,ttr)/rho
+              endif
+
+              tem = qt(i,(ntrw-1)*lev+k,jj)
+              if ( tem .gt. 0. ) then
+                 qt(i,(ntrnc-1)*lev+k,jj) =                             &
+                      make_RainNumber(tem*rho,ttr)/rho
+              endif
+            enddo
+          enddo
+        enddo
+      endif
 !
 !  output initial fileds
 !

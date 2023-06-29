@@ -75,6 +75,7 @@ module cld_eff_rad_v2
     ! 3: fu, 2007
     ! 4: kristjansson et al., 2000
     ! 5: wyser, 1998
+    ! 6: Heymsfield et al.,2014  !not finished (by xb141)
     
 !    namelist / cld_eff_rad_nml / &
 !        qi0_rei, qmin, beta, liq_ice_combine, rewflag, reiflag, rewmin, rewmax, reimin, &
@@ -502,6 +503,29 @@ subroutine cld_eff_rad                                       &
                 
             endif
             
+            if (reiflag .eq. 6) then
+
+                ! -----------------------------------------------------------------------
+                ! cloud ice (Heymsfield et al., 2014)
+                ! -----------------------------------------------------------------------
+
+                if (qmi (i, k) .gt. qmin) then
+                    qci (i, k) = betai * dpg * qmi (i, k) * 1.0e3
+                    if ( tc0 >= -56 .and. tc0 < 0 ) then
+                       rei (i, k) = 308.4 * exp ( 0.0152 * tc0 )
+                    elseif ( tc0 >= -71 .and. tc0 < -56 ) then
+                       rei (i, k) = 9.1744e+4 * exp ( 0.117 * tc0 )
+                    elseif ( tc0 >= -85 .and. tc0 < -71 ) then
+                       rei (i, k) = 83.3 * exp ( 0.0184 * tc0 )
+                    endif
+                    rei (i, k) = max (reimin, min (reimax, rei (i, k)))
+                else
+                    qci (i, k) = 0.0
+                    rei (i, k) = reimin
+                endif
+
+            endif
+
             ! -----------------------------------------------------------------------
             ! rain (lin et al., 1983)
             ! -----------------------------------------------------------------------
