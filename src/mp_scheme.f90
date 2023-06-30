@@ -102,6 +102,7 @@
       use rank
       use radn,                only: ntcw,ntiw,ntrw,ntsw,ntgl,nthl,     &
                                      ntinc,ntrnc
+      use const,               only: qmin
 ! for wsm6
       use module_mp_wsm6,      only: wsm6
 ! for thompson
@@ -183,7 +184,7 @@
               qv2d,qc2d,qr2d,qi2d,qs2d,qg2d,qnc2d,qni2d,qnr2d,          &
               rew2d,rer2d,rei2d,res2d,reg2d,                            &
               t2d,dp2d,dz2d,cld2d,w2d,u2d,v2d,rhc2d,p2d
-      real    qmin, qnmin
+      real(kind=RTYPE) qnmin
 ! 2M Thompson MP
       real,dimension(:,:),allocatable ::                                &
               nwfa,nifa,pfils,pflls,vt_dbz_wt
@@ -369,7 +370,7 @@
         istep=1          !current step
         nsteps=1         !maximum number of steps
 
-        qmin=1.0e-12     !minimum of q (kg/kg)
+!        qmin=1.0e-12     !minimum of q (kg/kg)
         qnmin=1.0e-6     !minimum of qn (m^-3)
 
         t2d=0.
@@ -856,7 +857,7 @@
 #endif
                   rhc2d, last_step, do_inline_mp )
 
-        qmin = 1.0e-15     !minimum of q (kg/kg)
+!        qmin = 1.0e-15     !minimum of q (kg/kg)
         do k = 1, lev
           do i = 1, nxj
             qt(i,             k) = max( qv2d(i,k) , qmin )
