@@ -14,7 +14,6 @@
       use index
       use mpe
       use radn, only : ntoz,ntcw,ntrw,ntiw,ntsw,ntgl
-
 #ifdef CWB_MPMD
       use rank, only : root_rsm,myrank,itag
 #else

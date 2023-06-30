@@ -156,9 +156,16 @@
  107  format('global_idw.t',i3.3,'.',i4.4,'.',i3.3,'.dat')
  108  format('global_idw.t',i3.3,'.',i3.3,'.',i3.3,'.dat')
 
-      open(71,file=f71,form='unformatted',access='direct',recl=8*nx*my*8)
+      open(71,file=f71,form='unformatted',access='direct',recl=8*nx*my)
 
-      read(71,rec=1) outp
+      do k=1,8
+        read(71,rec=k) ww1
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          outp(:,jj,k) = ww1(:,j)
+        enddo
+      enddo
+
       close(71)
 
 !helio<
@@ -1320,6 +1327,8 @@
               , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6       &
               , ggdef)
       endif
+!
+!#ifdef RSM_sigp
         if(outgrb2==1.and.myrank==0)then
             if(io_quilting)then 
               keydoit(1:4)='CLSE'
