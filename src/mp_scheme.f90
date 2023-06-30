@@ -241,10 +241,6 @@
       convert_dry_q = .true.
       q_remove_cond = .false.
 !
-! define rhc for GFDL MP v1 & v2
-!     rhc = 1.0                 ! default
-!     rhc = 1.0 - 0.02*cosl**2  ! =0.98 at equator; =1.0 at pole
-!
 ! reset all value to zero
       prsl  = 0.
       del   = 0.
@@ -743,7 +739,6 @@
            qs2d(nxj,lev),qg2d(nxj,lev),cld2d(nxj,lev),qnc2d(nxj,lev),   &
            qni2d(nxj,lev),w2d(nxj,lev),t2d(nxj,lev),u2d(nxj,lev),       &
            v2d(nxj,lev),dp2d(nxj,lev),dz2d(nxj,lev),                    &
-           q_con(nxj,lev),cappa(nxj,lev),te(nxj,lev),                   &
            hs(nxj),land1d(nxj),gsize(nxj),rain1d(nxj),snow1d(nxj),      &
            ice1d(nxj),graupel1d(nxj),water1d(nxj),rhc2d(nxj,lev) )
         if ( effr_in ) allocate                                         &
@@ -752,7 +747,8 @@
 #ifdef EXT_DIAG
         allocate                                                        &
          ( prefluxr(nxj,lev),prefluxi(nxj,lev),prefluxs(nxj,lev),       &
-           prefluxg(nxj,lev),prefluxw(nxj,lev) )
+           prefluxg(nxj,lev),prefluxw(nxj,lev),                         &
+           q_con(nxj,lev),cappa(nxj,lev),te(nxj,lev) )
         allocate                                                        &
          ( cond0(nxj),dep0(nxj),evap0(nxj),sub0(nxj) )
 #endif
@@ -765,9 +761,6 @@
         if(nmmiph.eq.12) sedi_w = sedi_w_v2  !flag for w momentum transportation during sedimentation
         if(nmmiph.eq.13) sedi_w = sedi_w_v3  !flag for w momentum transportation during sedimentation
 
-        te    = 0.0
-        q_con = 0.0  !not sure
-        cappa = 0.0  !not sure
         gsize = 0.0
         land1d = 0.0
         rain1d = 0.
@@ -776,6 +769,9 @@
         graupel1d = 0.
         water1d = 0.
 #ifdef EXT_DIAG
+        te    = 0.0
+        q_con = 0.0  !not sure
+        cappa = 0.0  !not sure
         cond0 = 0.0
         dep0  = 0.0
         evap0 = 0.0
@@ -830,8 +826,9 @@
                   t2d, w2d, u2d, v2d, dz2d, dp2d, gsize, dta, hs,       &
                   land1d,                                               &
                   rain1d, snow1d, ice1d, graupel1d, hydrostatic,        &
-                  1, nxj, 1, lev, q_con, cappa, consv_te, te,           &
+                  1, nxj, 1, lev, consv_te,                             &
 #ifdef EXT_DIAG
+                  q_con, cappa, te,                                     &
                   prefluxr, prefluxi, prefluxs, prefluxg,               &
                   cond0, dep0, evap0, sub0,                             &
 #endif
@@ -845,12 +842,13 @@
                   t2d, w2d, u2d, v2d, dz2d, dp2d, gsize, dta, hs,       &
                   land1d, water1d,                                      &
                   rain1d, snow1d, ice1d, graupel1d, hydrostatic,        &
-                  1, nxj, 1, lev, q_con, cappa, consv_te, te,           &
+                  1, nxj, 1, lev, consv_te,                             &
 #ifdef EXT_DIAG
+                  q_con, cappa, te,                                     &
                   prefluxw, prefluxr, prefluxi, prefluxs, prefluxg,     &
                   cond0, dep0, evap0, sub0,                             &
 #endif
-                  rhc2d, last_step, do_inline_mp )
+                  last_step, do_inline_mp )
 
         do k = 1, lev
           do i = 1, nxj
@@ -928,14 +926,14 @@
 
         deallocate                                                      &
          ( qv2d,qc2d,qr2d,qi2d,qs2d,qg2d,qnc2d,qni2d,cld2d,w2d,t2d,u2d, &
-           v2d,dp2d,dz2d,q_con,cappa,te,hs,gsize,rain1d,snow1d,ice1d,   &
-           graupel1d,water1d,land1d,rhc2d )
+           v2d,dp2d,dz2d,hs,gsize,rain1d,snow1d,ice1d,graupel1d,water1d,&
+           land1d,rhc2d )
         if ( effr_in ) deallocate                                       &
          ( rew2d,rei2d,rer2d,res2d,reg2d,snr1d,p2d,dp2d_ef )
 #ifdef EXT_DIAG
         deallocate                                                      &
          ( prefluxw,prefluxr,prefluxi,prefluxs,prefluxg,cond0,dep0,     &
-           evap0,sub0 )
+           evap0,sub0,q_con,cappa,te )
 #endif
       endif  !end if nmmiph.eq.12 .or nmmiph.eq.13
 
