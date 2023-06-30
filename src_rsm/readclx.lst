@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Thu Jun 29 14:24:00 2023
+ Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:30:24 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
    Source file       : readclx.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -87,166 +87,162 @@
               25                     !
               26                           use index
               27                           use namelist_soilveg
-              28                     !helio>
-              29                           use mpe
-              30                           use phygrid, only : ls_full,ls_redu
-              31                     !helio<
-              32                     !
-              33                           implicit  none
-              34                     
-              35                           integer   nx,my,my_max,julian,isot,ivegsrc
-              36                     
-              37                           real      solt(nxp,my_max),wet(nxp,my_max),z0(nxp,my_max),alb(nxp,my_max),  &
-              38                                     sst(nxp,my_max)                           &
-              39                     !soil
-              40                                    ,sigmaf(nxp,my_max)                        &
-              41                     !noah
-              42                                    ,shdmax(nxp,my_max),shdmin(nxp,my_max) &
-              43                                    ,snoalb(nxp,my_max)
+              28                     !
+              29                           implicit  none
+              30                     
+              31                           integer   nx,my,my_max,julian,isot,ivegsrc
+              32                     
+              33                           real      solt(nxp,my_max),wet(nxp,my_max),z0(nxp,my_max),alb(nxp,my_max),  &
+              34                                     sst(nxp,my_max)                           &
+              35                     !soil
+              36                                    ,sigmaf(nxp,my_max)                        &
+              37                     !noah
+              38                                    ,shdmax(nxp,my_max),shdmin(nxp,my_max) &
+              39                                    ,snoalb(nxp,my_max)
+              40                     
+              41                           integer slopetyp(nxp,my_max)
+              42                     
+              43                           integer istyp(nxp,my_max),ivegtyp(nxp,my_max)
               44                     
-              45                           integer slopetyp(nxp,my_max)
-              46                     
-              47                           integer istyp(nxp,my_max),ivegtyp(nxp,my_max)
-              48                     
+              45                     !
+              46                           logical land(nxp,my_max),sea(nxp,my_max),ice(nxp,my_max)
+              47                     !
+              48                     !  working array as climt data base
               49                     !
-              50                           logical land(nxp,my_max),sea(nxp,my_max),ice(nxp,my_max)
-              51                     !
-              52                     !  working array as climt data base
-              53                     !
-              54                           real    glob(nx,my)
-              55                           real      sstcl(nxp,my_max,2),soltcl(nxp,my_max,2),    &
-              56                                     wetcl(nxp,my_max,2),albcl(nxp,my_max,2),     &
-              57                                     z0cl(nxp,my_max,2),                          &
-              58                     !soil
-              59                                     vfrcl(nxp,my_max,2)
-              60                     !soil
-              61                           integer   ls(nxp,my_max),icex(nxp,my_max),iglob(nx,my)
-              62                     
-              63                           character bckfile*80,lrec*26,blnk*1,ggdef*4
-              64                           integer   mon(12),mondy(13)
-              65                           data mon/15,46,74,105,135,166,196,227,258,288,319,349/
-              66                           data mondy/0,31,59,90,120,151,181,212,243,273,304,334,365/
-              67                           data blnk/' '/
-              68                     
-              69                           integer   i,j,k,jul,nxj,mm,istat,monidex,lncrec,jj,ii
-              70                           real      coef1,coef2
-              71                     !
-              72                           lncrec=nx*my
-              73                     !
-              74                           jul=julian
-              75                           if(jul .ge. 366)jul=365
-              76                     !
-              77                     !  what month is it ?
-              78                     !
+              50                           real    glob(nx,my)
+              51                           real      sstcl(nxp,my_max,2),soltcl(nxp,my_max,2),    &
+              52                                     wetcl(nxp,my_max,2),albcl(nxp,my_max,2),     &
+              53                                     z0cl(nxp,my_max,2),                          &
+              54                     !soil
+              55                                     vfrcl(nxp,my_max,2)
+              56                     !soil
+              57                           integer   ls(nxp,my_max),icex(nxp,my_max),iglob(nx,my)
+              58                     
+              59                           character bckfile*80,lrec*26,blnk*1,ggdef*4
+              60                           integer   mon(12),mondy(13)
+              61                           data mon/15,46,74,105,135,166,196,227,258,288,319,349/
+              62                           data mondy/0,31,59,90,120,151,181,212,243,273,304,334,365/
+              63                           data blnk/' '/
+              64                     
+              65                           integer   i,j,k,jul,nxj,mm,istat,monidex,lncrec,jj,ii
+              66                           real      coef1,coef2
+              67                     !
+              68                           lncrec=nx*my
+              69                     !
+              70                           jul=julian
+              71                           if(jul .ge. 366)jul=365
+              72                     !
+              73                     !  what month is it ?
+              74                     !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 640
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 16)
                                    <<< Loop-information  End >>>
-              79     1   s    v            do k=1,12
-              80     1   p                 if(jul .gt. mondy(k) .and. jul .le. mondy(k+1))monidex=k
-              81     1   p    v            end do
-              82                     !
-              83                       11  format('W00100','gbck',a4,4x,i2.2,6x)  ! W10
-              84                       12  format('S9M100','gbck',a4,4x,i2.2,6x)  ! X10
-              85                       14  format('S00030','gbck',a4,4x,i2.2,6x)  ! S35
-              86                       15  format('S00040','gbck',a4,4x,i2.2,6x)  ! S44
-              87                       16  format('S00070','gbck',a4,11x,a1) ! S07
-              88                       17  format('S00090','gbck',a4,4x,i2.2,6x) ! S09
-              89                     !soil
-              90                       13  format('S9M5B0','gbck',a4,4x,i2.2,6x)  ! for new soil
-              91                       18  format('S000ST','gbck',a4,11x,a1)      ! for new soil
-              92                       19  format('S000VF','gbck',a4,4x,i2.2,6x)  ! for new soil
-              93                       21  format('S000VT','gbck',a4,11x,a1)      ! for new soil
-              94                       22  format('S9Y100','gbck',a4,11x,a1)      ! for new soil
-              95                     !soil
-              96                       23  format('S000VX','gbck',a4,11x,a1)      ! for new soil
-              97                       24  format('S000VN','gbck',a4,11x,a1)      ! for new soil
-              98                       25  format('S00063','gbck',a4,11x,a1)      ! for new soil
-              99                       26  format('S0003X','gbck',a4,11x,a1)      ! for new soil
-             100                     !source 2(19-soil, 20-veg)
-             101                       28  format('S00XST','gbck',a4,11x,a1)      ! for new soil
-             102                       31  format('S00XVT','gbck',a4,11x,a1)      ! for new soil
-             103                     !source 3(19-soil, 20-veg)
-             104                       29  format('S00WST','gbck',a4,11x,a1)      ! for new soil from MODIS
-             105                       32  format('S00WVT','gbck',a4,11x,a1)      ! for new soil from MODIS
-             106                       33  format('S00WVF','gbck',a4,4x,i2.2,6x)      ! for new soil from MODIS
-             107                     !
-             108                     !  to interpolat linearly based on julian day
-             109                     !
-             110                     !-- climat dataset has 12 months
-             111                     
-             112                           if(jul .le. mon(1))jul=jul+365
-             113     1                     if(jul .gt. mon(12))then
-             114     1               !                                -- read dmsfile --
-             115     1                     mm=12
-             116     1                     write(lrec,11)ggdef,mm
-             117     1                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
-             118     1                     call unify_reducepick(nx,my,my_max,glob,sstcl(1,1,1))
+              75     1   s    v            do k=1,12
+              76     1   p                 if(jul .gt. mondy(k) .and. jul .le. mondy(k+1))monidex=k
+              77     1   p    v            end do
+              78                     !
+              79                       11  format('W00100','gbck',a4,4x,i2.2,6x)  ! W10
+              80                       12  format('S9M100','gbck',a4,4x,i2.2,6x)  ! X10
+              81                       14  format('S00030','gbck',a4,4x,i2.2,6x)  ! S35
+              82                       15  format('S00040','gbck',a4,4x,i2.2,6x)  ! S44
+              83                       16  format('S00070','gbck',a4,11x,a1) ! S07
+              84                       17  format('S00090','gbck',a4,4x,i2.2,6x) ! S09
+              85                     !soil
+              86                       13  format('S9M5B0','gbck',a4,4x,i2.2,6x)  ! for new soil
+              87                       18  format('S000ST','gbck',a4,11x,a1)      ! for new soil
+              88                       19  format('S000VF','gbck',a4,4x,i2.2,6x)  ! for new soil
+              89                       21  format('S000VT','gbck',a4,11x,a1)      ! for new soil
+              90                       22  format('S9Y100','gbck',a4,11x,a1)      ! for new soil
+              91                     !soil
+              92                       23  format('S000VX','gbck',a4,11x,a1)      ! for new soil
+              93                       24  format('S000VN','gbck',a4,11x,a1)      ! for new soil
+              94                       25  format('S00063','gbck',a4,11x,a1)      ! for new soil
+              95                       26  format('S0003X','gbck',a4,11x,a1)      ! for new soil
+              96                     !source 2(19-soil, 20-veg)
+              97                       28  format('S00XST','gbck',a4,11x,a1)      ! for new soil
+              98                       31  format('S00XVT','gbck',a4,11x,a1)      ! for new soil
+              99                     !source 3(19-soil, 20-veg)
+             100                       29  format('S00WST','gbck',a4,11x,a1)      ! for new soil from MODIS
+             101                       32  format('S00WVT','gbck',a4,11x,a1)      ! for new soil from MODIS
+             102                       33  format('S00WVF','gbck',a4,4x,i2.2,6x)      ! for new soil from MODIS
+             103                     !
+             104                     !  to interpolat linearly based on julian day
+             105                     !
+             106                     !-- climat dataset has 12 months
+             107                     
+             108                           if(jul .le. mon(1))jul=jul+365
+             109     1                     if(jul .gt. mon(12))then
+             110     1               !                                -- read dmsfile --
+             111     1                     mm=12
+             112     1                     write(lrec,11)ggdef,mm
+             113     1                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
+             114     1                     call unify_reducepick(nx,my,my_max,glob,sstcl(1,1,1))
+             115     1               
+             116     1               !ch?  write(lrec,12)ggdef,mm
+             117     1               !ch?  call dmsread(nx,my,lrec,lncrec,'H',bckfile,soltcl(1,1,1),istat)
+             118     1               !ch?  if( lreduce.eq.1 ) call reducepick (soltcl(1,1,1),nxdef,nx,my)
              119     1               
-             120     1               !ch?  write(lrec,12)ggdef,mm
-             121     1               !ch?  call dmsread(nx,my,lrec,lncrec,'H',bckfile,soltcl(1,1,1),istat)
-             122     1               !ch?  if( lreduce.eq.1 ) call reducepick (soltcl(1,1,1),nxdef,nx,my)
+             120     1                     write(lrec,14)ggdef,mm
+             121     1                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
+             122     1                     call unify_reducepick(nx,my,my_max,glob,albcl(1,1,1))
              123     1               
-             124     1                     write(lrec,14)ggdef,mm
+             124     1                     write(lrec,15)ggdef,mm
              125     1                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
-             126     1                     call unify_reducepick(nx,my,my_max,glob,albcl(1,1,1))
+             126     1                     call unify_reducepick(nx,my,my_max,glob,z0cl(1,1,1))
              127     1               
-             128     1                     write(lrec,15)ggdef,mm
+             128     1                     write(lrec,13)ggdef,mm
              129     1                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
-             130     1                     call unify_reducepick(nx,my,my_max,glob,z0cl(1,1,1))
+             130     1                     call unify_reducepick(nx,my,my_max,glob,wetcl(1,1,1))
              131     1               
-             132     1                     write(lrec,13)ggdef,mm
-             133     1                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
-             134     1                     call unify_reducepick(nx,my,my_max,glob,wetcl(1,1,1))
-             135     1               
-             136     1               !soil
-             137     1                     if(ivegsrc .le. 1)write(lrec,19)ggdef,mm
-             138     1                     if(ivegsrc .eq. 2)write(lrec,33)ggdef,mm
-             139     1                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
-             140     1                     call unify_reducepick(nx,my,my_max,glob,vfrcl(1,1,1))
-             141     1               !soil
-             142     1                     mm=1
-             143     1                     write(lrec,11)ggdef,mm
-             144     1                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
-             145     1                     call unify_reducepick(nx,my,my_max,glob,sstcl(1,1,2))
+             132     1               !soil
+             133     1                     if(ivegsrc .le. 1)write(lrec,19)ggdef,mm
+             134     1                     if(ivegsrc .eq. 2)write(lrec,33)ggdef,mm
+             135     1                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
+             136     1                     call unify_reducepick(nx,my,my_max,glob,vfrcl(1,1,1))
+             137     1               !soil
+             138     1                     mm=1
+             139     1                     write(lrec,11)ggdef,mm
+             140     1                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
+             141     1                     call unify_reducepick(nx,my,my_max,glob,sstcl(1,1,2))
+             142     1               
+             143     1               !ch?  write(lrec,12)ggdef,mm
+             144     1               !ch?  call dmsread(nx,my,lrec,lncrec,'H',bckfile,soltcl(1,1,2),istat)
+             145     1               !ch?  if( lreduce.eq.1 ) call reducepick (soltcl(1,1,2),nxdef,nx,my)
              146     1               
-             147     1               !ch?  write(lrec,12)ggdef,mm
-             148     1               !ch?  call dmsread(nx,my,lrec,lncrec,'H',bckfile,soltcl(1,1,2),istat)
-             149     1               !ch?  if( lreduce.eq.1 ) call reducepick (soltcl(1,1,2),nxdef,nx,my)
+             147     1                     write(lrec,14)ggdef,mm
+             148     1                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
+             149     1                     call unify_reducepick(nx,my,my_max,glob,albcl(1,1,2))
              150     1               
-             151     1                     write(lrec,14)ggdef,mm
+             151     1                     write(lrec,15)ggdef,mm
              152     1                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
-             153     1                     call unify_reducepick(nx,my,my_max,glob,albcl(1,1,2))
+             153     1                     call unify_reducepick(nx,my,my_max,glob,z0cl(1,1,2))
              154     1               
-             155     1                     write(lrec,15)ggdef,mm
+             155     1                     write(lrec,13)ggdef,mm
              156     1                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
-             157     1                     call unify_reducepick(nx,my,my_max,glob,z0cl(1,1,2))
-             158     1               
-             159     1                     write(lrec,13)ggdef,mm
-             160     1                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
-             161     1                     call unify_reducepick(nx,my,my_max,glob,wetcl(1,1,2))
-             162     1               !soil
-             163     1                     if(ivegsrc .le. 1)write(lrec,19)ggdef,mm
-             164     1                     if(ivegsrc .eq. 2)write(lrec,33)ggdef,mm
-             165     1                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
-             166     1                     call unify_reducepick(nx,my,my_max,glob,vfrcl(1,1,2))
-             167     1               !soil
-             168     1               !
-             169     1                     coef1=float(jul-mon(12))/float(380-mon(12))
-             170     1                     coef2=1.-coef1
+             157     1                     call unify_reducepick(nx,my,my_max,glob,wetcl(1,1,2))
+             158     1               !soil
+             159     1                     if(ivegsrc .le. 1)write(lrec,19)ggdef,mm
+             160     1                     if(ivegsrc .eq. 2)write(lrec,33)ggdef,mm
+             161     1                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
+             162     1                     call unify_reducepick(nx,my,my_max,glob,vfrcl(1,1,2))
+             163     1               !soil
+             164     1               !
+             165     1                     coef1=float(jul-mon(12))/float(380-mon(12))
+             166     1                     coef2=1.-coef1
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      albcl, wetcl, sstcl, z0cl, vfrcl, alb
+                                   <<<      albcl, wetcl, sstcl, vfrcl, z0cl, alb
                                    <<<      wet, z0, sst, sigmaf
                                    <<< Loop-information  End >>>
-             171     2  pp                 do jj=1,jlistnum
-             172     2   p                    j=jlist1(jj)
-             173     2   p                    nxj=nxdef_2d(j)
+             167     2  pp                 do jj=1,jlistnum
+             168     2   p                    j=jlist1(jj)
+             169     2   p                    nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -260,87 +256,87 @@
                                    <<<      SCALABLE  : SPILL 0  FILL 0
                                    <<<      PREDICATE : SPILL 0  FILL 0
                                    <<< Loop-information  End >>>
-             174     3   p    v               do i=1,nxj
-             175     3   p    v                  sst(i,jj) =coef1*sstcl(i,jj,2) +coef2*sstcl(i,jj,1)
-             176     3               !ch?        solt(i,jj)=coef1*soltcl(ii,j,2)+coef2*soltcl(ii,j,1)
-             177     3   p    v                  alb(i,jj) =coef1*albcl(i,jj,2) +coef2*albcl(i,jj,1)
-             178     3   p    v                  z0(i,jj)=coef1*z0cl(i,jj,2)+coef2*z0cl(i,jj,1)
-             179     3   p    v                  wet(i,jj)=coef1*wetcl(i,jj,2)+coef2*wetcl(i,jj,1)
-             180     3               !soil
-             181     3   p    v                sigmaf(i,jj)=coef1*vfrcl(i,jj,2)+coef2*vfrcl(i,jj,1)
-             182     3               !soil
-             183     3   p    v              enddo
-             184     2   p                 enddo
-             185     1                     end if
-             186                     !
-             187     1                     do 30 k=2,12
-             188     2                     if(jul .gt. mon(k-1) .and. jul .le. mon(k))then
-             189     2               !                                -- read dmsfile --
-             190     2                     write(lrec,11)ggdef,k-1
-             191     2                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
-             192     2                     call unify_reducepick(nx,my,my_max,glob,sstcl(1,1,1))
+             170     3   p    v               do i=1,nxj
+             171     3   p    v                  sst(i,jj) =coef1*sstcl(i,jj,2) +coef2*sstcl(i,jj,1)
+             172     3               !ch?        solt(i,jj)=coef1*soltcl(ii,j,2)+coef2*soltcl(ii,j,1)
+             173     3   p    v                  alb(i,jj) =coef1*albcl(i,jj,2) +coef2*albcl(i,jj,1)
+             174     3   p    v                  z0(i,jj)=coef1*z0cl(i,jj,2)+coef2*z0cl(i,jj,1)
+             175     3   p    v                  wet(i,jj)=coef1*wetcl(i,jj,2)+coef2*wetcl(i,jj,1)
+             176     3               !soil
+             177     3   p    v                sigmaf(i,jj)=coef1*vfrcl(i,jj,2)+coef2*vfrcl(i,jj,1)
+             178     3               !soil
+             179     3   p    v              enddo
+             180     2   p                 enddo
+             181     1                     end if
+             182                     !
+             183     1                     do 30 k=2,12
+             184     2                     if(jul .gt. mon(k-1) .and. jul .le. mon(k))then
+             185     2               !                                -- read dmsfile --
+             186     2                     write(lrec,11)ggdef,k-1
+             187     2                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
+             188     2                     call unify_reducepick(nx,my,my_max,glob,sstcl(1,1,1))
+             189     2               
+             190     2               !ch?  write(lrec,12)ggdef,k-1
+             191     2               !ch?  call dmsread(nx,my,lrec,lncrec,'H',bckfile,soltcl(1,1,1),istat)
+             192     2               !ch?  if( lreduce.eq.1 ) call reducepick (soltcl(1,1,1),nxdef,nx,my)
              193     2               
-             194     2               !ch?  write(lrec,12)ggdef,k-1
-             195     2               !ch?  call dmsread(nx,my,lrec,lncrec,'H',bckfile,soltcl(1,1,1),istat)
-             196     2               !ch?  if( lreduce.eq.1 ) call reducepick (soltcl(1,1,1),nxdef,nx,my)
+             194     2                     write(lrec,14)ggdef,k-1
+             195     2                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
+             196     2                     call unify_reducepick(nx,my,my_max,glob,albcl(1,1,1))
              197     2               
-             198     2                     write(lrec,14)ggdef,k-1
+             198     2                     write(lrec,15)ggdef,k-1
              199     2                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
-             200     2                     call unify_reducepick(nx,my,my_max,glob,albcl(1,1,1))
+             200     2                     call unify_reducepick(nx,my,my_max,glob,z0cl(1,1,1))
              201     2               
-             202     2                     write(lrec,15)ggdef,k-1
+             202     2                     write(lrec,13)ggdef,k-1
              203     2                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
-             204     2                     call unify_reducepick(nx,my,my_max,glob,z0cl(1,1,1))
-             205     2               
-             206     2                     write(lrec,13)ggdef,k-1
-             207     2                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
-             208     2                     call unify_reducepick(nx,my,my_max,glob,wetcl(1,1,1))
-             209     2               !soil
-             210     2                     if(ivegsrc .le. 1)write(lrec,19)ggdef,k-1
-             211     2                     if(ivegsrc .eq. 2)write(lrec,33)ggdef,k-1
+             204     2                     call unify_reducepick(nx,my,my_max,glob,wetcl(1,1,1))
+             205     2               !soil
+             206     2                     if(ivegsrc .le. 1)write(lrec,19)ggdef,k-1
+             207     2                     if(ivegsrc .eq. 2)write(lrec,33)ggdef,k-1
+             208     2                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
+             209     2                     call unify_reducepick(nx,my,my_max,glob,vfrcl(1,1,1))
+             210     2               !soil
+             211     2                     write(lrec,11)ggdef,k
              212     2                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
-             213     2                     call unify_reducepick(nx,my,my_max,glob,vfrcl(1,1,1))
-             214     2               !soil
-             215     2                     write(lrec,11)ggdef,k
-             216     2                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
-             217     2                     call unify_reducepick(nx,my,my_max,glob,sstcl(1,1,2))
-             218     2               
-             219     2               !ch?  write(lrec,12)ggdef,k
-             220     2               !ch?  call dmsread(nx,my,lrec,lncrec,'H',bckfile,soltcl(1,1,2),istat)
-             221     2               !ch?  if( lreduce.eq.1 ) call reducepick (soltcl(1,1,2),nxdef,nx,my)
-             222     2               !
-             223     2                     write(lrec,14)ggdef,k
+             213     2                     call unify_reducepick(nx,my,my_max,glob,sstcl(1,1,2))
+             214     2               
+             215     2               !ch?  write(lrec,12)ggdef,k
+             216     2               !ch?  call dmsread(nx,my,lrec,lncrec,'H',bckfile,soltcl(1,1,2),istat)
+             217     2               !ch?  if( lreduce.eq.1 ) call reducepick (soltcl(1,1,2),nxdef,nx,my)
+             218     2               !
+             219     2                     write(lrec,14)ggdef,k
+             220     2                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
+             221     2                     call unify_reducepick(nx,my,my_max,glob,albcl(1,1,2))
+             222     2               
+             223     2                     write(lrec,15)ggdef,k
              224     2                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
-             225     2                     call unify_reducepick(nx,my,my_max,glob,albcl(1,1,2))
+             225     2                     call unify_reducepick(nx,my,my_max,glob,z0cl(1,1,2))
              226     2               
-             227     2                     write(lrec,15)ggdef,k
+             227     2                     write(lrec,13)ggdef,k
              228     2                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
-             229     2                     call unify_reducepick(nx,my,my_max,glob,z0cl(1,1,2))
-             230     2               
-             231     2                     write(lrec,13)ggdef,k
-             232     2                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
-             233     2                     call unify_reducepick(nx,my,my_max,glob,wetcl(1,1,2))
-             234     2               !soil
-             235     2                     if(ivegsrc .le. 1)write(lrec,19)ggdef,k
-             236     2                     if(ivegsrc .eq. 2)write(lrec,33)ggdef,k
-             237     2                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
-             238     2                     call unify_reducepick(nx,my,my_max,glob,vfrcl(1,1,2))
-             239     2               !soil
-             240     2               
-             241     2               !
-             242     2                     coef1=float(jul-mon(k-1))/float(mon(k)-mon(k-1))
-             243     2                     coef2=1.-coef1
+             229     2                     call unify_reducepick(nx,my,my_max,glob,wetcl(1,1,2))
+             230     2               !soil
+             231     2                     if(ivegsrc .le. 1)write(lrec,19)ggdef,k
+             232     2                     if(ivegsrc .eq. 2)write(lrec,33)ggdef,k
+             233     2                     call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
+             234     2                     call unify_reducepick(nx,my,my_max,glob,vfrcl(1,1,2))
+             235     2               !soil
+             236     2               
+             237     2               !
+             238     2                     coef1=float(jul-mon(k-1))/float(mon(k)-mon(k-1))
+             239     2                     coef2=1.-coef1
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      albcl, wetcl, sstcl, z0cl, vfrcl, alb
+                                   <<<      albcl, wetcl, sstcl, vfrcl, z0cl, alb
                                    <<<      wet, z0, sst, sigmaf
                                    <<< Loop-information  End >>>
-             244     3  pp                 do jj=1,jlistnum
-             245     3   p                    j=jlist1(jj)
-             246     3   p                    nxj=nxdef_2d(j)
+             240     3  pp                 do jj=1,jlistnum
+             241     3   p                    j=jlist1(jj)
+             242     3   p                    nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -354,101 +350,52 @@
                                    <<<      SCALABLE  : SPILL 0  FILL 0
                                    <<<      PREDICATE : SPILL 0  FILL 0
                                    <<< Loop-information  End >>>
-             247     4   p    v               do i=1,nxj
-             248     4   p    v                  sst(i,jj) =coef1*sstcl(i,jj,2) +coef2*sstcl(i,jj,1)
-             249     4               !ch?        solt(i,jj)=coef1*soltcl(i,jj,2)+coef2*soltcl(i,jj,1)
-             250     4   p    v                  alb(i,jj) =coef1*albcl(i,jj,2) +coef2*albcl(i,jj,1)
-             251     4   p    v                  z0(i,jj)=coef1*z0cl(i,jj,2)+coef2*z0cl(i,jj,1)
-             252     4   p    v                  wet(i,jj)=coef1*wetcl(i,jj,2)+coef2*wetcl(i,jj,1)
-             253     4               !soil
-             254     4   p    v                  sigmaf(i,jj)=coef1*vfrcl(i,jj,2)+coef2*vfrcl(i,jj,1)
-             255     4               !soil
-             256     4   p    v               enddo
-             257     3   p                 enddo
-             258     2                     end if
-             259     1                 30  continue
-             260                     !
-             261                     !-- climat dataset has 2 half years
-             262                     !                                  -- read dmsfile --
-             263                     !
-             264                     !-- land, sea and ice table
-             265                     !                                   -- read dmsflie --
-             266                           write(lrec,17)ggdef,monidex
+             243     4   p    v               do i=1,nxj
+             244     4   p    v                  sst(i,jj) =coef1*sstcl(i,jj,2) +coef2*sstcl(i,jj,1)
+             245     4               !ch?        solt(i,jj)=coef1*soltcl(i,jj,2)+coef2*soltcl(i,jj,1)
+             246     4   p    v                  alb(i,jj) =coef1*albcl(i,jj,2) +coef2*albcl(i,jj,1)
+             247     4   p    v                  z0(i,jj)=coef1*z0cl(i,jj,2)+coef2*z0cl(i,jj,1)
+             248     4   p    v                  wet(i,jj)=coef1*wetcl(i,jj,2)+coef2*wetcl(i,jj,1)
+             249     4               !soil
+             250     4   p    v                  sigmaf(i,jj)=coef1*vfrcl(i,jj,2)+coef2*vfrcl(i,jj,1)
+             251     4               !soil
+             252     4   p    v               enddo
+             253     3   p                 enddo
+             254     2                     end if
+             255     1                 30  continue
+             256                     !
+             257                     !-- climat dataset has 2 half years
+             258                     !                                  -- read dmsfile --
+             259                     !
+             260                     !-- land, sea and ice table
+             261                     !                                   -- read dmsflie --
+             262                           write(lrec,17)ggdef,monidex
+             263                           call dmsreadi(nx,my,lrec,lncrec,'I',bckfile,iglob,istat)
+             264                           call unify_reducepicki(nx,my,my_max,iglob,icex)
+             265                     
+             266                           write(lrec,16)ggdef,blnk
              267                           call dmsreadi(nx,my,lrec,lncrec,'I',bckfile,iglob,istat)
-             268                           call unify_reducepicki(nx,my,my_max,iglob,icex)
+             268                           call unify_reducepicki(nx,my,my_max,iglob,ls)
              269                     
-             270                           write(lrec,16)ggdef,blnk
-             271                           call dmsreadi(nx,my,lrec,lncrec,'I',bckfile,iglob,istat)
-             272                     !helio>
-             273                     !     call unify_reducepicki(nx,my,my_max,iglob,ls)
-                                   <<< Loop-information Start >>>
-                                   <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 6
-                                   <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 16)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
-                                   <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      iglob, ls_full
-                                   <<< Loop-information  End >>>
-             274        pp   2v            ls_full(:,:) = iglob(:,:)
-                                   <<< Loop-information Start >>>
-                                   <<<  [OPTIMIZATION]
-                                   <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      iglob, ls
-                                   <<< Loop-information  End >>>
-             275     1                     do jj = 1, jlistnum
-             276     1                        j=jlist1(jj)
-             277     1                        ii=nxjstart(j)
-             278     1                        nxj=nxdef_2d(j)
-             279     1                        if(lreduce.eq.1) call reducepicki (iglob(1,j),nxdef(j),nx,1)
-                                   <<< Loop-information Start >>>
-                                   <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 942
-                                   <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 16)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
-                                   <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      iglob, ls
-                                   <<< Loop-information  End >>>
-             280     2  pp   2v               do i = 1, nxj
-             281     2   p   2v                  ls(i,jj) = iglob(ii,j)
-             282     2   p   2v                  ii=ii+1
-             283     2   p   2v               enddo
-             284     1                     enddo
-                                   <<< Loop-information Start >>>
-                                   <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 6
-                                   <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 16)
-                                   <<<    SOFTWARE PIPELINING(IPC: 3.00, ITR: 288, MVE: 5, POL: S)
-                                   <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      iglob, ls_redu
-                                   <<< Loop-information  End >>>
-             285        pp   2v            ls_redu(:,:) = iglob(:,:)
-             286                     
-             287                           call mpe_unify(ls_redu,nx,my,2,mpe_integer)
-             288                     !helio<
-             289                     
-             290                     
-             291                     !soil
-             292                     !-- soiltyp
-             293                     !      write(lrec,18)ggdef,blnk
-             294                           if(isot .eq. 0)write(lrec,18)ggdef,blnk
-             295                           if(isot .eq. 1)write(lrec,28)ggdef,blnk
-             296                           if(isot .eq. 2)write(lrec,29)ggdef,blnk
-             297                     !
-             298                           call dmsreadi(nx,my,lrec,lncrec,'I',bckfile,iglob,istat)
-             299                           call unify_reducepicki(nx,my,my_max,iglob,istyp)
-             300                     !-- vegtyp
-             301                     !      write(lrec,21)ggdef,blnk
-             302                           if(ivegsrc .eq. 0)write(lrec,21)ggdef,blnk
-             303                           if(ivegsrc .eq. 1)write(lrec,31)ggdef,blnk
-             304                           if(ivegsrc .eq. 2)write(lrec,32)ggdef,blnk
-             305                     !
-             306                           call dmsreadi(nx,my,lrec,lncrec,'I',bckfile,iglob,istat)
-             307                           call unify_reducepicki(nx,my,my_max,iglob,ivegtyp)
-             308                     ! the value of z0 is followed from new veg.type, read in lookup table.
-             309     1                      if (ivegsrc .ge. 1)then
+             270                     !soil
+             271                     !-- soiltyp
+             272                     !      write(lrec,18)ggdef,blnk
+             273                           if(isot .eq. 0)write(lrec,18)ggdef,blnk
+             274                           if(isot .eq. 1)write(lrec,28)ggdef,blnk
+             275                           if(isot .eq. 2)write(lrec,29)ggdef,blnk
+             276                     !
+             277                           call dmsreadi(nx,my,lrec,lncrec,'I',bckfile,iglob,istat)
+             278                           call unify_reducepicki(nx,my,my_max,iglob,istyp)
+             279                     !-- vegtyp
+             280                     !      write(lrec,21)ggdef,blnk
+             281                           if(ivegsrc .eq. 0)write(lrec,21)ggdef,blnk
+             282                           if(ivegsrc .eq. 1)write(lrec,31)ggdef,blnk
+             283                           if(ivegsrc .eq. 2)write(lrec,32)ggdef,blnk
+             284                     !
+             285                           call dmsreadi(nx,my,lrec,lncrec,'I',bckfile,iglob,istat)
+             286                           call unify_reducepicki(nx,my,my_max,iglob,ivegtyp)
+             287                     ! the value of z0 is followed from new veg.type, read in lookup table.
+             288     1                      if (ivegsrc .ge. 1)then
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 3
@@ -456,9 +403,9 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ivegtyp, z0
                                    <<< Loop-information  End >>>
-             310     2  pp                  do jj=1,jlistnum
-             311     2   p                     j=jlist1(jj)
-             312     2   p                     nxj=nxdef_2d(j)
+             289     2  pp                  do jj=1,jlistnum
+             290     2   p                     j=jlist1(jj)
+             291     2   p                     nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -466,42 +413,42 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ivegtyp, z0
                                    <<< Loop-information  End >>>
-             313     3   p   2v                do i=1,nxj
-             314     3   p   2v                   z0(i,jj)=z0_data(ivegtyp(i,jj))
-             315     3   p   2v                enddo
-             316     2   p                  enddo
-             317     1                      endif
-             318                     !-- annual mean Tg
-             319                           write(lrec,22)ggdef,blnk
-             320                           call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
-             321                           call unify_reducepick(nx,my,my_max,glob,solt)
-             322                     
-             323                     !soil
-             324                     !noah
-             325                     !-- shdmax
-             326                           write(lrec,23)ggdef,blnk
-             327                           call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
-             328                           call unify_reducepick(nx,my,my_max,glob,shdmax)
-             329                     !      call dmsread(nx,my,lrec,lncrec,'H',bckfile,shdmax,istat)
-             330                     !      if( lreduce.eq.1 ) call reducepick (shdmax,nxdef,nx,my)
-             331                     !-- shdmin
-             332                           write(lrec,24)ggdef,blnk
-             333                           call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
-             334                           call unify_reducepick(nx,my,my_max,glob,shdmin)
-             335                     !      call dmsread(nx,my,lrec,lncrec,'H',bckfile,shdmin,istat)
-             336                     !      if( lreduce.eq.1 ) call reducepick (shdmin,nxdef,nx,my)
-             337                     !-- slopetyp
-             338                           write(lrec,25)ggdef,blnk
-             339                           call dmsreadi(nx,my,lrec,lncrec,'I',bckfile,iglob,istat)
-             340                           call unify_reducepicki(nx,my,my_max,iglob,slopetyp)
-             341                     !-- snoalb
-             342                           write(lrec,26)ggdef,blnk
-             343                           call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
-             344                           call unify_reducepick(nx,my,my_max,glob,snoalb)
-             345                     !      call dmsread(nx,my,lrec,lncrec,'H',bckfile,snoalb,istat)
-             346                     !      if( lreduce.eq.1 ) call reducepick (snoalb,nxdef,nx,my)
-             347                     
-             348                     
+             292     3   p   2v                do i=1,nxj
+             293     3   p   2v                   z0(i,jj)=z0_data(ivegtyp(i,jj))
+             294     3   p   2v                enddo
+             295     2   p                  enddo
+             296     1                      endif
+             297                     !-- annual mean Tg
+             298                           write(lrec,22)ggdef,blnk
+             299                           call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
+             300                           call unify_reducepick(nx,my,my_max,glob,solt)
+             301                     
+             302                     !soil
+             303                     !noah
+             304                     !-- shdmax
+             305                           write(lrec,23)ggdef,blnk
+             306                           call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
+             307                           call unify_reducepick(nx,my,my_max,glob,shdmax)
+             308                     !      call dmsread(nx,my,lrec,lncrec,'H',bckfile,shdmax,istat)
+             309                     !      if( lreduce.eq.1 ) call reducepick (shdmax,nxdef,nx,my)
+             310                     !-- shdmin
+             311                           write(lrec,24)ggdef,blnk
+             312                           call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
+             313                           call unify_reducepick(nx,my,my_max,glob,shdmin)
+             314                     !      call dmsread(nx,my,lrec,lncrec,'H',bckfile,shdmin,istat)
+             315                     !      if( lreduce.eq.1 ) call reducepick (shdmin,nxdef,nx,my)
+             316                     !-- slopetyp
+             317                           write(lrec,25)ggdef,blnk
+             318                           call dmsreadi(nx,my,lrec,lncrec,'I',bckfile,iglob,istat)
+             319                           call unify_reducepicki(nx,my,my_max,iglob,slopetyp)
+             320                     !-- snoalb
+             321                           write(lrec,26)ggdef,blnk
+             322                           call dmsread(nx,my,lrec,lncrec,'H',bckfile,glob,istat)
+             323                           call unify_reducepick(nx,my,my_max,glob,snoalb)
+             324                     !      call dmsread(nx,my,lrec,lncrec,'H',bckfile,snoalb,istat)
+             325                     !      if( lreduce.eq.1 ) call reducepick (snoalb,nxdef,nx,my)
+             326                     
+             327                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
@@ -509,10 +456,10 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ls, slopetyp, icex, sea, land, ice, solt
                                    <<< Loop-information  End >>>
-             349     1  pp                 do jj=1,jlistnum
-             350     1   p                    j=jlist1(jj)
-             351     1               !byl         ii=nxjstart(j)
-             352     1   p                    nxj=nxdef_2d(j)
+             328     1  pp                 do jj=1,jlistnum
+             329     1   p                    j=jlist1(jj)
+             330     1               !byl         ii=nxjstart(j)
+             331     1   p                    nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -520,33 +467,33 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      slopetyp, icex, ls, solt, sea, land, ice
                                    <<< Loop-information  End >>>
-             353     2   p    v               do i=1,nxj
-             354     2   p    v                  ice(i,jj) =.false.
-             355     2   p    v                  land(i,jj)=.false.
-             356     2   p    v                  sea(i,jj) =.false.
-             357     2   p    v                  if(ls(i,jj) .eq. 0)sea(i,jj) =.true.
-             358     2   p    v                  if(ls(i,jj) .eq. 1)land(i,jj)=.true.
-             359     2   p    v                  if(ls(i,jj) .eq. 1)slopetyp(i,jj)=max(1,slopetyp(i,jj))
-             360     2   p    v                  if( (ls(i,jj).eq.0) .and. (icex(i,jj).eq.1) ) solt(i,jj)=271.2
-             361     2               !soil if(icex(i,j) .eq. 1)then
-             362     2               !soil sea(i,j)=.false.
-             363     2               !soil land(i,j)=.false.
-             364     2               !soil ice(i,j)=.true.
-             365     2               !soil end if
-             366     2   p    v              enddo
-             367     1   p                 enddo
-             368                     !
-             369                     !  modify albedo base on ground wetness
-             370                     !
-             371                     !      do 51 j=1,my
-             372                     !       nxj=nxdef(j)
-             373                     !      do 51 i=1,nxj
-             374                     !     xt=0.31-0.17*wet(i,1)
-             375                     !     if(alb(i,j).lt.xt)alb(i,j)=xt
-             376                     !51   continue
-             377                     !
-             378                     !  modify deep soil temp for sea-ice points (=271.2)
-             379                     !
+             332     2   p    v               do i=1,nxj
+             333     2   p    v                  ice(i,jj) =.false.
+             334     2   p    v                  land(i,jj)=.false.
+             335     2   p    v                  sea(i,jj) =.false.
+             336     2   p    v                  if(ls(i,jj) .eq. 0)sea(i,jj) =.true.
+             337     2   p    v                  if(ls(i,jj) .eq. 1)land(i,jj)=.true.
+             338     2   p    v                  if(ls(i,jj) .eq. 1)slopetyp(i,jj)=max(1,slopetyp(i,jj))
+             339     2   p    v                  if( (ls(i,jj).eq.0) .and. (icex(i,jj).eq.1) ) solt(i,jj)=271.2
+             340     2               !soil if(icex(i,j) .eq. 1)then
+             341     2               !soil sea(i,j)=.false.
+             342     2               !soil land(i,j)=.false.
+             343     2               !soil ice(i,j)=.true.
+             344     2               !soil end if
+             345     2   p    v              enddo
+             346     1   p                 enddo
+             347                     !
+             348                     !  modify albedo base on ground wetness
+             349                     !
+             350                     !      do 51 j=1,my
+             351                     !       nxj=nxdef(j)
+             352                     !      do 51 i=1,nxj
+             353                     !     xt=0.31-0.17*wet(i,1)
+             354                     !     if(alb(i,j).lt.xt)alb(i,j)=xt
+             355                     !51   continue
+             356                     !
+             357                     !  modify deep soil temp for sea-ice points (=271.2)
+             358                     !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 3
@@ -554,9 +501,9 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ls, icex, ice, sea
                                    <<< Loop-information  End >>>
-             380     1  pp                 do 52 jj=1,jlistnum
-             381     1   p                   j=jlist1(jj)
-             382     1   p                  nxj=nxdef_2d(j)
+             359     1  pp                 do 52 jj=1,jlistnum
+             360     1   p                   j=jlist1(jj)
+             361     1   p                  nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 16)
@@ -564,23 +511,23 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      icex, ls, ice, sea
                                    <<< Loop-information  End >>>
-             383     2   p   2v            do 52 i=1,nxj
-             384     3   p   2v            if ( (ls(i,jj).eq.0) .and. (icex(i,jj).eq.1) ) then
-             385     3               !soil
-             386     3               ! in new soil model, ice present sea-ice
-             387     3   p   2v            ice(i,jj)=.true.        !sea ice
-             388     3   p   2v            sea(i,jj)=.false.
-             389     3               !soil
-             390     3   p   2v            endif
-             391     1   p   2v        52  continue
-             392                     !
-             393                           return
-             394                           end
+             362     2   p   2v            do 52 i=1,nxj
+             363     3   p   2v            if ( (ls(i,jj).eq.0) .and. (icex(i,jj).eq.1) ) then
+             364     3               !soil
+             365     3               ! in new soil model, ice present sea-ice
+             366     3   p   2v            ice(i,jj)=.true.        !sea ice
+             367     3   p   2v            sea(i,jj)=.false.
+             368     3               !soil
+             369     3   p   2v            endif
+             370     1   p   2v        52  continue
+             371                     !
+             372                           return
+             373                           end
 
  Procedure information
-   Lines      : 394
-   Statements : 222
-   Stack(byte): 8704
+   Lines      : 373
+   Statements : 208
+   Stack(byte): 7520
    Prefetch num: 0
 
  Scoping unit of external sub-program : readclx
@@ -588,99 +535,99 @@
      alb
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  37
-      |(Definition)     : 177  250
+      |(Declaration)    : 1  33
+      |(Definition)     : 173  246
       |(Reference)      : 
      albcl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 55
-      |(Definition)     : 126  153  200  225
-      |(Reference)      : 177  177  250  250
+      |(Declaration)    : 51
+      |(Definition)     : 122  149  196  221
+      |(Reference)      : 173  173  246  246
      bckfile
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  63
-      |(Definition)     : 117  125  129  133  139  144  152  156  160  165  191  199  203  207  212  216  224  228  232  237  267  271  298  306  320  327  333  339  343
+      |(Declaration)    : 1  59
+      |(Definition)     : 113  121  125  129  135  140  148  152  156  161  187  195  199  203  208  212  220  224  228  233  263  267  277  285  299  306  312  318  322
       |(Reference)      : 
      blnk
       |(Class and Type) : variable name, CHARACTER(1,1)
       |(Attributes)     : initialized
-      |(Declaration)    : 63  67
+      |(Declaration)    : 59  63
       |(Definition)     : 
-      |(Reference)      : 270  294  295  296  302  303  304  319  326  332  338  342
+      |(Reference)      : 266  273  274  275  281  282  283  298  305  311  317  321
      coef1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 70
-      |(Definition)     : 169  242
-      |(Reference)      : 170  175  177  178  179  181  243  248  250  251  252  254
+      |(Declaration)    : 66
+      |(Definition)     : 165  238
+      |(Reference)      : 166  171  173  174  175  177  239  244  246  247  248  250
      coef2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 70
-      |(Definition)     : 170  243
-      |(Reference)      : 175  177  178  179  181  248  250  251  252  254
+      |(Declaration)    : 66
+      |(Definition)     : 166  239
+      |(Reference)      : 171  173  174  175  177  244  246  247  248  250
      dmsread
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 117  125  129  133  139  144  152  156  160  165  191  199  203  207  212  216  224  228  232  237  320  327  333  343
+      |(Reference)      : 113  121  125  129  135  140  148  152  156  161  187  195  199  203  208  212  220  224  228  233  299  306  312  322
      dmsreadi
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 267  271  298  306  339
+      |(Reference)      : 263  267  277  285  318
      float
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 169  169  242  242
+      |(Reference)      : 165  165  238  238
      ggdef
       |(Class and Type) : variable name, CHARACTER(4,1)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  63
+      |(Declaration)    : 1  59
       |(Definition)     : 
-      |(Reference)      : 116  124  128  132  137  138  143  151  155  159  163  164  190  198  202  206  210  211  215  223  227  231  235  236  266  270  294  295  296  302  303  304  319  326  332  338  342
+      |(Reference)      : 112  120  124  128  133  134  139  147  151  155  159  160  186  194  198  202  206  207  211  219  223  227  231  232  262  266  273  274  275  281  282  283  298  305  311  317  321
      glob
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 54
-      |(Definition)     : 117  118  125  126  129  130  133  134  139  140  144  145  152  153  156  157  160  161  165  166  191  192  199  200  203  204  207  208  212  213  216  217  224  225  228  229  232  233  237  238  320  321  327  328  333  334  343  344
+      |(Declaration)    : 50
+      |(Definition)     : 113  114  121  122  125  126  129  130  135  136  140  141  148  149  152  153  156  157  161  162  187  188  195  196  199  200  203  204  208  209  212  213  220  221  224  225  228  229  233  234  299  300  306  307  312  313  322  323
       |(Reference)      : 
      i
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 69
-      |(Definition)     : 174  247  280  313  353  383
-      |(Reference)      : 175  175  175  177  177  177  178  178  178  179  179  179  181  181  181  248  248  248  250  250  250  251  251  251  252  252  252  254  254  254  281  314  314  354  355  356  357  357  358  358  359  359  359  360  360  360  384  384  387  388
+      |(Declaration)    : 65
+      |(Definition)     : 170  243  292  332  362
+      |(Reference)      : 171  171  171  173  173  173  174  174  174  175  175  175  177  177  177  244  244  244  246  246  246  247  247  247  248  248  248  250  250  250  293  293  333  334  335  336  336  337  337  338  338  338  339  339  339  363  363  366  367
      ice
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  50
-      |(Definition)     : 354  387
+      |(Declaration)    : 1  46
+      |(Definition)     : 333  366
       |(Reference)      : 
      icex
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 61
-      |(Definition)     : 268
-      |(Reference)      : 360  384
+      |(Declaration)    : 57
+      |(Definition)     : 264
+      |(Reference)      : 339  363
      iglob
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 61
-      |(Definition)     : 267  268  271  279  298  299  306  307  339  340
-      |(Reference)      : 274  281  285
+      |(Declaration)    : 57
+      |(Definition)     : 263  264  267  268  277  278  285  286  318  319
+      |(Reference)      : 
      ii
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 69
-      |(Definition)     : 277  282
-      |(Reference)      : 281  282
+      |(Declaration)    : 65
+      |(Definition)     : 
+      |(Reference)      : 
      index
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -690,177 +637,141 @@
      isot
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  35
+      |(Declaration)    : 1  31
       |(Definition)     : 
-      |(Reference)      : 294  295  296
+      |(Reference)      : 273  274  275
      istat
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 69
-      |(Definition)     : 117  125  129  133  139  144  152  156  160  165  191  199  203  207  212  216  224  228  232  237  267  271  298  306  320  327  333  339  343
+      |(Declaration)    : 65
+      |(Definition)     : 113  121  125  129  135  140  148  152  156  161  187  195  199  203  208  212  220  224  228  233  263  267  277  285  299  306  312  318  322
       |(Reference)      : 
      istyp
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  47
-      |(Definition)     : 299
+      |(Declaration)    : 1  43
+      |(Definition)     : 278
       |(Reference)      : 
      ivegsrc
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  35
+      |(Declaration)    : 1  31
       |(Definition)     : 
-      |(Reference)      : 137  138  163  164  210  211  235  236  302  303  304  309
+      |(Reference)      : 133  134  159  160  206  207  231  232  281  282  283  288
      ivegtyp
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  47
-      |(Definition)     : 307
-      |(Reference)      : 314
+      |(Declaration)    : 1  43
+      |(Definition)     : 286
+      |(Reference)      : 293
      j
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 69
-      |(Definition)     : 172  245  276  311  350  381
-      |(Reference)      : 173  246  277  278  279  279  281  312  352  382
+      |(Declaration)    : 65
+      |(Definition)     : 168  241  290  329  360
+      |(Reference)      : 169  242  291  331  361
      jj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 69
-      |(Definition)     : 171  244  275  310  349  380
-      |(Reference)      : 172  175  175  175  177  177  177  178  178  178  179  179  179  181  181  181  245  248  248  248  250  250  250  251  251  251  252  252  252  254  254  254  276  281  311  314  314  350  354  355  356  357  357  358  358  359  359  359  360  360  360  381  384  384  387  388
+      |(Declaration)    : 65
+      |(Definition)     : 167  240  289  328  359
+      |(Reference)      : 168  171  171  171  173  173  173  174  174  174  175  175  175  177  177  177  241  244  244  244  246  246  246  247  247  247  248  248  248  250  250  250  290  293  293  329  333  334  335  336  336  337  337  338  338  338  339  339  339  360  363  363  366  367
      jlist1
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 172  245  276  311  350  381
+      |(Reference)      : 168  241  290  329  360
      jlistnum
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 171  244  275  310  349  380
+      |(Reference)      : 167  240  289  328  359
      jul
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 69
-      |(Definition)     : 74  75  112
-      |(Reference)      : 75  80  80  112  112  113  169  188  188  242
+      |(Declaration)    : 65
+      |(Definition)     : 70  71  108
+      |(Reference)      : 71  76  76  108  108  109  165  184  184  238
      julian
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  35
+      |(Declaration)    : 1  31
       |(Definition)     : 
-      |(Reference)      : 74
+      |(Reference)      : 70
      k
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 69
-      |(Definition)     : 79  187
-      |(Reference)      : 80  80  80  188  188  190  198  202  206  210  211  215  223  227  231  235  236  242  242  242
+      |(Declaration)    : 65
+      |(Definition)     : 75  183
+      |(Reference)      : 76  76  76  184  184  186  194  198  202  206  207  211  219  223  227  231  232  238  238  238
      land
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  50
-      |(Definition)     : 355  358
+      |(Declaration)    : 1  46
+      |(Definition)     : 334  337
       |(Reference)      : 
      lncrec
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 69
-      |(Definition)     : 72  117  125  129  133  139  144  152  156  160  165  191  199  203  207  212  216  224  228  232  237  267  271  298  306  320  327  333  339  343
+      |(Declaration)    : 65
+      |(Definition)     : 68  113  121  125  129  135  140  148  152  156  161  187  195  199  203  208  212  220  224  228  233  263  267  277  285  299  306  312  318  322
       |(Reference)      : 
      lrec
       |(Class and Type) : variable name, CHARACTER(26,1)
       |(Attributes)     : 
-      |(Declaration)    : 63
-      |(Definition)     : 116  117  124  125  128  129  132  133  137  138  139  143  144  151  152  155  156  159  160  163  164  165  190  191  198  199  202  203  206  207  210  211  212  215  216  223  224  227  228  231  232  235  236  237  266  267  270  271  294  295  296  298  302  303  304  306  319  320  326  327  332  333  338  339  342  343
+      |(Declaration)    : 59
+      |(Definition)     : 112  113  120  121  124  125  128  129  133  134  135  139  140  147  148  151  152  155  156  159  160  161  186  187  194  195  198  199  202  203  206  207  208  211  212  219  220  223  224  227  228  231  232  233  262  263  266  267  273  274  275  277  281  282  283  285  298  299  305  306  311  312  317  318  321  322
       |(Reference)      : 
-     lreduce
-      |(Class and Type) : variable name, INTEGER(4)
-      |(Attributes)     : common-block-object, use-associated
-      |(Declaration)    : 
-      |(Definition)     : 
-      |(Reference)      : 279
      ls
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  61
-      |(Definition)     : 281
-      |(Reference)      : 357  358  359  360  384
-     ls_full
-      |(Class and Type) : variable name, INTEGER(4)
-      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
-      |(Declaration)    : 
-      |(Definition)     : 274
-      |(Reference)      : 30
-     ls_redu
-      |(Class and Type) : variable name, INTEGER(4)
-      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
-      |(Declaration)    : 
-      |(Definition)     : 285  287
-      |(Reference)      : 30
+      |(Declaration)    : 1  57
+      |(Definition)     : 268
+      |(Reference)      : 336  337  338  339  363
      max
       |(Class and Type) : intrinsic function name, INTEGER(4)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 359
+      |(Reference)      : 338
      mm
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 69
-      |(Definition)     : 115  142
-      |(Reference)      : 116  124  128  132  137  138  143  151  155  159  163  164
+      |(Declaration)    : 65
+      |(Definition)     : 111  138
+      |(Reference)      : 112  120  124  128  133  134  139  147  151  155  159  160
      mon
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, initialized
-      |(Declaration)    : 64  65
+      |(Declaration)    : 60  61
       |(Definition)     : 
-      |(Reference)      : 112  113  169  169  188  188  242  242  242
+      |(Reference)      : 108  109  165  165  184  184  238  238  238
      mondy
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, initialized
-      |(Declaration)    : 64  66
+      |(Declaration)    : 60  62
       |(Definition)     : 
-      |(Reference)      : 80  80
+      |(Reference)      : 76  76
      monidex
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 69
-      |(Definition)     : 80
-      |(Reference)      : 266
-     mpe
-      |(Class and Type) : module name
-      |(Attributes)     : 
-      |(Declaration)    : 
-      |(Definition)     : 
-      |(Reference)      : 29
-     mpe_integer
-      |(Class and Type) : named constant, INTEGER(4)
-      |(Attributes)     : use-associated
-      |(Declaration)    : 
-      |(Definition)     : 
-      |(Reference)      : 287
-     mpe_unify
-      |(Class and Type) : external subroutine name
-      |(Attributes)     : 
-      |(Declaration)    : 
-      |(Definition)     : 
-      |(Reference)      : 287
+      |(Declaration)    : 65
+      |(Definition)     : 76
+      |(Reference)      : 262
      my
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  35
-      |(Definition)     : 117  118  125  126  129  130  133  134  139  140  144  145  152  153  156  157  160  161  165  166  191  192  199  200  203  204  207  208  212  213  216  217  224  225  228  229  232  233  237  238  267  268  271  287  298  299  306  307  320  321  327  328  333  334  339  340  343  344
-      |(Reference)      : 54  61  72
+      |(Declaration)    : 1  31
+      |(Definition)     : 113  114  121  122  125  126  129  130  135  136  140  141  148  149  152  153  156  157  161  162  187  188  195  196  199  200  203  204  208  209  212  213  220  221  224  225  228  229  233  234  263  264  267  268  277  278  285  286  299  300  306  307  312  313  318  319  322  323
+      |(Reference)      : 50  57  68
      my_max
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  35
-      |(Definition)     : 118  126  130  134  140  145  153  157  161  166  192  200  204  208  213  217  225  229  233  238  268  299  307  321  328  334  340  344
-      |(Reference)      : 37  37  37  37  37  37  37  37  37  45  47  47  50  50  50  55  55  55  55  55  55  61  61
+      |(Declaration)    : 1  31
+      |(Definition)     : 114  122  126  130  136  141  149  153  157  162  188  196  200  204  209  213  221  225  229  234  264  268  278  286  300  307  313  319  323
+      |(Reference)      : 33  33  33  33  33  33  33  33  33  41  43  43  46  46  46  51  51  51  51  51  51  57  57
      namelist_soilveg
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -870,216 +781,192 @@
      nx
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  35
-      |(Definition)     : 117  118  125  126  129  130  133  134  139  140  144  145  152  153  156  157  160  161  165  166  191  192  199  200  203  204  207  208  212  213  216  217  224  225  228  229  232  233  237  238  267  268  271  279  287  298  299  306  307  320  321  327  328  333  334  339  340  343  344
-      |(Reference)      : 54  61  72
-     nxdef
-      |(Class and Type) : variable name, INTEGER(4)
-      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
-      |(Declaration)    : 
-      |(Definition)     : 279
-      |(Reference)      : 
+      |(Declaration)    : 1  31
+      |(Definition)     : 113  114  121  122  125  126  129  130  135  136  140  141  148  149  152  153  156  157  161  162  187  188  195  196  199  200  203  204  208  209  212  213  220  221  224  225  228  229  233  234  263  264  267  268  277  278  285  286  299  300  306  307  312  313  318  319  322  323
+      |(Reference)      : 50  57  68
      nxdef_2d
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 173  246  278  312  352  382
+      |(Reference)      : 169  242  291  331  361
      nxj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 69
-      |(Definition)     : 173  246  278  312  352  382
-      |(Reference)      : 174  247  280  313  353  383
-     nxjstart
-      |(Class and Type) : variable name, INTEGER(4)
-      |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
-      |(Declaration)    : 
-      |(Definition)     : 
-      |(Reference)      : 277
+      |(Declaration)    : 65
+      |(Definition)     : 169  242  291  331  361
+      |(Reference)      : 170  243  292  332  362
      nxp
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 37  37  37  37  37  37  37  37  37  45  47  47  50  50  50  55  55  55  55  55  55  61  61
-     phygrid
-      |(Class and Type) : module name
-      |(Attributes)     : 
-      |(Declaration)    : 
-      |(Definition)     : 
-      |(Reference)      : 30
+      |(Reference)      : 33  33  33  33  33  33  33  33  33  41  43  43  46  46  46  51  51  51  51  51  51  57  57
      readclx
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 1
       |(Reference)      : 
-     reducepicki
-      |(Class and Type) : external subroutine name
-      |(Attributes)     : 
-      |(Declaration)    : 
-      |(Definition)     : 
-      |(Reference)      : 279
      sea
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  50
-      |(Definition)     : 356  357  388
+      |(Declaration)    : 1  46
+      |(Definition)     : 335  336  367
       |(Reference)      : 
      shdmax
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  37
-      |(Definition)     : 328
+      |(Declaration)    : 1  33
+      |(Definition)     : 307
       |(Reference)      : 
      shdmin
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  37
-      |(Definition)     : 334
+      |(Declaration)    : 1  33
+      |(Definition)     : 313
       |(Reference)      : 
      sigmaf
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  37
-      |(Definition)     : 181  254
+      |(Declaration)    : 1  33
+      |(Definition)     : 177  250
       |(Reference)      : 
      slopetyp
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  45
-      |(Definition)     : 340  359
-      |(Reference)      : 359
+      |(Declaration)    : 1  41
+      |(Definition)     : 319  338
+      |(Reference)      : 338
      snoalb
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  37
-      |(Definition)     : 344
+      |(Declaration)    : 1  33
+      |(Definition)     : 323
       |(Reference)      : 
      solt
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  37
-      |(Definition)     : 321  360
+      |(Declaration)    : 1  33
+      |(Definition)     : 300  339
       |(Reference)      : 
      soltcl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 55
+      |(Declaration)    : 51
       |(Definition)     : 
       |(Reference)      : 
      sst
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  37
-      |(Definition)     : 175  248
+      |(Declaration)    : 1  33
+      |(Definition)     : 171  244
       |(Reference)      : 
      sstcl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 55
-      |(Definition)     : 118  145  192  217
-      |(Reference)      : 175  175  248  248
+      |(Declaration)    : 51
+      |(Definition)     : 114  141  188  213
+      |(Reference)      : 171  171  244  244
      unify_reducepick
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 118  126  130  134  140  145  153  157  161  166  192  200  204  208  213  217  225  229  233  238  321  328  334  344
+      |(Reference)      : 114  122  126  130  136  141  149  153  157  162  188  196  200  204  209  213  221  225  229  234  300  307  313  323
      unify_reducepicki
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 268  299  307  340
+      |(Reference)      : 264  268  278  286  319
      vfrcl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 55
-      |(Definition)     : 140  166  213  238
-      |(Reference)      : 181  181  254  254
+      |(Declaration)    : 51
+      |(Definition)     : 136  162  209  234
+      |(Reference)      : 177  177  250  250
      wet
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  37
-      |(Definition)     : 179  252
+      |(Declaration)    : 1  33
+      |(Definition)     : 175  248
       |(Reference)      : 
      wetcl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 55
-      |(Definition)     : 134  161  208  233
-      |(Reference)      : 179  179  252  252
+      |(Declaration)    : 51
+      |(Definition)     : 130  157  204  229
+      |(Reference)      : 175  175  248  248
      Z0_DATA
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 314
+      |(Reference)      : 293
      z0
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  37
-      |(Definition)     : 178  251  314
+      |(Declaration)    : 1  33
+      |(Definition)     : 174  247  293
       |(Reference)      : 
      z0cl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 55
-      |(Definition)     : 130  157  204  229
-      |(Reference)      : 178  178  251  251
+      |(Declaration)    : 51
+      |(Definition)     : 126  153  200  225
+      |(Reference)      : 174  174  247  247
    Cross reference of label
      (Label) (label-kind)               (line-no.)
      ------- ------------- ------------ ----------
-         11  format        (Definition) 83  
-                           (Reference)  116  143  190  215
-         12  format        (Definition) 84
-         13  format        (Definition) 90  
-                           (Reference)  132  159  206  231
-         14  format        (Definition) 85  
-                           (Reference)  124  151  198  223
-         15  format        (Definition) 86  
+         11  format        (Definition) 79  
+                           (Reference)  112  139  186  211
+         12  format        (Definition) 80
+         13  format        (Definition) 86  
                            (Reference)  128  155  202  227
-         16  format        (Definition) 87  
-                           (Reference)  270
-         17  format        (Definition) 88  
+         14  format        (Definition) 81  
+                           (Reference)  120  147  194  219
+         15  format        (Definition) 82  
+                           (Reference)  124  151  198  223
+         16  format        (Definition) 83  
                            (Reference)  266
-         18  format        (Definition) 91  
-                           (Reference)  294
-         19  format        (Definition) 92  
-                           (Reference)  137  163  210  235
-         21  format        (Definition) 93  
-                           (Reference)  302
-         22  format        (Definition) 94  
-                           (Reference)  319
-         23  format        (Definition) 96  
-                           (Reference)  326
-         24  format        (Definition) 97  
-                           (Reference)  332
-         25  format        (Definition) 98  
-                           (Reference)  338
-         26  format        (Definition) 99  
-                           (Reference)  342
-         28  format        (Definition) 101  
-                           (Reference)  295
-         29  format        (Definition) 104  
-                           (Reference)  296
-         30  execution     (Definition) 259  
-                           (Reference)  187
-         31  format        (Definition) 102  
-                           (Reference)  303
-         32  format        (Definition) 105  
-                           (Reference)  304
-         33  format        (Definition) 106  
-                           (Reference)  138  164  211  236
-         52  execution     (Definition) 391  
-                           (Reference)  380  383
+         17  format        (Definition) 84  
+                           (Reference)  262
+         18  format        (Definition) 87  
+                           (Reference)  273
+         19  format        (Definition) 88  
+                           (Reference)  133  159  206  231
+         21  format        (Definition) 89  
+                           (Reference)  281
+         22  format        (Definition) 90  
+                           (Reference)  298
+         23  format        (Definition) 92  
+                           (Reference)  305
+         24  format        (Definition) 93  
+                           (Reference)  311
+         25  format        (Definition) 94  
+                           (Reference)  317
+         26  format        (Definition) 95  
+                           (Reference)  321
+         28  format        (Definition) 97  
+                           (Reference)  274
+         29  format        (Definition) 100  
+                           (Reference)  275
+         30  execution     (Definition) 255  
+                           (Reference)  183
+         31  format        (Definition) 98  
+                           (Reference)  282
+         32  format        (Definition) 101  
+                           (Reference)  283
+         33  format        (Definition) 102  
+                           (Reference)  134  160  207  232
+         52  execution     (Definition) 370  
+                           (Reference)  359  362
 
  Total information
    Procedures       : 1
-   Total lines      : 394
-   Total statements : 222
-   Total stack(byte): 8704
+   Total lines      : 373
+   Total statements : 208
+   Total stack(byte): 7520
    Total prefetch num: 0
 

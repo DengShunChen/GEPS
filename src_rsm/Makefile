@@ -255,6 +255,7 @@ SRCS_f90  = \
   rqkir.f90 \
   rrtmg.f90 \
   rsmout.f90 \
+  rsmout_sigp.f90 \
   rstrandz.f90 \
   rstrantq.f90 \
   samfdeepcnv.f90 \

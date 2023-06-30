@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Thu Jun 29 14:24:40 2023
+ Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:31:17 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
    Source file       : rrtmg.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -146,7 +146,7 @@
               84                     ! --- for pdf cloud
               85                           real    sup
               86                           real    deltaq(nx,lev),cnvw(nx,lev),cnvc(nx,lev)
-              87                     ! --- for WSM6 & Thompson & GFDL MP
+              87                     ! --- for MP WSM6 & Thompson & GFDL
               88                           real    ftp(nx,lev),ftp1(nx,lev),fqp(nx,lev),fqp1(nx,lev)
               89                           real    phy3d(nxj,lev,5)
               90                     
@@ -170,7 +170,7 @@
              108                     !      real    dtrad(nx,lev)
              109                           real    ctot(nx),chig(nx),cmid(nx),clow(nx),csbl(nx)
              110                     
-             111                     ! for WSM6 & Thompson & GFDL MP
+             111                     ! for GFDL MP
              112                           real    cldcov(nx,lev)   ! input/output layer cloud fraction
              113                           real    dummy3(nxj,lev)
              114                     
@@ -313,7 +313,7 @@
              191     2   p   2v             tracer(i,kc,ntoz) = tracer(i,kc,ntoz)*fac_o3
              192     2   p   2v            end do
              193     1   p                 end do
-             194     1                     if ( nmmiph.eq.6 .or. nmmiph.eq.8 .or. nmmiph.eq.18 ) then
+             194     1                     if ( nmmiph.eq.6 .or. nmmiph.eq.8 ) then
              195     1                       nclds=3
              196     1               ! for MP WSM6 & Thompson effective radius
                                    <<< Loop-information Start >>>
@@ -339,7 +339,7 @@
              203     2   p                   enddo
              204     1                     endif
              205                     
-             206     1                     if ( nmmiph.eq.11 .or. nmmiph.eq.12 .or. nmmiph.eq.13 ) then
+             206     1                     if ( nmmiph.eq.11 ) then
              207     1               ! for MP GFDL effective radius
              208     1                       nclds = 5  ! number of effective cloud condensates used in radiation processes
                                    <<< Loop-information Start >>>
@@ -366,35 +366,8 @@
              216     2   p                   enddo
              217     1                     endif
              218                     
-             219     1                     if ( nmmiph.eq.15 .or. nmmiph.eq.16) then
-             220     1               ! for MP Goddard (GCE) effective radius
-             221     1                       nclds = 6
-                                   <<< Loop-information Start >>>
-                                   <<<  [PARALLELIZATION]
-                                   <<<    Standard iteration count: 2
-                                   <<<  [OPTIMIZATION]
-                                   <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      fqp1, fqp, ftp, ftp1, phy3d
-                                   <<< Loop-information  End >>>
-             222     2  pp                   do k = 1, lev
-                                   <<< Loop-information Start >>>
-                                   <<<  [OPTIMIZATION]
-                                   <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.83, ITR: 40, MVE: 3, POL: S)
-                                   <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      fqp1, ftp, phy3d, fqp, ftp1
-                                   <<< Loop-information  End >>>
-             223     3   p    v                do i = 1, nxj
-             224     3   p    v                  phy3d(i,k,1) = ftp(i,k)    ! effective radius for liquid water (micron)
-             225     3   p    v                  phy3d(i,k,2) = ftp1(i,k)   ! effective radius for ice water    (micron)
-             226     3   p    v                  phy3d(i,k,3) = fqp(i,k)    ! effective radius for snow water   (micron)
-             227     3   p    v                  phy3d(i,k,4) = fqp1(i,k)   ! effective radius for rain water   (micron)
-             228     3   p    v                enddo
-             229     2   p                   enddo
-             230     1                     endif
-             231                     
-             232     1                     if ( nmmiph.eq.2 ) then
-             233     1                       nclds=1
+             219     1                     if ( nmmiph.eq.2 ) then
+             220     1                       nclds=1
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 1778
@@ -404,17 +377,17 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      phy3d
                                    <<< Loop-information  End >>>
-             234     1  pp   4v              phy3d=0.
-             235     1                     endif
-             236                     !
-             237                     !     if (myrank .eq. 0) print *,'### j=',j
-             238                     !     if (myrank .eq. 0) print *,'tracer(1,60,3)=',tracer(1,60,3)
-             239                     
-             240                     !--------------------------------------------------------------------
-             241                     !    to set xlat(nx), sinlat(nx), coslat(nx) for grrad : input
-             242                     !    to set qgrs(nx,lev), tgrs(nx,lev) for grrad : input
-             243                     !--------------------------------------------------------------------
-             244                     
+             221     1  pp   4v              phy3d=0.
+             222     1                     endif
+             223                     !
+             224                     !     if (myrank .eq. 0) print *,'### j=',j
+             225                     !     if (myrank .eq. 0) print *,'tracer(1,60,3)=',tracer(1,60,3)
+             226                     
+             227                     !--------------------------------------------------------------------
+             228                     !    to set xlat(nx), sinlat(nx), coslat(nx) for grrad : input
+             229                     !    to set qgrs(nx,lev), tgrs(nx,lev) for grrad : input
+             230                     !--------------------------------------------------------------------
+             231                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 125
@@ -439,58 +412,58 @@
                                    <<<      SCALABLE  : SPILL 0  FILL 0
                                    <<<      PREDICATE : SPILL 0  FILL 0
                                    <<< Loop-information  End >>>
-             245     1  pp    v            do i = 1, nxj
-             246     1   p    v               slmsk(i)=slimsk(i)
-             247     1   p    v               xlon(i)=xlonr(i)
-             248     1   p    v               xlat(i)=xlatj*d2r
-             249     1               !        tsfc(i)=tt(i,lev)          !surface temp in k
-             250     1   p    v               tsfc(i)=tg(i)
-             251     1   p    v               snowd(i)=snr(i)
-             252     1   p    v               sncovr(i)=sncover(i)
-             253     1   p    v               snalb(i)=snoalb(i)
-             254     1   p    v               zorl(i)=z0(i)*100.         !surface roughness in cm
-             255     1   p    v               hprim(i)=std(i)
-             256     1   p    v               alvsf(i)=alvsg(i)
-             257     1   p    v               alnsf(i)=alnsg(i)
-             258     1   p    v               alvwf(i)=alvwg(i)
-             259     1   p    v               alnwf(i)=alnwg(i)
-             260     1   p    v               facsf(i)=facsg(i)
-             261     1   p    v               facwf(i)=facwg(i)
-             262     1   p    v               fice(i)=cice(i)
-             263     1   p    v               tisfc(i)=xtice(i)
-             264     1   p    v               sinlat(i)=sinlj
-             265     1   p    v               coslat(i)=coslj
-             266     1   p    v               cvt(i)=0.
-             267     1   p    v               cvb(i)=0.
-             268     1   p    v               icsdsw(i)=icsdswg(i)
-             269     1   p    v               icsdlw(i)=icsdlwg(i)
-             270     1   p    v            enddo
-             271                     
-             272                     !     if (myrank .eq. 0) print *,'### j=',j
-             273                     !     if (myrank .eq. 0) print *,'xlatj=',xlatj
-             274                     !     if (myrank .eq. 0) print *,'xlatj=',xlat(1)
-             275                     
-             276                     !     if (myrank .eq. 0) print *,'### j=',j
-             277                     !     if (myrank .eq. 0) print *,'sinlj=',sinlj
-             278                     !     if (myrank .eq. 0) print *,'coslj=',coslj
-             279                     !     if (myrank .eq. 0) print *,'sinlat(1)=',sinlat(1)
-             280                     !     if (myrank .eq. 0) print *,'coslat(1)=',coslat(1)
-             281                     
-             282                     !     if (myrank .eq. 0) print *,'### j=',j
-             283                     !     if (myrank .eq. 0) print *,'qgrs(1,1)=',qgrs(1,1)
-             284                     !     if (myrank .eq. 0) print *,'qgrs(1,lev)=',qgrs(1,lev)
-             285                     !     if (myrank .eq. 0) print *,'qgrs(ipt,1)=',qgrs(ipt,1)
-             286                     !     if (myrank .eq. 0) print *,'qgrs(ipt,lev)=',qgrs(ipt,lev)
-             287                     !     if (myrank .eq. 0) print *,'tgrs(1,1)=',tgrs(1,1)
-             288                     !     if (myrank .eq. 0) print *,'tgrs(1,lev)=',tgrs(1,lev)
-             289                     !     if (myrank .eq. 0) print *,'tgrs(ipt,1)=',tgrs(ipt,1)
-             290                     !     if (myrank .eq. 0) print *,'tgrs(ipt,lev)=',tgrs(ipt,lev)
-             291                     !------------------------------------------------------------------------
-             292                     
-             293                           cmax=-1.0e+25
-             294                           cmin=1.0e+25
-             295                           imin=1
-             296                           imax=1
+             232     1  pp    v            do i = 1, nxj
+             233     1   p    v               slmsk(i)=slimsk(i)
+             234     1   p    v               xlon(i)=xlonr(i)
+             235     1   p    v               xlat(i)=xlatj*d2r
+             236     1               !        tsfc(i)=tt(i,lev)          !surface temp in k
+             237     1   p    v               tsfc(i)=tg(i)
+             238     1   p    v               snowd(i)=snr(i)
+             239     1   p    v               sncovr(i)=sncover(i)
+             240     1   p    v               snalb(i)=snoalb(i)
+             241     1   p    v               zorl(i)=z0(i)*100.         !surface roughness in cm
+             242     1   p    v               hprim(i)=std(i)
+             243     1   p    v               alvsf(i)=alvsg(i)
+             244     1   p    v               alnsf(i)=alnsg(i)
+             245     1   p    v               alvwf(i)=alvwg(i)
+             246     1   p    v               alnwf(i)=alnwg(i)
+             247     1   p    v               facsf(i)=facsg(i)
+             248     1   p    v               facwf(i)=facwg(i)
+             249     1   p    v               fice(i)=cice(i)
+             250     1   p    v               tisfc(i)=xtice(i)
+             251     1   p    v               sinlat(i)=sinlj
+             252     1   p    v               coslat(i)=coslj
+             253     1   p    v               cvt(i)=0.
+             254     1   p    v               cvb(i)=0.
+             255     1   p    v               icsdsw(i)=icsdswg(i)
+             256     1   p    v               icsdlw(i)=icsdlwg(i)
+             257     1   p    v            enddo
+             258                     
+             259                     !     if (myrank .eq. 0) print *,'### j=',j
+             260                     !     if (myrank .eq. 0) print *,'xlatj=',xlatj
+             261                     !     if (myrank .eq. 0) print *,'xlatj=',xlat(1)
+             262                     
+             263                     !     if (myrank .eq. 0) print *,'### j=',j
+             264                     !     if (myrank .eq. 0) print *,'sinlj=',sinlj
+             265                     !     if (myrank .eq. 0) print *,'coslj=',coslj
+             266                     !     if (myrank .eq. 0) print *,'sinlat(1)=',sinlat(1)
+             267                     !     if (myrank .eq. 0) print *,'coslat(1)=',coslat(1)
+             268                     
+             269                     !     if (myrank .eq. 0) print *,'### j=',j
+             270                     !     if (myrank .eq. 0) print *,'qgrs(1,1)=',qgrs(1,1)
+             271                     !     if (myrank .eq. 0) print *,'qgrs(1,lev)=',qgrs(1,lev)
+             272                     !     if (myrank .eq. 0) print *,'qgrs(ipt,1)=',qgrs(ipt,1)
+             273                     !     if (myrank .eq. 0) print *,'qgrs(ipt,lev)=',qgrs(ipt,lev)
+             274                     !     if (myrank .eq. 0) print *,'tgrs(1,1)=',tgrs(1,1)
+             275                     !     if (myrank .eq. 0) print *,'tgrs(1,lev)=',tgrs(1,lev)
+             276                     !     if (myrank .eq. 0) print *,'tgrs(ipt,1)=',tgrs(ipt,1)
+             277                     !     if (myrank .eq. 0) print *,'tgrs(ipt,lev)=',tgrs(ipt,lev)
+             278                     !------------------------------------------------------------------------
+             279                     
+             280                           cmax=-1.0e+25
+             281                           cmin=1.0e+25
+             282                           imin=1
+             283                           imax=1
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 42
@@ -505,29 +478,29 @@
                                    <<<      SCALABLE  : SPILL 0  FILL 77
                                    <<<      PREDICATE : SPILL 0  FILL 0
                                    <<< Loop-information  End >>>
-             297     1  pp    m            do i = 1, nxj
-             298     1   p    s            www = curate(i) * 0.0416667 * 0.1
-             299     1   p    v            www = max ( www, 5.531e-04 )
-             300     1   p    v            cv(i) = 0.93 + 0.124*log(www)
-             301     2   p    s            if(cv(i) .gt. cmax) then
-             302     2   p    s               cmax = cv(i)
-             303     2   p    m               imax = i
-             304     2   p    v            endif
-             305     2   p    s            if(cv(i) .lt. cmin) then
-             306     2   p    s               cmin = cv(i)
-             307     2   p    s               imin = i
-             308     2   p    v            endif
-             309     1   p    v            enddo
-             310                     
-             311                     !     if (myrank .eq. 0) then
-             312                     !     if (myrank .eq. 0) print *,'### j=',j
-             313                     !         print *,'### iter=',iter
-             314                     !         print *,'### cloud fraction : cv-max =',cmax,' imax=',imax
-             315                     !         print *,'### cloud fraction : cv-min =',cmin,' imin=',imin
-             316                     !     endif
-             317                     
-             318                           tem1= 0.1
-             319                           tem2= 0.8
+             284     1  pp    m            do i = 1, nxj
+             285     1   p    s            www = curate(i) * 0.0416667 * 0.1
+             286     1   p    v            www = max ( www, 5.531e-04 )
+             287     1   p    v            cv(i) = 0.93 + 0.124*log(www)
+             288     2   p    s            if(cv(i) .gt. cmax) then
+             289     2   p    s               cmax = cv(i)
+             290     2   p    m               imax = i
+             291     2   p    v            endif
+             292     2   p    s            if(cv(i) .lt. cmin) then
+             293     2   p    s               cmin = cv(i)
+             294     2   p    s               imin = i
+             295     2   p    v            endif
+             296     1   p    v            enddo
+             297                     
+             298                     !     if (myrank .eq. 0) then
+             299                     !     if (myrank .eq. 0) print *,'### j=',j
+             300                     !         print *,'### iter=',iter
+             301                     !         print *,'### cloud fraction : cv-max =',cmax,' imax=',imax
+             302                     !         print *,'### cloud fraction : cv-min =',cmin,' imin=',imin
+             303                     !     endif
+             304                     
+             305                           tem1= 0.1
+             306                           tem2= 0.8
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 942
@@ -537,167 +510,167 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      cv
                                    <<< Loop-information  End >>>
-             320     1  pp   2v            do i = 1, nxj
-             321     1   p   2v            if ( cv(i) .lt. tem1 )  cv(i) = 0.0
-             322     1   p   2v            if ( cv(i) .gt. tem2 )  cv(i) = tem2 + 0.01
-             323     1   p   2v            enddo
-             324                     !
-             325                     !--------------------------------------------------------------------
-             326                     !      if (myrank .eq. 0) then
-             327                     !     print *,'ptop=', ptop
-             328                     !     pstmax=-1.0e10
-             329                     !     pstmin=1.0e10
-             330                     !     imax=1
-             331                     !     imin=1
-             332                     !     do i=1,nxj
-             333                     !        if (pst(i) .gt. pstmax) then
-             334                     !            pstmax=pst(i)
-             335                     !            imax=i
-             336                     !        endif
-             337                     !        if (pst(i) .lt. pstmin ) then
-             338                     !            pstmin=pst(i)
-             339                     !            imin=i
-             340                     !        endif
-             341                     !     enddo
-             342                     !     if (myrank .eq. 0) print *,'### j=',j
-             343                     !     print *,'pst-max=',pstmax,' imax=',imax
-             344                     !     print *,'pst-min=',pstmin,' imin=',imin
-             345                     !     endif
-             346                     !
-             347                     !     if (myrank .eq. 0) then
-             348                     !     pmax=-1.0e10
-             349                     !     pmin=1.0e10
-             350                     !     imax=1
-             351                     !     imin=1
-             352                     !     kmax=1
-             353                     !     kmin=1
-             354                     !     do k=1,lev+1
-             355                     !     do i=1,nxj
-             356                     !        if (prsi(i,k) .gt. pmax) then
-             357                     !            pmax=prsi(i,k)
-             358                     !            imax=i
-             359                     !            kmax=k
-             360                     !        endif
-             361                     !        if (prsi(i,k) .lt. pmin) then
-             362                     !            pmin=prsi(i,k)
-             363                     !            imin=i
-             364                     !            kmin=k
-             365                     !        endif
-             366                     !     enddo
-             367                     !     enddo
-             368                     !     if (myrank .eq. 0) print *,'### j=',j
-             369                     !     print *,'### prsi : pressure at even level(ptop/pbot)###'
-             370                     !     print *,'prsi-max=',pmax,' imax=',imax,' kmax=',kmax
-             371                     !     print *,'prsi-min=',pmin,' imin=',imin,' kmin=',kmin
-             372                     !     print *,'prsi(ipt,lev+1)=',prsi(ipt,lev+1)
-             373                     !     endif
-             374                     !--------------------------------------------------------------------
-             375                     !     if (myrank .eq. 0) then
-             376                     !     pmax=-1.0e10
-             377                     !     pmin=1.0e10
-             378                     !     imax=1
-             379                     !     imin=1
-             380                     !     kmax=1
-             381                     !     kmin=1
-             382                     !     do k=1,lev
-             383                     !     do i=1,nxj
-             384                     !        if (prsl(i,k) .gt. pmax) then
-             385                     !            pmax=prsl(i,k)
-             386                     !            imax=i
-             387                     !            kmax=k
-             388                     !        endif
-             389                     !        if (prsl(i,k) .lt. pmin) then
-             390                     !            pmin=prsl(i,k)
-             391                     !            imin=i
-             392                     !            kmin=k
-             393                     !        endif
-             394                     !     enddo
-             395                     !     enddo
-             396                     !     if (myrank .eq. 0) print *,'### j=',j
-             397                     !     print *,'### prsl : pressure at odd level(mid-level)##'
-             398                     !     print *,'prsl-max=',pmax,' imax=',imax,' kmax=',kmax
-             399                     !     print *,'prsl-min=',pmin,' imin=',imin,' kmin=',kmin
-             400                     !     print *,'prsl(ipt,lev)=',prsl(ipt,lev)
-             401                     !     endif
-             402                     !--------------------------------------------------------------------
-             403                     !     if (myrank .eq. 0) then
-             404                     !     pmax=-1.0e10
-             405                     !     pmin=1.0e10
-             406                     !     imax=1
-             407                     !     imin=1
-             408                     !     kmax=1
-             409                     !     kmin=1
-             410                     !     do k=1,lev
-             411                     !     do i=1,nxj
-             412                     !        if (prslk(i,k) .gt. pmax) then
-             413                     !            pmax=prslk(i,k)
-             414                     !            imax=i
-             415                     !            kmax=k
-             416                     !        endif
-             417                     !        if (prslk(i,k) .lt. pmin) then
-             418                     !            pmin=prslk(i,k)
-             419                     !            imin=i
-             420                     !            kmin=k
-             421                     !        endif
-             422                     !     enddo
-             423                     !     enddo
-             424                     !     if (myrank .eq. 0) print *,'### j=',j
-             425                     !     print *,'### prslk : (p_odd/1000.)**xkapa ###'
-             426                     !     print *,'prslk-max=',pmax,' imax=',imax,' kmax=',kmax
-             427                     !     print *,'prslk-min=',pmin,' imin=',imin,' kmin=',kmin
-             428                     !     print *,'prslk(ipt,lev)=',prslk(ipt,lev)
-             429                     !     endif
-             430                     !--------------------------------------------------------------------
-             431                     !     if (myrank .eq. 0) then
-             432                     !     pmax=-1.0e10
-             433                     !     pmin=1.0e10
-             434                     !     imax=1
-             435                     !     imin=1
-             436                     !     kmax=1
-             437                     !     kmin=1
-             438                     !     do k=1,lev
-             439                     !     do i=1,nxj
-             440                     !        if (plt(i,k) .gt. pmax) then
-             441                     !            pmax=plt(i,k)
-             442                     !            imax=i
-             443                     !            kmax=k
-             444                     !        endif
-             445                     !        if (plt(i,k) .lt. pmin) then
-             446                     !            pmin=plt(i,k)
-             447                     !            imin=i
-             448                     !            kmin=k
-             449                     !        endif
-             450                     !     enddo
-             451                     !     enddo
-             452                     !     if (myrank .eq. 0) print *,'### j=',j
-             453                     !     print *,'plt-max=',pmax,' imax=',imax,' kmax=',kmax
-             454                     !     print *,'plt-min=',pmin,' imin=',imin,' kmin=',kmin
-             455                     !     print *,'plt(ipt,lev)=',plt(ipt,lev)
-             456                     !     endif
-             457                     !--------------------------------------------------------------------
-             458                               call grrad(prsi,prsl,prslk,tgrs,qgrs,tracer,vvl,slmsk,     &
-             459                                  xlon,xlat,tsfc,snowd,sncovr,snalb,zorl,hprim,           &
-             460                                  alvsf,alnsf,alvwf,alnwf,facsf,facwf,fice,tisfc,         &
-             461                                  sinlat,coslat,solhr,jdat,solcon,                        &
-             462                                  cv,cvt,cvb,                                             &
-             463                                  icsdsw,icsdlw,ntcw,nclds,ntoz,ntrac,nfxr,               &
-             464                                  dtlw,dtsw,lsswr,lslwr,lssav,                            &
-             465                                  nx,nxj,lev,me,lprnt,ipt,kdt,myrank,                     &
-             466                                  ntiw,ntrw,ntsw,ntgl,uni_cloud,lmfshal,lmfdeep2,         &
-             467                                  deltaq,sup,cnvw,cnvc,phy3d,                             &
-             468                     !  ---  outputs:
-             469                                  dummy1,sfalb,coszen,coszdg,                             &
-             470                                  dummy2,tsflw,semis,                                     &
-             471                     !  ---  input/output:
-             472                                  dummy3,fluxr,                                           &
-             473                     !  ---  optional outputs:
-             474                                  dummy4,dummy5,                                          &
-             475                                  work1,work2,work3,work4,                                &
-             476                                  work5,work6,work7,work8                                 &
-             477                                  )
-             478                     
-             479                     !       if (myrank .eq. 0) print *,'grrad ok!'
-             480                     
+             307     1  pp   2v            do i = 1, nxj
+             308     1   p   2v            if ( cv(i) .lt. tem1 )  cv(i) = 0.0
+             309     1   p   2v            if ( cv(i) .gt. tem2 )  cv(i) = tem2 + 0.01
+             310     1   p   2v            enddo
+             311                     !
+             312                     !--------------------------------------------------------------------
+             313                     !      if (myrank .eq. 0) then
+             314                     !     print *,'ptop=', ptop
+             315                     !     pstmax=-1.0e10
+             316                     !     pstmin=1.0e10
+             317                     !     imax=1
+             318                     !     imin=1
+             319                     !     do i=1,nxj
+             320                     !        if (pst(i) .gt. pstmax) then
+             321                     !            pstmax=pst(i)
+             322                     !            imax=i
+             323                     !        endif
+             324                     !        if (pst(i) .lt. pstmin ) then
+             325                     !            pstmin=pst(i)
+             326                     !            imin=i
+             327                     !        endif
+             328                     !     enddo
+             329                     !     if (myrank .eq. 0) print *,'### j=',j
+             330                     !     print *,'pst-max=',pstmax,' imax=',imax
+             331                     !     print *,'pst-min=',pstmin,' imin=',imin
+             332                     !     endif
+             333                     !
+             334                     !     if (myrank .eq. 0) then
+             335                     !     pmax=-1.0e10
+             336                     !     pmin=1.0e10
+             337                     !     imax=1
+             338                     !     imin=1
+             339                     !     kmax=1
+             340                     !     kmin=1
+             341                     !     do k=1,lev+1
+             342                     !     do i=1,nxj
+             343                     !        if (prsi(i,k) .gt. pmax) then
+             344                     !            pmax=prsi(i,k)
+             345                     !            imax=i
+             346                     !            kmax=k
+             347                     !        endif
+             348                     !        if (prsi(i,k) .lt. pmin) then
+             349                     !            pmin=prsi(i,k)
+             350                     !            imin=i
+             351                     !            kmin=k
+             352                     !        endif
+             353                     !     enddo
+             354                     !     enddo
+             355                     !     if (myrank .eq. 0) print *,'### j=',j
+             356                     !     print *,'### prsi : pressure at even level(ptop/pbot)###'
+             357                     !     print *,'prsi-max=',pmax,' imax=',imax,' kmax=',kmax
+             358                     !     print *,'prsi-min=',pmin,' imin=',imin,' kmin=',kmin
+             359                     !     print *,'prsi(ipt,lev+1)=',prsi(ipt,lev+1)
+             360                     !     endif
+             361                     !--------------------------------------------------------------------
+             362                     !     if (myrank .eq. 0) then
+             363                     !     pmax=-1.0e10
+             364                     !     pmin=1.0e10
+             365                     !     imax=1
+             366                     !     imin=1
+             367                     !     kmax=1
+             368                     !     kmin=1
+             369                     !     do k=1,lev
+             370                     !     do i=1,nxj
+             371                     !        if (prsl(i,k) .gt. pmax) then
+             372                     !            pmax=prsl(i,k)
+             373                     !            imax=i
+             374                     !            kmax=k
+             375                     !        endif
+             376                     !        if (prsl(i,k) .lt. pmin) then
+             377                     !            pmin=prsl(i,k)
+             378                     !            imin=i
+             379                     !            kmin=k
+             380                     !        endif
+             381                     !     enddo
+             382                     !     enddo
+             383                     !     if (myrank .eq. 0) print *,'### j=',j
+             384                     !     print *,'### prsl : pressure at odd level(mid-level)##'
+             385                     !     print *,'prsl-max=',pmax,' imax=',imax,' kmax=',kmax
+             386                     !     print *,'prsl-min=',pmin,' imin=',imin,' kmin=',kmin
+             387                     !     print *,'prsl(ipt,lev)=',prsl(ipt,lev)
+             388                     !     endif
+             389                     !--------------------------------------------------------------------
+             390                     !     if (myrank .eq. 0) then
+             391                     !     pmax=-1.0e10
+             392                     !     pmin=1.0e10
+             393                     !     imax=1
+             394                     !     imin=1
+             395                     !     kmax=1
+             396                     !     kmin=1
+             397                     !     do k=1,lev
+             398                     !     do i=1,nxj
+             399                     !        if (prslk(i,k) .gt. pmax) then
+             400                     !            pmax=prslk(i,k)
+             401                     !            imax=i
+             402                     !            kmax=k
+             403                     !        endif
+             404                     !        if (prslk(i,k) .lt. pmin) then
+             405                     !            pmin=prslk(i,k)
+             406                     !            imin=i
+             407                     !            kmin=k
+             408                     !        endif
+             409                     !     enddo
+             410                     !     enddo
+             411                     !     if (myrank .eq. 0) print *,'### j=',j
+             412                     !     print *,'### prslk : (p_odd/1000.)**xkapa ###'
+             413                     !     print *,'prslk-max=',pmax,' imax=',imax,' kmax=',kmax
+             414                     !     print *,'prslk-min=',pmin,' imin=',imin,' kmin=',kmin
+             415                     !     print *,'prslk(ipt,lev)=',prslk(ipt,lev)
+             416                     !     endif
+             417                     !--------------------------------------------------------------------
+             418                     !     if (myrank .eq. 0) then
+             419                     !     pmax=-1.0e10
+             420                     !     pmin=1.0e10
+             421                     !     imax=1
+             422                     !     imin=1
+             423                     !     kmax=1
+             424                     !     kmin=1
+             425                     !     do k=1,lev
+             426                     !     do i=1,nxj
+             427                     !        if (plt(i,k) .gt. pmax) then
+             428                     !            pmax=plt(i,k)
+             429                     !            imax=i
+             430                     !            kmax=k
+             431                     !        endif
+             432                     !        if (plt(i,k) .lt. pmin) then
+             433                     !            pmin=plt(i,k)
+             434                     !            imin=i
+             435                     !            kmin=k
+             436                     !        endif
+             437                     !     enddo
+             438                     !     enddo
+             439                     !     if (myrank .eq. 0) print *,'### j=',j
+             440                     !     print *,'plt-max=',pmax,' imax=',imax,' kmax=',kmax
+             441                     !     print *,'plt-min=',pmin,' imin=',imin,' kmin=',kmin
+             442                     !     print *,'plt(ipt,lev)=',plt(ipt,lev)
+             443                     !     endif
+             444                     !--------------------------------------------------------------------
+             445                               call grrad(prsi,prsl,prslk,tgrs,qgrs,tracer,vvl,slmsk,     &
+             446                                  xlon,xlat,tsfc,snowd,sncovr,snalb,zorl,hprim,           &
+             447                                  alvsf,alnsf,alvwf,alnwf,facsf,facwf,fice,tisfc,         &
+             448                                  sinlat,coslat,solhr,jdat,solcon,                        &
+             449                                  cv,cvt,cvb,                                             &
+             450                                  icsdsw,icsdlw,ntcw,nclds,ntoz,ntrac,nfxr,               &
+             451                                  dtlw,dtsw,lsswr,lslwr,lssav,                            &
+             452                                  nx,nxj,lev,me,lprnt,ipt,kdt,myrank,                     &
+             453                                  ntiw,ntrw,ntsw,ntgl,uni_cloud,lmfshal,lmfdeep2,         &
+             454                                  deltaq,sup,cnvw,cnvc,phy3d,                             &
+             455                     !  ---  outputs:
+             456                                  dummy1,sfalb,coszen,coszdg,                             &
+             457                                  dummy2,tsflw,semis,                                     &
+             458                     !  ---  input/output:
+             459                                  dummy3,fluxr,                                           &
+             460                     !  ---  optional outputs:
+             461                                  dummy4,dummy5,                                          &
+             462                                  work1,work2,work3,work4,                                &
+             463                                  work5,work6,work7,work8                                 &
+             464                                  )
+             465                     
+             466                     !       if (myrank .eq. 0) print *,'grrad ok!'
+             467                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 132
@@ -717,35 +690,35 @@
                                    <<<      SCALABLE  : SPILL 0  FILL 0
                                    <<<      PREDICATE : SPILL 0  FILL 0
                                    <<< Loop-information  End >>>
-             481     1  pp    v             do i=1,nxj
-             482     1               !
-             483     1               ! total sky
-             484     1               !
-             485     1   p    v                ss(i)   = fluxr(i,4)-fluxr(i,5)
-             486     1   p    v                rs(i)   = fluxr(i,7)-fluxr(i,6)
-             487     1   p    v                asol(i) = fluxr(i,1)-fluxr(i,2)
-             488     1   p    v                olr(i)  = fluxr(i,3)
-             489     1   p    v                sld(i)  = fluxr(i,4)
-             490     1   p    v                rld(i)  = fluxr(i,6)
-             491     1               ! clear sky
-             492     1   p    v                ss_clr(i)   = fluxr(i,24)-fluxr(i,25)
-             493     1   p    v                rs_clr(i)   = fluxr(i,27)-fluxr(i,26)
-             494     1   p    v                asol_clr(i) = fluxr(i,1 )-fluxr(i,22)
-             495     1   p    v                olr_clr(i)  = fluxr(i,23)
-             496     1   p    v                sld_clr(i)  = fluxr(i,24)
-             497     1   p    v                rld_clr(i)  = fluxr(i,26)
-             498     1               !
-             499     1               ! cloud fraction
-             500     1               !
-             501     1   p    v                chig(i)=fluxr(i,8)   ! high cloud fraction
-             502     1   p    v                cmid(i)=fluxr(i,9)   ! middle cloud fraction
-             503     1   p    v                clow(i)=fluxr(i,10)  ! low cloud fraction
-             504     1   p    v                ctot(i)=fluxr(i,20)  ! total cloud fraction
-             505     1               !
-             506     1   p    v                sfalb_g(i)=sfalb(i)
-             507     1   p    v                semis_g(i)=semis(i)  ! surface emissivity
-             508     1   p    v             enddo
-             509                     
+             468     1  pp    v             do i=1,nxj
+             469     1               !
+             470     1               ! total sky
+             471     1               !
+             472     1   p    v                ss(i)   = fluxr(i,4)-fluxr(i,5)
+             473     1   p    v                rs(i)   = fluxr(i,7)-fluxr(i,6)
+             474     1   p    v                asol(i) = fluxr(i,1)-fluxr(i,2)
+             475     1   p    v                olr(i)  = fluxr(i,3)
+             476     1   p    v                sld(i)  = fluxr(i,4)
+             477     1   p    v                rld(i)  = fluxr(i,6)
+             478     1               ! clear sky
+             479     1   p    v                ss_clr(i)   = fluxr(i,24)-fluxr(i,25)
+             480     1   p    v                rs_clr(i)   = fluxr(i,27)-fluxr(i,26)
+             481     1   p    v                asol_clr(i) = fluxr(i,1 )-fluxr(i,22)
+             482     1   p    v                olr_clr(i)  = fluxr(i,23)
+             483     1   p    v                sld_clr(i)  = fluxr(i,24)
+             484     1   p    v                rld_clr(i)  = fluxr(i,26)
+             485     1               !
+             486     1               ! cloud fraction
+             487     1               !
+             488     1   p    v                chig(i)=fluxr(i,8)   ! high cloud fraction
+             489     1   p    v                cmid(i)=fluxr(i,9)   ! middle cloud fraction
+             490     1   p    v                clow(i)=fluxr(i,10)  ! low cloud fraction
+             491     1   p    v                ctot(i)=fluxr(i,20)  ! total cloud fraction
+             492     1               !
+             493     1   p    v                sfalb_g(i)=sfalb(i)
+             494     1   p    v                semis_g(i)=semis(i)  ! surface emissivity
+             495     1   p    v             enddo
+             496                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
@@ -754,8 +727,8 @@
                                    <<<      dummy2, dummy5, dummy4, dummy1, dummy3
                                    <<<      cldcov, htrlw0, htrsw0, htrlw, htrsw
                                    <<< Loop-information  End >>>
-             510     1  pp                  do k = 1, lev
-             511     1   p                     kc=lev-k+1
+             497     1  pp                  do k = 1, lev
+             498     1   p                     kc=lev-k+1
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -764,16 +737,16 @@
                                    <<<      dummy4, htrlw0, dummy3, dummy2, dummy5
                                    <<<      dummy1, htrsw0, cldcov, htrlw, htrsw
                                    <<< Loop-information  End >>>
-             512     2   p    v             do i = 1, nxj
-             513     2   p    v                htrsw(i,kc)=dummy1(i,k)*86400.
-             514     2   p    v                htrlw(i,kc)=dummy2(i,k)*86400.
-             515     2   p    v                cldcov(i,kc)=dummy3(i,k)
-             516     2   p    v                htrsw0(i,kc)=dummy4(i,k)*86400.
-             517     2   p    v                htrlw0(i,kc)=dummy5(i,k)*86400.
-             518     2   p    v             enddo
-             519     1   p                  enddo
-             520                     
-             521                     !       do k = 1, lev
+             499     2   p    v             do i = 1, nxj
+             500     2   p    v                htrsw(i,kc)=dummy1(i,k)*86400.
+             501     2   p    v                htrlw(i,kc)=dummy2(i,k)*86400.
+             502     2   p    v                cldcov(i,kc)=dummy3(i,k)
+             503     2   p    v                htrsw0(i,kc)=dummy4(i,k)*86400.
+             504     2   p    v                htrlw0(i,kc)=dummy5(i,k)*86400.
+             505     2   p    v             enddo
+             506     1   p                  enddo
+             507                     
+             508                     !       do k = 1, lev
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 942
@@ -783,13 +756,13 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      coszen, tsflw, cosz, tsflwr
                                    <<< Loop-information  End >>>
-             522     1  pp   2v             do i = 1, nxj
-             523     1               !          dtrad(i,k)=htrsw(i,k)+htrlw(i,k)
-             524     1   p   2v                tsflwr(i)=tsflw(i)
-             525     1   p   2v                cosz(i)  =coszen(i)
-             526     1   p   2v             enddo
-             527                     !       enddo
-             528                     
+             509     1  pp   2v             do i = 1, nxj
+             510     1               !          dtrad(i,k)=htrsw(i,k)+htrlw(i,k)
+             511     1   p   2v                tsflwr(i)=tsflw(i)
+             512     1   p   2v                cosz(i)  =coszen(i)
+             513     1   p   2v             enddo
+             514                     !       enddo
+             515                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
@@ -799,8 +772,8 @@
                                    <<<      work2, work1, fdirr, fuirr, fdslr, fuslr
                                    <<<      fdir, fuir, fdsl, fusl
                                    <<< Loop-information  End >>>
-             529     1  pp                  do k = 1, lev+1
-             530     1   p                     kc=lev-k+2
+             516     1  pp                  do k = 1, lev+1
+             517     1   p                     kc=lev-k+2
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -810,26 +783,26 @@
                                    <<<      fdslr, fuslr, work5, work4, fdir, fuir
                                    <<<      work3, work2, fdsl, fusl
                                    <<< Loop-information  End >>>
-             531     2   p    v             do i = 1, nxj
-             532     2   p    v                fusl(i,kc)=work1(i,k)
-             533     2   p    v                fdsl(i,kc)=work2(i,k)
-             534     2   p    v                fuir(i,kc)=work3(i,k)
-             535     2   p    v                fdir(i,kc)=work4(i,k)
-             536     2   p    v                fuslr(i,kc)=work5(i,k)
-             537     2   p    v                fdslr(i,kc)=work6(i,k)
-             538     2   p    v                fuirr(i,kc)=work7(i,k)
-             539     2   p    v                fdirr(i,kc)=work8(i,k)
-             540     2   p    v             enddo
-             541     1   p                  enddo
-             542                            deallocate(tracer)
-             543                     
-             544                            return
-             545                            end
+             518     2   p    v             do i = 1, nxj
+             519     2   p    v                fusl(i,kc)=work1(i,k)
+             520     2   p    v                fdsl(i,kc)=work2(i,k)
+             521     2   p    v                fuir(i,kc)=work3(i,k)
+             522     2   p    v                fdir(i,kc)=work4(i,k)
+             523     2   p    v                fuslr(i,kc)=work5(i,k)
+             524     2   p    v                fdslr(i,kc)=work6(i,k)
+             525     2   p    v                fuirr(i,kc)=work7(i,k)
+             526     2   p    v                fdirr(i,kc)=work8(i,k)
+             527     2   p    v             enddo
+             528     1   p                  enddo
+             529                            deallocate(tracer)
+             530                     
+             531                            return
+             532                            end
 
  Procedure information
-   Lines      : 545
-   Statements : 225
-   Stack(byte): 6352
+   Lines      : 532
+   Statements : 214
+   Stack(byte): 5984
    Prefetch num: 92
 
  Scoping unit of external sub-program : rrtmg
@@ -838,116 +811,116 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 76
-      |(Definition)     : 257
-      |(Reference)      : 458
+      |(Definition)     : 244
+      |(Reference)      : 445
      alnsg
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  52
       |(Definition)     : 
-      |(Reference)      : 257
+      |(Reference)      : 244
      alnwf
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 76
-      |(Definition)     : 259
-      |(Reference)      : 458
+      |(Definition)     : 246
+      |(Reference)      : 445
      alnwg
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  52
       |(Definition)     : 
-      |(Reference)      : 259
+      |(Reference)      : 246
      alvsf
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 76
-      |(Definition)     : 256
-      |(Reference)      : 458
+      |(Definition)     : 243
+      |(Reference)      : 445
      alvsg
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  52
       |(Definition)     : 
-      |(Reference)      : 256
+      |(Reference)      : 243
      alvwf
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 76
-      |(Definition)     : 258
-      |(Reference)      : 458
+      |(Definition)     : 245
+      |(Reference)      : 445
      alvwg
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  52
       |(Definition)     : 
-      |(Reference)      : 258
+      |(Reference)      : 245
      asol
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  93
-      |(Definition)     : 487
+      |(Definition)     : 474
       |(Reference)      : 
      asol_clr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  119
-      |(Definition)     : 494
+      |(Definition)     : 481
       |(Reference)      : 
      chig
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  109
-      |(Definition)     : 501
+      |(Definition)     : 488
       |(Reference)      : 
      cice
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  50
       |(Definition)     : 
-      |(Reference)      : 262
+      |(Reference)      : 249
      cldcov
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  112
-      |(Definition)     : 515
+      |(Definition)     : 502
       |(Reference)      : 162
      clow
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  109
-      |(Definition)     : 503
+      |(Definition)     : 490
       |(Reference)      : 
      cmax
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 58
-      |(Definition)     : 293  302
-      |(Reference)      : 301
+      |(Definition)     : 280  289
+      |(Reference)      : 288
      cmid
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  109
-      |(Definition)     : 502
+      |(Definition)     : 489
       |(Reference)      : 
      cmin
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 58
-      |(Definition)     : 294  306
-      |(Reference)      : 305
+      |(Definition)     : 281  293
+      |(Reference)      : 292
      cnvc
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  86
       |(Definition)     : 
-      |(Reference)      : 458
+      |(Reference)      : 445
      cnvw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  86
       |(Definition)     : 
-      |(Reference)      : 458
+      |(Reference)      : 445
      const
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -958,32 +931,32 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 76
-      |(Definition)     : 265
-      |(Reference)      : 458
+      |(Definition)     : 252
+      |(Reference)      : 445
      coslj
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  55
       |(Definition)     : 
-      |(Reference)      : 265
+      |(Reference)      : 252
      cosz
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  52
-      |(Definition)     : 525
+      |(Definition)     : 512
       |(Reference)      : 
      coszdg
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 80
-      |(Definition)     : 458
+      |(Definition)     : 445
       |(Reference)      : 
      coszen
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 80
-      |(Definition)     : 458
-      |(Reference)      : 525
+      |(Definition)     : 445
+      |(Reference)      : 512
      csbl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
@@ -994,86 +967,86 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  109
-      |(Definition)     : 504
+      |(Definition)     : 491
       |(Reference)      : 
      curate
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  52
       |(Definition)     : 
-      |(Reference)      : 298
+      |(Reference)      : 285
      cv
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 72
-      |(Definition)     : 300  321  322
-      |(Reference)      : 301  302  305  306  321  322  458
+      |(Definition)     : 287  308  309
+      |(Reference)      : 288  289  292  293  308  309  445
      cvb
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 72
-      |(Definition)     : 267
-      |(Reference)      : 458
+      |(Definition)     : 254
+      |(Reference)      : 445
      cvt
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 72
-      |(Definition)     : 266
-      |(Reference)      : 458
+      |(Definition)     : 253
+      |(Reference)      : 445
      d2r
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  55
       |(Definition)     : 
-      |(Reference)      : 248
+      |(Reference)      : 235
      deltaq
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  86
       |(Definition)     : 
-      |(Reference)      : 458
+      |(Reference)      : 445
      dtlw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  55
       |(Definition)     : 
-      |(Reference)      : 458
+      |(Reference)      : 445
      dtsw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  55
       |(Definition)     : 
-      |(Reference)      : 458
+      |(Reference)      : 445
      dummy1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 102
-      |(Definition)     : 458
-      |(Reference)      : 513
+      |(Definition)     : 445
+      |(Reference)      : 500
      dummy2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 102
-      |(Definition)     : 458
-      |(Reference)      : 514
+      |(Definition)     : 445
+      |(Reference)      : 501
      dummy3
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 113
-      |(Definition)     : 162  458
-      |(Reference)      : 515
+      |(Definition)     : 162  445
+      |(Reference)      : 502
      dummy4
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 128
-      |(Definition)     : 458
-      |(Reference)      : 516
+      |(Definition)     : 445
+      |(Reference)      : 503
      dummy5
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 128
-      |(Definition)     : 458
-      |(Reference)      : 517
+      |(Definition)     : 445
+      |(Reference)      : 504
      fac_o3
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
@@ -1084,187 +1057,187 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 76
-      |(Definition)     : 260
-      |(Reference)      : 458
+      |(Definition)     : 247
+      |(Reference)      : 445
      facsg
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  52
       |(Definition)     : 
-      |(Reference)      : 260
+      |(Reference)      : 247
      facwf
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 76
-      |(Definition)     : 261
-      |(Reference)      : 458
+      |(Definition)     : 248
+      |(Reference)      : 445
      facwg
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  52
       |(Definition)     : 
-      |(Reference)      : 261
+      |(Reference)      : 248
      fdir
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  100
-      |(Definition)     : 535
+      |(Definition)     : 522
       |(Reference)      : 
      fdirr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  126
-      |(Definition)     : 539
+      |(Definition)     : 526
       |(Reference)      : 
      fdsl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  99
-      |(Definition)     : 533
+      |(Definition)     : 520
       |(Reference)      : 
      fdslr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  125
-      |(Definition)     : 537
+      |(Definition)     : 524
       |(Reference)      : 
      fice
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 76
-      |(Definition)     : 262
-      |(Reference)      : 458
+      |(Definition)     : 249
+      |(Reference)      : 445
      fluxr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 134
-      |(Definition)     : 458
-      |(Reference)      : 485  485  486  486  487  487  488  489  490  492  492  493  493  494  494  495  496  497  501  502  503  504
+      |(Definition)     : 445
+      |(Reference)      : 472  472  473  473  474  474  475  476  477  479  479  480  480  481  481  482  483  484  488  489  490  491
      fqp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  88
       |(Definition)     : 
-      |(Reference)      : 201  213  226
+      |(Reference)      : 201  213
      fqp1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  88
       |(Definition)     : 
-      |(Reference)      : 214  227
+      |(Reference)      : 214
      ftp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  88
       |(Definition)     : 
-      |(Reference)      : 199  211  224
+      |(Reference)      : 199  211
      ftp1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  88
       |(Definition)     : 
-      |(Reference)      : 200  212  225
+      |(Reference)      : 200  212
      fuir
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  100
-      |(Definition)     : 534
+      |(Definition)     : 521
       |(Reference)      : 
      fuirr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  126
-      |(Definition)     : 538
+      |(Definition)     : 525
       |(Reference)      : 
      fusl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  99
-      |(Definition)     : 532
+      |(Definition)     : 519
       |(Reference)      : 
      fuslr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  125
-      |(Definition)     : 536
+      |(Definition)     : 523
       |(Reference)      : 
      grrad
       |(Class and Type) : module subroutine name
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 29  458
+      |(Reference)      : 29  445
      hprim
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 72
-      |(Definition)     : 255
-      |(Reference)      : 458
+      |(Definition)     : 242
+      |(Reference)      : 445
      htrlw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  98
-      |(Definition)     : 514
+      |(Definition)     : 501
       |(Reference)      : 
      htrlw0
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  124
-      |(Definition)     : 517
+      |(Definition)     : 504
       |(Reference)      : 
      htrsw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  98
-      |(Definition)     : 513
+      |(Definition)     : 500
       |(Reference)      : 
      htrsw0
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  124
-      |(Definition)     : 516
+      |(Definition)     : 503
       |(Reference)      : 
      i
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 39
-      |(Definition)     : 149  155  169  189  198  210  223  245  297  320  481  512  522  531
-      |(Reference)      : 150  150  156  156  157  157  158  158  159  159  160  160  161  161  162  162  170  170  191  191  199  199  200  200  201  201  211  211  212  212  213  213  214  214  224  224  225  225  226  226  227  227  246  246  247  247  248  250  250  251  251  252  252  253  253  254  254  255  255  256  256  257  257  258  258  259  259  260  260  261  261  262  262  263  263  264  265  266  267  268  268  269  269  298  300  301  302  303  305  306  307  321  321  322  322  485  485  485  486  486  486  487  487  487  488  488  489  489  490  490  492  492  492  493  493  493  494  494  494  495  495  496  496  497  497  501  501  502  502  503  503  504  504  506  506  507  507  513  513  514  514  515  515  516  516  517  517  524  524  525  525  532  532  533  533  534  534  535  535  536  536  537  537  538  538  539  539
+      |(Definition)     : 149  155  169  189  198  210  232  284  307  468  499  509  518
+      |(Reference)      : 150  150  156  156  157  157  158  158  159  159  160  160  161  161  162  162  170  170  191  191  199  199  200  200  201  201  211  211  212  212  213  213  214  214  233  233  234  234  235  237  237  238  238  239  239  240  240  241  241  242  242  243  243  244  244  245  245  246  246  247  247  248  248  249  249  250  250  251  252  253  254  255  255  256  256  285  287  288  289  290  292  293  294  308  308  309  309  472  472  472  473  473  473  474  474  474  475  475  476  476  477  477  479  479  479  480  480  480  481  481  481  482  482  483  483  484  484  488  488  489  489  490  490  491  491  493  493  494  494  500  500  501  501  502  502  503  503  504  504  511  511  512  512  519  519  520  520  521  521  522  522  523  523  524  524  525  525  526  526
      icsdlw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 83
-      |(Definition)     : 269
-      |(Reference)      : 458
+      |(Definition)     : 256
+      |(Reference)      : 445
      icsdlwg
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  54
       |(Definition)     : 
-      |(Reference)      : 269
+      |(Reference)      : 256
      icsdsw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 83
-      |(Definition)     : 268
-      |(Reference)      : 458
+      |(Definition)     : 255
+      |(Reference)      : 445
      icsdswg
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  54
       |(Definition)     : 
-      |(Reference)      : 268
+      |(Reference)      : 255
      imax
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 58
-      |(Definition)     : 296  303
+      |(Definition)     : 283  290
       |(Reference)      : 
      imin
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 58
-      |(Definition)     : 295  307
+      |(Definition)     : 282  294
       |(Reference)      : 
      index
       |(Class and Type) : module name
@@ -1277,7 +1250,7 @@
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  40
       |(Definition)     : 
-      |(Reference)      : 458
+      |(Reference)      : 445
      j
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
@@ -1289,85 +1262,85 @@
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  54
       |(Definition)     : 
-      |(Reference)      : 458
+      |(Reference)      : 445
      k
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 39
-      |(Definition)     : 153  167  185  197  209  222  510  529
-      |(Reference)      : 154  156  156  157  158  159  160  161  162  168  170  186  188  199  199  200  200  201  201  211  211  212  212  213  213  214  214  224  224  225  225  226  226  227  227  511  513  514  515  516  517  530  532  533  534  535  536  537  538  539
+      |(Definition)     : 153  167  185  197  209  497  516
+      |(Reference)      : 154  156  156  157  158  159  160  161  162  168  170  186  188  199  199  200  200  201  201  211  211  212  212  213  213  214  214  498  500  501  502  503  504  517  519  520  521  522  523  524  525  526
      kc
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 39
-      |(Definition)     : 154  168  188  511  530
-      |(Reference)      : 156  157  158  159  160  161  162  170  191  191  513  514  515  516  517  532  533  534  535  536  537  538  539
+      |(Definition)     : 154  168  188  498  517
+      |(Reference)      : 156  157  158  159  160  161  162  170  191  191  500  501  502  503  504  519  520  521  522  523  524  525  526
      kdt
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  40
       |(Definition)     : 
-      |(Reference)      : 458
+      |(Reference)      : 445
      lev
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  40
       |(Definition)     : 
-      |(Reference)      : 43  43  43  45  45  45  65  66  66  67  67  69  86  86  86  88  88  88  88  89  98  98  99  99  100  100  102  102  103  103  104  104  112  113  124  124  125  125  126  126  128  128  129  129  130  130  147  150  153  154  167  168  170  188  197  209  222  458  510  511  529  530
+      |(Reference)      : 43  43  43  45  45  45  65  66  66  67  67  69  86  86  86  88  88  88  88  89  98  98  99  99  100  100  102  102  103  103  104  104  112  113  124  124  125  125  126  126  128  128  129  129  130  130  147  150  153  154  167  168  170  188  197  209  445  497  498  516  517
      lmfdeep2
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  57
-      |(Definition)     : 458
+      |(Definition)     : 445
       |(Reference)      : 
      lmfshal
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  57
-      |(Definition)     : 458
+      |(Definition)     : 445
       |(Reference)      : 
      log
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 300
+      |(Reference)      : 287
      lprnt
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  56
       |(Definition)     : 
-      |(Reference)      : 458
+      |(Reference)      : 445
      lslwr
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  56
       |(Definition)     : 
-      |(Reference)      : 458
+      |(Reference)      : 445
      lssav
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  56
       |(Definition)     : 
-      |(Reference)      : 458
+      |(Reference)      : 445
      lsswr
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  56
       |(Definition)     : 
-      |(Reference)      : 458
+      |(Reference)      : 445
      max
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 299
+      |(Reference)      : 286
      me
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 458
+      |(Reference)      : 445
      module_radiation_driver
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -1385,7 +1358,7 @@
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 458
+      |(Reference)      : 445
      n
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
@@ -1402,74 +1375,74 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 40
-      |(Definition)     : 195  208  221  233
-      |(Reference)      : 458
+      |(Definition)     : 195  208  220
+      |(Reference)      : 445
      nfxr
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  40
       |(Definition)     : 
-      |(Reference)      : 134  458
+      |(Reference)      : 134  445
      nmmiph
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  40
       |(Definition)     : 
-      |(Reference)      : 194  194  194  206  206  206  219  219  232
+      |(Reference)      : 194  194  206  219
      ntcw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 458
+      |(Reference)      : 445
      ntgl
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 458
+      |(Reference)      : 445
      ntiw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 458
+      |(Reference)      : 445
      ntoz
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 142  191  191  458
+      |(Reference)      : 142  191  191  445
      ntrac
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 40
       |(Definition)     : 143  145
-      |(Reference)      : 147  166  458
+      |(Reference)      : 147  166  445
      ntrw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 458
+      |(Reference)      : 445
      ntsw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 458
+      |(Reference)      : 445
      nx
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  40
       |(Definition)     : 
-      |(Reference)      : 43  43  43  43  43  45  45  45  50  50  50  50  50  50  50  52  52  52  52  52  52  52  52  52  52  54  54  65  66  66  67  67  69  86  86  86  88  88  88  88  93  93  93  93  93  93  94  94  98  98  99  99  100  100  102  102  103  103  104  104  109  109  109  109  109  112  119  119  119  119  120  120  124  124  125  125  126  126  128  128  129  129  130  130  134  147  458
+      |(Reference)      : 43  43  43  43  43  45  45  45  50  50  50  50  50  50  50  52  52  52  52  52  52  52  52  52  52  54  54  65  66  66  67  67  69  86  86  86  88  88  88  88  93  93  93  93  93  93  94  94  98  98  99  99  100  100  102  102  103  103  104  104  109  109  109  109  109  112  119  119  119  119  120  120  124  124  125  125  126  126  128  128  129  129  130  130  134  147  445
      nxj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  40
       |(Definition)     : 
-      |(Reference)      : 72  72  72  72  72  72  72  72  72  72  72  72  76  76  76  76  76  76  76  76  76  76  80  80  80  81  81  83  83  89  113  149  155  169  189  198  210  223  245  297  320  458  481  512  522  531
+      |(Reference)      : 72  72  72  72  72  72  72  72  72  72  72  72  76  76  76  76  76  76  76  76  76  76  80  80  80  81  81  83  83  89  113  149  155  169  189  198  210  232  284  307  445  468  499  509  518
      o3l
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
@@ -1480,19 +1453,19 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  93
-      |(Definition)     : 488
+      |(Definition)     : 475
       |(Reference)      : 
      olr_clr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  119
-      |(Definition)     : 495
+      |(Definition)     : 482
       |(Reference)      : 
      phy3d
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 89
-      |(Definition)     : 199  200  201  211  212  213  214  224  225  226  227  234  458
+      |(Definition)     : 199  200  201  211  212  213  214  221  445
       |(Reference)      : 
      physpara
       |(Class and Type) : module name
@@ -1511,19 +1484,19 @@
       |(Attributes)     : DIMENSION
       |(Declaration)    : 65
       |(Definition)     : 150  156
-      |(Reference)      : 458
+      |(Reference)      : 445
      prsl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 66
       |(Definition)     : 157
-      |(Reference)      : 458
+      |(Reference)      : 445
      prslk
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 66
       |(Definition)     : 158
-      |(Reference)      : 458
+      |(Reference)      : 445
      pst
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
@@ -1541,7 +1514,7 @@
       |(Attributes)     : DIMENSION
       |(Declaration)    : 67
       |(Definition)     : 160
-      |(Reference)      : 458
+      |(Reference)      : 445
      qt
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
@@ -1570,13 +1543,13 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  93
-      |(Definition)     : 490
+      |(Definition)     : 477
       |(Reference)      : 
      rld_clr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  120
-      |(Definition)     : 497
+      |(Definition)     : 484
       |(Reference)      : 
      rrtmg
       |(Class and Type) : external subroutine name
@@ -1588,13 +1561,13 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  93
-      |(Definition)     : 486
+      |(Definition)     : 473
       |(Reference)      : 
      rs_clr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  119
-      |(Definition)     : 493
+      |(Definition)     : 480
       |(Reference)      : 
      sd
       |(Class and Type) : variable name, REAL(8)
@@ -1606,25 +1579,25 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 81
-      |(Definition)     : 458
-      |(Reference)      : 507
+      |(Definition)     : 445
+      |(Reference)      : 494
      semis_g
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  94
-      |(Definition)     : 507
+      |(Definition)     : 494
       |(Reference)      : 
      sfalb
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 80
-      |(Definition)     : 458
-      |(Reference)      : 506
+      |(Definition)     : 445
+      |(Reference)      : 493
      sfalb_g
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  94
-      |(Definition)     : 506
+      |(Definition)     : 493
       |(Reference)      : 
      sigma
       |(Class and Type) : variable name, REAL(8)
@@ -1636,163 +1609,163 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 76
-      |(Definition)     : 264
-      |(Reference)      : 458
+      |(Definition)     : 251
+      |(Reference)      : 445
      sinlj
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  55
       |(Definition)     : 
-      |(Reference)      : 264
+      |(Reference)      : 251
      sld
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  93
-      |(Definition)     : 489
+      |(Definition)     : 476
       |(Reference)      : 
      sld_clr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  120
-      |(Definition)     : 496
+      |(Definition)     : 483
       |(Reference)      : 
      slimsk
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  50
       |(Definition)     : 
-      |(Reference)      : 246
+      |(Reference)      : 233
      slmsk
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 72
-      |(Definition)     : 246
-      |(Reference)      : 458
+      |(Definition)     : 233
+      |(Reference)      : 445
      snalb
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 72
-      |(Definition)     : 253
-      |(Reference)      : 458
+      |(Definition)     : 240
+      |(Reference)      : 445
      sncover
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  50
       |(Definition)     : 
-      |(Reference)      : 252
+      |(Reference)      : 239
      sncovr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 72
-      |(Definition)     : 252
-      |(Reference)      : 458
+      |(Definition)     : 239
+      |(Reference)      : 445
      snoalb
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  50
       |(Definition)     : 
-      |(Reference)      : 253
+      |(Reference)      : 240
      snowd
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 72
-      |(Definition)     : 251
-      |(Reference)      : 458
+      |(Definition)     : 238
+      |(Reference)      : 445
      snr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  50
       |(Definition)     : 
-      |(Reference)      : 251
+      |(Reference)      : 238
      solcon
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 458
+      |(Reference)      : 445
      solhr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  55
       |(Definition)     : 
-      |(Reference)      : 458
+      |(Reference)      : 445
      ss
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  93
-      |(Definition)     : 485
+      |(Definition)     : 472
       |(Reference)      : 
      ss_clr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  119
-      |(Definition)     : 492
+      |(Definition)     : 479
       |(Reference)      : 
      std
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  43
       |(Definition)     : 
-      |(Reference)      : 255
+      |(Reference)      : 242
      sup
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  85
       |(Definition)     : 
-      |(Reference)      : 458
+      |(Reference)      : 445
      tem1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 58
-      |(Definition)     : 318
-      |(Reference)      : 321
+      |(Definition)     : 305
+      |(Reference)      : 308
      tem2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 58
-      |(Definition)     : 319
-      |(Reference)      : 322  322
+      |(Definition)     : 306
+      |(Reference)      : 309  309
      tg
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  43
       |(Definition)     : 
-      |(Reference)      : 250
+      |(Reference)      : 237
      tgrs
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 67
       |(Definition)     : 159
-      |(Reference)      : 458
+      |(Reference)      : 445
      tisfc
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 76
-      |(Definition)     : 263
-      |(Reference)      : 458
+      |(Definition)     : 250
+      |(Reference)      : 445
      tracer
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION
       |(Declaration)    : 70
-      |(Definition)     : 147  170  191  542
-      |(Reference)      : 191  458
+      |(Definition)     : 147  170  191  529
+      |(Reference)      : 191  445
      tsfc
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 72
-      |(Definition)     : 250
-      |(Reference)      : 458
+      |(Definition)     : 237
+      |(Reference)      : 445
      tsflw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 81
-      |(Definition)     : 458
-      |(Reference)      : 524
+      |(Definition)     : 445
+      |(Reference)      : 511
      tsflwr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  52
-      |(Definition)     : 524
+      |(Definition)     : 511
       |(Reference)      : 
      tt
       |(Class and Type) : variable name, REAL(8)
@@ -1804,68 +1777,68 @@
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  57
-      |(Definition)     : 458
+      |(Definition)     : 445
       |(Reference)      : 
      vvl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 69
       |(Definition)     : 161
-      |(Reference)      : 458
+      |(Reference)      : 445
      work1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 103
-      |(Definition)     : 458
-      |(Reference)      : 532
+      |(Definition)     : 445
+      |(Reference)      : 519
      work2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 103
-      |(Definition)     : 458
-      |(Reference)      : 533
+      |(Definition)     : 445
+      |(Reference)      : 520
      work3
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 104
-      |(Definition)     : 458
-      |(Reference)      : 534
+      |(Definition)     : 445
+      |(Reference)      : 521
      work4
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 104
-      |(Definition)     : 458
-      |(Reference)      : 535
+      |(Definition)     : 445
+      |(Reference)      : 522
      work5
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 129
-      |(Definition)     : 458
-      |(Reference)      : 536
+      |(Definition)     : 445
+      |(Reference)      : 523
      work6
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 129
-      |(Definition)     : 458
-      |(Reference)      : 537
+      |(Definition)     : 445
+      |(Reference)      : 524
      work7
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 130
-      |(Definition)     : 458
-      |(Reference)      : 538
+      |(Definition)     : 445
+      |(Reference)      : 525
      work8
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 130
-      |(Definition)     : 458
-      |(Reference)      : 539
+      |(Definition)     : 445
+      |(Reference)      : 526
      www
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 58
-      |(Definition)     : 298  299
-      |(Reference)      : 299  300
+      |(Definition)     : 285  286
+      |(Reference)      : 286  287
      xkapa
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : dummy-argument
@@ -1876,49 +1849,49 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 72
-      |(Definition)     : 248
-      |(Reference)      : 458
+      |(Definition)     : 235
+      |(Reference)      : 445
      xlatj
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  55
       |(Definition)     : 
-      |(Reference)      : 248
+      |(Reference)      : 235
      xlon
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 72
-      |(Definition)     : 247
-      |(Reference)      : 458
+      |(Definition)     : 234
+      |(Reference)      : 445
      xlonr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  52
       |(Definition)     : 
-      |(Reference)      : 247
+      |(Reference)      : 234
      xtice
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  50
       |(Definition)     : 
-      |(Reference)      : 263
+      |(Reference)      : 250
      z0
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  50
       |(Definition)     : 
-      |(Reference)      : 254
+      |(Reference)      : 241
      zorl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 72
-      |(Definition)     : 254
-      |(Reference)      : 458
+      |(Definition)     : 241
+      |(Reference)      : 445
 
  Total information
    Procedures       : 1
-   Total lines      : 545
-   Total statements : 225
-   Total stack(byte): 6352
+   Total lines      : 532
+   Total statements : 214
+   Total stack(byte): 5984
    Total prefetch num: 92
 

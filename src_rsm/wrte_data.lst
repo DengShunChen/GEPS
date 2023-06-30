@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Thu Jun 29 14:23:03 2023
+ Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:30:19 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
    Source file       : wrte_data.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -58,6 +58,7 @@
                           -Nsetvalue=nostack -Nsetvalue=noscalar
                           -Nsetvalue=noarray -Nsetvalue=nostruct -Nuse_rodata
 
+ External subroutine subprogram "wrte_data"
   (inc)(line-no.)(nest)(optimize)
                1                     #ifdef RSM
                2                           subroutine wrte_data(idtg,fhour,nx,my,lsoil,lev,temp_gfs,spfh_gfs   &
@@ -140,19 +141,241 @@
               79                           end
               80                     #endif
 
- Diagnostic messages:
-   jwd1039i-w  "wrte_data.f90", line 1: Corresponding END statement missing.
-
  Procedure information
    Lines      : 80
-   Statements : 0
-   Stack(byte): 0
+   Statements : 35
+   Stack(byte): 3024
    Prefetch num: 0
 
+ Scoping unit of external sub-program : wrte_data
+   Attribute and Cross reference of name
+     cfhour
+      |(Class and Type) : variable name, CHARACTER(16,1)
+      |(Attributes)     : 
+      |(Declaration)    : 16
+      |(Definition)     : 34
+      |(Reference)      : 37
+     cform
+      |(Class and Type) : variable name, CHARACTER(40,1)
+      |(Attributes)     : 
+      |(Declaration)    : 16
+      |(Definition)     : 33
+      |(Reference)      : 34
+     cice_gfs
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  18
+      |(Definition)     : 
+      |(Reference)      : 70
+     cidtg
+      |(Class and Type) : variable name, CHARACTER(12,1)
+      |(Attributes)     : 
+      |(Declaration)    : 16
+      |(Definition)     : 35
+      |(Reference)      : 37
+     clwr_gfs
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  18
+      |(Definition)     : 
+      |(Reference)      : 46
+     fhour
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 2  15
+      |(Definition)     : 
+      |(Reference)      : 31  40
+     geop_gfs
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  18
+      |(Definition)     : 
+      |(Reference)      : 54
+     grpl_gfs
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  18
+      |(Definition)     : 
+      |(Reference)      : 
+     idtg
+      |(Class and Type) : variable name, INTEGER(8)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 2  12
+      |(Definition)     : 
+      |(Reference)      : 35
+     ios
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 37
+      |(Reference)      : 
+     kh
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 13
+      |(Definition)     : 31
+      |(Reference)      : 32  34
+     lev
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 2
+      |(Definition)     : 
+      |(Reference)      : 18  18  18  18  18  18  18  18  18  18
+     log10
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 32
+     lsoil
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 2  14
+      |(Definition)     : 
+      |(Reference)      : 18  18
+     max
+      |(Class and Type) : intrinsic function name, REAL(8)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 32
+     my
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 2
+      |(Definition)     : 
+      |(Reference)      : 18  18  18  18  18  18  18  18  18  18  18  18  18  18  18  18  18  18
+     myrank
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : common-block-object, use-associated
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 10
+     ndig
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 13
+      |(Definition)     : 32
+      |(Reference)      : 33  33
+     nint
+      |(Class and Type) : intrinsic function name, INTEGER(4)
+      |(Attributes)     : PURE, ELEMENTAL
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 31
+     nsig
+      |(Class and Type) : variable name, INTEGER(4)
+      |(Attributes)     : 
+      |(Declaration)    : 13
+      |(Definition)     : 29
+      |(Reference)      : 37  40  42  44  46  52  54  56  58  60  62  64  66  68  70  72  75
+     nx
+      |(Class and Type) : variable name, INTEGER(4)-implicited
+      |(Attributes)     : dummy-argument
+      |(Declaration)    : 2
+      |(Definition)     : 
+      |(Reference)      : 18  18  18  18  18  18  18  18  18  18  18  18  18  18  18  18  18  18
+     ozon_gfs
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  18
+      |(Definition)     : 
+      |(Reference)      : 52
+     qice_gfs
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  18
+      |(Definition)     : 
+      |(Reference)      : 
+     rain_gfs
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  18
+      |(Definition)     : 
+      |(Reference)      : 
+     rank
+      |(Class and Type) : module name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 
+      |(Reference)      : 10
+     slmsk_gfs
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  18
+      |(Definition)     : 
+      |(Reference)      : 72
+     smc_gfs
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  18
+      |(Definition)     : 
+      |(Reference)      : 64
+     snow_gfs
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  18
+      |(Definition)     : 
+      |(Reference)      : 
+     snr_gfs
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  18
+      |(Definition)     : 
+      |(Reference)      : 66
+     spfh_gfs
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  18
+      |(Definition)     : 
+      |(Reference)      : 44
+     stc_gfs
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  18
+      |(Definition)     : 
+      |(Reference)      : 68
+     temp_gfs
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  18
+      |(Definition)     : 
+      |(Reference)      : 42
+     terr_gfs
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  18
+      |(Definition)     : 
+      |(Reference)      : 56
+     tg_gfs
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  18
+      |(Definition)     : 
+      |(Reference)      : 62
+     u_gfs
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  18
+      |(Definition)     : 
+      |(Reference)      : 58
+     v_gfs
+      |(Class and Type) : variable name, REAL(8)-implicited
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 2  18
+      |(Definition)     : 
+      |(Reference)      : 60
+     wrte_data
+      |(Class and Type) : external subroutine name
+      |(Attributes)     : 
+      |(Declaration)    : 
+      |(Definition)     : 2
+      |(Reference)      : 
+
  Total information
-   Procedures       : 0
+   Procedures       : 1
    Total lines      : 80
-   Total statements : 0
-   Total stack(byte): 0
+   Total statements : 35
+   Total stack(byte): 3024
    Total prefetch num: 0
 

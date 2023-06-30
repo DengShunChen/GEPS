@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Thu Jun 29 14:23:20 2023
+ Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:30:20 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
    Source file       : get_model_param.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -68,107 +68,100 @@
                6                           use const, only : ifilin,cwbout,bckfile,namlsts,   &
                7                                             ifilout,crdate,ocards,phyout,cntrl, &
                8                                             ifilin_ncep,ifilin_sst,ifilin_nc,&
-               9                                             ifilin_ClmANA,ifilin_ClmFCT,ifilout_grb
+               9                                             ifilin_ClmANA,ifilin_ClmFCT
               10                     
               11                           use paramt
               12                     
               13                           use rank
-              14                           use mod_grb2_param, only:grbmem,grbnumm
-              15                     !
-              16                           implicit  none
-              17                     
-              18                     !
-              19                           namelist /model_param/nco,lev,ncld,octahedral,nout &
-              20                                                ,io_quilting,npex,npey !2dMPI
-              21                     !
-              22                           integer istat
-              23                           character*80 filist
-              24                           character*80 pathname,logicname,truefile
-              25                           namelist /filst/ ifilin,cwbout,bckfile,namlsts &
-              26                                          , ifilout,crdate,ocards,phyout,cntrl &
-              27                                          , ifilin_ncep,ifilin_sst,ifilin_nc &
-              28                                          , ifilin_ClmANA,ifilin_ClmFCT,ifilout_grb
-              29                     
-              30                           namelist /grb_conf/ grbmem,grbnumm
-              31                     
-              32                           data pathname/'NWPETCGLB'/
-              33                           data logicname/'filist'/
-              34                     !
-              35                     !  read namlist of path/file name(operation)
-              36                     !
-              37                           call getfname(pathname,logicname,truefile,istat)
-              38     1                     if(istat.ne.0)then
-              39     1                       print *,'getfname : error','RANK=',myrank
-              40     1                       call mpe_finalize
-              41     1                       call dmsexit(-1)
-              42     1               !     else
-              43     1               !       if(myrank .eq. 0) print *,truefile
-              44     1                     endif
+              14                     !
+              15                           implicit  none
+              16                     
+              17                     !
+              18                           namelist /model_param/nco,lev,ncld,octahedral,nout &
+              19                                                ,io_quilting,npex,npey !2dMPI
+              20                     !
+              21                           integer istat
+              22                           character*80 filist
+              23                           character*80 pathname,logicname,truefile
+              24                           namelist /filst/ ifilin,cwbout,bckfile,namlsts &
+              25                                          , ifilout,crdate,ocards,phyout,cntrl &
+              26                                          , ifilin_ncep,ifilin_sst,ifilin_nc &
+              27                                          , ifilin_ClmANA,ifilin_ClmFCT
+              28                           data pathname/'NWPETCGLB'/
+              29                           data logicname/'filist'/
+              30                     !
+              31                     !  read namlist of path/file name(operation)
+              32                     !
+              33                           call getfname(pathname,logicname,truefile,istat)
+              34     1                     if(istat.ne.0)then
+              35     1                       print *,'getfname : error','RANK=',myrank
+              36     1                       call mpe_finalize
+              37     1                       call dmsexit(-1)
+              38     1               !     else
+              39     1               !       if(myrank .eq. 0) print *,truefile
+              40     1                     endif
+              41                     !
+              42                           open (unit=12,file=trim(truefile),form='formatted')
+              43                     !
+              44                           read (12,filst,end=110)
               45                     !
-              46                           open (unit=12,file=trim(truefile),form='formatted')
-              47                     !
-              48                           read (12,filst,end=110)
-              49                     !
-              50                       110 continue
-              51                           close(12)
+              46                       110 continue
+              47                           close(12)
+              48                     !
+              49                     !  read namelist for model parameters
+              50                     !
+              51                           open (unit=1,file=trim(namlsts),form='formatted')
               52                     !
-              53                     !  read namelist for model parameters
+              53                           read (1,model_param,end=120)
               54                     !
-              55                           open (unit=1,file=trim(namlsts),form='formatted')
-              56                     !
-              57                           read (1,model_param,end=120)
-              58                     !
-              59                       120 continue
-              60                           read (1,grb_conf,end=121)
-              61                       121 continue
-              62                           close(1)
-              63                     
-              64                     
-              65                     !     if(myrank .eq. 0) print model_param
-              66                           if(myrank_all .eq. 0) print model_param
-              67                     
-              68     1                     if ( octahedral ) then
-              69     1                       my=2*nco
-              70     1                       nx=16+4*nco
-              71     1                       jtrun= 2*((1+(4*nco-1)/4)/2)
-              72     1               
-              73     1                       im=16+4*nco
-              74     1                       jm=2*nco
-              75     1                       jtr= 2*((1+(4*nco-1)/4)/2)
-              76     1                     else
-              77     1                       nx=4*nco
-              78     1                       my=nx/2
-              79     1                       jtrun= 2*((1+(nx-1)/2)/2)
-              80     1               
-              81     1                       im=nx
-              82     1                       jm=im/2
-              83     1                       jtr= 2*((1+(im-1)/2)/2)
-              84     1                     endif
-              85                           mlmax= jtrun*(jtrun+1)/2
-              86                     
-              87                           lm=lev
-              88                           mlm=jtr*(jtr+1)/2
-              89                     
-              90                           imax=nx
-              91                           jmax=imax/2
-              92                           lpx=26
-              93                           kvkw=im/2
-              94                     
-              95                           ilm=im*lm
-              96                           im2=kvkw*(lm+1)
-              97                     
-              98                           jmhalf=jm/2
-              99                           lmX2=lm*2
-             100                           lmX4=lm*4
-             101                           lmX10=lm*10
-             102                     
-             103                           return
-             104                           end
+              55                       120 continue
+              56                           close(1)
+              57                     
+              58                     !     if(myrank .eq. 0) print model_param
+              59                           if(myrank_all .eq. 0) print model_param
+              60                     
+              61     1                     if ( octahedral ) then
+              62     1                       my=2*nco
+              63     1                       nx=16+4*nco
+              64     1                       jtrun= 2*((1+(4*nco-1)/4)/2)
+              65     1               
+              66     1                       im=16+4*nco
+              67     1                       jm=2*nco
+              68     1                       jtr= 2*((1+(4*nco-1)/4)/2)
+              69     1                     else
+              70     1                       nx=4*nco
+              71     1                       my=nx/2
+              72     1                       jtrun= 2*((1+(nx-1)/2)/2)
+              73     1               
+              74     1                       im=nx
+              75     1                       jm=im/2
+              76     1                       jtr= 2*((1+(im-1)/2)/2)
+              77     1                     endif
+              78                           mlmax= jtrun*(jtrun+1)/2
+              79                     
+              80                           lm=lev
+              81                           mlm=jtr*(jtr+1)/2
+              82                     
+              83                           imax=nx
+              84                           jmax=imax/2
+              85                           lpx=26
+              86                           kvkw=im/2
+              87                     
+              88                           ilm=im*lm
+              89                           im2=kvkw*(lm+1)
+              90                     
+              91                           jmhalf=jm/2
+              92                           lmX2=lm*2
+              93                           lmX4=lm*4
+              94                           lmX10=lm*10
+              95                     
+              96                           return
+              97                           end
 
  Procedure information
-   Lines      : 104
-   Statements : 62
-   Stack(byte): 4000
+   Lines      : 97
+   Statements : 58
+   Stack(byte): 3680
    Prefetch num: 0
 
  Scoping unit of external sub-program : get_model_param
@@ -176,13 +169,13 @@
      bckfile
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : common-block-object, namelist-group-object, use-associated
-      |(Declaration)    : 25
+      |(Declaration)    : 24
       |(Definition)     : 
       |(Reference)      : 6
      cntrl
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : common-block-object, namelist-group-object, use-associated
-      |(Declaration)    : 25
+      |(Declaration)    : 24
       |(Definition)     : 
       |(Reference)      : 6
      const
@@ -194,13 +187,13 @@
      crdate
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : common-block-object, namelist-group-object, use-associated
-      |(Declaration)    : 25
+      |(Declaration)    : 24
       |(Definition)     : 
       |(Reference)      : 6
      cwbout
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : common-block-object, namelist-group-object, use-associated
-      |(Declaration)    : 25
+      |(Declaration)    : 24
       |(Definition)     : 
       |(Reference)      : 6
      dmsexit
@@ -208,19 +201,19 @@
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 41
+      |(Reference)      : 37
      filist
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : 
-      |(Declaration)    : 23
+      |(Declaration)    : 22
       |(Definition)     : 
       |(Reference)      : 
      filst
       |(Class and Type) : namelist name
       |(Attributes)     : 
-      |(Declaration)    : 25
+      |(Declaration)    : 24
       |(Definition)     : 
-      |(Reference)      : 48
+      |(Reference)      : 44
      get_model_param
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
@@ -232,289 +225,259 @@
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 37
-     grb_conf
-      |(Class and Type) : namelist name
-      |(Attributes)     : 
-      |(Declaration)    : 30
-      |(Definition)     : 
-      |(Reference)      : 60
-     grbmem
-      |(Class and Type) : variable name, INTEGER(4)
-      |(Attributes)     : namelist-group-object, use-associated
-      |(Declaration)    : 30
-      |(Definition)     : 
-      |(Reference)      : 14
-     grbnumm
-      |(Class and Type) : variable name, INTEGER(4)
-      |(Attributes)     : namelist-group-object, use-associated
-      |(Declaration)    : 30
-      |(Definition)     : 
-      |(Reference)      : 14
+      |(Reference)      : 33
      ifilin
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : common-block-object, namelist-group-object, use-associated
-      |(Declaration)    : 25
+      |(Declaration)    : 24
       |(Definition)     : 
       |(Reference)      : 6
      ifilin_ClmANA
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : common-block-object, namelist-group-object, use-associated
-      |(Declaration)    : 25
+      |(Declaration)    : 24
       |(Definition)     : 
       |(Reference)      : 6
      ifilin_ClmFCT
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : common-block-object, namelist-group-object, use-associated
-      |(Declaration)    : 25
+      |(Declaration)    : 24
       |(Definition)     : 
       |(Reference)      : 6
      ifilin_nc
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : common-block-object, namelist-group-object, use-associated
-      |(Declaration)    : 25
+      |(Declaration)    : 24
       |(Definition)     : 
       |(Reference)      : 6
      ifilin_ncep
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : common-block-object, namelist-group-object, use-associated
-      |(Declaration)    : 25
+      |(Declaration)    : 24
       |(Definition)     : 
       |(Reference)      : 6
      ifilin_sst
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : common-block-object, namelist-group-object, use-associated
-      |(Declaration)    : 25
+      |(Declaration)    : 24
       |(Definition)     : 
       |(Reference)      : 6
      ifilout
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : common-block-object, namelist-group-object, use-associated
-      |(Declaration)    : 25
-      |(Definition)     : 
-      |(Reference)      : 6
-     ifilout_grb
-      |(Class and Type) : variable name, CHARACTER(80,1)
-      |(Attributes)     : namelist-group-object, use-associated
-      |(Declaration)    : 25
+      |(Declaration)    : 24
       |(Definition)     : 
       |(Reference)      : 6
      ilm
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 95
+      |(Definition)     : 88
       |(Reference)      : 
      im
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 73  81
-      |(Reference)      : 82  83  93  95
+      |(Definition)     : 66  74
+      |(Reference)      : 75  76  86  88
      im2
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 96
+      |(Definition)     : 89
       |(Reference)      : 
      imax
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 90
-      |(Reference)      : 91
+      |(Definition)     : 83
+      |(Reference)      : 84
      io_quilting
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : common-block-object, namelist-group-object, use-associated
-      |(Declaration)    : 19
+      |(Declaration)    : 18
       |(Definition)     : 
       |(Reference)      : 
      istat
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 22
-      |(Definition)     : 37
-      |(Reference)      : 38
+      |(Declaration)    : 21
+      |(Definition)     : 33
+      |(Reference)      : 34
      jm
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 74  82
-      |(Reference)      : 98
+      |(Definition)     : 67  75
+      |(Reference)      : 91
      jmax
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 91
+      |(Definition)     : 84
       |(Reference)      : 
      jmhalf
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 98
+      |(Definition)     : 91
       |(Reference)      : 
      jtr
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 75  83
-      |(Reference)      : 88  88
+      |(Definition)     : 68  76
+      |(Reference)      : 81  81
      jtrun
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 71  79
-      |(Reference)      : 85  85
+      |(Definition)     : 64  72
+      |(Reference)      : 78  78
      kvkw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 93
-      |(Reference)      : 96
+      |(Definition)     : 86
+      |(Reference)      : 89
      lev
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, namelist-group-object, use-associated
-      |(Declaration)    : 19
+      |(Declaration)    : 18
       |(Definition)     : 
-      |(Reference)      : 87
+      |(Reference)      : 80
      lm
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 87
-      |(Reference)      : 95  96  99  100  101
+      |(Definition)     : 80
+      |(Reference)      : 88  89  92  93  94
      lmX10
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 101
+      |(Definition)     : 94
       |(Reference)      : 
      lmX2
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 99
+      |(Definition)     : 92
       |(Reference)      : 
      lmX4
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 100
+      |(Definition)     : 93
       |(Reference)      : 
      logicname
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : initialized
-      |(Declaration)    : 24  33
-      |(Definition)     : 37
+      |(Declaration)    : 23  29
+      |(Definition)     : 33
       |(Reference)      : 
      lpx
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 92
+      |(Definition)     : 85
       |(Reference)      : 
      mlm
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 88
+      |(Definition)     : 81
       |(Reference)      : 
      mlmax
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 85
+      |(Definition)     : 78
       |(Reference)      : 
-     mod_grb2_param
-      |(Class and Type) : module name
-      |(Attributes)     : 
-      |(Declaration)    : 
-      |(Definition)     : 
-      |(Reference)      : 14
      model_param
       |(Class and Type) : namelist name
       |(Attributes)     : 
-      |(Declaration)    : 19
+      |(Declaration)    : 18
       |(Definition)     : 
-      |(Reference)      : 57  66
+      |(Reference)      : 53  59
      mpe_finalize
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 40
+      |(Reference)      : 36
      my
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 69  78
+      |(Definition)     : 62  71
       |(Reference)      : 
      myrank
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 39
+      |(Reference)      : 35
      myrank_all
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 66
+      |(Reference)      : 59
      namlsts
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : common-block-object, namelist-group-object, use-associated
-      |(Declaration)    : 25
+      |(Declaration)    : 24
       |(Definition)     : 
-      |(Reference)      : 6  55
+      |(Reference)      : 6  51
      ncld
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, namelist-group-object, use-associated
-      |(Declaration)    : 19
+      |(Declaration)    : 18
       |(Definition)     : 
       |(Reference)      : 
      nco
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, namelist-group-object, use-associated
-      |(Declaration)    : 19
+      |(Declaration)    : 18
       |(Definition)     : 
-      |(Reference)      : 69  70  71  73  74  75  77
+      |(Reference)      : 62  63  64  66  67  68  70
      nout
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, namelist-group-object, use-associated
-      |(Declaration)    : 19
+      |(Declaration)    : 18
       |(Definition)     : 
       |(Reference)      : 
      npex
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, namelist-group-object, use-associated
-      |(Declaration)    : 19
+      |(Declaration)    : 18
       |(Definition)     : 
       |(Reference)      : 
      npey
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, namelist-group-object, use-associated
-      |(Declaration)    : 19
+      |(Declaration)    : 18
       |(Definition)     : 
       |(Reference)      : 
      nx
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 70  77
-      |(Reference)      : 78  79  81  90
+      |(Definition)     : 63  70
+      |(Reference)      : 71  72  74  83
      ocards
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : common-block-object, namelist-group-object, use-associated
-      |(Declaration)    : 25
+      |(Declaration)    : 24
       |(Definition)     : 
       |(Reference)      : 6
      octahedral
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : common-block-object, namelist-group-object, use-associated
-      |(Declaration)    : 19
+      |(Declaration)    : 18
       |(Definition)     : 
-      |(Reference)      : 68
+      |(Reference)      : 61
      param
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -530,13 +493,13 @@
      pathname
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : initialized
-      |(Declaration)    : 24  32
-      |(Definition)     : 37
+      |(Declaration)    : 23  28
+      |(Definition)     : 33
       |(Reference)      : 
      phyout
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : common-block-object, namelist-group-object, use-associated
-      |(Declaration)    : 25
+      |(Declaration)    : 24
       |(Definition)     : 
       |(Reference)      : 6
      rank
@@ -550,27 +513,25 @@
       |(Attributes)     : PURE
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 46  55
+      |(Reference)      : 42  51
      truefile
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : 
-      |(Declaration)    : 24
-      |(Definition)     : 37
-      |(Reference)      : 46
+      |(Declaration)    : 23
+      |(Definition)     : 33
+      |(Reference)      : 42
    Cross reference of label
      (Label) (label-kind)               (line-no.)
      ------- ------------- ------------ ----------
-        110  execution     (Definition) 50  
-                           (Reference)  48
-        120  execution     (Definition) 59  
-                           (Reference)  57
-        121  execution     (Definition) 61  
-                           (Reference)  60
+        110  execution     (Definition) 46  
+                           (Reference)  44
+        120  execution     (Definition) 55  
+                           (Reference)  53
 
  Total information
    Procedures       : 1
-   Total lines      : 104
-   Total statements : 62
-   Total stack(byte): 4000
+   Total lines      : 97
+   Total statements : 58
+   Total stack(byte): 3680
    Total prefetch num: 0
 

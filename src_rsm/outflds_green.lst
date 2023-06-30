@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Thu Jun 29 14:24:00 2023
+ Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:31:12 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
    Source file       : outflds_green.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -70,172 +70,168 @@
                8                           use mpe
                9                           use rank
               10                           use index
-              11                           use const ,only:aki,bki ,outdms ,outgrb2 ,ifilout_grb , &
-              12                                           RTYPE,kflag
-              13                           use mod_grb2_param  !for write grib2 data
+              11                           use const ,only:aki,bki,RTYPE,kflag
+              12                     
+              13                           implicit  none
               14                     
-              15                           implicit  none
-              16                     
-              17                           integer   itau,nx,my,my_max,lev,ncld,istat,lenc,nc
-              18                           real      ptop,cp,rgas,grav
-              19                           real      rcp
-              20                     
-              21                           real      plt(nxp,lev,my_max)                                    &
-              22                                   , u10(nxp,my_max),v10(nxp,my_max),t2(nxp,my_max)         &
-              23                                   , ss(nxp,my_max)                                         &
-              24                                   , tht(nxp,my_max),raincu6(nxp,my_max),rainlp6(nxp,my_max)
-              25                           real(kind=RTYPE) ut(nxp,lev,my_max),vt(nxp,lev,my_max),          &
-              26                                            tt(nxp,lev,my_max),qt(nxp,lev*ncld,my_max),     &
-              27                                            sgeo(nxp,my_max),pt(nxp,my_max),cosl(my),       &
-              28                                            pk(nxp,lev,my_max)
-              29                     
-              30                           character ifilout*80, ggdef*4, ihdg*26, ihdg2*26
-              31                           integer*8 idtg
-              32                     !
-              33                     ! local work arrays
+              15                           integer   itau,nx,my,my_max,lev,ncld,istat,lenc,nc
+              16                           real      ptop,cp,rgas,grav
+              17                           real      rcp
+              18                     
+              19                           real      plt(nxp,lev,my_max)                                    &
+              20                                   , u10(nxp,my_max),v10(nxp,my_max),t2(nxp,my_max)         &
+              21                                   , ss(nxp,my_max),pk(nxp,my_max)                          &
+              22                                   , tht(nxp,my_max),raincu6(nxp,my_max),rainlp6(nxp,my_max)
+              23                           real(kind=RTYPE) ut(nxp,lev,my_max),vt(nxp,lev,my_max),          &
+              24                                            tt(nxp,lev,my_max),qt(nxp,lev*ncld,my_max),     &
+              25                                            sgeo(nxp,my_max),pt(nxp,my_max),cosl(my)
+              26                     
+              27                           character ifilout*80, ggdef*4, ihdg*26, ihdg2*26
+              28                           integer*8 idtg
+              29                     !
+              30                     ! local work arrays
+              31                     !
+              32                           real(kind=RTYPE) glob(nx,my),mout(nx,my),wrk(nxp,my_max),      &
+              33                                            rh0(nxp,my_max)
               34                     !
-              35                           real(kind=RTYPE) glob(nx,my),mout(nx,my),wrk(nxp,my_max),      &
-              36                                            rh0(nxp,my_max)
-              37                     !
-              38                           real      whtlev(100),whtlevq(100),whtlevz(100)
-              39                           character*6 labx
-              40                     
-              41                           integer   jj,j,nxj,k,i,n,nk,ntrac,ll,mm,la,kk
-              42                     !
-              43                           real oqt(nxp,my_max),oqc(nxp,my_max),ou(nxp,my_max),  &
-              44                                ov(nxp,my_max),ot(nxp,my_max),pla(nxp,my_max),   &
-              45                                pp(nxp,my_max),p2(nxp,my_max),p10(nxp,my_max),   &
-              46                                rhtmp(nxp)
-              47                           real, parameter ::rad=6.371e6
-              48                           integer,parameter :: l= 4, m= 2
-              49                           real   avett,p(l),hm(m),xxx,temp,tepl(nxp,l,my_max)
-              50                           real(kind=RTYPE) akir(l),bkir(l)
-              51                           data hm/100.0,40.0/
-              52                     !      data aki/   .00000,   .02193,   .26557,   .97701/ !M60~M57
-              53                     !      data bki/.99058760,.98124505,.96996497,.95697164/
-              54                           character layer(2)*3,var(6)*3,wtemp*6
-              55                           data layer/'H10','B40'/
-              56                           data var/'010','500','200','210','100','550'/
-              57                     !
-              58                           rcp=rgas/cp
-              59                           lenc = nx*my
-              60                           nc=0
+              35                           real      whtlev(100),whtlevq(100),whtlevz(100)
+              36                           character*6 labx
+              37                     
+              38                           integer   jj,j,nxj,k,i,n,nk,ntrac,ll,mm,la,kk
+              39                     !
+              40                           real oqt(nxp,my_max),oqc(nxp,my_max),ou(nxp,my_max),  &
+              41                                ov(nxp,my_max),ot(nxp,my_max),pla(nxp,my_max),   &
+              42                                pp(nxp,my_max),p2(nxp,my_max),p10(nxp,my_max),   &
+              43                                rhtmp(nxp)
+              44                           real, parameter ::rad=6.371e6
+              45                           integer,parameter :: l= 4, m= 2
+              46                           real   avett,p(l),hm(m),xxx,temp,tepl(nxp,l,my_max)
+              47                           real(kind=RTYPE) akir(l),bkir(l)
+              48                           data hm/100.0,40.0/
+              49                     !      data aki/   .00000,   .02193,   .26557,   .97701/ !M60~M57
+              50                     !      data bki/.99058760,.98124505,.96996497,.95697164/
+              51                           character layer(2)*3,var(6)*3,wtemp*6
+              52                           data layer/'H10','B40'/
+              53                           data var/'010','500','200','210','100','550'/
+              54                     !
+              55                           rcp=rgas/cp
+              56                           lenc = nx*my
+              57                           nc=0
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    FULL UNROLLING
                                    <<< Loop-information  End >>>
-              61     1       f             do k=1,l
-              62     1       f               kk=lev-k+1
-              63     1       f               akir(k)=aki(kk)
-              64     1       f               bkir(k)=bki(kk)
-              65     1       f             enddo
-              66                     
-              67                     !=======================================================================
-              68                           if(myrank .eq. 0) print*,'   in outflds_green for tau= ',itau
-              69                     !----------------------------------------------------------------------
-              70     1                     do mm=1,m    ! 1: 100m, 2: 40m.
-              71     1               !-----------------------------------------------------------------------
-              72     1               ! calculate PQUVT at new layer.
-              73     2                     do jj = 1, jlistnum
-              74     2                       j=jlist1(jj)
-              75     2                       nxj=nxdef_2d(j)
+              58     1       f             do k=1,l
+              59     1       f               kk=lev-k+1
+              60     1       f               akir(k)=aki(kk)
+              61     1       f               bkir(k)=bki(kk)
+              62     1       f             enddo
+              63                     !=======================================================================
+              64                           if(myrank .eq. 0) print*,'   in outflds_green for tau= ',itau
+              65                     !----------------------------------------------------------------------
+              66     1                     do mm=1,m    ! 1: 100m, 2: 40m.
+              67     1               !-----------------------------------------------------------------------
+              68     1               ! calculate PQUVT at new layer.
+              69     2                     do jj = 1, jlistnum
+              70     2                       j=jlist1(jj)
+              71     2                       nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      tt, plt, qt, pt, pp, p2, p10, pla
                                    <<<    SPILLS :
-                                   <<<      GENERAL   : SPILL 7  FILL 76
+                                   <<<      GENERAL   : SPILL 7  FILL 75
                                    <<<      SIMD&FP   : SPILL 4  FILL 26
                                    <<<      SCALABLE  : SPILL 9  FILL 11
                                    <<<      PREDICATE : SPILL 0  FILL 0
                                    <<< Loop-information  End >>>
-              76     3                         do i = 1, nxj
-              77     3               ! ave. temp.
-              78     3                         avett=(tt(i,lev,jj)+tt(i,lev-1,jj))/2.*                  &
-              79     3                               ((plt(i,lev,jj)+plt(i,lev-1,jj))/2./1000.)**rcp/     &
-              80     3                               (1.+0.608*(qt(i,lev-1,jj)+qt(i,lev-1,jj))/2.)
-              81     3               ! calculate 40m&100m P, 2m P, 10m P.
-              82     3                       pp(i,jj)=(pt(i,jj)+ptop)*(exp(-(hm(mm)*grav)/(rgas*avett)))
-              83     3                       p2(i,jj)=(pt(i,jj)+ptop)*(exp(-(2.0*grav)/(rgas*avett)))
-              84     3                       p10(i,jj)=(pt(i,jj)+ptop)*(exp(-(10.0*grav)/(rgas*avett)))
-              85     3                       pla(i,jj)=pp(i,jj)
-              86     3               ! transfer temperature from tt(virtual theta) to tepl(temperature).
-              87     3                       la=0
+              72     3                         do i = 1, nxj
+              73     3               ! ave. temp.
+              74     3                         avett=(tt(i,lev,jj)+tt(i,lev-1,jj))/2.*                  &
+              75     3                               ((plt(i,lev,jj)+plt(i,lev-1,jj))/2./1000.)**rcp/     &
+              76     3                               (1.+0.608*(qt(i,lev-1,jj)+qt(i,lev-1,jj))/2.)
+              77     3               ! calculate 40m&100m P, 2m P, 10m P.
+              78     3                       pp(i,jj)=(pt(i,jj)+ptop)*(exp(-(hm(mm)*grav)/(rgas*avett)))
+              79     3                       p2(i,jj)=(pt(i,jj)+ptop)*(exp(-(2.0*grav)/(rgas*avett)))
+              80     3                       p10(i,jj)=(pt(i,jj)+ptop)*(exp(-(10.0*grav)/(rgas*avett)))
+              81     3                       pla(i,jj)=pp(i,jj)
+              82     3               ! transfer temperature from tt(virtual theta) to tepl(temperature).
+              83     3                       la=0
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 517
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 4)
                                    <<< Loop-information  End >>>
-              88     4   s    v              do ll=lev,lev-3,-1
-              89     4   p    v                la=la+1
-              90     4   p    v                tepl(i,la,jj)=(tt(i,ll,jj)*(pla(i,jj)/1000.)**rcp)/(1.+0.608*qt(i,ll,jj))
-              91     4   p    v              enddo
-              92     3               
-              93     3                       call sigmap(l,akir(:),bkir(:),pt(i,jj),p)
-              94     3               ! find pp pressure position
-              95     4                        if(pp(i,jj).gt.p(1))then
-              96     4                         temp=(pp(i,jj)-p(2))/(p(1)-p(2))-1.0
-              97     4                         oqt(i,jj)=qt(i,lev,jj)+temp*(qt(i,lev,jj)-qt(i,lev-1,jj))
-              98     4                         oqt(i,jj)=max(oqt(i,jj),1.e-8)
-              99     4                         oqc(i,jj)=qt(i,lev*2,jj)+temp*(qt(i,lev*2,jj)-qt(i,lev*2-1,jj))
-             100     4                         oqc(i,jj)=max(oqc(i,jj),1.e-8)
-             101     4               
-             102     4                        xxx= rad/cosl(j)
-             103     4                        ou(i,jj)=u10(i,jj)/xxx
-             104     4                        ov(i,jj)=v10(i,jj)/xxx
-             105     4                         temp=(p(1)-pp(i,jj))/(p(1)-p10(i,jj))
-             106     4                         ou(i,jj)=ou(i,jj)*temp+ut(i,lev,jj)*(1.0-temp)
-             107     4                         ov(i,jj)=ov(i,jj)*temp+vt(i,lev,jj)*(1.0-temp)
-             108     4               
-             109     4                         temp=(p(1)-pp(i,jj))/(p(1)-p2(i,jj))
-             110     4                         ot(i,jj)=t2(i,jj)*temp+tepl(i,1,jj)*(1.0-temp)
-             111     4               
-             112     4                         goto 99
-             113     4                         endif
-             114     3               
+              84     4   s    v              do ll=lev,lev-3,-1
+              85     4   p    v                la=la+1
+              86     4   p    v                tepl(i,la,jj)=(tt(i,ll,jj)*(pla(i,jj)/1000.)**rcp)/(1.+0.608*qt(i,ll,jj))
+              87     4   p    v              enddo
+              88     3               
+              89     3                       call sigmap(l,akir(:),bkir(:),pt(i,jj),p)
+              90     3               ! find pp pressure position
+              91     4                        if(pp(i,jj).gt.p(1))then
+              92     4                         temp=(pp(i,jj)-p(2))/(p(1)-p(2))-1.0
+              93     4                         oqt(i,jj)=qt(i,lev,jj)+temp*(qt(i,lev,jj)-qt(i,lev-1,jj))
+              94     4                         oqt(i,jj)=max(oqt(i,jj),1.e-8)
+              95     4                         oqc(i,jj)=qt(i,lev*2,jj)+temp*(qt(i,lev*2,jj)-qt(i,lev*2-1,jj))
+              96     4                         oqc(i,jj)=max(oqc(i,jj),1.e-8)
+              97     4               
+              98     4                        xxx= rad/cosl(j)
+              99     4                        ou(i,jj)=u10(i,jj)/xxx
+             100     4                        ov(i,jj)=v10(i,jj)/xxx
+             101     4                         temp=(p(1)-pp(i,jj))/(p(1)-p10(i,jj))
+             102     4                         ou(i,jj)=ou(i,jj)*temp+ut(i,lev,jj)*(1.0-temp)
+             103     4                         ov(i,jj)=ov(i,jj)*temp+vt(i,lev,jj)*(1.0-temp)
+             104     4               
+             105     4                         temp=(p(1)-pp(i,jj))/(p(1)-p2(i,jj))
+             106     4                         ot(i,jj)=t2(i,jj)*temp+tepl(i,1,jj)*(1.0-temp)
+             107     4               
+             108     4                         goto 99
+             109     4                         endif
+             110     3               
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    FULL UNROLLING
                                    <<< Loop-information  End >>>
-             115     4       f               do ll=1,l-1
-             116     5       f                if((pp(i,jj).le.p(ll)).and.(pp(i,jj)).gt.p(ll+1))then
-             117     5       f                 temp=(p(ll)-pp(i,jj))/(p(ll)-p(ll+1))
-             118     5       f                 oqt(i,jj)=qt(i,lev-ll+1,jj)*temp+qt(i,lev-ll,jj)*(1.0-temp)
-             119     5       f                 oqt(i,jj)=max(oqt(i,jj),1.e-8)
-             120     5       f                 oqc(i,jj)=qt(i,lev*2-ll+1,jj)*temp+qt(i,lev*2-ll,jj)*(1.0-temp)
-             121     5       f                 oqc(i,jj)=max(oqc(i,jj),1.e-8)
-             122     5       f                 ou(i,jj)=ut(i,lev-ll+1,jj)*temp+ut(i,lev-ll,jj)*(1.0-temp)
-             123     5       f                 ov(i,jj)=vt(i,lev-ll+1,jj)*temp+vt(i,lev-ll,jj)*(1.0-temp)
-             124     5       f                 ot(i,jj)=tepl(i,ll,jj)*temp+tepl(i,ll+1,jj)*(1.0-temp)
-             125     5       f                 goto 99
-             126     5       f                endif
-             127     4       f               enddo
-             128     3               
-             129     4                        if(pp(i,jj).le.p(l))then
-             130     4                         temp=(p(l-1)-pp(i,jj))/(p(l-1)-p(l))-1.0
-             131     4                         oqt(i,jj)=qt(i,lev-l+1,jj)+temp*(qt(i,lev-l+1,jj)-qt(i,lev-l+2,jj))
-             132     4                         oqt(i,jj)=max(oqt(i,jj),1.e-8)
-             133     4                         oqc(i,jj)=qt(i,lev*2-l+1,jj)+temp*(qt(i,lev*2-l+1,jj)-qt(i,lev*2-l+2,jj))
-             134     4                         oqc(i,jj)=max(oqc(i,jj),1.e-8)
-             135     4                         ou(i,jj)=ut(i,lev-l+1,jj)+temp*(ut(i,lev-l+1,jj)-ut(i,lev-l+2,jj))
-             136     4                         ov(i,jj)=vt(i,lev-l+1,jj)+temp*(vt(i,lev-l+1,jj)-vt(i,lev-l+2,jj))
-             137     4                         ot(i,jj)=tepl(i,l,jj)+temp*(tepl(i,l,jj)-tepl(i,l-1,jj))
-             138     4                         goto 99
-             139     4                        endif
-             140     3               !-----------------------------------------------------------------------
-             141     3                99   continue
-             142     3               ! transfer tt(theta tv) to T
-             143     3               !        tepl(i,j)=(ot(i,j)*(pla(i,j)/1000.)**rcp)/(1.+0.608*oqt(i,j))
-             144     3               
-             145     3                       enddo  ! end (i)
-             146     2                     enddo  ! end (jj)
-             147     1               
-             148     1               !      call mpe_unify(pla,nx,my,2,mpe_double)
-             149     1               !      call mpe_unify(oqt,nx,my,2,mpe_double)
-             150     1               !      call mpe_unify(oqc,nx,my,2,mpe_double)
-             151     1               !      call mpe_unify(tepl,nx,my,2,mpe_double)
-             152     1               !      call mpe_unify(ot,nx,my,2,mpe_double)
+             111     4       f               do ll=1,l-1
+             112     5       f                if((pp(i,jj).le.p(ll)).and.(pp(i,jj)).gt.p(ll+1))then
+             113     5       f                 temp=(p(ll)-pp(i,jj))/(p(ll)-p(ll+1))
+             114     5       f                 oqt(i,jj)=qt(i,lev-ll+1,jj)*temp+qt(i,lev-ll,jj)*(1.0-temp)
+             115     5       f                 oqt(i,jj)=max(oqt(i,jj),1.e-8)
+             116     5       f                 oqc(i,jj)=qt(i,lev*2-ll+1,jj)*temp+qt(i,lev*2-ll,jj)*(1.0-temp)
+             117     5       f                 oqc(i,jj)=max(oqc(i,jj),1.e-8)
+             118     5       f                 ou(i,jj)=ut(i,lev-ll+1,jj)*temp+ut(i,lev-ll,jj)*(1.0-temp)
+             119     5       f                 ov(i,jj)=vt(i,lev-ll+1,jj)*temp+vt(i,lev-ll,jj)*(1.0-temp)
+             120     5       f                 ot(i,jj)=tepl(i,ll,jj)*temp+tepl(i,ll+1,jj)*(1.0-temp)
+             121     5       f                 goto 99
+             122     5       f                endif
+             123     4       f               enddo
+             124     3               
+             125     4                        if(pp(i,jj).le.p(l))then
+             126     4                         temp=(p(l-1)-pp(i,jj))/(p(l-1)-p(l))-1.0
+             127     4                         oqt(i,jj)=qt(i,lev-l+1,jj)+temp*(qt(i,lev-l+1,jj)-qt(i,lev-l+2,jj))
+             128     4                         oqt(i,jj)=max(oqt(i,jj),1.e-8)
+             129     4                         oqc(i,jj)=qt(i,lev*2-l+1,jj)+temp*(qt(i,lev*2-l+1,jj)-qt(i,lev*2-l+2,jj))
+             130     4                         oqc(i,jj)=max(oqc(i,jj),1.e-8)
+             131     4                         ou(i,jj)=ut(i,lev-l+1,jj)+temp*(ut(i,lev-l+1,jj)-ut(i,lev-l+2,jj))
+             132     4                         ov(i,jj)=vt(i,lev-l+1,jj)+temp*(vt(i,lev-l+1,jj)-vt(i,lev-l+2,jj))
+             133     4                         ot(i,jj)=tepl(i,l,jj)+temp*(tepl(i,l,jj)-tepl(i,l-1,jj))
+             134     4                         goto 99
+             135     4                        endif
+             136     3               !-----------------------------------------------------------------------
+             137     3                99   continue
+             138     3               ! transfer tt(theta tv) to T
+             139     3               !        tepl(i,j)=(ot(i,j)*(pla(i,j)/1000.)**rcp)/(1.+0.608*oqt(i,j))
+             140     3               
+             141     3                       enddo  ! end (i)
+             142     2                     enddo  ! end (jj)
+             143     1               
+             144     1               !      call mpe_unify(pla,nx,my,2,mpe_double)
+             145     1               !      call mpe_unify(oqt,nx,my,2,mpe_double)
+             146     1               !      call mpe_unify(oqc,nx,my,2,mpe_double)
+             147     1               !      call mpe_unify(tepl,nx,my,2,mpe_double)
+             148     1               !      call mpe_unify(ot,nx,my,2,mpe_double)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 3
@@ -243,10 +239,10 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ou, ov
                                    <<< Loop-information  End >>>
-             153     2  pp                 do 50 jj = 1, jlistnum
-             154     2   p                 j=jlist1(jj)
-             155     2   p                 nxj=nxdef_2d(j)
-             156     2   p                 xxx= rad/cosl(j)
+             149     2  pp                 do 50 jj = 1, jlistnum
+             150     2   p                 j=jlist1(jj)
+             151     2   p                 nxj=nxdef_2d(j)
+             152     2   p                 xxx= rad/cosl(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -254,18 +250,18 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ou, ov
                                    <<< Loop-information  End >>>
-             157     3   p   2v            do 50 i=1,nxj
-             158     3   p   2v             ou(i,jj)= ou(i,jj)*xxx
-             159     3   p   2v             ov(i,jj)= ov(i,jj)*xxx
-             160     2   p   2v         50 continue
+             153     3   p   2v            do 50 i=1,nxj
+             154     3   p   2v             ou(i,jj)= ou(i,jj)*xxx
+             155     3   p   2v             ov(i,jj)= ov(i,jj)*xxx
+             156     2   p   2v         50 continue
+             157     1               
+             158     1               !      call mpe_unify(globu,nx,my,2,mpe_double)
+             159     1               !      call mpe_unify(globv,nx,my,2,mpe_double)
+             160     1               !-----------------------------------------------------------------------
              161     1               
-             162     1               !      call mpe_unify(globu,nx,my,2,mpe_double)
-             163     1               !      call mpe_unify(globv,nx,my,2,mpe_double)
-             164     1               !-----------------------------------------------------------------------
-             165     1               
-             166     1               !output P
-             167     1                     write(wtemp,'(a3,a3)')layer(mm),var(1)
-             168     1                     call syslbl(wtemp,idtg,itau,ggdef,ihdg)
+             162     1               !output P
+             163     1                     write(wtemp,'(a3,a3)')layer(mm),var(1)
+             164     1                     call syslbl(wtemp,idtg,itau,ggdef,ihdg)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 7
@@ -275,14 +271,13 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      pla, wrk
                                    <<< Loop-information  End >>>
-             169     1  pp   4v            wrk=pla
-             170     1                     call unify_reduceintp(nx,my,my_max,wrk,glob)
-             171     1                     if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-             172     1                     if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,3,0,2,103,0,hm(mm),glob)
-             173     1               
-             174     1               !output Q
-             175     1                     write(wtemp,'(a3,a3)')layer(mm),var(2)
-             176     1                     call syslbl(wtemp,idtg,itau,ggdef,ihdg)
+             165     1  pp   4v            wrk=pla
+             166     1                     call unify_reduceintp(nx,my,my_max,wrk,glob)
+             167     1                     call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             168     1               
+             169     1               !output Q
+             170     1                     write(wtemp,'(a3,a3)')layer(mm),var(2)
+             171     1                     call syslbl(wtemp,idtg,itau,ggdef,ihdg)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 7
@@ -292,13 +287,12 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      oqt, wrk
                                    <<< Loop-information  End >>>
-             177     1  pp   4v            wrk=oqt
-             178     1                     call unify_reduceintp(nx,my,my_max,wrk,glob)
-             179     1                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-             180     1                     if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,1,0,6,103,0,hm(mm),glob)
-             181     1               
-             182     1                     write(wtemp,'(a3,a3)')layer(mm),var(6)
-             183     1                     call syslbl(wtemp,idtg,itau,ggdef,ihdg)
+             172     1  pp   4v            wrk=oqt
+             173     1                     call unify_reduceintp(nx,my,my_max,wrk,glob)
+             174     1                     call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             175     1               
+             176     1                     write(wtemp,'(a3,a3)')layer(mm),var(6)
+             177     1                     call syslbl(wtemp,idtg,itau,ggdef,ihdg)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 7
@@ -308,15 +302,13 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      oqc, wrk
                                    <<< Loop-information  End >>>
-             184     1  pp   4v            wrk=oqc
-             185     1                     call unify_reduceintp(nx,my,my_max,wrk,glob)
-             186     1                     call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-             187     1                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-             188     1                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,1,235,8,103,0,hm(mm),glob)
-             189     1               
-             190     1               !output U,V
-             191     1                     write(wtemp,'(a3,a3)')layer(mm),var(3)
-             192     1                     call syslbl(wtemp,idtg,itau,ggdef,ihdg)
+             178     1  pp   4v            wrk=oqc
+             179     1                     call unify_reduceintp(nx,my,my_max,wrk,glob)
+             180     1                     call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             181     1               
+             182     1               !output U,V
+             183     1                     write(wtemp,'(a3,a3)')layer(mm),var(3)
+             184     1                     call syslbl(wtemp,idtg,itau,ggdef,ihdg)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 7
@@ -326,13 +318,12 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ou, wrk
                                    <<< Loop-information  End >>>
-             193     1  pp   4v            wrk=ou
-             194     1                     call unify_reduceintp(nx,my,my_max,wrk,glob)
-             195     1                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-             196     1                     if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,2,2,2,103,0,hm(mm),glob)
-             197     1               
-             198     1                     write(wtemp,'(a3,a3)')layer(mm),var(4)
-             199     1                     call syslbl(wtemp,idtg,itau,ggdef,ihdg)
+             185     1  pp   4v            wrk=ou
+             186     1                     call unify_reduceintp(nx,my,my_max,wrk,glob)
+             187     1                     call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             188     1               
+             189     1                     write(wtemp,'(a3,a3)')layer(mm),var(4)
+             190     1                     call syslbl(wtemp,idtg,itau,ggdef,ihdg)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 7
@@ -342,14 +333,13 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ov, wrk
                                    <<< Loop-information  End >>>
-             200     1  pp   4v            wrk=ov
-             201     1                     call unify_reduceintp(nx,my,my_max,wrk,glob)
-             202     1                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-             203     1                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,2,3,2,103,0,hm(mm),glob)
-             204     1               
-             205     1               !output T
-             206     1                     write(wtemp,'(a3,a3)')layer(mm),var(5)
-             207     1                     call syslbl(wtemp,idtg,itau,ggdef,ihdg)
+             191     1  pp   4v            wrk=ov
+             192     1                     call unify_reduceintp(nx,my,my_max,wrk,glob)
+             193     1                     call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             194     1               
+             195     1               !output T
+             196     1                     write(wtemp,'(a3,a3)')layer(mm),var(5)
+             197     1                     call syslbl(wtemp,idtg,itau,ggdef,ihdg)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 7
@@ -359,16 +349,15 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ot, wrk
                                    <<< Loop-information  End >>>
-             208     1  pp   4v            wrk=ot
-             209     1                     call unify_reduceintp(nx,my,my_max,wrk,glob)
-             210     1                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-             211     1                     if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,0,0,2,103,0,hm(mm),glob)
-             212     1               !-----------------------------------------------------------------------
-             213     1                     enddo  ! end (mm)
-             214                     !=======================================================================
-             215                     !output S00310(net SW flux at the surface)
-             216                           write(wtemp,'(a6)')'S00310'
-             217                           call syslbl(wtemp,idtg,itau,ggdef,ihdg)
+             198     1  pp   4v            wrk=ot
+             199     1                     call unify_reduceintp(nx,my,my_max,wrk,glob)
+             200     1                     call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             201     1               !-----------------------------------------------------------------------
+             202     1                     enddo  ! end (mm)
+             203                     !=======================================================================
+             204                     !output S00310(net SW flux at the surface)
+             205                           write(wtemp,'(a6)')'S00310'
+             206                           call syslbl(wtemp,idtg,itau,ggdef,ihdg)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 7
@@ -378,20 +367,19 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      ss, wrk
                                    <<< Loop-information  End >>>
-             218        pp   4v            wrk=ss
-             219                           call unify_reduceintp(nx,my,my_max,wrk,glob)
-             220                           if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-             221                           if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,4,9,2,1,0,0.,glob)
-             222                     
-             223                     !output RH at bottom level
+             207        pp   4v            wrk=ss
+             208                           call unify_reduceintp(nx,my,my_max,wrk,glob)
+             209                           call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             210                     
+             211                     !output RH at bottom level
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      tt, pk, qt, rhtmp, tht, rh0
                                    <<< Loop-information  End >>>
-             224     1                     do jj = 1, jlistnum
-             225     1                       j=jlist1(jj)
-             226     1                       nxj=nxdef_2d(j)
+             212     1                     do jj = 1, jlistnum
+             213     1                       j=jlist1(jj)
+             214     1                       nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 552
@@ -401,10 +389,10 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      pk, tt, qt, tht
                                    <<< Loop-information  End >>>
-             227     2  pp   2v                do i = 1, nxj
-             228     2   p   2v                tht(i,jj) =tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt(i,lev,jj))
-             229     2   p   2v                enddo
-             230     1                      call qsatq(nxj,tht(1,jj),plt(1,lev,jj),rhtmp)
+             215     2  pp   2v                do i = 1, nxj
+             216     2   p   2v                tht(i,jj) =tt(i,lev,jj)*pk(i,jj)/(1.0+0.608*qt(i,lev,jj))
+             217     2   p   2v                enddo
+             218     1                      call qsatq(nxj,tht(1,jj),plt(1,lev,jj),rhtmp)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 422
@@ -414,19 +402,18 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qt, rhtmp, rh0
                                    <<< Loop-information  End >>>
-             231     2  pp   2v                do i = 1, nxj
-             232     2   p   2v                 rh0(i,jj)=rhtmp(i)
-             233     2   p   2v                 rh0(i,jj)=100.*(qt(i,lev,jj)/rh0(i,jj))
-             234     2   p   2v                 rh0(i,jj)= min( 100., max( 1., rh0(i,jj) ) )
-             235     2   p   2v                enddo
-             236     1                     enddo
-             237                           write(wtemp,'(a6)')'B00510'
-             238                           call syslbl(wtemp,idtg,itau,ggdef,ihdg)
-             239                           call unify_reduceintp(nx,my,my_max,rh0,glob)
-             240                           if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-             241                           if(outgrb2==1.and.myrank==0) call wrt_grb2(itau,0,1,1,2,103,0,0.,glob)
-             242                     
-             243                     !output b00010
+             219     2  pp   2v                do i = 1, nxj
+             220     2   p   2v                 rh0(i,jj)=rhtmp(i)
+             221     2   p   2v                 rh0(i,jj)=100.*(qt(i,lev,jj)/rh0(i,jj))
+             222     2   p   2v                 rh0(i,jj)= min( 100., max( 1., rh0(i,jj) ) )
+             223     2   p   2v                enddo
+             224     1                     enddo
+             225                           write(wtemp,'(a6)')'B00510'
+             226                           call syslbl(wtemp,idtg,itau,ggdef,ihdg)
+             227                           call unify_reduceintp(nx,my,my_max,rh0,glob)
+             228                           call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             229                     
+             230                     !output b00010
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 4
@@ -434,9 +421,9 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      pt, wrk
                                    <<< Loop-information  End >>>
-             244     1  pp                 do jj = 1, jlistnum
-             245     1   p                   j=jlist1(jj)
-             246     1   p                   nxj=nxdef_2d(j)
+             231     1  pp                 do jj = 1, jlistnum
+             232     1   p                   j=jlist1(jj)
+             233     1   p                   nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -444,19 +431,18 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      pt, wrk
                                    <<< Loop-information  End >>>
-             247     2   p   2v                do i = 1, nxj
-             248     2   p   2v                 wrk(i,jj)=pt(i,jj)+ptop
-             249     2   p   2v                enddo
-             250     1   p                 enddo
-             251                           write(wtemp,'(a6)')'B00010'
-             252                           call syslbl(wtemp,idtg,itau,ggdef,ihdg)
-             253                           call unify_reduceintp(nx,my,my_max,wrk,glob)
-             254                           if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-             255                           if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,0,3,0,2,103,0,0.,glob)
-             256                     !=======================================================================
-             257                     !output 6hr prec.
-             258     1                     if (mod(float(itau)+0.00001, 6. ) .lt. 0.01) then
-             259     1                     call syslbl ('b00633',idtg,itau,ggdef,ihdg)
+             234     2   p   2v                do i = 1, nxj
+             235     2   p   2v                 wrk(i,jj)=pt(i,jj)+ptop
+             236     2   p   2v                enddo
+             237     1   p                 enddo
+             238                           write(wtemp,'(a6)')'B00010'
+             239                           call syslbl(wtemp,idtg,itau,ggdef,ihdg)
+             240                           call unify_reduceintp(nx,my,my_max,wrk,glob)
+             241                           call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             242                     !=======================================================================
+             243                     !output 6hr prec.
+             244     1                     if (mod(float(itau)+0.00001, 6. ) .lt. 0.01) then
+             245     1                     call syslbl ('b00633',idtg,itau,ggdef,ihdg)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 7
@@ -466,14 +452,13 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      raincu6, wrk
                                    <<< Loop-information  End >>>
-             260     1  pp   4v            wrk=raincu6
-             261     1                     call unify_reduceintp(nx,my,my_max,wrk,glob)
-             262     1                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-             263     1                     if(outdms.gt.0)call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-             264     1                     if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,1,10,2,103,0,0.,1,6,glob)
-             265     1               
-             266     1               !
-             267     1                     call syslbl ('b00643',idtg,itau,ggdef,ihdg)
+             246     1  pp   4v            wrk=raincu6
+             247     1                     call unify_reduceintp(nx,my,my_max,wrk,glob)
+             248     1                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             249     1                     call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             250     1               
+             251     1               !
+             252     1                     call syslbl ('b00643',idtg,itau,ggdef,ihdg)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 7
@@ -483,14 +468,13 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      rainlp6, wrk
                                    <<< Loop-information  End >>>
-             268     1  pp   4v            wrk=rainlp6
-             269     1                     call unify_reduceintp(nx,my,my_max,wrk,glob)
-             270     1                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-             271     1                     if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-             272     1                     if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,1,47,2,103,0,0.,1,6,glob)
-             273     1               
-             274     1               !
-             275     1                     call syslbl ('b00623',idtg,itau,ggdef,ihdg)
+             253     1  pp   4v            wrk=rainlp6
+             254     1                     call unify_reduceintp(nx,my,my_max,wrk,glob)
+             255     1                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             256     1                     call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             257     1               
+             258     1               !
+             259     1                     call syslbl ('b00623',idtg,itau,ggdef,ihdg)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 4
@@ -498,9 +482,9 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      rainlp6, raincu6, wrk
                                    <<< Loop-information  End >>>
-             276     2  pp                 do 98 jj = 1, jlistnum
-             277     2   p                 j=jlist1(jj)
-             278     2   p                 nxj=nxdef_2d(j)
+             260     2  pp                 do 98 jj = 1, jlistnum
+             261     2   p                 j=jlist1(jj)
+             262     2   p                 nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -508,28 +492,25 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      rainlp6, raincu6, wrk
                                    <<< Loop-information  End >>>
-             279     3   p   2v            do 98 i=1,nxj
-             280     3   p   2v             wrk(i,jj)=raincu6(i,jj)+rainlp6(i,jj)
-             281     2   p   2v       98   continue
-             282     1                     call unify_reduceintp(nx,my,my_max,wrk,glob)
-             283     1                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
-             284     1                     if(outdms.gt.0) call split(nx,my,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
-             285     1                     if(outgrb2==1.and.myrank==0)call wrt_grb2_accu(itau,0,1,8,2,103,0,0.,1,6,glob)
-             286     1               
-             287     1                     endif
-             288                     !
-             289     1                     if(outdms.gt.0)then
-             290     1                     if ( myrank .lt. nc )             &
-             291     1                        call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,mout,istat)
-             292     1                     endif
-             293                     !
-             294                     !=======================================================================
-             295                           return
-             296                           end
+             263     3   p   2v            do 98 i=1,nxj
+             264     3   p   2v             wrk(i,jj)=raincu6(i,jj)+rainlp6(i,jj)
+             265     2   p   2v       98   continue
+             266     1                     call unify_reduceintp(nx,my,my_max,wrk,glob)
+             267     1                     call qmaxn3 (glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+             268     1                     call split(nx,my,lev,lenc,ifilout,nc,glob,mout,ihdg,ihdg2)
+             269     1               
+             270     1                     endif
+             271                     !
+             272                           if ( myrank .lt. nc )             &
+             273                              call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,mout,istat)
+             274                     !
+             275                     !=======================================================================
+             276                           return
+             277                           end
 
  Procedure information
-   Lines      : 296
-   Statements : 207
+   Lines      : 277
+   Statements : 191
    Stack(byte): 7824
    Prefetch num: 0
 
@@ -540,30 +521,30 @@
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 11  63
+      |(Reference)      : 11  60
      akir
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 50
-      |(Definition)     : 63  93
+      |(Declaration)    : 47
+      |(Definition)     : 60  89
       |(Reference)      : 
      avett
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 49
-      |(Definition)     : 78
-      |(Reference)      : 82  83  84
+      |(Declaration)    : 46
+      |(Definition)     : 74
+      |(Reference)      : 78  79  80
      bki
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 11  64
+      |(Reference)      : 11  61
      bkir
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 50
-      |(Definition)     : 64  93
+      |(Declaration)    : 47
+      |(Definition)     : 61  89
       |(Reference)      : 
      const
       |(Class and Type) : module name
@@ -574,92 +555,86 @@
      cosl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  25
+      |(Declaration)    : 1  23
       |(Definition)     : 
-      |(Reference)      : 102  156
+      |(Reference)      : 98  152
      cp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  18
+      |(Declaration)    : 1  16
       |(Definition)     : 
-      |(Reference)      : 58
+      |(Reference)      : 55
      dmswrit_split
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 290
+      |(Reference)      : 272
      exp
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 82  83  84
+      |(Reference)      : 78  79  80
      float
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 258
+      |(Reference)      : 244
      ggdef
       |(Class and Type) : variable name, CHARACTER(4,1)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  30
-      |(Definition)     : 168  176  183  192  199  207  217  238  252  259  267  275
+      |(Declaration)    : 1  27
+      |(Definition)     : 164  171  177  184  190  197  206  226  239  245  252  259
       |(Reference)      : 
      glob
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 35
-      |(Definition)     : 170  171  172  178  179  180  185  186  187  188  194  195  196  201  202  203  209  210  211  219  220  221  239  240  241  253  254  255  261  262  263  264  269  270  271  272  282  283  284  285
+      |(Declaration)    : 32
+      |(Definition)     : 166  167  173  174  179  180  186  187  192  193  199  200  208  209  227  228  240  241  247  248  249  254  255  256  266  267  268
       |(Reference)      : 
      grav
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  18
+      |(Declaration)    : 1  16
       |(Definition)     : 
-      |(Reference)      : 82  83  84
+      |(Reference)      : 78  79  80
      hm
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, initialized
-      |(Declaration)    : 49  51
-      |(Definition)     : 172  180  188  196  203  211
-      |(Reference)      : 82
+      |(Declaration)    : 46  48
+      |(Definition)     : 
+      |(Reference)      : 78
      i
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 41
-      |(Definition)     : 76  157  227  231  247  279
-      |(Reference)      : 78  78  78  78  78  78  82  82  83  83  84  84  85  85  90  90  90  90  93  95  96  97  97  97  97  98  98  99  99  99  99  100  100  103  103  104  104  105  105  106  106  106  107  107  107  109  109  110  110  110  116  116  117  118  118  118  119  119  120  120  120  121  121  122  122  122  123  123  123  124  124  124  129  130  131  131  131  131  132  132  133  133  133  133  134  134  135  135  135  135  136  136  136  136  137  137  137  137  158  158  159  159  228  228  228  228  232  232  233  233  233  234  234  248  248  280  280  280
+      |(Declaration)    : 38
+      |(Definition)     : 72  153  215  219  234  263
+      |(Reference)      : 74  74  74  74  74  74  78  78  79  79  80  80  81  81  86  86  86  86  89  91  92  93  93  93  93  94  94  95  95  95  95  96  96  99  99  100  100  101  101  102  102  102  103  103  103  105  105  106  106  106  112  112  113  114  114  114  115  115  116  116  116  117  117  118  118  118  119  119  119  120  120  120  125  126  127  127  127  127  128  128  129  129  129  129  130  130  131  131  131  131  132  132  132  132  133  133  133  133  154  154  155  155  216  216  216  216  220  220  221  221  221  222  222  235  235  264  264  264
      idtg
       |(Class and Type) : variable name, INTEGER(8)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  31
-      |(Definition)     : 168  176  183  192  199  207  217  238  252  259  267  275
+      |(Declaration)    : 1  28
+      |(Definition)     : 164  171  177  184  190  197  206  226  239  245  252  259
       |(Reference)      : 
      ifilout
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  30
-      |(Definition)     : 171  179  186  187  195  202  210  220  240  254  263  271  284  290
+      |(Declaration)    : 1  27
+      |(Definition)     : 167  174  180  187  193  200  209  228  241  249  256  268  272
       |(Reference)      : 
-     ifilout_grb
-      |(Class and Type) : variable name, CHARACTER(80,1)
-      |(Attributes)     : use-associated
-      |(Declaration)    : 
-      |(Definition)     : 
-      |(Reference)      : 11
      ihdg
       |(Class and Type) : variable name, CHARACTER(26,1)
       |(Attributes)     : 
-      |(Declaration)    : 30
-      |(Definition)     : 168  171  176  179  183  186  187  192  195  199  202  207  210  217  220  238  240  252  254  259  262  262  263  267  270  270  271  275  283  283  284
+      |(Declaration)    : 27
+      |(Definition)     : 164  167  171  174  177  180  184  187  190  193  197  200  206  209  226  228  239  241  245  248  248  249  252  255  255  256  259  267  267  268
       |(Reference)      : 
      ihdg2
       |(Class and Type) : variable name, CHARACTER(26,1)
       |(Attributes)     : 
-      |(Declaration)    : 30
-      |(Definition)     : 171  179  186  187  195  202  210  220  240  254  263  271  284  290
+      |(Declaration)    : 27
+      |(Definition)     : 167  174  180  187  193  200  209  228  241  249  256  268  272
       |(Reference)      : 
      index
       |(Class and Type) : module name
@@ -670,140 +645,134 @@
      istat
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 17
-      |(Definition)     : 290
+      |(Declaration)    : 15
+      |(Definition)     : 272
       |(Reference)      : 
      itau
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  17
-      |(Definition)     : 168  172  176  180  183  188  192  196  199  203  207  211  217  221  238  241  252  255  259  264  267  272  275  285
-      |(Reference)      : 68  258
+      |(Declaration)    : 1  15
+      |(Definition)     : 164  171  177  184  190  197  206  226  239  245  252  259
+      |(Reference)      : 64  244
      j
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 41
-      |(Definition)     : 74  154  225  245  277
-      |(Reference)      : 75  102  155  156  226  246  278
+      |(Declaration)    : 38
+      |(Definition)     : 70  150  213  232  261
+      |(Reference)      : 71  98  151  152  214  233  262
      jj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 41
-      |(Definition)     : 73  153  224  244  276
-      |(Reference)      : 74  78  78  78  78  78  78  82  82  83  83  84  84  85  85  90  90  90  90  93  95  96  97  97  97  97  98  98  99  99  99  99  100  100  103  103  104  104  105  105  106  106  106  107  107  107  109  109  110  110  110  116  116  117  118  118  118  119  119  120  120  120  121  121  122  122  122  123  123  123  124  124  124  129  130  131  131  131  131  132  132  133  133  133  133  134  134  135  135  135  135  136  136  136  136  137  137  137  137  154  158  158  159  159  225  228  228  228  228  230  230  232  233  233  233  234  234  245  248  248  277  280  280  280
+      |(Declaration)    : 38
+      |(Definition)     : 69  149  212  231  260
+      |(Reference)      : 70  74  74  74  74  74  74  78  78  79  79  80  80  81  81  86  86  86  86  89  91  92  93  93  93  93  94  94  95  95  95  95  96  96  99  99  100  100  101  101  102  102  102  103  103  103  105  105  106  106  106  112  112  113  114  114  114  115  115  116  116  116  117  117  118  118  118  119  119  119  120  120  120  125  126  127  127  127  127  128  128  129  129  129  129  130  130  131  131  131  131  132  132  132  132  133  133  133  133  150  154  154  155  155  213  216  216  216  216  218  218  220  221  221  221  222  222  232  235  235  261  264  264  264
      jlist1
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 74  154  225  245  277
+      |(Reference)      : 70  150  213  232  261
      jlistnum
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 73  153  224  244  276
+      |(Reference)      : 69  149  212  231  260
      k
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 41
-      |(Definition)     : 61
-      |(Reference)      : 62  63  64
+      |(Declaration)    : 38
+      |(Definition)     : 58
+      |(Reference)      : 59  60  61
      kflag
       |(Class and Type) : named constant, CHARACTER(1,1)
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 11  290
+      |(Reference)      : 11  272
      kk
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 41
-      |(Definition)     : 62
-      |(Reference)      : 63  64
+      |(Declaration)    : 38
+      |(Definition)     : 59
+      |(Reference)      : 60  61
      l
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 48
+      |(Declaration)    : 45
       |(Definition)     : 
-      |(Reference)      : 49  49  50  50  61  93  115  129  130  130  130  131  131  131  133  133  133  135  135  135  136  136  136  137  137  137
+      |(Reference)      : 46  46  47  47  58  89  111  125  126  126  126  127  127  127  129  129  129  131  131  131  132  132  132  133  133  133
      la
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 41
-      |(Definition)     : 87  89
-      |(Reference)      : 89  90
+      |(Declaration)    : 38
+      |(Definition)     : 83  85
+      |(Reference)      : 85  86
      labx
       |(Class and Type) : variable name, CHARACTER(6,1)
       |(Attributes)     : 
-      |(Declaration)    : 39
+      |(Declaration)    : 36
       |(Definition)     : 
       |(Reference)      : 
      layer
       |(Class and Type) : variable name, CHARACTER(3,1)
       |(Attributes)     : DIMENSION, initialized
-      |(Declaration)    : 54  55
+      |(Declaration)    : 51  52
       |(Definition)     : 
-      |(Reference)      : 167  175  182  191  198  206
+      |(Reference)      : 163  170  176  183  189  196
      lenc
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 17
-      |(Definition)     : 59  171  179  186  187  195  202  210  220  240  254  263  271  284  290
+      |(Declaration)    : 15
+      |(Definition)     : 56  167  174  180  187  193  200  209  228  241  249  256  268  272
       |(Reference)      : 
      lev
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  17
-      |(Definition)     : 
-      |(Reference)      : 21  25  25  25  25  25  62  78  78  78  78  78  78  88  88  97  97  97  99  99  99  106  107  118  118  120  120  122  122  123  123  131  131  131  133  133  133  135  135  135  136  136  136  228  228  228  230  233
+      |(Declaration)    : 1  15
+      |(Definition)     : 167  174  180  187  193  200  209  228  241  249  256  268
+      |(Reference)      : 19  23  23  23  23  59  74  74  74  74  74  74  84  84  93  93  93  95  95  95  102  103  114  114  116  116  118  118  119  119  127  127  127  129  129  129  131  131  131  132  132  132  216  216  218  221
      ll
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 41
-      |(Definition)     : 88  115
-      |(Reference)      : 90  90  116  116  117  117  117  118  118  120  120  122  122  123  123  124  124
+      |(Declaration)    : 38
+      |(Definition)     : 84  111
+      |(Reference)      : 86  86  112  112  113  113  113  114  114  116  116  118  118  119  119  120  120
      m
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 48
+      |(Declaration)    : 45
       |(Definition)     : 
-      |(Reference)      : 49  70
+      |(Reference)      : 46  66
      max
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 98  100  119  121  132  134  234
+      |(Reference)      : 94  96  115  117  128  130  222
      min
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 234
+      |(Reference)      : 222
      mm
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 41
-      |(Definition)     : 70
-      |(Reference)      : 82  167  172  175  180  182  188  191  196  198  203  206  211
+      |(Declaration)    : 38
+      |(Definition)     : 66
+      |(Reference)      : 78  163  170  176  183  189  196
      mod
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 258
-     mod_grb2_param
-      |(Class and Type) : module name
-      |(Attributes)     : 
-      |(Declaration)    : 
-      |(Definition)     : 
-      |(Reference)      : 13
+      |(Reference)      : 244
      mout
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 35
-      |(Definition)     : 171  179  186  187  195  202  210  220  240  254  263  271  284  290
+      |(Declaration)    : 32
+      |(Definition)     : 167  174  180  187  193  200  209  228  241  249  256  268  272
       |(Reference)      : 
      mpe
       |(Class and Type) : module name
@@ -814,219 +783,207 @@
      my
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  17
-      |(Definition)     : 170  171  178  179  185  186  187  194  195  201  202  209  210  219  220  239  240  253  254  261  262  263  269  270  271  282  283  284  290
-      |(Reference)      : 25  35  35  59
+      |(Declaration)    : 1  15
+      |(Definition)     : 166  167  173  174  179  180  186  187  192  193  199  200  208  209  227  228  240  241  247  248  249  254  255  256  266  267  268  272
+      |(Reference)      : 23  32  32  56
      my_max
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  17
-      |(Definition)     : 170  178  185  194  201  209  219  239  253  261  269  282
-      |(Reference)      : 21  21  21  21  21  21  21  21  25  25  25  25  25  25  25  35  35  43  43  43  43  43  43  43  43  43  49
+      |(Declaration)    : 1  15
+      |(Definition)     : 166  173  179  186  192  199  208  227  240  247  254  266
+      |(Reference)      : 19  19  19  19  19  19  19  19  19  23  23  23  23  23  23  32  32  40  40  40  40  40  40  40  40  40  46
      myrank
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 68  172  180  188  196  203  211  221  241  255  264  272  285  290
+      |(Reference)      : 64  272
      n
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 41
+      |(Declaration)    : 38
       |(Definition)     : 
       |(Reference)      : 
      nc
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 17
-      |(Definition)     : 60  171  179  186  187  195  202  210  220  240  254  263  271  284
-      |(Reference)      : 290
+      |(Declaration)    : 15
+      |(Definition)     : 57  167  174  180  187  193  200  209  228  241  249  256  268
+      |(Reference)      : 272
      ncld
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  17
+      |(Declaration)    : 1  15
       |(Definition)     : 
-      |(Reference)      : 25
+      |(Reference)      : 23
      nk
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 41
+      |(Declaration)    : 38
       |(Definition)     : 
       |(Reference)      : 
      ntrac
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 41
+      |(Declaration)    : 38
       |(Definition)     : 
       |(Reference)      : 
      nx
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  17
-      |(Definition)     : 170  171  178  179  185  186  187  194  195  201  202  209  210  219  220  239  240  253  254  261  262  263  269  270  271  282  283  284  290
-      |(Reference)      : 35  35  59
+      |(Declaration)    : 1  15
+      |(Definition)     : 166  167  173  174  179  180  186  187  192  193  199  200  208  209  227  228  240  241  247  248  249  254  255  256  266  267  268  272
+      |(Reference)      : 32  32  56
      nxdef_2d
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 75  155  226  246  278
+      |(Reference)      : 71  151  214  233  262
      nxj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 41
-      |(Definition)     : 75  155  226  230  246  278
-      |(Reference)      : 76  157  227  231  247  279
+      |(Declaration)    : 38
+      |(Definition)     : 71  151  214  218  233  262
+      |(Reference)      : 72  153  215  219  234  263
      nxp
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 21  21  21  21  21  21  21  21  25  25  25  25  25  25  25  35  35  43  43  43  43  43  43  43  43  43  43  49
+      |(Reference)      : 19  19  19  19  19  19  19  19  19  23  23  23  23  23  23  32  32  40  40  40  40  40  40  40  40  40  40  46
      oqc
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 43
-      |(Definition)     : 99  100  120  121  133  134
-      |(Reference)      : 100  121  134  184
+      |(Declaration)    : 40
+      |(Definition)     : 95  96  116  117  129  130
+      |(Reference)      : 96  117  130  178
      oqt
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 43
-      |(Definition)     : 97  98  118  119  131  132
-      |(Reference)      : 98  119  132  177
+      |(Declaration)    : 40
+      |(Definition)     : 93  94  114  115  127  128
+      |(Reference)      : 94  115  128  172
      ot
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 43
-      |(Definition)     : 110  124  137
-      |(Reference)      : 208
+      |(Declaration)    : 40
+      |(Definition)     : 106  120  133
+      |(Reference)      : 198
      ou
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 43
-      |(Definition)     : 103  106  122  135  158
-      |(Reference)      : 106  158  193
-     outdms
-      |(Class and Type) : variable name, INTEGER(4)
-      |(Attributes)     : use-associated
-      |(Declaration)    : 
-      |(Definition)     : 
-      |(Reference)      : 11  171  179  187  195  202  210  220  240  254  263  271  284  289
+      |(Declaration)    : 40
+      |(Definition)     : 99  102  118  131  154
+      |(Reference)      : 102  154  185
      outflds_green
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 1
       |(Reference)      : 
-     outgrb2
-      |(Class and Type) : variable name, INTEGER(4)
-      |(Attributes)     : use-associated
-      |(Declaration)    : 
-      |(Definition)     : 
-      |(Reference)      : 11  172  180  188  196  203  211  221  241  255  264  272  285
      ov
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 43
-      |(Definition)     : 104  107  123  136  159
-      |(Reference)      : 107  159  200
+      |(Declaration)    : 40
+      |(Definition)     : 100  103  119  132  155
+      |(Reference)      : 103  155  191
      p
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 49
-      |(Definition)     : 93
-      |(Reference)      : 95  96  96  96  105  105  109  109  116  116  117  117  117  129  130  130  130
+      |(Declaration)    : 46
+      |(Definition)     : 89
+      |(Reference)      : 91  92  92  92  101  101  105  105  112  112  113  113  113  125  126  126  126
      p10
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 43
-      |(Definition)     : 84
-      |(Reference)      : 105
+      |(Declaration)    : 40
+      |(Definition)     : 80
+      |(Reference)      : 101
      p2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 43
-      |(Definition)     : 83
-      |(Reference)      : 109
+      |(Declaration)    : 40
+      |(Definition)     : 79
+      |(Reference)      : 105
      pk
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  25
+      |(Declaration)    : 1  19
       |(Definition)     : 
-      |(Reference)      : 228
+      |(Reference)      : 216
      pla
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 43
-      |(Definition)     : 85
-      |(Reference)      : 90  169
+      |(Declaration)    : 40
+      |(Definition)     : 81
+      |(Reference)      : 86  165
      plt
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  21
-      |(Definition)     : 230
-      |(Reference)      : 78  78
+      |(Declaration)    : 1  19
+      |(Definition)     : 218
+      |(Reference)      : 74  74
      pp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 43
-      |(Definition)     : 82
-      |(Reference)      : 85  95  96  105  109  116  116  117  129  130
+      |(Declaration)    : 40
+      |(Definition)     : 78
+      |(Reference)      : 81  91  92  101  105  112  112  113  125  126
      pt
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  25
-      |(Definition)     : 93
-      |(Reference)      : 82  83  84  248
+      |(Declaration)    : 1  23
+      |(Definition)     : 89
+      |(Reference)      : 78  79  80  235
      ptop
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  18
+      |(Declaration)    : 1  16
       |(Definition)     : 
-      |(Reference)      : 82  83  84  248
+      |(Reference)      : 78  79  80  235
      qmaxn3
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 262  270  283
+      |(Reference)      : 248  255  267
      qsatq
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 230
+      |(Reference)      : 218
      qt
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  25
+      |(Declaration)    : 1  23
       |(Definition)     : 
-      |(Reference)      : 78  78  90  97  97  97  99  99  99  118  118  120  120  131  131  131  133  133  133  228  233
+      |(Reference)      : 74  74  86  93  93  93  95  95  95  114  114  116  116  127  127  127  129  129  129  216  221
      RTYPE
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 11  25  35  50
+      |(Reference)      : 11  23  32  47
      rad
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 47
+      |(Declaration)    : 44
       |(Definition)     : 
-      |(Reference)      : 102  156
+      |(Reference)      : 98  152
      raincu6
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  21
+      |(Declaration)    : 1  19
       |(Definition)     : 
-      |(Reference)      : 260  280
+      |(Reference)      : 246  264
      rainlp6
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  21
+      |(Declaration)    : 1  19
       |(Definition)     : 
-      |(Reference)      : 268  280
+      |(Reference)      : 253  264
      rank
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -1036,31 +993,31 @@
      rcp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 19
-      |(Definition)     : 58
-      |(Reference)      : 78  90
+      |(Declaration)    : 17
+      |(Definition)     : 55
+      |(Reference)      : 74  86
      rgas
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 1  18
+      |(Declaration)    : 1  16
       |(Definition)     : 
-      |(Reference)      : 58  82  83  84
+      |(Reference)      : 55  78  79  80
      rh0
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 35
-      |(Definition)     : 232  233  234  239
-      |(Reference)      : 233  234
+      |(Declaration)    : 32
+      |(Definition)     : 220  221  222  227
+      |(Reference)      : 221  222
      rhtmp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 43
-      |(Definition)     : 230
-      |(Reference)      : 232
+      |(Declaration)    : 40
+      |(Definition)     : 218
+      |(Reference)      : 220
      sgeo
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  25
+      |(Declaration)    : 1  23
       |(Definition)     : 
       |(Reference)      : 
      sigmap
@@ -1068,162 +1025,150 @@
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 93
+      |(Reference)      : 89
      split
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 171  179  186  187  195  202  210  220  240  254  263  271  284
+      |(Reference)      : 167  174  180  187  193  200  209  228  241  249  256  268
      ss
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  21
+      |(Declaration)    : 1  19
       |(Definition)     : 
-      |(Reference)      : 218
+      |(Reference)      : 207
      syslbl
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 168  176  183  192  199  207  217  238  252  259  267  275
+      |(Reference)      : 164  171  177  184  190  197  206  226  239  245  252  259
      t2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  21
+      |(Declaration)    : 1  19
       |(Definition)     : 
-      |(Reference)      : 110
+      |(Reference)      : 106
      temp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 49
-      |(Definition)     : 96  105  109  117  130
-      |(Reference)      : 97  99  106  106  107  107  110  110  118  118  120  120  122  122  123  123  124  124  131  133  135  136  137
+      |(Declaration)    : 46
+      |(Definition)     : 92  101  105  113  126
+      |(Reference)      : 93  95  102  102  103  103  106  106  114  114  116  116  118  118  119  119  120  120  127  129  131  132  133
      tepl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 49
-      |(Definition)     : 90
-      |(Reference)      : 110  124  124  137  137  137
+      |(Declaration)    : 46
+      |(Definition)     : 86
+      |(Reference)      : 106  120  120  133  133  133
      tht
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 21
-      |(Definition)     : 228  230
+      |(Declaration)    : 19
+      |(Definition)     : 216  218
       |(Reference)      : 
      tt
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  25
+      |(Declaration)    : 1  23
       |(Definition)     : 
-      |(Reference)      : 78  78  90  228
+      |(Reference)      : 74  74  86  216
      u10
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  21
+      |(Declaration)    : 1  19
       |(Definition)     : 
-      |(Reference)      : 103
+      |(Reference)      : 99
      unify_reduceintp
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 170  178  185  194  201  209  219  239  253  261  269  282
+      |(Reference)      : 166  173  179  186  192  199  208  227  240  247  254  266
      ut
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  25
+      |(Declaration)    : 1  23
       |(Definition)     : 
-      |(Reference)      : 106  122  122  135  135  135
+      |(Reference)      : 102  118  118  131  131  131
      v10
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  21
+      |(Declaration)    : 1  19
       |(Definition)     : 
-      |(Reference)      : 104
+      |(Reference)      : 100
      var
       |(Class and Type) : variable name, CHARACTER(3,1)
       |(Attributes)     : DIMENSION, initialized
-      |(Declaration)    : 54  56
+      |(Declaration)    : 51  53
       |(Definition)     : 
-      |(Reference)      : 167  175  182  191  198  206
+      |(Reference)      : 163  170  176  183  189  196
      vt
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  25
+      |(Declaration)    : 1  23
       |(Definition)     : 
-      |(Reference)      : 107  123  123  136  136  136
+      |(Reference)      : 103  119  119  132  132  132
      whtlev
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 38
+      |(Declaration)    : 35
       |(Definition)     : 
       |(Reference)      : 
      whtlevq
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 38
+      |(Declaration)    : 35
       |(Definition)     : 
       |(Reference)      : 
      whtlevz
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 38
+      |(Declaration)    : 35
       |(Definition)     : 
       |(Reference)      : 
      wrk
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 35
-      |(Definition)     : 169  170  177  178  184  185  193  194  200  201  208  209  218  219  248  253  260  261  268  269  280  282
+      |(Declaration)    : 32
+      |(Definition)     : 165  166  172  173  178  179  185  186  191  192  198  199  207  208  235  240  246  247  253  254  264  266
       |(Reference)      : 
-     wrt_grb2
-      |(Class and Type) : module subroutine name
-      |(Attributes)     : use-associated
-      |(Declaration)    : 
-      |(Definition)     : 
-      |(Reference)      : 172  180  188  196  203  211  221  241  255
-     wrt_grb2_accu
-      |(Class and Type) : module subroutine name
-      |(Attributes)     : use-associated
-      |(Declaration)    : 
-      |(Definition)     : 
-      |(Reference)      : 264  272  285
      wtemp
       |(Class and Type) : variable name, CHARACTER(6,1)
       |(Attributes)     : 
-      |(Declaration)    : 54
-      |(Definition)     : 167  168  175  176  182  183  191  192  198  199  206  207  216  217  237  238  251  252
+      |(Declaration)    : 51
+      |(Definition)     : 163  164  170  171  176  177  183  184  189  190  196  197  205  206  225  226  238  239
       |(Reference)      : 
      xxx
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 49
-      |(Definition)     : 102  156
-      |(Reference)      : 103  104  158  159
+      |(Declaration)    : 46
+      |(Definition)     : 98  152
+      |(Reference)      : 99  100  154  155
    Cross reference of label
      (Label) (label-kind)               (line-no.)
      ------- ------------- ------------ ----------
-         50  execution     (Definition) 160  
-                           (Reference)  153  157
-         98  execution     (Definition) 281  
-                           (Reference)  276  279
-         99  execution     (Definition) 141  
-                           (Reference)  112  125  138
+         50  execution     (Definition) 156  
+                           (Reference)  149  153
+         98  execution     (Definition) 265  
+                           (Reference)  260  263
+         99  execution     (Definition) 137  
+                           (Reference)  108  121  134
 
  External subroutine subprogram "sigmap"
   (inc)(line-no.)(nest)(optimize)
-             297                     
-             298                     !***********************************************************************
-             299                           subroutine sigmap(layer,aki,bki,psfc,p)
-             300                     !
-             301                           use const, only: RTYPE
-             302                     !
-             303                           implicit none
-             304                           integer i, layer
-             305                           real p(layer)
-             306                           real(kind=RTYPE) psfc,aki(layer), bki(layer)
-             307                     
+             278                     
+             279                     !***********************************************************************
+             280                           subroutine sigmap(layer,aki,bki,psfc,p)
+             281                     !
+             282                           use const, only: RTYPE
+             283                     !
+             284                           implicit none
+             285                           integer i, layer
+             286                           real p(layer)
+             287                           real(kind=RTYPE) psfc,aki(layer), bki(layer)
+             288                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 1000
@@ -1233,11 +1178,11 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      bki, aki, p
                                    <<< Loop-information  End >>>
-             308     1  pp   2v            do i=1,layer
-             309     1   p   2v            p(i)=aki(i)+(bki(i)*psfc)
-             310     1   p   2v            enddo
-             311                           return
-             312                           end
+             289     1  pp   2v            do i=1,layer
+             290     1   p   2v            p(i)=aki(i)+(bki(i)*psfc)
+             291     1   p   2v            enddo
+             292                           return
+             293                           end
 
  Procedure information
    Lines      : 16
@@ -1250,62 +1195,62 @@
      aki
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 299  306
+      |(Declaration)    : 280  287
       |(Definition)     : 
-      |(Reference)      : 309
+      |(Reference)      : 290
      bki
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 299  306
+      |(Declaration)    : 280  287
       |(Definition)     : 
-      |(Reference)      : 309
+      |(Reference)      : 290
      const
       |(Class and Type) : module name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 301
+      |(Reference)      : 282
      i
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 304
-      |(Definition)     : 308
-      |(Reference)      : 309  309  309
+      |(Declaration)    : 285
+      |(Definition)     : 289
+      |(Reference)      : 290  290  290
      layer
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 299  304
+      |(Declaration)    : 280  285
       |(Definition)     : 
-      |(Reference)      : 305  306  306  308
+      |(Reference)      : 286  287  287  289
      p
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 299  305
-      |(Definition)     : 309
+      |(Declaration)    : 280  286
+      |(Definition)     : 290
       |(Reference)      : 
      psfc
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : dummy-argument
-      |(Declaration)    : 299  306
+      |(Declaration)    : 280  287
       |(Definition)     : 
-      |(Reference)      : 309
+      |(Reference)      : 290
      RTYPE
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 301  306
+      |(Reference)      : 282  287
      sigmap
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 299
+      |(Definition)     : 280
       |(Reference)      : 
 
  Total information
    Procedures       : 2
-   Total lines      : 312
-   Total statements : 218
+   Total lines      : 293
+   Total statements : 202
    Total stack(byte): 8608
    Total prefetch num: 0
 

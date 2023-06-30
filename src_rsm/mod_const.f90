@@ -97,7 +97,7 @@
 ! output data for RSM (Also, RSM compiling flag is necessary)
     !for RSM output
     logical :: outrsm
-    integer :: rsmoutinv
+    integer :: rsmoutinv, rsmsfcmgrhr
     real    :: rlon1, rlon2, rlat1, rlat2, rgrdsz
 
     !for horizontal diffusion

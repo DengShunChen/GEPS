@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Thu Jun 29 14:23:11 2023
+ Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:30:26 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
    Source file       : sfc_diff.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -66,7 +66,7 @@
                4                                               stress,fm,fh,                   &
                5                                               ustar,wind,ddvel,fm10,fh2,fh10, &
                6                                               sigmaf,vegtype,shdmax,ivegsrc,  &
-               7                                               tsurf,flag_iter,redrag)
+               7                                               tsurf,flag_iter,redrag,ustress,vstress,ssu,ssv)
                8                     !
                9                           use machine , only : kind_phys
               10                     !     use funcphys, only : fpvs
@@ -85,7 +85,7 @@
               23                           ,                                      stress,  fm, fh, ustar        &
               24                           ,                                      wind, ddvel, fm10, fh2,fh10   &
               25                           ,                                      sigmaf, shdmax, tsurf, snwdph &
-              26                           ,                                      ustress, vstress
+              26                           ,                                      ustress, vstress, ssu, ssv
               27                           integer, dimension(im) ::  vegtype, islimsk
               28                     
               29                           logical   flag_iter(im) ! added by s.lu
@@ -137,14 +137,14 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      flag_iter
                                    <<<    SPILLS :
-                                   <<<      GENERAL   : SPILL 3  FILL 32
+                                   <<<      GENERAL   : SPILL 3  FILL 34
                                    <<<      SIMD&FP   : SPILL 13  FILL 21
                                    <<<      SCALABLE  : SPILL 0  FILL 0
                                    <<<      PREDICATE : SPILL 0  FILL 0
                                    <<< Loop-information  End >>>
               73     1   s    s            do i=1,imj
               74     2   p    v              if(flag_iter(i)) then
-              75     2   p    v                wind(i) = max(sqrt(u1(i)*u1(i) + v1(i)*v1(i)) &
+              75     2   p    v                wind(i) = max(sqrt((u1(i)-ssu(i))**2 + (v1(i)-ssv(i))**2) &
               76     2                                     + max(0.0, min(ddvel(i), 30.0)), 1.0)
               77     2   p    v                tem1    = 1.0 + rvrdm1 * max(q1(i),1.e-8)
               78     2   p    v                thv1    = t1(i) * prslki(i) * tem1
@@ -366,8 +366,8 @@
              294     2   p    v                stress(i) = cm(i) * wind(i) * wind(i)
              295     2   p    v                ustar(i)  = sqrt(stress(i))
              296     2               !! jwhwu 20110311
-             297     2   p    v               ustress(i) = - stress(i) * u1(I) / wind(i)
-             298     2   p    v               vstress(i) = - stress(i) * v1(I) / wind(i)
+             297     2   p    v               ustress(i) = - stress(i) * (u1(I)-ssu(I)) / wind(i)
+             298     2   p    v               vstress(i) = - stress(i) * (v1(I)-ssv(I)) / wind(i)
              299     2               !
              300     2               !  update z0 over ocean
              301     2               !
@@ -397,7 +397,7 @@
  Procedure information
    Lines      : 323
    Statements : 186
-   Stack(byte): 672
+   Stack(byte): 688
    Prefetch num: 0
 
  Scoping unit of external sub-program : sfc_diff
@@ -737,13 +737,13 @@
       |(Attributes)     : 
       |(Declaration)    : 34
       |(Definition)     : 73
-      |(Reference)      : 74  75  75  75  75  75  75  77  78  78  79  79  80  82  84  85  86  92  93  99  113  119  121  123  126  135  137  139  142  155  156  164  172  180  180  180  180  184  184  185  185  186  187  188  189  189  189  189  207  208  209  241  244  285  285  286  286  287  287  288  288  289  289  290  290  290  291  291  291  292  292  292  293  293  293  294  294  294  294  295  295  297  297  297  297  298  298  298  298  302  303  303  314  316
+      |(Reference)      : 74  75  75  75  75  75  75  77  78  78  79  79  80  82  84  85  86  92  93  99  113  119  121  123  126  135  137  139  142  155  156  164  172  180  180  180  180  184  184  185  185  186  187  188  189  189  189  189  207  208  209  241  244  285  285  286  286  287  287  288  288  289  289  290  290  290  291  291  291  292  292  292  293  293  293  294  294  294  294  295  295  297  297  297  297  297  298  298  298  298  298  302  303  303  314  316
      im
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  18
       |(Definition)     : 
-      |(Reference)      : 19  19  19  19  20  20  20  20  20  20  20  20  20  20  20  20  20  20  20  20  20  20  20  20  20  20  20  20  27  27  29
+      |(Reference)      : 19  19  19  19  20  20  20  20  20  20  20  20  20  20  20  20  20  20  20  20  20  20  20  20  20  20  20  20  20  20  27  27  29
      imj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
@@ -966,6 +966,18 @@
       |(Declaration)    : 
       |(Definition)     : 
       |(Reference)      : 75  93  108  108  156  201  202  204  219  220  222  228  233  235  265  266  272  272  276  277  295
+     ssu
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  20
+      |(Definition)     : 
+      |(Reference)      : 75  297
+     ssv
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  20
+      |(Definition)     : 
+      |(Reference)      : 75  298
      stress
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
@@ -1025,7 +1037,7 @@
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  19
       |(Definition)     : 
-      |(Reference)      : 75  75  297
+      |(Reference)      : 75  297
      ustar
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
@@ -1034,8 +1046,8 @@
       |(Reference)      : 99  156  303  303
      ustress
       |(Class and Type) : variable name, REAL(8)
-      |(Attributes)     : DIMENSION
-      |(Declaration)    : 20
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  20
       |(Definition)     : 297
       |(Reference)      : 
      v1
@@ -1043,7 +1055,7 @@
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  19
       |(Definition)     : 
-      |(Reference)      : 75  75  298
+      |(Reference)      : 75  298
      vegtype
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, dummy-argument
@@ -1064,8 +1076,8 @@
       |(Reference)      : 99
      vstress
       |(Class and Type) : variable name, REAL(8)
-      |(Attributes)     : DIMENSION
-      |(Declaration)    : 20
+      |(Attributes)     : DIMENSION, dummy-argument
+      |(Declaration)    : 1  20
       |(Definition)     : 298
       |(Reference)      : 
      wind
@@ -1133,6 +1145,6 @@
    Procedures       : 1
    Total lines      : 323
    Total statements : 186
-   Total stack(byte): 672
+   Total stack(byte): 688
    Total prefetch num: 0
 

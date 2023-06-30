@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Thu Jun 29 14:23:01 2023
+ Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:30:17 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
    Source file       : gscondp.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -Knosimd -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -Knosimd -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -249,17 +249,18 @@
              133     3   p   2                   deltaq(i,k) = (1-u(i,k))*qw(i,k)
              134     3   p   2                 enddo
              135     2   p                   enddo
-             136     1                     endif
-             137                     !
-             138                     !c*************************************************************
-             139                     !c*******begining of  grid-scale condensation/evap. loop*******
-             140                     !c*************************************************************
-             141                     !
-             142                     !     do k = km-1,2,-1
-             143     1                     do k = km,1,-1
-             144     1               !       vprs(:) = fpvs(t(:,k))       ! fpvs in pa
-             145     1               !c-----------------------------------------------------------------------
-             146     1               !c------------------qw, qi and qint--------------------------------------
+             136     1                       kdt=0
+             137     1                     endif
+             138                     !
+             139                     !c*************************************************************
+             140                     !c*******begining of  grid-scale condensation/evap. loop*******
+             141                     !c*************************************************************
+             142                     !
+             143                     !     do k = km-1,2,-1
+             144     1                     do k = km,1,-1
+             145     1               !       vprs(:) = fpvs(t(:,k))       ! fpvs in pa
+             146     1               !c-----------------------------------------------------------------------
+             147     1               !c------------------qw, qi and qint--------------------------------------
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 220
@@ -268,42 +269,42 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      t, qw, q, cwm, deltaq, qi, qint
                                    <<< Loop-information  End >>>
-             147     2  pp                   do i = 1, im
-             148     2   p                     tmt0  = t(i,k)-273.16
-             149     2   p                     tmt15 = min(tmt0,cons_m15)
-             150     2   p                     qik   = max(q(i,k),epsq)
-             151     2   p                     cwmik = max(cwm(i,k),climit)
-             152     2   p                     deltaqik = deltaq(i,k)
-             153     2   p                     qi(i)   = qw(i,k)
-             154     2   p                     qint(i) = qw(i,k)
-             155     2               !         if (tmt0 .le. -40.) qint(i) = qi(i)
-             156     2               !c-------------------ice-water id number iw------------------------------
-             157     3   p                     if(tmt0 < -15.0) then
-             158     3   p                       u00ik = u(i,k)
-             159     3   p                       fi = qik + deltaqik -qi(i)
-             160     4   p                       if(fi > d00.or.cwmik > climit) then
-             161     4   p                          iw(i,k) = 1
-             162     4   p                       else
-             163     4   p                         iw(i,k) = 0
-             164     4   p                       end if
-             165     3   p                     end if
-             166     2               !
-             167     3   p                     if(tmt0 >= 0.0) then
-             168     3   p                       iw(i,k) = 0
-             169     3   p                     end if
-             170     2               !
-             171     3   p                     if (tmt0 < 0.0 .and. tmt0 >= -15.0) then
-             172     3   p                       iw(i,k) = 0
-             173     4   p                       if (k < km) then
-             174     4   p                       if (iw(i,k+1) == 1 .and. cwmik > climit) iw(i,k) = 1
-             175     4   p                       endif
-             176     3   p                     end if
-             177     2   p                   enddo
-             178     1               !c--------------condensation and evaporation of cloud--------------------
+             148     2  pp                   do i = 1, im
+             149     2   p                     tmt0  = t(i,k)-273.16
+             150     2   p                     tmt15 = min(tmt0,cons_m15)
+             151     2   p                     qik   = max(q(i,k),epsq)
+             152     2   p                     cwmik = max(cwm(i,k),climit)
+             153     2   p                     deltaqik = deltaq(i,k)
+             154     2   p                     qi(i)   = qw(i,k)
+             155     2   p                     qint(i) = qw(i,k)
+             156     2               !         if (tmt0 .le. -40.) qint(i) = qi(i)
+             157     2               !c-------------------ice-water id number iw------------------------------
+             158     3   p                     if(tmt0 < -15.0) then
+             159     3   p                       u00ik = u(i,k)
+             160     3   p                       fi = qik + deltaqik -qi(i)
+             161     4   p                       if(fi > d00.or.cwmik > climit) then
+             162     4   p                          iw(i,k) = 1
+             163     4   p                       else
+             164     4   p                         iw(i,k) = 0
+             165     4   p                       end if
+             166     3   p                     end if
+             167     2               !
+             168     3   p                     if(tmt0 >= 0.0) then
+             169     3   p                       iw(i,k) = 0
+             170     3   p                     end if
+             171     2               !
+             172     3   p                     if (tmt0 < 0.0 .and. tmt0 >= -15.0) then
+             173     3   p                       iw(i,k) = 0
+             174     4   p                       if (k < km) then
+             175     4   p                       if (iw(i,k+1) == 1 .and. cwmik > climit) iw(i,k) = 1
+             176     4   p                       endif
+             177     3   p                     end if
+             178     2   p                   enddo
+             179     1               !c--------------condensation and evaporation of cloud--------------------
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      q, t, cwm, prsl, u, deltaq, psp1, ps
+                                   <<<      deltaq, t, q, cwm, u, prsl, psp1, ps
                                    <<<      tp1, qp1, iw, qint, qi
                                    <<<    SPILLS :
                                    <<<      GENERAL   : SPILL 7  FILL 14
@@ -311,175 +312,175 @@
                                    <<<      SCALABLE  : SPILL 0  FILL 0
                                    <<<      PREDICATE : SPILL 0  FILL 0
                                    <<< Loop-information  End >>>
-             179     2   s                   do i = 1, im
-             180     2               !c------------------------at, aq and dp/dt-------------------------------
-             181     2   p                     qik   = max(q(i,k),epsq)
-             182     2   p                     cwmik = max(cwm(i,k),climit)
-             183     2   p                     iwik  = iw(i,k)
-             184     2   p                     u00ik = u(i,k)
-             185     2   p                     iice = .false.
-             186     2   p                     deltaqik = deltaq(i,k)
-             187     2   p                     tik   = t(i,k)
-             188     2   p                     pres  = prsl(i,k) * h1000
-             189     2   p                     pp0   = (pres / ps(i)) * psp1(i)
-             190     2   p                     at    = (tik-tp1(i,k)) * rdt
-             191     2   p                     aq    = (qik-qp1(i,k)) * rdt
-             192     2   p                     ap    = (pres-pp0)    * rdt
-             193     3   p                     if(tik - 273.16 < thgni) then  ! has to be consistent with radiation
-             194     3   p                       iice = .true.
-             195     3   p                     endif
-             196     2               !c----------------the satuation specific humidity------------------------
-             197     2   p                     fiw   = float(iwik)
-             198     2   p                     elv   = (h1-fiw)*elwv    + fiw*eliv
-             199     2   p                     qc    = (h1-fiw)*qint(i) + fiw*qi(i)
-             200     2               !     if (lprnt) print *,' qc=',qc,' qint=',qint(i),' qi=',qi(i)
-             201     2               !c----------------the relative humidity----------------------------------
-             202     3   p                     if(qc <= 1.0e-10) then
-             203     3   p                       rqik=d00
-             204     3   p                     else
-             205     3   p                       rqik = qik/qc
-             206     3   p                     endif
-             207     3   p                     if(iice) then
-             208     3   p                       qsc = qc * sup
-             209     3   p                       usc = sup
-             210     3   p                     else
-             211     3   p                       qsc = qc
-             212     3   p                       usc = us
-             213     3   p                     endif
-             214     2               !c----------------cloud cover ratio ccrik--------------------------------
-             215     3   p                      if(rqik >= usc) then
-             216     3   p                         ccrik = us
-             217     3   p                      else
-             218     3   p                         qtmp = qik + cwmik -qsc
-             219     4   p                         if(deltaqik > epsq) then
-             220     5   p                           if(qtmp <= -deltaqik) then
-             221     5   p                             ccrik = d00
-             222     5   p                           elseif(qtmp >= deltaqik) then
-             223     5   p                             ccrik = us
-             224     5   p                           else
-             225     5   p                             ccrik = 0.5 * qtmp / deltaqik + 0.5
-             226     5   p                             ccrik = max(ccrik, 0.)
-             227     5   p                             ccrik = min(ccrik, 1.)
-             228     5   p                           endif
-             229     4   p                         else
-             230     5   p                           if(qtmp > 0.) then
-             231     5   p                             ccrik = us
-             232     5   p                           else
-             233     5   p                             ccrik = d00
-             234     5   p                           endif
-             235     4   p                         endif
-             236     3   p                      endif
-             237     2               !c-----------correct ccr if it is too small in large cwm regions--------
-             238     2               !         if(ccrik.ge.0.01.and.ccrik.le.0.2.and
-             239     2               !    &          .cwmik.ge.0.2e-3) then
-             240     2               !          ccrik=min(1.0,cwmik*1.0e3)
-             241     2               !         end if
-             242     2               !c----------------------------------------------------------------------
-             243     2               !   if no cloud exists then evaporate any existing cloud condensate
-             244     2               !c----------------evaporation of cloud water-----------------------------
-             245     2   p                     e0 = d00
-             246     3   p                     if (ccrik <= cclimit.and.cwmik > climit) then
-             247     3               !
-             248     3               !   first iteration - increment halved
-             249     3               !
-             250     3   s                       tx1 = tik
-             251     3   p                       tx3 = qik
-             252     3               
-             253     3   s                       es   = min(pres, fpvs(tx1))
-             254     3   s                       qs   = eps * es / (pres + epsm1*es)
-             255     4   s                       if(qs < cons_0) then
-             256     4   s                         print*, 'warning : qs - deltaqik < 0.0'
-             257     4   s                         print*, 'qs, deltaqik:',qs,deltaqik
-             258     4   p                       endif
-             259     3   s                       tsq  = tx1 * tx1
-             260     3   s                       delq = 0.5*(qs-deltaqik-tx3)*tsq / (tsq + el2orc*qs)
-             261     3               !
-             262     3   p                       tx2   = delq
-             263     3   s                       tx1   = tx1 - delq * albycp
-             264     3   s                       tx3   = tx3 + delq
-             265     3               !
-             266     3               !   second iteration
-             267     3               !
-             268     3   s                       es   = min(pres, fpvs(tx1))
-             269     3   s                       qs   = eps * es / (pres + epsm1*es)
-             270     4   s                       if(qs < cons_0) then
-             271     4   s                         print*, 'warning : qs - deltaqik < 0.0'
-             272     4   s                         print*, 'qs, deltaqik:',qs,deltaqik
-             273     4   p                       endif
-             274     3   s                       tsq  = tx1 * tx1
-             275     3   s                       delq = (qs-deltaqik-tx3)*tsq / (tsq + el2orc * qs)
-             276     3               !
-             277     3   p                       tx2  = tx2 + delq
-             278     3   s                       tx1  = tx1 - delq * albycp
-             279     3   p                       tx3  = tx3 + delq
-             280     3               !
-             281     3               !   third iteration
-             282     3               !
-             283     3   s                       es   = min(pres, fpvs(tx1))
-             284     3   s                       qs   = eps * es / (pres + epsm1*es)
-             285     4   s                       if(qs < cons_0) then
-             286     4   s                         print*, 'warning : qs - deltaqik < 0.0'
-             287     4   s                         print*, 'qs, deltaqik:',qs,deltaqik
-             288     4   p                       endif
-             289     3   s                       tsq  = tx1 * tx1
-             290     3   p                       delq = (qs-deltaqik-tx3)*tsq / (tsq + el2orc * qs)
-             291     3               
-             292     3   p                       tx2 = tx2 + delq
-             293     3               
-             294     3   p                       e0 = max(tx2*rdt, cons_0)
-             295     3   p                       e0 = min(cwmik*rdt,   e0)
-             296     3   p                       e0 = max(cons_0,e0)
-             297     3   p                     end if
-             298     2               !   if cloud cover > 0.2 condense water vapor in to cloud condensate
-             299     2               !c-----------the eqs. for cond. has been reorganized to reduce cpu------
-             300     2   p                     cond = d00
-             301     2               !         if (ccrik .gt. 0.20 .and. qc .gt. epsq) then
-             302     3   p                     if (ccrik > cclimit .and. qc > epsq) then
-             303     3   p                        us00   = deltaqik / qc
-             304     3   p                        ccrik1 = 1.0 - ccrik
-             305     3   p                        aa     = eps*elv*pres*qik
-             306     3   p                        ab     = ccrik*ccrik1*deltaqik
-             307     3   p                        ac     = ab + 0.5*cwmik+ 0.5 * ccrik * (qc-qsc)
-             308     3   p                        ad     = ab * ccrik1 + 0.5*ccrik*ccrik1*qc*(us-usc)
-             309     3   p                        ae     = cpr*tik*tik
-             310     3   p                        af     = ae * pres
-             311     3   p                        ag     = aa * elv
-             312     3   p                        ai     = cp * aa
-             313     3   p                        cond   = (ac-ad)*(af*aq-ai*at+ae*qik*ap)/(ac*(af+ag))
-             314     3               !c-----------check & correct if over condensation occurs-----------------
-             315     3   p                        condi  = (qik   -u00ik   *qc*1.0)*rdt
-             316     3   p                        cond   = min(cond, condi)
-             317     3               !c----------check & correct if supersatuation is too high----------------
-             318     3               !             qtemp=qik-max(0.,(cond-e0))*dt
-             319     3               !             if(qc.le.1.0e-10) then
-             320     3               !               rqtmp=0.0
-             321     3               !             else
-             322     3               !               rqtmp=qtemp/qc
-             323     3               !             end if
-             324     3               !             if(rqtmp.ge.1.10) then
-             325     3               !               cond=(qik-1.10*qc)*rdt
-             326     3               !             end if
-             327     3               !c-----------------------------------------------------------------------
-             328     3   p                        cond = max(cond, d00)
-             329     3               !c-------------------update of t, q and cwm------------------------------
-             330     3   p                     end if
-             331     2   p                     cone0    = (cond-e0) * dt
-             332     2   p                     cwm(i,k) = cwm(i,k) + cone0
-             333     2               !     if (lprnt .and. i .eq. ipr) print *,' t=',t(i,k),' cone0',cone0
-             334     2               !    &,' cond=',cond,' e0=',e0,' elv=',elv,' rcp=',rcp,' k=',k
-             335     2               !    &,' cwm=',cwm(i,k)
-             336     2   p                     t(i,k)   = t(i,k)   + elv*rcp*cone0
-             337     2   p                     q(i,k)   = q(i,k)   - cone0
-             338     2   p                   enddo                                  ! end of i-loop!
-             339     1                     enddo                                    ! end of k-loop!
-             340                     !
-             341                     !*********************************************************************
-             342                     !****************end of the condensation/evaporation loop*************
-             343                     !*********************************************************************
-             344                     !
-             345                     !----------------store t, q, ps for next time step
-             346                     
-             347                     !      if (dt > dtf+0.001) then     ! three time level
+             180     2   s                   do i = 1, im
+             181     2               !c------------------------at, aq and dp/dt-------------------------------
+             182     2   p                     qik   = max(q(i,k),epsq)
+             183     2   p                     cwmik = max(cwm(i,k),climit)
+             184     2   p                     iwik  = iw(i,k)
+             185     2   p                     u00ik = u(i,k)
+             186     2   p                     iice = .false.
+             187     2   p                     deltaqik = deltaq(i,k)
+             188     2   p                     tik   = t(i,k)
+             189     2   p                     pres  = prsl(i,k) * h1000
+             190     2   p                     pp0   = (pres / ps(i)) * psp1(i)
+             191     2   p                     at    = (tik-tp1(i,k)) * rdt
+             192     2   p                     aq    = (qik-qp1(i,k)) * rdt
+             193     2   p                     ap    = (pres-pp0)    * rdt
+             194     3   p                     if(tik - 273.16 < thgni) then  ! has to be consistent with radiation
+             195     3   p                       iice = .true.
+             196     3   p                     endif
+             197     2               !c----------------the satuation specific humidity------------------------
+             198     2   p                     fiw   = float(iwik)
+             199     2   p                     elv   = (h1-fiw)*elwv    + fiw*eliv
+             200     2   p                     qc    = (h1-fiw)*qint(i) + fiw*qi(i)
+             201     2               !     if (lprnt) print *,' qc=',qc,' qint=',qint(i),' qi=',qi(i)
+             202     2               !c----------------the relative humidity----------------------------------
+             203     3   p                     if(qc <= 1.0e-10) then
+             204     3   p                       rqik=d00
+             205     3   p                     else
+             206     3   p                       rqik = qik/qc
+             207     3   p                     endif
+             208     3   p                     if(iice) then
+             209     3   p                       qsc = qc * sup
+             210     3   p                       usc = sup
+             211     3   p                     else
+             212     3   p                       qsc = qc
+             213     3   p                       usc = us
+             214     3   p                     endif
+             215     2               !c----------------cloud cover ratio ccrik--------------------------------
+             216     3   p                      if(rqik >= usc) then
+             217     3   p                         ccrik = us
+             218     3   p                      else
+             219     3   p                         qtmp = qik + cwmik -qsc
+             220     4   p                         if(deltaqik > epsq) then
+             221     5   p                           if(qtmp <= -deltaqik) then
+             222     5   p                             ccrik = d00
+             223     5   p                           elseif(qtmp >= deltaqik) then
+             224     5   p                             ccrik = us
+             225     5   p                           else
+             226     5   p                             ccrik = 0.5 * qtmp / deltaqik + 0.5
+             227     5   p                             ccrik = max(ccrik, 0.)
+             228     5   p                             ccrik = min(ccrik, 1.)
+             229     5   p                           endif
+             230     4   p                         else
+             231     5   p                           if(qtmp > 0.) then
+             232     5   p                             ccrik = us
+             233     5   p                           else
+             234     5   p                             ccrik = d00
+             235     5   p                           endif
+             236     4   p                         endif
+             237     3   p                      endif
+             238     2               !c-----------correct ccr if it is too small in large cwm regions--------
+             239     2               !         if(ccrik.ge.0.01.and.ccrik.le.0.2.and
+             240     2               !    &          .cwmik.ge.0.2e-3) then
+             241     2               !          ccrik=min(1.0,cwmik*1.0e3)
+             242     2               !         end if
+             243     2               !c----------------------------------------------------------------------
+             244     2               !   if no cloud exists then evaporate any existing cloud condensate
+             245     2               !c----------------evaporation of cloud water-----------------------------
+             246     2   p                     e0 = d00
+             247     3   p                     if (ccrik <= cclimit.and.cwmik > climit) then
+             248     3               !
+             249     3               !   first iteration - increment halved
+             250     3               !
+             251     3   s                       tx1 = tik
+             252     3   p                       tx3 = qik
+             253     3               
+             254     3   s                       es   = min(pres, fpvs(tx1))
+             255     3   s                       qs   = eps * es / (pres + epsm1*es)
+             256     4   s                       if(qs < cons_0) then
+             257     4   s                         print*, 'warning : qs - deltaqik < 0.0'
+             258     4   s                         print*, 'qs, deltaqik:',qs,deltaqik
+             259     4   p                       endif
+             260     3   s                       tsq  = tx1 * tx1
+             261     3   s                       delq = 0.5*(qs-deltaqik-tx3)*tsq / (tsq + el2orc*qs)
+             262     3               !
+             263     3   p                       tx2   = delq
+             264     3   s                       tx1   = tx1 - delq * albycp
+             265     3   s                       tx3   = tx3 + delq
+             266     3               !
+             267     3               !   second iteration
+             268     3               !
+             269     3   s                       es   = min(pres, fpvs(tx1))
+             270     3   s                       qs   = eps * es / (pres + epsm1*es)
+             271     4   s                       if(qs < cons_0) then
+             272     4   s                         print*, 'warning : qs - deltaqik < 0.0'
+             273     4   s                         print*, 'qs, deltaqik:',qs,deltaqik
+             274     4   p                       endif
+             275     3   s                       tsq  = tx1 * tx1
+             276     3   s                       delq = (qs-deltaqik-tx3)*tsq / (tsq + el2orc * qs)
+             277     3               !
+             278     3   p                       tx2  = tx2 + delq
+             279     3   s                       tx1  = tx1 - delq * albycp
+             280     3   p                       tx3  = tx3 + delq
+             281     3               !
+             282     3               !   third iteration
+             283     3               !
+             284     3   s                       es   = min(pres, fpvs(tx1))
+             285     3   s                       qs   = eps * es / (pres + epsm1*es)
+             286     4   s                       if(qs < cons_0) then
+             287     4   s                         print*, 'warning : qs - deltaqik < 0.0'
+             288     4   s                         print*, 'qs, deltaqik:',qs,deltaqik
+             289     4   p                       endif
+             290     3   s                       tsq  = tx1 * tx1
+             291     3   p                       delq = (qs-deltaqik-tx3)*tsq / (tsq + el2orc * qs)
+             292     3               
+             293     3   p                       tx2 = tx2 + delq
+             294     3               
+             295     3   p                       e0 = max(tx2*rdt, cons_0)
+             296     3   p                       e0 = min(cwmik*rdt,   e0)
+             297     3   p                       e0 = max(cons_0,e0)
+             298     3   p                     end if
+             299     2               !   if cloud cover > 0.2 condense water vapor in to cloud condensate
+             300     2               !c-----------the eqs. for cond. has been reorganized to reduce cpu------
+             301     2   p                     cond = d00
+             302     2               !         if (ccrik .gt. 0.20 .and. qc .gt. epsq) then
+             303     3   p                     if (ccrik > cclimit .and. qc > epsq) then
+             304     3   p                        us00   = deltaqik / qc
+             305     3   p                        ccrik1 = 1.0 - ccrik
+             306     3   p                        aa     = eps*elv*pres*qik
+             307     3   p                        ab     = ccrik*ccrik1*deltaqik
+             308     3   p                        ac     = ab + 0.5*cwmik+ 0.5 * ccrik * (qc-qsc)
+             309     3   p                        ad     = ab * ccrik1 + 0.5*ccrik*ccrik1*qc*(us-usc)
+             310     3   p                        ae     = cpr*tik*tik
+             311     3   p                        af     = ae * pres
+             312     3   p                        ag     = aa * elv
+             313     3   p                        ai     = cp * aa
+             314     3   p                        cond   = (ac-ad)*(af*aq-ai*at+ae*qik*ap)/(ac*(af+ag))
+             315     3               !c-----------check & correct if over condensation occurs-----------------
+             316     3   p                        condi  = (qik   -u00ik   *qc*1.0)*rdt
+             317     3   p                        cond   = min(cond, condi)
+             318     3               !c----------check & correct if supersatuation is too high----------------
+             319     3               !             qtemp=qik-max(0.,(cond-e0))*dt
+             320     3               !             if(qc.le.1.0e-10) then
+             321     3               !               rqtmp=0.0
+             322     3               !             else
+             323     3               !               rqtmp=qtemp/qc
+             324     3               !             end if
+             325     3               !             if(rqtmp.ge.1.10) then
+             326     3               !               cond=(qik-1.10*qc)*rdt
+             327     3               !             end if
+             328     3               !c-----------------------------------------------------------------------
+             329     3   p                        cond = max(cond, d00)
+             330     3               !c-------------------update of t, q and cwm------------------------------
+             331     3   p                     end if
+             332     2   p                     cone0    = (cond-e0) * dt
+             333     2   p                     cwm(i,k) = cwm(i,k) + cone0
+             334     2               !     if (lprnt .and. i .eq. ipr) print *,' t=',t(i,k),' cone0',cone0
+             335     2               !    &,' cond=',cond,' e0=',e0,' elv=',elv,' rcp=',rcp,' k=',k
+             336     2               !    &,' cwm=',cwm(i,k)
+             337     2   p                     t(i,k)   = t(i,k)   + elv*rcp*cone0
+             338     2   p                     q(i,k)   = q(i,k)   - cone0
+             339     2   p                   enddo                                  ! end of i-loop!
+             340     1                     enddo                                    ! end of k-loop!
+             341                     !
+             342                     !*********************************************************************
+             343                     !****************end of the condensation/evaporation loop*************
+             344                     !*********************************************************************
+             345                     !
+             346                     !----------------store t, q, ps for next time step
+             347                     
+             348                     !      if (dt > dtf+0.001) then     ! three time level
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
@@ -487,21 +488,21 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      q, tp1, qp1, t, qp, tp
                                    <<< Loop-information  End >>>
-             348     1  pp                   do k = 1, km
+             349     1  pp                   do k = 1, km
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SOFTWARE PIPELINING(IPC: 2.16, ITR: 6, MVE: 2, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      tp1, qp1, t, qp, q, tp
                                    <<< Loop-information  End >>>
-             349     2   p   2                 do i = 1, im
-             350     2   p   2                   tp(i,k)  = tp1(i,k)
-             351     2   p   2                   qp(i,k)  = qp1(i,k)
-             352     2               !
-             353     2   p   2                   tp1(i,k) = t(i,k)
-             354     2   p   2                   qp1(i,k) = max(q(i,k),epsq)
-             355     2   p   2                 enddo
-             356     1   p                   enddo
+             350     2   p   2                 do i = 1, im
+             351     2   p   2                   tp(i,k)  = tp1(i,k)
+             352     2   p   2                   qp(i,k)  = qp1(i,k)
+             353     2               !
+             354     2   p   2                   tp1(i,k) = t(i,k)
+             355     2   p   2                   qp1(i,k) = max(q(i,k),epsq)
+             356     2   p   2                 enddo
+             357     1   p                   enddo
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 942
@@ -510,32 +511,32 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      psp, psp1, ps
                                    <<< Loop-information  End >>>
-             357     1  pp   2               do i = 1, im
-             358     1   p   2                 psp(i)  = psp1(i)
-             359     1   p   2                 psp1(i) = ps(i)
-             360     1   p   2               enddo
-             361                     !      else                   ! two time level scheme - tp1, qp1, psp1 not used
-             362                     !        do k = 1, km
-             363                     !          do i = 1, im
-             364                     !            tp(i,k)  = t(i,k)
-             365                     !            qp(i,k)  = max(q(i,k),epsq)
-             366                     !            qp(i,k)  = q(i,k)
-             367                     !            tp1(i,k) = tp(i,k)
-             368                     !            qp1(i,k) = qp(i,k)
-             369                     !          enddo
-             370                     !        enddo
-             371                     !        do i = 1, im
-             372                     !          psp(i)  = ps(i)
-             373                     !          psp1(i) = ps(i)
-             374                     !        enddo
-             375                     !      endif
-             376                     !-----------------------------------------------------------------------
-             377                           return
-             378                           end
+             358     1  pp   2               do i = 1, im
+             359     1   p   2                 psp(i)  = psp1(i)
+             360     1   p   2                 psp1(i) = ps(i)
+             361     1   p   2               enddo
+             362                     !      else                   ! two time level scheme - tp1, qp1, psp1 not used
+             363                     !        do k = 1, km
+             364                     !          do i = 1, im
+             365                     !            tp(i,k)  = t(i,k)
+             366                     !            qp(i,k)  = max(q(i,k),epsq)
+             367                     !            qp(i,k)  = q(i,k)
+             368                     !            tp1(i,k) = tp(i,k)
+             369                     !            qp1(i,k) = qp(i,k)
+             370                     !          enddo
+             371                     !        enddo
+             372                     !        do i = 1, im
+             373                     !          psp(i)  = ps(i)
+             374                     !          psp1(i) = ps(i)
+             375                     !        enddo
+             376                     !      endif
+             377                     !-----------------------------------------------------------------------
+             378                           return
+             379                           end
 
  Procedure information
-   Lines      : 378
-   Statements : 219
+   Lines      : 379
+   Statements : 220
    Stack(byte): 4976
    Prefetch num: 0
 
@@ -551,68 +552,68 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 305
-      |(Reference)      : 311  312
+      |(Definition)     : 306
+      |(Reference)      : 312  313
      ab
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 306
-      |(Reference)      : 307  308
+      |(Definition)     : 307
+      |(Reference)      : 308  309
      ac
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 307
-      |(Reference)      : 313  313
+      |(Definition)     : 308
+      |(Reference)      : 314  314
      ad
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 308
-      |(Reference)      : 313
+      |(Definition)     : 309
+      |(Reference)      : 314
      ae
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 309
-      |(Reference)      : 310  313
+      |(Definition)     : 310
+      |(Reference)      : 311  314
      af
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 310
-      |(Reference)      : 313  313
+      |(Definition)     : 311
+      |(Reference)      : 314  314
      ag
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 311
-      |(Reference)      : 313
+      |(Definition)     : 312
+      |(Reference)      : 314
      ai
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 312
-      |(Reference)      : 313
+      |(Definition)     : 313
+      |(Reference)      : 314
      albycp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
       |(Definition)     : 80
-      |(Reference)      : 263  278
+      |(Reference)      : 264  279
      ap
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 192
-      |(Reference)      : 313
+      |(Definition)     : 193
+      |(Reference)      : 314
      aq
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 191
-      |(Reference)      : 313
+      |(Definition)     : 192
+      |(Reference)      : 314
      arcp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
@@ -623,8 +624,8 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 190
-      |(Reference)      : 313
+      |(Definition)     : 191
+      |(Reference)      : 314
      bi
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
@@ -636,85 +637,85 @@
       |(Attributes)     : 
       |(Declaration)    : 64
       |(Definition)     : 84
-      |(Reference)      : 246  302
+      |(Reference)      : 247  303
      ccrik
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 216  221  223  225  226  227  231  233
-      |(Reference)      : 226  227  246  302  304  306  307  308
+      |(Definition)     : 217  222  224  226  227  228  232  234
+      |(Reference)      : 227  228  247  303  305  307  308  309
      ccrik1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 304
-      |(Reference)      : 306  308  308
+      |(Definition)     : 305
+      |(Reference)      : 307  309  309
      climit
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
       |(Definition)     : 85
-      |(Reference)      : 151  160  174  182  246
+      |(Reference)      : 152  161  175  183  247
      cond
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 300  313  316  328
-      |(Reference)      : 316  328  331
+      |(Definition)     : 301  314  317  329
+      |(Reference)      : 317  329  332
      condi
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 315
-      |(Reference)      : 316
+      |(Definition)     : 316
+      |(Reference)      : 317
      cone0
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 331
-      |(Reference)      : 332  336  337
+      |(Definition)     : 332
+      |(Reference)      : 333  337  338
      cons_0
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 50
       |(Definition)     : 
-      |(Reference)      : 255  270  285  294  296
+      |(Reference)      : 256  271  286  295  297
      cons_m15
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 50
       |(Definition)     : 
-      |(Reference)      : 149
+      |(Reference)      : 150
      cp
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 25  33
       |(Definition)     : 
-      |(Reference)      : 43  43  312
+      |(Reference)      : 43  43  313
      cpr
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 39  43
       |(Definition)     : 
-      |(Reference)      : 43  309
+      |(Reference)      : 43  310
      cwm
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  53
-      |(Definition)     : 332
-      |(Reference)      : 151  182  332
+      |(Definition)     : 333
+      |(Reference)      : 152  183  333
      cwmik
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 151  182
-      |(Reference)      : 160  174  218  246  295  307
+      |(Definition)     : 152  183
+      |(Reference)      : 161  175  219  247  296  308
      d00
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 39  43
       |(Definition)     : 
-      |(Reference)      : 88  160  203  221  233  245  300  328
+      |(Reference)      : 88  161  204  222  234  246  301  329
      d125
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
@@ -731,44 +732,44 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 260  275  290
-      |(Reference)      : 262  263  264  277  278  279  292
+      |(Definition)     : 261  276  291
+      |(Reference)      : 263  264  265  278  279  280  293
      deltaq
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  53
       |(Definition)     : 133
-      |(Reference)      : 152  186
+      |(Reference)      : 153  187
      deltaqik
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 53
-      |(Definition)     : 152  186
-      |(Reference)      : 159  219  220  222  225  257  260  272  275  287  290  303  306
+      |(Definition)     : 153  187
+      |(Reference)      : 160  220  221  223  226  258  261  273  276  288  291  304  307
      dt
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  53
       |(Definition)     : 
-      |(Reference)      : 82  331
+      |(Reference)      : 82  332
      e0
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 245  294  295  296
-      |(Reference)      : 295  296  331
+      |(Definition)     : 246  295  296  297
+      |(Reference)      : 296  297  332
      el2orc
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
       |(Definition)     : 79
-      |(Reference)      : 260  275  290
+      |(Reference)      : 261  276  291
      eliv
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 39  43
       |(Definition)     : 
-      |(Reference)      : 198
+      |(Reference)      : 199
      eliw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
@@ -779,62 +780,62 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 198
-      |(Reference)      : 305  311  336
+      |(Definition)     : 199
+      |(Reference)      : 306  312  337
      elwv
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 39  43
       |(Definition)     : 
-      |(Reference)      : 198
+      |(Reference)      : 199
      eps
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 25  34
       |(Definition)     : 
-      |(Reference)      : 35  95  254  269  284  305
+      |(Reference)      : 35  95  255  270  285  306
      epsm1
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 25  35
       |(Definition)     : 
-      |(Reference)      : 95  254  269  284
+      |(Reference)      : 95  255  270  285
      epsq
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 39  43
       |(Definition)     : 
-      |(Reference)      : 96  122  124  150  181  219  302  354
+      |(Reference)      : 96  122  124  151  182  220  303  355
      es
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 253  268  283
-      |(Reference)      : 254  254  269  269  284  284
+      |(Definition)     : 254  269  284
+      |(Reference)      : 255  255  270  270  285  285
      fi
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 159
-      |(Reference)      : 160
+      |(Definition)     : 160
+      |(Reference)      : 161
      fiw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 197
-      |(Reference)      : 198  198  199  199
+      |(Definition)     : 198
+      |(Reference)      : 199  199  200  200
      float
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 197
+      |(Reference)      : 198
      fpvs
       |(Class and Type) : external function name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 94  253  268  283
+      |(Reference)      : 94  254  269  284
      fpvs
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
@@ -864,13 +865,13 @@
       |(Attributes)     : 
       |(Declaration)    : 39  43
       |(Definition)     : 
-      |(Reference)      : 43  43  82  83  198  199
+      |(Reference)      : 43  43  82  83  199  200
      h1000
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 39  43
       |(Definition)     : 
-      |(Reference)      : 93  188
+      |(Reference)      : 93  189
      h2
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
@@ -893,32 +894,32 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 73
-      |(Definition)     : 87  91  120  127  132  147  179  349  357
-      |(Reference)      : 88  93  94  95  96  96  121  121  122  122  123  123  124  124  128  128  129  129  133  133  133  148  150  151  152  153  153  154  154  158  159  161  163  168  172  174  174  181  182  183  184  186  187  188  189  189  190  191  199  199  332  332  336  336  337  337  350  350  351  351  353  353  354  354  358  358  359  359
+      |(Definition)     : 87  91  120  127  132  148  180  350  358
+      |(Reference)      : 88  93  94  95  96  96  121  121  122  122  123  123  124  124  128  128  129  129  133  133  133  149  151  152  153  154  154  155  155  159  160  162  164  169  173  175  175  182  183  184  185  187  188  189  190  190  191  192  200  200  333  333  337  337  338  338  351  351  352  352  354  354  355  355  359  359  360  360
      iice
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : 
       |(Declaration)    : 61
-      |(Definition)     : 185  194
-      |(Reference)      : 207
+      |(Definition)     : 186  195
+      |(Reference)      : 208
      im
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  52
       |(Definition)     : 
-      |(Reference)      : 53  53  53  64  64  64  64  73  87  91  120  127  132  147  179  349  357
+      |(Reference)      : 53  53  53  64  64  64  64  73  87  91  120  127  132  148  180  350  358
      iw
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 73
-      |(Definition)     : 88  161  163  168  172  174
-      |(Reference)      : 174  183
+      |(Definition)     : 88  162  164  169  173  175
+      |(Reference)      : 175  184
      iwik
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 73
-      |(Definition)     : 183
-      |(Reference)      : 197
+      |(Definition)     : 184
+      |(Reference)      : 198
      ix
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
@@ -929,20 +930,20 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 73
-      |(Definition)     : 92  119  131  143  348
-      |(Reference)      : 93  94  95  96  96  121  121  122  122  123  123  124  124  133  133  133  148  150  151  152  153  154  158  161  163  168  172  173  174  174  181  182  183  184  186  187  188  190  191  332  332  336  336  337  337  350  350  351  351  353  353  354  354
+      |(Definition)     : 92  119  131  144  349
+      |(Reference)      : 93  94  95  96  96  121  121  122  122  123  123  124  124  133  133  133  149  151  152  153  154  155  159  162  164  169  173  174  175  175  182  183  184  185  187  188  189  191  192  333  333  337  337  338  338  351  351  352  352  354  354  355  355
      kdt
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  73
-      |(Definition)     : 
+      |(Definition)     : 136
       |(Reference)      : 118
      km
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  52
       |(Definition)     : 
-      |(Reference)      : 53  53  53  53  53  53  53  53  53  64  64  73  88  92  119  131  143  173  348
+      |(Reference)      : 53  53  53  53  53  53  53  53  53  64  64  73  88  92  119  131  144  174  349
      lprnt
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : dummy-argument
@@ -954,37 +955,37 @@
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 96  122  124  150  151  181  182  226  294  296  328  354
+      |(Reference)      : 96  122  124  151  152  182  183  227  295  297  329  355
      min
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 94  149  227  253  268  283  295  316
+      |(Reference)      : 94  150  228  254  269  284  296  317
      pp0
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 189
-      |(Reference)      : 192
+      |(Definition)     : 190
+      |(Reference)      : 193
      pres
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 93  188
-      |(Reference)      : 94  95  189  192  253  254  268  269  283  284  305  310
+      |(Definition)     : 93  189
+      |(Reference)      : 94  95  190  193  254  255  269  270  284  285  306  311
      prsl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  53
       |(Definition)     : 
-      |(Reference)      : 93  188
+      |(Reference)      : 93  189
      ps
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  53
       |(Definition)     : 
-      |(Reference)      : 128  129  189  359
+      |(Reference)      : 128  129  190  360
      psat
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
@@ -995,74 +996,74 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  53
-      |(Definition)     : 128  358
+      |(Definition)     : 128  359
       |(Reference)      : 
      psp1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  53
-      |(Definition)     : 129  359
-      |(Reference)      : 189  358
+      |(Definition)     : 129  360
+      |(Reference)      : 190  359
      q
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  53
-      |(Definition)     : 337
-      |(Reference)      : 122  124  150  181  337  354
+      |(Definition)     : 338
+      |(Reference)      : 122  124  151  182  338  355
      qc
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 199
-      |(Reference)      : 202  205  208  211  302  303  307  308  315
+      |(Definition)     : 200
+      |(Reference)      : 203  206  209  212  303  304  308  309  316
      qi
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 64
-      |(Definition)     : 153
-      |(Reference)      : 159  199
+      |(Definition)     : 154
+      |(Reference)      : 160  200
      qik
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 150  181
-      |(Reference)      : 159  191  205  218  251  305  313  315
+      |(Definition)     : 151  182
+      |(Reference)      : 160  192  206  219  252  306  314  316
      qint
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 64
-      |(Definition)     : 154
-      |(Reference)      : 199
+      |(Definition)     : 155
+      |(Reference)      : 200
      qp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  53
-      |(Definition)     : 122  351
+      |(Definition)     : 122  352
       |(Reference)      : 
      qp1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  53
-      |(Definition)     : 124  354
-      |(Reference)      : 191  351
+      |(Definition)     : 124  355
+      |(Reference)      : 192  352
      qs
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 254  269  284
-      |(Reference)      : 255  257  260  260  270  272  275  275  285  287  290  290
+      |(Definition)     : 255  270  285
+      |(Reference)      : 256  258  261  261  271  273  276  276  286  288  291  291
      qsc
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 59
-      |(Definition)     : 208  211
-      |(Reference)      : 218  307
+      |(Definition)     : 209  212
+      |(Reference)      : 219  308
      qtmp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 59
-      |(Definition)     : 218
-      |(Reference)      : 220  222  225  230
+      |(Definition)     : 219
+      |(Reference)      : 221  223  226  231
      qtpd
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
@@ -1074,7 +1075,7 @@
       |(Attributes)     : DIMENSION
       |(Declaration)    : 64
       |(Definition)     : 95  96
-      |(Reference)      : 96  133  153  154
+      |(Reference)      : 96  133  154  155
      qwtmp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
@@ -1092,7 +1093,7 @@
       |(Attributes)     : 
       |(Declaration)    : 39  43
       |(Definition)     : 
-      |(Reference)      : 336
+      |(Reference)      : 337
      rcpr
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
@@ -1110,13 +1111,13 @@
       |(Attributes)     : 
       |(Declaration)    : 64
       |(Definition)     : 82
-      |(Reference)      : 190  191  192  294  295  315
+      |(Reference)      : 191  192  193  295  296  316
      rqik
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 203  205
-      |(Reference)      : 215
+      |(Definition)     : 204  206
+      |(Reference)      : 216
      rqikk
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
@@ -1134,25 +1135,25 @@
       |(Attributes)     : INTENT(IN), dummy-argument
       |(Declaration)    : 1  60
       |(Definition)     : 
-      |(Reference)      : 208  209
+      |(Reference)      : 209  210
      t
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  53
-      |(Definition)     : 94  336
-      |(Reference)      : 121  123  148  187  336  353
+      |(Definition)     : 94  337
+      |(Reference)      : 121  123  149  188  337  354
      thgni
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 25  36
       |(Definition)     : 
-      |(Reference)      : 193
+      |(Reference)      : 194
      tik
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 187
-      |(Reference)      : 190  193  250  309  309
+      |(Definition)     : 188
+      |(Reference)      : 191  194  251  310  310
      tm10
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
@@ -1163,32 +1164,32 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 148
-      |(Reference)      : 149  157  167  171  171
+      |(Definition)     : 149
+      |(Reference)      : 150  158  168  172  172
      tmt15
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 149
+      |(Definition)     : 150
       |(Reference)      : 
      tp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  53
-      |(Definition)     : 121  350
+      |(Definition)     : 121  351
       |(Reference)      : 
      tp1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  53
-      |(Definition)     : 123  353
-      |(Reference)      : 190  350
+      |(Definition)     : 123  354
+      |(Reference)      : 191  351
      tsq
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 259  274  289
-      |(Reference)      : 260  260  275  275  290  290
+      |(Definition)     : 260  275  290
+      |(Reference)      : 261  261  276  276  291  291
      ttp
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
@@ -1199,26 +1200,26 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 250  253  263  268  278  283
-      |(Reference)      : 259  259  263  274  274  278  289  289
+      |(Definition)     : 251  254  264  269  279  284
+      |(Reference)      : 260  260  264  275  275  279  290  290
      tx2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 262  277  292
-      |(Reference)      : 277  292  294
+      |(Definition)     : 263  278  293
+      |(Reference)      : 278  293  295
      tx3
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 251  264  279
-      |(Reference)      : 260  264  275  279  290
+      |(Definition)     : 252  265  280
+      |(Reference)      : 261  265  276  280  291
      u
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  64
       |(Definition)     : 
-      |(Reference)      : 133  158  184
+      |(Reference)      : 133  159  185
      u00b
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
@@ -1229,8 +1230,8 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 158  184
-      |(Reference)      : 315
+      |(Definition)     : 159  185
+      |(Reference)      : 316
      u00t
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
@@ -1242,19 +1243,19 @@
       |(Attributes)     : 
       |(Declaration)    : 64
       |(Definition)     : 83
-      |(Reference)      : 212  216  223  231  308
+      |(Reference)      : 213  217  224  232  309
      us00
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 64
-      |(Definition)     : 303
+      |(Definition)     : 304
       |(Reference)      : 
      usc
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 59
-      |(Definition)     : 209  212
-      |(Reference)      : 215  308
+      |(Definition)     : 210  213
+      |(Reference)      : 216  309
      vprs
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
@@ -1264,8 +1265,8 @@
 
  Total information
    Procedures       : 1
-   Total lines      : 378
-   Total statements : 219
+   Total lines      : 379
+   Total statements : 220
    Total stack(byte): 4976
    Total prefetch num: 0
 

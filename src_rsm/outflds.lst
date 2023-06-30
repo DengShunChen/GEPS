@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Thu Jun 29 14:24:06 2023
+ Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:31:19 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
    Source file       : outflds.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -64,7 +64,7 @@
                2                                  , lmax,numout,idtg,ifilout                              &
                3                                  , outdir,ktrop,ptop,capa,cp,rgas,grav,sigma,sgeo        &
                4                                  , ptend,pt,plt,pk,pk2,phi,ut,vt,vvel                    &
-               5                                  , tt,qt_org,rdiv,rvor,tg,gwet,z0,hflux,qflux,snr        &
+               5                                  , tt,qt,rdiv,rvor,tg,gwet,z0,hflux,qflux,snr            &
                6                                  , raintot,raincu,rainlp,plcl,cumtop,ss,rs,alb,gwclim    &
                7                                  , acld,cosl,drag,ugws,vgws,t2,q2,rh2,rh10,u10,v10,gfx,rld,sld &
                8                     !byl             , km,smc,slc,stc,canopy,ggdef,slptyp,v850,v700,h850,h500   &
@@ -82,7 +82,7 @@
               20                           use index
               21                           use mod_outflds
               22                           use radn, only : ntcw,ntiw,ntoz
-              23                           use const, only : RTYPE,nmmiph
+              23                           use const, only : RTYPE
               24                     
               25                           implicit  none
               26                     
@@ -116,7 +116,7 @@
               54                           real(kind=RTYPE) rdiv(nxp,lev,my_max),rvor(nxp,lev,my_max)    &
               55                                          , ut(nxp,lev,my_max),vt(nxp,lev,my_max)        &
               56                                          , tt(nxp,lev,my_max),qt(nxp,lev*ncld,my_max)   &
-              57                                          , qt_org(nxp,lev*ncld,my_max),phi(nxp,lev,my_max) &
+              57                                          , sht(nxp,lev*ncld,my_max),phi(nxp,lev,my_max) &
               58                                          , sgeo(nxp,my_max),ptend(nxp,my_max)           &
               59                                          , pt(nxp,my_max),vvel(nxp,lev,my_max)          &
               60                                          , sigma(lev+1,2)                               &
@@ -239,48 +239,47 @@
              137                     !
              138                           call whttau (itau,numout,outdir,ntau,taudir)
              139                           if(ntau.eq.0) return
-             140                     
-             141                     !
-             142                     !  copy qt into local qt arrays
-             143                     !
+             140                     !
+             141                     !  save qt into local arrays
+             142                     !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<< Loop-information  End >>>
-             144     1  pp                 do jj = 1, jlistnum
-             145     1   p                   j=jlist1(jj)
-             146     1   p                   nxj=nxdef_2d(j)
+             143     1  pp                 do jj = 1, jlistnum
+             144     1   p                   j=jlist1(jj)
+             145     1   p                   nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      qt_org, qt
+                                   <<<      qt, sht
                                    <<< Loop-information  End >>>
-             147     2   p                   do k = 1, lev*ncld
+             146     2   p                   do k = 1, lev*ncld
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
                                    <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      qt_org, qt
+                                   <<<      qt, sht
                                    <<< Loop-information  End >>>
-             148     3   p   4v                do i = 1,nxj
-             149     3   p   4v                  qt(i,k,jj) = qt_org(i,k,jj)
-             150     3   p   4v                enddo
-             151     2   p                   enddo
-             152     1   p                 enddo
-             153                     !
-             154     1                     if(ncld.ge.2)then
-             155     1                       ntrac=2
-             156     1                     else
-             157     1                       ntrac=ncld
-             158     1                     endif
-             159     1                     do n=1,ntrac
-             160     1                       nk=(n-1)*lev
-             161     1                       ngq = 0
-             162     1                       ntt = 0
-             163     2                       do jj =1,jlistnum
-             164     2                         j=jlist1(jj)
-             165     2                         nxj=nxdef_2d(j)
+             147     3   p   4v                do i = 1,nxj
+             148     3   p   4v                  sht(i,k,jj) = qt(i,k,jj)
+             149     3   p   4v                enddo
+             150     2   p                   enddo
+             151     1   p                 enddo
+             152                     !
+             153     1                     if(ncld.ge.2)then
+             154     1                       ntrac=2
+             155     1                     else
+             156     1                       ntrac=ncld
+             157     1                     endif
+             158     1                     do n=1,ntrac
+             159     1                       nk=(n-1)*lev
+             160     1                       ngq = 0
+             161     1                       ntt = 0
+             162     2                       do jj =1,jlistnum
+             163     2                         j=jlist1(jj)
+             164     2                         nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 5
@@ -288,8 +287,8 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qt
                                    <<< Loop-information  End >>>
-             166     3  pp                     do k = 1, lev
-             167     3   p                       kk=nk+k
+             165     3  pp                     do k = 1, lev
+             166     3   p                       kk=nk+k
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -297,35 +296,35 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qt
                                    <<< Loop-information  End >>>
-             168     4   p   2v                  do i = 1,nxj
-             169     5   p   2v                    if ( qt(i,kk,jj) .lt. 0.0 )  then
-             170     5   p   2v                      ngq = ngq + 1
-             171     5   p   2v                      qt(i,kk,jj) = 0.0
-             172     5   p   2v                    endif
-             173     4   p   2v                  enddo
-             174     3   p                     enddo
-             175     2               !         ntt = ntt + nxj*lev
-             176     2                         ntt = ntt + nxjp(j)*lev
-             177     2                       enddo
-             178     1                       call mpe_global_sum(ngq,1,mpe_integer)
-             179     1                       call mpe_global_sum(ntt,1,mpe_integer)
-             180     1                       if( n.eq.1 .and. myrank.eq.0 .and. ngq.ne.0 )  print 901, ngq
-             181     1                       if( n.eq.2 .and. myrank.eq.0 .and. ngq.ne.0 )  print 902, ntt-ngq
-             182     1                     enddo
-             183                     
-             184                       901 format ( 1x, " *** warning: in outflds, there are grid points"  &
-             185                                  , " with q < 0. , total number = ",i8,// )
-             186                       902 format ( 1x, " *** checking: in outflds, there are grid points" &
-             187                                  , " with qc > 0. , total number = ",i8,// )
-             188                     !
-             189                     !                 compute interpolation coeffs
-             190                     !
-             191                           ograv= 1.0/grav
-             192                     !
-             193                     !  generate structure variables
-             194                     !
-             195                     !  first, the log(p) quantities
-             196                     !
+             167     4   p   2v                  do i = 1,nxj
+             168     5   p   2v                    if ( qt(i,kk,jj) .lt. 0.0 )  then
+             169     5   p   2v                      ngq = ngq + 1
+             170     5   p   2v                      qt(i,kk,jj) = 0.0
+             171     5   p   2v                    endif
+             172     4   p   2v                  enddo
+             173     3   p                     enddo
+             174     2               !         ntt = ntt + nxj*lev
+             175     2                         ntt = ntt + nxjp(j)*lev
+             176     2                       enddo
+             177     1                       call mpe_global_sum(ngq,1,mpe_integer)
+             178     1                       call mpe_global_sum(ntt,1,mpe_integer)
+             179     1                       if( n.eq.1 .and. myrank.eq.0 .and. ngq.ne.0 )  print 901, ngq
+             180     1                       if( n.eq.2 .and. myrank.eq.0 .and. ngq.ne.0 )  print 902, ntt-ngq
+             181     1                     enddo
+             182                     
+             183                       901 format ( 1x, " *** warning: in outflds, there are grid points"  &
+             184                                  , " with q < 0. , total number = ",i8,// )
+             185                       902 format ( 1x, " *** checking: in outflds, there are grid points" &
+             186                                  , " with qc > 0. , total number = ",i8,// )
+             187                     !
+             188                     !                 compute interpolation coeffs
+             189                     !
+             190                           ograv= 1.0/grav
+             191                     !
+             192                     !  generate structure variables
+             193                     !
+             194                     !  first, the log(p) quantities
+             195                     !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 45
@@ -333,19 +332,19 @@
                                    <<<    SIMD(VL: 8)
                                    <<<    FULL UNROLLING
                                    <<< Loop-information  End >>>
-             197     1   s   fv            do k=1,lpout
-             198     1   p   fv              pkout(k)= log(pout(k))
-             199     1   p   fv            enddo
-             200                     !
-             201                     !  generate std height at p levels
-             202                     !
-             203                           call geostd(lpout,pout,phistd)
-             204                     !
-             205                           alaps = 0.0065
-             206                           rdg = rgas/grav
-             207                     !
-             208                     !  hydrostatic equation
-             209                     !
+             196     1   s   fv            do k=1,lpout
+             197     1   p   fv              pkout(k)= log(pout(k))
+             198     1   p   fv            enddo
+             199                     !
+             200                     !  generate std height at p levels
+             201                     !
+             202                           call geostd(lpout,pout,phistd)
+             203                     !
+             204                           alaps = 0.0065
+             205                           rdg = rgas/grav
+             206                     !
+             207                     !  hydrostatic equation
+             208                     !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
@@ -353,9 +352,9 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      tt, pk2, pk, sgeo, phi
                                    <<< Loop-information  End >>>
-             210     1  pp                 do jj =1,jlistnum
-             211     1   p                   j=jlist1(jj)
-             212     1   p                   nxj=nxdef_2d(j)
+             209     1  pp                 do jj =1,jlistnum
+             210     1   p                   j=jlist1(jj)
+             211     1   p                   nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -363,16 +362,16 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      pk2, pk, sgeo, tt, phi
                                    <<< Loop-information  End >>>
-             213     2   p   2v              do i=1,nxj
-             214     2   p   2v                phi(i,lev,jj)= cp*tt(i,lev,jj)*(pk2(i,lev,jj)-pk(i,lev,jj)) &
-             215     2                                      + sgeo(i,jj)
-             216     2   p   2v              enddo
+             212     2   p   2v              do i=1,nxj
+             213     2   p   2v                phi(i,lev,jj)= cp*tt(i,lev,jj)*(pk2(i,lev,jj)-pk(i,lev,jj)) &
+             214     2                                      + sgeo(i,jj)
+             215     2   p   2v              enddo
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      pk, pk2, tt, phi
                                    <<< Loop-information  End >>>
-             217     2   p                   do k=lev-1,1,-1
+             216     2   p                   do k=lev-1,1,-1
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -380,17 +379,17 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      tt, pk, phi, pk2
                                    <<< Loop-information  End >>>
-             218     3   p    v                do i=1,nxj
-             219     3   p    v                  phi(i,k,jj)= phi(i,k+1,jj)+cp*(tt(i,k,jj)*(pk2(i,k,jj)-pk(i,k,jj)) &
-             220     3                                      + tt(i,k+1,jj)*(pk(i,k+1,jj)-pk2(i,k,jj)))
-             221     3   p    v                enddo
-             222     2   p                   enddo
+             217     3   p    v                do i=1,nxj
+             218     3   p    v                  phi(i,k,jj)= phi(i,k+1,jj)+cp*(tt(i,k,jj)*(pk2(i,k,jj)-pk(i,k,jj)) &
+             219     3                                      + tt(i,k+1,jj)*(pk(i,k+1,jj)-pk2(i,k,jj)))
+             220     3   p    v                enddo
+             221     2   p                   enddo
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      plt, plog
                                    <<< Loop-information  End >>>
-             223     2   p                   do k=1,lev
+             222     2   p                   do k=1,lev
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -398,29 +397,29 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      plt, plog
                                    <<< Loop-information  End >>>
-             224     3   p    v                do i=1,nxj
-             225     3   p    v                  plog(i,k,jj)= log(plt(i,k,jj))
-             226     3   p    v                enddo
-             227     2   p                   enddo
-             228     1   p                 enddo
-             229                     !
-             230                     !  compute sea level pressure and update pdiff
-             231                     !  The method is based on one used by ecmwf, reseach manual 2 (1988)
-             232                     !
-             233                     !  llts layer's temperature is used to derive an alternative
-             234                     !  surface skin temperature
-             235                     !
-             236                     !      if( itau .gt. 0 )then
-             237                     !
-             238                           llts = lev-5
-             239                     !
+             223     3   p    v                do i=1,nxj
+             224     3   p    v                  plog(i,k,jj)= log(plt(i,k,jj))
+             225     3   p    v                enddo
+             226     2   p                   enddo
+             227     1   p                 enddo
+             228                     !
+             229                     !  compute sea level pressure and update pdiff
+             230                     !  The method is based on one used by ecmwf, reseach manual 2 (1988)
+             231                     !
+             232                     !  llts layer's temperature is used to derive an alternative
+             233                     !  surface skin temperature
+             234                     !
+             235                     !      if( itau .gt. 0 )then
+             236                     !
+             237                           llts = lev-5
+             238                     !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<< Loop-information  End >>>
-             240     1  pp                 do jj = 1, jlistnum
-             241     1   p                   j=jlist1(jj)
-             242     1   p                   nxj=nxdef_2d(j)
+             239     1  pp                 do jj = 1, jlistnum
+             240     1   p                   j=jlist1(jj)
+             241     1   p                   nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -433,78 +432,78 @@
                                    <<<      SCALABLE  : SPILL 0  FILL 1
                                    <<<      PREDICATE : SPILL 1  FILL 1
                                    <<< Loop-information  End >>>
-             243     2   p    v              do i=1,nxj
-             244     2   p    v                ttb  = tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt(i,lev,jj))
-             245     2   p    v                ttp  = tt(i,llts,jj)*pk(i,llts,jj)/(1.0+0.608*qt(i,llts,jj))
-             246     2   p    v                ttt1 = ttb + alaps*rdg*ttb*   &
-             247     2                             ((pt(i,jj)+ptop)/plt(i,lev,jj)-1.0)
-             248     2   p    v                ttt2 = ttp + alaps*(phi(i,llts,jj)-sgeo(i,jj))/grav
-             249     2   p    v                hld1(i,jj) = 0.25*ttt1 + 0.75*ttt2
-             250     2   p    v                hld2(i,jj) = hld1(i,jj) + alaps*sgeo(i,jj)/grav
-             251     3   p    v                if( sgeo(i,jj) .lt. 0.1 ) then
-             252     3   p    v                  anlslp = pt(i,jj) + ptop
-             253     3   p    v                else if( hld1(i,jj) .le. 290.5 .and. hld2(i,jj) .gt. 290.5 ) then
-             254     3   p    v                  apha = rgas*(290.5-hld1(i,jj))/sgeo(i,jj)
-             255     3   p    v                  ttt = sgeo(i,jj)/(rgas*hld1(i,jj))
-             256     3   p    v                  anlslp = (pt(i,jj)+ptop)*exp( ttt*(1.0-0.5*apha*ttt+0.333333*  &
-             257     3                                    apha*ttt*apha*ttt) )
-             258     3   p    v                else if( hld1(i,jj) .gt. 290.5 .and. hld2(i,jj) .gt. 290.5 ) then
-             259     3   p    v                  hld1(i,jj) = (hld1(i,jj)+290.5)*0.5
-             260     3   p    v                  anlslp = (pt(i,jj)+ptop)*exp( sgeo(i,jj)/(rgas*hld1(i,jj)) )
-             261     3   p    v                else if( hld1(i,jj) .lt. 255.0 .and. hld2(i,jj) .lt. 255.0 ) then
-             262     3   p    v                  hld1(i,jj) = (hld1(i,jj)+255.0)*0.5
-             263     3   p    v                  anlslp = (pt(i,jj)+ptop)*exp( sgeo(i,jj)/(rgas*hld1(i,jj)) )
-             264     3   p    v                else
-             265     3   p    v                  apha = alaps * rdg
-             266     3   p    v                  ttt = sgeo(i,jj)/(rgas*hld1(i,jj))
-             267     3   p    v                  anlslp = (pt(i,jj)+ptop)*exp( ttt*(1.0-0.5*apha*ttt+0.333333*  &
-             268     3                                    apha*ttt*apha*ttt) )
-             269     3   p    v                endif
-             270     2   p    v                pllp(i,jj) = anlslp - pt(i,jj)
-             271     2   p    v                pdiff(i,jj)=pllp(i,jj)
-             272     2   p    v              enddo
-             273     1   p                 enddo
-             274                     !
-             275                     !      else
-             276                     !
-             277                     !  pllp equal to pdiff at the initial time, tau=0
-             278                     !
-             279                     !      do jj = 1, jlistnum
-             280                     !        j=jlist1(jj)
-             281                     !        nxj=nxdef(j)
-             282                     !        do i = 1, nxj
-             283                     !          pllp(i,j) = pdiff(i,jj)
-             284                     !        enddo
-             285                     !      enddo
-             286                     !
-             287                     !      endif     ! end of ( itau .gt. 0 )
-             288                     !
-             289                     !      call mpe_unify(pllp,nx,my,2,mpe_double)
-             290                     !      call mpe_unify(pt,nx,my,2,mpe_double)
-             291                     !      call mpe_unify(ptend,nx,my,2,mpe_double)
+             242     2   p    v              do i=1,nxj
+             243     2   p    v                ttb  = tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt(i,lev,jj))
+             244     2   p    v                ttp  = tt(i,llts,jj)*pk(i,llts,jj)/(1.0+0.608*qt(i,llts,jj))
+             245     2   p    v                ttt1 = ttb + alaps*rdg*ttb*   &
+             246     2                             ((pt(i,jj)+ptop)/plt(i,lev,jj)-1.0)
+             247     2   p    v                ttt2 = ttp + alaps*(phi(i,llts,jj)-sgeo(i,jj))/grav
+             248     2   p    v                hld1(i,jj) = 0.25*ttt1 + 0.75*ttt2
+             249     2   p    v                hld2(i,jj) = hld1(i,jj) + alaps*sgeo(i,jj)/grav
+             250     3   p    v                if( sgeo(i,jj) .lt. 0.1 ) then
+             251     3   p    v                  anlslp = pt(i,jj) + ptop
+             252     3   p    v                else if( hld1(i,jj) .le. 290.5 .and. hld2(i,jj) .gt. 290.5 ) then
+             253     3   p    v                  apha = rgas*(290.5-hld1(i,jj))/sgeo(i,jj)
+             254     3   p    v                  ttt = sgeo(i,jj)/(rgas*hld1(i,jj))
+             255     3   p    v                  anlslp = (pt(i,jj)+ptop)*exp( ttt*(1.0-0.5*apha*ttt+0.333333*  &
+             256     3                                    apha*ttt*apha*ttt) )
+             257     3   p    v                else if( hld1(i,jj) .gt. 290.5 .and. hld2(i,jj) .gt. 290.5 ) then
+             258     3   p    v                  hld1(i,jj) = (hld1(i,jj)+290.5)*0.5
+             259     3   p    v                  anlslp = (pt(i,jj)+ptop)*exp( sgeo(i,jj)/(rgas*hld1(i,jj)) )
+             260     3   p    v                else if( hld1(i,jj) .lt. 255.0 .and. hld2(i,jj) .lt. 255.0 ) then
+             261     3   p    v                  hld1(i,jj) = (hld1(i,jj)+255.0)*0.5
+             262     3   p    v                  anlslp = (pt(i,jj)+ptop)*exp( sgeo(i,jj)/(rgas*hld1(i,jj)) )
+             263     3   p    v                else
+             264     3   p    v                  apha = alaps * rdg
+             265     3   p    v                  ttt = sgeo(i,jj)/(rgas*hld1(i,jj))
+             266     3   p    v                  anlslp = (pt(i,jj)+ptop)*exp( ttt*(1.0-0.5*apha*ttt+0.333333*  &
+             267     3                                    apha*ttt*apha*ttt) )
+             268     3   p    v                endif
+             269     2   p    v                pllp(i,jj) = anlslp - pt(i,jj)
+             270     2   p    v                pdiff(i,jj)=pllp(i,jj)
+             271     2   p    v              enddo
+             272     1   p                 enddo
+             273                     !
+             274                     !      else
+             275                     !
+             276                     !  pllp equal to pdiff at the initial time, tau=0
+             277                     !
+             278                     !      do jj = 1, jlistnum
+             279                     !        j=jlist1(jj)
+             280                     !        nxj=nxdef(j)
+             281                     !        do i = 1, nxj
+             282                     !          pllp(i,j) = pdiff(i,jj)
+             283                     !        enddo
+             284                     !      enddo
+             285                     !
+             286                     !      endif     ! end of ( itau .gt. 0 )
+             287                     !
+             288                     !      call mpe_unify(pllp,nx,my,2,mpe_double)
+             289                     !      call mpe_unify(pt,nx,my,2,mpe_double)
+             290                     !      call mpe_unify(ptend,nx,my,2,mpe_double)
+             291                     !
              292                     !
-             293                     !
-             294                     ! output surface fields
-             295                     !
-             296                     !  add terrain pressure output in surfout ( add "ptop" )
-             297                     !
-             298                           if(myrank.eq.0)print*,' outfld : start surfout, lwrite = ',lwrite
-             299                           call surfout (nx,my,my_max,ifilout,itau,idtg,taudir,ntau,pdiff,pt  &
-             300                                        ,ptop,typtrk(1,1,1),ptend,glob,ggdef,lwrite)
-             301                     !
-             302                     !  obtain the the bottom pressure for the following interpolations
-             303                     !  bt2 will be used in geoptential interpolations
-             304                     !
-             305                           pl1000= log(1000.1)
-             306                     !
+             293                     ! output surface fields
+             294                     !
+             295                     !  add terrain pressure output in surfout ( add "ptop" )
+             296                     !
+             297                           if(myrank.eq.0)print*,' outfld : start surfout, lwrite = ',lwrite
+             298                           call surfout (nx,my,my_max,ifilout,itau,idtg,taudir,ntau,pdiff,pt  &
+             299                                        ,ptop,typtrk(1,1,1),ptend,glob,ggdef,lwrite)
+             300                     !
+             301                     !  obtain the the bottom pressure for the following interpolations
+             302                     !  bt2 will be used in geoptential interpolations
+             303                     !
+             304                           pl1000= log(1000.1)
+             305                     !
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      pdiff, pt, pllp, slp
                                    <<< Loop-information  End >>>
-             307     1                     do jj = 1, jlistnum
-             308     1                       j=jlist1(jj)
-             309     1                       nxj=nxdef_2d(j)
+             306     1                     do jj = 1, jlistnum
+             307     1                       j=jlist1(jj)
+             308     1                       nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 616
@@ -514,17 +513,17 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      pdiff, slp, pt, pllp
                                    <<< Loop-information  End >>>
-             310     2  pp   2v              do i = 1, nxj
-             311     2   p   2v                slp(i,jj)= pt(i,jj)+pdiff(i,jj)
-             312     3   p   2v                if( slp(i,jj) .le. 1000.1) then
-             313     3   p   2v                  pllp(i,jj) = 1000.1
-             314     3   p   2v                else
-             315     3   p   2v                  pllp(i,jj) = slp(i,jj)
-             316     3   p   2v                endif
-             317     2   p   2v              enddo
-             318     1               !
-             319     1                       call geostd (nxjp(j),pllp(1,jj),bt2(1,jj))
-             320     1               !
+             309     2  pp   2v              do i = 1, nxj
+             310     2   p   2v                slp(i,jj)= pt(i,jj)+pdiff(i,jj)
+             311     3   p   2v                if( slp(i,jj) .le. 1000.1) then
+             312     3   p   2v                  pllp(i,jj) = 1000.1
+             313     3   p   2v                else
+             314     3   p   2v                  pllp(i,jj) = slp(i,jj)
+             315     3   p   2v                endif
+             316     2   p   2v              enddo
+             317     1               !
+             318     1                       call geostd (nxjp(j),pllp(1,jj),bt2(1,jj))
+             319     1               !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 45
@@ -534,47 +533,47 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      pllp
                                    <<< Loop-information  End >>>
-             321     2  pp    v              do i = 1, nxj
-             322     2   p    v                pllp(i,jj) = log(pllp(i,jj))
-             323     2   p    v              enddo
-             324     1                     enddo
-             325                     !
-             326                     !      call mpe_unify(pllp,nx,my,2,mpe_double)
-             327                     !      call mpe_unify(bt2,nx,my,2,mpe_double)
-             328                     !
-             329                           labx='phi   '
-             330                           call whtrec (labx,ntau,taudir,whtlevz,numz)
-             331                     !
-             332                           labx='h2o   '
-             333                           call whtrec (labx,ntau,taudir,whtlevq,numq)
-             334                     !
-             335                           labx='tmp   '
-             336                           call whtrec (labx,ntau,taudir,whtlev,numt)
-             337                     !
-             338     1                     if(numz.gt.0.or.numt.gt.0.or.numq.gt.0) then
-             339     1               !
-             340     1               !  temperature output
-             341     1               !
+             320     2  pp    v              do i = 1, nxj
+             321     2   p    v                pllp(i,jj) = log(pllp(i,jj))
+             322     2   p    v              enddo
+             323     1                     enddo
+             324                     !
+             325                     !      call mpe_unify(pllp,nx,my,2,mpe_double)
+             326                     !      call mpe_unify(bt2,nx,my,2,mpe_double)
+             327                     !
+             328                           labx='phi   '
+             329                           call whtrec (labx,ntau,taudir,whtlevz,numz)
+             330                     !
+             331                           labx='h2o   '
+             332                           call whtrec (labx,ntau,taudir,whtlevq,numq)
+             333                     !
+             334                           labx='tmp   '
+             335                           call whtrec (labx,ntau,taudir,whtlev,numt)
+             336                     !
+             337     1                     if(numz.gt.0.or.numt.gt.0.or.numq.gt.0) then
+             338     1               !
+             339     1               !  temperature output
+             340     1               !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<< Loop-information  End >>>
-             342     2  pp                 do jj =1,jlistnum
-             343     2   p                   j=jlist1(jj)
-             344     2   p                   nxj=nxdef_2d(j)
-             345     2               !
-             346     2               !  bottom boundary condition for temperature:
-             347     2               !  limits for 1000 mb boundary condition are (1) standard lapse rate
-             348     2               !  from bottom model level for terrain height and (2) layer mean temp
-             349     2               !  of slp and 1000 mb.  Boundary condition is linear combination
-             350     2               !  of these two cases weighted with subterrainean thickness.
-             351     2               !
+             341     2  pp                 do jj =1,jlistnum
+             342     2   p                   j=jlist1(jj)
+             343     2   p                   nxj=nxdef_2d(j)
+             344     2               !
+             345     2               !  bottom boundary condition for temperature:
+             346     2               !  limits for 1000 mb boundary condition are (1) standard lapse rate
+             347     2               !  from bottom model level for terrain height and (2) layer mean temp
+             348     2               !  of slp and 1000 mb.  Boundary condition is linear combination
+             349     2               !  of these two cases weighted with subterrainean thickness.
+             350     2               !
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      tt, pk, qt, tmp
                                    <<< Loop-information  End >>>
-             352     3   p                   do k = 1, lev
+             351     3   p                   do k = 1, lev
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -582,11 +581,11 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      pk, tt, qt, tmp
                                    <<< Loop-information  End >>>
-             353     4   p   2v                do i = 1,nxj
-             354     4   p   2v                  tmp(i,k,jj) = tt(i,k,jj)*pk(i,k,jj)/(1.0+0.608*qt(i,k,jj))
-             355     4   p   2v                enddo
-             356     3   p                   enddo
-             357     2               !
+             352     4   p   2v                do i = 1,nxj
+             353     4   p   2v                  tmp(i,k,jj) = tt(i,k,jj)*pk(i,k,jj)/(1.0+0.608*qt(i,k,jj))
+             354     4   p   2v                enddo
+             355     3   p                   enddo
+             356     2               !
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -599,54 +598,54 @@
                                    <<<      SCALABLE  : SPILL 0  FILL 1
                                    <<<      PREDICATE : SPILL 0  FILL 0
                                    <<< Loop-information  End >>>
-             358     3   p    v              do i=1,nxj
-             359     3   p    v                slp(i,jj) = max( slp(i,jj), pt(i,jj) )
-             360     3   p    v                splog= log(slp(i,jj))
-             361     3   p    v                dx= log(slp(i,jj)/(pt(i,jj)+ptop))
-             362     3               !          bx= tmp(i,lev,jj)*(1.0/sig(lev+1))**0.19023 + sgeo(i,jj)*0.00065
-             363     3   p    v                bx= tmp(i,lev,jj) + sgeo(i,jj)*0.00065
-             364     4   p    v                if ( sgeo(i,jj) .ge. 1000.0 )  then
-             365     4   p    v                  tmid = sgeo(i,jj)/(dx*rgas)
-             366     4   p    v                  ax = tmp(i,lev,jj)+ (tmid-tmp(i,lev,jj))*(splog-plog(i,lev,jj)) &
-             367     4                               / (log((slp(i,jj)+pt(i,jj)+ptop)*0.5)-plog(i,lev,jj))
-             368     4   p    v                else
-             369     4   p    v                  ax = bx
-             370     4   p    v                endif
-             371     3   p    v                cx = (sgeo(i,jj)-1000.0)/(10000.0-1000.0)
-             372     3   p    v                cx = max (0.0, min (1.0, cx))
-             373     3   p    v                dx = cx*cx
-             374     3   p    v                tsf = dx*ax + (1.0-dx)*bx
-             375     3   p    v                tadia= tmp(i,lev,jj)*(slp(i,jj)/plt(i,lev,jj))**0.25
-             376     3   p    v                tsf  = max( tmp(i,lev,jj), min( tsf,tadia ) )
-             377     4   p    v                if ( slp(i,jj) .gt. 1000.1 )  then
-             378     4   p    v                  bt1(i,jj)= tsf
-             379     4   p    v                  t1000(i,jj) = tsf
-             380     4   p    v                else
-             381     4   p    v                  bt1(i,jj)= tsf + (tsf-tmp(i,lev,jj))*(pl1000-splog)  &
-             382     4                                    / (splog - plog(i,lev,jj))
-             383     4   p    v                  t1000(i,jj) = bt1(i,jj)
-             384     4   p    v                endif
-             385     3   p    v              enddo
-             386     2   p                 enddo
-             387     1               !
-             388     1               !!      call mpe_unify(bt1,nx,my,2,mpe_double)
-             389     1               !
-             390     2                     if(numt.gt.0) then
-             391     2                     if(myrank.eq.0)print*,' outfld : start tempout, lwrite = ',lwrite
-             392     2                       call tempout( nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,numt &
-             393     2                              ,whtlev,pkout,plog,pllp,tmp,bt1,pres3d,ggdef,lwrite)
-             394     2                     endif
-             395     1               !
-             396     1               !  moisture output as mixing ratio
-             397     1               !
-             398     2                     if(numq.gt.0) then
-             399     2               !
-             400     2               !  ensure no supersaturated points for output moisture fields
-             401     2               !
-             402     3                     do jj =1,jlistnum
-             403     3                       j=jlist1(jj)
-             404     3                       nxj=nxdef_2d(j)
-             405     3                       call qsatq_2d(nxjp(j),nxp,lev,tmp(1,1,jj),plt(1,1,jj),wrk1(1,1))
+             357     3   p    v              do i=1,nxj
+             358     3   p    v                slp(i,jj) = max( slp(i,jj), pt(i,jj) )
+             359     3   p    v                splog= log(slp(i,jj))
+             360     3   p    v                dx= log(slp(i,jj)/(pt(i,jj)+ptop))
+             361     3               !          bx= tmp(i,lev,jj)*(1.0/sig(lev+1))**0.19023 + sgeo(i,jj)*0.00065
+             362     3   p    v                bx= tmp(i,lev,jj) + sgeo(i,jj)*0.00065
+             363     4   p    v                if ( sgeo(i,jj) .ge. 1000.0 )  then
+             364     4   p    v                  tmid = sgeo(i,jj)/(dx*rgas)
+             365     4   p    v                  ax = tmp(i,lev,jj)+ (tmid-tmp(i,lev,jj))*(splog-plog(i,lev,jj)) &
+             366     4                               / (log((slp(i,jj)+pt(i,jj)+ptop)*0.5)-plog(i,lev,jj))
+             367     4   p    v                else
+             368     4   p    v                  ax = bx
+             369     4   p    v                endif
+             370     3   p    v                cx = (sgeo(i,jj)-1000.0)/(10000.0-1000.0)
+             371     3   p    v                cx = max (0.0, min (1.0, cx))
+             372     3   p    v                dx = cx*cx
+             373     3   p    v                tsf = dx*ax + (1.0-dx)*bx
+             374     3   p    v                tadia= tmp(i,lev,jj)*(slp(i,jj)/plt(i,lev,jj))**0.25
+             375     3   p    v                tsf  = max( tmp(i,lev,jj), min( tsf,tadia ) )
+             376     4   p    v                if ( slp(i,jj) .gt. 1000.1 )  then
+             377     4   p    v                  bt1(i,jj)= tsf
+             378     4   p    v                  t1000(i,jj) = tsf
+             379     4   p    v                else
+             380     4   p    v                  bt1(i,jj)= tsf + (tsf-tmp(i,lev,jj))*(pl1000-splog)  &
+             381     4                                    / (splog - plog(i,lev,jj))
+             382     4   p    v                  t1000(i,jj) = bt1(i,jj)
+             383     4   p    v                endif
+             384     3   p    v              enddo
+             385     2   p                 enddo
+             386     1               !
+             387     1               !!      call mpe_unify(bt1,nx,my,2,mpe_double)
+             388     1               !
+             389     2                     if(numt.gt.0) then
+             390     2                     if(myrank.eq.0)print*,' outfld : start tempout, lwrite = ',lwrite
+             391     2                       call tempout( nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,numt &
+             392     2                              ,whtlev,pkout,plog,pllp,tmp,bt1,pres3d,ggdef,lwrite)
+             393     2                     endif
+             394     1               !
+             395     1               !  moisture output as mixing ratio
+             396     1               !
+             397     2                     if(numq.gt.0) then
+             398     2               !
+             399     2               !  ensure no supersaturated points for output moisture fields
+             400     2               !
+             401     3                     do jj =1,jlistnum
+             402     3                       j=jlist1(jj)
+             403     3                       nxj=nxdef_2d(j)
+             404     3                       call qsatq_2d(nxjp(j),nxp,lev,tmp(1,1,jj),plt(1,1,jj),wrk1(1,1))
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 3
@@ -654,7 +653,7 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      wrk1, qt, tmp
                                    <<< Loop-information  End >>>
-             406     4  pp                   do k=1, lev
+             405     4  pp                   do k=1, lev
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -662,10 +661,10 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      wrk1, qt, tmp
                                    <<< Loop-information  End >>>
-             407     5   p   2v                do i=1,nxj
-             408     5   p   2v                  tmp(i,k,jj)= qt(i,k,jj)/wrk1(i,k)
-             409     5   p   2v                enddo
-             410     4   p                   enddo
+             406     5   p   2v                do i=1,nxj
+             407     5   p   2v                  tmp(i,k,jj)= qt(i,k,jj)/wrk1(i,k)
+             408     5   p   2v                enddo
+             409     4   p                   enddo
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 1143
@@ -675,24 +674,24 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      tmp, bt1
                                    <<< Loop-information  End >>>
-             411     4  pp   2v              do i=1,nxj
-             412     4   p   2v                bt1(i,jj)= tmp(i,lev,jj)
-             413     4   p   2v              enddo
-             414     3                     enddo
-             415     2               
-             416     2               !!      call mpe_unify(bt1,nx,my,2,mpe_double)
-             417     2               !
-             418     2                     if(myrank.eq.0)print*,' outfld : start shumfout, lwrite = ',lwrite
-             419     2                     call shumout( nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,numq &
-             420     2                          ,whtlevq,pkout,plog,pllp,tmp,bt1,pres3d,glob,ggdef,lwrite)
-             421     2               !
-             422     2               !  output clout water content if necessnary
-             423     2               !
-             424     2                     iqwout = 0   ! do output for qw
-             425     3                     if( iqwout .eq. 0 .and. nclds .ge. 2 )then
-             426     3               !  output all hydrometeors
-             427     4                       do ntrac=1,nclds
-             428     5                         if ( ntrac .eq. 1 .or. nclds .gt. 2 ) then
+             410     4  pp   2v              do i=1,nxj
+             411     4   p   2v                bt1(i,jj)= tmp(i,lev,jj)
+             412     4   p   2v              enddo
+             413     3                     enddo
+             414     2               
+             415     2               !!      call mpe_unify(bt1,nx,my,2,mpe_double)
+             416     2               !
+             417     2                     if(myrank.eq.0)print*,' outfld : start shumfout, lwrite = ',lwrite
+             418     2                     call shumout( nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,numq &
+             419     2                          ,whtlevq,pkout,plog,pllp,tmp,bt1,pres3d,glob,ggdef,lwrite)
+             420     2               !
+             421     2               !  output clout water content if necessnary
+             422     2               !
+             423     2                     iqwout = 0   ! do output for qw
+             424     3                     if( iqwout .eq. 0 .and. nclds .ge. 2 )then
+             425     3               !  output all hydrometeors
+             426     4                       do ntrac=1,nclds
+             427     5                         if ( ntrac .eq. 1 .or. nclds .gt. 2 ) then
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
@@ -700,16 +699,16 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      tmp, bt1
                                    <<< Loop-information  End >>>
-             429     6  pp                       do jj = 1, jlistnum
-             430     6   p                         j=jlist1(jj)
-             431     6   p                         nxj=nxdef_2d(j)
+             428     6  pp                       do jj = 1, jlistnum
+             429     6   p                         j=jlist1(jj)
+             430     6   p                         nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qt, tmp
                                    <<< Loop-information  End >>>
-             432     7   p                         do k = 1, lev
-             433     7   p                           kk = (ntrac-1)*lev+k
+             431     7   p                         do k = 1, lev
+             432     7   p                           kk = (ntrac-1)*lev+k
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -717,10 +716,10 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qt, tmp
                                    <<< Loop-information  End >>>
-             434     8   p   2v                      do i = 1,nxj
-             435     8   p   2v                        tmp(i,k,jj)=qt(i,kk,jj)
-             436     8   p   2v                      enddo
-             437     7   p                         enddo
+             433     8   p   2v                      do i = 1,nxj
+             434     8   p   2v                        tmp(i,k,jj)=qt(i,kk,jj)
+             435     8   p   2v                      enddo
+             436     7   p                         enddo
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -728,19 +727,19 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      tmp, bt1
                                    <<< Loop-information  End >>>
-             438     7   p   2v                    do i = 1,nxj
-             439     7   p   2v                      bt1(i,jj)=tmp(i,lev,jj)
-             440     7   p   2v                    enddo
-             441     6   p                       enddo
-             442     5               !!        call mpe_unify(bt1,nx,my,2,mpe_double)
-             443     5                           if(myrank.eq.0)print*,' outfld : start shumout2, lwrite = ',lwrite
-             444     5                           call shumout2( nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,numq &
-             445     5                              ,whtlevq,pkout,plog,pllp,tmp,bt1,pres3d,glob,ggdef,ntrac,lwrite )
-             446     5                         endif
-             447     4                       enddo
-             448     3               !
-             449     3               !  output ozone
-             450     4                       if ( ntoz .eq. ncld ) then
+             437     7   p   2v                    do i = 1,nxj
+             438     7   p   2v                      bt1(i,jj)=tmp(i,lev,jj)
+             439     7   p   2v                    enddo
+             440     6   p                       enddo
+             441     5               !!        call mpe_unify(bt1,nx,my,2,mpe_double)
+             442     5                           if(myrank.eq.0)print*,' outfld : start shumout2, lwrite = ',lwrite
+             443     5                           call shumout2( nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,numq &
+             444     5                              ,whtlevq,pkout,plog,pllp,tmp,bt1,pres3d,glob,ggdef,ntrac,lwrite )
+             445     5                         endif
+             446     4                       enddo
+             447     3               !
+             448     3               !  output ozone
+             449     4                       if ( ntoz .eq. ncld ) then
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
@@ -748,15 +747,15 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      tmp, bt1
                                    <<< Loop-information  End >>>
-             451     5  pp                     do jj = 1, jlistnum
-             452     5   p                       j=jlist1(jj)
-             453     5   p                       nxj=nxdef_2d(j)
+             450     5  pp                     do jj = 1, jlistnum
+             451     5   p                       j=jlist1(jj)
+             452     5   p                       nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qt, tmp
                                    <<< Loop-information  End >>>
-             454     6   p                       do k = 1, lev
+             453     6   p                       do k = 1, lev
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -764,10 +763,10 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qt, tmp
                                    <<< Loop-information  End >>>
-             455     7   p   2v                    do i = 1,nxj
-             456     7   p   2v                      tmp(i,k,jj)=qt(i,k+(ntoz-1)*lev,jj)
-             457     7   p   2v                    enddo
-             458     6   p                       enddo
+             454     7   p   2v                    do i = 1,nxj
+             455     7   p   2v                      tmp(i,k,jj)=qt(i,k+(ntoz-1)*lev,jj)
+             456     7   p   2v                    enddo
+             457     6   p                       enddo
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -775,18 +774,17 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      tmp, bt1
                                    <<< Loop-information  End >>>
-             459     6   p   2v                  do i = 1,nxj
-             460     6   p   2v                    bt1(i,jj)=tmp(i,lev,jj)
-             461     6   p   2v                  enddo
-             462     5   p                     enddo
-             463     4               !!        call mpe_unify(bt1,nx,my,2,mpe_double)
-             464     4                         if(myrank.eq.0)print*,' outfld : start shumout2, lwrite =',lwrite
-             465     4                           call shumout2(nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,numq &
-             466     4                           ,whtlevq,pkout,plog,pllp,tmp,bt1,pres3d,glob,ggdef,ntoz,lwrite)
-             467     4                       endif
-             468     3               !
-             469     3               !  output for combination of all condensates
-             470     3                       if ( nmmiph .eq. 18 ) nclds = 6  !do not combine number concentraction for 2M Thompson
+             458     6   p   2v                  do i = 1,nxj
+             459     6   p   2v                    bt1(i,jj)=tmp(i,lev,jj)
+             460     6   p   2v                  enddo
+             461     5   p                     enddo
+             462     4               !!        call mpe_unify(bt1,nx,my,2,mpe_double)
+             463     4                         if(myrank.eq.0)print*,' outfld : start shumout2, lwrite =',lwrite
+             464     4                           call shumout2(nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,numq &
+             465     4                           ,whtlevq,pkout,plog,pllp,tmp,bt1,pres3d,glob,ggdef,ntoz,lwrite)
+             466     4                       endif
+             467     3               !
+             468     3               !  output for combination of all cloud water and cloud ice
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
@@ -795,7 +793,7 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      tmp
                                    <<< Loop-information  End >>>
-             471     3  pp   4v              tmp=0.
+             469     3  pp   4v              tmp=0.
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
@@ -803,21 +801,21 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      tmp, bt1
                                    <<< Loop-information  End >>>
-             472     4  pp                   do jj = 1, jlistnum
-             473     4   p                     j=jlist1(jj)
-             474     4   p                     nxj=nxdef_2d(j)
+             470     4  pp                   do jj = 1, jlistnum
+             471     4   p                     j=jlist1(jj)
+             472     4   p                     nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    INTERCHANGED(nest: 3)
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qt, tmp
                                    <<< Loop-information  End >>>
-             475     5   p                     do k = 1, lev
+             473     5   p                     do k = 1, lev
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    INTERCHANGED(nest: 2)
                                    <<< Loop-information  End >>>
-             476     6   p                       do ntrac=2,nclds
+             474     6   p                       do ntrac=2,nclds
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -825,11 +823,11 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qt, tmp
                                    <<< Loop-information  End >>>
-             477     7   p   2v                    do i = 1,nxj
-             478     7   p   2v                      tmp(i,k,jj)=tmp(i,k,jj)+qt(i,k+(ntrac-1)*lev,jj)
-             479     7   p   2v                    enddo
-             480     6   p                       enddo
-             481     5   p                     enddo
+             475     7   p   2v                    do i = 1,nxj
+             476     7   p   2v                      tmp(i,k,jj)=tmp(i,k,jj)+qt(i,k+(ntrac-1)*lev,jj)
+             477     7   p   2v                    enddo
+             478     6   p                       enddo
+             479     5   p                     enddo
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -837,30 +835,30 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      tmp, bt1
                                    <<< Loop-information  End >>>
-             482     5   p   2v                do i = 1,nxj
-             483     5   p   2v                  bt1(i,jj)=tmp(i,lev,jj)
-             484     5   p   2v                enddo
-             485     4   p                   enddo
-             486     3               !!        call mpe_unify(bt1,nx,my,2,mpe_double)
-             487     3                       if(myrank.eq.0)print*,' outfld : start shumout2, lwrite =',lwrite
-             488     3                         call shumout2(nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,numq &
-             489     3                         ,whtlevq,pkout,plog,pllp,tmp,bt1,pres3d,glob,ggdef,ncld+1,lwrite)
-             490     3               
-             491     3                     endif
-             492     2               !
-             493     2                     endif     ! end of moisture output
+             480     5   p   2v                do i = 1,nxj
+             481     5   p   2v                  bt1(i,jj)=tmp(i,lev,jj)
+             482     5   p   2v                enddo
+             483     4   p                   enddo
+             484     3               !!        call mpe_unify(bt1,nx,my,2,mpe_double)
+             485     3                       if(myrank.eq.0)print*,' outfld : start shumout2, lwrite =',lwrite
+             486     3                         call shumout2(nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,numq &
+             487     3                         ,whtlevq,pkout,plog,pllp,tmp,bt1,pres3d,glob,ggdef,ncld+1,lwrite)
+             488     3               
+             489     3                     endif
+             490     2               !
+             491     2                     endif     ! end of moisture output
+             492     1               !
+             493     1               !  geopotential height output
              494     1               !
-             495     1               !  geopotential height output
-             496     1               !
-             497     2                     if(numz.gt.0) then
+             495     2                     if(numz.gt.0) then
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      slp, t1000, sgeo, bt1, bt2
                                    <<< Loop-information  End >>>
-             498     3                       do jj =1,jlistnum
-             499     3                         j=jlist1(jj)
-             500     3                         nxj=nxdef_2d(j)
+             496     3                       do jj =1,jlistnum
+             497     3                         j=jlist1(jj)
+             498     3                         nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 42
@@ -870,25 +868,25 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      slp, t1000, sgeo, bt1
                                    <<< Loop-information  End >>>
-             501     4  pp    v                do i=1,nxj
-             502     5   p    v                  if(slp(i,jj).le.1000.1) then
-             503     5   p    v                    bt1(i,jj)= t1000(i,jj)*rgas*log(slp(i,jj)*0.001)
-             504     5   p    v                  else
-             505     5   p    v                    bt1(i,jj) = min( sgeo(i,jj), 0.0 )
-             506     5   p    v                  endif
-             507     4   p    v                enddo
-             508     3               !
-             509     3               !  compute standard geopotentials, subtract them from sigma
-             510     3               !  level values. vertical interpolation will be done on
-             511     3               !  these deviation from standard values
-             512     3               !
+             499     4  pp    v                do i=1,nxj
+             500     5   p    v                  if(slp(i,jj).le.1000.1) then
+             501     5   p    v                    bt1(i,jj)= t1000(i,jj)*rgas*log(slp(i,jj)*0.001)
+             502     5   p    v                  else
+             503     5   p    v                    bt1(i,jj) = min( sgeo(i,jj), 0.0 )
+             504     5   p    v                  endif
+             505     4   p    v                enddo
+             506     3               !
+             507     3               !  compute standard geopotentials, subtract them from sigma
+             508     3               !  level values. vertical interpolation will be done on
+             509     3               !  these deviation from standard values
+             510     3               !
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      phi, wrk1, tmp
                                    <<< Loop-information  End >>>
-             513     4                         do k=1,lev
-             514     4                           call geostd (nxjp(j),plt(1,k,jj),wrk1(1,k))
+             511     4                         do k=1,lev
+             512     4                           call geostd (nxjp(j),plt(1,k,jj),wrk1(1,k))
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 843
@@ -898,13 +896,13 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      wrk1, phi, tmp
                                    <<< Loop-information  End >>>
-             515     5  pp   2v                  do i=1,nxj
-             516     5   p   2v                    tmp(i,k,jj) = ograv*phi(i,k,jj)-wrk1(i,k)
-             517     5   p   2v                  enddo
-             518     4                         enddo
+             513     5  pp   2v                  do i=1,nxj
+             514     5   p   2v                    tmp(i,k,jj) = ograv*phi(i,k,jj)-wrk1(i,k)
+             515     5   p   2v                  enddo
+             516     4                         enddo
+             517     3               !
+             518     3               !  bottom boundary conditions
              519     3               !
-             520     3               !  bottom boundary conditions
-             521     3               !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 889
@@ -914,24 +912,24 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      bt1, bt2
                                    <<< Loop-information  End >>>
-             522     4  pp   2v                do i=1,nxj
-             523     4   p   2v                  bt1(i,jj) = ograv*bt1(i,jj) - bt2(i,jj)
-             524     4   p   2v                enddo
-             525     3                       enddo
-             526     2               !!        call mpe_unify(bt1,nx,my,2,mpe_double)
-             527     2               !
-             528     2                       if(myrank.eq.0)print*,' outfld : start geopout, lwrite = ',lwrite
-             529     2                       call geopout (nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,numz &
-             530     2                             ,whtlevz,pkout,plog,pllp,tmp,bt1,pres3d,glob,ggdef,phistd  &
-             531     2                             ,typtrk(1,1,4),typtrk(1,1,5),lwrite)
-             532     2               !
-             533     2                     endif   ! end of geopotential height output
-             534     1               !
-             535     1                     endif   ! end of ( itau .gt. 0 )
-             536                     !
-             537                           labx='vor   '
-             538                           call whtrec (labx,ntau,taudir,whtlev,num)
-             539     1                     if(num.gt.0) then
+             520     4  pp   2v                do i=1,nxj
+             521     4   p   2v                  bt1(i,jj) = ograv*bt1(i,jj) - bt2(i,jj)
+             522     4   p   2v                enddo
+             523     3                       enddo
+             524     2               !!        call mpe_unify(bt1,nx,my,2,mpe_double)
+             525     2               !
+             526     2                       if(myrank.eq.0)print*,' outfld : start geopout, lwrite = ',lwrite
+             527     2                       call geopout (nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,numz &
+             528     2                             ,whtlevz,pkout,plog,pllp,tmp,bt1,pres3d,glob,ggdef,phistd  &
+             529     2                             ,typtrk(1,1,4),typtrk(1,1,5),lwrite)
+             530     2               !
+             531     2                     endif   ! end of geopotential height output
+             532     1               !
+             533     1                     endif   ! end of ( itau .gt. 0 )
+             534                     !
+             535                           labx='vor   '
+             536                           call whtrec (labx,ntau,taudir,whtlev,num)
+             537     1                     if(num.gt.0) then
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 3
@@ -939,9 +937,9 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      rvor, bt1
                                    <<< Loop-information  End >>>
-             540     2  pp                   do jj =1,jlistnum
-             541     2   p                     j=jlist1(jj)
-             542     2   p                     nxj=nxdef_2d(j)
+             538     2  pp                   do jj =1,jlistnum
+             539     2   p                     j=jlist1(jj)
+             540     2   p                     nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -949,20 +947,20 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      rvor, bt1
                                    <<< Loop-information  End >>>
-             543     3   p   2v                do i=1,nxj
-             544     3   p   2v                  bt1(i,jj)= rvor(i,lev,jj)
-             545     3   p   2v                enddo
-             546     2   p                   enddo
-             547     1               !!        call mpe_unify(bt1,nx,my,2,mpe_double)
-             548     1                       if(myrank.eq.0)print*,' outfld : start vorout, lwrite = ',lwrite
-             549     1                       call vortout (nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,num  &
-             550     1                                ,whtlev,pkout,plog,pllp,rvor,bt1,pres3d,ggdef           &
-             551     1                                ,typtrk(1,1,2),typtrk(1,1,3),lwrite)
-             552     1                     endif
-             553                     !
-             554                           labx='div   '
-             555                           call whtrec (labx,ntau,taudir,whtlev,num)
-             556     1                     if(num.gt.0) then
+             541     3   p   2v                do i=1,nxj
+             542     3   p   2v                  bt1(i,jj)= rvor(i,lev,jj)
+             543     3   p   2v                enddo
+             544     2   p                   enddo
+             545     1               !!        call mpe_unify(bt1,nx,my,2,mpe_double)
+             546     1                       if(myrank.eq.0)print*,' outfld : start vorout, lwrite = ',lwrite
+             547     1                       call vortout (nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,num  &
+             548     1                                ,whtlev,pkout,plog,pllp,rvor,bt1,pres3d,ggdef           &
+             549     1                                ,typtrk(1,1,2),typtrk(1,1,3),lwrite)
+             550     1                     endif
+             551                     !
+             552                           labx='div   '
+             553                           call whtrec (labx,ntau,taudir,whtlev,num)
+             554     1                     if(num.gt.0) then
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 3
@@ -970,9 +968,9 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      rdiv, bt1
                                    <<< Loop-information  End >>>
-             557     2  pp                   do jj =1,jlistnum
-             558     2   p                     j=jlist1(jj)
-             559     2   p                     nxj=nxdef_2d(j)
+             555     2  pp                   do jj =1,jlistnum
+             556     2   p                     j=jlist1(jj)
+             557     2   p                     nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -980,19 +978,19 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      rdiv, bt1
                                    <<< Loop-information  End >>>
-             560     3   p   2v                do i=1,nxj
-             561     3   p   2v                  bt1(i,jj)= rdiv(i,lev,jj)
-             562     3   p   2v                enddo
-             563     2   p                   enddo
-             564     1               !!        call mpe_unify(bt1,nx,my,2,mpe_double)
-             565     1                       if(myrank.eq.0)print*,' outfld : start divgout, lwrite = ',lwrite
-             566     1                       call divgout (nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,num &
-             567     1                                 ,whtlev,pkout,plog,pllp,rdiv,bt1,pres3d,ggdef,lwrite)
-             568     1                     endif
-             569                     !
-             570                           labx='wnd   '
-             571                           call whtrec (labx,ntau,taudir,whtlev,num)
-             572     1                     if(num.gt.0) then
+             558     3   p   2v                do i=1,nxj
+             559     3   p   2v                  bt1(i,jj)= rdiv(i,lev,jj)
+             560     3   p   2v                enddo
+             561     2   p                   enddo
+             562     1               !!        call mpe_unify(bt1,nx,my,2,mpe_double)
+             563     1                       if(myrank.eq.0)print*,' outfld : start divgout, lwrite = ',lwrite
+             564     1                       call divgout (nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,num &
+             565     1                                 ,whtlev,pkout,plog,pllp,rdiv,bt1,pres3d,ggdef,lwrite)
+             566     1                     endif
+             567                     !
+             568                           labx='wnd   '
+             569                           call whtrec (labx,ntau,taudir,whtlev,num)
+             570     1                     if(num.gt.0) then
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
@@ -1000,9 +998,9 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      vt, ut, bt2, bt1
                                    <<< Loop-information  End >>>
-             573     2  pp                   do jj =1,jlistnum
-             574     2   p                     j=jlist1(jj)
-             575     2   p                     nxj=nxdef_2d(j)
+             571     2  pp                   do jj =1,jlistnum
+             572     2   p                     j=jlist1(jj)
+             573     2   p                     nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -1010,21 +1008,21 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      vt, ut, bt2, bt1
                                    <<< Loop-information  End >>>
-             576     3   p   2v                do i=1,nxj
-             577     3   p   2v                  bt1(i,jj)= ut(i,lev,jj)
-             578     3   p   2v                  bt2(i,jj)= vt(i,lev,jj)
-             579     3   p   2v                enddo
-             580     2   p                   enddo
-             581     1               !!        call mpe_unify(bt1,nx,my,2,mpe_double)
-             582     1               !!        call mpe_unify(bt2,nx,my,2,mpe_double)
-             583     1                       if(myrank.eq.0)print*,' outfld : start windout, lwrite = ',lwrite
-             584     1                       call windout (nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,num &
-             585     1                          ,whtlev,cosl,pkout,plog,pllp,ut,vt,vvel,bt1,bt2,pres3d,glob,ggdef,lwrite)
-             586     1                     endif
-             587                     !
-             588                           labx='dag   '
-             589                           call whtrec (labx,ntau,taudir,whtlev,num)
-             590     1                     if(num.gt.0) then
+             574     3   p   2v                do i=1,nxj
+             575     3   p   2v                  bt1(i,jj)= ut(i,lev,jj)
+             576     3   p   2v                  bt2(i,jj)= vt(i,lev,jj)
+             577     3   p   2v                enddo
+             578     2   p                   enddo
+             579     1               !!        call mpe_unify(bt1,nx,my,2,mpe_double)
+             580     1               !!        call mpe_unify(bt2,nx,my,2,mpe_double)
+             581     1                       if(myrank.eq.0)print*,' outfld : start windout, lwrite = ',lwrite
+             582     1                       call windout (nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,num &
+             583     1                          ,whtlev,cosl,pkout,plog,pllp,ut,vt,vvel,bt1,bt2,pres3d,glob,ggdef,lwrite)
+             584     1                     endif
+             585                     !
+             586                           labx='dag   '
+             587                           call whtrec (labx,ntau,taudir,whtlev,num)
+             588     1                     if(num.gt.0) then
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 3
@@ -1032,9 +1030,9 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      drag, bt1
                                    <<< Loop-information  End >>>
-             591     2  pp                   do jj =1,jlistnum
-             592     2   p                     j=jlist1(jj)
-             593     2   p                     nxj=nxdef_2d(j)
+             589     2  pp                   do jj =1,jlistnum
+             590     2   p                     j=jlist1(jj)
+             591     2   p                     nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -1042,44 +1040,44 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      drag, bt1
                                    <<< Loop-information  End >>>
-             594     3   p   2v                do i=1,nxj
-             595     3   p   2v                  bt1(i,jj)= drag(i,lev,jj)
-             596     3   p   2v                enddo
-             597     2   p                   enddo
-             598     1               !!        call mpe_unify(bt1,nx,my,2,mpe_double)
-             599     1                     if(myrank.eq.0)print*,' outfld : start dragout, lwrite = ',lwrite
-             600     1                       call dragout (nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,num &
-             601     1                                 ,whtlev,pkout,plog,pllp,drag,bt1,pres3d,ggdef,lwrite)
-             602     1                     endif
-             603                     !
-             604     1                     if(lwritesit) then
-             605     1                       labx='sit   '
-             606     1                       call whtrec (labx,ntau,taudir,whtlev,num)
-             607     2                       if(num.gt.0) then
-             608     2                         call sitout(nx,my,my_max,itau,ifilout,idtg,num,whtlev,ggdef)
-             609     2                       endif
-             610     1                     endif
-             611                     !
-             612                     !  wk_xy(-,-,1) : temperature at the lowest sigma level
-             613                     !  wk_xy(-,-,2) : u wind at the lowest sigma level
-             614                     !  wk_xy(-,-,3) : v wind at the lowest sigma level
-             615                     !  wk_xy(-,-,4) : precipitable water
-             616                     !  wk_xy(-,-,5) : relative humidity at the lowest sigma level
-             617                     !
-             618     1                     if(ncld.ge.2)then
-             619     1                       ntrac=2
-             620     1                     else
-             621     1                       ntrac=ncld
-             622     1                     endif
+             592     3   p   2v                do i=1,nxj
+             593     3   p   2v                  bt1(i,jj)= drag(i,lev,jj)
+             594     3   p   2v                enddo
+             595     2   p                   enddo
+             596     1               !!        call mpe_unify(bt1,nx,my,2,mpe_double)
+             597     1                     if(myrank.eq.0)print*,' outfld : start dragout, lwrite = ',lwrite
+             598     1                       call dragout (nx,my,my_max,lpout,lev,itau,ifilout,idtg,pout,num &
+             599     1                                 ,whtlev,pkout,plog,pllp,drag,bt1,pres3d,ggdef,lwrite)
+             600     1                     endif
+             601                     !
+             602     1                     if(lwritesit) then
+             603     1                       labx='sit   '
+             604     1                       call whtrec (labx,ntau,taudir,whtlev,num)
+             605     2                       if(num.gt.0) then
+             606     2                         call sitout(nx,my,my_max,itau,ifilout,idtg,num,whtlev,ggdef)
+             607     2                       endif
+             608     1                     endif
+             609                     !
+             610                     !  wk_xy(-,-,1) : temperature at the lowest sigma level
+             611                     !  wk_xy(-,-,2) : u wind at the lowest sigma level
+             612                     !  wk_xy(-,-,3) : v wind at the lowest sigma level
+             613                     !  wk_xy(-,-,4) : precipitable water
+             614                     !  wk_xy(-,-,5) : relative humidity at the lowest sigma level
+             615                     !
+             616     1                     if(ncld.ge.2)then
+             617     1                       ntrac=2
+             618     1                     else
+             619     1                       ntrac=ncld
+             620     1                     endif
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      tt, pk, qt, vt, ut, wk_xy, tmpout, tmpin
                                    <<< Loop-information  End >>>
-             623     1                     do jj = 1, jlistnum
-             624     1                       j=jlist1(jj)
-             625     1                       nxj=nxdef_2d(j)
-             626     1                       xx=rad/cosl(j)
+             621     1                     do jj = 1, jlistnum
+             622     1                       j=jlist1(jj)
+             623     1                       nxj=nxdef_2d(j)
+             624     1                       xx=rad/cosl(j)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 373
@@ -1089,19 +1087,19 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      vt, ut, pk, tt, qt, wk_xy
                                    <<< Loop-information  End >>>
-             627     2  pp    v              do i = 1,nxj
-             628     2   p    v                wk_xy(i,jj,1) = tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt(i,lev,jj))
-             629     2   p    v                wk_xy(i,jj,2) = ut(i,lev,jj)*xx
-             630     2   p    v                wk_xy(i,jj,3) = vt(i,lev,jj)*xx
-             631     2   p    v              end do
-             632     2                       do n = 1, ntrac
+             625     2  pp    v              do i = 1,nxj
+             626     2   p    v                wk_xy(i,jj,1) = tt(i,lev,jj)*pk(i,lev,jj)/(1.0+0.608*qt(i,lev,jj))
+             627     2   p    v                wk_xy(i,jj,2) = ut(i,lev,jj)*xx
+             628     2   p    v                wk_xy(i,jj,3) = vt(i,lev,jj)*xx
+             629     2   p    v              end do
+             630     2                       do n = 1, ntrac
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      pt, qt, wk_xy
                                    <<< Loop-information  End >>>
-             633     3                         do k = 1, lev
-             634     3                           kk=(n-1)*lev+k
+             631     3                         do k = 1, lev
+             632     3                           kk=(n-1)*lev+k
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 593
@@ -1111,13 +1109,13 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      wk_xy, pt, qt
                                    <<< Loop-information  End >>>
-             635     4  pp   2v                  do i = 1,nxj
-             636     4   p   2v                    deltap = ( pt(i,jj)*(sigma(k+1,1)-sigma(k,1))+ &
-             637     4                                      (sigma(k+1,2)-sigma(k,2)) ) * 100./grav
-             638     4   p   2v                    wk_xy(i,jj,4) = wk_xy(i,jj,4) + qt(i,kk,jj)*deltap
-             639     4   p   2v                  enddo
-             640     3                         enddo
-             641     2                       enddo
+             633     4  pp   2v                  do i = 1,nxj
+             634     4   p   2v                    deltap = ( pt(i,jj)*(sigma(k+1,1)-sigma(k,1))+ &
+             635     4                                      (sigma(k+1,2)-sigma(k,2)) ) * 100./grav
+             636     4   p   2v                    wk_xy(i,jj,4) = wk_xy(i,jj,4) + qt(i,kk,jj)*deltap
+             637     4   p   2v                  enddo
+             638     3                         enddo
+             639     2                       enddo
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 1334
@@ -1127,8 +1125,8 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      wk_xy, tmpin
                                    <<< Loop-information  End >>>
-             642     1  pp   2v              tmpin(:)=wk_xy(:,jj,1)
-             643     1                       call qsatq(nxj,tmpin,plt(1,lev,jj),tmpout)
+             640     1  pp   2v              tmpin(:)=wk_xy(:,jj,1)
+             641     1                       call qsatq(nxj,tmpin,plt(1,lev,jj),tmpout)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 1334
@@ -1138,7 +1136,7 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      tmpout, wk_xy
                                    <<< Loop-information  End >>>
-             644     1  pp   2v              wk_xy(:,jj,5)=tmpout(:)
+             642     1  pp   2v              wk_xy(:,jj,5)=tmpout(:)
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 422
@@ -1148,49 +1146,47 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qt, wk_xy
                                    <<< Loop-information  End >>>
-             645     2  pp   2v              do i = 1,nxj
-             646     2   p   2v                wk_xy(i,jj,5) = 100.*(qt(i,lev,jj)/wk_xy(i,jj,5))
-             647     2   p   2v                wk_xy(i,jj,5) = min( 100., max( 1., wk_xy(i,jj,5) ) )
-             648     2   p   2v              enddo
-             649     1                     enddo
-             650                     
-             651                     !
+             643     2  pp   2v              do i = 1,nxj
+             644     2   p   2v                wk_xy(i,jj,5) = 100.*(qt(i,lev,jj)/wk_xy(i,jj,5))
+             645     2   p   2v                wk_xy(i,jj,5) = min( 100., max( 1., wk_xy(i,jj,5) ) )
+             646     2   p   2v              enddo
+             647     1                     enddo
+             648                     !
+             649                     !  get back original qt
+             650                     !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
+                                   <<< Loop-information  End >>>
+             651     1  pp                 do jj = 1, jlistnum
+             652     1   p                   j=jlist1(jj)
+             653     1   p                   nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      qt, hpbl, cmid, clow, chig, ctot, wk_xy
+                                   <<<      sht, qt
                                    <<< Loop-information  End >>>
-             652     1  pp                 do jj =1,jlistnum
-             653     1   p                   j=jlist1(jj)
-             654     1   p                   nxj=nxdef_2d(j)
+             654     2   p                   do k = 1, lev*ncld
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
-                                   <<<    SOFTWARE PIPELINING(IPC: 2.81, ITR: 32, MVE: 2, POL: S)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.00, ITR: 160, MVE: 3, POL: S)
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      wk_xy, hpbl, qt, clow, cmid, ctot, chig
+                                   <<<      sht, qt
                                    <<< Loop-information  End >>>
-             655     2   p    v              do i=1,nxj
-             656     2   p    v                wk_xy(i,jj,6) = ctot(i,jj)
-             657     2   p    v                wk_xy(i,jj,7) = chig(i,jj)
-             658     2   p    v                wk_xy(i,jj,8) = cmid(i,jj)
-             659     2   p    v                wk_xy(i,jj,9) = clow(i,jj)
-             660     2   p    v                wk_xy(i,jj,10) = hpbl(i,jj)
-             661     2   p    v                wk_xy(i,jj,11) = qt(i,1,jj)
-             662     2   p    v                wk_xy(i,jj,12) = qt(i,lev,jj)
-             663     2   p    v              enddo
-             664     1   p                 enddo
-             665                     
-             666                     !soil variable
+             655     3   p   4v                do i = 1,nxj
+             656     3   p   4v                  qt(i,k,jj) = sht(i,k,jj)
+             657     3   p   4v                enddo
+             658     2   p                   enddo
+             659     1   p                 enddo
+             660                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<< Loop-information  End >>>
-             667     1  pp                 do jj = 1, jlistnum
-             668     1   p                   j=jlist1(jj)
-             669     1   p                   nxj=nxdef_2d(j)
+             661     1  pp                 do jj = 1, jlistnum
+             662     1   p                   j=jlist1(jj)
+             663     1   p                   nxj=nxdef_2d(j)
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -1205,41 +1201,68 @@
                                    <<<      SCALABLE  : SPILL 0  FILL 0
                                    <<<      PREDICATE : SPILL 0  FILL 0
                                    <<< Loop-information  End >>>
-             670     2   p    v              do i = 1,nxj
-             671     2   p    v                soil_xy(i,jj,1 ) = smc(i,1,jj)
-             672     2   p    v                soil_xy(i,jj,2 ) = smc(i,2,jj)
-             673     2   p    v                soil_xy(i,jj,3 ) = smc(i,3,jj)
-             674     2   p    v                soil_xy(i,jj,4 ) = smc(i,4,jj)
-             675     2   p    v                soil_xy(i,jj,5 ) = slc(i,1,jj)
-             676     2   p    v                soil_xy(i,jj,6 ) = slc(i,2,jj)
-             677     2   p    v                soil_xy(i,jj,7 ) = slc(i,3,jj)
-             678     2   p    v                soil_xy(i,jj,8 ) = slc(i,4,jj)
-             679     2   p    v                soil_xy(i,jj,9 ) = stc(i,1,jj)
-             680     2   p    v                soil_xy(i,jj,10) = stc(i,2,jj)
-             681     2   p    v                soil_xy(i,jj,11) = stc(i,3,jj)
-             682     2   p    v                soil_xy(i,jj,12) = stc(i,4,jj)
-             683     2   p    v              enddo
-             684     1   p                 enddo
-             685                     
-             686                     !
-             687                     ! output some 2-dimension veriable to dmsfile
-             688                     !
-             689                           if(myrank .eq. 0) print *,'call out2d'
-             690                           if ( lwrite )                                                 &
-             691                           call out2d (nx,lev,my,my_max,ifilout,itau,idtg,taudir,ntau    &
-             692                                      ,hflux,qflux,tg,gwet,snr,z0,raintot,raincu,rainlp  &
-             693                                      ,plcl,cumtop,ss,rs,alb,gwclim,glob                 &
-             694                                      ,acld,ugws,vgws,t2,q2,rh2,rh10,u10,v10,gfx,rld     &
-             695                     !xb110                 ,sld,wk_xy,soil_xy,canopy,ggdef,lwrite,flash)
-             696                                      ,sld,wk_xy,soil_xy,canopy,ggdef)
-             697                     !
-             698                           return
-             699                           end
+             664     2   p    v              do i = 1,nxj
+             665     2   p    v                soil_xy(i,jj,1) = smc(i,1,jj)
+             666     2   p    v                soil_xy(i,jj,2) = smc(i,2,jj)
+             667     2   p    v                soil_xy(i,jj,3) = smc(i,3,jj)
+             668     2   p    v                soil_xy(i,jj,4) = smc(i,4,jj)
+             669     2   p    v                soil_xy(i,jj,5) = slc(i,1,jj)
+             670     2   p    v                soil_xy(i,jj,6) = slc(i,2,jj)
+             671     2   p    v                soil_xy(i,jj,7) = slc(i,3,jj)
+             672     2   p    v                soil_xy(i,jj,8) = slc(i,4,jj)
+             673     2   p    v                soil_xy(i,jj,9) = stc(i,1,jj)
+             674     2   p    v                soil_xy(i,jj,10) = stc(i,2,jj)
+             675     2   p    v                soil_xy(i,jj,11) = stc(i,3,jj)
+             676     2   p    v                soil_xy(i,jj,12) = stc(i,4,jj)
+             677     2   p    v              enddo
+             678     1   p                 enddo
+             679                     !
+                                   <<< Loop-information Start >>>
+                                   <<<  [PARALLELIZATION]
+                                   <<<    Standard iteration count: 2
+                                   <<<  [OPTIMIZATION]
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      qt, hpbl, cmid, clow, chig, ctot, wk_xy
+                                   <<< Loop-information  End >>>
+             680     1  pp                 do jj =1,jlistnum
+             681     1   p                   j=jlist1(jj)
+             682     1   p                   nxj=nxdef_2d(j)
+                                   <<< Loop-information Start >>>
+                                   <<<  [OPTIMIZATION]
+                                   <<<    SIMD(VL: 8)
+                                   <<<    SOFTWARE PIPELINING(IPC: 2.81, ITR: 32, MVE: 2, POL: S)
+                                   <<<    PREFETCH(HARD) Expected by compiler :
+                                   <<<      wk_xy, hpbl, qt, clow, cmid, ctot, chig
+                                   <<< Loop-information  End >>>
+             683     2   p    v              do i=1,nxj
+             684     2   p    v                wk_xy(i,jj,6) = ctot(i,jj)
+             685     2   p    v                wk_xy(i,jj,7) = chig(i,jj)
+             686     2   p    v                wk_xy(i,jj,8) = cmid(i,jj)
+             687     2   p    v                wk_xy(i,jj,9) = clow(i,jj)
+             688     2   p    v                wk_xy(i,jj,10) = hpbl(i,jj)
+             689     2   p    v                wk_xy(i,jj,11) = qt(i,1,jj)
+             690     2   p    v                wk_xy(i,jj,12) = qt(i,lev,jj)
+             691     2   p    v              enddo
+             692     1   p                 enddo
+             693                     !
+             694                     ! output some 2-dimension veriable to dmsfile
+             695                     !
+             696                           if(myrank .eq. 0) print *,'call out2d'
+             697                           if ( lwrite )                                                 &
+             698                           call out2d (nx,lev,my,my_max,ifilout,itau,idtg,taudir,ntau    &
+             699                                      ,hflux,qflux,tg,gwet,snr,z0,raintot,raincu,rainlp  &
+             700                                      ,plcl,cumtop,ss,rs,alb,gwclim,glob                 &
+             701                                      ,acld,ugws,vgws,t2,q2,rh2,rh10,u10,v10,gfx,rld     &
+             702                     !xb110                 ,sld,wk_xy,soil_xy,canopy,ggdef,lwrite,flash)
+             703                                      ,sld,wk_xy,soil_xy,canopy,ggdef)
+             704                     !
+             705                           return
+             706                           end
 
  Procedure information
-   Lines      : 699
-   Statements : 435
-   Stack(byte): 30064
+   Lines      : 706
+   Statements : 443
+   Stack(byte): 30848
    Prefetch num: 16
 
  Scoping unit of external sub-program : outflds
@@ -1248,61 +1271,61 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 690
+      |(Definition)     : 697
       |(Reference)      : 
      alaps
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 95
-      |(Definition)     : 205
-      |(Reference)      : 246  248  250  265
+      |(Definition)     : 204
+      |(Reference)      : 245  247  249  264
      alb
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 690
+      |(Definition)     : 697
       |(Reference)      : 
      anlslp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 95
-      |(Definition)     : 252  256  260  263  267
-      |(Reference)      : 270
+      |(Definition)     : 251  255  259  262  266
+      |(Reference)      : 269
      apha
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 96
-      |(Definition)     : 254  265
-      |(Reference)      : 256  256  256  267  267  267
+      |(Definition)     : 253  264
+      |(Reference)      : 255  255  255  266  266  266
      ax
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 96
-      |(Definition)     : 366  369
-      |(Reference)      : 374
+      |(Definition)     : 365  368
+      |(Reference)      : 373
      bt1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 77
-      |(Definition)     : 131  378  381  392  412  419  439  444  460  465  483  488  503  505  523  529  544  549  561  566  577  584  595  600
-      |(Reference)      : 383  523
+      |(Definition)     : 131  377  380  391  411  418  438  443  459  464  481  486  501  503  521  527  542  547  559  564  575  582  593  598
+      |(Reference)      : 382  521
      bt2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 77
-      |(Definition)     : 132  319  578  584
-      |(Reference)      : 523
+      |(Definition)     : 132  318  576  582
+      |(Reference)      : 521
      bx
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 96
-      |(Definition)     : 363
-      |(Reference)      : 369  374
+      |(Definition)     : 362
+      |(Reference)      : 368  373
      canopy
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 690
+      |(Definition)     : 697
       |(Reference)      : 
      capa
       |(Class and Type) : variable name, REAL(8)
@@ -1315,19 +1338,19 @@
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
       |(Definition)     : 
-      |(Reference)      : 657
+      |(Reference)      : 685
      clow
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
       |(Definition)     : 
-      |(Reference)      : 659
+      |(Reference)      : 687
      cmid
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
       |(Definition)     : 
-      |(Reference)      : 658
+      |(Reference)      : 686
      const
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -1338,157 +1361,157 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  54
-      |(Definition)     : 584
-      |(Reference)      : 626
+      |(Definition)     : 582
+      |(Reference)      : 624
      cp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  28
       |(Definition)     : 
-      |(Reference)      : 214  219
+      |(Reference)      : 213  218
      ctot
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
       |(Definition)     : 
-      |(Reference)      : 656
+      |(Reference)      : 684
      cumtop
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 690
+      |(Definition)     : 697
       |(Reference)      : 
      cx
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 96
-      |(Definition)     : 371  372
-      |(Reference)      : 372  373  373
+      |(Definition)     : 370  371
+      |(Reference)      : 371  372  372
      deltap
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 96
-      |(Definition)     : 636
-      |(Reference)      : 638
+      |(Definition)     : 634
+      |(Reference)      : 636
      divgout
       |(Class and Type) : module subroutine name
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 566
+      |(Reference)      : 564
      drag
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 600
-      |(Reference)      : 595
+      |(Definition)     : 598
+      |(Reference)      : 593
      dragout
       |(Class and Type) : module subroutine name
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 600
+      |(Reference)      : 598
      dx
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 96
-      |(Definition)     : 361  373
-      |(Reference)      : 365  374  374
+      |(Definition)     : 360  372
+      |(Reference)      : 364  373  373
      exp
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 256  260  263  267
+      |(Reference)      : 255  259  262  266
      geopout
       |(Class and Type) : module subroutine name
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 529
+      |(Reference)      : 527
      geostd
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 203  319  514
+      |(Reference)      : 202  318  512
      gfx
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 690
+      |(Definition)     : 697
       |(Reference)      : 
      ggdef
       |(Class and Type) : variable name, CHARACTER(4,1)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  64
-      |(Definition)     : 299  392  419  444  465  488  529  549  566  584  600  608  690
+      |(Definition)     : 298  391  418  443  464  486  527  547  564  582  598  606  697
       |(Reference)      : 
      glob
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 70
-      |(Definition)     : 299  419  444  465  488  529  584  690
+      |(Definition)     : 298  418  443  464  486  527  582  697
       |(Reference)      : 
      grav
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  28
       |(Definition)     : 
-      |(Reference)      : 191  206  248  250  636
+      |(Reference)      : 190  205  247  249  634
      gwclim
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 690
+      |(Definition)     : 697
       |(Reference)      : 
      gwet
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 690
+      |(Definition)     : 697
       |(Reference)      : 
      hflux
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 690
+      |(Definition)     : 697
       |(Reference)      : 
      hld1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 77
-      |(Definition)     : 249  259  262
-      |(Reference)      : 250  253  254  255  258  259  260  261  262  263  266
+      |(Definition)     : 248  258  261
+      |(Reference)      : 249  252  253  254  257  258  259  260  261  262  265
      hld2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 77
-      |(Definition)     : 250
-      |(Reference)      : 253  258  261
+      |(Definition)     : 249
+      |(Reference)      : 252  257  260
      hpbl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
       |(Definition)     : 
-      |(Reference)      : 660
+      |(Reference)      : 688
      i
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 93
-      |(Definition)     : 148  168  213  218  224  243  310  321  353  358  407  411  434  438  455  459  477  482  501  515  522  543  560  576  594  627  635  645  655  670
-      |(Reference)      : 149  149  169  171  214  214  214  214  214  219  219  219  219  219  219  219  219  225  225  244  244  244  245  245  245  246  246  248  248  249  250  250  250  251  252  253  253  254  254  255  255  256  258  258  259  259  260  260  260  261  261  262  262  263  263  263  266  266  267  270  270  271  271  311  311  311  312  313  315  315  322  322  354  354  354  354  359  359  359  360  361  361  363  363  364  365  366  366  366  366  366  366  371  375  375  375  376  377  378  379  381  381  381  383  383  408  408  408  412  412  435  435  439  439  456  456  460  460  478  478  478  483  483  502  503  503  503  505  505  516  516  516  523  523  523  544  544  561  561  577  577  578  578  595  595  628  628  628  628  629  629  630  630  636  638  638  638  646  646  646  647  647  656  656  657  657  658  658  659  659  660  660  661  661  662  662  671  671  672  672  673  673  674  674  675  675  676  676  677  677  678  678  679  679  680  680  681  681  682  682
+      |(Definition)     : 147  167  212  217  223  242  309  320  352  357  406  410  433  437  454  458  475  480  499  513  520  541  558  574  592  625  633  643  655  664  683
+      |(Reference)      : 148  148  168  170  213  213  213  213  213  218  218  218  218  218  218  218  218  224  224  243  243  243  244  244  244  245  245  247  247  248  249  249  249  250  251  252  252  253  253  254  254  255  257  257  258  258  259  259  259  260  260  261  261  262  262  262  265  265  266  269  269  270  270  310  310  310  311  312  314  314  321  321  353  353  353  353  358  358  358  359  360  360  362  362  363  364  365  365  365  365  365  365  370  374  374  374  375  376  377  378  380  380  380  382  382  407  407  407  411  411  434  434  438  438  455  455  459  459  476  476  476  481  481  500  501  501  501  503  503  514  514  514  521  521  521  542  542  559  559  575  575  576  576  593  593  626  626  626  626  627  627  628  628  634  636  636  636  644  644  644  645  645  656  656  665  665  666  666  667  667  668  668  669  669  670  670  671  671  672  672  673  673  674  674  675  675  676  676  684  684  685  685  686  686  687  687  688  688  689  689  690  690
      idtg
       |(Class and Type) : variable name, INTEGER(8)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  65
-      |(Definition)     : 299  392  419  444  465  488  529  549  566  584  600  608  690
+      |(Definition)     : 298  391  418  443  464  486  527  547  564  582  598  606  697
       |(Reference)      : 
      ifilout
       |(Class and Type) : variable name, CHARACTER(80,1)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  64
-      |(Definition)     : 299  392  419  444  465  488  529  549  566  584  600  608  690
+      |(Definition)     : 298  391  418  443  464  486  527  547  564  582  598  606  697
       |(Reference)      : 
      index
       |(Class and Type) : module name
@@ -1500,50 +1523,50 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 94
-      |(Definition)     : 424
-      |(Reference)      : 425
+      |(Definition)     : 423
+      |(Reference)      : 424
      itau
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  27
-      |(Definition)     : 138  299  392  419  444  465  488  529  549  566  584  600  608  690
+      |(Definition)     : 138  298  391  418  443  464  486  527  547  564  582  598  606  697
       |(Reference)      : 136
      j
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 93
-      |(Definition)     : 145  164  211  241  308  343  403  430  452  473  499  541  558  574  592  624  653  668
-      |(Reference)      : 146  165  176  212  242  309  319  344  404  405  431  453  474  500  514  542  559  575  593  625  626  654  669
+      |(Definition)     : 144  163  210  240  307  342  402  429  451  471  497  539  556  572  590  622  652  662  681
+      |(Reference)      : 145  164  175  211  241  308  318  343  403  404  430  452  472  498  512  540  557  573  591  623  624  653  663  682
      jj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 93
-      |(Definition)     : 144  163  210  240  307  342  402  429  451  472  498  540  557  573  591  623  652  667
-      |(Reference)      : 145  149  149  164  169  171  211  214  214  214  214  214  219  219  219  219  219  219  219  219  225  225  241  244  244  244  245  245  245  246  246  248  248  249  250  250  250  251  252  253  253  254  254  255  255  256  258  258  259  259  260  260  260  261  261  262  262  263  263  263  266  266  267  270  270  271  271  308  311  311  311  312  313  315  315  319  319  322  322  343  354  354  354  354  359  359  359  360  361  361  363  363  364  365  366  366  366  366  366  366  371  375  375  375  376  377  378  379  381  381  381  383  383  403  405  405  408  408  412  412  430  435  435  439  439  452  456  456  460  460  473  478  478  478  483  483  499  502  503  503  503  505  505  514  516  516  523  523  523  541  544  544  558  561  561  574  577  577  578  578  592  595  595  624  628  628  628  628  629  629  630  630  636  638  638  638  642  643  644  646  646  646  647  647  653  656  656  657  657  658  658  659  659  660  660  661  661  662  662  668  671  671  672  672  673  673  674  674  675  675  676  676  677  677  678  678  679  679  680  680  681  681  682  682
+      |(Definition)     : 143  162  209  239  306  341  401  428  450  470  496  538  555  571  589  621  651  661  680
+      |(Reference)      : 144  148  148  163  168  170  210  213  213  213  213  213  218  218  218  218  218  218  218  218  224  224  240  243  243  243  244  244  244  245  245  247  247  248  249  249  249  250  251  252  252  253  253  254  254  255  257  257  258  258  259  259  259  260  260  261  261  262  262  262  265  265  266  269  269  270  270  307  310  310  310  311  312  314  314  318  318  321  321  342  353  353  353  353  358  358  358  359  360  360  362  362  363  364  365  365  365  365  365  365  370  374  374  374  375  376  377  378  380  380  380  382  382  402  404  404  407  407  411  411  429  434  434  438  438  451  455  455  459  459  471  476  476  476  481  481  497  500  501  501  501  503  503  512  514  514  521  521  521  539  542  542  556  559  559  572  575  575  576  576  590  593  593  622  626  626  626  626  627  627  628  628  634  636  636  636  640  641  642  644  644  644  645  645  652  656  656  662  665  665  666  666  667  667  668  668  669  669  670  670  671  671  672  672  673  673  674  674  675  675  676  676  681  684  684  685  685  686  686  687  687  688  688  689  689  690  690
      jlist1
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 145  164  211  241  308  343  403  430  452  473  499  541  558  574  592  624  653  668
+      |(Reference)      : 144  163  210  240  307  342  402  429  451  471  497  539  556  572  590  622  652  662  681
      jlistnum
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 144  163  210  240  307  342  402  429  451  472  498  540  557  573  591  623  652  667
+      |(Reference)      : 143  162  209  239  306  341  401  428  450  470  496  538  555  571  589  621  651  661  680
      k
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 93
-      |(Definition)     : 147  166  197  217  223  352  406  432  454  475  513  633
-      |(Reference)      : 149  149  167  198  198  219  219  219  219  219  219  219  219  225  225  354  354  354  354  408  408  408  433  435  456  456  478  478  478  514  514  516  516  516  634  636  636  636  636
+      |(Definition)     : 146  165  196  216  222  351  405  431  453  473  511  631  654
+      |(Reference)      : 148  148  166  197  197  218  218  218  218  218  218  218  218  224  224  353  353  353  353  407  407  407  432  434  455  455  476  476  476  512  512  514  514  514  632  634  634  634  634  656  656
      kk
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 93
-      |(Definition)     : 167  433  634
-      |(Reference)      : 169  171  435  638
+      |(Definition)     : 166  432  632
+      |(Reference)      : 168  170  434  636
      km
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
@@ -1560,20 +1583,20 @@
       |(Class and Type) : variable name, CHARACTER(6,1)
       |(Attributes)     : 
       |(Declaration)    : 91
-      |(Definition)     : 329  330  332  333  335  336  537  538  554  555  570  571  588  589  605  606
+      |(Definition)     : 328  329  331  332  334  335  535  536  552  553  568  569  586  587  603  604
       |(Reference)      : 
      lev
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  27
-      |(Definition)     : 392  405  419  444  465  488  529  549  566  584  600  690
-      |(Reference)      : 30  30  30  54  54  54  54  54  54  54  54  54  54  54  54  69  69  77  117  118  147  160  166  176  214  214  214  214  217  223  238  244  244  244  246  352  363  366  366  366  366  375  375  376  381  381  406  412  432  433  439  454  456  460  475  478  483  513  544  561  577  578  595  628  628  628  629  630  633  634  643  646  662
+      |(Definition)     : 391  404  418  443  464  486  527  547  564  582  598  697
+      |(Reference)      : 30  30  30  54  54  54  54  54  54  54  54  54  54  54  54  69  69  77  117  118  146  159  165  175  213  213  213  213  216  222  237  243  243  243  245  351  362  365  365  365  365  374  374  375  380  380  405  411  431  432  438  453  455  459  473  476  481  511  542  559  575  576  593  626  626  626  627  628  631  632  641  644  654  690
      llts
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 94
-      |(Definition)     : 238
-      |(Reference)      : 245  245  245  248
+      |(Definition)     : 237
+      |(Reference)      : 244  244  244  247
      lmax
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
@@ -1585,37 +1608,37 @@
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 198  225  305  322  360  361  366  503
+      |(Reference)      : 197  224  304  321  359  360  365  501
      lpout
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 76
       |(Definition)     : 
-      |(Reference)      : 77  77  77  82  197  203  392  419  444  465  488  529  549  566  584  600
+      |(Reference)      : 77  77  77  82  196  202  391  418  443  464  486  527  547  564  582  598
      lwrite
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  99
-      |(Definition)     : 299  392  419  444  465  488  529  549  566  584  600
-      |(Reference)      : 298  391  418  443  464  487  528  548  565  583  599  690
+      |(Definition)     : 298  391  418  443  464  486  527  547  564  582  598
+      |(Reference)      : 297  390  417  442  463  485  526  546  563  581  597  697
      lwritesit
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  99
       |(Definition)     : 
-      |(Reference)      : 604
+      |(Reference)      : 602
      max
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 359  372  376  647
+      |(Reference)      : 358  371  375  645
      min
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 372  376  505  647
+      |(Reference)      : 371  375  503  645
      mod_outflds
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -1633,72 +1656,66 @@
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 178  179
+      |(Reference)      : 177  178
      mpe_integer
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 178  179
+      |(Reference)      : 177  178
      my
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  27
-      |(Definition)     : 299  392  419  444  465  488  529  549  566  584  600  608  690
+      |(Definition)     : 298  391  418  443  464  486  527  547  564  582  598  606  697
       |(Reference)      : 30  54  70  116  118
      my_max
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  27
-      |(Definition)     : 299  392  419  444  465  488  529  549  566  584  600  608  690
+      |(Definition)     : 298  391  418  443  464  486  527  547  564  582  598  606  697
       |(Reference)      : 30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  54  54  54  54  54  54  54  54  54  54  54  54  54  54  54  69  69  69  71  77  77  77  77  82  84  87
      myrank
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 136  180  181  298  391  418  443  464  487  528  548  565  583  599  689
+      |(Reference)      : 136  179  180  297  390  417  442  463  485  526  546  563  581  597  696
      n
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 93
-      |(Definition)     : 159  632
-      |(Reference)      : 160  180  181  634
+      |(Definition)     : 158  630
+      |(Reference)      : 159  179  180  632
      ncld
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  27
       |(Definition)     : 
-      |(Reference)      : 54  54  123  147  154  157  450  488  618  621
+      |(Reference)      : 54  54  123  146  153  156  449  486  616  619  654
      nclds
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 94
-      |(Definition)     : 121  123  470
-      |(Reference)      : 425  427  428  476
+      |(Definition)     : 121  123
+      |(Reference)      : 424  426  427  474
      ngq
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 93
-      |(Definition)     : 161  170  178
-      |(Reference)      : 170  180  180  181  181
+      |(Definition)     : 160  169  177
+      |(Reference)      : 169  179  179  180  180
      nk
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 93
-      |(Definition)     : 160
-      |(Reference)      : 167
-     nmmiph
-      |(Class and Type) : variable name, INTEGER(4)
-      |(Attributes)     : common-block-object, use-associated
-      |(Declaration)    : 
-      |(Definition)     : 
-      |(Reference)      : 23  470
+      |(Definition)     : 159
+      |(Reference)      : 166
      ntau
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 93
-      |(Definition)     : 138  299  330  333  336  538  555  571  589  606  690
+      |(Definition)     : 138  298  329  332  335  536  553  569  587  604  697
       |(Reference)      : 139
      ntcw
       |(Class and Type) : variable name, INTEGER(4)
@@ -1716,26 +1733,26 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 465
-      |(Reference)      : 22  120  121  450  456
+      |(Definition)     : 464
+      |(Reference)      : 22  120  121  449  455
      ntrac
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 93
-      |(Definition)     : 155  157  427  444  476  619  621
-      |(Reference)      : 159  428  433  478  632
+      |(Definition)     : 154  156  426  443  474  617  619
+      |(Reference)      : 158  427  432  476  630
      ntt
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 93
-      |(Definition)     : 162  176  179
-      |(Reference)      : 176  181
+      |(Definition)     : 161  175  178
+      |(Reference)      : 175  180
      num
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 94
-      |(Definition)     : 538  549  555  566  571  584  589  600  606  608
-      |(Reference)      : 539  556  572  590  607
+      |(Definition)     : 536  547  553  564  569  582  587  598  604  606
+      |(Reference)      : 537  554  570  588  605
      numout
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
@@ -1746,44 +1763,44 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 94
-      |(Definition)     : 333  419  444  465  488
-      |(Reference)      : 338  398
+      |(Definition)     : 332  418  443  464  486
+      |(Reference)      : 337  397
      numt
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 94
-      |(Definition)     : 336  392
-      |(Reference)      : 338  390
+      |(Definition)     : 335  391
+      |(Reference)      : 337  389
      numz
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 94
-      |(Definition)     : 330  529
-      |(Reference)      : 338  497
+      |(Definition)     : 329  527
+      |(Reference)      : 337  495
      nx
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  27
-      |(Definition)     : 299  392  419  444  465  488  529  549  566  584  600  608  690
+      |(Definition)     : 298  391  418  443  464  486  527  547  564  582  598  606  697
       |(Reference)      : 70  116  117  118
      nxdef_2d
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 146  165  212  242  309  344  404  431  453  474  500  542  559  575  593  625  654  669
+      |(Reference)      : 145  164  211  241  308  343  403  430  452  472  498  540  557  573  591  623  653  663  682
      nxj
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
       |(Declaration)    : 93
-      |(Definition)     : 146  165  212  242  309  344  404  431  453  474  500  542  559  575  593  625  643  654  669
-      |(Reference)      : 148  168  213  218  224  243  310  321  353  358  407  411  434  438  455  459  477  482  501  515  522  543  560  576  594  627  635  645  655  670
+      |(Definition)     : 145  164  211  241  308  343  403  430  452  472  498  540  557  573  591  623  641  653  663  682
+      |(Reference)      : 147  167  212  217  223  242  309  320  352  357  406  410  433  437  454  458  475  480  499  513  520  541  558  574  592  625  633  643  655  664  683
      nxjp
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : ALLOCATABLE, DIMENSION, SAVE, use-associated
       |(Declaration)    : 
-      |(Definition)     : 319  405  514
-      |(Reference)      : 176
+      |(Definition)     : 318  404  512
+      |(Reference)      : 175
      nxlev
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
@@ -1806,20 +1823,20 @@
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : common-block-object, use-associated
       |(Declaration)    : 
-      |(Definition)     : 405
+      |(Definition)     : 404
       |(Reference)      : 30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  30  54  54  54  54  54  54  54  54  54  54  54  54  54  54  54  69  69  69  71  77  77  77  77  77  82  84  85  85  87
      ograv
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 95
-      |(Definition)     : 191
-      |(Reference)      : 516  523
+      |(Definition)     : 190
+      |(Reference)      : 514  521
      out2d
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 690
+      |(Reference)      : 697
      outdir
       |(Class and Type) : variable name, CHARACTER(16,1)
       |(Attributes)     : DIMENSION, dummy-argument
@@ -1836,134 +1853,128 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 30
-      |(Definition)     : 271  299
-      |(Reference)      : 311
+      |(Definition)     : 270  298
+      |(Reference)      : 310
      phi
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  54
-      |(Definition)     : 214  219
-      |(Reference)      : 219  248  516
+      |(Definition)     : 213  218
+      |(Reference)      : 218  247  514
      phistd
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 77
-      |(Definition)     : 203  529
+      |(Definition)     : 202  527
       |(Reference)      : 
      pk
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  54
       |(Definition)     : 
-      |(Reference)      : 214  219  219  244  245  354  628
+      |(Reference)      : 213  218  218  243  244  353  626
      pk2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  54
       |(Definition)     : 
-      |(Reference)      : 214  219  219
+      |(Reference)      : 213  218  218
      pkout
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 77
-      |(Definition)     : 198  392  419  444  465  488  529  549  566  584  600
+      |(Definition)     : 197  391  418  443  464  486  527  547  564  582  598
       |(Reference)      : 
      pl1000
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 96
-      |(Definition)     : 305
-      |(Reference)      : 381
+      |(Definition)     : 304
+      |(Reference)      : 380
      plcl
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 690
+      |(Definition)     : 697
       |(Reference)      : 
      pllp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 69
-      |(Definition)     : 130  270  313  315  319  322  392  419  444  465  488  529  549  566  584  600
-      |(Reference)      : 271  322
+      |(Definition)     : 130  269  312  314  318  321  391  418  443  464  486  527  547  564  582  598
+      |(Reference)      : 270  321
      plog
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 69
-      |(Definition)     : 225  392  419  444  465  488  529  549  566  584  600
-      |(Reference)      : 366  366  381
+      |(Definition)     : 224  391  418  443  464  486  527  547  564  582  598
+      |(Reference)      : 365  365  380
      plt
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 405  514  643
-      |(Reference)      : 225  246  375
+      |(Definition)     : 404  512  641
+      |(Reference)      : 224  245  374
      pout
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, initialized
       |(Declaration)    : 77  108
-      |(Definition)     : 203  392  419  444  465  488  529  549  566  584  600
-      |(Reference)      : 198
+      |(Definition)     : 202  391  418  443  464  486  527  547  564  582  598
+      |(Reference)      : 197
      pres3d
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 82
-      |(Definition)     : 133  392  419  444  465  488  529  549  566  584  600
+      |(Definition)     : 133  391  418  443  464  486  527  547  564  582  598
       |(Reference)      : 
      pt
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  54
-      |(Definition)     : 299
-      |(Reference)      : 246  252  256  260  263  267  270  311  359  361  366  636
+      |(Definition)     : 298
+      |(Reference)      : 245  251  255  259  262  266  269  310  358  360  365  634
      ptend
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  54
-      |(Definition)     : 299
+      |(Definition)     : 298
       |(Reference)      : 
      ptop
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  28
-      |(Definition)     : 299
-      |(Reference)      : 246  252  256  260  263  267  361  366
+      |(Definition)     : 298
+      |(Reference)      : 245  251  255  259  262  266  360  365
      q2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 690
+      |(Definition)     : 697
       |(Reference)      : 
      qflux
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 690
+      |(Definition)     : 697
       |(Reference)      : 
      qsatq
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 643
+      |(Reference)      : 641
      qsatq_2d
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 405
+      |(Reference)      : 404
      qt
-      |(Class and Type) : variable name, REAL(8)
-      |(Attributes)     : DIMENSION
-      |(Declaration)    : 54
-      |(Definition)     : 149  171
-      |(Reference)      : 169  244  245  354  408  435  456  478  628  638  646  661  662
-     qt_org
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  54
-      |(Definition)     : 
-      |(Reference)      : 149
+      |(Definition)     : 170  656
+      |(Reference)      : 148  168  243  244  353  407  434  455  476  626  636  644  689  690
      RTYPE
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : use-associated
@@ -1975,7 +1986,7 @@
       |(Attributes)     : initialized
       |(Declaration)    : 95  114
       |(Definition)     : 
-      |(Reference)      : 626
+      |(Reference)      : 624
      radn
       |(Class and Type) : module name
       |(Attributes)     : 
@@ -1986,19 +1997,19 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 690
+      |(Definition)     : 697
       |(Reference)      : 
      rainlp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 690
+      |(Definition)     : 697
       |(Reference)      : 
      raintot
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 690
+      |(Definition)     : 697
       |(Reference)      : 
      rank
       |(Class and Type) : module name
@@ -2010,320 +2021,326 @@
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 95
-      |(Definition)     : 206
-      |(Reference)      : 246  265
+      |(Definition)     : 205
+      |(Reference)      : 245  264
      rdiv
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  54
-      |(Definition)     : 566
-      |(Reference)      : 561
+      |(Definition)     : 564
+      |(Reference)      : 559
      rgas
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  28
       |(Definition)     : 
-      |(Reference)      : 206  254  255  260  263  266  365  503
+      |(Reference)      : 205  253  254  259  262  265  364  501
      rh10
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 690
+      |(Definition)     : 697
       |(Reference)      : 
      rh2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 690
+      |(Definition)     : 697
       |(Reference)      : 
      rld
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 690
+      |(Definition)     : 697
       |(Reference)      : 
      rs
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 690
+      |(Definition)     : 697
       |(Reference)      : 
      rvor
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  54
-      |(Definition)     : 549
-      |(Reference)      : 544
+      |(Definition)     : 547
+      |(Reference)      : 542
      sgeo
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  54
       |(Definition)     : 
-      |(Reference)      : 214  248  250  251  254  255  260  263  266  363  364  365  371  505
+      |(Reference)      : 213  247  249  250  253  254  259  262  265  362  363  364  370  503
+     sht
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : DIMENSION
+      |(Declaration)    : 54
+      |(Definition)     : 148
+      |(Reference)      : 656
      shumout
       |(Class and Type) : module subroutine name
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 419
+      |(Reference)      : 418
      shumout2
       |(Class and Type) : module subroutine name
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 444  465  488
+      |(Reference)      : 443  464  486
      sigma
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  54
       |(Definition)     : 
-      |(Reference)      : 636  636  636  636
+      |(Reference)      : 634  634  634  634
      sitout
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 608
+      |(Reference)      : 606
      slc
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
       |(Definition)     : 
-      |(Reference)      : 675  676  677  678
+      |(Reference)      : 669  670  671  672
      sld
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 690
+      |(Definition)     : 697
       |(Reference)      : 
      slp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 71
-      |(Definition)     : 311  359
-      |(Reference)      : 312  315  359  360  361  366  375  377  502  503
+      |(Definition)     : 310  358
+      |(Reference)      : 311  314  358  359  360  365  374  376  500  501
      smc
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
       |(Definition)     : 
-      |(Reference)      : 671  672  673  674
+      |(Reference)      : 665  666  667  668
      snr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 690
+      |(Definition)     : 697
       |(Reference)      : 
      soil_xy
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 87
-      |(Definition)     : 134  671  672  673  674  675  676  677  678  679  680  681  682  690
+      |(Definition)     : 134  665  666  667  668  669  670  671  672  673  674  675  676  697
       |(Reference)      : 
      splog
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 96
-      |(Definition)     : 360
-      |(Reference)      : 366  381  381
+      |(Definition)     : 359
+      |(Reference)      : 365  380  380
      ss
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 690
+      |(Definition)     : 697
       |(Reference)      : 
      stc
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
       |(Definition)     : 
-      |(Reference)      : 679  680  681  682
+      |(Reference)      : 673  674  675  676
      surfout
       |(Class and Type) : module subroutine name
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 299
+      |(Reference)      : 298
      t1000
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 30
-      |(Definition)     : 379  383
-      |(Reference)      : 503
+      |(Definition)     : 378  382
+      |(Reference)      : 501
      t2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 690
+      |(Definition)     : 697
       |(Reference)      : 
      tadia
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 96
-      |(Definition)     : 375
-      |(Reference)      : 376
+      |(Definition)     : 374
+      |(Reference)      : 375
      taudir
       |(Class and Type) : variable name, CHARACTER(16,1)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 90
-      |(Definition)     : 138  299  330  333  336  538  555  571  589  606  690
+      |(Definition)     : 138  298  329  332  335  536  553  569  587  604  697
       |(Reference)      : 
      tempout
       |(Class and Type) : module subroutine name
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 392
+      |(Reference)      : 391
      tg
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 690
+      |(Definition)     : 697
       |(Reference)      : 
      tmid
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 96
-      |(Definition)     : 365
-      |(Reference)      : 366
+      |(Definition)     : 364
+      |(Reference)      : 365
      tmp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 69
-      |(Definition)     : 354  392  405  408  419  435  444  456  465  471  478  488  516  529
-      |(Reference)      : 363  366  366  375  376  381  412  439  460  478  483
+      |(Definition)     : 353  391  404  407  418  434  443  455  464  469  476  486  514  527
+      |(Reference)      : 362  365  365  374  375  380  411  438  459  476  481
      tmpin
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 85
-      |(Definition)     : 127  642  643
+      |(Definition)     : 127  640  641
       |(Reference)      : 
      tmpout
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 85
-      |(Definition)     : 128  643
-      |(Reference)      : 644
+      |(Definition)     : 128  641
+      |(Reference)      : 642
      tsf
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 96
-      |(Definition)     : 374  376
-      |(Reference)      : 376  378  379  381  381
+      |(Definition)     : 373  375
+      |(Reference)      : 375  377  378  380  380
      tt
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  54
       |(Definition)     : 
-      |(Reference)      : 214  219  219  244  245  354  628
+      |(Reference)      : 213  218  218  243  244  353  626
      ttb
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 95
-      |(Definition)     : 244
-      |(Reference)      : 246  246
+      |(Definition)     : 243
+      |(Reference)      : 245  245
      ttp
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 95
+      |(Definition)     : 244
+      |(Reference)      : 247
+     ttt
+      |(Class and Type) : variable name, REAL(8)
+      |(Attributes)     : 
+      |(Declaration)    : 95
+      |(Definition)     : 254  265
+      |(Reference)      : 255  255  255  255  266  266  266  266
+     ttt1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 95
       |(Definition)     : 245
       |(Reference)      : 248
-     ttt
-      |(Class and Type) : variable name, REAL(8)
-      |(Attributes)     : 
-      |(Declaration)    : 95
-      |(Definition)     : 255  266
-      |(Reference)      : 256  256  256  256  267  267  267  267
-     ttt1
-      |(Class and Type) : variable name, REAL(8)
-      |(Attributes)     : 
-      |(Declaration)    : 95
-      |(Definition)     : 246
-      |(Reference)      : 249
      ttt2
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 95
-      |(Definition)     : 248
-      |(Reference)      : 249
+      |(Definition)     : 247
+      |(Reference)      : 248
      typtrk
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  54
-      |(Definition)     : 299  529  529  549  549
+      |(Definition)     : 298  527  527  547  547
       |(Reference)      : 
      u10
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 690
+      |(Definition)     : 697
       |(Reference)      : 
      ugws
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 690
+      |(Definition)     : 697
       |(Reference)      : 
      ut
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  54
-      |(Definition)     : 584
-      |(Reference)      : 577  629
+      |(Definition)     : 582
+      |(Reference)      : 575  627
      v10
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 690
+      |(Definition)     : 697
       |(Reference)      : 
      vgws
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 690
+      |(Definition)     : 697
       |(Reference)      : 
      vortout
       |(Class and Type) : module subroutine name
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 549
+      |(Reference)      : 547
      vt
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  54
-      |(Definition)     : 584
-      |(Reference)      : 578  630
+      |(Definition)     : 582
+      |(Reference)      : 576  628
      vvel
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  54
-      |(Definition)     : 584
+      |(Definition)     : 582
       |(Reference)      : 
      whtlev
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 89
-      |(Definition)     : 336  392  538  549  555  566  571  584  589  600  606  608
+      |(Definition)     : 335  391  536  547  553  564  569  582  587  598  604  606
       |(Reference)      : 
      whtlevq
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 89
-      |(Definition)     : 333  419  444  465  488
+      |(Definition)     : 332  418  443  464  486
       |(Reference)      : 
      whtlevz
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 89
-      |(Definition)     : 330  529
+      |(Definition)     : 329  527
       |(Reference)      : 
      whtrec
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 330  333  336  538  555  571  589  606
+      |(Reference)      : 329  332  335  536  553  569  587  604
      whttau
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
@@ -2335,43 +2352,43 @@
       |(Attributes)     : use-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 584
+      |(Reference)      : 582
      wk_xy
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 84
-      |(Definition)     : 126  628  629  630  638  644  646  647  656  657  658  659  660  661  662  690
-      |(Reference)      : 638  642  646  647
+      |(Definition)     : 126  626  627  628  636  642  644  645  684  685  686  687  688  689  690  697
+      |(Reference)      : 636  640  644  645
      wrk1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
       |(Declaration)    : 77
-      |(Definition)     : 405  514
-      |(Reference)      : 408  516
+      |(Definition)     : 404  512
+      |(Reference)      : 407  514
      xx
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
       |(Declaration)    : 96
-      |(Definition)     : 626
-      |(Reference)      : 629  630
+      |(Definition)     : 624
+      |(Reference)      : 627  628
      z0
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  30
-      |(Definition)     : 690
+      |(Definition)     : 697
       |(Reference)      : 
    Cross reference of label
      (Label) (label-kind)               (line-no.)
      ------- ------------- ------------ ----------
-        901  format        (Definition) 184  
+        901  format        (Definition) 183  
+                           (Reference)  179
+        902  format        (Definition) 185  
                            (Reference)  180
-        902  format        (Definition) 186  
-                           (Reference)  181
 
  Total information
    Procedures       : 1
-   Total lines      : 699
-   Total statements : 435
-   Total stack(byte): 30064
+   Total lines      : 706
+   Total statements : 443
+   Total stack(byte): 30848
    Total prefetch num: 16
 

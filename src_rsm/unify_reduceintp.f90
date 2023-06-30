@@ -41,7 +41,7 @@
       if( lreduce.eq.1 ) then
         do jj =1, jlistnum
           j=jlist1(jj)
-          call reduceintp_idw(ffx(1,jj),nxdef(j),nx,my,j)
+          call reduceintp_idw(ffx(1,jj),nxdef(j),nx,my,jj)
         enddo
       endif
       call mpe2d_unify_my(ff,ffx)

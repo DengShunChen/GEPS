@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Thu Jun 29 14:23:20 2023
+ Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:30:31 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
    Source file       : xyintpo.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -1895,23 +1895,20 @@
              577                     
              578                           subroutine phi2pt(nx,my,lmax,zz,anlslp,t1000,puvphi,sgeo,pt)
              579                     !c
-             580                           use const, only: RTYPE
-             581                     !c
-             582                           dimension sgeo(nx,my),pt(nx,my),zz(nx,my,lmax)
-             583                           dimension fld1(nx,lmax+2,my),fld2(nx,lmax+2,my),t1000(nx,my) &
-             584                                  , anlslp(nx,my)                                       &
-             585                                  , hld1(nx,my),hld2(nx,my)                             &
-             586                                  , tens(lmax+2)
-             587                           dimension phistd(lmax),puvphi(lmax),pdiff(nx,my)
-             588                           real(kind=RTYPE) presp(nx,lmax+2,my)
-             589                     !c
-             590                           data cp/1004.24/, grav/9.80616/
+             580                           dimension sgeo(nx,my),pt(nx,my),zz(nx,my,lmax)
+             581                           dimension fld1(nx,lmax+2,my),fld2(nx,lmax+2,my),t1000(nx,my) &
+             582                                  , anlslp(nx,my),presp(nx,lmax+2,my)                   &
+             583                                  , pdiff(nx,my),hld1(nx,my),hld2(nx,my)                &
+             584                                  , tens(lmax+2)
+             585                           dimension phistd(lmax),puvphi(lmax)
+             586                     !c
+             587                           data cp/1004.24/, grav/9.80616/
+             588                     !c
+             589                           capa= 1.0/3.5
+             590                           rgas= capa*cp
              591                     !c
-             592                           capa= 1.0/3.5
-             593                           rgas= capa*cp
-             594                     !c
-             595                           lmaxp1= lmax + 1
-             596                           lmaxp2= lmax + 2
+             592                           lmaxp1= lmax + 1
+             593                           lmaxp2= lmax + 2
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2000
@@ -1920,16 +1917,16 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      tens
                                    <<< Loop-information  End >>>
-             597     1  pp   4v            do 20 k = 1, lmaxp2
-             598     1   p   4v            tens(k) = 1.0
-             599     1   p   4v        20  continue
-             600                           tens(lmaxp2) = 0.0
-             601                           tens(1) = 0.0
-             602                     !c
-             603                           call geostd ( lmax,puvphi,phistd )
-             604                     !c
-             605                     !c  read geopotential height
-             606                     !c
+             594     1  pp   4v            do 20 k = 1, lmaxp2
+             595     1   p   4v            tens(k) = 1.0
+             596     1   p   4v        20  continue
+             597                           tens(lmaxp2) = 0.0
+             598                           tens(1) = 0.0
+             599                     !c
+             600                           call geostd ( lmax,puvphi,phistd )
+             601                     !c
+             602                     !c  read geopotential height
+             603                     !c
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 45
@@ -1940,15 +1937,15 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      puvphi, zz, fld1, presp, fld2, (unknown)
                                    <<< Loop-information  End >>>
-             607     1  pp    v            do 60 k=1,lmax
-             608     1   p    v            pstdt= log(puvphi(k))
+             604     1  pp    v            do 60 k=1,lmax
+             605     1   p    v            pstdt= log(puvphi(k))
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<<  [OPTIMIZATION]
                                    <<<    INTERCHANGED(nest: 1)
                                    <<< Loop-information  End >>>
-             609     2  pp                 do 50 j=1,my
+             606     2  pp                 do 50 j=1,my
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -1956,23 +1953,23 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      fld1, presp, zz, fld2
                                    <<< Loop-information  End >>>
-             610     3   p   2v            do 50 i=1,nx
-             611     3   p   2v            presp(i,k+1,j)= pstdt
-             612     3   p   2v            fld2(i,k+1,j)= -grav*zz(i,j,k)
-             613     3   p   2v            fld1(i,k+1,j)= -grav*phistd(k)-fld2(i,k+1,j)
-             614     2   p   2v        50  continue
-             615     1   p             60  continue
-             616                     !c
-             617                     !c  initialization of terrain pressure
-             618                     !c
-             619                     !c  define bottom & top boundary condition for pt interpolation
-             620                     !c
-             621                           l1= 1
-             622                           alaps= 6.5e-4
-             623                           eps = 0.001
-             624                           call ttstd ( 1, 1.0, tp00 )
-             625                           call ttstd ( 1, puvphi(1), tp01 )
-             626                     !c
+             607     3   p   2v            do 50 i=1,nx
+             608     3   p   2v            presp(i,k+1,j)= pstdt
+             609     3   p   2v            fld2(i,k+1,j)= -grav*zz(i,j,k)
+             610     3   p   2v            fld1(i,k+1,j)= -grav*phistd(k)-fld2(i,k+1,j)
+             611     2   p   2v        50  continue
+             612     1   p             60  continue
+             613                     !c
+             614                     !c  initialization of terrain pressure
+             615                     !c
+             616                     !c  define bottom & top boundary condition for pt interpolation
+             617                     !c
+             618                           l1= 1
+             619                           alaps= 6.5e-4
+             620                           eps = 0.001
+             621                           call ttstd ( 1, 1.0, tp00 )
+             622                           call ttstd ( 1, puvphi(1), tp01 )
+             623                     !c
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
@@ -1982,7 +1979,7 @@
                                    <<<     SEQUENTIAL : 24
                                    <<<      fld2: 24
                                    <<< Loop-information  End >>>
-             627     1                     do 130 j=1,my
+             624     1                     do 130 j=1,my
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 40
@@ -1993,26 +1990,26 @@
                                    <<<      sgeo, t1000, fld2, anlslp, presp, hld1
                                    <<<      pt
                                    <<< Loop-information  End >>>
-             628     2  pp    v            do 132 i=1,nx
-             629     2   p    v            hld1(i,j)= anlslp(i,j)
-             630     2   p    v            pt(i,j)  = 0.1
-             631     2               !c
-             632     2               !c dealing with inconsistency between anlslp and 1000hPa height
-             633     2               !c 2009/12/10
-             634     3   p    v            if( fld2(i,lmaxp1,j).gt.0 .and. anlslp(i,j).ge.1000.)then
-             635     3   p    v              pxx = log(hld1(i,j))
-             636     3   p    v              pt(i,j) = fld2(i,lmaxp1,j)  &
-             637     3                              +rgas*t1000(i,j)*(pxx-presp(i,lmaxp1,j))
-             638     3   p    v            endif
-             639     2               !c
-             640     3   p    v            if(sgeo(i,j).le.-1.0) then
-             641     3   p    v              px= sgeo(i,j)/(rgas*(t1000(i,j)-alaps*0.5*sgeo(i,j)))
-             642     3   p    v              hld1(i,j)= hld1(i,j)*(1.0-px)
-             643     3   p    v              pt(i,j)  =-sgeo(i,j) + 0.1
-             644     3   p    v            endif
-             645     2   p    v        132 continue
-             646     1                     call geostd (nx,hld1(1,j),hld2(1,j))
-             647     1               !c
+             625     2  pp    v            do 132 i=1,nx
+             626     2   p    v            hld1(i,j)= anlslp(i,j)
+             627     2   p    v            pt(i,j)  = 0.1
+             628     2               !c
+             629     2               !c dealing with inconsistency between anlslp and 1000hPa height
+             630     2               !c 2009/12/10
+             631     3   p    v            if( fld2(i,lmaxp1,j).gt.0 .and. anlslp(i,j).ge.1000.)then
+             632     3   p    v              pxx = log(hld1(i,j))
+             633     3   p    v              pt(i,j) = fld2(i,lmaxp1,j)  &
+             634     3                              +rgas*t1000(i,j)*(pxx-presp(i,lmaxp1,j))
+             635     3   p    v            endif
+             636     2               !c
+             637     3   p    v            if(sgeo(i,j).le.-1.0) then
+             638     3   p    v              px= sgeo(i,j)/(rgas*(t1000(i,j)-alaps*0.5*sgeo(i,j)))
+             639     3   p    v              hld1(i,j)= hld1(i,j)*(1.0-px)
+             640     3   p    v              pt(i,j)  =-sgeo(i,j) + 0.1
+             641     3   p    v            endif
+             642     2   p    v        132 continue
+             643     1                     call geostd (nx,hld1(1,j),hld2(1,j))
+             644     1               !c
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 37
@@ -2026,35 +2023,35 @@
                                    <<<     SEQUENTIAL : 18
                                    <<<      fld2: 18
                                    <<< Loop-information  End >>>
-             648     2  pp    v            do 133 i=1,nx
-             649     2   p    v            hld1(i,j) = log(hld1(i,j))
-             650     2               !ccc   if ( hld1(i,j) .le. (presp(i,lmaxp1,j)+eps) )  then
-             651     3   p    v            if ( hld1(i,j) .le. presp(i,lmaxp1,j) )  then
-             652     3   p    v              presp(i,lmaxp2,j)= 2.0*presp(i,lmaxp1,j) - presp(i,lmax,j)
-             653     3   p    v              fld2(i,lmaxp2,j) = 2.0*fld2(i,lmaxp1,j) - fld2(i,lmax,j)
-             654     3   p    v              fld1(i,lmaxp2,j) = fld1(i,lmaxp1,j)
-             655     3   p    v            else
-             656     3   p    v              presp(i,lmaxp2,j)= hld1(i,j)
-             657     3   p    v              fld2(i,lmaxp2,j) = pt(i,j)
-             658     3   p    v              fld1(i,lmaxp2,j) =-fld2(i,lmaxp2,j)-grav*hld2(i,j)
-             659     3   p    v            endif
-             660     2   p    v            presp(i,1,j)= log(1.0)
-             661     2   p    v            fld2(i,1,j) = fld2(i,2,j) - rgas*tp00*(presp(i,2,j)-presp(i,1,j))
-             662     2   p    v            fld1(i,1,j) = fld1(i,2,j)
-             663     2               !c
-             664     2   p    v            pdiff(i,j)  = -sgeo(i,j)
-             665     2   p    v            if ((sgeo(i,j).le.0.0).and.(sgeo(i,j).ge.(-1.0+eps)))  &
-             666     2                      pdiff(i,j)= 0.0
-             667     2               !c
-             668     2   p    v        133 continue
-             669     1               !c
-             670     1               !c  interpolate to get terrain pressure
-             671     1               !c  interpolation is of log p - cubic as function of geopotential
-             672     1               !c  output is log p in array pt
+             645     2  pp    v            do 133 i=1,nx
+             646     2   p    v            hld1(i,j) = log(hld1(i,j))
+             647     2               !ccc   if ( hld1(i,j) .le. (presp(i,lmaxp1,j)+eps) )  then
+             648     3   p    v            if ( hld1(i,j) .le. presp(i,lmaxp1,j) )  then
+             649     3   p    v              presp(i,lmaxp2,j)= 2.0*presp(i,lmaxp1,j) - presp(i,lmax,j)
+             650     3   p    v              fld2(i,lmaxp2,j) = 2.0*fld2(i,lmaxp1,j) - fld2(i,lmax,j)
+             651     3   p    v              fld1(i,lmaxp2,j) = fld1(i,lmaxp1,j)
+             652     3   p    v            else
+             653     3   p    v              presp(i,lmaxp2,j)= hld1(i,j)
+             654     3   p    v              fld2(i,lmaxp2,j) = pt(i,j)
+             655     3   p    v              fld1(i,lmaxp2,j) =-fld2(i,lmaxp2,j)-grav*hld2(i,j)
+             656     3   p    v            endif
+             657     2   p    v            presp(i,1,j)= log(1.0)
+             658     2   p    v            fld2(i,1,j) = fld2(i,2,j) - rgas*tp00*(presp(i,2,j)-presp(i,1,j))
+             659     2   p    v            fld1(i,1,j) = fld1(i,2,j)
+             660     2               !c
+             661     2   p    v            pdiff(i,j)  = -sgeo(i,j)
+             662     2   p    v            if ((sgeo(i,j).le.0.0).and.(sgeo(i,j).ge.(-1.0+eps)))  &
+             663     2                      pdiff(i,j)= 0.0
+             664     2               !c
+             665     2   p    v        133 continue
+             666     1               !c
+             667     1               !c  interpolate to get terrain pressure
+             668     1               !c  interpolation is of log p - cubic as function of geopotential
+             669     1               !c  output is log p in array pt
+             670     1               !c
+             671     1                     call vterpj( nx,lmaxp2,l1,fld2(1,1,j),presp(1,1,j),pdiff(1,j) &
+             672     1                               , pt(1,j),tens)
              673     1               !c
-             674     1                     call vterpj( nx,lmaxp2,l1,fld2(1,1,j),presp(1,1,j),pdiff(1,j) &
-             675     1                               , pt(1,j),tens)
-             676     1               !c
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 45
@@ -2064,17 +2061,17 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      pt
                                    <<< Loop-information  End >>>
-             677     2  pp    v            do 135 i=1,nx
-             678     2   p    v            pt(i,j)= exp(pt(i,j))
-             679     2   p    v        135 continue
-             680     1                 130 continue
-             681                     !c
-             682                           return
-             683                           end
+             674     2  pp    v            do 135 i=1,nx
+             675     2   p    v            pt(i,j)= exp(pt(i,j))
+             676     2   p    v        135 continue
+             677     1                 130 continue
+             678                     !c
+             679                           return
+             680                           end
 
  Procedure information
-   Lines      : 107
-   Statements : 70
+   Lines      : 104
+   Statements : 68
    Stack(byte): 3552
    Prefetch num: 66
 
@@ -2084,145 +2081,139 @@
       |(Class and Type) : variable name, REAL(8)-implicited
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 622
-      |(Reference)      : 641
+      |(Definition)     : 619
+      |(Reference)      : 638
      anlslp
       |(Class and Type) : variable name, REAL(8)-implicited
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 578  583
+      |(Declaration)    : 578  581
       |(Definition)     : 
-      |(Reference)      : 629  634
+      |(Reference)      : 626  631
      capa
       |(Class and Type) : variable name, REAL(8)-implicited
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 592
-      |(Reference)      : 593
-     const
-      |(Class and Type) : module name
-      |(Attributes)     : 
-      |(Declaration)    : 
-      |(Definition)     : 
-      |(Reference)      : 580
+      |(Definition)     : 589
+      |(Reference)      : 590
      cp
       |(Class and Type) : variable name, REAL(8)-implicited
       |(Attributes)     : initialized
-      |(Declaration)    : 590
+      |(Declaration)    : 587
       |(Definition)     : 
-      |(Reference)      : 593
+      |(Reference)      : 590
      eps
       |(Class and Type) : variable name, REAL(8)-implicited
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 623
-      |(Reference)      : 665
+      |(Definition)     : 620
+      |(Reference)      : 662
      exp
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 678
+      |(Reference)      : 675
      fld1
       |(Class and Type) : variable name, REAL(8)-implicited
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 583
-      |(Definition)     : 613  654  658  662
-      |(Reference)      : 654  662
+      |(Declaration)    : 581
+      |(Definition)     : 610  651  655  659
+      |(Reference)      : 651  659
      fld2
       |(Class and Type) : variable name, REAL(8)-implicited
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 583
-      |(Definition)     : 612  653  657  661  674
-      |(Reference)      : 613  634  636  653  653  658  661
+      |(Declaration)    : 581
+      |(Definition)     : 609  650  654  658  671
+      |(Reference)      : 610  631  633  650  650  655  658
      geostd
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 603  646
+      |(Reference)      : 600  643
      grav
       |(Class and Type) : variable name, REAL(8)-implicited
       |(Attributes)     : initialized
-      |(Declaration)    : 590
+      |(Declaration)    : 587
       |(Definition)     : 
-      |(Reference)      : 612  613  658
+      |(Reference)      : 609  610  655
      hld1
       |(Class and Type) : variable name, REAL(8)-implicited
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 583
-      |(Definition)     : 629  642  646  649
-      |(Reference)      : 635  642  649  651  656
+      |(Declaration)    : 581
+      |(Definition)     : 626  639  643  646
+      |(Reference)      : 632  639  646  648  653
      hld2
       |(Class and Type) : variable name, REAL(8)-implicited
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 583
-      |(Definition)     : 646
-      |(Reference)      : 658
+      |(Declaration)    : 581
+      |(Definition)     : 643
+      |(Reference)      : 655
      i
       |(Class and Type) : variable name, INTEGER(4)-implicited
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 610  628  648  677
-      |(Reference)      : 611  612  612  613  613  629  629  630  634  634  635  636  636  636  636  640  641  641  641  642  642  643  643  649  649  651  651  652  652  652  653  653  653  654  654  656  656  657  657  658  658  658  660  661  661  661  661  662  662  664  664  665  665  665  678  678
+      |(Definition)     : 607  625  645  674
+      |(Reference)      : 608  609  609  610  610  626  626  627  631  631  632  633  633  633  633  637  638  638  638  639  639  640  640  646  646  648  648  649  649  649  650  650  650  651  651  653  653  654  654  655  655  655  657  658  658  658  658  659  659  661  661  662  662  662  675  675
      j
       |(Class and Type) : variable name, INTEGER(4)-implicited
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 609  627
-      |(Reference)      : 611  612  612  613  613  629  629  630  634  634  635  636  636  636  636  640  641  641  641  642  642  643  643  646  646  649  649  651  651  652  652  652  653  653  653  654  654  656  656  657  657  658  658  658  660  661  661  661  661  662  662  664  664  665  665  665  674  674  674  674  678  678
+      |(Definition)     : 606  624
+      |(Reference)      : 608  609  609  610  610  626  626  627  631  631  632  633  633  633  633  637  638  638  638  639  639  640  640  643  643  646  646  648  648  649  649  649  650  650  650  651  651  653  653  654  654  655  655  655  657  658  658  658  658  659  659  661  661  662  662  662  671  671  671  671  675  675
      k
       |(Class and Type) : variable name, INTEGER(4)-implicited
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 597  607
-      |(Reference)      : 598  608  611  612  612  613  613  613
+      |(Definition)     : 594  604
+      |(Reference)      : 595  605  608  609  609  610  610  610
      l1
       |(Class and Type) : variable name, INTEGER(4)-implicited
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 621  674
+      |(Definition)     : 618  671
       |(Reference)      : 
      lmax
       |(Class and Type) : variable name, INTEGER(4)-implicited
       |(Attributes)     : dummy-argument
       |(Declaration)    : 578
-      |(Definition)     : 603
-      |(Reference)      : 582  583  583  583  587  587  588  595  596  607  652  653
+      |(Definition)     : 600
+      |(Reference)      : 580  581  581  581  581  585  585  592  593  604  649  650
      lmaxp1
       |(Class and Type) : variable name, INTEGER(4)-implicited
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 595
-      |(Reference)      : 634  636  636  651  652  653  654
+      |(Definition)     : 592
+      |(Reference)      : 631  633  633  648  649  650  651
      lmaxp2
       |(Class and Type) : variable name, INTEGER(4)-implicited
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 596  674
-      |(Reference)      : 597  600  652  653  654  656  657  658  658
+      |(Definition)     : 593  671
+      |(Reference)      : 594  597  649  650  651  653  654  655  655
      log
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 608  635  649  660
+      |(Reference)      : 605  632  646  657
      my
       |(Class and Type) : variable name, INTEGER(4)-implicited
       |(Attributes)     : dummy-argument
       |(Declaration)    : 578
       |(Definition)     : 
-      |(Reference)      : 582  582  582  583  583  583  583  583  583  587  588  609  627
+      |(Reference)      : 580  580  580  581  581  581  581  581  581  581  581  606  624
      nx
       |(Class and Type) : variable name, INTEGER(4)-implicited
       |(Attributes)     : dummy-argument
       |(Declaration)    : 578
-      |(Definition)     : 646  674
-      |(Reference)      : 582  582  582  583  583  583  583  583  583  587  588  610  628  648  677
+      |(Definition)     : 643  671
+      |(Reference)      : 580  580  580  581  581  581  581  581  581  581  581  607  625  645  674
      pdiff
       |(Class and Type) : variable name, REAL(8)-implicited
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 587
-      |(Definition)     : 664  665  674
+      |(Declaration)    : 581
+      |(Definition)     : 661  662  671
       |(Reference)      : 
      phi2pt
       |(Class and Type) : external subroutine name
@@ -2233,127 +2224,121 @@
      phistd
       |(Class and Type) : variable name, REAL(8)-implicited
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 587
-      |(Definition)     : 603
-      |(Reference)      : 613
+      |(Declaration)    : 585
+      |(Definition)     : 600
+      |(Reference)      : 610
      presp
-      |(Class and Type) : variable name, REAL(8)
+      |(Class and Type) : variable name, REAL(8)-implicited
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 588
-      |(Definition)     : 611  652  656  660  674
-      |(Reference)      : 636  651  652  652  661  661
+      |(Declaration)    : 581
+      |(Definition)     : 608  649  653  657  671
+      |(Reference)      : 633  648  649  649  658  658
      pstdt
       |(Class and Type) : variable name, REAL(8)-implicited
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 608
-      |(Reference)      : 611
+      |(Definition)     : 605
+      |(Reference)      : 608
      pt
       |(Class and Type) : variable name, REAL(8)-implicited
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 578  582
-      |(Definition)     : 630  636  643  674  678
-      |(Reference)      : 657  678
+      |(Declaration)    : 578  580
+      |(Definition)     : 627  633  640  671  675
+      |(Reference)      : 654  675
      puvphi
       |(Class and Type) : variable name, REAL(8)-implicited
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 578  587
-      |(Definition)     : 603  625
-      |(Reference)      : 608
+      |(Declaration)    : 578  585
+      |(Definition)     : 600  622
+      |(Reference)      : 605
      px
       |(Class and Type) : variable name, REAL(8)-implicited
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 641
-      |(Reference)      : 642
+      |(Definition)     : 638
+      |(Reference)      : 639
      pxx
       |(Class and Type) : variable name, REAL(8)-implicited
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 635
-      |(Reference)      : 636
-     RTYPE
-      |(Class and Type) : named constant, INTEGER(4)
-      |(Attributes)     : use-associated
-      |(Declaration)    : 
-      |(Definition)     : 
-      |(Reference)      : 580  588
+      |(Definition)     : 632
+      |(Reference)      : 633
      rgas
       |(Class and Type) : variable name, REAL(8)-implicited
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 593
-      |(Reference)      : 636  641  661
+      |(Definition)     : 590
+      |(Reference)      : 633  638  658
      sgeo
       |(Class and Type) : variable name, REAL(8)-implicited
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 578  582
+      |(Declaration)    : 578  580
       |(Definition)     : 
-      |(Reference)      : 640  641  641  643  664  665  665
+      |(Reference)      : 637  638  638  640  661  662  662
      t1000
       |(Class and Type) : variable name, REAL(8)-implicited
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 578  583
+      |(Declaration)    : 578  581
       |(Definition)     : 
-      |(Reference)      : 636  641
+      |(Reference)      : 633  638
      tens
       |(Class and Type) : variable name, REAL(8)-implicited
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 583
-      |(Definition)     : 598  600  601  674
+      |(Declaration)    : 581
+      |(Definition)     : 595  597  598  671
       |(Reference)      : 
      tp00
       |(Class and Type) : variable name, REAL(8)-implicited
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 624
-      |(Reference)      : 661
+      |(Definition)     : 621
+      |(Reference)      : 658
      tp01
       |(Class and Type) : variable name, REAL(8)-implicited
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 625
+      |(Definition)     : 622
       |(Reference)      : 
      ttstd
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 624  625
+      |(Reference)      : 621  622
      vterpj
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 674
+      |(Reference)      : 671
      zz
       |(Class and Type) : variable name, REAL(8)-implicited
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 578  582
+      |(Declaration)    : 578  580
       |(Definition)     : 
-      |(Reference)      : 612
+      |(Reference)      : 609
    Cross reference of label
      (Label) (label-kind)               (line-no.)
      ------- ------------- ------------ ----------
-         20  execution     (Definition) 599  
-                           (Reference)  597
-         50  execution     (Definition) 614  
-                           (Reference)  609  610
-         60  execution     (Definition) 615  
-                           (Reference)  607
-        130  execution     (Definition) 680  
-                           (Reference)  627
-        132  execution     (Definition) 645  
-                           (Reference)  628
-        133  execution     (Definition) 668  
-                           (Reference)  648
-        135  execution     (Definition) 679  
-                           (Reference)  677
+         20  execution     (Definition) 596  
+                           (Reference)  594
+         50  execution     (Definition) 611  
+                           (Reference)  606  607
+         60  execution     (Definition) 612  
+                           (Reference)  604
+        130  execution     (Definition) 677  
+                           (Reference)  624
+        132  execution     (Definition) 642  
+                           (Reference)  625
+        133  execution     (Definition) 665  
+                           (Reference)  645
+        135  execution     (Definition) 676  
+                           (Reference)  674
 
  Total information
    Procedures       : 7
-   Total lines      : 683
-   Total statements : 419
+   Total lines      : 680
+   Total statements : 417
    Total stack(byte): 129360
    Total prefetch num: 74
 

@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Thu Jun 29 14:23:03 2023
+ Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:30:19 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
    Source file       : gathv.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -70,10 +70,9 @@
                8                           implicit  none
                9                     
               10                           integer   mn,nx,lev,ipt(mn)
-              11                           real(kind=RTYPE) fyy(nx*lev),f(nx*lev)
-              12                           real      tp1(mn,4)
-              13                           integer   i,inx
-              14                     !
+              11                           real(kind=RTYPE) fyy(nx*lev),f(nx*lev),tp1(mn,4)
+              12                           integer   i,inx
+              13                     !
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 411
@@ -83,20 +82,20 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      tp1, ipt
                                    <<< Loop-information  End >>>
-              15     1  pp    v            do 20 i=1,mn
-              16     1   p    v            tp1(i,1)= fyy(ipt(i))
-              17     1   p    v            tp1(i,3)= f  (ipt(i))
-              18     1   p    v            inx= ipt(i)-nx
-              19     1   p    v            tp1(i,2)= fyy(inx)
-              20     1   p    v            tp1(i,4)= f  (inx)
-              21     1   p    v         20 continue
-              22                     !
-              23                           return
-              24                           end
+              14     1  pp    v            do 20 i=1,mn
+              15     1   p    v            tp1(i,1)= fyy(ipt(i))
+              16     1   p    v            tp1(i,3)= f  (ipt(i))
+              17     1   p    v            inx= ipt(i)-nx
+              18     1   p    v            tp1(i,2)= fyy(inx)
+              19     1   p    v            tp1(i,4)= f  (inx)
+              20     1   p    v         20 continue
+              21                     !
+              22                           return
+              23                           end
 
  Procedure information
-   Lines      : 24
-   Statements : 16
+   Lines      : 23
+   Statements : 15
    Stack(byte): 800
    Prefetch num: 0
 
@@ -113,13 +112,13 @@
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  11
       |(Definition)     : 
-      |(Reference)      : 17  20
+      |(Reference)      : 16  19
      fyy
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  11
       |(Definition)     : 
-      |(Reference)      : 16  19
+      |(Reference)      : 15  18
      gathv
       |(Class and Type) : external subroutine name
       |(Attributes)     : 
@@ -129,21 +128,21 @@
      i
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 13
-      |(Definition)     : 15
-      |(Reference)      : 16  16  17  17  18  19  20
+      |(Declaration)    : 12
+      |(Definition)     : 14
+      |(Reference)      : 15  15  16  16  17  18  19
      inx
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 13
-      |(Definition)     : 18
-      |(Reference)      : 19  20
+      |(Declaration)    : 12
+      |(Definition)     : 17
+      |(Reference)      : 18  19
      ipt
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : DIMENSION, dummy-argument
       |(Declaration)    : 1  10
       |(Definition)     : 
-      |(Reference)      : 16  17  18
+      |(Reference)      : 15  16  17
      lev
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
@@ -155,13 +154,13 @@
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  10
       |(Definition)     : 
-      |(Reference)      : 10  12  15
+      |(Reference)      : 10  11  14
      nx
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : dummy-argument
       |(Declaration)    : 1  10
       |(Definition)     : 
-      |(Reference)      : 11  11  18
+      |(Reference)      : 11  11  17
      RTYPE
       |(Class and Type) : named constant, INTEGER(4)
       |(Attributes)     : use-associated
@@ -171,19 +170,19 @@
      tp1
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, dummy-argument
-      |(Declaration)    : 1  12
-      |(Definition)     : 16  17  19  20
+      |(Declaration)    : 1  11
+      |(Definition)     : 15  16  18  19
       |(Reference)      : 
    Cross reference of label
      (Label) (label-kind)               (line-no.)
      ------- ------------- ------------ ----------
-         20  execution     (Definition) 21  
-                           (Reference)  15
+         20  execution     (Definition) 20  
+                           (Reference)  14
 
  Total information
    Procedures       : 1
-   Total lines      : 24
-   Total statements : 16
+   Total lines      : 23
+   Total statements : 15
    Total stack(byte): 800
    Total prefetch num: 0
 

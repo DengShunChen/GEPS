@@ -1,13 +1,13 @@
 
- Fujitsu Fortran Version 4.6.1  Thu Jun 29 14:23:26 2023
+ Fujitsu Fortran Version 4.6.1  Wed Feb  1 14:30:38 2023
 
  Compilation information
-   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_rsm
+   Current directory : /IFS/nwpr/gfs/xb157/Git/tco639l72/src_new
    Source file       : cld_eff_rad.f90
 
  Option information
-   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
-   Cpp options          : -DTIMING -DUSE_FFTW -DW3TAG -DGFDLMP_v2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.7.4/include -I/package/fx1000/g2lib-1.4.0_cwb/include -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
+   Command line options : -Kident_mpi -f2004 -c -X9 -Free -CcdRR8 -Cpp -Kfast,parallel,openmp,ocl,autoobjstack -x- -fw -Knofp_relaxed -SSL2BLAMP -Kopenmp,parallel -DTIMING -DUSE_FFTW -DRSM -Ec -Nlst=a,lst=d,lst=i,lst=p,lst=t,lst=x -Koptmsg=2 -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Knointentopt
+   Cpp options          : -DTIMING -DUSE_FFTW -DRSM -I. -I/users/xa09/pkg/fx1000/fftw-3.3.10/include -I/package/fx1000/netcdf-4.1.3/include -I/nwpr/gfs/xb157/CWBSUMc2/components/coupler -I/nwpr/gfs/xb124/package/fx1000/MCT/include -DTIMCOMCPL -I/opt/FJSVxtclanga/.common/MELI025/include/mpi/fujitsu -I/opt/FJSVxtclanga/.common/MELI025/lib64 -Dunix -Dlinux -D__FUJITSU -D__FRT_major__=4 -D__FRT_minor__=6 -D__FRT_patchlevel__=1 -D__FRT_version__="4.6.1" -D__aarch64__ -D__unix -D_OPENMP=201511 -D__frt_version=800 -D__ARM_ARCH=8 -D__ARM_FEATURE_SVE -D__ELF__ -D__unix__ -D__linux__ -D__linux -Asystem(unix) -otmp
    Effective options    : -fw -g0 -AE -Ec -Free -O3 -X9
                           -CcdRR8 -x- -xaccept=nomodule_allocatable
                           -KA64FX -KARMV8_3_A -KSVE -Kalign_commons
@@ -137,92 +137,91 @@
               75                         ! 3: fu, 2007
               76                         ! 4: kristjansson et al., 2000
               77                         ! 5: wyser, 1998
-              78                         ! 6: Heymsfield et al.,2014  !not finished (by xb141)
-              79                     
-              80                     !    namelist / cld_eff_rad_nml / &
-              81                     !        qi0_rei, qmin, beta, liq_ice_combine, rewflag, reiflag, rewmin, rewmax, reimin, &
-              82                     !        reimax, rermin, rermax, resmin, resmax, regmin, regmax, betaw, betai, betar, betas, &
-              83                     !        betag, snow_grauple_combine
-              84                     
-              85                     contains
-              86                     
-              87                     ! =======================================================================
-              88                     ! radius of cloud species diagnosis
-              89                     ! =======================================================================
-              90                     
-              91                     subroutine cld_eff_rad                                       &
-              92                           ( is, ie, ks, ke, lsm, p, delp, t, qw, qi, qr, qs, qg, &
-              93                             qa, qcw, qci, qcr, qcs, qcg, rew, rei, rer, res, reg, &
-              94                             cld, snowd, cnvw, cnvi, cnvc)
-              95                     !        cld, cloud, snowd, cnvw, cnvi, cnvc)
-              96                     
-              97                         implicit none
-              98                     
-              99                         integer, intent (in) :: is, ie
-             100                         integer, intent (in) :: ks, ke
-             101                     
-             102                         real, intent (in), dimension (is:ie) :: lsm ! land sea mask, 0: ocean, 1: land, 2: sea ice
-             103                         real, intent (in), dimension (is:ie) :: snowd ! snow depth (mm) ; only used if rewflag=3
-             104                     
-             105                         real, intent (in), dimension (is:ie, ks:ke) :: delp, t, p
-             106                     !    real, intent (in), dimension (is:ie, ks:ke) :: cloud ! cloud fraction
-             107                         real, intent (in), dimension (is:ie, ks:ke) :: qw, qi, qr, qs, qg ! mass mixing ratio (kg / kg)
-             108                         real, intent (in), dimension (is:ie, ks:ke) :: qa ! aerosol mixing ratio (kg / kg) ; only used if prog_ccn=.true.
-             109                     
-             110                         real, intent (in), dimension (is:ie, ks:ke), optional :: cnvw, cnvi ! convective cloud water / ice mass mixing ratio (kg / kg)
-             111                         real, intent (in), dimension (is:ie, ks:ke), optional :: cnvc ! convective cloud fraction
-             112                     
-             113                         real, intent (inout), dimension (is:ie, ks:ke) :: qcw, qci, qcr, qcs, qcg ! units: g / m^2
-             114                         real, intent (inout), dimension (is:ie, ks:ke) :: rew, rei, rer, res, reg ! radii (micron)
-             115                         real, intent (inout), dimension (is:ie, ks:ke) :: cld ! total cloud fraction
-             116                     
-             117                         ! local variables
-             118                     
-             119                         integer :: i, k, ind
-             120                     
-             121                         real, dimension (is:ie, ks:ke) :: qmw, qmr, qmi, qms, qmg ! mass mixing ratio (kg / kg)
-             122                     
-             123                         real :: dpg ! dp / g
-             124                         real :: rho ! density (kg / m^3)
-             125                         real :: ccnw ! cloud condensate nuclei for cloud water (cm^ - 3)
-             126                         real :: mask
-             127                         real :: cor
-             128                         real :: tc0
-             129                         real :: bw
-             130                     
-             131                         real :: lambdar, lambdas, lambdag
-             132                         real :: rei_fac
-             133                     
-             134                         real, parameter :: n0r = 8.0e6, n0s = 3.0e6, n0g = 4.0e6 ! intercept parameters (m^ - 4) in lin et al. (1983)
-             135                         real, parameter :: alphar = 0.8, alphas = 0.25, alphag = 0.5 ! parameters in terminal equation in lin et al., (1983)
-             136                         real, parameter :: gammar = 17.837789, gammas = 8.2850630, gammag = 11.631769 ! gamma values as a result of different alpha
-             137                         real, parameter :: rho_0 = 50.e-3
-             138                     
-             139                         real :: retab (138) = (/ &
-             140                             0.05000, 0.05000, 0.05000, 0.05000, 0.05000, 0.05000, &
-             141                             0.05500, 0.06000, 0.07000, 0.08000, 0.09000, 0.10000, &
-             142                             0.20000, 0.30000, 0.40000, 0.50000, 0.60000, 0.70000, &
-             143                             0.80000, 0.90000, 1.00000, 1.10000, 1.20000, 1.30000, &
-             144                             1.40000, 1.50000, 1.60000, 1.80000, 2.00000, 2.20000, &
-             145                             2.40000, 2.60000, 2.80000, 3.00000, 3.20000, 3.50000, &
-             146                             3.80000, 4.10000, 4.40000, 4.70000, 5.00000, 5.30000, &
-             147                             5.60000, 5.92779, 6.26422, 6.61973, 6.99539, 7.39234, &
-             148                             7.81177, 8.25496, 8.72323, 9.21800, 9.74075, 10.2930, &
-             149                             10.8765, 11.4929, 12.1440, 12.8317, 13.5581, 14.2319, &
-             150                             15.0351, 15.8799, 16.7674, 17.6986, 18.6744, 19.6955, &
-             151                             20.7623, 21.8757, 23.0364, 24.2452, 25.5034, 26.8125, &
-             152                             27.7895, 28.6450, 29.4167, 30.1088, 30.7306, 31.2943, &
-             153                             31.8151, 32.3077, 32.7870, 33.2657, 33.7540, 34.2601, &
-             154                             34.7892, 35.3442, 35.9255, 36.5316, 37.1602, 37.8078, &
-             155                             38.4720, 39.1508, 39.8442, 40.5552, 41.2912, 42.0635, &
-             156                             42.8876, 43.7863, 44.7853, 45.9170, 47.2165, 48.7221, &
-             157                             50.4710, 52.4980, 54.8315, 57.4898, 60.4785, 63.7898, &
-             158                             65.5604, 71.2885, 75.4113, 79.7368, 84.2351, 88.8833, &
-             159                             93.6658, 98.5739, 103.603, 108.752, 114.025, 119.424, &
-             160                             124.954, 130.630, 136.457, 142.446, 148.608, 154.956, &
-             161                             161.503, 168.262, 175.248, 182.473, 189.952, 197.699, &
-             162                             205.728, 214.055, 222.694, 231.661, 240.971, 250.639 /)
-             163                     
+              78                     
+              79                     !    namelist / cld_eff_rad_nml / &
+              80                     !        qi0_rei, qmin, beta, liq_ice_combine, rewflag, reiflag, rewmin, rewmax, reimin, &
+              81                     !        reimax, rermin, rermax, resmin, resmax, regmin, regmax, betaw, betai, betar, betas, &
+              82                     !        betag, snow_grauple_combine
+              83                     
+              84                     contains
+              85                     
+              86                     ! =======================================================================
+              87                     ! radius of cloud species diagnosis
+              88                     ! =======================================================================
+              89                     
+              90                     subroutine cld_eff_rad                                       &
+              91                           ( is, ie, ks, ke, lsm, p, delp, t, qw, qi, qr, qs, qg, &
+              92                             qa, qcw, qci, qcr, qcs, qcg, rew, rei, rer, res, reg, &
+              93                             cld, snowd, cnvw, cnvi, cnvc)
+              94                     !        cld, cloud, snowd, cnvw, cnvi, cnvc)
+              95                     
+              96                         implicit none
+              97                     
+              98                         integer, intent (in) :: is, ie
+              99                         integer, intent (in) :: ks, ke
+             100                     
+             101                         real, intent (in), dimension (is:ie) :: lsm ! land sea mask, 0: ocean, 1: land, 2: sea ice
+             102                         real, intent (in), dimension (is:ie) :: snowd ! snow depth (mm) ; only used if rewflag=3
+             103                     
+             104                         real, intent (in), dimension (is:ie, ks:ke) :: delp, t, p
+             105                     !    real, intent (in), dimension (is:ie, ks:ke) :: cloud ! cloud fraction
+             106                         real, intent (in), dimension (is:ie, ks:ke) :: qw, qi, qr, qs, qg ! mass mixing ratio (kg / kg)
+             107                         real, intent (in), dimension (is:ie, ks:ke) :: qa ! aerosol mixing ratio (kg / kg) ; only used if prog_ccn=.true.
+             108                     
+             109                         real, intent (in), dimension (is:ie, ks:ke), optional :: cnvw, cnvi ! convective cloud water / ice mass mixing ratio (kg / kg)
+             110                         real, intent (in), dimension (is:ie, ks:ke), optional :: cnvc ! convective cloud fraction
+             111                     
+             112                         real, intent (inout), dimension (is:ie, ks:ke) :: qcw, qci, qcr, qcs, qcg ! units: g / m^2
+             113                         real, intent (inout), dimension (is:ie, ks:ke) :: rew, rei, rer, res, reg ! radii (micron)
+             114                         real, intent (inout), dimension (is:ie, ks:ke) :: cld ! total cloud fraction
+             115                     
+             116                         ! local variables
+             117                     
+             118                         integer :: i, k, ind
+             119                     
+             120                         real, dimension (is:ie, ks:ke) :: qmw, qmr, qmi, qms, qmg ! mass mixing ratio (kg / kg)
+             121                     
+             122                         real :: dpg ! dp / g
+             123                         real :: rho ! density (kg / m^3)
+             124                         real :: ccnw ! cloud condensate nuclei for cloud water (cm^ - 3)
+             125                         real :: mask
+             126                         real :: cor
+             127                         real :: tc0
+             128                         real :: bw
+             129                     
+             130                         real :: lambdar, lambdas, lambdag
+             131                         real :: rei_fac
+             132                     
+             133                         real, parameter :: n0r = 8.0e6, n0s = 3.0e6, n0g = 4.0e6 ! intercept parameters (m^ - 4) in lin et al. (1983)
+             134                         real, parameter :: alphar = 0.8, alphas = 0.25, alphag = 0.5 ! parameters in terminal equation in lin et al., (1983)
+             135                         real, parameter :: gammar = 17.837789, gammas = 8.2850630, gammag = 11.631769 ! gamma values as a result of different alpha
+             136                         real, parameter :: rho_0 = 50.e-3
+             137                     
+             138                         real :: retab (138) = (/ &
+             139                             0.05000, 0.05000, 0.05000, 0.05000, 0.05000, 0.05000, &
+             140                             0.05500, 0.06000, 0.07000, 0.08000, 0.09000, 0.10000, &
+             141                             0.20000, 0.30000, 0.40000, 0.50000, 0.60000, 0.70000, &
+             142                             0.80000, 0.90000, 1.00000, 1.10000, 1.20000, 1.30000, &
+             143                             1.40000, 1.50000, 1.60000, 1.80000, 2.00000, 2.20000, &
+             144                             2.40000, 2.60000, 2.80000, 3.00000, 3.20000, 3.50000, &
+             145                             3.80000, 4.10000, 4.40000, 4.70000, 5.00000, 5.30000, &
+             146                             5.60000, 5.92779, 6.26422, 6.61973, 6.99539, 7.39234, &
+             147                             7.81177, 8.25496, 8.72323, 9.21800, 9.74075, 10.2930, &
+             148                             10.8765, 11.4929, 12.1440, 12.8317, 13.5581, 14.2319, &
+             149                             15.0351, 15.8799, 16.7674, 17.6986, 18.6744, 19.6955, &
+             150                             20.7623, 21.8757, 23.0364, 24.2452, 25.5034, 26.8125, &
+             151                             27.7895, 28.6450, 29.4167, 30.1088, 30.7306, 31.2943, &
+             152                             31.8151, 32.3077, 32.7870, 33.2657, 33.7540, 34.2601, &
+             153                             34.7892, 35.3442, 35.9255, 36.5316, 37.1602, 37.8078, &
+             154                             38.4720, 39.1508, 39.8442, 40.5552, 41.2912, 42.0635, &
+             155                             42.8876, 43.7863, 44.7853, 45.9170, 47.2165, 48.7221, &
+             156                             50.4710, 52.4980, 54.8315, 57.4898, 60.4785, 63.7898, &
+             157                             65.5604, 71.2885, 75.4113, 79.7368, 84.2351, 88.8833, &
+             158                             93.6658, 98.5739, 103.603, 108.752, 114.025, 119.424, &
+             159                             124.954, 130.630, 136.457, 142.446, 148.608, 154.956, &
+             160                             161.503, 168.262, 175.248, 182.473, 189.952, 197.699, &
+             161                             205.728, 214.055, 222.694, 231.661, 240.971, 250.639 /)
+             162                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 445
@@ -234,32 +233,32 @@
                                    <<<      qmg, qms, qr, qg, qi, qs, qw, qmr, qmi
                                    <<<      qmw
                                    <<< Loop-information  End >>>
-             164        pp    v          qmw = qw
-             165         p    v          qmi = qi
-             166         p    v          qmr = qr
-             167         p    v          qms = qs
-             168         p    v          qmg = qg
-             169                     !    cld = cloud
-             170                     
-             171                     !>>>xb141
-             172                     #ifdef split_cnvw
-             173                         if (present (cnvw)) then
-             174                             if (present (cnvi)) then
-             175                                 qmw = qmw + cnvw
-             176                             else
-             177                                 do k = ks, ke
-             178                                   do i = is, ie
-             179                                     if (t (i, k) > t_ice) then
-             180                                       qmw (i, k) = qmw (i, k) + cnvw (i, k)
-             181                                     else
-             182                                       qmi (i, k) = qmi (i, k) + cnvw (i, k)
-             183                                     endif
-             184                                   enddo
-             185                                 enddo
-             186                             endif
-             187                         endif
-             188                     #else
-             189     1                   if (present (cnvw)) then
+             163        pp    v          qmw = qw
+             164         p    v          qmi = qi
+             165         p    v          qmr = qr
+             166         p    v          qms = qs
+             167         p    v          qmg = qg
+             168                     !    cld = cloud
+             169                     
+             170                     !>>>xb141
+             171                     #ifdef split_cnvw
+             172                         if (present (cnvw)) then
+             173                             if (present (cnvi)) then
+             174                                 qmw = qmw + cnvw
+             175                             else
+             176                                 do k = ks, ke
+             177                                   do i = is, ie
+             178                                     if (t (i, k) > t_ice) then
+             179                                       qmw (i, k) = qmw (i, k) + cnvw (i, k)
+             180                                     else
+             181                                       qmi (i, k) = qmi (i, k) + cnvw (i, k)
+             182                                     endif
+             183                                   enddo
+             184                                 enddo
+             185                             endif
+             186                         endif
+             187                     #else
+             188     1                   if (present (cnvw)) then
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 1000
@@ -270,11 +269,11 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      cnvw, qmw
                                    <<< Loop-information  End >>>
-             190     1  pp   2v              qmw = qmw + cnvw
-             191     1                   endif
-             192                     #endif
-             193                     !<<<xb141
-             194     1                   if (present (cnvi)) then
+             189     1  pp   2v              qmw = qmw + cnvw
+             190     1                   endif
+             191                     #endif
+             192                     !<<<xb141
+             193     1                   if (present (cnvi)) then
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 1000
@@ -285,9 +284,9 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      cnvi, qmi
                                    <<< Loop-information  End >>>
-             195     1  pp   2v              qmi = qmi + cnvi
-             196     1                   endif
-             197     1                   if (present (cnvc)) then
+             194     1  pp   2v              qmi = qmi + cnvi
+             195     1                   endif
+             196     1                   if (present (cnvc)) then
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 889
@@ -298,10 +297,10 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      cnvc, cld
                                    <<< Loop-information  End >>>
-             198     1  pp   2v              cld = cnvc + (1 - cnvc) * cld
-             199     1                   endif
-             200                     
-             201     1                   if (liq_ice_combine) then
+             197     1  pp   2v              cld = cnvc + (1 - cnvc) * cld
+             198     1                   endif
+             199                     
+             200     1                   if (liq_ice_combine) then
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
@@ -309,7 +308,7 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qms, qmi, qmg, qmr, qmw
                                    <<< Loop-information  End >>>
-             202     2  pp                   do k = ks, ke
+             201     2  pp                   do k = ks, ke
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -317,55 +316,55 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qmg, qms, qmi, qmr, qmw
                                    <<< Loop-information  End >>>
-             203     3   p    v                  do i = is, ie
-             204     3               #ifdef SJ_CLD_TEST
-             205     3                               ! frozen condensates:
-             206     3                               ! cloud ice treated as snow above freezing and graupel exists
-             207     3                               if (t (i, k) > t_ice) then
-             208     3                                   qms (i, k) = qmi (i, k) + qms (i, k)
-             209     3                                   qmi (i, k) = 0.
-             210     3                               else
-             211     3                                   qmi (i, k) = qmi (i, k) + qms (i, k)
-             212     3                                   if (qmi (i, k) .gt. qi0_max) then
-             213     3                                       qms (i, k) = qmi (i, k) - qi0_max + qmg (i, k)
-             214     3                                       qmi (i, k) = qi0_max
-             215     3                                   else
-             216     3                                       qms (i, k) = qmg (i, k)
-             217     3                                   endif
-             218     3                                   qmg (i, k) = 0. ! treating all graupel as "snow"
-             219     3                               endif
-             220     3               #else
-             221     3   p    v                      qmw (i, k) = qmw (i, k) + qmr (i, k)
-             222     3   p    v                      qmr (i, k) = 0.0
-             223     3   p    v                      qmi (i, k) = qmi (i, k) + qms (i, k) + qmg (i, k)
-             224     3   p    v                      qms (i, k) = 0.0
-             225     3   p    v                      qmg (i, k) = 0.0
-             226     3               #endif
-             227     3   p    v                  enddo
-             228     2   p                   enddo
-             229     1               #ifdef SJ_CLD_TEST
-             230     1                   else
-             231     1                       ! treating snow as ice, graupel as snow
-             232     1                       ! qmi (:, :) = qmi (:, :) + qms (:, :)
-             233     1                       ! qms (:, :) = qmg (:, :)
-             234     1                       ! qmg (:, :) = 0. ! treating all graupel as "snow"
-             235     1                       do k = ks, ke
-             236     1                           do i = is, ie
-             237     1                               ! step - 1: combine cloud ice & snow
-             238     1                               qmi (i, k) = qmi (i, k) + qms (i, k)
-             239     1                               ! step - 2: auto - convert cloud ice if > qi0_max
-             240     1                               qms (i, k) = qmi (i, k) - qi0_max
-             241     1                               if (qms (i, k) .gt. 0.) then
-             242     1                                   qmi (i, k) = qi0_max
-             243     1                               else
-             244     1                                   qms (i, k) = 0.0
-             245     1                               endif
-             246     1                           enddo
-             247     1                       enddo
-             248     1               #endif
-             249     1                   endif
-             250                     
-             251     1                   if (snow_grauple_combine) then
+             202     3   p    v                  do i = is, ie
+             203     3               #ifdef SJ_CLD_TEST
+             204     3                               ! frozen condensates:
+             205     3                               ! cloud ice treated as snow above freezing and graupel exists
+             206     3                               if (t (i, k) > t_ice) then
+             207     3                                   qms (i, k) = qmi (i, k) + qms (i, k)
+             208     3                                   qmi (i, k) = 0.
+             209     3                               else
+             210     3                                   qmi (i, k) = qmi (i, k) + qms (i, k)
+             211     3                                   if (qmi (i, k) .gt. qi0_max) then
+             212     3                                       qms (i, k) = qmi (i, k) - qi0_max + qmg (i, k)
+             213     3                                       qmi (i, k) = qi0_max
+             214     3                                   else
+             215     3                                       qms (i, k) = qmg (i, k)
+             216     3                                   endif
+             217     3                                   qmg (i, k) = 0. ! treating all graupel as "snow"
+             218     3                               endif
+             219     3               #else
+             220     3   p    v                      qmw (i, k) = qmw (i, k) + qmr (i, k)
+             221     3   p    v                      qmr (i, k) = 0.0
+             222     3   p    v                      qmi (i, k) = qmi (i, k) + qms (i, k) + qmg (i, k)
+             223     3   p    v                      qms (i, k) = 0.0
+             224     3   p    v                      qmg (i, k) = 0.0
+             225     3               #endif
+             226     3   p    v                  enddo
+             227     2   p                   enddo
+             228     1               #ifdef SJ_CLD_TEST
+             229     1                   else
+             230     1                       ! treating snow as ice, graupel as snow
+             231     1                       ! qmi (:, :) = qmi (:, :) + qms (:, :)
+             232     1                       ! qms (:, :) = qmg (:, :)
+             233     1                       ! qmg (:, :) = 0. ! treating all graupel as "snow"
+             234     1                       do k = ks, ke
+             235     1                           do i = is, ie
+             236     1                               ! step - 1: combine cloud ice & snow
+             237     1                               qmi (i, k) = qmi (i, k) + qms (i, k)
+             238     1                               ! step - 2: auto - convert cloud ice if > qi0_max
+             239     1                               qms (i, k) = qmi (i, k) - qi0_max
+             240     1                               if (qms (i, k) .gt. 0.) then
+             241     1                                   qmi (i, k) = qi0_max
+             242     1                               else
+             243     1                                   qms (i, k) = 0.0
+             244     1                               endif
+             245     1                           enddo
+             246     1                       enddo
+             247     1               #endif
+             248     1                   endif
+             249                     
+             250     1                   if (snow_grauple_combine) then
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 3
@@ -373,7 +372,7 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qmg, qms
                                    <<< Loop-information  End >>>
-             252     2  pp                   do k = ks, ke
+             251     2  pp                   do k = ks, ke
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    SIMD(VL: 8)
@@ -381,380 +380,357 @@
                                    <<<    PREFETCH(HARD) Expected by compiler :
                                    <<<      qmg, qms
                                    <<< Loop-information  End >>>
-             253     3   p   2v                  do i = is, ie
-             254     3   p   2v                      qms (i, k) = qms (i, k) + qmg (i, k)
-             255     3   p   2v                      qmg (i, k) = 0.0
-             256     3   p   2v                  enddo
-             257     2   p                   enddo
-             258     1                   endif
-             259                     
-             260                         ! liquid condensates:
-             261                         ! sjl: 20180825
-             262                     #ifdef COMBINE_QR
-             263                         do k = ks, ke
-             264                             do i = is, ie
-             265                                 ! step - 1: combine cloud water & rain
-             266                                 qmw (i, k) = qmw (i, k) + qmr (i, k)
-             267                                 ! step - 2: auto - convert cloud wat if > ql0_max
-             268                                 qmr (i, k) = qmw (i, k) - ql0_max
-             269                                 if (qmr (i, k) .gt. 0.) then
-             270                                     qmw (i, k) = ql0_max
-             271                                 else
-             272                                     qmr (i, k) = 0.0
-             273                                 endif
-             274                             enddo
-             275                         enddo
-             276                     #endif
-             277                     
+             252     3   p   2v                  do i = is, ie
+             253     3   p   2v                      qms (i, k) = qms (i, k) + qmg (i, k)
+             254     3   p   2v                      qmg (i, k) = 0.0
+             255     3   p   2v                  enddo
+             256     2   p                   enddo
+             257     1                   endif
+             258                     
+             259                         ! liquid condensates:
+             260                         ! sjl: 20180825
+             261                     #ifdef COMBINE_QR
+             262                         do k = ks, ke
+             263                             do i = is, ie
+             264                                 ! step - 1: combine cloud water & rain
+             265                                 qmw (i, k) = qmw (i, k) + qmr (i, k)
+             266                                 ! step - 2: auto - convert cloud wat if > ql0_max
+             267                                 qmr (i, k) = qmw (i, k) - ql0_max
+             268                                 if (qmr (i, k) .gt. 0.) then
+             269                                     qmw (i, k) = ql0_max
+             270                                 else
+             271                                     qmr (i, k) = 0.0
+             272                                 endif
+             273                             enddo
+             274                         enddo
+             275                     #endif
+             276                     
                                    <<< Loop-information Start >>>
                                    <<<  [PARALLELIZATION]
                                    <<<    Standard iteration count: 2
                                    <<< Loop-information  End >>>
-             278     1  pp               do k = ks, ke
-             279     1               
+             277     1  pp               do k = ks, ke
+             278     1               
                                    <<< Loop-information Start >>>
                                    <<<  [OPTIMIZATION]
                                    <<<    PREFETCH(HARD) Expected by compiler :
-                                   <<<      delp, qmw, qmi, qmr, qms, qmg, cld, lsm
-                                   <<<      t, p, rer, qcr, res, qcs, qcg, reg
+                                   <<<      qmw, delp, qmi, t, qmr, qms, qmg, cld, p
+                                   <<<      lsm, qcr, rer, res, qcs, qcg, reg
                                    <<<    SPILLS :
-                                   <<<      GENERAL   : SPILL 0  FILL 6
-                                   <<<      SIMD&FP   : SPILL 10  FILL 99
+                                   <<<      GENERAL   : SPILL 0  FILL 4
+                                   <<<      SIMD&FP   : SPILL 10  FILL 95
                                    <<<      SCALABLE  : SPILL 0  FILL 0
                                    <<<      PREDICATE : SPILL 0  FILL 0
                                    <<< Loop-information  End >>>
-             280     2   p    s              do i = is, ie
-             281     2               
-             282     2   p    v                  qmw (i, k) = max (qmw (i, k), 0.0)
-             283     2   p    v                  qmi (i, k) = max (qmi (i, k), 0.0)
-             284     2   p    v                  qmr (i, k) = max (qmr (i, k), 0.0)
-             285     2   p    v                  qms (i, k) = max (qms (i, k), 0.0)
-             286     2   p    v                  qmg (i, k) = max (qmg (i, k), 0.0)
-             287     2               
-             288     2   p    v                  cld (i, k) = min (max (cld (i, k), 0.0), 1.0)
-             289     2               
-             290     2   p    v                  mask = min (max (lsm (i), 0.0), 2.0)
-             291     2               
-             292     2   p    v                  dpg = abs (delp (i, k)) / grav
-             293     2                           ! rho = p (i, k) / (rdgas * t (i, k) * (1. + zvir * qv)) ! needs qv
-             294     2   p    v                  rho = p (i, k) / (rdgas * t (i, k))
-             295     2                           ! use rho = dpg / delz ! needs delz
-             296     2               
-             297     2   p    v                  tc0 = t (i, k) - t_ice
-             298     2               
-             299     3   p    s                  if (rewflag .eq. 1) then
-             300     3               
-             301     3                               ! -----------------------------------------------------------------------
-             302     3                               ! cloud water (martin et al., 1994)
-             303     3                               ! -----------------------------------------------------------------------
-             304     3               
-             305     4   p    s                      if (prog_ccn) then
-             306     4                                   ! boucher and lohmann (1995)
-             307     4   p    s                          ccnw = (1.0 - abs (mask - 1.0)) * &
-             308     4                                        (10. ** 2.24 * (0.7273 * qa (i, k) * rho * 1.e9) ** 0.257) + &
-             309     4                                        abs (mask - 1.0) * &
-             310     4                                        (10. ** 2.06 * (0.7273 * qa (i, k) * rho * 1.e9) ** 0.48)
-             311     4   p    s                      else
-             312     4               #ifndef MARTIN_CCN
-             313     4   p    s                          ccnw = ccn_o * abs (mask - 1.0) + ccn_l * (1.0 - abs (mask - 1.0))
-             314     4               #else
-             315     4                                   ccnw = 0.80 * (- 1.15e-3 * (ccn_o ** 2) + 0.963 * ccn_o + 5.30) * abs (mask - 1.0) + &
-             316     4                                       0.67 * (- 2.10e-4 * (ccn_l ** 2) + 0.568 * ccn_l - 27.9) * (1.0 - abs (mask - 1.0))
-             317     4               #endif
-             318     4   p    s                      endif
-             319     3               
-             320     4   p    s                      if (qmw (i, k) .gt. qmin) then
-             321     4   p    s                          qcw (i, k) = betaw * dpg * qmw (i, k) * 1.0e3
-             322     4   p    s                          rew (i, k) = exp (1.0 / 3.0 * log ((3.0 * qmw (i, k) * rho) / (4.0 * pi * rhow * ccnw))) * 1.0e4
-             323     4   p    s                          rew (i, k) = max (rewmin, min (rewmax, rew (i, k)))
-             324     4   p    s                      else
-             325     4   p    s                          qcw (i, k) = 0.0
-             326     4   p    s                          rew (i, k) = rewmin
-             327     4   p    s                      endif
-             328     3               
-             329     3   p    v                  endif
-             330     2               
-             331     3   p    s                  if (rewflag .eq. 2) then
-             332     3               
-             333     3                               ! -----------------------------------------------------------------------
-             334     3                               ! cloud water (martin et al., 1994, gfdl revision)
-             335     3                               ! -----------------------------------------------------------------------
-             336     3               
-             337     4   p    s                      if (prog_ccn) then
-             338     4                                   ! boucher and lohmann (1995)
-             339     4   p    s                          ccnw = (1.0 - abs (mask - 1.0)) * &
-             340     4                                        (10. ** 2.24 * (0.7273 * qa (i, k) * rho * 1.e9) ** 0.257) + &
-             341     4                                        abs (mask - 1.0) * &
-             342     4                                        (10. ** 2.06 * (0.7273 * qa (i, k) * rho * 1.e9) ** 0.48)
-             343     4   p    s                      else
-             344     4   p    s                          ccnw = 1.077 * ccn_o * abs (mask - 1.0) + 1.143 * ccn_l * (1.0 - abs (mask - 1.0))
-             345     4   p    s                      endif
-             346     3               
-             347     4   p    s                      if (qmw (i, k) .gt. qmin) then
-             348     4   p    s                          qcw (i, k) = betaw * dpg * qmw (i, k) * 1.0e3
-             349     4   p    s                          rew (i, k) = exp (1.0 / 3.0 * log ((3.0 * qmw (i, k) * rho) / (4.0 * pi * rhow * ccnw))) * 1.0e4
-             350     4   p    s                          rew (i, k) = max (rewmin, min (rewmax, rew (i, k)))
-             351     4   p    s                      else
-             352     4   p    s                          qcw (i, k) = 0.0
-             353     4   p    s                          rew (i, k) = rewmin
-             354     4   p    s                      endif
-             355     3               
-             356     3   p    v                  endif
-             357     2               
-             358     3   p    s                  if (rewflag .eq. 3) then
-             359     3               
-             360     3                               ! -----------------------------------------------------------------------
-             361     3                               ! cloud water (kiehl et al., 1994)
-             362     3                               ! -----------------------------------------------------------------------
-             363     3               
-             364     4   p    s                      if (qmw (i, k) .gt. qmin) then
-             365     4   p    s                          qcw (i, k) = betaw * dpg * qmw (i, k) * 1.0e3
-             366     4   p    s                          rew (i, k) = 14.0 * abs (mask - 1.0) + &
-             367     4                                        (8.0 + (14.0 - 8.0) * min (1.0, max (0.0, - tc0 / 30.0))) * (1.0 - abs (mask - 1.0))
-             368     4   p    s                          rew (i, k) = rew (i, k) + (14.0 - rew (i, k)) * min (1.0, max (0.0, snowd (i) / 1000.0))
-             369     4   p    s                          rew (i, k) = max (rewmin, min (rewmax, rew (i, k)))
-             370     4   p    s                      else
-             371     4   p    s                          qcw (i, k) = 0.0
-             372     4   p    s                          rew (i, k) = rewmin
-             373     4   p    s                      endif
-             374     3               
-             375     3   p    v                  endif
-             376     2               
-             377     3   p    s                  if (reiflag .eq. 1) then
-             378     3               
-             379     3                               ! -----------------------------------------------------------------------
-             380     3                               ! cloud ice (heymsfield and mcfarquhar, 1996)
-             381     3                               ! -----------------------------------------------------------------------
-             382     3               
-             383     4   p    s                      if (qmi (i, k) .gt. qmin) then
-             384     4   p    s                          qci (i, k) = betai * dpg * qmi (i, k) * 1.0e3
-             385     4               #ifdef SJ_CLD_TEST
-             386     4                                   rei_fac = log (1.0e3 * min (qi0_rei, qmi (i, k)) * rho)
-             387     4               #else
-             388     4   p    s                          rei_fac = log (1.0e3 * qmi (i, k) * rho)
-             389     4               #endif
-             390     5   p    s                          if (tc0 .lt. - 50) then
-             391     5   p    s                              rei (i, k) = beta / 9.917 * exp (0.109 * rei_fac) * 1.0e3
-             392     5   p    s                          elseif (tc0 .lt. - 40) then
-             393     5   p    s                              rei (i, k) = beta / 9.337 * exp (0.080 * rei_fac) * 1.0e3
-             394     5   p    s                          elseif (tc0 .lt. - 30) then
-             395     5   p    s                              rei (i, k) = beta / 9.208 * exp (0.055 * rei_fac) * 1.0e3
-             396     5   p    s                          else
-             397     5   p    s                              rei (i, k) = beta / 9.387 * exp (0.031 * rei_fac) * 1.0e3
-             398     5   p    s                          endif
-             399     4   p    s                          rei (i, k) = max (reimin, min (reimax, rei (i, k)))
-             400     4   p    s                      else
-             401     4   p    s                          qci (i, k) = 0.0
-             402     4   p    s                          rei (i, k) = reimin
-             403     4   p    s                      endif
-             404     3               
-             405     3   p    v                  endif
-             406     2               
-             407     3   p    s                  if (reiflag .eq. 2) then
-             408     3               
-             409     3                               ! -----------------------------------------------------------------------
-             410     3                               ! cloud ice (donner et al., 1997)
-             411     3                               ! -----------------------------------------------------------------------
-             412     3               
-             413     4   p    s                      if (qmi (i, k) .gt. qmin) then
-             414     4   p    s                          qci (i, k) = betai * dpg * qmi (i, k) * 1.0e3
-             415     5   p    s                          if (tc0 .le. - 55) then
-             416     5   p    s                              rei (i, k) = 15.41627
-             417     5   p    s                          elseif (tc0 .le. - 50) then
-             418     5   p    s                              rei (i, k) = 16.60895
-             419     5   p    s                          elseif (tc0 .le. - 45) then
-             420     5   p    s                              rei (i, k) = 32.89967
-             421     5   p    s                          elseif (tc0 .le. - 40) then
-             422     5   p    s                              rei (i, k) = 35.29989
-             423     5   p    s                          elseif (tc0 .le. - 35) then
-             424     5   p    s                              rei (i, k) = 55.65818
-             425     5   p    s                          elseif (tc0 .le. - 30) then
-             426     5   p    s                              rei (i, k) = 85.19071
-             427     5   p    s                          elseif (tc0 .le. - 25) then
-             428     5   p    s                              rei (i, k) = 72.35392
-             429     5   p    s                          else
-             430     5   p    s                              rei (i, k) = 92.46298
-             431     5   p    s                          endif
-             432     4   p    s                          rei (i, k) = max (reimin, min (reimax, rei (i, k)))
-             433     4   p    s                      else
-             434     4   p    s                          qci (i, k) = 0.0
-             435     4   p    s                          rei (i, k) = reimin
-             436     4   p    s                      endif
-             437     3               
-             438     3   p    v                  endif
-             439     2               
-             440     3   p    s                  if (reiflag .eq. 3) then
-             441     3               
-             442     3                               ! -----------------------------------------------------------------------
-             443     3                               ! cloud ice (fu, 2007)
-             444     3                               ! -----------------------------------------------------------------------
-             445     3               
-             446     4   p    s                      if (qmi (i, k) .gt. qmin) then
-             447     4   p    s                          qci (i, k) = betai * dpg * qmi (i, k) * 1.0e3
-             448     4               #ifdef SJ_CLD_TEST
-             449     4                                   ! use fu2007 form below - 10 c
-             450     4                                   if (tc0 > - 10) then
-             451     4                                       ! tc = - 10, rei = 40.6
-             452     4                                       rei (i, k) = 100.0 + tc0 * 5.94
-             453     4                                   else
-             454     4                                       rei (i, k) = 47.05 + tc0 * (0.6624 + 0.001741 * tc0)
-             455     4                                   endif
-             456     4                                   ! rei (i, k) = max (reimin, min (reimax, rei (i, k)))
-             457     4                                   rei (i, k) = max (reimin, rei (i, k))
-             458     4               #else
-             459     4   p    s                          rei (i, k) = 47.05 + tc0 * (0.6624 + 0.001741 * tc0)
-             460     4   p    s                          rei (i, k) = max (reimin, min (reimax, rei (i, k)))
-             461     4               #endif
-             462     4   p    s                      else
-             463     4   p    s                          qci (i, k) = 0.0
-             464     4   p    s                          rei (i, k) = reimin
-             465     4   p    s                      endif
-             466     3               
-             467     3   p    v                  endif
-             468     2               
-             469     3   p    s                  if (reiflag .eq. 4) then
-             470     3               
-             471     3                               ! -----------------------------------------------------------------------
-             472     3                               ! cloud ice (kristjansson et al., 2000)
-             473     3                               ! -----------------------------------------------------------------------
-             474     3               
-             475     4   p    s                      if (qmi (i, k) .gt. qmin) then
-             476     4   p    s                          qci (i, k) = betai * dpg * qmi (i, k) * 1.0e3
-             477     4   p    s                          ind = min (max (int (t (i, k) - 136.0), 44), 138 - 1)
-             478     4   p    s                          cor = t (i, k) - int (t (i, k))
-             479     4   p    s                          rei (i, k) = retab (ind) * (1. - cor) + retab (ind + 1) * cor
-             480     4   p    s                          rei (i, k) = max (reimin, min (reimax, rei (i, k)))
-             481     4   p    s                      else
-             482     4   p    s                          qci (i, k) = 0.0
-             483     4   p    s                          rei (i, k) = reimin
-             484     4   p    s                      endif
-             485     3               
-             486     3   p    v                  endif
-             487     2               
-             488     3   p    s                  if (reiflag .eq. 5) then
-             489     3               
-             490     3                               ! -----------------------------------------------------------------------
-             491     3                               ! cloud ice (wyser, 1998)
-             492     3                               ! -----------------------------------------------------------------------
-             493     3               
-             494     4   p    s                      if (qmi (i, k) .gt. qmin) then
-             495     4   p    s                          qci (i, k) = betai * dpg * qmi (i, k) * 1.0e3
-             496     4   p    s                          bw = - 2. + 1.e-3 * log10 (rho * qmi (i, k) / rho_0) * max (0.0, - tc0) ** 1.5
-             497     4   p    s                          rei (i, k) = 377.4 + bw * (203.3 + bw * (37.91 + 2.3696 * bw))
-             498     4   p    s                          rei (i, k) = max (reimin, min (reimax, rei (i, k)))
-             499     4   p    s                      else
-             500     4   p    s                          qci (i, k) = 0.0
-             501     4   p    s                          rei (i, k) = reimin
-             502     4   p    s                      endif
-             503     3               
-             504     3   p    v                  endif
-             505     2               
-             506     3   p    s                  if (reiflag .eq. 6) then
-             507     3               
-             508     3                               ! -----------------------------------------------------------------------
-             509     3                               ! cloud ice (Heymsfield et al., 2014)
-             510     3                               ! -----------------------------------------------------------------------
-             511     3               
-             512     4   p    s                      if (qmi (i, k) .gt. qmin) then
-             513     4   p    s                          qci (i, k) = betai * dpg * qmi (i, k) * 1.0e3
-             514     5   p    s                          if ( tc0 >= -56 .and. tc0 < 0 ) then
-             515     5   p    s                             rei (i, k) = 308.4 * exp ( 0.0152 * tc0 )
-             516     5   p    s                          elseif ( tc0 >= -71 .and. tc0 < -56 ) then
-             517     5   p    s                             rei (i, k) = 9.1744e+4 * exp ( 0.117 * tc0 )
-             518     5   p    s                          elseif ( tc0 >= -85 .and. tc0 < -71 ) then
-             519     5   p    s                             rei (i, k) = 83.3 * exp ( 0.0184 * tc0 )
-             520     5   p    s                          endif
-             521     4   p    s                          rei (i, k) = max (reimin, min (reimax, rei (i, k)))
-             522     4   p    s                      else
-             523     4   p    s                          qci (i, k) = 0.0
-             524     4   p    s                          rei (i, k) = reimin
-             525     4   p    s                      endif
-             526     3               
-             527     3   p    v                  endif
-             528     2               
-             529     2                           ! -----------------------------------------------------------------------
-             530     2                           ! rain (lin et al., 1983)
-             531     2                           ! -----------------------------------------------------------------------
+             279     2   p    s              do i = is, ie
+             280     2               
+             281     2   p    v                  qmw (i, k) = max (qmw (i, k), 0.0)
+             282     2   p    v                  qmi (i, k) = max (qmi (i, k), 0.0)
+             283     2   p    v                  qmr (i, k) = max (qmr (i, k), 0.0)
+             284     2   p    v                  qms (i, k) = max (qms (i, k), 0.0)
+             285     2   p    v                  qmg (i, k) = max (qmg (i, k), 0.0)
+             286     2               
+             287     2   p    v                  cld (i, k) = min (max (cld (i, k), 0.0), 1.0)
+             288     2               
+             289     2   p    v                  mask = min (max (lsm (i), 0.0), 2.0)
+             290     2               
+             291     2   p    v                  dpg = abs (delp (i, k)) / grav
+             292     2                           ! rho = p (i, k) / (rdgas * t (i, k) * (1. + zvir * qv)) ! needs qv
+             293     2   p    v                  rho = p (i, k) / (rdgas * t (i, k))
+             294     2                           ! use rho = dpg / delz ! needs delz
+             295     2               
+             296     2   p    v                  tc0 = t (i, k) - t_ice
+             297     2               
+             298     3   p    s                  if (rewflag .eq. 1) then
+             299     3               
+             300     3                               ! -----------------------------------------------------------------------
+             301     3                               ! cloud water (martin et al., 1994)
+             302     3                               ! -----------------------------------------------------------------------
+             303     3               
+             304     4   p    s                      if (prog_ccn) then
+             305     4                                   ! boucher and lohmann (1995)
+             306     4   p    s                          ccnw = (1.0 - abs (mask - 1.0)) * &
+             307     4                                        (10. ** 2.24 * (0.7273 * qa (i, k) * rho * 1.e9) ** 0.257) + &
+             308     4                                        abs (mask - 1.0) * &
+             309     4                                        (10. ** 2.06 * (0.7273 * qa (i, k) * rho * 1.e9) ** 0.48)
+             310     4   p    s                      else
+             311     4               #ifndef MARTIN_CCN
+             312     4   p    s                          ccnw = ccn_o * abs (mask - 1.0) + ccn_l * (1.0 - abs (mask - 1.0))
+             313     4               #else
+             314     4                                   ccnw = 0.80 * (- 1.15e-3 * (ccn_o ** 2) + 0.963 * ccn_o + 5.30) * abs (mask - 1.0) + &
+             315     4                                       0.67 * (- 2.10e-4 * (ccn_l ** 2) + 0.568 * ccn_l - 27.9) * (1.0 - abs (mask - 1.0))
+             316     4               #endif
+             317     4   p    s                      endif
+             318     3               
+             319     4   p    s                      if (qmw (i, k) .gt. qmin) then
+             320     4   p    s                          qcw (i, k) = betaw * dpg * qmw (i, k) * 1.0e3
+             321     4   p    s                          rew (i, k) = exp (1.0 / 3.0 * log ((3.0 * qmw (i, k) * rho) / (4.0 * pi * rhow * ccnw))) * 1.0e4
+             322     4   p    s                          rew (i, k) = max (rewmin, min (rewmax, rew (i, k)))
+             323     4   p    s                      else
+             324     4   p    s                          qcw (i, k) = 0.0
+             325     4   p    s                          rew (i, k) = rewmin
+             326     4   p    s                      endif
+             327     3               
+             328     3   p    v                  endif
+             329     2               
+             330     3   p    s                  if (rewflag .eq. 2) then
+             331     3               
+             332     3                               ! -----------------------------------------------------------------------
+             333     3                               ! cloud water (martin et al., 1994, gfdl revision)
+             334     3                               ! -----------------------------------------------------------------------
+             335     3               
+             336     4   p    s                      if (prog_ccn) then
+             337     4                                   ! boucher and lohmann (1995)
+             338     4   p    s                          ccnw = (1.0 - abs (mask - 1.0)) * &
+             339     4                                        (10. ** 2.24 * (0.7273 * qa (i, k) * rho * 1.e9) ** 0.257) + &
+             340     4                                        abs (mask - 1.0) * &
+             341     4                                        (10. ** 2.06 * (0.7273 * qa (i, k) * rho * 1.e9) ** 0.48)
+             342     4   p    s                      else
+             343     4   p    s                          ccnw = 1.077 * ccn_o * abs (mask - 1.0) + 1.143 * ccn_l * (1.0 - abs (mask - 1.0))
+             344     4   p    s                      endif
+             345     3               
+             346     4   p    s                      if (qmw (i, k) .gt. qmin) then
+             347     4   p    s                          qcw (i, k) = betaw * dpg * qmw (i, k) * 1.0e3
+             348     4   p    s                          rew (i, k) = exp (1.0 / 3.0 * log ((3.0 * qmw (i, k) * rho) / (4.0 * pi * rhow * ccnw))) * 1.0e4
+             349     4   p    s                          rew (i, k) = max (rewmin, min (rewmax, rew (i, k)))
+             350     4   p    s                      else
+             351     4   p    s                          qcw (i, k) = 0.0
+             352     4   p    s                          rew (i, k) = rewmin
+             353     4   p    s                      endif
+             354     3               
+             355     3   p    v                  endif
+             356     2               
+             357     3   p    s                  if (rewflag .eq. 3) then
+             358     3               
+             359     3                               ! -----------------------------------------------------------------------
+             360     3                               ! cloud water (kiehl et al., 1994)
+             361     3                               ! -----------------------------------------------------------------------
+             362     3               
+             363     4   p    s                      if (qmw (i, k) .gt. qmin) then
+             364     4   p    s                          qcw (i, k) = betaw * dpg * qmw (i, k) * 1.0e3
+             365     4   p    s                          rew (i, k) = 14.0 * abs (mask - 1.0) + &
+             366     4                                        (8.0 + (14.0 - 8.0) * min (1.0, max (0.0, - tc0 / 30.0))) * (1.0 - abs (mask - 1.0))
+             367     4   p    s                          rew (i, k) = rew (i, k) + (14.0 - rew (i, k)) * min (1.0, max (0.0, snowd (i) / 1000.0))
+             368     4   p    s                          rew (i, k) = max (rewmin, min (rewmax, rew (i, k)))
+             369     4   p    s                      else
+             370     4   p    s                          qcw (i, k) = 0.0
+             371     4   p    s                          rew (i, k) = rewmin
+             372     4   p    s                      endif
+             373     3               
+             374     3   p    v                  endif
+             375     2               
+             376     3   p    s                  if (reiflag .eq. 1) then
+             377     3               
+             378     3                               ! -----------------------------------------------------------------------
+             379     3                               ! cloud ice (heymsfield and mcfarquhar, 1996)
+             380     3                               ! -----------------------------------------------------------------------
+             381     3               
+             382     4   p    s                      if (qmi (i, k) .gt. qmin) then
+             383     4   p    s                          qci (i, k) = betai * dpg * qmi (i, k) * 1.0e3
+             384     4               #ifdef SJ_CLD_TEST
+             385     4                                   rei_fac = log (1.0e3 * min (qi0_rei, qmi (i, k)) * rho)
+             386     4               #else
+             387     4   p    s                          rei_fac = log (1.0e3 * qmi (i, k) * rho)
+             388     4               #endif
+             389     5   p    s                          if (tc0 .lt. - 50) then
+             390     5   p    s                              rei (i, k) = beta / 9.917 * exp (0.109 * rei_fac) * 1.0e3
+             391     5   p    s                          elseif (tc0 .lt. - 40) then
+             392     5   p    s                              rei (i, k) = beta / 9.337 * exp (0.080 * rei_fac) * 1.0e3
+             393     5   p    s                          elseif (tc0 .lt. - 30) then
+             394     5   p    s                              rei (i, k) = beta / 9.208 * exp (0.055 * rei_fac) * 1.0e3
+             395     5   p    s                          else
+             396     5   p    s                              rei (i, k) = beta / 9.387 * exp (0.031 * rei_fac) * 1.0e3
+             397     5   p    s                          endif
+             398     4   p    s                          rei (i, k) = max (reimin, min (reimax, rei (i, k)))
+             399     4   p    s                      else
+             400     4   p    s                          qci (i, k) = 0.0
+             401     4   p    s                          rei (i, k) = reimin
+             402     4   p    s                      endif
+             403     3               
+             404     3   p    v                  endif
+             405     2               
+             406     3   p    s                  if (reiflag .eq. 2) then
+             407     3               
+             408     3                               ! -----------------------------------------------------------------------
+             409     3                               ! cloud ice (donner et al., 1997)
+             410     3                               ! -----------------------------------------------------------------------
+             411     3               
+             412     4   p    s                      if (qmi (i, k) .gt. qmin) then
+             413     4   p    s                          qci (i, k) = betai * dpg * qmi (i, k) * 1.0e3
+             414     5   p    s                          if (tc0 .le. - 55) then
+             415     5   p    s                              rei (i, k) = 15.41627
+             416     5   p    s                          elseif (tc0 .le. - 50) then
+             417     5   p    s                              rei (i, k) = 16.60895
+             418     5   p    s                          elseif (tc0 .le. - 45) then
+             419     5   p    s                              rei (i, k) = 32.89967
+             420     5   p    s                          elseif (tc0 .le. - 40) then
+             421     5   p    s                              rei (i, k) = 35.29989
+             422     5   p    s                          elseif (tc0 .le. - 35) then
+             423     5   p    s                              rei (i, k) = 55.65818
+             424     5   p    s                          elseif (tc0 .le. - 30) then
+             425     5   p    s                              rei (i, k) = 85.19071
+             426     5   p    s                          elseif (tc0 .le. - 25) then
+             427     5   p    s                              rei (i, k) = 72.35392
+             428     5   p    s                          else
+             429     5   p    s                              rei (i, k) = 92.46298
+             430     5   p    s                          endif
+             431     4   p    s                          rei (i, k) = max (reimin, min (reimax, rei (i, k)))
+             432     4   p    s                      else
+             433     4   p    s                          qci (i, k) = 0.0
+             434     4   p    s                          rei (i, k) = reimin
+             435     4   p    s                      endif
+             436     3               
+             437     3   p    v                  endif
+             438     2               
+             439     3   p    s                  if (reiflag .eq. 3) then
+             440     3               
+             441     3                               ! -----------------------------------------------------------------------
+             442     3                               ! cloud ice (fu, 2007)
+             443     3                               ! -----------------------------------------------------------------------
+             444     3               
+             445     4   p    s                      if (qmi (i, k) .gt. qmin) then
+             446     4   p    s                          qci (i, k) = betai * dpg * qmi (i, k) * 1.0e3
+             447     4               #ifdef SJ_CLD_TEST
+             448     4                                   ! use fu2007 form below - 10 c
+             449     4                                   if (tc0 > - 10) then
+             450     4                                       ! tc = - 10, rei = 40.6
+             451     4                                       rei (i, k) = 100.0 + tc0 * 5.94
+             452     4                                   else
+             453     4                                       rei (i, k) = 47.05 + tc0 * (0.6624 + 0.001741 * tc0)
+             454     4                                   endif
+             455     4                                   ! rei (i, k) = max (reimin, min (reimax, rei (i, k)))
+             456     4                                   rei (i, k) = max (reimin, rei (i, k))
+             457     4               #else
+             458     4   p    s                          rei (i, k) = 47.05 + tc0 * (0.6624 + 0.001741 * tc0)
+             459     4   p    s                          rei (i, k) = max (reimin, min (reimax, rei (i, k)))
+             460     4               #endif
+             461     4   p    s                      else
+             462     4   p    s                          qci (i, k) = 0.0
+             463     4   p    s                          rei (i, k) = reimin
+             464     4   p    s                      endif
+             465     3               
+             466     3   p    v                  endif
+             467     2               
+             468     3   p    s                  if (reiflag .eq. 4) then
+             469     3               
+             470     3                               ! -----------------------------------------------------------------------
+             471     3                               ! cloud ice (kristjansson et al., 2000)
+             472     3                               ! -----------------------------------------------------------------------
+             473     3               
+             474     4   p    s                      if (qmi (i, k) .gt. qmin) then
+             475     4   p    s                          qci (i, k) = betai * dpg * qmi (i, k) * 1.0e3
+             476     4   p    s                          ind = min (max (int (t (i, k) - 136.0), 44), 138 - 1)
+             477     4   p    s                          cor = t (i, k) - int (t (i, k))
+             478     4   p    s                          rei (i, k) = retab (ind) * (1. - cor) + retab (ind + 1) * cor
+             479     4   p    s                          rei (i, k) = max (reimin, min (reimax, rei (i, k)))
+             480     4   p    s                      else
+             481     4   p    s                          qci (i, k) = 0.0
+             482     4   p    s                          rei (i, k) = reimin
+             483     4   p    s                      endif
+             484     3               
+             485     3   p    v                  endif
+             486     2               
+             487     3   p    s                  if (reiflag .eq. 5) then
+             488     3               
+             489     3                               ! -----------------------------------------------------------------------
+             490     3                               ! cloud ice (wyser, 1998)
+             491     3                               ! -----------------------------------------------------------------------
+             492     3               
+             493     4   p    s                      if (qmi (i, k) .gt. qmin) then
+             494     4   p    s                          qci (i, k) = betai * dpg * qmi (i, k) * 1.0e3
+             495     4   p    s                          bw = - 2. + 1.e-3 * log10 (rho * qmi (i, k) / rho_0) * max (0.0, - tc0) ** 1.5
+             496     4   p    s                          rei (i, k) = 377.4 + bw * (203.3 + bw * (37.91 + 2.3696 * bw))
+             497     4   p    s                          rei (i, k) = max (reimin, min (reimax, rei (i, k)))
+             498     4   p    s                      else
+             499     4   p    s                          qci (i, k) = 0.0
+             500     4   p    s                          rei (i, k) = reimin
+             501     4   p    s                      endif
+             502     3               
+             503     3   p    v                  endif
+             504     2               
+             505     2                           ! -----------------------------------------------------------------------
+             506     2                           ! rain (lin et al., 1983)
+             507     2                           ! -----------------------------------------------------------------------
+             508     2               
+             509     3   p    s                  if (qmr (i, k) .gt. qmin) then
+             510     3   p    s                      qcr (i, k) = betar * dpg * qmr (i, k) * 1.0e3
+             511     3   p    s                      lambdar = exp (0.25 * log (pi * rhor * n0r / qmr (i, k) / rho))
+             512     3   p    s                      rer (i, k) = 0.5 * exp (log (gammar / 6) / alphar) / lambdar * 1.0e6
+             513     3   p    s                      rer (i, k) = max (rermin, min (rermax, rer (i, k)))
+             514     3   p    s                  else
+             515     3   p    s                      qcr (i, k) = 0.0
+             516     3   p    s                      rer (i, k) = rermin
+             517     3   p    v                  endif
+             518     2               
+             519     2                           ! -----------------------------------------------------------------------
+             520     2                           ! snow (lin et al., 1983)
+             521     2                           ! -----------------------------------------------------------------------
+             522     2               
+             523     3   p    s                  if (qms (i, k) .gt. qmin) then
+             524     3   p    s                      qcs (i, k) = betas * dpg * qms (i, k) * 1.0e3
+             525     3   p    s                      lambdas = exp (0.25 * log (pi * rhos * n0s / qms (i, k) / rho))
+             526     3   p    s                      res (i, k) = 0.5 * exp (log (gammas / 6) / alphas) / lambdas * 1.0e6
+             527     3   p    s                      res (i, k) = max (resmin, min (resmax, res (i, k)))
+             528     3   p    s                  else
+             529     3   p    s                      qcs (i, k) = 0.0
+             530     3   p    s                      res (i, k) = resmin
+             531     3   p    v                  endif
              532     2               
-             533     3   p    s                  if (qmr (i, k) .gt. qmin) then
-             534     3   p    s                      qcr (i, k) = betar * dpg * qmr (i, k) * 1.0e3
-             535     3   p    s                      lambdar = exp (0.25 * log (pi * rhor * n0r / qmr (i, k) / rho))
-             536     3   p    s                      rer (i, k) = 0.5 * exp (log (gammar / 6) / alphar) / lambdar * 1.0e6
-             537     3   p    s                      rer (i, k) = max (rermin, min (rermax, rer (i, k)))
-             538     3   p    s                  else
-             539     3   p    s                      qcr (i, k) = 0.0
-             540     3   p    s                      rer (i, k) = rermin
-             541     3   p    v                  endif
-             542     2               
-             543     2                           ! -----------------------------------------------------------------------
-             544     2                           ! snow (lin et al., 1983)
-             545     2                           ! -----------------------------------------------------------------------
+             533     2                           ! -----------------------------------------------------------------------
+             534     2                           ! graupel (lin et al., 1983)
+             535     2                           ! -----------------------------------------------------------------------
+             536     2               
+             537     3   p    s                  if (qmg (i, k) .gt. qmin) then
+             538     3   p    s                      qcg (i, k) = betag * dpg * qmg (i, k) * 1.0e3
+             539     3   p    s                      lambdag = exp (0.25 * log (pi * rhog * n0g / qmg (i, k) / rho))
+             540     3   p    s                      reg (i, k) = 0.5 * exp (log (gammag / 6) / alphag) / lambdag * 1.0e6
+             541     3   p    s                      reg (i, k) = max (regmin, min (regmax, reg (i, k)))
+             542     3   p    s                  else
+             543     3   p    s                      qcg (i, k) = 0.0
+             544     3   p    s                      reg (i, k) = regmin
+             545     3   p    v                  endif
              546     2               
-             547     3   p    s                  if (qms (i, k) .gt. qmin) then
-             548     3   p    s                      qcs (i, k) = betas * dpg * qms (i, k) * 1.0e3
-             549     3   p    s                      lambdas = exp (0.25 * log (pi * rhos * n0s / qms (i, k) / rho))
-             550     3   p    s                      res (i, k) = 0.5 * exp (log (gammas / 6) / alphas) / lambdas * 1.0e6
-             551     3   p    s                      res (i, k) = max (resmin, min (resmax, res (i, k)))
-             552     3   p    s                  else
-             553     3   p    s                      qcs (i, k) = 0.0
-             554     3   p    s                      res (i, k) = resmin
-             555     3   p    v                  endif
-             556     2               
-             557     2                           ! -----------------------------------------------------------------------
-             558     2                           ! graupel (lin et al., 1983)
-             559     2                           ! -----------------------------------------------------------------------
-             560     2               
-             561     3   p    s                  if (qmg (i, k) .gt. qmin) then
-             562     3   p    s                      qcg (i, k) = betag * dpg * qmg (i, k) * 1.0e3
-             563     3   p    s                      lambdag = exp (0.25 * log (pi * rhog * n0g / qmg (i, k) / rho))
-             564     3   p    s                      reg (i, k) = 0.5 * exp (log (gammag / 6) / alphag) / lambdag * 1.0e6
-             565     3   p    s                      reg (i, k) = max (regmin, min (regmax, reg (i, k)))
-             566     3   p    s                  else
-             567     3   p    s                      qcg (i, k) = 0.0
-             568     3   p    s                      reg (i, k) = regmin
-             569     3   p    v                  endif
-             570     2               
-             571     2   p    v              enddo
-             572     1               
-             573     1   p               enddo
-             574                     
-             575                     end subroutine cld_eff_rad
-             576                     
-             577                     !subroutine cld_eff_rad_init (nlunit, input_nml_file, logunit, fn_nml)
-             578                     !
-             579                     !    implicit none
-             580                     !
-             581                     !    integer, intent (in) :: nlunit
-             582                     !    integer, intent (in) :: logunit
-             583                     !
-             584                     !    character (len = 64), intent (in) :: fn_nml
-             585                     !    character (len = *), intent (in) :: input_nml_file (:)
-             586                     !
-             587                     !    logical :: exists
-             588                     !
-             589                     !#ifdef INTERNAL_FILE_NML
-             590                     !    read (input_nml_file, nml = cld_eff_rad_nml)
-             591                     !#else
-             592                     !    inquire (file = trim (fn_nml), exist = exists)
-             593                     !    if (.not. exists) then
-             594                     !        write (6, *) 'cld_eff_rad :: namelist file: ', trim (fn_nml), ' does not exist'
-             595                     !        stop
-             596                     !    else
-             597                     !        open (unit = nlunit, file = fn_nml, readonly, status = 'old')
-             598                     !    endif
-             599                     !    rewind (nlunit)
-             600                     !    read (nlunit, nml = cld_eff_rad_nml)
-             601                     !    close (nlunit)
-             602                     !#endif
-             603                     !
-             604                     !end subroutine cld_eff_rad_init
-             605                     
-             606                     end module cld_eff_rad_v2
+             547     2   p    v              enddo
+             548     1               
+             549     1   p               enddo
+             550                     
+             551                     end subroutine cld_eff_rad
+             552                     
+             553                     !subroutine cld_eff_rad_init (nlunit, input_nml_file, logunit, fn_nml)
+             554                     !
+             555                     !    implicit none
+             556                     !
+             557                     !    integer, intent (in) :: nlunit
+             558                     !    integer, intent (in) :: logunit
+             559                     !
+             560                     !    character (len = 64), intent (in) :: fn_nml
+             561                     !    character (len = *), intent (in) :: input_nml_file (:)
+             562                     !
+             563                     !    logical :: exists
+             564                     !
+             565                     !#ifdef INTERNAL_FILE_NML
+             566                     !    read (input_nml_file, nml = cld_eff_rad_nml)
+             567                     !#else
+             568                     !    inquire (file = trim (fn_nml), exist = exists)
+             569                     !    if (.not. exists) then
+             570                     !        write (6, *) 'cld_eff_rad :: namelist file: ', trim (fn_nml), ' does not exist'
+             571                     !        stop
+             572                     !    else
+             573                     !        open (unit = nlunit, file = fn_nml, readonly, status = 'old')
+             574                     !    endif
+             575                     !    rewind (nlunit)
+             576                     !    read (nlunit, nml = cld_eff_rad_nml)
+             577                     !    close (nlunit)
+             578                     !#endif
+             579                     !
+             580                     !end subroutine cld_eff_rad_init
+             581                     
+             582                     end module cld_eff_rad_v2
 
  Procedure information
-   Lines      : 606
-   Statements : 264
-   Stack(byte): 4768
+   Lines      : 582
+   Statements : 248
+   Stack(byte): 4752
    Prefetch num: 0
 
  Scoping unit of module : cld_eff_rad_v2
@@ -818,7 +794,7 @@
       |(Attributes)     : PRIVATE
       |(Declaration)    : 25
       |(Definition)     : 
-      |(Reference)      : 606
+      |(Reference)      : 582
      grav
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : PRIVATE, use-associated
@@ -1001,588 +977,588 @@
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 292  307  307  313  313  339  339  344  344  366  366
+      |(Reference)      : 291  306  306  312  312  338  338  343  343  365  365
      alphag
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 135
+      |(Declaration)    : 134
       |(Definition)     : 
-      |(Reference)      : 564
+      |(Reference)      : 540
      alphar
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 135
+      |(Declaration)    : 134
       |(Definition)     : 
-      |(Reference)      : 536
+      |(Reference)      : 512
      alphas
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 135
+      |(Declaration)    : 134
       |(Definition)     : 
-      |(Reference)      : 550
+      |(Reference)      : 526
      beta
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 391  393  395  397
+      |(Reference)      : 390  392  394  396
      betag
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 562
+      |(Reference)      : 538
      betai
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 384  414  447  476  495  513
+      |(Reference)      : 383  413  446  475  494
      betar
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 534
+      |(Reference)      : 510
      betas
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 548
+      |(Reference)      : 524
      betaw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 321  348  365
+      |(Reference)      : 320  347  364
      bw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 129
-      |(Definition)     : 496
-      |(Reference)      : 497  497  497
+      |(Declaration)    : 128
+      |(Definition)     : 495
+      |(Reference)      : 496  496  496
      ccn_l
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : namelist-group-object, host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 313  344
+      |(Reference)      : 312  343
      ccn_o
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : namelist-group-object, host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 313  344
+      |(Reference)      : 312  343
      ccnw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 125
-      |(Definition)     : 307  313  339  344
-      |(Reference)      : 322  349
+      |(Declaration)    : 124
+      |(Definition)     : 306  312  338  343
+      |(Reference)      : 321  348
      cld
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
-      |(Declaration)    : 91  115
-      |(Definition)     : 198  288
-      |(Reference)      : 198  288
+      |(Declaration)    : 90  114
+      |(Definition)     : 197  287
+      |(Reference)      : 197  287
      cld_eff_rad
       |(Class and Type) : module subroutine name
       |(Attributes)     : 
       |(Declaration)    : 
-      |(Definition)     : 91
-      |(Reference)      : 575
+      |(Definition)     : 90
+      |(Reference)      : 551
      cnvc
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), OPTIONAL, dummy-argument
-      |(Declaration)    : 91  111
+      |(Declaration)    : 90  110
       |(Definition)     : 
-      |(Reference)      : 197  198  198
+      |(Reference)      : 196  197  197
      cnvi
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), OPTIONAL, dummy-argument
-      |(Declaration)    : 91  110
+      |(Declaration)    : 90  109
       |(Definition)     : 
-      |(Reference)      : 194  195
+      |(Reference)      : 193  194
      cnvw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), OPTIONAL, dummy-argument
-      |(Declaration)    : 91  110
+      |(Declaration)    : 90  109
       |(Definition)     : 
-      |(Reference)      : 189  190
+      |(Reference)      : 188  189
      cor
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 127
-      |(Definition)     : 478
-      |(Reference)      : 479  479
+      |(Declaration)    : 126
+      |(Definition)     : 477
+      |(Reference)      : 478  478
      delp
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 91  105
+      |(Declaration)    : 90  104
       |(Definition)     : 
-      |(Reference)      : 292
+      |(Reference)      : 291
      dpg
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 123
-      |(Definition)     : 292
-      |(Reference)      : 321  348  365  384  414  447  476  495  513  534  548  562
+      |(Declaration)    : 122
+      |(Definition)     : 291
+      |(Reference)      : 320  347  364  383  413  446  475  494  510  524  538
      exp
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 322  349  391  393  395  397  515  517  519  535  536  549  550  563  564
+      |(Reference)      : 321  348  390  392  394  396  511  512  525  526  539  540
      gammag
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 136
+      |(Declaration)    : 135
       |(Definition)     : 
-      |(Reference)      : 564
+      |(Reference)      : 540
      gammar
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 136
+      |(Declaration)    : 135
       |(Definition)     : 
-      |(Reference)      : 536
+      |(Reference)      : 512
      gammas
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 136
+      |(Declaration)    : 135
       |(Definition)     : 
-      |(Reference)      : 550
+      |(Reference)      : 526
      grav
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 292
+      |(Reference)      : 291
      i
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 119
-      |(Definition)     : 203  253  280
-      |(Reference)      : 221  221  221  222  223  223  223  223  224  225  254  254  254  255  282  282  283  283  284  284  285  285  286  286  288  288  290  292  294  294  297  307  307  320  321  321  322  322  323  323  325  326  339  339  347  348  348  349  349  350  350  352  353  364  365  365  366  368  368  368  368  369  369  371  372  383  384  384  388  391  393  395  397  399  399  401  402  413  414  414  416  418  420  422  424  426  428  430  432  432  434  435  446  447  447  459  460  460  463  464  475  476  476  477  478  478  479  480  480  482  483  494  495  495  496  497  498  498  500  501  512  513  513  515  517  519  521  521  523  524  533  534  534  535  536  537  537  539  540  547  548  548  549  550  551  551  553  554  561  562  562  563  564  565  565  567  568
+      |(Declaration)    : 118
+      |(Definition)     : 202  252  279
+      |(Reference)      : 220  220  220  221  222  222  222  222  223  224  253  253  253  254  281  281  282  282  283  283  284  284  285  285  287  287  289  291  293  293  296  306  306  319  320  320  321  321  322  322  324  325  338  338  346  347  347  348  348  349  349  351  352  363  364  364  365  367  367  367  367  368  368  370  371  382  383  383  387  390  392  394  396  398  398  400  401  412  413  413  415  417  419  421  423  425  427  429  431  431  433  434  445  446  446  458  459  459  462  463  474  475  475  476  477  477  478  479  479  481  482  493  494  494  495  496  497  497  499  500  509  510  510  511  512  513  513  515  516  523  524  524  525  526  527  527  529  530  537  538  538  539  540  541  541  543  544
      ie
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
-      |(Declaration)    : 91  99
+      |(Declaration)    : 90  98
       |(Definition)     : 
-      |(Reference)      : 102  103  105  105  105  107  107  107  107  107  108  110  110  111  113  113  113  113  113  114  114  114  114  114  115  121  121  121  121  121  203  253  280
+      |(Reference)      : 101  102  104  104  104  106  106  106  106  106  107  109  109  110  112  112  112  112  112  113  113  113  113  113  114  120  120  120  120  120  202  252  279
      ind
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 119
-      |(Definition)     : 477
-      |(Reference)      : 479  479
+      |(Declaration)    : 118
+      |(Definition)     : 476
+      |(Reference)      : 478  478
      int
       |(Class and Type) : intrinsic function name, INTEGER(4)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 477  478
+      |(Reference)      : 476  477
      is
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
-      |(Declaration)    : 91  99
+      |(Declaration)    : 90  98
       |(Definition)     : 
-      |(Reference)      : 102  103  105  105  105  107  107  107  107  107  108  110  110  111  113  113  113  113  113  114  114  114  114  114  115  121  121  121  121  121  203  253  280
+      |(Reference)      : 101  102  104  104  104  106  106  106  106  106  107  109  109  110  112  112  112  112  112  113  113  113  113  113  114  120  120  120  120  120  202  252  279
      k
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : 
-      |(Declaration)    : 119
-      |(Definition)     : 202  252  278
-      |(Reference)      : 221  221  221  222  223  223  223  223  224  225  254  254  254  255  282  282  283  283  284  284  285  285  286  286  288  288  292  294  294  297  307  307  320  321  321  322  322  323  323  325  326  339  339  347  348  348  349  349  350  350  352  353  364  365  365  366  368  368  368  369  369  371  372  383  384  384  388  391  393  395  397  399  399  401  402  413  414  414  416  418  420  422  424  426  428  430  432  432  434  435  446  447  447  459  460  460  463  464  475  476  476  477  478  478  479  480  480  482  483  494  495  495  496  497  498  498  500  501  512  513  513  515  517  519  521  521  523  524  533  534  534  535  536  537  537  539  540  547  548  548  549  550  551  551  553  554  561  562  562  563  564  565  565  567  568
+      |(Declaration)    : 118
+      |(Definition)     : 201  251  277
+      |(Reference)      : 220  220  220  221  222  222  222  222  223  224  253  253  253  254  281  281  282  282  283  283  284  284  285  285  287  287  291  293  293  296  306  306  319  320  320  321  321  322  322  324  325  338  338  346  347  347  348  348  349  349  351  352  363  364  364  365  367  367  367  368  368  370  371  382  383  383  387  390  392  394  396  398  398  400  401  412  413  413  415  417  419  421  423  425  427  429  431  431  433  434  445  446  446  458  459  459  462  463  474  475  475  476  477  477  478  479  479  481  482  493  494  494  495  496  497  497  499  500  509  510  510  511  512  513  513  515  516  523  524  524  525  526  527  527  529  530  537  538  538  539  540  541  541  543  544
      ke
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
-      |(Declaration)    : 91  100
+      |(Declaration)    : 90  99
       |(Definition)     : 
-      |(Reference)      : 105  105  105  107  107  107  107  107  108  110  110  111  113  113  113  113  113  114  114  114  114  114  115  121  121  121  121  121  202  252  278
+      |(Reference)      : 104  104  104  106  106  106  106  106  107  109  109  110  112  112  112  112  112  113  113  113  113  113  114  120  120  120  120  120  201  251  277
      ks
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : INTENT(IN), dummy-argument
-      |(Declaration)    : 91  100
+      |(Declaration)    : 90  99
       |(Definition)     : 
-      |(Reference)      : 105  105  105  107  107  107  107  107  108  110  110  111  113  113  113  113  113  114  114  114  114  114  115  121  121  121  121  121  202  252  278
+      |(Reference)      : 104  104  104  106  106  106  106  106  107  109  109  110  112  112  112  112  112  113  113  113  113  113  114  120  120  120  120  120  201  251  277
      lambdag
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 131
-      |(Definition)     : 563
-      |(Reference)      : 564
+      |(Declaration)    : 130
+      |(Definition)     : 539
+      |(Reference)      : 540
      lambdar
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 131
-      |(Definition)     : 535
-      |(Reference)      : 536
+      |(Declaration)    : 130
+      |(Definition)     : 511
+      |(Reference)      : 512
      lambdas
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 131
-      |(Definition)     : 549
-      |(Reference)      : 550
+      |(Declaration)    : 130
+      |(Definition)     : 525
+      |(Reference)      : 526
      liq_ice_combine
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 201
+      |(Reference)      : 200
      log
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 322  349  388  535  536  549  550  563  564
+      |(Reference)      : 321  348  387  511  512  525  526  539  540
      log10
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 496
+      |(Reference)      : 495
      lsm
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 91  102
+      |(Declaration)    : 90  101
       |(Definition)     : 
-      |(Reference)      : 290
+      |(Reference)      : 289
      mask
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 126
-      |(Definition)     : 290
-      |(Reference)      : 307  307  313  313  339  339  344  344  366  366
+      |(Declaration)    : 125
+      |(Definition)     : 289
+      |(Reference)      : 306  306  312  312  338  338  343  343  365  365
      max
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 282  283  284  285  286  288  290  323  350  366  368  369  399  432  460  477  480  496  498  521  537  551  565
+      |(Reference)      : 281  282  283  284  285  287  289  322  349  365  367  368  398  431  459  476  479  495  497  513  527  541
      min
       |(Class and Type) : intrinsic function name, REAL(8)
       |(Attributes)     : PURE, ELEMENTAL
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 288  290  323  350  366  368  369  399  432  460  477  480  498  521  537  551  565
+      |(Reference)      : 287  289  322  349  365  367  368  398  431  459  476  479  497  513  527  541
      n0g
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 134
+      |(Declaration)    : 133
       |(Definition)     : 
-      |(Reference)      : 563
+      |(Reference)      : 539
      n0r
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 134
+      |(Declaration)    : 133
       |(Definition)     : 
-      |(Reference)      : 535
+      |(Reference)      : 511
      n0s
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 134
+      |(Declaration)    : 133
       |(Definition)     : 
-      |(Reference)      : 549
+      |(Reference)      : 525
      p
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 91  105
+      |(Declaration)    : 90  104
       |(Definition)     : 
-      |(Reference)      : 294
+      |(Reference)      : 293
      pi
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 322  349  535  535  549  549  563  563
+      |(Reference)      : 321  348  511  511  525  525  539  539
      present
       |(Class and Type) : intrinsic function name, LOGICAL(4)
       |(Attributes)     : PURE
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 189  194  197
+      |(Reference)      : 188  193  196
      prog_ccn
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : namelist-group-object, host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 305  337
+      |(Reference)      : 304  336
      qa
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 91  108
+      |(Declaration)    : 90  107
       |(Definition)     : 
-      |(Reference)      : 307  307  339  339
+      |(Reference)      : 306  306  338  338
      qcg
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
-      |(Declaration)    : 91  113
-      |(Definition)     : 562  567
+      |(Declaration)    : 90  112
+      |(Definition)     : 538  543
       |(Reference)      : 
      qci
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
-      |(Declaration)    : 91  113
-      |(Definition)     : 384  401  414  434  447  463  476  482  495  500  513  523
+      |(Declaration)    : 90  112
+      |(Definition)     : 383  400  413  433  446  462  475  481  494  499
       |(Reference)      : 
      qcr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
-      |(Declaration)    : 91  113
-      |(Definition)     : 534  539
+      |(Declaration)    : 90  112
+      |(Definition)     : 510  515
       |(Reference)      : 
      qcs
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
-      |(Declaration)    : 91  113
-      |(Definition)     : 548  553
+      |(Declaration)    : 90  112
+      |(Definition)     : 524  529
       |(Reference)      : 
      qcw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
-      |(Declaration)    : 91  113
-      |(Definition)     : 321  325  348  352  365  371
+      |(Declaration)    : 90  112
+      |(Definition)     : 320  324  347  351  364  370
       |(Reference)      : 
      qg
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 91  107
+      |(Declaration)    : 90  106
       |(Definition)     : 
-      |(Reference)      : 168
+      |(Reference)      : 167
      qi
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 91  107
+      |(Declaration)    : 90  106
       |(Definition)     : 
-      |(Reference)      : 165
+      |(Reference)      : 164
      qmg
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 121
-      |(Definition)     : 168  225  255  286
-      |(Reference)      : 223  254  286  561  562  563
+      |(Declaration)    : 120
+      |(Definition)     : 167  224  254  285
+      |(Reference)      : 222  253  285  537  538  539
      qmi
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 121
-      |(Definition)     : 165  195  223  283
-      |(Reference)      : 195  223  283  383  384  388  413  414  446  447  475  476  494  495  496  512  513
+      |(Declaration)    : 120
+      |(Definition)     : 164  194  222  282
+      |(Reference)      : 194  222  282  382  383  387  412  413  445  446  474  475  493  494  495
      qmin
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 320  347  364  383  413  446  475  494  512  533  547  561
+      |(Reference)      : 319  346  363  382  412  445  474  493  509  523  537
      qmr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 121
-      |(Definition)     : 166  222  284
-      |(Reference)      : 221  284  533  534  535
+      |(Declaration)    : 120
+      |(Definition)     : 165  221  283
+      |(Reference)      : 220  283  509  510  511
      qms
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 121
-      |(Definition)     : 167  224  254  285
-      |(Reference)      : 223  254  285  547  548  549
+      |(Declaration)    : 120
+      |(Definition)     : 166  223  253  284
+      |(Reference)      : 222  253  284  523  524  525
      qmw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION
-      |(Declaration)    : 121
-      |(Definition)     : 164  190  221  282
-      |(Reference)      : 190  221  282  320  321  322  347  348  349  364  365
+      |(Declaration)    : 120
+      |(Definition)     : 163  189  220  281
+      |(Reference)      : 189  220  281  319  320  321  346  347  348  363  364
      qr
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 91  107
+      |(Declaration)    : 90  106
       |(Definition)     : 
-      |(Reference)      : 166
+      |(Reference)      : 165
      qs
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 91  107
+      |(Declaration)    : 90  106
       |(Definition)     : 
-      |(Reference)      : 167
+      |(Reference)      : 166
      qw
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 91  107
+      |(Declaration)    : 90  106
       |(Definition)     : 
-      |(Reference)      : 164
+      |(Reference)      : 163
      rdgas
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 294
+      |(Reference)      : 293
      reg
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
-      |(Declaration)    : 91  114
-      |(Definition)     : 564  565  568
-      |(Reference)      : 565
+      |(Declaration)    : 90  113
+      |(Definition)     : 540  541  544
+      |(Reference)      : 541
      regmax
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 565
+      |(Reference)      : 541
      regmin
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 565  568
+      |(Reference)      : 541  544
      rei
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
-      |(Declaration)    : 91  114
-      |(Definition)     : 391  393  395  397  399  402  416  418  420  422  424  426  428  430  432  435  459  460  464  479  480  483  497  498  501  515  517  519  521  524
-      |(Reference)      : 399  432  460  480  498  521
+      |(Declaration)    : 90  113
+      |(Definition)     : 390  392  394  396  398  401  415  417  419  421  423  425  427  429  431  434  458  459  463  478  479  482  496  497  500
+      |(Reference)      : 398  431  459  479  497
      rei_fac
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 132
-      |(Definition)     : 388
-      |(Reference)      : 391  393  395  397
+      |(Declaration)    : 131
+      |(Definition)     : 387
+      |(Reference)      : 390  392  394  396
      reiflag
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 377  407  440  469  488  506
+      |(Reference)      : 376  406  439  468  487
      reimax
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 399  432  460  480  498  521
+      |(Reference)      : 398  431  459  479  497
      reimin
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 399  402  432  435  460  464  480  483  498  501  521  524
+      |(Reference)      : 398  401  431  434  459  463  479  482  497  500
      rer
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
-      |(Declaration)    : 91  114
-      |(Definition)     : 536  537  540
-      |(Reference)      : 537
+      |(Declaration)    : 90  113
+      |(Definition)     : 512  513  516
+      |(Reference)      : 513
      rermax
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 537
+      |(Reference)      : 513
      rermin
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 537  540
+      |(Reference)      : 513  516
      res
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
-      |(Declaration)    : 91  114
-      |(Definition)     : 550  551  554
-      |(Reference)      : 551
+      |(Declaration)    : 90  113
+      |(Definition)     : 526  527  530
+      |(Reference)      : 527
      resmax
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 551
+      |(Reference)      : 527
      resmin
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 551  554
+      |(Reference)      : 527  530
      retab
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, initialized
-      |(Declaration)    : 139
+      |(Declaration)    : 138
       |(Definition)     : 
-      |(Reference)      : 479  479
+      |(Reference)      : 478  478
      rew
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(INOUT), dummy-argument
-      |(Declaration)    : 91  114
-      |(Definition)     : 322  323  326  349  350  353  366  368  369  372
-      |(Reference)      : 323  350  368  368  369
+      |(Declaration)    : 90  113
+      |(Definition)     : 321  322  325  348  349  352  365  367  368  371
+      |(Reference)      : 322  349  367  367  368
      rewflag
       |(Class and Type) : variable name, INTEGER(4)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 299  331  358
+      |(Reference)      : 298  330  357
      rewmax
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 323  350  369
+      |(Reference)      : 322  349  368
      rewmin
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 323  326  350  353  369  372
+      |(Reference)      : 322  325  349  352  368  371
      rho
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 124
-      |(Definition)     : 294
-      |(Reference)      : 307  307  322  339  339  349  388  496  535  549  563
+      |(Declaration)    : 123
+      |(Definition)     : 293
+      |(Reference)      : 306  306  321  338  338  348  387  495  511  525  539
      rho_0
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 137
+      |(Declaration)    : 136
       |(Definition)     : 
-      |(Reference)      : 496
+      |(Reference)      : 495
      rhow
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 322  349
+      |(Reference)      : 321  348
      snow_grauple_combine
       |(Class and Type) : variable name, LOGICAL(4)
       |(Attributes)     : host-associated, initialized
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 251
+      |(Reference)      : 250
      snowd
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 91  103
+      |(Declaration)    : 90  102
       |(Definition)     : 
-      |(Reference)      : 368
+      |(Reference)      : 367
      t
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : DIMENSION, INTENT(IN), dummy-argument
-      |(Declaration)    : 91  105
+      |(Declaration)    : 90  104
       |(Definition)     : 
-      |(Reference)      : 294  297  477  478  478
+      |(Reference)      : 293  296  476  477  477
      t_ice
       |(Class and Type) : named constant, REAL(8)
       |(Attributes)     : host-associated
       |(Declaration)    : 
       |(Definition)     : 
-      |(Reference)      : 297
+      |(Reference)      : 296
      tc0
       |(Class and Type) : variable name, REAL(8)
       |(Attributes)     : 
-      |(Declaration)    : 128
-      |(Definition)     : 297
-      |(Reference)      : 366  390  392  394  415  417  419  421  423  425  427  459  459  496  514  514  515  516  516  517  518  518  519
+      |(Declaration)    : 127
+      |(Definition)     : 296
+      |(Reference)      : 365  389  391  393  414  416  418  420  422  424  426  458  458  495
 
  Total information
    Procedures       : 1
-   Total lines      : 606
-   Total statements : 264
-   Total stack(byte): 4768
+   Total lines      : 582
+   Total statements : 248
+   Total stack(byte): 4752
    Total prefetch num: 0
 
