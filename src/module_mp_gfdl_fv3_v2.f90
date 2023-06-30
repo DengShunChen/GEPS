@@ -199,7 +199,7 @@ module module_mp_gfdl_v2
     logical :: rad_snow = .true. ! consider snow in cloud fraciton calculation
     logical :: rad_graupel = .true. ! consider graupel in cloud fraction calculation
     logical :: rad_rain = .true. ! consider rain in cloud fraction calculation
-    logical :: fix_negative = .false. ! fix negative water species
+    logical :: fix_negative = .true. ! fix negative water species
     logical :: do_setup = .true. ! setup constants and parameters
     logical :: disp_heat = .false. ! dissipative heating due to sedimentation
     logical :: do_cond_timescale = .false. ! whether to apply a timescale to condensation
@@ -1037,6 +1037,17 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
             qiz (k) = qiz (k) * con_r8
             qsz (k) = qsz (k) * con_r8
             qgz (k) = qgz (k) * con_r8
+        enddo
+
+!xb141>>>
+        ! -----------------------------------------------------------------------
+        ! fix all negative water species
+        ! -----------------------------------------------------------------------
+        if (fix_negative) &
+            call neg_adj (ks, ke, tz, dp1, qvz, qlz, qrz, qiz, qsz, qgz, cond)
+!xb141<<<
+
+        do k = ks, ke
             ! all are moist mixing ratios at this point on:
             qv (i, k) = qvz (k)
             ql (i, k) = qlz (k)
