@@ -102,7 +102,6 @@
       use rank
       use radn,                only: ntcw,ntiw,ntrw,ntsw,ntgl,nthl,     &
                                      ntinc,ntrnc
-      use const,               only: qmin
 ! for wsm6
       use module_mp_wsm6,      only: wsm6
 ! for thompson
@@ -184,7 +183,6 @@
               qv2d,qc2d,qr2d,qi2d,qs2d,qg2d,qnc2d,qni2d,qnr2d,          &
               rew2d,rer2d,rei2d,res2d,reg2d,                            &
               t2d,dp2d,dz2d,cld2d,w2d,u2d,v2d,rhc2d,p2d
-      real(kind=RTYPE) qnmin
 ! 2M Thompson MP
       real,dimension(:,:),allocatable ::                                &
               nwfa,nifa,pfils,pflls,vt_dbz_wt
@@ -370,9 +368,6 @@
         istep=1          !current step
         nsteps=1         !maximum number of steps
 
-!        qmin=1.0e-12     !minimum of q (kg/kg)
-        qnmin=1.0e-6     !minimum of qn (m^-3)
-
         t2d=0.
         qv2d=0.
         qc2d=0.
@@ -554,14 +549,14 @@
               qnr2d(i,kc) = qnr2d(i,kc)/(1. + tem)
             endif
 
-            qt(i,              k) = max( qv2d (i,kc) , qmin  )
-            qt(i,(ntcw-1) *lev+k) = max( qc2d (i,kc) , qmin  )
-            qt(i,(ntrw-1) *lev+k) = max( qr2d (i,kc) , qmin  )
-            qt(i,(ntiw-1) *lev+k) = max( qi2d (i,kc) , qmin  )
-            qt(i,(ntsw-1) *lev+k) = max( qs2d (i,kc) , qmin  )
-            qt(i,(ntgl-1) *lev+k) = max( qg2d (i,kc) , qmin  )
-            qt(i,(ntinc-1)*lev+k) = max( qni2d(i,kc) , qnmin )
-            qt(i,(ntrnc-1)*lev+k) = max( qnr2d(i,kc) , qnmin )
+            qt(i,              k) = max( qv2d (i,kc) , 0. )
+            qt(i,(ntcw-1) *lev+k) = max( qc2d (i,kc) , 0. )
+            qt(i,(ntrw-1) *lev+k) = max( qr2d (i,kc) , 0. )
+            qt(i,(ntiw-1) *lev+k) = max( qi2d (i,kc) , 0. )
+            qt(i,(ntsw-1) *lev+k) = max( qs2d (i,kc) , 0. )
+            qt(i,(ntgl-1) *lev+k) = max( qg2d (i,kc) , 0. )
+            qt(i,(ntinc-1)*lev+k) = max( qni2d(i,kc) , 0. )
+            qt(i,(ntrnc-1)*lev+k) = max( qnr2d(i,kc) , 0. )
             tt(i,k) = t2d(i,kc)
 
             re_cloud(i,k) = rew2d(i,k)*1.E+6   ! m to micron
@@ -857,15 +852,14 @@
 #endif
                   rhc2d, last_step, do_inline_mp )
 
-!        qmin = 1.0e-15     !minimum of q (kg/kg)
         do k = 1, lev
           do i = 1, nxj
-            qt(i,             k) = max( qv2d(i,k) , qmin )
-            qt(i,(ntcw-1)*lev+k) = max( qc2d(i,k) , qmin )
-            qt(i,(ntrw-1)*lev+k) = max( qr2d(i,k) , qmin )
-            qt(i,(ntiw-1)*lev+k) = max( qi2d(i,k) , qmin )
-            qt(i,(ntsw-1)*lev+k) = max( qs2d(i,k) , qmin )
-            qt(i,(ntgl-1)*lev+k) = max( qg2d(i,k) , qmin )
+            qt(i,             k) = qv2d(i,k)
+            qt(i,(ntcw-1)*lev+k) = qc2d(i,k)
+            qt(i,(ntrw-1)*lev+k) = qr2d(i,k)
+            qt(i,(ntiw-1)*lev+k) = qi2d(i,k)
+            qt(i,(ntsw-1)*lev+k) = qs2d(i,k)
+            qt(i,(ntgl-1)*lev+k) = qg2d(i,k)
             qa(i,k)  = cld2d(i,k)
             tt(i,k)  = t2d  (i,k)
             ut(i,k)  = u2d  (i,k)
