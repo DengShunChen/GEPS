@@ -533,7 +533,7 @@
       ss_adj =0.
 ! for MP WSM6 & Thompson
       uni_cloud=.false. !if using SHOC scheme, it should be .true.
-      lmfshal=( nmshl .eq. 2 .or. nmshl .eq. 3 .or. nmshl .or. 4 ) ! .true. if using mass-flux shallow convection
+      lmfshal=( nmshl .eq. 2 .or. nmshl .eq. 3 .or. nmshl .eq. 4 ) ! .true. if using mass-flux shallow convection
       lmfdeep2=( nmcup .eq. 6 .or. nmcup .eq. 7 ) ! .true. if using scale-aware deep con
 
 
