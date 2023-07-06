@@ -185,7 +185,7 @@
 
       integer   jj,j,nxj,k,i,m,n,mf,nc,kk,KL
       real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu
-      real      hfilt,hfilt2,nf,dec,coefu,powd,kfac
+      real      hfilt,nf,dec,coefu,powd,kfac
       real      c1,c2,c3
       logical   windchk
 
@@ -220,14 +220,11 @@
 !
       powd = float(hord) / 2.
       hfilt  = (radsq/(nf*(nf+1)))**powd
-      hfilt2 = radsq/(nf*(nf+1))
       coefu = factop/float(hdk2(1)-hdk1)
       if ( octahedral ) then
         hfilt  = hfilt/(6.*dta)
-        hfilt2 = hfilt2/(6.*dta)
       else
         hfilt  = hfilt/dta
-        hfilt2 = hfilt2/dta
       endif
 
       do 100 k=1,levp  ! levp -> lev
@@ -466,7 +463,7 @@
       use index
       use mpe
       use rank
-      use const, only : hdk1,hdk2,radsq,vd,factop,RTYPE
+      use const, only : hdk1,hdk2,radsq,vd,factop,RTYPE,hord
       use param, only : octahedral
 
       implicit  none
@@ -487,7 +484,7 @@
 
       integer   jj,j,nxj,k,i,m,n,mf,nc,kk,KL
       real      xx,facd,facv,fact,amp,ddiffu,vdiffu,tdiffu
-      real      hfilt2,hfilt4,hfilt6,nf,kfac,fl
+      real      hfilt,nf,kfac,fl,powd
       real      c1,c2,c3,c4
       logical   windchk
 
@@ -512,18 +509,13 @@
 !
       nf=jtrun-1
 !
+      powd = float(hord) / 2.
       fl   = factop/float(hdk2(1)-hdk1)
-      hfilt6 = (radsq/(nf*(nf+1)))**3.
-      hfilt4 = (radsq/(nf*(nf+1)))**2.
-      hfilt2 = radsq/(nf*(nf+1))
+      hfilt = (radsq/(nf*(nf+1)))**powd
       if ( octahedral ) then
-        hfilt6 = hfilt6/(6.*dta)
-        hfilt4 = hfilt4/(6.*dta)
-        hfilt2 = hfilt2/(6.*dta)
+        hfilt = hfilt/(6.*dta)
       else
-        hfilt6 = hfilt6/dta
-        hfilt4 = hfilt4/dta
-        hfilt2 = hfilt2/dta
+        hfilt = hfilt/dta
       endif
 
       do 100 k=1,levp  ! levp -> lev
@@ -553,21 +545,17 @@
           mf=mlist(m)
           do n=mf,jtrun
 
-!!            c1=1.+dta*facv*hfilt6*eps4(n,m)**3.
-!!            c2=1.+dta*facd*hfilt2*eps4(n,m)
 !            if ( KL .le. hdk1 ) then
 !              c1=1.+dta*facv*hfilt4*eps4(n,m)**2.+vd*exp(-0.7*k)
 !              c2=1.+dta*facd*hfilt4*eps4(n,m)**2.+vd*exp(-0.7*k)
 !              c3=1.+dta*fact*hfilt4*eps4(n,m)**2.+vd*exp(-0.7*k)
 !            else
-              c1=1.+dta*facv*hfilt4*eps4(n,m)**2.
-              c2=1.+dta*facd*hfilt4*eps4(n,m)**2.
-              c3=1.+dta*fact*hfilt4*eps4(n,m)**2.
-!!              c2=1.+dta*facd*hfilt6*eps4(n,m)**3.
+              c1=1.+dta*facv*hfilt*eps4(n,m)**powd
+              c2=1.+dta*facd*hfilt*eps4(n,m)**powd
+              c3=1.+dta*fact*hfilt*eps4(n,m)**powd
 !            endif
 
 
-!!            c3=1.+dta*fact*hfilt6*eps4(n,m)**3.
 
 
 

@@ -261,7 +261,7 @@
       return
       end
 
-      subroutine ptot(pdrym,sumwatm,sumtotm,pltemp,lprint)
+      subroutine ptot(pdrym,lprint)
 
       use index
       use mpe
@@ -275,16 +275,8 @@
       integer i,j,k,n,jj,kk,nxj,nxjf,kn,lprint
       real    sumtot   ,sumwat    ,dsigp                    &
              ,sumtotm  ,sumwatm   ,pdrym                    &
-             ,sumtott  ,sumwatt   ,sumwatta                 &
-             ,qtot     ,qtota     ,odpondp
-      real(kind=RTYPE) pnew(nxp,my_max)                     &
-                      ,ww1(nx,my_max),pltemp(jtrun,jtmax,2)
-      real    pten(nxp,my_max),pmax,pmin
+             ,sumtott  ,sumwatt   ,qtot 
       
-      pmax = 0.
-      pmin = 0.
-      pnew = 0.
-      pten = 0.
 
       ! dry air mass conservation
       sumtot=0.
@@ -296,56 +288,18 @@
         do i = 1,nxj
           sumtott=0.
           sumwatt=0.
-          sumwatta=0.
-          qtot=0.
-          qtota=0.
           do k = 1, lev
             dsigp = dsigma(k,1)*pt(i,jj)+dsigma(k,2)
+            qtot=0.
             do n = 1, ncld
                kk=k+(n-1)*lev
-               if ( qp(i,kk,jj) .gt. qmin ) qtot = qtot  + qp(i,kk,jj)
-               if ( qt(i,kk,jj) .gt. qmin ) qtota= qtota + qt(i,kk,jj)
+               qtot = qtot + qt(i,kk,jj)
             enddo
             sumtott = sumtott  + dsigp
             sumwatt = sumwatt  + dsigp * qtot
-            sumwatta= sumwatta + dsigp * qtota
-!            tt(i,k,jj)  = tt(i,k,jj)*pk(i,k,jj) / (1.0+0.608*qt(i,k,jj))
           enddo
-          pnew(i,jj) = sumtott - sumwatt + sumwatta
-          pten(i,jj) = sumwatta - sumwatt
           sumtot = sumtot + sumtott * cosl(j) * nx / nxjf
           sumwat = sumwat + sumwatt * cosl(j) * nx / nxjf
-        enddo
-      enddo
-
-      pmax = maxval(pten)
-      pmin = minval(pten)
-      call mpe_global_max(pmax,1,mpe_double)
-      call mpe_global_max(pmin,1,mpe_double)
-!      if ( myrank .eq. 0 ) print *,'max adj = ',pmax,' min adj = ',pmin
-      call mpe2d_unify_nx(ww1,pnew)
-      call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1            &
-                  ,pltemp,nsizey)            
-      call transr1(jtrun,jtmax,nx,my,my_max,poly,pltemp,pnew,nsizey)
-
-      ! mass adjustment of tracers
-
-      do jj = 1, jlistnum
-        j=jlist1(jj)
-        nxj=nxdef_2d(j)
-!        call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pnew(1,jj), &
-!                                pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
-        do i = 1,nxj
-          do k = 1, lev
-            odpondp =  (dsigma(k,1)*pt(i,jj)+dsigma(k,2))              &
-                     / (dsigma(k,1)*pnew(i,jj)+dsigma(k,2))
-            do n = 1, ncld
-              kk=k+(n-1)*lev
-              if ( qt(i,kk,jj) .gt. qmin )                             &
-                qt(i,kk,jj) = qt(i,kk,jj) * odpondp
-            enddo
-!            tt(i,k,jj) = tt(i,k,jj)*(1.0+0.608*qt(i,k,jj))/pk(i,k,jj)
-          enddo
         enddo
       enddo
 
@@ -367,6 +321,79 @@
         print*,'water mass = ',sumwatm,' hPa'
         print*,'total air mass = ',sumtotm,' hPa'
       endif
+
+      return
+      end
+!
+      subroutine adjptq(pltemp)
+
+      use index
+      use mpe
+      use rank
+      use const
+      use param
+      use grid
+
+      implicit none
+
+      integer i,j,k,n,jj,kk,nxj,nxjf,kn,lprint
+      real    dsigp    ,qtot      ,qtota                    &
+             ,sumtott  ,sumwatt   ,sumwatta                 &
+             ,odpondp
+      real(kind=RTYPE) pnew(nxp,my_max)                     &
+                      ,ww1(nx,my_max),pltemp(jtrun,jtmax,2)
+      
+      ! adjustment of surface pressure
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        nxjf=nxdef(j)
+        do i = 1,nxj
+          sumtott=0.
+          sumwatt=0.
+          sumwatta=0.
+          do k = 1, lev
+            dsigp = dsigma(k,1)*pt(i,jj)+dsigma(k,2)
+            qtot=0.
+            qtota=0.
+            do n = 1, ncld
+               kk=k+(n-1)*lev
+               qtot = qtot  + qp(i,kk,jj)
+               qtota= qtota + qt(i,kk,jj)
+            enddo
+            sumtott = sumtott  + dsigp
+            sumwatt = sumwatt  + dsigp * qtot
+            sumwatta= sumwatta + dsigp * qtota
+            tt(i,k,jj)  = tt(i,k,jj)*pk(i,k,jj) / (1.0+0.608*qt(i,k,jj))
+          enddo
+          pnew(i,jj) = sumtott - sumwatt + sumwatta
+        enddo
+      enddo
+
+      call mpe2d_unify_nx(ww1,pnew)
+      call tranrs1(jtrun,jtmax,nx,my,my_max,poly,weight,ww1            &
+                  ,pltemp,nsizey)            
+      call transr1(jtrun,jtmax,nx,my,my_max,poly,pltemp,pnew,nsizey)
+
+      ! mass adjustment of all tracers and virtual potential temperature
+
+      do jj = 1, jlistnum
+        j=jlist1(jj)
+        nxj=nxdef_2d(j)
+        call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pnew(1,jj), &
+                                pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
+        do i = 1,nxj
+          do k = 1, lev
+            odpondp =  (dsigma(k,1)*pt(i,jj)+dsigma(k,2))              &
+                     / (dsigma(k,1)*pnew(i,jj)+dsigma(k,2))
+            do n = 1, ncld
+              kk=k+(n-1)*lev
+              qt(i,kk,jj) = qt(i,kk,jj) * odpondp
+            enddo
+            tt(i,k,jj) = tt(i,k,jj)*(1.0+0.608*qt(i,k,jj))/pk(i,k,jj)
+          enddo
+        enddo
+      enddo
 
       return
       end
