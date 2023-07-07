@@ -62,7 +62,7 @@
       integer   nfxr
 !  for Semi-Lagrangian
 !
-      real(kind=RTYPE) ndsldta,ndsldtah,dth,dta,facm(2,2),         &
+      real(kind=RTYPE) ndsldta,ndsldtah,dth,dta,                   &
                 diveng(nxp,lev,my_max),                            &
                 qm_sl(nx,levp*ncld,my_max),                        &
                 pten_sl(nx,levp,my_max),                           &
@@ -146,7 +146,7 @@
       real    www,dtx,dtq,thdai,tkei,tpei,dsigp,            &
               cosw,tengi,dt24,tg2,dtx_tau,hfiltx,sqhaf,     &
               dt1,sptend,wmax,xx,dtaup,hfiltm,              &
-              sptendmax2,sptendmax1,dt_chg,prslp,alphax
+              sptendmax2,sptendmax1,dt_chg,alphax
       integer itimestep,recn
 
 ! for io quilting
@@ -209,16 +209,17 @@
       turn_sit=.false.       !turn_sit=.true., will run sit_vdiff in some tau
       lrun_sitvdiff=.false.  !lrun_sitvdiff=.true., run sit_vdiff in this tau
 !
+      ttm_sl=0.
+      pten_sl=0.
+      qm_sl=0.
+      vvm_sl=0.
+      uum_sl=0.
+!
       lmax  = 16
       nfxr  = 33
       cc    = 0.
       istat = 0
 !
-!      data facm/1.,0.,1.5,-0.5/
-      data facm/ 1.   , 0.  , &
-                 1.5  ,-0.5 /
-
-
 !
       year = idate(1)
       yrd  = 365
