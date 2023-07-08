@@ -138,11 +138,11 @@
       implicit none
 
 !  ---  inputs:
-      integer,  intent(in)    :: nmmiph,nx,nxj,lev,ncld,kdt,me
+      integer,  intent(in)    :: nmmiph,nx,nxj,jj,lev,ncld,kdt,me
 !      integer,  intent(in)    :: ntcw,ntrw,ntiw,ntsw,ntgl,ntinc,ntrnc
       integer,  intent(in)    :: islimsk(nx)
       integer,  intent(in)    :: itimestep
-      real,     intent(in)    :: tpi,dta,jj
+      real,     intent(in)    :: tpi,dta
       real,     intent(in)    :: phii(nx,lev+1),phi(nx,lev)
       real,     intent(in)    :: area
       real,     intent(in)    :: ptop
