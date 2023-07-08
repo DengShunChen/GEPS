@@ -56,7 +56,7 @@
          capa,cp,rad,radsq,grav,omega,rgas,stbo,s0,hltm,   &
          ptop,dt,tau,taui,taue,tauo,                       &
          hours,frad,evaprh,qgini,                          &
-         tice,hice,cutfreq,taup,hfilt,tfilt,               &
+         tice,hice,cutfreq,taup,hfilt,hfiltx,tfilt,        &
          taureg,cgw,domfc,otgreen,cgwd,cmbk,spl1,spl2,     &
          factop
     real(kind=RTYPE) :: ptmean,ptmeans,qmin
@@ -71,8 +71,8 @@
     common/constR/                                         &
          capa,cp,rad,radsq,grav,omega,rgas,stbo,s0,hltm,   &
          ptop,ptmean,dt,tau,taui,taue,tauo,                &
-         hours,frad,evaprh,qgini,                          &
-         tice,hice,cutfreq,taup,hfilt,ptmeans,             &
+         hours,frad,evaprh,qgini,hfilt,hfiltx,             &
+         tice,hice,cutfreq,taup,ptmeans,                   &
          taureg,cgw,fsit,domfc,otgreen,spl1,spl2,          &
          dSITdt_intv,weightSIT,updatetg
     logical :: lsimpl,lzadv, yesdia,dopbl, docup, dorad,   &
@@ -94,6 +94,12 @@
 
     !for Semi-Lagrangain
     logical :: ndsladvh2
+
+    !for Semi-implicit
+    real    :: alphax
+
+    !for mass conservation
+    real    :: pdryi,pdry,pcorr
 
 ! output data for RSM (Also, RSM compiling flag is necessary)
     !for RSM output

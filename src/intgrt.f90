@@ -100,8 +100,7 @@
       character rfile*55, ctau*6
 !!      real      tbar(lev),qbar(lev*ncld),qbrrow(ncld,my)
       integer,  parameter :: ktop=4
-      real      fac(ktop), wkj(my,4), wkmf(jtrun), windmax3          &
-               ,pdryi       ,pdry      ,pcorr
+      real      fac(ktop), wkj(my,4), wkmf(jtrun), windmax3
       data      windmax3/130./
 !
       logical   histim, tchange, flag, forward, fwd
@@ -144,9 +143,9 @@
               istst,ii ,n_stable,n_unstable,nc_stable,nxjf
 
       real    www,dtx,dtq,thdai,tkei,tpei,dsigp,            &
-              cosw,tengi,dt24,tg2,dtx_tau,hfiltx,sqhaf,     &
+              cosw,tengi,dt24,tg2,dtx_tau,sqhaf,            &
               dt1,sptend,wmax,xx,dtaup,hfiltm,              &
-              sptendmax2,sptendmax1,dt_chg,alphax
+              sptendmax2,sptendmax1,dt_chg
       integer itimestep,recn
 
 ! for io quilting
@@ -369,7 +368,6 @@
       recn=1
       rdivm=0.
       flash=0.
-      pdryi=0.
       pdry=0.
 !
 !
@@ -552,7 +550,6 @@
       alphax=alpha
       n_stable=0
       n_unstable=0
-      hfiltx=hfilt
       hfiltm=mwhd*hfilt
       if(dta.gt.720)then
 !!        dt_chg=1800.
@@ -573,10 +570,7 @@
         sptendmax1=0.3305
       endif
 
-      ! sureface pressure global mean correction
-      if ( mass_dp ) then
-        call ptot(pdryi,0)
-      endif
+
 
 !
 !      if(typhoon)then
@@ -1029,7 +1023,7 @@
       call transr1(jtrun,jtmax,nx,my,my_max,poly,pltemp,pt,nsizey)
 
       if ( mass_dp ) then
-        call ptot(pdry,0)
+        call ptot(pdry,1)
         pcorr = (pdryi-pdry) * sqrt(2.)
       endif
 !

@@ -341,6 +341,10 @@
         ftp1=0.
         fqp1=0.
         itaui=0
+! give the initial forward weighting for Semi-implicit
+        alphax = alpha
+! give the initial coefficient for horizontal diffusion
+        hfiltx = hfilt
 !
 ! new start gfcst: read climate data, initialize parameters
 !
@@ -917,6 +921,13 @@
         call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pt(1,jj) &
                           ,pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
  160  continue
+!                  
+!  computing global mean surface pressure at initial time
+!
+      if ( mass_dp .and. .not. restrt ) then
+        pdryi = 0.
+        call ptot(pdryi,1)
+      endif
 !
 !  compute globel moisture budget and p-coordinate variables
 !

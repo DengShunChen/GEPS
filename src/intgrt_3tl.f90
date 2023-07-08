@@ -143,7 +143,7 @@
               istst,ii,nxjf !,n_stable,n_unstable,nc_stable
 
       real    www,dtx,dta,thdai,tkei,tpei,dsigp,            &
-              cosw,tengi,dt24,tg2,dtx_tau,hfiltx,sqhaf,     &
+              cosw,tengi,dt24,tg2,dtx_tau,sqhaf,            &
               dummy,dt1,sptend,wmax,xx,facw,dtaup!!,          &
 !!              sptendmax2,sptendmax1,dt_chg
 ! sppt variables
@@ -680,7 +680,7 @@
 !!      else if(tau.gt.24. .and. tau.le.36.)then
 !!         hfiltx=hfilt*2.
 !!      else
-       hfiltx=hfilt
+!!       hfiltx=hfilt
 !!      endif
 !
 !  global mean tempertures (tbar) and specific humid (qbar)
