@@ -1023,7 +1023,7 @@
       call transr1(jtrun,jtmax,nx,my,my_max,poly,pltemp,pt,nsizey)
 
       if ( mass_dp ) then
-        call ptot(pdry,1)
+        call ptot(pdry,dpprt)
         pcorr = (pdryi-pdry) * sqrt(2.)
       endif
 !

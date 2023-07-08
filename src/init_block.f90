@@ -109,6 +109,7 @@
       ttl=.true.
 ! dry air mass correction
       mass_dp=.true.
+      dpprt  =.false.
 ! output data for RSM (Also, RSM compiling flag is necessary)
       outrsm=.false.
       rsmoutinv=6

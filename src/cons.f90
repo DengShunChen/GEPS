@@ -83,8 +83,8 @@
 !
                       , cmbk,cgwd,nmmiph,spl1,spl2                      &
                       , weightSIT,dSITdt_intv,mwhd,doclx,doslavepp      &
-                      , outdms,outgrb2,alpha,two_loop,ttl,tfilt,mass_dp &
-                      , factop
+                      , outdms,outgrb2,alpha,two_loop,ttl,tfilt,factop  &
+                      , mass_dp,dpprt
 !                       
       real    si(lev+1)
       logical flag
