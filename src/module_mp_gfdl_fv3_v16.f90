@@ -4326,9 +4326,11 @@ subroutine qs_table3 (n)
             ! see smithsonian meteorological tables page 350.
             ! -----------------------------------------------------------------------
             aa = - 9.09718 * (table_ice / tem - 1.)
-            b = - 3.56654 * alog10 (table_ice / tem)
+!            b = - 3.56654 * alog10 (table_ice / tem)
+            b = - 3.56654 * dlog10 (table_ice / tem)
             c = 0.876793 * (1. - tem / table_ice)
-            e = alog10 (esbasi)
+!            e = alog10 (esbasi)
+            e = dlog10 (esbasi)
             table3 (i) = 0.1 * 10 ** (aa + b + c + e)
         else
             ! -----------------------------------------------------------------------
@@ -4336,10 +4338,12 @@ subroutine qs_table3 (n)
             ! see smithsonian meteorological tables page 350.
             ! -----------------------------------------------------------------------
             aa = - 7.90298 * (tbasw / tem - 1.)
-            b = 5.02808 * alog10 (tbasw / tem)
+!            b = 5.02808 * alog10 (tbasw / tem)
+            b = 5.02808 * dlog10 (tbasw / tem)
             c = - 1.3816e-7 * (10 ** ((1. - tem / tbasw) * 11.344) - 1.)
             d = 8.1328e-3 * (10 ** ((tbasw / tem - 1.) * (- 3.49149)) - 1.)
-            e = alog10 (esbasw)
+!            e = alog10 (esbasw)
+            e = dlog10 (esbasw)
             table3 (i) = 0.1 * 10 ** (aa + b + c + d + e)
         endif
     enddo
