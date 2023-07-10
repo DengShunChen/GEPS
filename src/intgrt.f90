@@ -547,7 +547,6 @@
 ! sppt
       itimestep=1
 !
-      alphax=alpha
       n_stable=0
       n_unstable=0
       hfiltm=mwhd*hfilt
