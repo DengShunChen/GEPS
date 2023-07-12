@@ -272,7 +272,8 @@
 
       implicit none
 
-      integer i,j,k,n,jj,kk,nxj,nxjf,kn,lprint
+      integer i,j,k,n,jj,kk,nxj,nxjf,kn
+      logical lprint
       real    sumtot   ,sumwat    ,dsigp                    &
              ,sumtotm  ,sumwatm   ,pdrym                    &
              ,sumtott  ,sumwatt   ,qtot 
@@ -312,7 +313,7 @@
       sumwatm = sumwat / float(kn)
       pdrym   = sumtotm - sumwatm
 
-      if( myrank .eq. 0 .and. lprint .eq. 1) then
+      if( myrank .eq. 0 .and. lprint ) then
         open(35,file='pdry.txt',form='formatted',status='unknown', &
              position='append')
         write(35,*)pdrym,sumwatm,sumtotm
@@ -336,7 +337,7 @@
 
       implicit none
 
-      integer i,j,k,n,jj,kk,nxj,nxjf,kn,lprint
+      integer i,j,k,n,jj,kk,nxj,nxjf,kn
       real    dsigp    ,qtot      ,qtota                    &
              ,sumtott  ,sumwatt   ,sumwatta                 &
              ,odpondp
