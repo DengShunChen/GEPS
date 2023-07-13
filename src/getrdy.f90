@@ -149,7 +149,8 @@
  107  format('global_idw.t',i3.3,'.',i4.4,'.',i3.3,'.dat')
  108  format('global_idw.t',i3.3,'.',i3.3,'.',i3.3,'.dat')
 
-      open(71,file=f71,form='unformatted',access='direct',recl=8*nx*my*8)
+      open(71,file=f71,form='unformatted',access='direct',    &
+           recl=8*nx*ny*8,convert="big_endian")
 
       read(71,rec=1) outp
       close(71)
