@@ -406,7 +406,7 @@ contains
       use radn, only : ntoz
       use param, only : ncld
       use mod_grb2_param
-      use const ,only:outdms,outgrb2 , RTYPE,kflag,qmin
+      use const ,only:outdms,outgrb2 , RTYPE,kflag,qmin,nmmiph
 
       implicit  none
 
@@ -426,19 +426,45 @@ contains
       character*26 ihdg,ihdg2
       character*6 lrec(lpout)
       character*4 ggdef
-      character*3 cspec(6)
+!      character*3 cspec(8)
+      character*3,dimension(:),allocatable :: cspec
       logical :: lwrite
       integer::Ptp0,Ptp1,Ptp2,Ptp3
-      integer,dimension(6)::cspe0,cspe1,cspe2,cspe3
+!      integer,dimension(6)::cspe0,cspe1,cspe2,cspe3
+      integer,dimension(:),allocatable ::cspe0,cspe1,cspe2,cspe3
 !
-      cspec=(/'500','551','553','552','554','555'/)
-      cspe0=(/  0  ,  0  ,  0  ,  0  ,  0  ,  0  /)
-      cspe1=(/  1  ,  1  ,  1  ,  1  ,  1  ,  1  /)
-      cspe2=(/  0  , 22  , 24  , 82  , 25  , 32  /)
-      cspe3=(/  6  ,  8  ,  8  ,  8  ,  8  ,  8  /)
+!key=556 for mixing ratio of hail
+!key=571~575 for number concentration of cloud droplet, ice, rain, snow, and graupel
+!key=572 : inc (ntinc=7)
+!key=573 : rnc (ntrnc=8)
+      if ( nmmiph .eq. 18 ) then
+        allocate ( cspec(8),cspe0(8),cspe1(8),cspe2(8),cspe3(8) )
+        cspec=(/'500','551','553','552','554','555','572','573'/)
+        cspe0=(/  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  /)
+        cspe1=(/  1  ,  1  ,  1  ,  1  ,  1  ,  1  ,  1  ,  1  /)
+        cspe2=(/  0  , 22  , 24  , 82  , 25  , 32  , 207 , 104 /)  !not sure of inc
+        cspe3=(/  6  ,  8  ,  8  ,  8  ,  8  ,  8  ,  8  ,  8  /)
+      elseif ( nmmiph .eq. 16 ) then
+        allocate ( cspec(7),cspe0(7),cspe1(7),cspe2(7),cspe3(7) )
+        cspec=(/'500','551','553','552','554','555','556'/)
+        cspe0=(/  0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0  /)
+        cspe1=(/  1  ,  1  ,  1  ,  1  ,  1  ,  1  ,  1  /)
+        cspe2=(/  0  , 22  , 24  , 82  , 25  , 32  , 71  /)
+        cspe3=(/  6  ,  8  ,  8  ,  8  ,  8  ,  8  ,  8  /)
+      else
+        allocate ( cspec(6),cspe0(6),cspe1(6),cspe2(6),cspe3(6) )
+        cspec=(/'500','551','553','552','554','555'/)
+        cspe0=(/  0  ,  0  ,  0  ,  0  ,  0  ,  0  /)
+        cspe1=(/  1  ,  1  ,  1  ,  1  ,  1  ,  1  /)
+        cspe2=(/  0  , 22  , 24  , 82  , 25  , 32  /)
+        cspe3=(/  6  ,  8  ,  8  ,  8  ,  8  ,  8  /)
+      endif
 !
-      ntrchk=ncld
-      if ( ntoz .gt. 0 ) ntrchk=ncld-1
+      if ( ntoz .gt. 0 ) then
+        ntrchk = ntoz - 1
+      else
+        ntrchk = ncld
+      endif
 !
       do k = 1, lev+1
        tens(k) = 1.0
@@ -469,7 +495,7 @@ contains
 !
         do k = 1, lpout-1
           lpl = int(plev(k)+0.001)
-          write( lrec(k), '(i3.3,a3)' ) lpl,'550'   ! combine cloud water and cloud ice together
+          write( lrec(k), '(i3.3,a3)' ) lpl,'550'   ! combine all condensates together
         end do
         lrec(lpout) = 'h00550'
         Ptp0=0 ;Ptp1=1 ;Ptp2=235 ;Ptp3=9 !grib code 
@@ -532,6 +558,87 @@ contains
       return
   end subroutine shumout2
 
+  subroutine cloudout(nx,my,my_max,lpout,lev,itau,ifilout,idtg   &
+      , plev,num,whtlev,pkout,pk,pklp,clds,cldb,cldfc,glob,ggdef,lwrite)
+!
+      use index
+      use rank, only : myrank
+      use param, only : ncld
+      use mod_grb2_param
+      use const ,only:outdms,outgrb2 , RTYPE,kflag
+
+      implicit  none
+
+      integer   nx,my,my_max,lpout,lev,itau,num,ntrac,ncnt,ntrchk
+
+      real      pkout(lpout),pklp(nxp,my_max)                        &
+      , pk(nxp,lev,my_max),clds(nxp,lev,my_max),cldb(nxp,my_max)      &
+      , plev(lpout),whtlev(num),tens(lev+1) 
+      real(kind=RTYPE) pout(nx,my),glob(nx,my),tmp(nxp,my_max)       &
+      , cldfc(nxp,my_max,lpout),ffx(nx,my_max)
+!
+      integer   i,k,lpl,n,lenc,istat,jj,j,nxj
+
+      integer*8 idtg
+      character*80 ifilout
+      character*26 ihdg,ihdg2
+      character*6 lrec(lpout)
+      character*4 ggdef
+      logical :: lwrite
+!
+      do k = 1, lev+1
+       tens(k) = 1.0
+      end do
+      tens(lev)= 0.0
+      tens(lev+1)= 0.0
+!
+      do k = 1, lpout-1
+       lpl = int(plev(k)+0.001)
+       write( lrec(k), '(i3.3,a3)' ) lpl,'770'
+      end do
+      lrec(lpout) = 'h00770'
+      call voterp(nx,my,my_max,lev,lpout,pk,pklp,clds,cldb,pkout,cldfc,tens)
+!
+      lenc= nx*my
+      ncnt= 0
+!
+      !for debug
+      !num=12
+      !whtlev(1:12)=(/100.,150.,200.,250.,300.,400.,500.,600.,700.,850.,925.,1000./)
+      do 30 n=1,num
+      do 10 k=1,lpout
+!
+      if(plev(k).eq.whtlev(n)) then
+!
+      do 11 jj=1, jlistnum
+      j=jlist1(jj)
+      nxj=nxdef_2d(j)
+      do 11 i=1,nxj
+       tmp(i,jj)= cldfc(i,jj,k)
+   11 continue
+      call unify_reduceintp(nx,my,my_max,tmp,glob)
+
+      if(outgrb2==1.and.myrank==0)then
+          call wrt_grb2(itau,0,6,32,3,100,-2,plev(k),glob)   !cloud fraction
+      endif
+!
+      call syslbl(lrec(k),idtg,itau,ggdef,ihdg)
+      call qmaxn3(glob,ihdg(1:14),ihdg(15:26),1,1,1,nx,my,1)
+      call split(nx,my,lenc,ifilout,ncnt,glob,pout,ihdg,ihdg2)
+      go to 30
+      endif
+   10 continue
+   30 continue
+      if(outdms.gt.0)then
+      if(lwrite .and. myrank .lt. ncnt ) &
+        call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+      endif
+!
+   40 continue
+
+      return
+  end subroutine cloudout
+
 
   subroutine surfout(nx,my,my_max,ifilout,itau,idtg,taudir,ntau,pdiff  &
        ,pt,ptop,slp,ptend,glob,ggdef,lwrite)
@@ -540,7 +647,7 @@ contains
       use mpe
       use rank
       use mod_grb2_param
-      use const ,only:outdms,outgrb2 ,RTYPE,kflag
+      use const ,only:outdms,outgrb2 ,RTYPE,kflag ,domfc
 !
       implicit  none
       integer   nx,my,my_max,i,j,jj,kk,n,lev,nxj,itau,ntau,num,lenc,istat
@@ -599,6 +706,7 @@ contains
       if(label(kk).eq.'SSL010' .or. label(kk).eq.'ssl010') then
         call unify_reduceintp(nx,my,my_max,slp,glob)
         call syslbl('ssl010',idtg,itau,ggdef,lrec)
+        if( itau==0 .or. itau .gt. nint(domfc) )then
         if(outdms.gt.0)then
           if(lwrite) call dmswrit(nx,my,lrec,lenc,kflag,ifilout,glob,istat)
         endif
@@ -606,7 +714,7 @@ contains
           call wrt_grb2(itau,0,3,1,2,101,0,0.,glob)
         endif
         call qmaxn3(glob,lrec(1:14),lrec(15:26),1,1,1,nx,my,1)
-
+        endif !itau .gt. domfc
 !
 !  terrain pressure
 !
@@ -620,6 +728,12 @@ contains
           enddo
         enddo
         call unify_reduceintp(nx,my,my_max,tmp,glob)
+!     if(myrank.eq.0) then
+!       open(30,file='sfc_pres.bin',status='unknown', &
+!           form='unformatted',access='direct',recl=262656)
+!       write(30,rec=1) ((glob(i,j),i=432,647),j=410,561)
+!       close(30)
+!     endif
 !byl        call mpe_unify(glob,nx,my,2,mpe_double)
         call syslbl('b00010',idtg,itau,ggdef,lrec)
 !byl        if( lreduce.eq.1 ) call reduceintp (glob,nxdef,nx,my)

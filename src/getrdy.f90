@@ -44,6 +44,10 @@
                                 ,ifilin_ocaf,read_ocaf,read_ocaf0      &
                                 ,wtfn12,wsfn12,time_weights,mask1st
       USE mo_netcdf,         ONLY:lkvl,set_ocndepth
+! for Thompson MP
+      use physcons,          only: con_rd,con_eps
+      use module_mp_thompson_make_number_concentrations,                &
+                             only: make_IceNumber, make_RainNumber
 !-----------------------------------------------------------------------
       use mod_grb2_param , only : grbid ,grbfile ,opn_grb2 ,cls_grb2,grbnxmy
 
@@ -110,6 +114,8 @@
       integer nxjpart      
 ! for io quilting
       character:: keydoit*34
+! for Thompson MP
+      real  tem,rho,ttr,ttv
 
       lmax=26
 !
@@ -150,9 +156,16 @@
  108  format('global_idw.t',i3.3,'.',i3.3,'.',i3.3,'.dat')
 
       open(71,file=f71,form='unformatted',access='direct',    &
-           recl=8*nx*my*8,convert="big_endian")
+           recl=8*nx*my,convert="big_endian")
 
-      read(71,rec=1) outp
+      do k=1,8
+        read(71,rec=k) ww1
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          outp(:,jj,k) = ww1(:,j)
+        enddo
+      enddo
+
       close(71)
 
 !helio<
@@ -327,6 +340,7 @@
         fqp=0.
         ftp1=0.
         fqp1=0.
+        itaui=0
 !
 ! new start gfcst: read climate data, initialize parameters
 !
@@ -1228,6 +1242,36 @@
 !        call mpe_unify(hflux,nx,my,2,mpe_double)
 !        call mpe_unify(qflux,nx,my,2,mpe_double)
       endif    ! end of ( .not. restrt ) for u10 v10 t2 being output at tau=0
+
+! for Thompson : 1st guess number concentration where mass non-zero
+      if ( .not.restrt .and. nmmiph.eq.18 ) then
+        do jj = 1, jlistnum
+          j=jlist1(jj)
+          nxj=nxdef_2d(j)
+          do k = 1, lev
+            do i = 1, nxj
+              ! virtual temperature :
+              ttv = tt(i,k,jj)*pk(i,k,jj)
+              ! real temperature :
+              ttr = ttv/(1.0+0.608*qt(i,k,jj))
+              ! air density :
+              rho = plt(i,k,jj)*100./(con_rd*ttv)
+
+              tem = qt(i,(ntiw-1)*lev+k,jj)
+              if ( tem .gt. 0. ) then
+                 qt(i,(ntinc-1)*lev+k,jj) =                             &
+                      make_IceNumber(tem*rho,ttr)/rho
+              endif
+
+              tem = qt(i,(ntrw-1)*lev+k,jj)
+              if ( tem .gt. 0. ) then
+                 qt(i,(ntrnc-1)*lev+k,jj) =                             &
+                      make_RainNumber(tem*rho,ttr)/rho
+              endif
+            enddo
+          enddo
+        enddo
+      endif
 !
 !  output initial fileds
 !
@@ -1283,6 +1327,8 @@
               , sgeo,pt,plt,ptop,ut,vt,tt,qt,cosl,raincu6,rainlp6       &
               , ggdef)
       endif
+!
+!#ifdef RSM_sigp
         if(outgrb2==1.and.myrank==0)then
             if(io_quilting)then 
               keydoit(1:4)='CLSE'
@@ -1294,7 +1340,7 @@
         endif
 
 #ifdef RSM
-      if (outrsm) then
+       if(outrsm) then
         if(myrank.eq.0)print*,' output: rsm date',idtg
         write(dtgrsm,'(I12)') idtg
         read(dtgrsm,'(I10,I2)')idtgrsm,ii   ! ii is dummy integer
@@ -1303,14 +1349,31 @@
 #else
         call wrte_idate(idtgrsm)
 #endif
-        call rsmout(idtg,0,nx,my,my_max,lev,ncld      &
-                , ptop,cp,rgas,grav,sgeo,pdiff        &
-                , t1000,pt,plt,pk,pk2,phi,ut,vt       &
-                , tt,qt,tg,snr,cosl                   &
-                , km_soil,smc,stc                     &
-                , ice,land,ocean)
-      endif
+        call rsmout_sigp( itaui,nx,my,my_max,lev,ncld        &
+                     , idtg,ptop,rad,grav,cosl           &
+                     , pt,sgeo,snr,gwr,tg,pk             &
+                     , ut,vt,tt,qt,km_soil,smc,stc       &
+                     , ice,land,ocean,xlon,xlat)
+       endif
 #endif
+!#ifdef RSM
+!      if (outrsm) then
+!        if(myrank.eq.0)print*,' output: rsm date',idtg
+!        write(dtgrsm,'(I12)') idtg
+!        read(dtgrsm,'(I10,I2)')idtgrsm,ii   ! ii is dummy integer
+!#ifdef CWB_MPMD
+!        call send_idate(idtgrsm)
+!#else
+!        call wrte_idate(idtgrsm)
+!#endif
+!        call rsmout(idtg,0,nx,my,my_max,lev,ncld      &
+!                , ptop,cp,rgas,grav,sgeo,pdiff        &
+!                , t1000,pt,plt,pk,pk2,phi,ut,vt       &
+!                , tt,qt,tg,snr,cosl                   &
+!                , km_soil,smc,stc                     &
+!                , ice,land,ocean)
+!      endif
+!#endif
 !
 !
         if(typhoon)then

@@ -1,3 +1,4 @@
+!#define update_dp
       subroutine diabat ( docup,dodry,dolsp,dopbl,dorad,doshl,dograv,tofd      &
                     , nx,my,my_max,lev,ncld,nmcup,nmpbl,nmland,nmshl,cgw       &
                     , idg,jdg,ldiag,dt,tau,hours,julian,year,yrd               &
@@ -186,7 +187,7 @@
       use radn
       use physpara
 !
-      use physcons, only :con_rd,con_fvirt,con_rerth,con_rv
+      use physcons, only :con_rd,con_fvirt,con_rerth,con_rv,con_pi
 ! for slavepp
       use phygrid,  only :dtcup,ducup,dvcup,dtshl,dushl,dvshl,dtlsp
 ! for land_noah_new
@@ -365,8 +366,8 @@
       logical   donor,upnor
       data      donor/.true./,fnor/0.5/
 
-! for GFDL microphysics
-      real area(nxp)
+! for microphysics
+      real area
 
 !#######################################################################
 !
@@ -402,6 +403,7 @@
 !     parameter (rhzbot=0.85, rhztop=0.85)
 
       real      work1(nxp),work2(nxp),rhc(nxp,lev),rhckt,psautco(nxp)
+      real      rhc_mp(nxp,lev)  !for GFDL MP
       real      del(nxp,lev),prsl(nxp,lev),psfc(nxp)
       real      qtc(nxp,lev), qtr(nxp,lev), ttc(nxp,lev)
       real      ftp(nxp,lev,my_max), fqp(nxp,lev,my_max), fpsp(nxp,my_max)
@@ -438,6 +440,8 @@
       real      phii(nxp,lev+1)
       real      qti(nxp,lev),qtrw(nxp,lev),qtsw(nxp,lev),qtgl(nxp,lev)
       real      icem,ntnc(nxp,lev,2) !1:ice, 2:liquid
+      real      ice00(nxp,lev)
+      real      qni
 ! for updating low boundary condition
       integer   ls(nxp,my_max)
       real      sstc(nxp,my_max),z0ocn(nxp,my_max)
@@ -1341,6 +1345,15 @@
 !=======================================================================
 !  cumulus scheme
 !=======================================================================
+      ! save old array for Thompson
+      if ( nmmiph .eq. 18 ) then
+        do k=1,lev
+          do i = 1, nxj
+            ice00(i,k) = qt(i,(ntiw-1)*lev+k,jj)
+          enddo
+        enddo
+      endif
+
       if ( docup .and. (nmcup.eq. 1) )                               &
         call cupcwb (j,nxjp(j),nxp,my,lev,ktcup,dta,grav,rgas,cp,hltm,etop,prevap  &
                  , sgeo(1,jj),pst(1,jj),plt(1,1,jj),pk(1,1,jj),pk2(1,1,jj)   &
@@ -1716,6 +1729,19 @@
                      , plt(1,1,jj),tt(1,1,jj), qt(1,1,jj),nshl(j)              &
                      , rcup(1,jj),ncld )
 
+      ! ice number concentration modification for Thompson
+      if ( nmmiph .eq. 18 ) then
+        icem = 4./3.*con_pi*3.2768*1.e-14*890.
+        do k=1,lev
+          do i=1,nxj
+            qni = (qt(i,(ntiw-1)*lev+k,jj)-ice00(i,k))/icem
+            if ( qni .gt. 0. ) then
+              qt(i,(ntinc-1)*lev+k,jj) = qt(i,(ntinc-1)*lev+k,jj) + qni
+            endif
+          enddo
+        enddo
+      endif
+
 !=======================================================================
 ! cloud microphysics
 !=======================================================================
@@ -1831,28 +1857,55 @@
         enddo
       endif !( dolsp .and. nmmiph.eq.2 )
 !
-      if ( dolsp .and. (nmmiph.eq.6 .or. nmmiph.eq.8 .or. nmmiph.eq.11) ) then
+      if ( dolsp .and. (nmmiph.eq.6 .or.       & ! WSM6
+           nmmiph.eq.8 .or. nmmiph.eq.18 .or.  & ! Thompson
+           nmmiph.eq.11 .or. nmmiph.eq.12 .or. nmmiph.eq.13 .or. & !GFDL MP
+           nmmiph.eq.15 .or. nmmiph.eq.16) ) then !Goddard MP
 
-! for GFDL MP
-      do i = 1, nxj
-        area(i) = tem1*tem2  !area of grid box
+! for microphysics
+      area = tem1*tem2  !area of grid box (m^2)
+
+! define rhc for GFDL MP
+      rhc_mp = 1.
+#ifdef rhc_GFDL
+      if ( arg .gt. 45. ) then
+        arg = 45.
+      elseif ( arg .lt. -45 ) then
+        arg = -45.
+      endif
+      do k=1,lev
+        do i=1,nxj
+!          rhc_mp(i,k) = 1.0 - 0.02*cos(d2r*arg)**2
+          if ( plt(i,k,jj)/plt(i,lev,jj) .lt. 0.4 ) then
+             tem = ( plt(i,k,jj)/plt(i,lev,jj) )**0.015
+             if ( tem .le. 0.95 ) tem = 0.95
+             rhc_mp(i,k) = rhc_mp(i,k)*tem
+          endif
+        enddo
       enddo
+#endif
 
       call mp_scheme                                                   &
 !  ---  inputs:
-           ( nmmiph,nxp,nxjp(j),lev,ncld,plt(1,1,jj),                  &
-             pst(1,jj),dsigma,phii,islimsk,q0,kdt,ntcw,ntrw,ntiw,ntsw, &
-             ntgl,ntinc,ntrnc,tpi,me,dta,area,jj,                      &
-#if defined (GFDLMP_v2)
-             sgeo(1,jj),                                               &
-#endif
+           ( nmmiph,nxp,nxjp(j),lev,ncld,plt(1,1,jj),ptop,             &
+             dsigma,phii,islimsk,q0,kdt,tpi,me,dta,area,jj,            &
+             itimestep,sgeo(1,jj),phi,rhc_mp,pk(1,1,jj),               &
+             snr(1,jj),                                                &
 !  ---  inputs/outputs:
              tt(1,1,jj),qt(1,1,jj),clds(1,1,jj),                       &
-             ut(1,1,jj),vt(1,1,jj),sd(1,1,jj),                         &
+             ut(1,1,jj),vt(1,1,jj),vvel(1,1,jj),                       &
+             pst(1,jj),                                                &
 !  ---  outputs:
              ftp(1,1,jj),ftp1(1,1,jj),fqp(1,1,jj),fqp1(1,1,jj),        &
              rlsp(1,jj),sr(1,jj) )
-!    
+!
+#ifdef update_dp
+      if ( nmmiph.eq.12 .or. nmmiph.eq.13 ) then
+        ! compute new time step pk, pk2, and plt
+        call prexp_hybrid_cwb ( nxjp(j),nxp,lev,ptop,sigma,pst(1,jj), &
+                            pk(1,1,jj),pk2(1,1,jj),plt(1,1,jj) )
+      endif
+#endif
       endif
 
 !

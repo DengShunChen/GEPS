@@ -1,3 +1,5 @@
+!#define MERRA2_aeroclimfix
+!#define oldmask
 !***********************************************************************
 !*                   GNU Lesser General Public License
 !*
@@ -42,7 +44,7 @@ module module_mp_gfdl_v2
         esw_table, d_sat, qs1d_m, wqsat_moist, wqsat2_moist, qs1d_moist, revap_rac1, &
         wqs2_vect, rhow, rhor, rhos, rhog, rhoh, rnzr, rnzs, rnzg, rnzh, rvgas, rdgas, &
         grav, hlv, hlf, cp_air, cp_vap, cv_air, cv_vap, c_ice, c_liq, dc_vap, dc_ice, &
-        t_ice, t_wfr, e00, pi, zvir, rgrav
+        t_ice, t_wfr, e00, pi, zvir, rgrav, isedi, isedi_ice, wqs2_rhc, cloud_diagnosis_v2
     
     integer, parameter :: r8 = 8 ! double precision
 
@@ -180,6 +182,14 @@ module module_mp_gfdl_v2
     integer :: irain_f = 0 ! cloud water to rain auto conversion scheme
         ! irain_f  = 0 : with subgrid variability
         ! irain_f /= 0 : no subgrid variability
+    integer :: isedi = 1  ! sedimentation scheme for rain, snow and graupel
+        ! isedi = 1: time-implicit monotonic
+        ! isedi = 2: PPM Lagrangian
+        ! isedi = 3: semi-Lagrangian (Juang and Hong 2010)
+    integer :: isedi_ice = 1  ! sedimentation scheme for cloud ice
+        ! isedi = 1: time-implicit monotonic
+        ! isedi = 2: PPM Lagrangian
+        ! isedi = 3: semi-Lagrangian (Juang and Hong 2010)
     
     logical :: sedi_transport = .true. ! transport of momentum in sedimentation
     logical :: do_sedi_w = .false. ! transport of vertical momentum during sedimentation
@@ -193,6 +203,9 @@ module module_mp_gfdl_v2
     logical :: do_setup = .true. ! setup constants and parameters
     logical :: disp_heat = .false. ! dissipative heating due to sedimentation
     logical :: do_cond_timescale = .false. ! whether to apply a timescale to condensation
+
+    logical :: liq_ice_combine = .false. ! combine all liquid water, combine all solid water
+    logical :: snow_grauple_combine = .true. ! combine snow and graupel
     
     real :: cld_fac = 1.0 ! multiplication factor for cloud fraction
     real :: cld_min = 0.05 ! minimum cloud fraction
@@ -222,8 +235,13 @@ module module_mp_gfdl_v2
     real :: dw_land = 0.20 ! base value for subgrid deviation / variability over land
     real :: dw_ocean = 0.10 ! base value for ocean
     
+#ifdef MERRA2_aeroclimfix
+    real :: ccn_o = 66. ! ccn over ocean (cm^ - 3) from Zhou et al. 2022
+    real :: ccn_l = 159. ! ccn over land (cm^ - 3) from Zhou et al. 2022
+#else
     real :: ccn_o = 90. ! ccn over ocean (cm^ - 3)
     real :: ccn_l = 270. ! ccn over land (cm^ - 3)
+#endif
     
     real :: rthresh = 10.0e-6 ! critical cloud drop radius (micron)
     
@@ -298,9 +316,12 @@ module module_mp_gfdl_v2
     logical :: use_ccn = .false. ! must be true when prog_ccn is false
     logical :: use_ppm = .false. ! use ppm fall scheme
     logical :: use_ppm_ice = .false. ! use ppm fall scheme for cloud ice
+!    logical :: use_semi = .true. ! use Semi-Lagrangian sedimentation
+!    logical :: use_semi_ice = .false. ! use Semi-Lagrangian sedimentation for cloud ice
     logical :: mono_prof = .true. ! perform terminal fall with mono ppm scheme
     logical :: do_hail = .false. ! use hail parameters instead of graupel
     logical :: hd_icefall = .false. ! use heymsfield and donner, 1990's fall speed of cloud ice
+    logical :: gce_icefall = .false. ! use Goddard's fall speed of cloud ice
     logical :: use_xr_cloud = .false. ! use xu and randall, 1996's cloud diagnosis
     logical :: use_park_cloud = .false. ! park et al. 2016
     logical :: use_gi_cloud = .false. ! gultepe and isaac (2007, grl)
@@ -327,6 +348,23 @@ module module_mp_gfdl_v2
     ! 4: cooper, 1986
     ! 5: flecther, 1962
     
+    integer :: rewflag = 1
+    ! 1: martin et al., 1994
+    ! 2: martin et al., 1994, gfdl revision
+    ! 3: kiehl et al., 1994
+
+    integer :: reiflag = 5
+    ! 1: heymsfield and mcfarquhar, 1996
+    ! 2: donner et al., 1997
+    ! 3: fu, 2007
+    ! 4: kristjansson et al., 2000
+    ! 5: wyser, 1998
+    ! 6: Heymsfield et al.,2014  !not finished (by xb141)
+    
+    integer :: ccnflag = 1
+    ! 1: default in GFDL MP v2
+    ! 2: same as use_ccn=f in GFDL MP v1, ccn=ccn0/den
+    ! 3: same as use_ccn=t in GFDL MP v1, ccn=ccn0/densfc
     ! -----------------------------------------------------------------------
     ! namelist
     ! -----------------------------------------------------------------------
@@ -361,7 +399,8 @@ module module_mp_gfdl_v2
         ntimes, disp_heat, do_hail, use_xr_cloud, xr_a, xr_b, xr_c, tau_revp, tice_mlt, hd_icefall, &
         do_cond_timescale, mp_time, consv_checker, te_err, use_park_cloud, &
         use_gi_cloud, use_rhc_cevap, use_rhc_revap, inflag, do_warm_rain_mp, &
-        rh_thres, f_dq_p, f_dq_m, do_cld_adj
+        rh_thres, f_dq_p, f_dq_m, do_cld_adj, liq_ice_combine, snow_grauple_combine, &
+        rewflag, reiflag, ccnflag
     
 contains
 
@@ -372,11 +411,14 @@ contains
 subroutine gfdl_cld_mp_driver                                              &
             ( qv, ql, qr, qi, qs, qg, qa, qnl, qni,                        &
               pt, w, ua, va, dz, delp, gsize, dts, hs,                     &
+              land,                                                        &
               rain, snow, ice, graupel, hydrostatic,                       &
               is, ie, ks, ke, q_con, cappa, consv_te, te,                  &
+#ifdef EXT_DIAG
               prefluxr, prefluxi, prefluxs, prefluxg,                      &
               condensation, deposition, evaporation, sublimation,          &
-              last_step, do_inline_mp )
+#endif
+              rhc, last_step, do_inline_mp )
     
     implicit none
     
@@ -387,10 +429,12 @@ subroutine gfdl_cld_mp_driver                                              &
     
     integer, intent (in) :: is, ie ! physics window
     integer, intent (in) :: ks, ke ! vertical dimension
-    
+
     real, intent (in) :: dts ! physics time step
+
+    real, intent (in), dimension (is:ie, ks:ke) :: rhc
     
-    real, intent (in), dimension (is:ie) :: hs, gsize
+    real, intent (in), dimension (is:ie) :: hs, gsize, land
     
     real, intent (in), dimension (is:ie, ks:ke) :: dz
     real, intent (in), dimension (is:ie, ks:ke) :: qnl, qni
@@ -398,17 +442,23 @@ subroutine gfdl_cld_mp_driver                                              &
     real, intent (inout), dimension (is:ie, ks:ke) :: delp
     real, intent (inout), dimension (is:ie, ks:ke) :: qv, ql, qr, qi, qs, qg, qa
     real, intent (inout), dimension (is:ie, ks:ke) :: pt, ua, va, w
-    real, intent (inout), dimension (is:ie, ks:ke) :: prefluxr, prefluxi, prefluxs, prefluxg
     real, intent (inout), dimension (is:, ks:) :: q_con, cappa
-    real, intent (inout), dimension (is:ie) :: rain, snow, ice, graupel
+    real, intent (inout), dimension (is:ie, ks:ke) :: te
+#ifdef EXT_DIAG
+    real, intent (inout), dimension (is:ie, ks:ke) :: prefluxr, prefluxi, prefluxs, prefluxg
     real, intent (inout), dimension (is:ie) :: condensation, deposition
     real, intent (inout), dimension (is:ie) :: evaporation, sublimation
-    
-    real, intent (inout), dimension (is:ie, ks:ke) :: te
+#endif
+    real, intent (inout), dimension (is:ie) :: rain, snow, ice, graupel
     ! logical :: used
-    real, dimension (is:ie) :: w_var
-    real, dimension (is:ie, ks:ke) :: vt_r, vt_s, vt_g, vt_i
+!    real, dimension (is:ie) :: w_var
+!    real, dimension (is:ie, ks:ke) :: vt_r, vt_s, vt_g, vt_i
     real, dimension (is:ie, ks:ke) :: m2_rain, m2_sol
+#ifndef EXT_DIAG
+    real, dimension (is:ie, ks:ke) :: prefluxr, prefluxi, prefluxs, prefluxg
+    real, dimension (is:ie) :: condensation, deposition
+    real, dimension (is:ie) :: evaporation, sublimation
+#endif
     
     if (last_step) then
         p_min = p0_min ! final clean - up
@@ -462,9 +512,13 @@ subroutine gfdl_cld_mp_driver                                              &
     call mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, qg, &
         qa, qnl, qni, dz, is, ie, ks, ke, dts, &
         rain, snow, graupel, ice, m2_rain, m2_sol, gsize, hs, &
-        w_var, vt_r, vt_s, vt_g, vt_i, q_con, cappa, consv_te, te, &
+#ifdef oldmask
+        land, &
+#endif
+!        w_var, vt_r, vt_s, vt_g, vt_i, 
+        q_con, cappa, consv_te, te, &
         prefluxr, prefluxi, prefluxs, prefluxg, condensation, deposition, &
-        evaporation, sublimation, last_step, do_inline_mp)
+        evaporation, sublimation, rhc, last_step, do_inline_mp)
     
 end subroutine gfdl_cld_mp_driver
 
@@ -486,9 +540,13 @@ end subroutine gfdl_cld_mp_driver
 subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
         qg, qa, qnl, qni, dz, is, ie, ks, ke, dt_in, &
         rain, snow, graupel, ice, m2_rain, m2_sol, gsize, hs, &
-        w_var, vt_r, vt_s, vt_g, vt_i, q_con, cappa, consv_te, te, &
+#ifdef oldmask
+        land, &
+#endif
+!        w_var, vt_r, vt_s, vt_g, vt_i, 
+        q_con, cappa, consv_te, te, &
         prefluxr, prefluxi, prefluxs, prefluxg, condensation, deposition, &
-        evaporation, sublimation, last_step, do_inline_mp)
+        evaporation, sublimation, rhc, last_step, do_inline_mp )
     
     implicit none
     
@@ -498,8 +556,12 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
     logical, intent (in) :: do_inline_mp
     integer, intent (in) :: is, ie, ks, ke
     real, intent (in) :: dt_in
+    real, intent (in), dimension (is:ie, ks:ke) :: rhc
     real, intent (in), dimension (is:ie) :: gsize
     real, intent (in), dimension (is:ie) :: hs
+#ifdef oldmask
+    real, intent (in), dimension (is:ie) :: land
+#endif
     real, intent (in), dimension (is:ie, ks:ke) :: dz
     real, intent (in), dimension (is:ie, ks:ke) :: qnl, qni
     
@@ -512,8 +574,8 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
     real, intent (inout), dimension (is:ie) :: condensation, deposition
     real, intent (inout), dimension (is:ie) :: evaporation, sublimation
     
-    real, intent (out), dimension (is:ie) :: w_var
-    real, intent (out), dimension (is:ie, ks:ke) :: vt_r, vt_s, vt_g, vt_i
+!    real, intent (out), dimension (is:ie) :: w_var
+!    real, intent (out), dimension (is:ie, ks:ke) :: vt_r, vt_s, vt_g, vt_i
     real, intent (out), dimension (is:ie, ks:ke) :: m2_rain, m2_sol
     real, intent (out), dimension (is:ie, ks:ke) :: te
     ! local:
@@ -524,6 +586,7 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
     real, dimension (ks:ke) :: den, p1, denfac
     real, dimension (ks:ke) :: ccn, cin, c_praut, m1_rain, m1_sol, m1
     real, dimension (ks:ke) :: u0, v0, u1, v1, w1
+    real, dimension (ks:ke) :: rhcz
     
     real (kind = r8), dimension (is:ie, ks:ke) :: te_beg, te_end, tw_beg, tw_end
     real (kind = r8), dimension (is:ie, ks:ke) :: te_beg_0, te_end_0, tw_beg_0, tw_end_0
@@ -634,6 +697,8 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
             
             den (k) = - dp1 (k) / (grav * dz1 (k)) ! density of dry air
             p1 (k) = den (k) * rdgas * tz (k) ! dry air pressure
+
+            rhcz (k) = rhc (i, k)
             
             ! -----------------------------------------------------------------------
             ! for sedi_momentum transport:
@@ -703,15 +768,23 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
         ! -----------------------------------------------------------------------
         
         cpaut = c_paut * 0.104 * grav / 1.717e-5
-        
+
         if (prog_ccn) then
             do k = ks, ke
                 ! boucher and lohmann (1995)
+#ifdef oldmask
+                nl = land (i) * &
+                     (10. ** 2.24 * (0.7273 * qnl (i, k) * den (k) * 1.e9) ** 0.257) + &
+                     (1. - land (i)) * &
+                     (10. ** 2.06 * (0.7273 * qnl (i, k) * den (k) * 1.e9) ** 0.48)
+                ni = qni (i, k)
+#else
                 nl = min (1., abs (hs (i)) / (10. * grav)) * &
                      (10. ** 2.24 * (0.7273 * qnl (i, k) * den (k) * 1.e9) ** 0.257) + &
                      (1. - min (1., abs (hs (i)) / (10. * grav))) * &
                      (10. ** 2.06 * (0.7273 * qnl (i, k) * den (k) * 1.e9) ** 0.48)
                 ni = qni (i, k)
+#endif
                 ! convert # / cm^3 to # / m^3
                 ccn (k) = max (10.0, nl) * 1.e6
                 cin (k) = max (10.0, ni) * 1.e6
@@ -720,11 +793,23 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
             enddo
         else
             ! convert # / cm^3 to # / m^3
+#ifdef oldmask
+            ccn0 = (ccn_l * land (i) + ccn_o * (1. - land (i)) )* 1.e6
+#else
             ccn0 = (ccn_l * min (1., abs (hs (i)) / (10. * grav)) + &
                 ccn_o * (1. - min (1., abs (hs (i)) / (10. * grav)))) * 1.e6
+#endif
             do k = ks, ke
-                ccn (k) = ccn0 / den (k)
-                c_praut (k) = cpaut * (ccn (k) * rhor) ** (- 1. / 3.)
+                if ( ccnflag .eq. 2 ) then  ! use_ccn=f
+                    ccn (k) = ccn0 / den(k)
+                    c_praut (k) = cpaut * (ccn0 * rhor) ** (- 1. / 3.)
+                elseif ( ccnflag .eq. 3 ) then  ! use_ccn=t
+                    ccn (k) = ccn0 * rdgas * tz (ke) / p1 (ke)
+                    c_praut (k) = cpaut * (ccn (k) * rhor) ** (- 1. / 3.)
+                else  ! default
+                    ccn (k) = ccn0 / den (k)
+                    c_praut (k) = cpaut * (ccn (k) * rhor) ** (- 1. / 3.)
+                endif
             enddo
         endif
         
@@ -737,8 +822,12 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
         s_leng = sqrt (gsize (i) / 1.e5)
         t_land = dw_land * s_leng
         t_ocean = dw_ocean * s_leng
+#ifdef oldmask
+        h_var = t_land * land (i) + t_ocean * (1. - land (i))
+#else
         tmp = min (1., abs (hs (i)) / (10. * grav))
         h_var = t_land * tmp + t_ocean * (1. - tmp)
+#endif
         h_var = min (0.20, max (0.01, h_var))
         
         ! -----------------------------------------------------------------------
@@ -767,7 +856,7 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
             ! -----------------------------------------------------------------------
             
             call warm_rain (dt_rain, ks, ke, dp1, dz1, tz, qvz, qlz, qrz, qiz, qsz, &
-                qgz, den, denfac, ccn, c_praut, rh_rain, vtrz, r1, pfr, m1_rain, w1, h_var, reevap, dte (i))
+                qgz, den, denfac, ccn, c_praut, rh_rain, vtrz, r1, pfr, m1_rain, w1, h_var, reevap, rhcz, dte (i))
             
             evaporation (i) = evaporation (i) + reevap * convt
             rain (i) = rain (i) + r1 * convt
@@ -785,7 +874,7 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
             call fall_speed (ks, ke, den, qsz, qiz, qgz, qlz, tz, vtsz, vtiz, vtgz)
             
             call terminal_fall (dts, ks, ke, tz, qvz, qlz, qrz, qgz, qsz, qiz, &
-                dz1, dp1, den, vtgz, vtsz, vtiz, r1, g1, s1, i1, pfr, pfi, pfs, pfg, m1_sol, w1, dte (i))
+                dz1, dp1, den, vtgz, vtsz, vtiz, r1, g1, s1, i1, pfr, pfi, pfs, pfg, m1_sol, w1, dte (i) )
             
             rain (i) = rain (i) + r1 * convt ! from melted snow & ice that reached the ground
             snow (i) = snow (i) + s1 * convt
@@ -833,7 +922,7 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
             ! -----------------------------------------------------------------------
             
             call warm_rain (dt_rain, ks, ke, dp1, dz1, tz, qvz, qlz, qrz, qiz, qsz, &
-                qgz, den, denfac, ccn, c_praut, rh_rain, vtrz, r1, pfr, m1_rain, w1, h_var, reevap, dte (i))
+                qgz, den, denfac, ccn, c_praut, rh_rain, vtrz, r1, pfr, m1_rain, w1, h_var, reevap, rhcz, dte (i))
             
             evaporation (i) = evaporation (i) + reevap * convt
             rain (i) = rain (i) + r1 * convt
@@ -852,7 +941,7 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
             
             call icloud (ks, ke, tz, p1, qvz, qlz, qrz, qiz, qsz, qgz, dp1, den, ccn, &
                 cin, denfac, vtsz, vtgz, vtrz, qaz, rh_adj, rh_rain, dts, h_var, gsize (i), &
-                cond, dep, reevap, sub, last_step_cld)
+                cond, dep, reevap, sub, rhcz, last_step_cld)
 
             condensation (i) = condensation (i) + cond * convt
             deposition (i) = deposition (i) + dep * convt
@@ -1084,7 +1173,7 @@ end subroutine sedi_heat
 ! -----------------------------------------------------------------------
 
 subroutine warm_rain (dt, ks, ke, dp, dz, tz, qv, ql, qr, qi, qs, qg, &
-        den, denfac, ccn, c_praut, rh_rain, vtr, r1, pfr, m1_rain, w1, h_var, reevap, dte)
+        den, denfac, ccn, c_praut, rh_rain, vtr, r1, pfr, m1_rain, w1, h_var, reevap, rhcz, dte)
     
     implicit none
     
@@ -1093,6 +1182,7 @@ subroutine warm_rain (dt, ks, ke, dp, dz, tz, qv, ql, qr, qi, qs, qg, &
     real, intent (in) :: rh_rain, h_var
     real, intent (in), dimension (ks:ke) :: dp, dz, den
     real, intent (in), dimension (ks:ke) :: denfac, ccn, c_praut
+    real, intent (in), dimension (ks:ke) :: rhcz
     
     real (kind = r8), intent (inout), dimension (ks:ke) :: tz
     real, intent (inout), dimension (ks:ke) :: vtr, qv, ql, qr, qi, qs, qg, m1_rain, w1, pfr
@@ -1105,6 +1195,8 @@ subroutine warm_rain (dt, ks, ke, dp, dz, tz, qv, ql, qr, qi, qs, qg, &
     real, parameter :: normr = 25132741228.7183
     real, parameter :: thr = 1.e-8
     
+    ! for semi_lagrangian sedimension
+    real, dimension (ks:ke) :: dzc, qrc, vtrc, m1_rainc
     real, dimension (ks:ke) :: dl, dm
     real (kind = r8), dimension (ks:ke) :: te1, te2
     real, dimension (ks:ke + 1) :: ze, zt
@@ -1162,7 +1254,7 @@ subroutine warm_rain (dt, ks, ke, dp, dz, tz, qv, ql, qr, qi, qs, qg, &
         ! evaporation and accretion of rain for the first 1 / 2 time step
         ! -----------------------------------------------------------------------
         
-        call revap_racc (ks, ke, dt5, tz, qv, ql, qr, qi, qs, qg, den, denfac, rh_rain, h_var, dp, reevap)
+        call revap_racc (ks, ke, dt5, tz, qv, ql, qr, qi, qs, qg, den, denfac, rh_rain, h_var, dp, reevap, rhcz)
         
         if (do_sedi_w) then
             do k = ks, ke
@@ -1185,7 +1277,8 @@ subroutine warm_rain (dt, ks, ke, dp, dz, tz, qv, ql, qr, qi, qs, qg, &
         ! mass flux induced by falling rain
         ! -----------------------------------------------------------------------
         
-        if (use_ppm) then
+!        if (use_ppm) then
+        if ( isedi .eq. 2 ) then  ! PPM-Lagrangian sedimentation
             zt (ks) = ze (ks)
             do k = ks + 1, ke
                 zt (k) = ze (k) - dt5 * (vtr (k - 1) + vtr (k))
@@ -1196,7 +1289,20 @@ subroutine warm_rain (dt, ks, ke, dp, dz, tz, qv, ql, qr, qi, qs, qg, &
                 if (zt (k + 1) >= zt (k)) zt (k + 1) = zt (k) - dz_min
             enddo
             call lagrangian_fall_ppm (ks, ke, zs, ze, zt, dp, qr, r1, m1_rain, mono_prof)
-        else
+        elseif ( isedi .eq. 3 ) then  ! semi-Lagrangian sedimentation
+            do k = ks, ke
+                dzc (k) = - dz (ke - k + 1)
+                qrc (k) = qr (ke - k + 1) * den (ke - k + 1)
+                vtrc (k) = vtr (ke - k + 1)
+                m1_rain (k) = 0.
+                m1_rainc (k) = 0.
+            enddo
+            call semi_lagrange_sedim (ke, dzc, vtrc, qrc, r1, m1_rainc, dt, 1.E-12)
+            do k = ks, ke
+                qr (k) = qrc (ke - k + 1) / den (k)
+                m1_rain (k) = m1_rainc (ke - k + 1)  ! accumulated precipitation flux
+            enddo
+        else  ! isedi=1, time-implicit sedimentation
             call implicit_fall (dt, ks, ke, ze, vtr, dp, qr, r1, m1_rain)
         endif
         
@@ -1266,7 +1372,7 @@ subroutine warm_rain (dt, ks, ke, dp, dz, tz, qv, ql, qr, qi, qs, qg, &
         ! evaporation and accretion of rain for the remaing 1 / 2 time step
         ! -----------------------------------------------------------------------
         
-        call revap_racc (ks, ke, dt5, tz, qv, ql, qr, qi, qs, qg, den, denfac, rh_rain, h_var, dp, reevap)
+        call revap_racc (ks, ke, dt5, tz, qv, ql, qr, qi, qs, qg, den, denfac, rh_rain, h_var, dp, reevap, rhcz)
         
     endif
     
@@ -1332,7 +1438,7 @@ end subroutine warm_rain
 ! evaporation of rain
 ! -----------------------------------------------------------------------
 
-subroutine revap_racc (ks, ke, dt, tz, qv, ql, qr, qi, qs, qg, den, denfac, rh_rain, h_var, dp, reevap)
+subroutine revap_racc (ks, ke, dt, tz, qv, ql, qr, qi, qs, qg, den, denfac, rh_rain, h_var, dp, reevap, rhcz)
     
     implicit none
     
@@ -1340,6 +1446,7 @@ subroutine revap_racc (ks, ke, dt, tz, qv, ql, qr, qi, qs, qg, den, denfac, rh_r
     real, intent (in) :: dt ! time step (s)
     real, intent (in) :: rh_rain, h_var
     real, intent (in), dimension (ks:ke) :: den, denfac, dp
+    real, intent (in), dimension (ks:ke) :: rhcz
     real (kind = r8), intent (inout), dimension (ks:ke) :: tz
     real, intent (inout), dimension (ks:ke) :: qv, qr, ql, qi, qs, qg
     real, intent (out) :: reevap
@@ -1374,7 +1481,8 @@ subroutine revap_racc (ks, ke, dt, tz, qv, ql, qr, qi, qs, qg, den, denfac, rh_r
             tin = (tz (k) * cvm (k) - lv00 * ql (k)) / (1. + (qv (k) + ql (k)) * c1_vap + qr (k) * c1_liq + q_sol (k) * c1_ice)
             
             qpz = qv (k) + ql (k)
-            qsat = wqs2 (tin, den (k), dqsdt)
+!            qsat = wqs2 (tin, den (k), dqsdt)
+            qsat = wqs2_rhc (tin, den (k), rhcz (k), dqsdt)  !xb141
             dqh = max (ql (k), h_var * max (qpz, qcmin))
             dqh = min (dqh, 0.2 * qpz) ! new limiter
             dqv = qsat - qv (k) ! use this to prevent super - sat the gird box
@@ -1511,7 +1619,7 @@ end subroutine linear_prof
 
 subroutine icloud (ks, ke, tzk, p1, qvk, qlk, qrk, qik, qsk, qgk, dp1, den, &
         ccn, cin, denfac, vts, vtg, vtr, qak, rh_adj, rh_rain, dts, h_var, &
-        gsize, cond, dep, reevap, sub, last_step)
+        gsize, cond, dep, reevap, sub, rhck, last_step)
     
     implicit none
     
@@ -1522,6 +1630,7 @@ subroutine icloud (ks, ke, tzk, p1, qvk, qlk, qrk, qik, qsk, qgk, dp1, den, &
     real, intent (inout), dimension (ks:ke) :: qvk, qlk, qrk, qik, qsk, qgk, qak
     real, intent (inout), dimension (ks:ke) :: cin
     real, intent (in) :: rh_adj, rh_rain, dts, h_var, gsize
+    real, intent (in), dimension (ks:ke) :: rhck
     real, intent (out) :: cond, dep, reevap, sub
     ! local:
     real, dimension (ks:ke) :: icpk, di, qim
@@ -1962,7 +2071,7 @@ subroutine icloud (ks, ke, tzk, p1, qvk, qlk, qrk, qik, qsk, qgk, dp1, den, &
     
     call subgrid_z_proc (ks, ke, p1, den, denfac, dts, rh_adj, tzk, qvk, qlk, &
         qrk, qik, qsk, qgk, qak, dp1, h_var, rh_rain, te8, ccn, cin, gsize, &
-        cond, dep, reevap, sub, last_step)
+        cond, dep, reevap, sub, rhck, last_step)
     
 end subroutine icloud
 
@@ -1971,12 +2080,13 @@ end subroutine icloud
 ! =======================================================================
 
 subroutine subgrid_z_proc (ks, ke, p1, den, denfac, dts, rh_adj, tz, qv, ql, qr, &
-        qi, qs, qg, qa, dp1, h_var, rh_rain, te8, ccn, cin, gsize, cond, dep, reevap, sub, last_step)
+        qi, qs, qg, qa, dp1, h_var, rh_rain, te8, ccn, cin, gsize, cond, dep, reevap, sub, rhcz, last_step)
     
     implicit none
     
     integer, intent (in) :: ks, ke
     real, intent (in) :: dts, rh_adj, h_var, rh_rain, gsize
+    real, intent (in), dimension (ks:ke) :: rhcz
     real, intent (in), dimension (ks:ke) :: p1, den, denfac, ccn, dp1
     real (kind = r8), intent (in), dimension (ks:ke) :: te8
     real (kind = r8), intent (inout), dimension (ks:ke) :: tz
@@ -2088,7 +2198,8 @@ subroutine subgrid_z_proc (ks, ke, p1, den, denfac, dts, rh_adj, tz, qv, ql, qr,
         
         tin = tz (k)
         rh_tem = qpz / iqs1 (tin, den (k))
-        qsw = wqs2 (tin, den (k), dwsdt)
+!        qsw = wqs2 (tin, den (k), dwsdt)
+        qsw = wqs2_rhc (tin, den (k), rhcz (k), dwsdt)  !xb141
         dq0 = qsw - qv (k)
         if (use_rhc_cevap) then
             evap = 0.
@@ -2614,6 +2725,8 @@ subroutine terminal_fall (dtm, ks, ke, tz, qv, ql, qr, qg, qs, qi, dz, dp, &
     real :: zs = 0.
     real :: fac_imlt
     
+    ! for semi_lagrangian sedimension
+    real, dimension (ks:ke) :: dzc, m1c, qsc, vtsc, qgc, vtgc, qic, vtic
     integer :: k, k0, m
     logical :: no_fall
     
@@ -2749,10 +2862,24 @@ subroutine terminal_fall (dtm, ks, ke, tz, qv, ql, qr, qg, qs, qi, dz, dp, &
                 te1 (k) = rgrav * te1 (k) * c_air * tz (k) * dp (k)
             enddo
         endif
-        
-        if (use_ppm_ice) then
+
+!        if (use_ppm_ice) then
+        if ( isedi_ice .eq. 2 ) then  ! PPM-Lagrangian sedimentation
             call lagrangian_fall_ppm (ks, ke, zs, ze, zt, dp, qi, i1, m1_sol, mono_prof)
-        else
+        elseif ( isedi_ice .eq. 3 ) then  ! semi-Lagrangian sedimentation
+            do k = ks, ke
+                dzc (k) = - dz (ke - k + 1)
+                qic (k) = qi (ke - k + 1) * den (ke - k + 1)
+                vtic (k) = vti (ke - k + 1)
+                m1_sol (k) = 0.
+                m1c (k) = 0.
+            enddo
+            call semi_lagrange_sedim (ke, dzc, vtic, qic, i1, m1c, dtm, 1.E-12)
+            do k = ks, ke
+                qi (k) = qic (ke - k + 1) / den (k)
+                m1_sol (k) = m1c (ke - k + 1)  ! accumulated precipitation flux
+            enddo
+        else  ! isedi_ice = 1, time-implicit sedimentation
             call implicit_fall (dtm, ks, ke, ze, vti, dp, qi, i1, m1_sol)
         endif
         
@@ -2846,9 +2973,23 @@ subroutine terminal_fall (dtm, ks, ke, tz, qv, ql, qr, qg, qs, qi, dz, dp, &
             enddo
         endif
         
-        if (use_ppm) then
+!        if (use_ppm) then
+        if ( isedi .eq. 2 ) then  ! PPM-Lagrangian sedimentation
             call lagrangian_fall_ppm (ks, ke, zs, ze, zt, dp, qs, s1, m1, mono_prof)
-        else
+        elseif ( isedi .eq. 3 ) then  ! semi-Lagrangian sedimentation
+            do k = ks, ke
+                dzc (k) = - dz (ke - k + 1)
+                qsc (k) = qs (ke - k + 1) * den (ke - k + 1)
+                vtsc (k) = vts (ke - k + 1)
+                m1 (k) = 0.
+                m1c (k) = 0.
+            enddo
+            call semi_lagrange_sedim (ke, dzc, vtsc, qsc, s1, m1c, dtm, 1.E-12)
+            do k = ks, ke
+                qs (k) = qsc (ke - k + 1) / den (k)
+                m1 (k) = m1c (ke - k + 1)  ! accumulated precipitation flux
+            enddo
+        else  ! isedi=1, time-implicit sedimentation
             call implicit_fall (dtm, ks, ke, ze, vts, dp, qs, s1, m1)
         endif
         
@@ -2943,9 +3084,23 @@ subroutine terminal_fall (dtm, ks, ke, tz, qv, ql, qr, qg, qs, qi, dz, dp, &
             enddo
         endif
         
-        if (use_ppm) then
+!        if (use_ppm) then
+        if ( isedi .eq. 2 ) then  ! PPM-Lagrangian sedimentation
             call lagrangian_fall_ppm (ks, ke, zs, ze, zt, dp, qg, g1, m1, mono_prof)
-        else
+        elseif ( isedi .eq. 3 ) then  ! semi-Lagrangian sedimentation
+            do k = ks, ke
+                dzc (k) = - dz (ke - k + 1)
+                qgc (k) = qg (ke - k + 1) * den (ke - k + 1)
+                vtgc (k) = vtg (ke - k + 1)
+                m1 (k) = 0.
+                m1c (k) = 0.
+            enddo
+            call semi_lagrange_sedim (ke, dzc, vtgc, qgc, g1, m1c, dtm, 1.E-12)
+            do k = ks, ke
+                qg (k) = qgc (ke - k + 1) / den (k)
+                m1 (k) = m1c (ke - k + 1)  ! accumulated precipitation flux
+            enddo
+        else  ! isedi=1, time-implicit sedimentation
             call implicit_fall (dtm, ks, ke, ze, vtg, dp, qg, g1, m1)
         endif
         
@@ -3409,6 +3564,7 @@ subroutine fall_speed (ks, ke, den, qs, qi, qg, ql, tk, vts, vti, vtg)
     real, dimension (ks:ke) :: qden, tc, rhof
     
     real :: vi0
+    real :: y1, y2, r00, fv
     
     integer :: k
     
@@ -3444,6 +3600,18 @@ subroutine fall_speed (ks, ke, den, qs, qi, qg, ql, tk, vts, vti, vtg)
                 if (hd_icefall) then
                     ! heymsfield and donner, 1990, jas
                     vti (k) = vi_fac * 3.29 * (qi (k) * den (k)) ** 0.16
+                elseif (gce_icefall) then
+                    ! new codes from Steve's in cgs, module_mp_gsfcgce_4ice_nuwrf.f90
+                    vti (k) = 0.
+                    y1 = qi (k) * den (k) * 1000.   ! g/cm^3
+                    if (y1 .ge. 1.e-6) then
+                        y1 = qi (k)
+                        y2 = ql (k)
+                        r00 = den (k) / 1000.  !g/cm^3
+                        fv = sqrt (1.29 / ( den(k) * 1000.))
+                        call vqrqi (2, r00, fv, y1, y2, tk (k), vti (k))
+                    endif
+                    vti (k) = vti (k) * 0.01  !convert back to m/s
                 else
                     ! deng and mace, 2008, grl
                     vti (k) = (3. + log10 (qi (k) * den (k))) * (tc (k) * (aa * tc (k) + bb) + cc) + dd * tc (k) + ee
@@ -3927,6 +4095,40 @@ real function wqs2 (ta, den, dqdt)
     
 end function wqs2
 
+!xb141 >>>>>>
+! =======================================================================
+! compute the gradient of saturated specific humidity for table ii 
+! which is tuned by rhc
+! =======================================================================
+real function wqs2_rhc (ta, den, rhc, dqdt)
+    
+    implicit none
+    
+    ! pure water phase; universal dry / moist formular using air density
+    ! input "den" can be either dry or moist air density
+    
+    real, intent (in) :: ta, den, rhc
+    real, intent (out) :: dqdt
+    real :: es, ap1, tmin
+    integer :: it
+    
+    tmin = table_ice - 160.
+    
+    if (.not. tables_are_initialized) call qsmith_init
+    
+    ap1 = 10. * dim (ta, tmin) + 1.
+    ap1 = min (2621., ap1)
+    it = ap1
+    es = tablew (it) + (ap1 - it) * desw (it)
+    wqs2_rhc = es / (rvgas * ta * den) * rhc
+    it = ap1 - 0.5
+    ! finite diff, del_t = 0.1:
+    dqdt = 10. * (desw (it) + (ap1 - it) * (desw (it + 1) - desw (it))) / (rvgas * ta * den)
+    
+end function wqs2_rhc
+!xb141 <<<<<
+
+! =======================================================================
 ! =======================================================================
 ! compute the gradient of saturated specific humidity for table ii
 ! it is the same as "wqs2", but written as vector function
@@ -4681,5 +4883,779 @@ subroutine neg_adj (ks, ke, pt, dp, qv, ql, qr, qi, qs, qg, cond)
     endif
     
 end subroutine neg_adj
+
+!-------------------------------------------------------------------
+      SUBROUTINE semi_lagrange_sedim(km,dzl,wwl,rql,precip,pfsan,dt,R1)
+!-------------------------------------------------------------------
+!
+! This routine is a semi-Lagrangain forward advection for hydrometeors
+! with mass conservation and positive definite advection
+! 2nd order interpolation with monotonic piecewise parabolic method is used.
+! This routine is under assumption of decfl < 1 for semi_Lagrangian
+!
+! km     number of layers
+! dzl    depth of model layer in meter (m)
+! wwl    terminal velocity at model layer (m/s)
+! rql    dry air density*mixing ratio
+! precip precipitation at surface (mm)
+! pfsan  precipitation fluxes (mm?)
+! dt     time step (s)
+! R1     minimum q, =1.E-12 in new Thompson MP
+!
+! author: hann-ming henry juang <henry.juang@noaa.gov>
+!         implemented by song-you hong
+! reference: Juang, H.-M., and S.-Y. Hong, 2010: Forward semi-Lagrangian advection
+!         with mass conservation and positive definiteness for falling
+!         hydrometeors. *Mon.  Wea. Rev.*, *138*, 1778-1791
+!
+      implicit none
+
+      integer, intent(in) :: km
+      real, intent(in) ::  dt, R1
+      real, intent(in) :: dzl(km),wwl(km)
+      real, intent(out) :: precip
+      real, intent(inout) :: rql(km)
+      real, intent(out)  :: pfsan(km)
+      integer  k,m,kk,kb,kt
+      real  tl,tl2,qql,dql,qqd
+      real  th,th2,qqh,dqh
+      real  zsum,qsum,dim,dip,con1,fa1,fa2
+      real  allold, decfl
+      real  dz(km), ww(km), qq(km)
+      real  wi(km+1), zi(km+1), za(km+2)
+      real  qn(km)
+      real  dza(km+1), qa(km+1), qmi(km+1), qpi(km+1)
+      real  net_flx(km)
+!
+      precip = 0.0
+      qa(:) = 0.0
+      qq(:) = 0.0
+      dz(:) = dzl(:)
+      ww(:) = wwl(:)
+      do k = 1,km
+        if(rql(k).gt.R1) then 
+          qq(k) = rql(k) 
+        else 
+          ww(k) = 0.0 
+        endif
+        pfsan(k) = 0.0
+        net_flx(k) = 0.0
+      enddo
+! skip for no precipitation for all layers
+      allold = 0.0
+      do k=1,km
+        allold = allold + qq(k)
+      enddo
+      if(allold.le.0.0) then
+         return 
+      endif
+!
+! compute interface values
+      zi(1)=0.0
+      do k=1,km
+        zi(k+1) = zi(k)+dz(k)
+      enddo
+! plm is 2nd order, we can use 2nd order wi or 3rd order wi
+! 2nd order interpolation to get wi
+!      wi(1) = ww(1)
+!      wi(km+1) = ww(km)
+!      do k=2,km
+!        wi(k) = (ww(k)*dz(k-1)+ww(k-1)*dz(k))/(dz(k-1)+dz(k))
+!      enddo
+! 3rd order interpolation to get wi
+      fa1 = 9./16.
+      fa2 = 1./16.
+      wi(1) = ww(1)
+      wi(2) = 0.5*(ww(2)+ww(1))
+      do k=3,km-1
+        wi(k) = fa1*(ww(k)+ww(k-1))-fa2*(ww(k+1)+ww(k-2))
+      enddo
+      wi(km) = 0.5*(ww(km)+ww(km-1))
+      wi(km+1) = ww(km)
+
+! terminate of top of raingroup
+      do k=2,km
+        if( ww(k).eq.0.0 ) wi(k)=ww(k-1)
+      enddo
+
+! diffusivity of wi
+      con1 = 0.05
+      do k=km,1,-1
+        decfl = (wi(k+1)-wi(k))*dt/dz(k)
+        if( decfl .gt. con1 ) then
+          wi(k) = wi(k+1) - con1*dz(k)/dt
+        endif
+      enddo
+! compute arrival point
+      do k=1,km+1
+        za(k) = zi(k) - wi(k)*dt
+      enddo
+      za(km+2) = zi(km+1)
+
+      do k=1,km+1
+        dza(k) = za(k+1)-za(k)
+      enddo
+
+! computer deformation at arrival point
+      do k=1,km
+        qa(k) = qq(k)*dz(k)/dza(k)
+      enddo
+      qa(km+1) = 0.0
+
+! estimate values at arrival cell interface with monotone
+      do k=2,km
+        dip=(qa(k+1)-qa(k))/(dza(k+1)+dza(k))
+        dim=(qa(k)-qa(k-1))/(dza(k-1)+dza(k))
+        if( dip*dim.le.0.0 ) then
+          qmi(k)=qa(k)
+          qpi(k)=qa(k)
+        else
+          qpi(k)=qa(k)+0.5*(dip+dim)*dza(k)
+          qmi(k)=2.0*qa(k)-qpi(k)
+          if( qpi(k).lt.0.0 .or. qmi(k).lt.0.0 ) then
+            qpi(k) = qa(k)
+            qmi(k) = qa(k)
+          endif
+        endif
+      enddo
+      qpi(1)=qa(1)
+      qmi(1)=qa(1)
+      qmi(km+1)=qa(km+1)
+      qpi(km+1)=qa(km+1)
+
+! interpolation to regular point
+      qn = 0.0
+      kb=1
+      kt=1
+      intp : do k=1,km
+             kb=max(kb-1,1)
+             kt=max(kt-1,1)
+! find kb and kt
+             if( zi(k).ge.za(km+1) ) then
+               exit intp
+             else
+               find_kb : do kk=kb,km
+                         if( zi(k).le.za(kk+1) ) then
+                           kb = kk
+                           exit find_kb
+                         else
+                           cycle find_kb
+                         endif
+               enddo find_kb
+               find_kt : do kk=kt,km+2
+                         if( zi(k+1).le.za(kk) ) then
+                           kt = kk
+                           exit find_kt
+                         else
+                           cycle find_kt
+                         endif
+               enddo find_kt
+               kt = kt - 1
+! compute q with piecewise constant method
+               if( kt.eq.kb ) then
+                 tl=(zi(k)-za(kb))/dza(kb)
+                 th=(zi(k+1)-za(kb))/dza(kb)
+                 tl2=tl*tl
+                 th2=th*th
+                 qqd=0.5*(qpi(kb)-qmi(kb))
+                 qqh=qqd*th2+qmi(kb)*th
+                 qql=qqd*tl2+qmi(kb)*tl
+                 qn(k) = (qqh-qql)/(th-tl)
+                 net_flx(k) = (qa(k)*dza(k)-(qqh-qql))  !xb141
+               else if( kt.gt.kb ) then
+                 tl=(zi(k)-za(kb))/dza(kb)
+                 tl2=tl*tl
+                 qqd=0.5*(qpi(kb)-qmi(kb))
+                 qql=qqd*tl2+qmi(kb)*tl
+                 dql = qa(kb)-qql
+                 zsum  = (1.-tl)*dza(kb)
+                 qsum  = dql*dza(kb)
+                 if( kt-kb.gt.1 ) then
+                 do m=kb+1,kt-1
+                   zsum = zsum + dza(m)
+                   qsum = qsum + qa(m) * dza(m)
+                 enddo
+                 endif
+                 th=(zi(k+1)-za(kt))/dza(kt)
+                 th2=th*th
+                 qqd=0.5*(qpi(kt)-qmi(kt))
+                 dqh=qqd*th2+qmi(kt)*th
+                 zsum  = zsum + th*dza(kt)
+                 qsum  = qsum + dqh*dza(kt)
+                 qn(k) = qsum/zsum
+                 net_flx(k) = (qa(k)*dza(k)-qsum)  !xb141
+               endif
+               cycle intp
+             endif
+
+       enddo intp
+
+! rain out
+      sum_precip: do k=1,km
+                    if( za(k).lt.0.0 .and. za(k+1).le.0.0 ) then
+                      precip = precip + qa(k)*dza(k)
+                      cycle sum_precip
+                    else if ( za(k).lt.0.0 .and. za(k+1).gt.0.0 ) then
+                      th = (0.0-za(k))/dza(k)
+                      th2 = th*th
+                      qqd = 0.5*(qpi(k)-qmi(k))
+                      qqh = qqd*th2+qmi(k)*th
+                      precip = precip + qqh*dza(k)
+                      exit sum_precip
+                    endif
+                    exit sum_precip
+      enddo sum_precip
+      precip = precip*grav  !xb141, because convt=1./grav
+
+! calculating precipitation fluxes
+      do k=km,1,-1
+         if(k == km) then
+           pfsan(k) = net_flx(k)*grav               !xb141, because convt=1./grav
+         else
+           pfsan(k) = pfsan(k+1) + net_flx(k)*grav  !xb141, because convt=1./grav
+         end if
+      enddo
+!
+! replace the new values
+      rql(:) = max(qn(:),R1)
+
+      END SUBROUTINE semi_lagrange_sedim
+
+!     compute fall speed of cloud rain and ice
+      SUBROUTINE vqrqi(isg,r00,fv,qri,ql,tair,ww1)
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+! compute fall speed of cloud rain and ice
+! isg=1, for rain
+! isg=2, for ice
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      implicit none
+
+      integer, intent(in) :: isg
+      real, intent(in) :: r00, fv,qri,ql,tair
+      real, intent(inout) :: ww1 
+
+! LOCAL variables
+      integer :: ic 
+      real  :: y1,vr,vs,vg
+      real  :: const_vt, const_d, const_m !cpi, cmin Di
+      real  :: cmin, draimax, tnw, vrc0, vrc1, vrc2, vrc3, zrc, cpi, roqr
+      real  :: bb1, bb2,ice_fall
+      real  :: bin_factor, ftnw, ftnwmin
+      real, dimension(7) ::  aice, vice
+      data aice/1.e-6, 1.e-5, 1.e-4, 1.e-3, 0.01, 0.1, 1./
+      data vice/5,15,30,35,40,45,50/
+
+      ice_fall=0.
+      const_vt=1.49e4
+      const_d=11.9
+      const_m=1./5.38e7
+      cmin=1.E-20
+      cpi=4.*atan(1.)
+      roqr=1.  !rain density (g/cm^3)
+      tnw=0.08
+
+      draimax=0.0500 !maximum rain diameter (cm)
+      draimax=draimax**4.*roqr*cpi
+      zrc=(cpi*roqr*tnw)**0.25
+      vrc0=-26.7
+      vrc1=20600./zrc
+      vrc2=-204500./(zrc*zrc)
+      vrc3=906000./(zrc*zrc*zrc)
+
+      y1=r00*qri
+      ww1=0.
+
+      if (y1 .gt. cmin) then
+
+      if (isg.eq.1) then                             !  rain
+
+         ftnw=1.                                                       
+           if(ql.lt.cmin .and. tair .gt. t_ice)then                      
+             bin_factor=0.11*(1000.*qri)**(-1.27) + 0.98      
+             bin_factor=min(bin_factor, 1.30)       
+             ftnw=1./bin_factor**3.35                             
+             ftnwmin=r00*qri/draimax                        
+             if(qri.le.0.001) ftnw=max(ftnw,ftnwmin/tnw)   
+           endif                                               
+
+               vs=sqrt( y1 )
+               vg=sqrt( vs)
+!               vr=vrc0+vrc1*vg+vrc2*vs+vrc3*vg*vs
+               vr=vrc0+vrc1*vg/ftnw**0.25+vrc2*vs/ftnw**0.50+vrc3*vg*vs/ftnw**0.75
+               ww1=max(fv*vr, 0.e0)
+
+
+      else if (isg.eq.2) then                         ! cloud ice
+
+            y1=1.e6*r00*qri                            ! to g/m**3
+
+            if (y1 .gt. 1.e-6) then
+                  y1=y1*1.e-3
+                  bb1=const_m*y1**0.25
+                  bb2=const_d*bb1**0.5
+                  ww1=max(const_vt*bb2**1.31, 0.0)
+                  ww1=ww1*100. !cm/s
+                  if (ww1 .gt. 50.) ww1=50.               ! SLang
+            endif  !y1
+      endif  !isg
+      endif !y1
+
+      end subroutine vqrqi
+
+! =======================================================================
+! radius of cloud species diagnosis
+! (copied from cld_eff_rad.f90)
+! =======================================================================
+subroutine cloud_diagnosis_v2                                       & 
+      ( is, ie, ks, ke, lsm, p, delp, t, &
+        qw, qi, qr, qs, qg, qa, &
+        rew, rei, rer, res, reg, snowd )
+    
+    implicit none
+    
+    integer, intent (in) :: is, ie
+    integer, intent (in) :: ks, ke
+    
+    real, intent (in), dimension (is:ie) :: lsm ! land sea mask, 0: ocean, 1: land, 2: sea ice
+    real, intent (in), dimension (is:ie) :: snowd ! snow depth (mm) ; only used if rewflag=3
+    
+    real, intent (in), dimension (is:ie, ks:ke) :: delp, t, p
+    real, intent (in), dimension (is:ie, ks:ke) :: qw, qi, qr, qs, qg ! mass mixing ratio (kg / kg)
+    real, intent (in), dimension (is:ie, ks:ke) :: qa ! aerosol mixing ratio (kg / kg) ; only used if prog_ccn=.true.
+    
+    real, intent (inout), dimension (is:ie, ks:ke) :: rew, rei, rer, res, reg ! radii (micron)
+
+    ! parameters : 
+    
+    real :: qi0_rei = 0.8e-4 ! max cloud ice value (by other sources)
+    real :: qmin = 1.0e-12 ! minimum mass mixing ratio (kg / kg)
+    real :: beta = 1.22 ! defined in heymsfield and mcfarquhar, 1996
+    
+#ifdef SJ_CLD_TEST
+    real :: rewmin = 4.0, rewmax = 10.0
+    real :: reimin = 4.0, reimax = 250.0
+    real :: rermin = 5.0, rermax = 2000.0
+    real :: resmin = 5.0, resmax = 2000.0
+    real :: regmin = 5.0, regmax = 2000.0
+#else
+    real :: rewmin = 5.0, rewmax = 10.0
+    real :: reimin = 10.0, reimax = 150.0
+    real :: rermin = 0.0, rermax = 10000.0
+    real :: resmin = 0.0, resmax = 10000.0
+    real :: regmin = 0.0, regmax = 10000.0
+#endif
+    ! rewmax = 15.0, rermin = 15.0 ! Kokhanovsky 2004
+    
+    real :: betaw = 1.0
+    real :: betai = 1.0
+    real :: betar = 1.0
+    real :: betas = 1.0
+    real :: betag = 1.0
+    
+!    logical :: liq_ice_combine = .false.
+!    logical :: snow_grauple_combine = .true.
+    
+    integer :: i, k, ind
+    
+    ! local variables
+    
+    real, dimension (is:ie, ks:ke) :: qmw, qmr, qmi, qms, qmg ! mass mixing ratio (kg / kg)
+    
+    real :: dpg ! dp / g
+    real :: rho ! density (kg / m^3)
+    real :: ccnw ! cloud condensate nuclei for cloud water (cm^ - 3)
+    real :: mask
+    real :: cor
+    real :: tc0
+    real :: bw
+    
+    real :: lambdar, lambdas, lambdag
+    real :: rei_fac
+    
+    real, parameter :: n0r = 8.0e6, n0s = 3.0e6, n0g = 4.0e6 ! intercept parameters (m^ - 4) in lin et al. (1983)
+    real, parameter :: alphar = 0.8, alphas = 0.25, alphag = 0.5 ! parameters in terminal equation in lin et al., (1983)
+    real, parameter :: gammar = 17.837789, gammas = 8.2850630, gammag = 11.631769 ! gamma values as a result of different alpha
+    real, parameter :: rho_0 = 50.e-3
+    
+    real :: retab (138) = (/ &
+        0.05000, 0.05000, 0.05000, 0.05000, 0.05000, 0.05000, &
+        0.05500, 0.06000, 0.07000, 0.08000, 0.09000, 0.10000, &
+        0.20000, 0.30000, 0.40000, 0.50000, 0.60000, 0.70000, &
+        0.80000, 0.90000, 1.00000, 1.10000, 1.20000, 1.30000, &
+        1.40000, 1.50000, 1.60000, 1.80000, 2.00000, 2.20000, &
+        2.40000, 2.60000, 2.80000, 3.00000, 3.20000, 3.50000, &
+        3.80000, 4.10000, 4.40000, 4.70000, 5.00000, 5.30000, &
+        5.60000, 5.92779, 6.26422, 6.61973, 6.99539, 7.39234, &
+        7.81177, 8.25496, 8.72323, 9.21800, 9.74075, 10.2930, &
+        10.8765, 11.4929, 12.1440, 12.8317, 13.5581, 14.2319, &
+        15.0351, 15.8799, 16.7674, 17.6986, 18.6744, 19.6955, &
+        20.7623, 21.8757, 23.0364, 24.2452, 25.5034, 26.8125, &
+        27.7895, 28.6450, 29.4167, 30.1088, 30.7306, 31.2943, &
+        31.8151, 32.3077, 32.7870, 33.2657, 33.7540, 34.2601, &
+        34.7892, 35.3442, 35.9255, 36.5316, 37.1602, 37.8078, &
+        38.4720, 39.1508, 39.8442, 40.5552, 41.2912, 42.0635, &
+        42.8876, 43.7863, 44.7853, 45.9170, 47.2165, 48.7221, &
+        50.4710, 52.4980, 54.8315, 57.4898, 60.4785, 63.7898, &
+        65.5604, 71.2885, 75.4113, 79.7368, 84.2351, 88.8833, &
+        93.6658, 98.5739, 103.603, 108.752, 114.025, 119.424, &
+        124.954, 130.630, 136.457, 142.446, 148.608, 154.956, &
+        161.503, 168.262, 175.248, 182.473, 189.952, 197.699, &
+        205.728, 214.055, 222.694, 231.661, 240.971, 250.639 /)
+    
+    qmw = qw
+    qmi = qi
+    qmr = qr
+    qms = qs
+    qmg = qg
+
+    if (liq_ice_combine) then
+        do k = ks, ke
+            do i = is, ie
+#ifdef SJ_CLD_TEST
+                ! frozen condensates:
+                ! cloud ice treated as snow above freezing and graupel exists
+                if (t (i, k) > t_ice) then
+                    qms (i, k) = qmi (i, k) + qms (i, k)
+                    qmi (i, k) = 0.
+                else
+                    qmi (i, k) = qmi (i, k) + qms (i, k)
+                    if (qmi (i, k) .gt. qi0_max) then
+                        qms (i, k) = qmi (i, k) - qi0_max + qmg (i, k)
+                        qmi (i, k) = qi0_max
+                    else
+                        qms (i, k) = qmg (i, k)
+                    endif
+                    qmg (i, k) = 0. ! treating all graupel as "snow"
+                endif
+#else
+                qmw (i, k) = qmw (i, k) + qmr (i, k)
+                qmr (i, k) = 0.0
+                qmi (i, k) = qmi (i, k) + qms (i, k) + qmg (i, k)
+                qms (i, k) = 0.0
+                qmg (i, k) = 0.0
+#endif
+            enddo
+        enddo
+#ifdef SJ_CLD_TEST
+    else
+        ! treating snow as ice, graupel as snow
+        ! qmi (:, :) = qmi (:, :) + qms (:, :)
+        ! qms (:, :) = qmg (:, :)
+        ! qmg (:, :) = 0. ! treating all graupel as "snow"
+        do k = ks, ke
+            do i = is, ie
+                ! step - 1: combine cloud ice & snow
+                qmi (i, k) = qmi (i, k) + qms (i, k)
+                ! step - 2: auto - convert cloud ice if > qi0_max
+                qms (i, k) = qmi (i, k) - qi0_max
+                if (qms (i, k) .gt. 0.) then
+                    qmi (i, k) = qi0_max
+                else
+                    qms (i, k) = 0.0
+                endif
+            enddo
+        enddo
+#endif
+    endif
+    
+    if (snow_grauple_combine) then
+        do k = ks, ke
+            do i = is, ie
+                qms (i, k) = qms (i, k) + qmg (i, k)
+                qmg (i, k) = 0.0
+            enddo
+        enddo
+    endif
+    
+    ! liquid condensates:
+    ! sjl: 20180825
+#ifdef COMBINE_QR
+    do k = ks, ke
+        do i = is, ie
+            ! step - 1: combine cloud water & rain
+            qmw (i, k) = qmw (i, k) + qmr (i, k)
+            ! step - 2: auto - convert cloud wat if > ql0_max
+            qmr (i, k) = qmw (i, k) - ql0_max
+            if (qmr (i, k) .gt. 0.) then
+                qmw (i, k) = ql0_max
+            else
+                qmr (i, k) = 0.0
+            endif
+        enddo
+    enddo
+#endif
+    
+    do k = ks, ke
+        
+        do i = is, ie
+            
+            qmw (i, k) = max (qmw (i, k), 0.0)
+            qmi (i, k) = max (qmi (i, k), 0.0)
+            qmr (i, k) = max (qmr (i, k), 0.0)
+            qms (i, k) = max (qms (i, k), 0.0)
+            qmg (i, k) = max (qmg (i, k), 0.0)
+            
+            mask = min (max (lsm (i), 0.0), 2.0)
+            
+            dpg = abs (delp (i, k)) / grav
+            ! rho = p (i, k) / (rdgas * t (i, k) * (1. + zvir * qv)) ! needs qv
+            rho = p (i, k) / (rdgas * t (i, k))
+            ! use rho = dpg / delz ! needs delz
+            
+            tc0 = t (i, k) - t_ice
+            
+            if (rewflag .eq. 1) then
+                
+                ! -----------------------------------------------------------------------
+                ! cloud water (martin et al., 1994)
+                ! -----------------------------------------------------------------------
+
+                if (prog_ccn) then
+                    ! boucher and lohmann (1995)
+                    ccnw = (1.0 - abs (mask - 1.0)) * &
+                         (10. ** 2.24 * (0.7273 * qa (i, k) * rho * 1.e9) ** 0.257) + &
+                         abs (mask - 1.0) * &
+                         (10. ** 2.06 * (0.7273 * qa (i, k) * rho * 1.e9) ** 0.48)
+                else
+#ifndef MARTIN_CCN
+                    ccnw = ccn_o * abs (mask - 1.0) + ccn_l * (1.0 - abs (mask - 1.0))
+#else
+                    ccnw = 0.80 * (- 1.15e-3 * (ccn_o ** 2) + 0.963 * ccn_o + 5.30) * abs (mask - 1.0) + &
+                        0.67 * (- 2.10e-4 * (ccn_l ** 2) + 0.568 * ccn_l - 27.9) * (1.0 - abs (mask - 1.0))
+#endif
+                endif
+                
+                if (qmw (i, k) .gt. qmin) then
+                    rew (i, k) = exp (1.0 / 3.0 * log ((3.0 * qmw (i, k) * rho) / (4.0 * pi * rhow * ccnw))) * 1.0e4
+                    rew (i, k) = max (rewmin, min (rewmax, rew (i, k)))
+                else
+                    rew (i, k) = rewmin
+                endif
+                
+            endif
+            
+            if (rewflag .eq. 2) then
+                
+                ! -----------------------------------------------------------------------
+                ! cloud water (martin et al., 1994, gfdl revision)
+                ! -----------------------------------------------------------------------
+                
+                if (prog_ccn) then
+                    ! boucher and lohmann (1995)
+                    ccnw = (1.0 - abs (mask - 1.0)) * &
+                         (10. ** 2.24 * (0.7273 * qa (i, k) * rho * 1.e9) ** 0.257) + &
+                         abs (mask - 1.0) * &
+                         (10. ** 2.06 * (0.7273 * qa (i, k) * rho * 1.e9) ** 0.48)
+                else
+                    ccnw = 1.077 * ccn_o * abs (mask - 1.0) + 1.143 * ccn_l * (1.0 - abs (mask - 1.0))
+                endif
+                
+                if (qmw (i, k) .gt. qmin) then
+                    rew (i, k) = exp (1.0 / 3.0 * log ((3.0 * qmw (i, k) * rho) / (4.0 * pi * rhow * ccnw))) * 1.0e4
+                    rew (i, k) = max (rewmin, min (rewmax, rew (i, k)))
+                else
+                    rew (i, k) = rewmin
+                endif
+                
+            endif
+            
+            if (rewflag .eq. 3) then
+                
+                ! -----------------------------------------------------------------------
+                ! cloud water (kiehl et al., 1994)
+                ! -----------------------------------------------------------------------
+                
+                if (qmw (i, k) .gt. qmin) then
+                    rew (i, k) = 14.0 * abs (mask - 1.0) + &
+                         (8.0 + (14.0 - 8.0) * min (1.0, max (0.0, - tc0 / 30.0))) * (1.0 - abs (mask - 1.0))
+                    rew (i, k) = rew (i, k) + (14.0 - rew (i, k)) * min (1.0, max (0.0, snowd (i) / 1000.0))
+                    rew (i, k) = max (rewmin, min (rewmax, rew (i, k)))
+                else
+                    rew (i, k) = rewmin
+                endif
+                
+            endif
+            
+            if (reiflag .eq. 1) then
+                
+                ! -----------------------------------------------------------------------
+                ! cloud ice (heymsfield and mcfarquhar, 1996)
+                ! -----------------------------------------------------------------------
+                
+                if (qmi (i, k) .gt. qmin) then
+#ifdef SJ_CLD_TEST
+                    rei_fac = log (1.0e3 * min (qi0_rei, qmi (i, k)) * rho)
+#else
+                    rei_fac = log (1.0e3 * qmi (i, k) * rho)
+#endif
+                    if (tc0 .lt. - 50) then
+                        rei (i, k) = beta / 9.917 * exp (0.109 * rei_fac) * 1.0e3
+                    elseif (tc0 .lt. - 40) then
+                        rei (i, k) = beta / 9.337 * exp (0.080 * rei_fac) * 1.0e3
+                    elseif (tc0 .lt. - 30) then
+                        rei (i, k) = beta / 9.208 * exp (0.055 * rei_fac) * 1.0e3
+                    else
+                        rei (i, k) = beta / 9.387 * exp (0.031 * rei_fac) * 1.0e3
+                    endif
+                    rei (i, k) = max (reimin, min (reimax, rei (i, k)))
+                else
+                    rei (i, k) = reimin
+                endif
+                
+            endif
+            
+            if (reiflag .eq. 2) then
+                
+                ! -----------------------------------------------------------------------
+                ! cloud ice (donner et al., 1997)
+                ! -----------------------------------------------------------------------
+                
+                if (qmi (i, k) .gt. qmin) then
+                    if (tc0 .le. - 55) then
+                        rei (i, k) = 15.41627
+                    elseif (tc0 .le. - 50) then
+                        rei (i, k) = 16.60895
+                    elseif (tc0 .le. - 45) then
+                        rei (i, k) = 32.89967
+                    elseif (tc0 .le. - 40) then
+                        rei (i, k) = 35.29989
+                    elseif (tc0 .le. - 35) then
+                        rei (i, k) = 55.65818
+                    elseif (tc0 .le. - 30) then
+                        rei (i, k) = 85.19071
+                    elseif (tc0 .le. - 25) then
+                        rei (i, k) = 72.35392
+                    else
+                        rei (i, k) = 92.46298
+                    endif
+                    rei (i, k) = max (reimin, min (reimax, rei (i, k)))
+                else
+                    rei (i, k) = reimin
+                endif
+                
+            endif
+            
+            if (reiflag .eq. 3) then
+                
+                ! -----------------------------------------------------------------------
+                ! cloud ice (fu, 2007)
+                ! -----------------------------------------------------------------------
+                
+                if (qmi (i, k) .gt. qmin) then
+#ifdef SJ_CLD_TEST
+                    ! use fu2007 form below - 10 c
+                    if (tc0 > - 10) then
+                        ! tc = - 10, rei = 40.6
+                        rei (i, k) = 100.0 + tc0 * 5.94
+                    else
+                        rei (i, k) = 47.05 + tc0 * (0.6624 + 0.001741 * tc0)
+                    endif
+                    ! rei (i, k) = max (reimin, min (reimax, rei (i, k)))
+                    rei (i, k) = max (reimin, rei (i, k))
+#else
+                    rei (i, k) = 47.05 + tc0 * (0.6624 + 0.001741 * tc0)
+                    rei (i, k) = max (reimin, min (reimax, rei (i, k)))
+#endif
+                else
+                    rei (i, k) = reimin
+                endif
+                
+            endif
+            
+            if (reiflag .eq. 4) then
+                
+                ! -----------------------------------------------------------------------
+                ! cloud ice (kristjansson et al., 2000)
+                ! -----------------------------------------------------------------------
+                
+                if (qmi (i, k) .gt. qmin) then
+                    ind = min (max (int (t (i, k) - 136.0), 44), 138 - 1)
+                    cor = t (i, k) - int (t (i, k))
+                    rei (i, k) = retab (ind) * (1. - cor) + retab (ind + 1) * cor
+                    rei (i, k) = max (reimin, min (reimax, rei (i, k)))
+                else
+                    rei (i, k) = reimin
+                endif
+                
+            endif
+            
+            if (reiflag .eq. 5) then
+                
+                ! -----------------------------------------------------------------------
+                ! cloud ice (wyser, 1998)
+                ! -----------------------------------------------------------------------
+                
+                if (qmi (i, k) .gt. qmin) then
+                    bw = - 2. + 1.e-3 * log10 (rho * qmi (i, k) / rho_0) * max (0.0, - tc0) ** 1.5
+                    rei (i, k) = 377.4 + bw * (203.3 + bw * (37.91 + 2.3696 * bw))
+                    rei (i, k) = max (reimin, min (reimax, rei (i, k)))
+                else
+                    rei (i, k) = reimin
+                endif
+                
+            endif
+            
+            if (reiflag .eq. 6) then
+
+                ! -----------------------------------------------------------------------
+                ! cloud ice (Heymsfield et al., 2014)
+                ! -----------------------------------------------------------------------
+
+                if (qmi (i, k) .gt. qmin) then
+                    if ( tc0 >= -56 .and. tc0 < 0 ) then
+                       rei (i, k) = 308.4 * exp ( 0.0152 * tc0 )
+                    elseif ( tc0 >= -71 .and. tc0 < -56 ) then
+                       rei (i, k) = 9.1744e+4 * exp ( 0.117 * tc0 )
+                    elseif ( tc0 >= -85 .and. tc0 < -71 ) then
+                       rei (i, k) = 83.3 * exp ( 0.0184 * tc0 )
+                    endif
+                    rei (i, k) = max (reimin, min (reimax, rei (i, k)))
+                else
+                    rei (i, k) = reimin
+                endif
+
+            endif
+
+            ! -----------------------------------------------------------------------
+            ! rain (lin et al., 1983)
+            ! -----------------------------------------------------------------------
+            
+            if (qmr (i, k) .gt. qmin) then
+                lambdar = exp (0.25 * log (pi * rhor * n0r / qmr (i, k) / rho))
+                rer (i, k) = 0.5 * exp (log (gammar / 6) / alphar) / lambdar * 1.0e6
+                rer (i, k) = max (rermin, min (rermax, rer (i, k)))
+            else
+                rer (i, k) = rermin
+            endif
+            
+            ! -----------------------------------------------------------------------
+            ! snow (lin et al., 1983)
+            ! -----------------------------------------------------------------------
+            
+            if (qms (i, k) .gt. qmin) then
+                lambdas = exp (0.25 * log (pi * rhos * n0s / qms (i, k) / rho))
+                res (i, k) = 0.5 * exp (log (gammas / 6) / alphas) / lambdas * 1.0e6
+                res (i, k) = max (resmin, min (resmax, res (i, k)))
+            else
+                res (i, k) = resmin
+            endif
+            
+            ! -----------------------------------------------------------------------
+            ! graupel (lin et al., 1983)
+            ! -----------------------------------------------------------------------
+            
+            if (qmg (i, k) .gt. qmin) then
+                lambdag = exp (0.25 * log (pi * rhog * n0g / qmg (i, k) / rho))
+                reg (i, k) = 0.5 * exp (log (gammag / 6) / alphag) / lambdag * 1.0e6
+                reg (i, k) = max (regmin, min (regmax, reg (i, k)))
+            else
+                reg (i, k) = regmin
+            endif
+            
+        enddo
+        
+    enddo
+    
+end subroutine cloud_diagnosis_v2
 
 end module module_mp_gfdl_v2
