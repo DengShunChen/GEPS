@@ -201,7 +201,7 @@ module module_mp_gfdl_v2
     logical :: rad_snow = .true. ! consider snow in cloud fraciton calculation
     logical :: rad_graupel = .true. ! consider graupel in cloud fraction calculation
     logical :: rad_rain = .true. ! consider rain in cloud fraction calculation
-    logical :: fix_negative = .false. ! fix negative water species
+    logical :: fix_negative = .true. ! fix negative water species
     logical :: do_setup = .true. ! setup constants and parameters
     logical :: disp_heat = .false. ! dissipative heating due to sedimentation
     logical :: do_cond_timescale = .false. ! whether to apply a timescale to condensation
@@ -415,8 +415,9 @@ subroutine gfdl_cld_mp_driver                                              &
               pt, w, ua, va, dz, delp, gsize, dts, hs,                     &
               land,                                                        &
               rain, snow, ice, graupel, hydrostatic,                       &
-              is, ie, ks, ke, q_con, cappa, consv_te, te,                  &
+              is, ie, ks, ke, consv_te,                                    &
 #ifdef EXT_DIAG
+              q_con, cappa, te,                                            &
               prefluxr, prefluxi, prefluxs, prefluxg,                      &
               condensation, deposition, evaporation, sublimation,          &
 #endif
@@ -444,9 +445,8 @@ subroutine gfdl_cld_mp_driver                                              &
     real, intent (inout), dimension (is:ie, ks:ke) :: delp
     real, intent (inout), dimension (is:ie, ks:ke) :: qv, ql, qr, qi, qs, qg, qa
     real, intent (inout), dimension (is:ie, ks:ke) :: pt, ua, va, w
-    real, intent (inout), dimension (is:, ks:) :: q_con, cappa
-    real, intent (inout), dimension (is:ie, ks:ke) :: te
 #ifdef EXT_DIAG
+    real, intent (inout), dimension (is:ie, ks:ke) :: q_con, cappa, te
     real, intent (inout), dimension (is:ie, ks:ke) :: prefluxr, prefluxi, prefluxs, prefluxg
     real, intent (inout), dimension (is:ie) :: condensation, deposition
     real, intent (inout), dimension (is:ie) :: evaporation, sublimation
@@ -457,9 +457,22 @@ subroutine gfdl_cld_mp_driver                                              &
 !    real, dimension (is:ie, ks:ke) :: vt_r, vt_s, vt_g, vt_i
     real, dimension (is:ie, ks:ke) :: m2_rain, m2_sol
 #ifndef EXT_DIAG
+    real, dimension (is:ie, ks:ke) :: q_con, cappa, te
     real, dimension (is:ie, ks:ke) :: prefluxr, prefluxi, prefluxs, prefluxg
     real, dimension (is:ie) :: condensation, deposition
     real, dimension (is:ie) :: evaporation, sublimation
+
+    q_con = 0.
+    cappa = 0.
+    te = 0.
+    prefluxr = 0.
+    prefluxi = 0.
+    prefluxs = 0.
+    prefluxg = 0.
+    condensation = 0.
+    deposition = 0.
+    evaporation = 0.
+    sublimation = 0.
 #endif
     
     if (last_step) then
@@ -1039,6 +1052,17 @@ subroutine mpdrv (hydrostatic, ua, va, w, delp, pt, qv, ql, qr, qi, qs, &
             qiz (k) = qiz (k) * con_r8
             qsz (k) = qsz (k) * con_r8
             qgz (k) = qgz (k) * con_r8
+        enddo
+
+!xb141>>>
+        ! -----------------------------------------------------------------------
+        ! fix all negative water species
+        ! -----------------------------------------------------------------------
+        if (fix_negative) &
+            call neg_adj (ks, ke, tz, dp1, qvz, qlz, qrz, qiz, qsz, qgz, cond)
+!xb141<<<
+
+        do k = ks, ke
             ! all are moist mixing ratios at this point on:
             qv (i, k) = qvz (k)
             ql (i, k) = qlz (k)
