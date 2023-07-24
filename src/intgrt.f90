@@ -1479,7 +1479,7 @@
               ntag=ntag+1
               call mpe_send_key(keydoit,ntag,istat)
             else
-             grbid=233  ! 231 outflds    233 mfc
+             grbid=233  
  133                      format( A  ,A ,I10.10 ,A , i4.4 ,A      )
              write(grbfile,133 )trim(ifilout_grb),'/GFS_',idtg/100 ,'_',itau,'.grb2'
              if(myrank==0) print*,'OutFileName= ',trim(grbfile)
@@ -1781,6 +1781,30 @@
 !          endif
 !        endif
         endif
+
+        if(  mod( itau , 1 ) == 0  )then
+        if(do_sit)then
+!         output sit var. at "outsitmean" interval
+          if(outsitmean .gt. 0. ) then
+             if(  mod( itau , NINT(outsitmean) ) == 0  )then 
+               if(myrank .eq. 0) print *,'outsitmean at tau=',itau
+               call writesitmean(nx,my,my_max,lkvl,ifilout,itau,idtg,ggdef)
+             endif
+          endif
+          call dtgfix12(idtg,idtg_temp,itau-1)
+          ibeforeyymm=idtg_temp/1000000
+          call dtgfix12(idtg,idtg_temp,itau)
+          icurrentyymm=idtg_temp/1000000
+          lnewyymm=icurrentyymm/=ibeforeyymm
+          if(myrank .eq. 0) then
+            print *,'ibeforeyymm=',ibeforeyymm,'icurrentyymm=',icurrentyymm &
+                   ,'lnewyymm=',lnewyymm
+          endif
+          if( lnewyymm ) then
+            call outsitmon(nx,my,my_max,lkvl,ifilout,itau,idtg,ggdef)
+          endif
+        endif ! (do_sit)
+        endif
 !
 !       output flux at 24 hour interval
 !
@@ -1797,39 +1821,6 @@
           call out24(nx,my,my_max,hf24,qf24,ss24,rs24,asol24,olr24,rain24,dt24 &
                   ,ifilout,glob,itau,idtg,ggdef,flash24)
 #endif
-          if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. (dailyClm_option.ge.1)) then
-            call outtseadiffFCT24(nx,my,my_max,dt24,ifilout,itau,idtg,ggdef)
-          endif
-
-          if(do_sit)then
-!           output sit var. at "outsitmean" interval
-            if(outsitmean .gt. 0. ) then
-!              dtaup = mod(tau+0.001, outsitmean)
-!              if( dtaup .lt. dtx_tau ) then
-               if(  mod( itau , NINT(outsitmean) ) == 0  )then 
-                 if(myrank .eq. 0) print *,'outsitmean at tau=',itau
-                 call writesitmean(nx,my,my_max,lkvl,ifilout,itau,idtg,ggdef)
-               endif
-            endif
-            if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. (dailyClm_option.ge.1)) then
-              call outtseadiffSIT24(nx,my,my_max,ratioSIT,dtsit24,ifilout,itau,idtg,ggdef)
-            endif
-            if(loutsit24)then
-              call outsit24(nx,my,my_max,lkvl,ifilout,itau,idtg,ggdef)
-            endif
-            call dtgfix12(idtg,idtg_temp,itau-1)
-            ibeforeyymm=idtg_temp/1000000
-            call dtgfix12(idtg,idtg_temp,itau)
-            icurrentyymm=idtg_temp/1000000
-            lnewyymm=icurrentyymm/=ibeforeyymm
-            if(myrank .eq. 0) then
-              print *,'ibeforeyymm=',ibeforeyymm,'icurrentyymm=',icurrentyymm &
-                     ,'lnewyymm=',lnewyymm
-            endif
-            if( lnewyymm ) then
-              call outsitmon(nx,my,my_max,lkvl,ifilout,itau,idtg,ggdef)
-            endif
-          endif ! (do_sit)
 !
 !         zero set arrays
 !
@@ -1851,11 +1842,13 @@
         endif ! (  mod( itau , 24 ) == 0  )
 
 !
-        if (dosppt .and.  dospptout .and. mod( itau , 1 ) == 0 ) then
-           call spptout(tau)
-        endif
-        if (doskeb .and.  doskebout .and. mod( itau , 1 ) == 0 ) then
-           call skebout(tau)
+        if( mod( itau , 1 ) == 0 )then
+          if (dosppt .and.  dospptout  ) then
+             call spptout(tau)
+          endif
+          if (doskeb .and.  doskebout  ) then
+             call skebout(tau)
+          endif
         endif
 
         if(do_sit .AND. lgodas .AND. ldailysst) then

@@ -4,7 +4,7 @@
       use rank
       use mpe
       use index
-      use const,              only:RTYPE,kflag
+      use const,              only:RTYPE,kflag,outdms
       use mod_sitgrid
       use mod_sit_control,    only:outsitlev
 
@@ -33,7 +33,9 @@
         call unify_reduceintp(nx,my,my_max,globp,wk1)
         call split(nx,my,lenc,ifilout,ncnt,wk1,pout,ihdg,ihdg2)
    10 continue
+      if(outdms.gt.0) then
       if(myrank .lt. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+      endif
 
       ncnt=0
       do 20 k = 0, outsitlev+1
@@ -43,7 +45,9 @@
         call unify_reduceintp(nx,my,my_max,globp,wk1)
         call split(nx,my,lenc,ifilout,ncnt,wk1,pout,ihdg,ihdg2)
    20 continue
+      if(outdms.gt.0) then
       if(myrank .lt. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+      endif
 
   
       end subroutine sitout
@@ -165,7 +169,7 @@
       use rank
       use mpe
       use index
-      use const,           only:RTYPE,kflag
+      use const,           only:RTYPE,kflag,outdms
       use mod_sitgrid,     only:sitwttau,sitwstau,sitwutau,sitwvtau &
                                ,dtsittau
       use mod_sit_control, only: xmissing,outsitlev
@@ -200,7 +204,9 @@
         call split(nx,my,lenc,ifilout,ncnt,wk1,pout,ihdg,ihdg2)
    10 continue
 
+      if(outdms.gt.0)then
       if(myrank .lt. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+      endif
 
       sitwttau=0.
       dtsittau=0.
@@ -215,11 +221,11 @@
       use rank
       use mpe
       use index
-      use const,          only: RTYPE,kflag
+      use const,          only: RTYPE,kflag,outgrb2,outdms
       use mod_sitgrid,    only: sitwt24,sitws24,sitwu24,sitwv24 &
                                ,dtsit24,wtfn0,wsfn0,obswt,sitwt
       use mod_sit_control,only: xmissing,outsitlev
-
+      use mod_grb2_param,only: wrt_grb2
       implicit none
 
       integer nx,my,my_max,lkvl,itau
@@ -263,10 +269,12 @@
         call syslbl (lrec,idtg,itau,ggdef,ihdg)
         call unify_reduceintp(nx,my,my_max,tm1,wk1)
         call split(nx,my,lenc,ifilout,ncnt,wk1,pout,ihdg,ihdg2)
-
+        if(outgrb2==1.and.myrank==0)call wrt_grb2(itau,10,3,0,2,168,0,float(k+1),wk1)
 !        call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,glob,istat)
    10 continue
-      if(myrank .lt. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat) 
+      if(outdms.gt.0)then
+      if(myrank .lt. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+      endif
      
       sitwt24=0.
       wtfn0=0.
@@ -282,7 +290,7 @@
       use rank
       use mpe
       use index
-      use const,              only: RTYPE,kflag
+      use const,              only: RTYPE,kflag,outdms
       use mod_sitgrid,        only: dtsitmon,wtfn,wtfns,wsfn,wsfns
       use mod_sit_control,    only: xmissing,outsitlev
   
@@ -312,12 +320,15 @@
         call unify_reduceintp(nx,my,my_max,glob2d,wk1) 
         call split(nx,my,lenc,ifilout,ncnt,wk1,pout,ihdg,ihdg2)
    10 continue
-      if(myrank .lt. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat) 
+      if(outdms.gt.0) then
+      if(myrank .lt. ncnt) call dmswrit_split(nx,my,ihdg2,lenc,kflag,ifilout,pout,istat)
+      endif
 
         write( lrec, '(i3.3,a3)' ) k,'TFS'
         call syslbl (lrec,idtg,itau,ggdef,ihdg)
         glob2d(:,:)=wtfns(:,:)/dtsitmon
         call unify_reduceintp(nx,my,my_max,glob2d,wk1)
+        if(outdms.gt.0) &
         call dmswrit(nx,my,ihdg,lenc,kflag,ifilout,wk1,istat)
 
 
@@ -957,7 +968,7 @@
 
       use mpe
       use index
-      use const,             only: kflag,RTYPE
+      use const,             only: kflag,RTYPE,outdms
       use mod_sitgrid,       only: tseadiffSIT24
 
       implicit none
@@ -986,11 +997,13 @@
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       call syslbl ('w0002f',idtg,itau,ggdef,ihdg)
+      if(outdms.gt.0) &
       call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
       tseadiffSIT24=0.
 
       call unify_reduceintp(nx,my,my_max,wrk2,glob)
       call syslbl ('w00002',idtg,itau,ggdef,ihdg)
+      if(outdms.gt.0) &
       call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
 
       END SUBROUTINE outtseadiffSIT24

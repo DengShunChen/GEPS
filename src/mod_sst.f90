@@ -813,7 +813,7 @@
 
       use index 
       use mpe
-      use const, only: kflag,RTYPE
+      use const, only: kflag,RTYPE,outdms
 
       implicit none
 
@@ -839,6 +839,7 @@
       enddo
       call unify_reduceintp(nx,my,my_max,wrk,glob)
       call syslbl ('w0001f',idtg,itau,ggdef,ihdg)
+      if(outdms.gt.0) &
       call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
       tseadiffFCT24=0.
 
@@ -1785,7 +1786,7 @@
          ihy2=ihy1+1
          CALL chlen (ifilin_nc,80,lnc)
          WRITE (fn(1), '(A,A11,i4)') ifilin_nc(1:lnc),'/dailygodas',ihy0
-         WRITE (fn(2), '(A,A11,i4)') ifilin_nc(1:lnc),'/dailygodas',ihy1
+         WRITE (fn(2), '(A,A11,i4)') ifilin_nc(1:lnc),'/dailygodas',yrori !ihy1
          WRITE (fn(3), '(A,A11,i4)') ifilin_nc(1:lnc),'/dailygodas',ihy2
 !ps         WRITE (fn(1), '("dailygodas",i4)') ihy0
 !ps         WRITE (fn(2), '("dailygodas",i4)') ihy1
@@ -1954,57 +1955,57 @@
            ALLOCATE (timevals1(nts1))
            CALL IO_GET_VAR_DOUBLE(gpnc1%file_id, io_var_id, timevals1)
            tsID=1
-           DO WHILE ( (ydate.GT.INT(timevals1(tsID))).AND.(tsID.LE.nts1) )
+           DO WHILE ( (ydate.GT.INT(timevals1(tsID))).AND.(tsID.LT.nts1) )
              tsID=tsID+1
            ENDDO
            if(myrank .eq. 0) print*,"tsID=",tsID,",nts1=",nts1
-           IF ( tsID .gt. nts1 ) THEN
-             INQUIRE (file=fn(3), exist=lex2)
-             IF ( .NOT. lex2 ) THEN
-               WRITE (message_text,*) 'Could not open file <',fn(3),'>'
-               WRITE(nerr,*) message_text
-               WRITE(nerr,*) 'read_godas_3days fn3 ', 'run terminated.'
-               istat=-1
-             ELSE
-               CALL IO_open (fn(3), gpnc2, IO_READ)
-               CALL IO_INQ_DIMID (gpnc2%file_id, 'time', ndimid2)
-               CALL IO_INQ_DIMLEN (gpnc2%file_id, ndimid2, nts2)
-               IF ( nts2 .lt. 1 ) THEN
-                 WRITE (message_text,*) 'File <',fn(3),'>'
-                 WRITE (nerr,*) message_text
-                 WRITE (nerr,*) 'read_dailygodas:','To few time steps<1'
-                 istat=-1
-               ELSE
-                 ALLOCATE (timevals2(nts2))
-                 CALL IO_INQ_VARID (gpnc2%file_id, 'time', io_var_id)
-                 CALL IO_GET_VAR_DOUBLE(gpnc2%file_id, io_var_id, timevals2)
-                 tsID=1
-                 DO WHILE ( (ydate.GT.INT(timevals2(tsID))).AND.(tsID.LE.nts2) )
-                   tsID=tsID+1
-                 ENDDO
-                 IF ( tsID .gt. nts2 ) THEN
-                   WRITE(nerr,*) 'read_dailygodas', 'Date not found'
-                   istat=-1
-                 ELSE
-                   IF ( lwarning_msg.GE.1 ) THEN
-                     WRITE (nerr,*) 'read_godas_3days: timevals2_date=',timevals2(tsID)
-                   ENDIF  
-                   tsID_godas(2)=tsID
-                   files_godas(2)=3
-                   nts_godas(2)=nts2
-                 ENDIF
-               ENDIF
-               CALL IO_close(gpnc2)
-               IF (ALLOCATED(timevals2)) DEALLOCATE(timevals2)
-             ENDIF
-           ELSE
+!           IF ( tsID .gt. nts1 ) THEN
+!             INQUIRE (file=fn(3), exist=lex2)
+!             IF ( .NOT. lex2 ) THEN
+!               WRITE (message_text,*) 'Could not open file <',fn(3),'>'
+!               WRITE(nerr,*) message_text
+!               WRITE(nerr,*) 'read_godas_3days fn3 ', 'run terminated.'
+!               istat=-1
+!             ELSE
+!               CALL IO_open (fn(3), gpnc2, IO_READ)
+!               CALL IO_INQ_DIMID (gpnc2%file_id, 'time', ndimid2)
+!               CALL IO_INQ_DIMLEN (gpnc2%file_id, ndimid2, nts2)
+!               IF ( nts2 .lt. 1 ) THEN
+!                 WRITE (message_text,*) 'File <',fn(3),'>'
+!                 WRITE (nerr,*) message_text
+!                 WRITE (nerr,*) 'read_dailygodas:','To few time steps<1'
+!                 istat=-1
+!               ELSE
+!                 ALLOCATE (timevals2(nts2))
+!                 CALL IO_INQ_VARID (gpnc2%file_id, 'time', io_var_id)
+!                 CALL IO_GET_VAR_DOUBLE(gpnc2%file_id, io_var_id, timevals2)
+!                 tsID=1
+!                 DO WHILE ( (ydate.GT.INT(timevals2(tsID))).AND.(tsID.LE.nts2) )
+!                   tsID=tsID+1
+!                 ENDDO
+!                 IF ( tsID .gt. nts2 ) THEN
+!                   WRITE(nerr,*) 'read_dailygodas', 'Date not found'
+!                   istat=-1
+!                 ELSE
+!                   IF ( lwarning_msg.GE.1 ) THEN
+!                     WRITE (nerr,*) 'read_godas_3days: timevals2_date=',timevals2(tsID)
+!                   ENDIF  
+!                   tsID_godas(2)=tsID
+!                   files_godas(2)=3
+!                   nts_godas(2)=nts2
+!                 ENDIF
+!               ENDIF
+!               CALL IO_close(gpnc2)
+!               IF (ALLOCATED(timevals2)) DEALLOCATE(timevals2)
+!             ENDIF
+!           ELSE
              tsID_godas(2)=tsID
              files_godas(2)=2
              nts_godas(2)=nts1
              IF ( lwarning_msg.GE.1 ) THEN
                WRITE (nerr,*) 'read_godas_3days: timevals1_date=',timevals1(tsID)
              ENDIF
-           ENDIF
+!           ENDIF
          ENDIF
          CALL IO_close(gpnc1)
          IF (ALLOCATED(timevals1)) DEALLOCATE(timevals1)
@@ -2055,8 +2056,8 @@
        IF (dayID .EQ. DAY_PLUS1) THEN
        ! read Day+1 data
          IF (tsID_godas(2).EQ.nts_godas(2)) THEN
-           files_godas(3)=files_godas(2)+1
-           tsID_godas(3)=1                   !first record of file 3
+           files_godas(3)=files_godas(2)!+1
+           tsID_godas(3)=nts_godas(2)         !first record of file 3
          ELSE
            files_godas(3)=files_godas(2)
            tsID_godas(3)=tsID_godas(2)+1
@@ -2064,8 +2065,8 @@
        ELSEIF (dayID .EQ. DAY_MINUS1) THEN
        ! read Day-1 data
          IF (tsID_godas(2).EQ.1) THEN
-           files_godas(1)=files_godas(2)-1
-           tsID_godas(1)=LAST_RECORD                !last record of file 1 !!!????? NEED to CODE
+           files_godas(1)=files_godas(2)!-1
+           tsID_godas(1)=1 !LAST_RECORD     !last record of file 
          ELSE
            files_godas(1)=files_godas(2)
            tsID_godas(1)=tsID_godas(2)-1

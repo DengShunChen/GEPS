@@ -14,8 +14,8 @@
       real      rad
       real      dta
 
-      real(kind=RTYPE)      vordiss(levp,2,jtrun,jtmax),divdiss(levp,2,jtrun,jtmax), &
-                diss_est(nxp,lev,my_max)
+      real(kind=RTYPE)      vordiss(levp,2,jtrun,jtmax),divdiss(levp,2,jtrun,jtmax)!, &
+!                diss_est(nxp,lev,my_max)
 
       real(kind=RTYPE) vornow(levp,2,jtrun,jtmax),divnow(levp,2,jtrun,jtmax),  &
                        temnow(levp,2,jtrun,jtmax),trefs(levp,2,jtrun,jtmax),   &
@@ -576,13 +576,14 @@
 !
       use index
       use mpe
+      use const ,only:RTYPE
 !
       implicit  none
 
 !
       integer   jtrun,jtmax,lev,ncld
 
-      real      dissest(lev,2,jtrun,jtmax)
+      real(kind=RTYPE)      dissest(lev,2,jtrun,jtmax)
 !
       real      wvn_top
 

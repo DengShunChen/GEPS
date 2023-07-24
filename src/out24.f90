@@ -2,9 +2,15 @@
                       ,rain24,dt24,ifilout,glob,itau,idtg,ggdef,flash24)
 !
       use index
+      use rank
       use mpe
       use mod_grb2_param  !for write grib2 data
-      use const ,only:outdms ,outgrb2 ,ifilout_grb, RTYPE,kflag
+      use const ,only:outdms ,outgrb2 ,ifilout_grb, RTYPE,kflag &
+                     ,do_sit,ldailyFCTsst,dailyClm_option,ldailyFCTicesndpt
+      USE mo_netcdf,           ONLY:lkvl
+      use mod_sitgrid, only:ratioSIT,dtsit24
+      USE mod_sit_control,only:loutsit24
+      use mod_sst ,only:outtseadiffFCT24
 
       implicit  none
 
@@ -142,6 +148,20 @@
       if(outdms.gt.0) call dmswrit(imax,jmax,ihdg,lenc,kflag,ifilout,glob,istat)
       if(outgrb2==1.and.myrank==0) call wrt_grb2_accu(itau,0,17,4,6,7,0,0.,0,24,glob)
 !xb110<<
+
+!Ocean SIT daily mean output
+      if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. (dailyClm_option.ge.1)) then
+        call outtseadiffFCT24(nx,my,my_max,dt24,ifilout,itau,idtg,ggdef)
+      endif
+
+      if(do_sit)then
+        if(ldailyFCTsst .OR. ldailyFCTicesndpt .OR. (dailyClm_option.ge.1)) then
+          call outtseadiffSIT24(nx,my,my_max,ratioSIT,dtsit24,ifilout,itau,idtg,ggdef)
+        endif
+        if(loutsit24)then
+          call outsit24(nx,my,my_max,lkvl,ifilout,itau,idtg,ggdef)
+        endif
+      endif !do_sit
 
 
       return

@@ -555,6 +555,8 @@ contains
 !
    40 continue
 
+      deallocate ( cspec,cspe0,cspe1,cspe2,cspe3 )
+
       return
   end subroutine shumout2
 

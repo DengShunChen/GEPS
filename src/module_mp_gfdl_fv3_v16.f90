@@ -4712,7 +4712,8 @@ subroutine cloud_diagnosis                                              &
     integer, intent (in) :: is, ie, ks, ke
     integer, intent (in), dimension (is:ie) :: lsm ! land sea mask, 0: ocean, 1: land, 2: sea ice
     
-    real(kind=RTYPE), intent (in), dimension (is:ie, ks:ke) :: t
+!    real(kind=RTYPE), intent (in), dimension (is:ie, ks:ke) :: t
+    real            , intent (in), dimension (is:ie, ks:ke) :: t
     real, intent (in), dimension (is:ie, ks:ke) :: den, delp
     real, intent (in), dimension (is:ie, ks:ke) :: qmw, qmi, qmr, qms, qmg !< units: kg / kg
     

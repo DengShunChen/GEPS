@@ -70,11 +70,18 @@ module unuse /data/common/gfs/modulefiles/x86_64
 
 # Loading gfs modules
 module use /data/common/gfs/modulefiles/$machine
-module load netcdf/3.6.3
+
+#module load netcdf/3.6.3
+module load netcdf/4.1.3
+setenv HDF5_LIB " -L/package/fx1000/hdf5-1.8.22/lib -lhdf5_hl -lhdf5"
 module load fftw/3.3.10.new_sp
 module load dms/v4
 module load operlib
 module load w3lib/2.0.2
 module unuse /data/common/gfs/modulefiles/$machine
 
-
+#===add for grib2 output
+setenv G2_LIB "-L/package/fx1000/g2lib-1.4.0_cwb/lib -lg2 "
+setenv G2_INC "/package/fx1000/g2lib-1.4.0_cwb/include"
+setenv PNG_LIB " -L/package/fx1000/libpng-1.6.37/lib -lpng "
+setenv JASPER_LIB "-L/package/fx1000/jasper-1.900.1/lib -ljasper"
